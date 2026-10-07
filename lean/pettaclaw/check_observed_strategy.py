@@ -14,6 +14,8 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
+    parser.add_argument('--suite', choices=['strategy', 'fair-goals'], default='strategy',
+                        help='Check the original strategy or weighted goal scheduling and its ledger adapter.')
     args = parser.parse_args()
     local = Path(__file__).resolve().parent
     canonical = local.parent / 'mettapedia'
@@ -80,13 +82,17 @@ def main():
         built[module] = fingerprint
         return fingerprint
 
-    targets = ['ObservedStrategyChecks', 'IterAuthoring', 'WeakAgentEcology']
+    targets = (['FairGoalChecks'] if args.suite == 'fair-goals' else
+               ['ObservedStrategyChecks', 'IterAuthoring', 'WeakAgentEcology'])
     try:
         for module in targets:
             build(module)
-        modules = ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
-                   'Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation',
-                   'FeedbackSensitiveBatch', 'ObservedStrategy', 'ObservedStrategyChecks']
+        modules = (['GoalSystem', 'GoalReview', 'GoalReviewChecks',
+                    'FairGoalScheduling', 'FairGoalStrategy', 'FairGoalChecks']
+                   if args.suite == 'fair-goals' else
+                   ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
+                    'Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation',
+                    'FeedbackSensitiveBatch', 'ObservedStrategy', 'ObservedStrategyChecks'])
         names = []
         for module in modules:
             source = source_for(module)
@@ -94,7 +100,8 @@ def main():
             names += [namespace + '.' + name for name in
                       re.findall(r'^theorem\s+(\w+)', source.read_text(), re.M)]
         audit = output / 'StrategyAxiomAudit.lean'
-        audit.write_text('import ObservedStrategyChecks\n\n' + '\n'.join(
+        audit_import = 'FairGoalChecks' if args.suite == 'fair-goals' else 'ObservedStrategyChecks'
+        audit.write_text('import ' + audit_import + '\n\n' + '\n'.join(
             '#print axioms ' + name for name in names) + '\n')
         checked = run('axiom-audit', audit)
         audited = re.findall(r"'([^']+)' (?:depends on axioms|does not depend)", checked.stdout)

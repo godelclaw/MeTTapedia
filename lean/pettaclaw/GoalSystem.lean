@@ -1,9 +1,9 @@
 import ObservedStrategy
 
 /-!
-# One ageing goal queue
+# Shared goal records and checked completion
 
-Research, maintenance and goal review use the same goal records and selector.
+Research, maintenance and goal review use the same goal records.
 Urgency is a configured base plus elapsed time since the last checked cycle.
 Blocked and finished goals are not eligible; a recurring goal becomes eligible
 after its configured interval. Ties retain the recorded queue order.
@@ -12,6 +12,11 @@ Scheduling metadata is attached to the existing protected request ledger.
 Completing a cycle uses that ledger's observed-result checker. A one-shot goal
 then finishes; a recurring goal resets its age and receives a fresh cycle key.
 Selection alone grants no authority, spends no budget and completes no work.
+
+The urgency-only selector below remains a reference policy; its conditional
+selection theorem is not starvation freedom. `FairGoalScheduling` adds
+weighted service over these same records, and `FairGoalStrategy` charges each
+admitted provider attempt without changing the completion rule.
 
 Host obligations: goal IDs are unique; cycle keys are fresh and disjoint from
 other requests; elapsed time and queue metadata are faithfully checkpointed;
@@ -43,6 +48,10 @@ structure Goal where
   round : Nat := 0
   blocked : Bool := false
   finished : Bool := false
+  /-- Configured relative share. Zero disables autonomous service. -/
+  share : Nat := 1
+  /-- Attention already allocated, independent of verified achievement. -/
+  service : Nat := 0
 deriving Repr, DecidableEq
 
 def urgency (goal : Goal) : Nat := goal.baseUrgency + goal.age
