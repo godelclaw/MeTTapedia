@@ -3,6 +3,10 @@ import MinimalSupport
 import NoCancellation
 import StarNormalForm
 import GraphMatchingBridge
+import CharTwoSix
+import UniformRigidity
+import TightCut
+import FermiKrenn
 import Mettapedia.Combinatorics.Matching
 
 /-! # Axiom audit
@@ -79,3 +83,42 @@ Every top-level conditional theorem, with its dependency cone printed. -/
 #print axioms StarNormalForm.excess_site_routing_network
 #print axioms StarNormalForm.live_pair_annihilates_complement
 #print axioms StarNormalForm.octet_ghz_relations
+
+/-! Characteristic two: contraction, four-site rigidity, and the six-site base. -/
+#print axioms MatchingCharTwo.capValue_mul_pmSum_contracted
+#print axioms KrennCharTwo.isGHZOver_contract
+#print axioms KrennCharTwo.no_isGHZOver_of_six
+#print axioms KrennCharTwo.fourRigid
+#print axioms KrennCharTwo.rigid_pair
+#print axioms KrennCharTwo.SixCNF.sixFmla_unsat
+#print axioms KrennCharTwo.no_isGHZOver_six
+
+/-! Uniform rigidity: contraction against site vectors, and the cap lemma. -/
+#print axioms MatchingSiteVectors.pmSum_formW
+#print axioms KrennUniform.pmSum_formW_univ_of_isGHZ
+#print axioms KrennUniform.cap_lemma
+#print axioms MatchingSiteVectors.pmSum_two_over_odd_cut
+#print axioms KrennUniform.split_lemma
+#print axioms KrennUniform.three_monoAt
+#print axioms MatchingTightCut.amplitude_shoreContract
+#print axioms KrennTightCut.isGHZOver_shoreContract
+#print axioms KrennTightCut.four_star
+#print axioms KrennTightCut.false_of_shoreTight_six
+#print axioms MatchingTightCut.amplitude_eq_crossOne_of_dead
+#print axioms KrennTightCut.shoreTight_of_export_dead
+#print axioms KrennTightCut.shoreTight_of_import_dead
+#print axioms KrennTightCut.exists_common_export
+#print axioms KrennTightCut.false_of_odd_sign_relation
+#print axioms MatchingPfaffian.pfSum_expand
+#print axioms MatchingPfaffian.a_mul_pfSum_update
+#print axioms MatchingPfaffian.capVal_mul_pfSum_update_eq_cap
+#print axioms KrennFermi.isFermiGHZ_contract
+#print axioms KrennFermi.no_isFermiGHZ_six
+#print axioms KrennFermi.krennGu_fermi
+#print axioms KrennFermi.not_isGHZOver_of_pfaffian
+#print axioms KrennFermi.not_isGHZOver_of_coherentSigns
+#print axioms KrennTightCut.productState_of_port
+#print axioms KrennTightCut.pair_elimination
+#print axioms KrennTightCut.not_isGHZOver_of_pair
+#print axioms KrennTightCut.paired_port_identity
+#print axioms KrennTightCut.not_isGHZOver_of_paired_port
