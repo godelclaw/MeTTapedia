@@ -81,8 +81,8 @@ lemma measurable_directingRowKernel_eval
       (fun r : ℕ → Fin k =>
         (directingRowKernel (k := k) P i r : Measure (Fin k)) ({b} : Set (Fin k))) := by
   let ρ : Measure (ℕ → Fin k) := rowProcessLaw (k := k) P i
-  letI : Nonempty (Fin k) := ⟨i⟩
-  letI : IsProbabilityMeasure ρ :=
+  let : Nonempty (Fin k) := ⟨i⟩
+  let : IsProbabilityMeasure ρ :=
     Measure.isProbabilityMeasure_map
       ((measurable_rowSuccessorVisitProcess (k := k) i).aemeasurable)
   simpa [ρ, directingRowKernel] using
@@ -298,7 +298,9 @@ lemma measurable_rowSuccessorEmpiricalCount
             (fun ω : ℕ → Fin k =>
               if rowSuccessorVisitProcess (k := k) i ω m = j then (1 : ℕ) else 0) := by
         exact Measurable.ite hset measurable_const measurable_const
-      simpa [rowSuccessorEmpiricalCount, Nat.count_succ] using ih.add hite
+      convert ih.add hite using 1
+      funext ω
+      simp [rowSuccessorEmpiricalCount, Nat.count_succ]
 
 lemma measurable_rowSuccessorEmpiricalFreq
     (i j : Fin k) (m : ℕ) :
@@ -2038,7 +2040,13 @@ lemma wordAllRowsInjectiveTuples_eq_piFinset
   classical
   ext Φ
   rw [Fintype.mem_piFinset]
-  simp [wordAllRowsInjectiveTuples, wordAllRowsInjective, wordRowInjectiveTuples]
+  constructor
+  · intro member i
+    have allRows := (Finset.mem_filter.mp member).2
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, allRows i⟩
+  · intro rows
+    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _,
+      fun i => (Finset.mem_filter.mp (rows i)).2⟩
 
 lemma wordAllRowsInjectiveTuples_card
     (a : Fin k) (ys : List (Fin k)) (n : ℕ) :
@@ -4559,7 +4567,7 @@ theorem existsRowKernel_hEval_and_rowSuccessorMatrixInvariance_of_successorMatri
                 ω (a :: b :: xs) ∂P) :
     ExistsRowKernel_hEval_and_rowSuccessorMatrixInvariance_of_successorMatrixPE k := by
   intro P hP hPE
-  letI : IsProbabilityMeasure P := hP
+  let : IsProbabilityMeasure P := hP
   refine ⟨directingRowKernel (k := k) P, ?_, ?_⟩
   · intro i b
     exact (measurable_directingRowKernel_eval (k := k) P i b).aemeasurable
@@ -4691,7 +4699,7 @@ theorem existsRowKernel_hEval_and_rowSuccessorMatrixInvariance_of_successorMatri
     (hStart : SuccessorMatrixPEStableUnderStartRestriction k) :
     ExistsRowKernel_hEval_and_rowSuccessorMatrixInvariance_of_successorMatrixPE k := by
   intro P hP hPE
-  letI : IsProbabilityMeasure P := hP
+  let : IsProbabilityMeasure P := hP
   exact
     existsRowKernel_hEval_and_rowSuccessorMatrixInvariance_of_successorMatrixPE_start
       (k := k) P hPE (hStart P hP hPE)
@@ -4982,7 +4990,7 @@ theorem successorMatrixPEStableUnderStartRestriction_subsingleton
     [Subsingleton (Fin k)] :
     SuccessorMatrixPEStableUnderStartRestriction k := by
   intro P hP hPE a
-  letI : IsProbabilityMeasure P := hP
+  let : IsProbabilityMeasure P := hP
   exact
     successorMatrixPE_start_restrict_of_successorMatrixPE_subsingleton
       (k := k) P hPE a
@@ -5096,7 +5104,7 @@ theorem successorMatrixPartialExchangeable_start_restrict_of_markovExchangeable_
     intro readIdx
     ext ω
     simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_iInter,
-      Set.mem_setOf_eq, funext_iff, rowSuccessorVisitProcess]
+      Set.mem_ofPred_eq, funext_iff, rowSuccessorVisitProcess]
   rw [hpre (fun j => σ' (anchor j) (idx j)), hpre idx]
   have hmeasE : ∀ readIdx : Fin m' → ℕ,
       MeasurableSet (⋂ j : Fin m', {ω : ℕ → Fin k |
@@ -5142,7 +5150,7 @@ theorem directingRowKernel_payload_of_markovExchangeable_strongRecurrence
     rcases Nat.eq_zero_or_pos k with rfl | hk
     · intro a
       exact Fin.elim0 a
-    · haveI : NeZero k := NeZero.of_pos hk
+    · have : NeZero k := NeZero.of_pos hk
       intro a
       exact
         successorMatrixPartialExchangeable_start_restrict_of_markovExchangeable_strongRecurrence
@@ -5156,7 +5164,7 @@ theorem markovDeFinetti_strongRecurrence (k : ℕ) :
     FortiniSuccessorMatrixInvarianceTheoremStrongRecurrence k := by
   intro μ hμ hExtStrong
   rcases hExtStrong with ⟨P, hP, hExt, hStrong⟩
-  letI : IsProbabilityMeasure P := hP
+  let : IsProbabilityMeasure P := hP
   rcases directingRowKernel_payload_of_markovExchangeable_strongRecurrence
       (k := k) μ hμ P hExt hStrong with ⟨rowKernel, hEval, hInv⟩
   rcases exists_markovParamLaw_of_hEval_and_rowSuccessorMatrixInvariance

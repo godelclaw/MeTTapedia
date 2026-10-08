@@ -5,15 +5,17 @@ import Mathlib.Data.Set.Finite.Basic
 /-!
 # Böhm Trees
 
-This file formalizes Böhm trees from Bucciarelli-Salibra "Graph Lambda Theories" (2008).
+This file defines finite, search-bounded tree observations motivated by Böhm trees
+in Bucciarelli-Salibra "Graph Lambda Theories" (2008). It is not yet a
+formalization of the source's unbounded Böhm tree or Böhm lambda theory.
 
 ## Main Definitions
 
-* `BohmTree` - Possibly infinite trees labelled by head variables
-* `bohmTree` - Compute the Böhm tree of a lambda term
-* `BohmTheory` - The Böhm theory B: equality of Böhm trees
+* `BohmTree` - Finite trees labelled by head variables
+* `bohmTree` - Finite-depth observation with a bounded head-search budget
+* `SearchTreeEqual` - Equality of the bounded observations at every depth
 
-## Key Insights
+## Mathematical background
 
 A **Böhm tree** BT(M) of a lambda term M is:
 - ⊥ if M is unsolvable
@@ -21,14 +23,14 @@ A **Böhm tree** BT(M) of a lambda term M is:
 
 The **Böhm theory** B consists of all equations M = N such that BT(M) = BT(N).
 
-**Key Results** (Bucciarelli-Salibra):
+**Source Results** (Bucciarelli-Salibra, not established by this packaging):
 - B is sensible (all unsolvable terms have ⊥ as their Böhm tree)
 - B is a graph theory (realized by a specific graph model)
 - B is the UNIQUE maximal sensible graph theory
 
 ## References
 
-- Bucciarelli & Salibra, "Graph Lambda Theories" (2008), §4-5
+- Bucciarelli & Salibra, "Graph Lambda Theories" (2008), §§2.2, 6
 - Barendregt, "The Lambda Calculus", Chapter 10
 -/
 
@@ -44,15 +46,14 @@ A Böhm tree is a possibly infinite tree where each node is labelled with:
 - Children corresponding to arguments
 -/
 
-/-- A Böhm tree is a potentially infinite tree with nodes labelled by:
+/-- A finite tree observation with nodes labelled by:
     - Number of lambda abstractions at this node
     - The head variable (de Bruijn index)
     - Children for each argument
 
-    We represent this coinductively to handle infinite trees.
-    For simplicity, we use a finite approximation here. -/
+    This is an inductive finite tree, not a coinductive representation. -/
 inductive BohmTree : Type where
-  /-- The bottom element ⊥, representing unsolvable terms -/
+  /-- Bottom, also used for depth truncation and exhausted head-search budget. -/
   | bot : BohmTree
   /-- A node with lambda-abstractions, head variable, and argument subtrees -/
   | node : (numLams : Nat) → (headVar : Nat) → (args : List BohmTree) → BohmTree
@@ -125,7 +126,7 @@ instance : DecidableEq BohmTree := fun a b =>
 
 namespace BohmTree
 
-/-- The bottom Böhm tree (unsolvable terms) -/
+/-- No node information; its interpretation depends on the observation interface -/
 def bottom : BohmTree := .bot
 
 /-- Check if a Böhm tree is bottom -/
@@ -133,9 +134,7 @@ def isBottom : BohmTree → Bool
   | .bot => true
   | .node _ _ _ => false
 
-/-- The depth of a Böhm tree (maximum path length from root).
-    Returns 0 for bottom, and is infinite for infinite trees.
-    We compute finite approximation. -/
+/-- The finite maximum path length from the root; bottom has depth zero. -/
 def depth : BohmTree → Nat
   | .bot => 0
   | .node _ _ args => 1 + (args.map depth).foldl max 0
@@ -208,6 +207,98 @@ def toHNF (fuel : Nat) (t : LambdaTerm) : Option LambdaTerm :=
            | some t' => toHNF fuel' t'
            | none => none
 
+/-- The argument collector succeeds exactly on variable-headed spines. -/
+theorem collectArgs_isSome_eq (t : LambdaTerm) (arguments : List LambdaTerm) :
+    (extractHNF.collectArgs t arguments).isSome = t.isAppHead := by
+  induction t generalizing arguments with
+  | var n => rfl
+  | lam t ih => rfl
+  | app t s ih _ =>
+      simp only [extractHNF.collectArgs, LambdaTerm.isAppHead]
+      exact ih (s :: arguments)
+
+/-- The structural HNF extractor recognizes exactly the Boolean HNF predicate. -/
+theorem extractHNF_isSome_eq_isHNF (t : LambdaTerm) :
+    (extractHNF t).isSome = t.isHNF := by
+  induction t with
+  | var n => rfl
+  | lam t ih =>
+      cases h : extractHNF t with
+      | none =>
+          simpa only [extractHNF, h, LambdaTerm.isHNF, Option.isSome_none] using ih
+      | some value =>
+          simpa only [extractHNF, h, LambdaTerm.isHNF, Option.isSome_some] using ih
+  | app t s ih _ =>
+      cases t with
+      | var n => rfl
+      | lam body => rfl
+      | app f a =>
+          have h := collectArgs_isSome_eq (.app f a) [s]
+          cases hCollect : extractHNF.collectArgs (.app f a) [s] with
+          | none =>
+              simpa only [extractHNF, hCollect, LambdaTerm.isHNF, Option.isSome_none] using h
+          | some value =>
+              simpa only [extractHNF, hCollect, LambdaTerm.isHNF, Option.isSome_some] using h
+
+/-- A successful head-reduction operation is an actual parallel β step. -/
+theorem headReduce_parRed {t result : LambdaTerm}
+    (h : headReduce t = some result) : t ⇛ result := by
+  induction t generalizing result with
+  | var n => simp [headReduce] at h
+  | lam body ih =>
+      cases hBody : headReduce body with
+      | none => simp [headReduce, hBody] at h
+      | some reduced =>
+          simp only [headReduce, hBody, Option.some.injEq] at h
+          subst result
+          exact ParRed.lam (ih hBody)
+  | app function argument ihFunction _ =>
+      cases function with
+      | var n => simp [headReduce] at h
+      | lam body =>
+          simp only [headReduce, Option.some.injEq] at h
+          subst result
+          exact ParRed.beta (ParRed.refl body) (ParRed.refl argument)
+      | app f a =>
+          cases hFunction : headReduce (.app f a) with
+          | none => simp [headReduce, hFunction] at h
+          | some reduced =>
+              simp only [headReduce, hFunction, Option.some.injEq] at h
+              subst result
+              exact ParRed.app (ihFunction hFunction) (ParRed.refl argument)
+
+/-- Successful bounded search retains both a real reduction path and actual HNF. -/
+theorem toHNF_sound {fuel : Nat} {t hnf : LambdaTerm}
+    (h : toHNF fuel t = some hnf) : (t ⇛* hnf) ∧ hnf.isHNF = true := by
+  induction fuel generalizing t with
+  | zero => simp [toHNF] at h
+  | succ fuel ih =>
+      simp only [toHNF] at h
+      split at h
+      · rename_i hExtract
+        simp only [Option.some.injEq] at h
+        subst hnf
+        exact ⟨Relation.ReflTransGen.refl,
+          (extractHNF_isSome_eq_isHNF t).symm.trans hExtract⟩
+      · cases hStep : headReduce t with
+        | none => simp [hStep] at h
+        | some reduced =>
+            simp only [hStep] at h
+            obtain ⟨hPath, hHead⟩ := ih h
+            exact ⟨Relation.ReflTransGen.head (headReduce_parRed hStep) hPath, hHead⟩
+
+/-- A successful search is evidence of reduction-sensitive solvability. -/
+theorem solvable_of_toHNF {fuel : Nat} {t hnf : LambdaTerm}
+    (h : toHNF fuel t = some hnf) : t.Solvable :=
+  ⟨hnf, toHNF_sound h⟩
+
+/-- Actual unsolvability prevents search success at every fuel. -/
+theorem unsolvable_toHNF_none {t : LambdaTerm} (h : t.Unsolvable) (fuel : Nat) :
+    toHNF fuel t = none := by
+  cases hSearch : toHNF fuel t with
+  | none => rfl
+  | some hnf => exact (h (solvable_of_toHNF hSearch)).elim
+
 /-! ### Helper lemmas for lambda terms -/
 
 /-- extractHNF on lambda: succeeds iff body succeeds, with incremented numLams -/
@@ -246,7 +337,7 @@ lemma headReduce_lam_none {t : LambdaTerm} (hr : headReduce t = none) :
 /-! ### Shift commutes with head reduction -/
 
 /-- Key lemma: headReduce commutes with shift.
-    This is essential for proving shift_preserves_bohmEqual.
+    This is essential for proving shift_preserves_searchTreeEqual.
 
     The proof uses subst_0_shift for the beta redex case. -/
 lemma headReduce_shift (t : LambdaTerm) (d c : Nat) :
@@ -380,7 +471,7 @@ lemma extractHNF_isSome_shift (t : LambdaTerm) (d c : Nat) :
     - IMPORTANT: Arguments also shift with cutoff c + k (they're inside k lambdas!)
 
     The proof requires careful tracking of the cutoff through the lambda nesting.
-    This is a key technical lemma for shift_preserves_bohmEqual. -/
+    This is a key technical lemma for shift_preserves_searchTreeEqual. -/
 lemma extractHNF_shift (t : LambdaTerm) (d c : Nat) :
     (extractHNF t).map (fun (k, h, args) => (k, if h < c + k then h else h + d,
         args.map (·.shift d (c + k)))) = extractHNF (t.shift d c) := by
@@ -654,19 +745,16 @@ lemma toHNF_result_stable {t : LambdaTerm} {fuel1 fuel2 : Nat} {hnf : LambdaTerm
   rw [hk]
   exact toHNF_mono_add h1
 
-/-- Compute the Böhm tree of a term with bounded depth.
-    Returns bottom if the term is unsolvable (no HNF found).
-
-    IMPORTANT: The fuel parameter controls TREE DEPTH. For head reduction,
-    we use sufficient fuel (depth * (depth + 1) + 1) to ensure that beta
-    reductions don't artificially truncate the tree. -/
+/-- Compute a finite, search-bounded tree observation. Tree depth determines
+the head-search budget as well as recursive depth. Bottom may therefore mean
+an unsolvable term, depth truncation, or exhausted head-search fuel; this
+budget is not a normalization bound. -/
 def bohmTree (depth : Nat) : LambdaTerm → BohmTree
   | t =>
       match depth with
       | 0 => .bot
       | depth' + 1 =>
-          -- Use ample reduction fuel to avoid truncation from beta reductions
-          -- At depth d, we allow d*(d+1)+1 reduction steps
+          -- The finite head-search budget can truncate a solvable term.
           let reductionFuel := depth * (depth + 1) + 1
           match toHNF reductionFuel t with
           | none => .bot
@@ -808,70 +896,24 @@ theorem bohmTree_shift (t : LambdaTerm) (d c m : Nat) :
     If two terms have equal Böhm trees, their shifts also have equal Böhm trees.
 
     Proof: bohmTree commutes with shift, so equal inputs give equal outputs. -/
-theorem shift_preserves_bohmEqual' (s s' : LambdaTerm) (d c : Nat)
+theorem shift_preserves_searchTreeEqual' (s s' : LambdaTerm) (d c : Nat)
     (h : ∀ n, bohmTree n s = bohmTree n s') :
     ∀ m, bohmTree m (s.shift d c) = bohmTree m (s'.shift d c) := by
   intro m
   rw [bohmTree_shift s d c m, bohmTree_shift s' d c m, h m]
 
-/-! ## The Böhm Theory
+/-! ## Equality of bounded observations
 
-Two terms are Böhm-equal if they have the same Böhm tree.
+This relation retains the search policy. It is not the source's exact
+Böhm-tree equality, and it is not a lambda congruence: `HeadSearchControls`
+refutes β-invariance (`bounded_beta_equality_fails`) and closure under
+application and substitution (`searchTreeEqual_not_app_left_congruence`,
+`searchTreeEqual_not_app_right_congruence`, `searchTreeEqual_not_subst_congruence`).
 -/
 
-/-- Two terms are Böhm-equal (same Böhm tree) -/
-def BohmEqual (t s : LambdaTerm) : Prop :=
+/-- Equality of the current search-bounded observations at every depth. -/
+def SearchTreeEqual (t s : LambdaTerm) : Prop :=
   ∀ n, bohmTree n t = bohmTree n s
-
-/-- The Böhm theory B: equations where terms have equal Böhm trees -/
-def BohmEquations : Set LambdaEq :=
-  { eq | BohmEqual eq.lhs eq.rhs }
-
-/-- Beta reduction preserves Böhm equality.
-
-    This is a fundamental property: (λx.t)s and t[s/x] have the same Böhm tree
-    because Böhm trees are computed via head reduction, and beta reduction
-    is exactly head reduction at the outermost redex.
-
-    See: Barendregt, "The Lambda Calculus", Chapter 10
--/
-theorem bohmTree_beta_eq (t s : LambdaTerm) (n : Nat) :
-    bohmTree n (.app (.lam t) s) = bohmTree n (s.subst 0 t) := by
-  cases n with
-  | zero => rfl  -- Both return .bot when depth is 0
-  | succ d =>
-    simp only [bohmTree]
-    -- reductionFuel = (d+1) * (d+2) + 1
-    -- By toHNF_beta_step, toHNF fuel (.app (.lam t) s) = toHNF (fuel-1) (s.subst 0 t)
-    have h_beta : toHNF ((d + 1) * (d + 1 + 1) + 1) (.app (.lam t) s)
-                = toHNF ((d + 1) * (d + 1 + 1)) (s.subst 0 t) := by
-      exact toHNF_beta_step ((d + 1) * (d + 1 + 1)) t s
-    rw [h_beta]
-    -- Now: match toHNF ((d+1)*(d+2)) (s.subst 0 t) with ...
-    --    = match toHNF ((d+1)*(d+2)+1) (s.subst 0 t) with ...
-    cases h : toHNF ((d + 1) * (d + 1 + 1)) (s.subst 0 t) with
-    | none =>
-      -- LHS returns .bot; need to show RHS does too
-      -- If toHNF with more fuel succeeds, we need the extractHNF result
-      cases h' : toHNF ((d + 1) * (d + 1 + 1) + 1) (s.subst 0 t) with
-      | none => rfl  -- Both return .bot
-      | some hnf' =>
-        -- This case: less fuel fails, more fuel succeeds
-        -- By toHNF_mono contrapositive, this shouldn't happen if the term
-        -- truly has no HNF. But with finite fuel, we might timeout.
-        -- However, both return BohmTrees - we just need same structure.
-        -- With 1 extra fuel, if we get an HNF, the result depends on extractHNF.
-        -- Since the term is the same, the Böhm tree should still be correct.
-        -- But we return .bot on LHS and something else on RHS - not equal!
-        -- This requires the fuel formula to be tight enough to avoid this case.
-        -- For now, the formula (d+1)*(d+2)+1 with 1 less = (d+1)*(d+2) should suffice
-        -- for reasonable terms. We leave a sorry for this edge case.
-        sorry
-    | some hnf =>
-      -- By monotonicity, RHS is also some hnf
-      have h' : toHNF ((d + 1) * (d + 1 + 1) + 1) (s.subst 0 t) = some hnf := toHNF_mono h
-      simp only [h']
-      -- Same hnf, so extractHNF gives same result, recursion is identical
 
 /-- Key structural lemma: The Böhm tree of λt is determined by the Böhm tree of t,
     with the number of lambdas incremented. -/
@@ -911,216 +953,16 @@ theorem bohmTree_congLam (t t' : LambdaTerm) (h : ∀ n, bohmTree n t = bohmTree
   -- Now we just need to show the match expressions are equal
   rw [h m]
 
-/-! ## Combined Congruence and Substitution Theorem (Step-Indexed)
+/-! ## Search failure and actual unsolvability -/
 
-The key insight is that `bohmTree n t` is already parameterized by depth `n`.
-When computing `bohmTree (n+1) t`, recursive calls use `bohmTree n` on arguments.
-This natural stratification breaks the apparent circular dependency between:
-- `subst_preserves_bohmEqual` (app case needs congruence)
-- `bohmTree_congAppRight` (needs substitution preservation for beta reduction)
-
-By using strong induction on depth, we prove all properties simultaneously at each level.
-At depth 0, all Böhm trees are .bot (trivial). At depth m+1, we use the induction
-hypothesis at depth m for recursive calls.
-
-Reference: Step-indexed logical relations (Ahmed 2006, Appel & McAllester 2001)
--/
-
-/-- Combined property: app congruence (left and right) and substitution preservation
-    at a given depth m. We use the full Böhm equality hypothesis (∀ k) for simplicity,
-    but the induction only uses values at depths < m for recursive children. -/
-def CongSubstAt (m : Nat) : Prop :=
-  -- (1) Left application congruence at depth m
-  (∀ t t' s, (∀ k, bohmTree k t = bohmTree k t') → bohmTree m (.app t s) = bohmTree m (.app t' s)) ∧
-  -- (2) Right application congruence at depth m
-  (∀ t s s', (∀ k, bohmTree k s = bohmTree k s') → bohmTree m (.app t s) = bohmTree m (.app t s')) ∧
-  -- (3) Substitution preserves Böhm equality at depth m (generalized to level j)
-  (∀ body s s' j, (∀ k, bohmTree k s = bohmTree k s') →
-                  bohmTree m (s.subst j body) = bohmTree m (s'.subst j body))
-
-/-- At depth 0, all Böhm trees are .bot, so all properties hold trivially. -/
-lemma congSubstAt_zero : CongSubstAt 0 := by
-  unfold CongSubstAt
-  refine ⟨?_, ?_, ?_⟩ <;> intros <;> rfl
-
-/-- The combined theorem by strong induction on depth.
-
-    This is the main theorem that breaks the circular dependency. -/
-theorem congSubstAt_all : ∀ m, CongSubstAt m := by
-  intro m
-  induction m using Nat.strong_induction_on with
-  | _ m ih =>
-    cases m with
-    | zero => exact congSubstAt_zero
-    | succ m' =>
-      unfold CongSubstAt
-      constructor
-      -- (1) Left application congruence at depth m'+1
-      · intro t t' s ht
-        -- The key insight: when computing bohmTree (m'+1) (.app t s),
-        -- we look at toHNF of (.app t s). If t and t' have equal Böhm trees,
-        -- they reduce to the same HNF structure (same head variable and
-        -- Böhm-equal arguments). The application adds s to the argument list.
-        -- Since the recursive calls use depth m', we apply IH at m'.
-        --
-        -- For now, we note that this case is less critical than the right case
-        -- (which is where substitution happens). We focus on proving (2) and (3).
-        sorry
-      constructor
-      -- (2) Right application congruence at depth m'+1
-      · intro t s s' hs
-        -- Case split on what t is:
-        match t with
-        | .var n =>
-          -- t is a variable: use already-proven bohmTree_congAppRight_var
-          exact bohmTree_congAppRight_var n s s' hs (m' + 1)
-        | .lam body =>
-          -- t is a lambda: beta reduction occurs
-          -- (.app (.lam body) s) reduces to (s.subst 0 body)
-          -- We use bohmTree_beta_eq and then part (3) of the IH
-          rw [bohmTree_beta_eq body s (m' + 1)]
-          rw [bohmTree_beta_eq body s' (m' + 1)]
-          -- Now need: bohmTree (m'+1) (s.subst 0 body) = bohmTree (m'+1) (s'.subst 0 body)
-          -- This is exactly part (3) of CongSubstAt (m'+1) with j=0
-          -- But we're proving CongSubstAt (m'+1), so we can't use it directly.
-          -- However, the recursive calls in bohmTree use depth m', so we can use
-          -- the IH at m' for the children. For the top level, we need a direct proof.
-          --
-          -- Key insight: bohmTree (m'+1) (s.subst 0 body) computes:
-          -- 1. toHNF of (s.subst 0 body)
-          -- 2. Recursively computes bohmTree m' on arguments
-          --
-          -- The arguments at depth m' can use IH. The HNF structure depends on
-          -- the substituted term, but s and s' produce the same Böhm tree
-          -- so the substituted terms have the same Böhm tree at all depths.
-          sorry
-        | .app t1 t2 =>
-          -- t is an application: recurse on head reduction
-          -- This is more complex as we need to track the reduction sequence
-          sorry
-      -- (3) Substitution preserves Böhm equality at depth m'+1
-      --
-      -- IMPORTANT: This case requires induction on BODY structure, not just depth.
-      -- At a fixed depth m'+1, we prove for all bodies by structural induction.
-      -- The terms being substituted (s, s') and the hypothesis (hs) must also vary.
-      · intro body s s' j hs
-        -- Use structural induction on body, generalizing s, s', j, and hs
-        induction body generalizing s s' j hs with
-        | var n =>
-          -- body is a variable: s.subst j (.var n)
-          -- Cases: n == j → s; n > j → .var (n-1); n < j → .var n
-          unfold LambdaTerm.subst
-          by_cases h1 : n == j
-          · -- n == j: result is s (and s' respectively)
-            simp only [h1, ↓reduceIte]
-            exact hs (m' + 1)
-          · -- n ≠ j: both branches reduce to the same term
-            simp only [h1, Bool.false_eq_true, ↓reduceIte]
-            -- The goal is now: bohmTree ... (if n > j then .var (n-1) else .var n)
-            --                = bohmTree ... (if n > j then .var (n-1) else .var n)
-            -- This is rfl since both sides are identical
-        | lam b ih_b =>
-          -- body is a lambda: s.subst j (.lam b) = .lam ((s.shift 1 0).subst (j+1) b)
-          simp only [LambdaTerm.subst]
-          -- Use bohmTree_lam_structure which only needs equality at the SAME depth
-          rw [bohmTree_lam_structure ((s.shift 1 0).subst (j+1) b) (m'+1)]
-          rw [bohmTree_lam_structure ((s'.shift 1 0).subst (j+1) b) (m'+1)]
-          -- Now need: bohmTree (m'+1) ((s.shift 1 0).subst (j+1) b)
-          --         = bohmTree (m'+1) ((s'.shift 1 0).subst (j+1) b)
-          -- to show the match expressions are equal
-          -- Use ih_b with shifted terms and j+1
-          have hshift : ∀ k, bohmTree k (s.shift 1 0) = bohmTree k (s'.shift 1 0) :=
-            shift_preserves_bohmEqual' s s' 1 0 hs
-          have ih_result := ih_b (s.shift 1 0) (s'.shift 1 0) (j+1) hshift
-          rw [ih_result]
-        | app b1 b2 ih_b1 ih_b2 =>
-          -- body is an application: distribute substitution
-          simp only [LambdaTerm.subst]
-          -- Goal: bohmTree (m'+1) (.app (s.subst j b1) (s.subst j b2))
-          --     = bohmTree (m'+1) (.app (s'.subst j b1) (s'.subst j b2))
-          -- Use ih_b1 and ih_b2 to get equality at depth m'+1 for subterms
-          have h1 := ih_b1 s s' j hs
-          have h2 := ih_b2 s s' j hs
-          -- h1 : bohmTree (m'+1) (s.subst j b1) = bohmTree (m'+1) (s'.subst j b1)
-          -- h2 : bohmTree (m'+1) (s.subst j b2) = bohmTree (m'+1) (s'.subst j b2)
-          -- For the app case, we need congruence at depth m'+1
-          -- But congruence requires equality at ALL depths, not just m'+1
-          -- This is the fundamental limitation - we need a different approach
-          sorry
-
-/-- Extract left application congruence from the combined theorem. -/
-theorem bohmTree_congAppLeft' (t t' s : LambdaTerm)
-    (h : ∀ n, bohmTree n t = bohmTree n t') (m : Nat) :
-    bohmTree m (.app t s) = bohmTree m (.app t' s) :=
-  (congSubstAt_all m).1 t t' s h
-
-/-- Extract right application congruence from the combined theorem. -/
-theorem bohmTree_congAppRight' (t s s' : LambdaTerm)
-    (h : ∀ n, bohmTree n s = bohmTree n s') (m : Nat) :
-    bohmTree m (.app t s) = bohmTree m (.app t s') :=
-  (congSubstAt_all m).2.1 t s s' h
-
-/-- Substitution preserves Böhm equality (generalized to level j). -/
-theorem subst_preserves_bohmEqual_general (body : LambdaTerm) (s s' : LambdaTerm) (j : Nat)
-    (h : ∀ n, bohmTree n s = bohmTree n s') :
-    ∀ m, bohmTree m (s.subst j body) = bohmTree m (s'.subst j body) :=
-  fun m => (congSubstAt_all m).2.2 body s s' j h
-
-/-- Böhm trees are congruent under application (left).
-
-    If t and t' have equal Böhm trees, then ts and t's have equal Böhm trees.
--/
-theorem bohmTree_congAppLeft (t t' s : LambdaTerm) (h : ∀ n, bohmTree n t = bohmTree n t') (m : Nat) :
-    bohmTree m (.app t s) = bohmTree m (.app t' s) :=
-  bohmTree_congAppLeft' t t' s h m
-
-/-- Böhm trees are congruent under application (right).
-
-    If s and s' have equal Böhm trees, then ts and ts' have equal Böhm trees.
--/
-theorem bohmTree_congAppRight (t s s' : LambdaTerm) (h : ∀ n, bohmTree n s = bohmTree n s') (m : Nat) :
-    bohmTree m (.app t s) = bohmTree m (.app t s') :=
-  bohmTree_congAppRight' t s s' h m
-
-/-- The Böhm theory as a LambdaTheory structure. -/
-noncomputable def BohmTheory : LambdaTheory where
-  equations := BohmEquations
-  refl := fun t => by
-    unfold BohmEquations BohmEqual
-    simp
-  symm := fun {t s} h => by
-    unfold BohmEquations BohmEqual at *
-    intro n
-    exact (h n).symm
-  trans := fun {t s u} h1 h2 => by
-    unfold BohmEquations BohmEqual at *
-    intro n
-    exact (h1 n).trans (h2 n)
-  beta := fun t s => by
-    unfold BohmEquations BohmEqual
-    intro n
-    exact bohmTree_beta_eq t s n
-  congLam := fun {t t'} h => by
-    unfold BohmEquations BohmEqual at *
-    intro n
-    exact bohmTree_congLam t t' h n
-  congAppLeft := fun {t t' s} h => by
-    unfold BohmEquations BohmEqual at *
-    intro n
-    exact bohmTree_congAppLeft t t' s h n
-  congAppRight := fun {t s s'} h => by
-    unfold BohmEquations BohmEqual at *
-    intro n
-    exact bohmTree_congAppRight t s s' h n
-
-/-! ## Key Properties of the Böhm Theory -/
-
-/-- Semantic unsolvability: a term has no head normal form reachable by reduction.
-    This is the operationally correct definition for Böhm tree computation. -/
+/-- Failure of the existing head-search procedure at every finite fuel.
+Actual unsolvability implies this predicate by `unsolvable_toHNF_none`;
+the converse is proved by `semanticUnsolvable_iff_unsolvable` in
+`HeadSearchAdequacy`, using head-normalization completeness. -/
 def SemanticUnsolvable (t : LambdaTerm) : Prop :=
   ∀ fuel, toHNF fuel t = none
 
-/-- Semantically unsolvable terms have bottom as their Böhm tree. -/
+/-- All-fuel head-search failure gives bottom in every bounded tree observation. -/
 theorem semanticUnsolvable_bohmTree_bot {t : LambdaTerm} (h : SemanticUnsolvable t) :
     ∀ n, bohmTree n t = .bot := by
   intro n
@@ -1131,98 +973,19 @@ theorem semanticUnsolvable_bohmTree_bot {t : LambdaTerm} (h : SemanticUnsolvable
     have h_none := h ((d + 1) * (d + 1 + 1) + 1)
     simp only [h_none]
 
-/-- Unsolvable terms have bottom as their Böhm tree.
-
-    **NOTE**: The syntactic definition `LambdaTerm.Unsolvable` (∄ args with
-    (t args...).isHNF = true) doesn't match the semantic definition needed
-    for Böhm trees. For example, (λx.x)y is syntactically "unsolvable" but
-    has bohmTree ≠ .bot because it reduces to y.
-
-    This theorem would require proving that syntactic unsolvability implies
-    semantic unsolvability, which requires showing that terms that are
-    syntactically stuck are also operationally stuck.
-
-    For fully general lambda terms, use `semanticUnsolvable_bohmTree_bot` instead.
--/
+/-- Actual unsolvable terms have bottom at every bounded tree observation.
+Only search soundness is needed: success would give a real path to HNF. -/
 theorem unsolvable_bohmTree_bot {t : LambdaTerm} (h : t.Unsolvable) :
     ∀ n, bohmTree n t = .bot := by
-  -- This requires connecting syntactic and semantic unsolvability.
-  -- The syntactic definition checks if (t args...).isHNF = false for all args.
-  -- For terms like Omega, syntactic ⟹ semantic because no args can "fix" the head.
-  -- But for beta redexes, the syntactic definition is too strict.
-  sorry
+  exact semanticUnsolvable_bohmTree_bot (unsolvable_toHNF_none h)
 
-/-- The Böhm theory is sensible (equates all unsolvable terms) -/
-theorem BohmTheory_sensible : BohmTheory.Sensible := by
-  unfold LambdaTheory.Sensible
-  intro t s ht hs
-  unfold LambdaTheory.equates BohmTheory BohmEquations BohmEqual
-  simp
-  intro n
-  rw [unsolvable_bohmTree_bot ht n, unsolvable_bohmTree_bot hs n]
-
-/-- The Böhm theory is a graph theory (Bucciarelli-Salibra Theorem 45).
-
-    The proof constructs a specific graph model D∞ (the limit of finite
-    approximations) and shows that its induced theory equals B.
-
-    The graph model D∞ has:
-    - Carrier: Böhm trees themselves
-    - Coding function: encodes application/abstraction structure
-
-    See: Bucciarelli & Salibra, "Graph Lambda Theories" (2008), Theorem 45
--/
-theorem BohmTheory_isGraphTheory : IsGraphTheory BohmTheory := by
-  sorry
-
-/-- B is the maximal sensible graph theory (Bucciarelli-Salibra Theorem 45).
-
-    Every sensible graph theory is contained in B. This is because:
-    1. Sensible theories equate all unsolvable terms
-    2. Graph theories respect the approximation structure of Böhm trees
-    3. If two terms have different Böhm trees, a sensible graph theory
-       cannot equate them (the difference is witnessed at some finite level)
-
-    This is the main maximality result for the Böhm theory.
-
-    See: Bucciarelli & Salibra, "Graph Lambda Theories" (2008), Theorem 45
--/
-theorem BohmTheory_maximal_sensible :
-    ∀ T : LambdaTheory, IsGraphTheory T → T.Sensible → T ≤ BohmTheory := by
-  sorry
-
-/-! ## Summary
-
-This file establishes Böhm trees and the Böhm theory:
-
-1. **BohmTree**: Possibly infinite trees (finite approximation via fuel)
-2. **bohmTree**: Computes Böhm tree of a lambda term
-3. **BohmTheory**: Lambda-theory where M = N iff BT(M) = BT(N)
-
-**Proven Results**:
-- ✓ `BohmTree.beq_eq_true_iff`: DecidableEq correctness (mutual recursion proof)
-- ✓ `BohmTheory_sensible`: B is sensible (all unsolvables equal ⊥)
-
-**Open Sorries** (require deep lambda calculus theory):
-- `bohmTree_beta_eq`: Beta reduction preserves Böhm equality
-  (requires analysis of fuel consumption in head reduction)
-- `bohmTree_congLam/AppLeft/AppRight`: Congruence properties
-  (require standardization-like arguments)
-- `unsolvable_bohmTree_bot`: Unsolvable terms have bottom Böhm tree
-  (requires connection between solvability and head reduction termination)
-- `BohmTheory_isGraphTheory`: B is a graph theory (Theorem 45)
-  (requires constructing the graph model D∞)
-- `BohmTheory_maximal_sensible`: B is maximal sensible (Theorem 45)
-  (requires approximation theorems and q-sequences)
-
-**References**:
-- Barendregt, "The Lambda Calculus", Chapter 10 (Böhm trees, standardization)
-- Bucciarelli & Salibra, "Graph Lambda Theories" (2008), Theorem 45
-
-**Technical Notes**:
-- We use a fuel parameter for termination (not full coinduction)
-- The `bohmTree_beta_eq` theorem may need modification to account for
-  fuel consumption during beta reduction
+/-!
+Application/substitution congruence, graph realization, and graph-restricted
+maximality for exact mathematical Böhm-tree equality are separate source
+obligations. This evaluator does not supply a lambda-theory record: fixed
+budgets can distinguish beta-equivalent terms. `BohmObservations` constructs
+the uncapped coherent observations; `BohmSearchApproximation` relates finite
+search to those observations without treating exhausted fuel as divergence.
 -/
 
 end Mettapedia.GSLT.GraphTheory

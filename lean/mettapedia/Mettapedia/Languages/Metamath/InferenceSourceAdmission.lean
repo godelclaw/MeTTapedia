@@ -3,11 +3,13 @@ import Mettapedia.GSLT.LanguageDef.CheckedSource
 import Mettapedia.Languages.Metamath.InferenceOneShotByteLog
 import Mettapedia.Languages.Metamath.InferenceProjection
 
+open Mettapedia.GSLT.LanguageDef
+
 /-!
 # Canonical Metamath source admission
 
 This module is the checked waist from an accepted `mm-lean4` source run to a
-source-indexed generic inference presentation.  It does not implement a second
+source-indexed generic inference definition.  It does not implement a second
 Metamath reader.  Exact-byte inputs use the certified token log whose erasure
 is `Metamath.Verify.checkBytes`; include-bearing inputs use the canonical
 include-aware `Metamath.Verify.check` entrypoint.
@@ -98,10 +100,10 @@ def insertedTargetAgrees (targetLabel : String)
 is a certified `checkBytes` run; the chosen ingress event is provably the head
 of the filtered events from that same run. -/
 structure TargetBoundary (sourceBytes : ByteArray) (targetLabel : String) where
-  run : CheckBytesRun sourceBytes .soundDefault
+  run : CheckBytesRun sourceBytes .sound
   run_eq : run =
     Mettapedia.Languages.Metamath.InferenceOneShotByteLog.checkBytesLogged
-      sourceBytes .soundDefault
+      sourceBytes .sound
   observed : List ObservedProofToken
   observed_eq : observed = targetProofTokens targetLabel run.calls
   first : ObservedProofToken
@@ -124,11 +126,11 @@ def proofTokens {sourceBytes : ByteArray} {targetLabel : String}
 theorem readerDB_eq_checkBytes {sourceBytes : ByteArray}
     {targetLabel : String}
     (boundary : TargetBoundary sourceBytes targetLabel) :
-    boundary.run.db = Metamath.Verify.checkBytes sourceBytes .soundDefault := by
+    boundary.run.db = Metamath.Verify.checkBytes sourceBytes .sound := by
   rw [boundary.run_eq]
   exact
     Mettapedia.Languages.Metamath.InferenceOneShotByteLog.checkBytesLogged_db_eq_checkBytes
-      sourceBytes .soundDefault
+      sourceBytes .sound
 
 end TargetBoundary
 
@@ -194,19 +196,19 @@ structure ChunkedTargetBoundary (sourceBytes : ByteArray)
   first : ObservedProofToken
   first_is_head : observed.head? = some first
   readerAccepted :
-    (Metamath.Verify.checkBytes sourceBytes .soundDefault).error?.isNone = true
+    (Metamath.Verify.checkBytes sourceBytes .sound).error?.isNone = true
   traversalAccepted : run.db.error?.isNone = true
   targetAbsent : first.before.db.find? targetLabel = none
   ingressAgrees : proofIngressAgrees targetLabel first observed = true
   readerInsertedAgrees :
     insertedTargetAgrees targetLabel
-      (Metamath.Verify.checkBytes sourceBytes .soundDefault) first = true
+      (Metamath.Verify.checkBytes sourceBytes .sound) first = true
   traversalInsertedAgrees :
     insertedTargetAgrees targetLabel run.db first = true
   finalDatabaseAgrees :
     (databaseSnapshot run.db ==
       databaseSnapshot
-        (Metamath.Verify.checkBytes sourceBytes .soundDefault)) = true
+        (Metamath.Verify.checkBytes sourceBytes .sound)) = true
 
 namespace ChunkedTargetBoundary
 
@@ -241,7 +243,7 @@ def extractTargetBoundary (sourceBytes : ByteArray) (targetLabel : String) :
     Except AdmissionError (TargetBoundary sourceBytes targetLabel) := do
   let run :=
     Mettapedia.Languages.Metamath.InferenceOneShotByteLog.checkBytesLogged
-      sourceBytes .soundDefault
+      sourceBytes .sound
   if hAccepted : run.db.error?.isNone then
     let observed := targetProofTokens targetLabel run.calls
     match hFirst : observed.head? with
@@ -273,9 +275,9 @@ def extractTargetBoundary (sourceBytes : ByteArray) (targetLabel : String) :
 def extractChunkedTargetBoundary (sourceBytes : ByteArray)
     (targetLabel : String) :
     Except AdmissionError (ChunkedTargetBoundary sourceBytes targetLabel) := do
-  let readerDB := Metamath.Verify.checkBytes sourceBytes .soundDefault
+  let readerDB := Metamath.Verify.checkBytes sourceBytes .sound
   if hReaderAccepted : readerDB.error?.isNone then
-    let run := chunkedTokenLog sourceBytes .soundDefault
+    let run := chunkedTokenLog sourceBytes .sound
     if hTraversalAccepted : run.db.error?.isNone then
       let observed := targetProofTokens targetLabel run.calls
       match hFirst : observed.head? with
@@ -341,13 +343,13 @@ namespace ParsedSource
 
 def readerDB {sourceBytes : ByteArray} {targetLabel : Option String} :
     ParsedSource sourceBytes targetLabel -> RuntimeDB
-  | .database => Metamath.Verify.checkBytes sourceBytes .soundDefault
+  | .database => Metamath.Verify.checkBytes sourceBytes .sound
   | .target _ _ | .chunkedTarget _ _ =>
-      Metamath.Verify.checkBytes sourceBytes .soundDefault
+      Metamath.Verify.checkBytes sourceBytes .sound
 
 def prefixDB {sourceBytes : ByteArray} {targetLabel : Option String} :
     ParsedSource sourceBytes targetLabel -> RuntimeDB
-  | .database => Metamath.Verify.checkBytes sourceBytes .soundDefault
+  | .database => Metamath.Verify.checkBytes sourceBytes .sound
   | .target _ boundary => boundary.prefixDB
   | .chunkedTarget _ boundary => boundary.prefixDB
 
@@ -355,7 +357,7 @@ theorem readerDB_eq_checkBytes {sourceBytes : ByteArray}
     {targetLabel : Option String}
     (parsed : ParsedSource sourceBytes targetLabel) :
     parsed.readerDB =
-      Metamath.Verify.checkBytes sourceBytes .soundDefault := by
+      Metamath.Verify.checkBytes sourceBytes .sound := by
   cases parsed with
   | database => rfl
   | target targetLabel boundary =>
@@ -368,46 +370,46 @@ end ParsedSource
 /-- Database-only admission explicitly starts with `projectPrefix?`; theorem
 admission uses the target-absence wrapper `projectForFreshTarget?`. -/
 def projectForMode (targetLabel : Option String) (database : RuntimeDB) :
-    Option ValidatedPresentation :=
+    Option ValidatedCalculusLanguageDef :=
   match targetLabel with
   | none => do
       let projection <- projectPrefix? database
-      let presentation <- presentationOfProjection? projection
-      presentation.validateV2?
+      let definition <- calculusLanguageDefOfProjection? projection
+      definition.validate?
   | some label => projectForFreshTarget? database label
 
 structure AdmissionInput where
   request : AdmissionRequest
   parsed : ParsedSource request.sourceBytes request.targetLabel
-  presentation : ValidatedPresentation
-  presentationGenerated :
-    projectForMode request.targetLabel parsed.prefixDB = some presentation
+  definition : ValidatedCalculusLanguageDef
+  definitionGenerated :
+    projectForMode request.targetLabel parsed.prefixDB = some definition
 
 private def finishPreparation (request : AdmissionRequest)
     (parsed : ParsedSource request.sourceBytes request.targetLabel) :
     Except AdmissionError AdmissionInput :=
-  match hPresentation :
+  match hDefinition :
       projectForMode request.targetLabel parsed.prefixDB with
   | none => .error .projectionFailed
-  | some presentation =>
+  | some definition =>
       .ok
         { request
           parsed
-          presentation
-          presentationGenerated := hPresentation }
+          definition
+          definitionGenerated := hDefinition }
 
 def AdmissionInput.generatedSource (input : AdmissionInput) : GSLTSource :=
   { identity := input.request.metadata.identityFor input.request.sourceBytes
     assumptions := input.request.metadata.assumptions
     profiles := input.request.metadata.profiles
-    presentation := input.presentation.1 }
+    definition := input.definition.1 }
 
 def prepareBytes (request : AdmissionRequest) :
     Except AdmissionError AdmissionInput :=
   match hTarget : request.targetLabel with
   | none =>
       let database :=
-        Metamath.Verify.checkBytes request.sourceBytes .soundDefault
+        Metamath.Verify.checkBytes request.sourceBytes .sound
       if database.error?.isNone then
         let parsed : ParsedSource request.sourceBytes none :=
           .database
@@ -432,7 +434,7 @@ def admit (input : AdmissionInput) :
   input.generatedSource.validate.mapError .sourceValidationFailed
 
 /-- Successful admission preserves the complete generated package, including
-identity, assumptions, profiles, and presentation. -/
+identity, assumptions, profiles, and its calculus language definition. -/
 theorem admit_source_eq_generated {input : AdmissionInput}
     {checked : CheckedGSLT} (hadmit : admit input = .ok checked) :
     checked.source = input.generatedSource := by
@@ -446,14 +448,14 @@ theorem admit_source_eq_generated {input : AdmissionInput}
       subst checked
       exact GSLTSource.validate_source_eq hvalidate
 
-/-- The source exposed by successful admission contains exactly the
-presentation recomputed from the accepted parser state selected by the same
-request. -/
-theorem admit_presentation_is_generated {input : AdmissionInput}
+/-- The source exposed by successful admission contains exactly the calculus
+language definition recomputed from the accepted parser state selected by the
+same request. -/
+theorem admit_definition_is_generated {input : AdmissionInput}
     {checked : CheckedGSLT} (hadmit : admit input = .ok checked) :
     (projectForMode input.request.targetLabel input.parsed.prefixDB).map
-        (fun presentation => presentation.1) =
-      some checked.source.presentation := by
+        (fun definition => definition.1) =
+      some checked.source.definition := by
   unfold admit at hadmit
   cases hvalidate : input.generatedSource.validate with
   | error error =>
@@ -463,7 +465,7 @@ theorem admit_presentation_is_generated {input : AdmissionInput}
       have hchecked : admitted = checked := by
         simpa [hvalidate, Except.mapError] using hadmit
       subst checked
-      rw [input.presentationGenerated]
+      rw [input.definitionGenerated]
       simp [hsource, AdmissionInput.generatedSource]
 
 /-- A checked theorem artifact binds the exact admitted source, target label,
@@ -513,9 +515,9 @@ structure IncludeAdmissionInput where
   artifactDigest : String
   metadata : SourceMetadata
   readerDB : RuntimeDB
-  presentation : ValidatedPresentation
-  presentationGenerated :
-    projectForMode none readerDB = some presentation
+  definition : ValidatedCalculusLanguageDef
+  definitionGenerated :
+    projectForMode none readerDB = some definition
 
 def IncludeAdmissionInput.generatedSource
     (input : IncludeAdmissionInput) : GSLTSource :=
@@ -525,7 +527,7 @@ def IncludeAdmissionInput.generatedSource
         artifactDigest := input.artifactDigest }
     assumptions := input.metadata.assumptions
     profiles := input.metadata.profiles
-    presentation := input.presentation.1 }
+    definition := input.definition.1 }
 
 def admitInclude (input : IncludeAdmissionInput) :
     Except AdmissionError CheckedGSLT :=
@@ -545,12 +547,12 @@ theorem admitInclude_source_eq_generated
       subst checked
       exact GSLTSource.validate_source_eq hvalidate
 
-theorem admitInclude_presentation_is_generated
+theorem admitInclude_definition_is_generated
     {input : IncludeAdmissionInput} {checked : CheckedGSLT}
     (hadmit : admitInclude input = .ok checked) :
     (projectForMode none input.readerDB).map
-        (fun presentation => presentation.1) =
-      some checked.source.presentation := by
+        (fun definition => definition.1) =
+      some checked.source.definition := by
   unfold admitInclude at hadmit
   cases hvalidate : input.generatedSource.validate with
   | error error =>
@@ -560,7 +562,7 @@ theorem admitInclude_presentation_is_generated
       have hchecked : admitted = checked := by
         simpa [hvalidate, Except.mapError] using hadmit
       subst checked
-      rw [input.presentationGenerated]
+      rw [input.definitionGenerated]
       simp [hsource, IncludeAdmissionInput.generatedSource]
 
 inductive PreparedAdmission where
@@ -573,7 +575,7 @@ inductive SourceRequest where
 
 /-- The single public preparation operation.  Include-aware theorem-boundary
 logging is not claimed: such a request reports that precise limitation instead
-of switching to raw file loading or a hand-authored presentation. -/
+of switching to raw file loading or a hand-authored language definition. -/
 def prepare : SourceRequest -> IO (Except AdmissionError PreparedAdmission)
   | .exactBytes request =>
       pure <| (prepareBytes request).map .exactBytes
@@ -581,18 +583,18 @@ def prepare : SourceRequest -> IO (Except AdmissionError PreparedAdmission)
       if request.targetLabel.isSome then
         return .error .includeTargetNotAvailable
       let rootBytes <- IO.FS.readBinFile request.sourcePath
-      let database <- Metamath.Verify.check request.sourcePath .soundDefault
+      let database <- Metamath.Verify.check request.sourcePath .sound
       if !database.error?.isNone then
         return .error .readerRejected
-      match hPresentation : projectForMode none database with
+      match hDefinition : projectForMode none database with
       | none => return .error .projectionFailed
-      | some presentation =>
+      | some definition =>
           return .ok <| .includeDatabase
             { rootBytes
               artifactDigest := request.verifiedArtifactDigest
               metadata := request.metadata
               readerDB := database
-              presentation
-              presentationGenerated := hPresentation }
+              definition
+              definitionGenerated := hDefinition }
 
 end Mettapedia.Languages.Metamath.InferenceSourceAdmission

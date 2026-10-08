@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.CostRegionTree
 import Mettapedia.GSLT.LanguageDef.CostRegionNormalization
+import Mettapedia.GSLT.LanguageDef.CostElaborationTransport
 import Mettapedia.GSLT.LanguageDef.WellSortedFillInversion
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.EquationSubstitution
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInteraction
@@ -27,6 +28,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefGSLT
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInteraction
 
@@ -78,8 +80,8 @@ theorem rho_costReflectiveNameResultsQuoted :
         costBaseSortName "Name" := by
     cases color <;>
       simp [costStaticReflectivePresentationDecl_eq_map,
-        mapReflectivePresentation, CostStaticColor.symbols, costBaseStaticSymbols,
-        costBasePresentationSymbols, costWrappedStaticSymbols,
+        mapReflectivePresentation, CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+        costBaseLanguageDefSymbolMap, costWrappedStaticSymbols,
         rhoReflectivePresentation, interactingName,
         show "Name" ≠ "Proc" by decide]
   have ruleCategoryBase : rule.category = costBaseSortName "Name" :=
@@ -94,8 +96,8 @@ theorem rho_costReflectiveNameResultsQuoted :
       rcases sourceConstructor with ⟨sourceRule, sourceRuleMembership⟩
       have sourceCategory : sourceRule.category = "Name" := by
         apply costBaseSortName_injective
-        simpa [CIGSLT.materializeDeclaredCostConstructor,
-          costBaseConstructor] using ruleCategoryBase
+        simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+          costBaseConstructor_def] using ruleCategoryBase
       obtain ⟨sourceLabel, sourceNotBare⟩ :=
         EquationSubstitution.rho_reflectiveNameResultSealed
           rhoReflectivePresentation.toReflectivePresentationDecl
@@ -110,29 +112,29 @@ theorem rho_costReflectiveNameResultsQuoted :
             using costStaticReflectivePresentationDecl_mem rhoCIGSLT .base
               rhoReflectivePresentation.toReflectivePresentationDecl
                 sourceMembership
-        · simp [CIGSLT.materializeDeclaredCostConstructor,
-            costBaseConstructor, costStaticReflectivePresentationDecl,
+        · simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+            costBaseConstructor_def, costStaticReflectivePresentationDecl,
             costBaseReflectivePresentationDecl, mapReflectivePresentation,
             costBaseStaticReflectiveSymbols, costBaseStaticSymbols,
-            costBasePresentationSymbols, sourceLabel]
+            costBaseLanguageDefSymbolMap, sourceLabel]
       · intro targetBare
         exact sourceNotBare
           ((usesBareCollection_costBaseConstructor_iff rhoCIGSLT.cut
             sourceRule).mp (by
-              simpa [CIGSLT.materializeDeclaredCostConstructor] using
+              simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor] using
                 targetBare))
   | wrapped sourceConstructor =>
       rcases sourceConstructor with ⟨sourceRule, sourceRuleMembership⟩
       have sourceCategory : sourceRule.category = "Name" := by
         by_cases interacting : sourceRule.category = "Proc"
         · have impossible : costWrappedSortName = costBaseSortName "Name" := by
-            simpa [CIGSLT.materializeDeclaredCostConstructor,
+            simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
               costWrappedConstructor, interacting, interactingName] using
                 ruleCategoryBase
           exact False.elim
             (costBaseSortName_ne_wrapped "Name" impossible.symm)
         · apply costBaseSortName_injective
-          simpa [CIGSLT.materializeDeclaredCostConstructor,
+          simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
             costWrappedConstructor, interacting, interactingName] using
               ruleCategoryBase
       obtain ⟨sourceLabel, sourceNotBare⟩ :=
@@ -149,7 +151,7 @@ theorem rho_costReflectiveNameResultsQuoted :
             using costStaticReflectivePresentationDecl_mem rhoCIGSLT .wrapped
               rhoReflectivePresentation.toReflectivePresentationDecl
                 sourceMembership
-        · simp [CIGSLT.materializeDeclaredCostConstructor,
+        · simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
             costWrappedConstructor, costStaticReflectivePresentationDecl,
             costWrappedReflectivePresentationDecl, mapReflectivePresentation,
             costWrappedStaticReflectiveSymbols, costWrappedStaticSymbols,
@@ -157,25 +159,32 @@ theorem rho_costReflectiveNameResultsQuoted :
       · intro targetBare
         exact sourceNotBare
           ((usesBareCollection_costWrappedConstructor_iff sourceRule).mp (by
-            simpa [CIGSLT.materializeDeclaredCostConstructor] using
+            simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor] using
               targetBare))
   | apparatus kind =>
       cases kind with
-      | signatureUnit | signatureProduct =>
+      | signatureUnit | signatureProduct | signatureCommit =>
           exact False.elim (costBaseSortName_ne_apparatus "Name" "signature"
-            (by simpa [CIGSLT.materializeDeclaredCostConstructor,
+            (by simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
               CostApparatusConstructor.grammarRule,
               costSignatureUnitConstructor, costSignatureProductConstructor,
+              costSignatureCommitConstructor,
               costSignatureSortName] using ruleCategoryBase.symm))
+      | keyLeaf | keyBranch =>
+          exact False.elim (costBaseSortName_ne_apparatus "Name" "key"
+            (by simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+              CostApparatusConstructor.grammarRule,
+              costKeyLeafConstructor, costKeyBranchConstructor,
+              costKeySortName] using ruleCategoryBase.symm))
       | signed | funding | contact =>
           exact False.elim (costBaseSortName_ne_wrapped "Name"
-            (by simpa [CIGSLT.materializeDeclaredCostConstructor,
+            (by simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
               CostApparatusConstructor.grammarRule, costSignedConstructor,
               costFundingConstructor, costContactConstructor]
                 using ruleCategoryBase.symm))
       | tokenStackEmpty | tokenStackCons =>
           exact False.elim (costBaseSortName_ne_apparatus "Name" "token-stack"
-            (by simpa [CIGSLT.materializeDeclaredCostConstructor,
+            (by simpa [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
               CostApparatusConstructor.grammarRule,
               costTokenStackEmptyConstructor, costTokenStackConsConstructor,
               costTokenStackSortName] using ruleCategoryBase.symm))
@@ -375,8 +384,8 @@ private theorem rhoCostMixedColorCanonicalName_not_typed :
       (.base (costBaseSortName "Name")) := by
     simpa [declaration, costStaticReflectivePresentationDecl,
       costBaseReflectivePresentationDecl, mapReflectivePresentation,
-      costBaseStaticSymbols, costBasePresentationSymbols,
-      CostStaticColor.symbols, CostStaticColor.constructorTag,
+      costBaseStaticSymbols, costBaseLanguageDefSymbolMap,
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, CostStaticColor.constructorTag,
       rhoReflectivePresentation] using typed
   obtain ⟨argument, argumentTyped, argumentsShape, _argumentSafe⟩ :=
     typed'.selectedQuoteArgument rhoCIGSLT.costWholeLanguage_validate
@@ -392,8 +401,8 @@ private theorem rhoCostMixedColorCanonicalName_not_typed :
       (.base (costBaseSortName "Proc")) := by
     simpa [declaration, costStaticReflectivePresentationDecl,
       costBaseReflectivePresentationDecl, mapReflectivePresentation,
-      costBaseStaticSymbols, costBasePresentationSymbols,
-      CostStaticColor.symbols, CostStaticColor.constructorTag,
+      costBaseStaticSymbols, costBaseLanguageDefSymbolMap,
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, CostStaticColor.constructorTag,
       rhoReflectivePresentation] using argumentTyped
   have typeEquality := HasType.apply_type_unique_of_validate_eq_nil
     rhoCIGSLT.costWholeLanguage_validate baseTyped rhoCostWrappedZero_typed
@@ -427,10 +436,11 @@ private theorem rhoCostMixedColorCanonicalDrop_not_typed :
   have declarationNameSort :
       declaration.nameSort = costBaseSortName "Name" := by
     simp [declaration, mapReflectivePresentation,
-      CostStaticColor.symbols, costWrappedStaticSymbols,
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, costWrappedStaticSymbols,
       rhoReflectivePresentation, rhoCIGSLT, rhoIGSLT,
       rhoInteractivePresentation, rhoValidatedLanguageDef, rhoCalc,
-      TypeDecl.plain, show "Name" ≠ "Proc" by decide]
+      TypeDecl.plain]
+    decide
   apply rhoCostMixedColorCanonicalName_not_typed
   simpa only [declarationNameSort] using argumentTyped
 
@@ -532,21 +542,21 @@ private theorem rho_costReflectiveConstructorsAllowed :
       (· ∈ rhoCIGSLT.continuationRetyping.wrappedLabels)
       rhoReflectivePresentation := by
   constructor
-  · let constructor : StructuralMorphism.AuthoredConstructor
+  · let constructor : StructuralMorphism.DeclaredConstructor
         rhoIGSLT.presentation.presentation :=
       ⟨rhoCalc.terms[2], List.getElem_mem (by simp [rhoCalc])⟩
     change constructor.1.label ∈ rhoContinuationRetyping.wrappedLabels
     apply (rhoContinuationRetyping.mem_wrappedLabels_iff constructor).2
     rw [rhoContinuationRetyping.mem_wrappedConstructors_iff]
     constructor <;> decide
-  · let constructor : StructuralMorphism.AuthoredConstructor
+  · let constructor : StructuralMorphism.DeclaredConstructor
         rhoIGSLT.presentation.presentation :=
       ⟨rhoCalc.terms[1], List.getElem_mem (by simp [rhoCalc])⟩
     change constructor.1.label ∈ rhoContinuationRetyping.wrappedLabels
     apply (rhoContinuationRetyping.mem_wrappedLabels_iff constructor).2
     rw [rhoContinuationRetyping.mem_wrappedConstructors_iff]
     constructor <;> decide
-  · let constructor : StructuralMorphism.AuthoredConstructor
+  · let constructor : StructuralMorphism.DeclaredConstructor
         rhoIGSLT.presentation.presentation :=
       ⟨rhoCalc.terms[0], List.getElem_mem (by simp [rhoCalc])⟩
     change constructor.1.label ∈ rhoContinuationRetyping.wrappedLabels
@@ -658,7 +668,7 @@ private theorem rho_costStatic_quoteDrop_action_canonicalize_eq
       isObjectPattern
           (thinning.thickenAmbientBVars inner.length
             (mapPattern (color.symbols rhoCIGSLT) name)) = true := by
-    rw [CostStaticBinderThinning.isObjectPattern_thickenAmbientBVars,
+    rw [CostStaticTypeThinning.isObjectPattern_thickenAmbientBVars,
       WellSorted.isObjectPattern_mapPattern]
     exact object
   have cancellation :=
@@ -674,7 +684,7 @@ private theorem rho_costStatic_quoteDrop_action_canonicalize_eq
   simpa only [declaration, costStaticReflectivePresentationDecl_eq_map,
     mapReflectivePresentation, mapPattern, mapPatternList_eq_map,
     CostStaticColor.reflectiveSymbols_constructor,
-    CostStaticBinderThinning.thickenAmbientBVars, List.length_map,
+    CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection, List.length_map,
     List.map_cons, List.map_nil, rhoReflectivePresentation]
     using cancellation
 
@@ -998,8 +1008,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
                 payload] := by
         rw [targetDeclarationQuote]
         simp [rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
           targetQuoteStatusTag]
       by_cases dropShape : ∃ name,
           Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1162,8 +1171,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
               (patterns.map (rhoCostStaticActionAt thinning assignment
                 currentInner currentAvailable)) := by
         simp [rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
           targetOrdinaryStatusTag, List.map_map, Function.comp_def]
       have canonicalApplication :
           Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1191,7 +1199,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
       simpa [rhoCostStaticActionAt,
         ReflectiveContextSupport.substituteAt,
         Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
-        CostStaticBinderThinning.thickenAmbientBVars, mapPattern]
+        CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern]
         using congrArg (Pattern.lambda binder) bodyEquality)
     (by
       intro bound arity binders body domain codomain bodyTyped currentAvailable
@@ -1208,7 +1216,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
       simpa [rhoCostStaticActionAt,
         ReflectiveContextSupport.substituteAt,
         Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
-        CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+        CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
         List.length_append, List.length_replicate,
         Nat.add_comm, Nat.add_left_comm, Nat.add_assoc]
         using congrArg (Pattern.multiLambda arity binders) bodyEquality)
@@ -1233,8 +1241,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
           action (.collection selectedCollectionType patterns none) =
             .collection selectedCollectionType (patterns.map action) none := by
         simp [action, rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
           List.map_map, Function.comp_def]
       by_cases parallelShape :
           collectionType = rhoReflectivePresentation.parallelCollection
@@ -1247,15 +1254,13 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
                 (patterns.map action) none := by
           intro patterns
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
             mapReflectivePresentation]
         have mapUnit :
             action (.apply rhoReflectivePresentation.parallelUnitConstructor []) =
               .apply targetDeclaration.parallelUnitConstructor [] := by
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
             mapReflectivePresentation]
         have childrenEquality :
             Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1344,8 +1349,7 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
           action (.collection selectedCollectionType patterns none) =
             .collection selectedCollectionType (patterns.map action) none := by
         simp [action, rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
           List.map_map, Function.comp_def]
       by_cases parallelShape :
           collectionType = rhoReflectivePresentation.parallelCollection
@@ -1358,15 +1362,13 @@ private theorem rhoCostStaticActionAt_canonicalize_eq
                 (patterns.map action) none := by
           intro patterns
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
             mapReflectivePresentation]
         have mapUnit :
             action (.apply rhoReflectivePresentation.parallelUnitConstructor []) =
               .apply targetDeclaration.parallelUnitConstructor [] := by
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
             mapReflectivePresentation]
         have childrenEquality :
             Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1743,8 +1745,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
                       payload] := by
               rw [targetDeclarationQuote]
               simp [rhoCostStaticActionAt,
-                ReflectiveContextSupport.substituteAt,
-                CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+                ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
                 targetQuoteStatusTag]
             by_cases dropShape : ∃ name,
                 Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1892,8 +1893,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
               (patterns.map (rhoCostStaticActionAt thinning assignment
                 currentInner currentAvailable)) := by
         simp [rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
           targetOrdinaryStatusTag, List.map_map, Function.comp_def]
       have canonicalApplication :
           Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -1922,7 +1922,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
       simpa [rhoCostStaticActionAt,
         ReflectiveContextSupport.substituteAt,
         Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
-        CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+        CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
         Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleContext.fill] using lifted)
     (by
       intro bound arity binders body domain codomain bodyTyped currentAvailable
@@ -1941,7 +1941,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
       simpa [rhoCostStaticActionAt,
         ReflectiveContextSupport.substituteAt,
         Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
-        CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+        CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
         Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleContext.fill,
         List.length_append, List.length_replicate,
         Nat.add_comm, Nat.add_left_comm, Nat.add_assoc] using lifted)
@@ -1968,8 +1968,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
           action (.collection selectedCollectionType patterns none) =
             .collection selectedCollectionType (patterns.map action) none := by
         simp [action, rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
           List.map_map, Function.comp_def]
       by_cases parallelShape :
           collectionType = rhoReflectivePresentation.parallelCollection
@@ -1982,15 +1981,13 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
                 (patterns.map action) none := by
           intro patterns
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
             mapReflectivePresentation]
         have mapUnit :
             action (.apply rhoReflectivePresentation.parallelUnitConstructor []) =
               .apply targetDeclaration.parallelUnitConstructor [] := by
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
             mapReflectivePresentation]
         have normalized :=
           ReflectiveParallelSubstitution.normalizationMapEquivalentBetween
@@ -2067,8 +2064,7 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
           action (.collection selectedCollectionType patterns none) =
             .collection selectedCollectionType (patterns.map action) none := by
         simp [action, rhoCostStaticActionAt,
-          ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+          ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
           List.map_map, Function.comp_def]
       by_cases parallelShape :
           collectionType = rhoReflectivePresentation.parallelCollection
@@ -2081,15 +2077,13 @@ theorem rhoCostStaticActionAt_canonicalize_equationEquiv
                 (patterns.map action) none := by
           intro patterns
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_collection, mapPattern,
             mapReflectivePresentation]
         have mapUnit :
             action (.apply rhoReflectivePresentation.parallelUnitConstructor []) =
               .apply targetDeclaration.parallelUnitConstructor [] := by
           simp [action, rhoCostStaticActionAt, targetDeclaration,
-            ReflectiveContextSupport.substituteAt,
-            CostStaticBinderThinning.thickenAmbientBVars, mapPattern,
+            ReflectiveContextSupport.substituteAt, CostStaticTypeThinning.thickenAmbientBVars_apply, mapPattern,
             mapReflectivePresentation]
         have normalized :=
           ReflectiveParallelSubstitution.normalizationMapEquivalentBetween
@@ -2242,7 +2236,7 @@ theorem rho_costEquationInstanceAt_canonicalize_eq
             costWrappedReflectivePresentationDecl, mapReflectivePresentation,
             costBaseStaticReflectiveSymbols,
             costWrappedStaticReflectiveSymbols,
-            costBasePresentationSymbols, costBaseStaticSymbols,
+            costBaseLanguageDefSymbolMap, costBaseStaticSymbols,
             costWrappedStaticSymbols, costBaseConstructorName,
             costWrappedConstructorName, costBaseConstructorTag,
             costWrappedConstructorTag,
@@ -2293,7 +2287,7 @@ theorem rho_costEquationInstanceAt_canonicalize_eq
             costWrappedReflectivePresentationDecl, mapReflectivePresentation,
             costBaseStaticReflectiveSymbols,
             costWrappedStaticReflectiveSymbols,
-            costBasePresentationSymbols, costBaseStaticSymbols,
+            costBaseLanguageDefSymbolMap, costBaseStaticSymbols,
             costWrappedStaticSymbols, costBaseConstructorName,
             costWrappedConstructorName, costBaseConstructorTag,
             costWrappedConstructorTag,
@@ -2301,12 +2295,350 @@ theorem rho_costEquationInstanceAt_canonicalize_eq
             Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeList,
             Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply]
 
+/-- The only source rho declaration represented by one bare collection is
+parallel composition.  This local inversion is used before the public
+declaration-level version later in the file. -/
+private theorem rho_sourceBareRule_eq_parallel
+    {rule : GrammarRule} (membership : rule ∈ rhoCalc.terms)
+    {parameterName : String} {collectionType : CollType}
+    {elementType : TypeExpr}
+    (parameterShape : rule.params =
+      [.simple parameterName (.collection collectionType elementType)]) :
+    rule = rhoCalc.terms[3] := by
+  change rule ∈ [rhoCalc.terms[0], rhoCalc.terms[1], rhoCalc.terms[2],
+    rhoCalc.terms[3], rhoCalc.terms[4], rhoCalc.terms[5]] at membership
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at membership
+  rcases membership with first | second | third | fourth | fifth | sixth
+  · subst rule
+    simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+      TypeExpr.baseType] at parameterShape
+  · subst rule
+    simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+      TypeExpr.baseType] at parameterShape
+  · subst rule
+    simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+      TypeExpr.baseType] at parameterShape
+  · subst rule
+    rfl
+  · subst rule
+    simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+      TypeExpr.baseType] at parameterShape
+  · subst rule
+    simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+      TypeExpr.baseType] at parameterShape
+
+/-- The generated result sort determines the colour of a declared parallel
+algebra. This computation is used only with the declaration evidence below. -/
+private def rhoCostAlgebraColor (rule : GrammarRule) : CostStaticColor :=
+  if rule.category = costBaseSortName "Proc" then .base else .wrapped
+
+/-- Generated collection metadata retains rho's bag algebra and transports
+its unit into the same static colour as the declaration. -/
+private theorem rho_costAlgebraRule_shape
+    {rule : GrammarRule} {kind : CollType} {algebra : CollectionAlgebra}
+    (algebraRule : EquationSemantics.AlgebraRule
+      rhoCIGSLT.costWholeLanguage rule kind algebra) :
+    kind = .hashBag ∧ algebra.unit = some
+      (costStaticReflectivePresentationDecl rhoCIGSLT (rhoCostAlgebraColor rule)
+        rhoReflectivePresentation.toReflectivePresentationDecl).parallelUnitConstructor := by
+  obtain ⟨parameterName, parameterShape⟩ := algebraRule.selfSorted
+  have bare : UsesBareCollection rule :=
+    ⟨parameterName, kind, .base rule.category, parameterShape⟩
+  have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
+    simpa only [rhoCIGSLT.costWholeLanguage_terms] using algebraRule.authored
+  obtain ⟨constructor, materializes⟩ :=
+    rhoCIGSLT.exists_declaredCostConstructor_of_mem rule coreMembership
+  have materializedBare : UsesBareCollection
+      (rhoCIGSLT.materializeDeclaredCostConstructor constructor) := by
+    rw [materializes]
+    exact bare
+  obtain ⟨color, role⟩ :=
+    rhoCIGSLT.exists_static_role_of_materialize_usesBareCollection constructor
+      materializedBare
+  let preimage := costStaticConstructorPreimage rhoCIGSLT color constructor role
+  obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
+      sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
+  have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
+    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2 sourceShape
+  have mappedShape := preimage.parametersMap
+  rw [materializes, parameterShape, sourceRuleEquality] at mappedShape
+  change [TermParam.simple parameterName (.collection kind (.base rule.category))] =
+    [TermParam.simple "ps" (.collection .hashBag
+      (.base ((color.symbols rhoCIGSLT).sort "Proc")))] at mappedShape
+  have shape : parameterName = "ps" ∧ kind = .hashBag ∧
+      rule.category = (color.symbols rhoCIGSLT).sort "Proc" := by
+    simpa using mappedShape
+  have colorEquality : rhoCostAlgebraColor rule = color := by
+    unfold rhoCostAlgebraColor
+    rw [shape.2.2]
+    cases color with
+    | base =>
+        change (if costBaseSortName "Proc" = costBaseSortName "Proc" then _ else _) = _
+        simp
+    | wrapped =>
+        change (if costWrappedSortName = costBaseSortName "Proc" then _ else _) = _
+        decide
+  have targetAlgebra : rule.algebra? =
+      some (StructuralMorphism.mapCollectionAlgebra
+        (color.symbols rhoCIGSLT).constructor
+        { flatten := true, unit := some "PZero" }) := by
+    calc
+      rule.algebra? =
+          (rhoCIGSLT.materializeDeclaredCostConstructor constructor).algebra? :=
+        congrArg GrammarRule.algebra? materializes.symm
+      _ = preimage.sourceConstructor.1.algebra?.map
+          (StructuralMorphism.mapCollectionAlgebra
+            (color.symbols rhoCIGSLT).constructor) := preimage.algebraMap
+      _ = _ := by rw [sourceRuleEquality]; rfl
+  have algebraEquality := Option.some.inj (algebraRule.declared.symm.trans targetAlgebra)
+  refine ⟨shape.2.1, ?_⟩
+  rw [algebraEquality, colorEquality]
+  cases color <;> rfl
+
+/-- No generated rho constructor can declare a set carrier.  Bare collection
+declarations in either Cost colour reflect to the sole bare source
+constructor, rho parallel composition, whose carrier is a bag. -/
+private theorem rho_costCollectionCarrierRule_hashSet_false
+    {rule : GrammarRule}
+    (carrier : EquationSemantics.CollectionCarrierRule
+      rhoCIGSLT.costWholeLanguage rule .hashSet) : False := by
+  obtain ⟨parameterName, elementType, parameterShape⟩ := carrier.selfSorted
+  have bare : UsesBareCollection rule :=
+    ⟨parameterName, .hashSet, elementType, parameterShape⟩
+  have coreMembership : rule ∈ rhoCIGSLT.costCoreLanguage.terms := by
+    simpa only [rhoCIGSLT.costWholeLanguage_terms] using carrier.authored
+  obtain ⟨constructor, materializes⟩ :=
+    rhoCIGSLT.exists_declaredCostConstructor_of_mem rule coreMembership
+  have materializedBare : UsesBareCollection
+      (rhoCIGSLT.materializeDeclaredCostConstructor constructor) := by
+    rw [materializes]
+    exact bare
+  obtain ⟨color, role⟩ :=
+    rhoCIGSLT.exists_static_role_of_materialize_usesBareCollection constructor
+      materializedBare
+  let preimage := costStaticConstructorPreimage rhoCIGSLT color constructor role
+  obtain ⟨sourceParameterName, sourceCollectionType, sourceElementType,
+      sourceShape⟩ := preimage.usesBareCollection_iff.mp materializedBare
+  have sourceRuleEquality : preimage.sourceConstructor.1 = rhoCalc.terms[3] :=
+    rho_sourceBareRule_eq_parallel preimage.sourceConstructor.2 sourceShape
+  have mappedShape := preimage.parametersMap
+  rw [materializes, parameterShape, sourceShape] at mappedShape
+  have collectionTypeEquality : sourceCollectionType = .hashSet := by
+    have shape : sourceParameterName = parameterName ∧
+        sourceCollectionType = .hashSet ∧
+        mapTypeExpr (color.symbols rhoCIGSLT) sourceElementType = elementType := by
+      simpa [mapTermParam, mapTypeExpr] using mappedShape.symm
+    exact shape.2.1
+  subst sourceCollectionType
+  rw [sourceRuleEquality] at sourceShape
+  simp [rhoCalc, TypeExpr.name, TypeExpr.proc, TypeExpr.bag,
+    TypeExpr.baseType] at sourceShape
+
+section DerivedAlgebra
+
+open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
+
+private theorem rho_costParallelCollection (color : CostStaticColor) :
+    (costStaticReflectivePresentationDecl rhoCIGSLT color
+      rhoReflectivePresentation.toReflectivePresentationDecl).parallelCollection =
+        .hashBag := by
+  cases color <;> rfl
+
+private theorem canonicalize_parallel_flatten_middle
+    (declaration : ReflectivePresentationDecl) (pre inner post : List Pattern) :
+    canonicalize declaration
+        (.collection declaration.parallelCollection
+          (pre ++ (.collection declaration.parallelCollection inner none) :: post) none) =
+      canonicalize declaration
+        (.collection declaration.parallelCollection (pre ++ inner ++ post) none) := by
+  have toEnd : List.Perm
+      (pre ++ (.collection declaration.parallelCollection inner none) :: post)
+      ((pre ++ post) ++ [.collection declaration.parallelCollection inner none]) :=
+    List.perm_middle.trans (List.perm_append_singleton _ _).symm
+  have fromEnd : List.Perm ((pre ++ post) ++ inner) (pre ++ inner ++ post) := by
+    rw [List.append_assoc, List.append_assoc]
+    exact List.Perm.append_left pre List.perm_append_comm
+  rw [canonicalize_parallel_permutation declaration toEnd,
+    canonicalize_parallel_flatten, canonicalize_parallel_permutation declaration fromEnd]
+
+private theorem canonicalize_parallel_unit_middle
+    (declaration : ReflectivePresentationDecl) (pre post : List Pattern) :
+    canonicalize declaration
+        (.collection declaration.parallelCollection
+          (pre ++ (.apply declaration.parallelUnitConstructor []) :: post) none) =
+      canonicalize declaration
+        (.collection declaration.parallelCollection (pre ++ post) none) := by
+  have toFront : List.Perm
+      (pre ++ (.apply declaration.parallelUnitConstructor []) :: post)
+      (.apply declaration.parallelUnitConstructor [] :: (pre ++ post)) := List.perm_middle
+  rw [canonicalize_parallel_permutation declaration toFront]
+  simp only [canonicalize, beq_self_eq_true, if_true]
+  change collapseParallel declaration
+      (normalizeParallelElements declaration
+        (canonicalize declaration (.apply declaration.parallelUnitConstructor []) ::
+          canonicalizeList declaration (pre ++ post))) =
+    collapseParallel declaration
+      (normalizeParallelElements declaration (canonicalizeList declaration (pre ++ post)))
+  rw [canonicalize_parallel_unit, normalizeParallelElements_unit_cons]
+
+/-- The exact retained declaration selects its own static colour for algebra
+laws. Bag permutations may use the base declaration independently of colour. -/
+def rhoCostDerivedGeneratorColor {redex contractum : Pattern} :
+    EquationSemantics.DerivedGeneratorWitness rhoCIGSLT.costWholeLanguage
+      redex contractum → CostStaticColor
+  | .flatten rule _ _ _ _ _ _ _ _ => rhoCostAlgebraColor rule
+  | .singleton rule _ _ _ _ _ _ => rhoCostAlgebraColor rule
+  | .unitElim rule _ _ _ _ _ _ _ _ => rhoCostAlgebraColor rule
+  | .emptyUnit rule _ _ _ _ _ _ => rhoCostAlgebraColor rule
+  | .bagPerm .. | .setPerm .. | .setDedup .. => .base
+
+/-- Every retained derived occurrence is absorbed by its computed generated
+reflective declaration, including both correctly retagged unit constructors. -/
+theorem rho_costDerivedGenerator_canonicalize_eq
+    {redex contractum : Pattern}
+    (witness : EquationSemantics.DerivedGeneratorWitness
+      rhoCIGSLT.costWholeLanguage redex contractum) :
+    canonicalize (costStaticReflectivePresentationDecl rhoCIGSLT
+        (rhoCostDerivedGeneratorColor witness)
+        rhoReflectivePresentation.toReflectivePresentationDecl) redex =
+      canonicalize (costStaticReflectivePresentationDecl rhoCIGSLT
+        (rhoCostDerivedGeneratorColor witness)
+        rhoReflectivePresentation.toReflectivePresentationDecl) contractum := by
+  cases witness with
+  | bagPerm rule elements elements' _ _ permutation =>
+      exact canonicalize_parallel_permutation _ permutation
+  | setPerm rule elements elements' carrier _ _ =>
+      exact False.elim (rho_costCollectionCarrierRule_hashSet_false carrier)
+  | setDedup rule element elements carrier _ =>
+      exact False.elim (rho_costCollectionCarrierRule_hashSet_false carrier)
+  | flatten rule kind algebra pre inner post algebraRule _ _ =>
+      obtain ⟨rfl, _⟩ := rho_costAlgebraRule_shape algebraRule
+      simpa only [rhoCostDerivedGeneratorColor, rho_costParallelCollection] using
+        canonicalize_parallel_flatten_middle
+          (costStaticReflectivePresentationDecl rhoCIGSLT (rhoCostAlgebraColor rule)
+            rhoReflectivePresentation.toReflectivePresentationDecl) pre inner post
+  | singleton rule kind algebra element algebraRule _ _ =>
+      obtain ⟨rfl, _⟩ := rho_costAlgebraRule_shape algebraRule
+      simpa only [rhoCostDerivedGeneratorColor, rho_costParallelCollection] using
+        canonicalize_parallel_singleton
+          (costStaticReflectivePresentationDecl rhoCIGSLT (rhoCostAlgebraColor rule)
+            rhoReflectivePresentation.toReflectivePresentationDecl) _
+  | unitElim rule kind algebra unit pre post algebraRule unitEq _ =>
+      obtain ⟨rfl, unitShape⟩ := rho_costAlgebraRule_shape algebraRule
+      have unitEquality := Option.some.inj (unitEq.symm.trans unitShape)
+      subst unit
+      simpa only [rhoCostDerivedGeneratorColor, rho_costParallelCollection] using
+        canonicalize_parallel_unit_middle
+          (costStaticReflectivePresentationDecl rhoCIGSLT (rhoCostAlgebraColor rule)
+            rhoReflectivePresentation.toReflectivePresentationDecl) pre post
+  | emptyUnit rule kind algebra unit algebraRule unitEq _ =>
+      obtain ⟨rfl, unitShape⟩ := rho_costAlgebraRule_shape algebraRule
+      have unitEquality := Option.some.inj (unitEq.symm.trans unitShape)
+      subst unit
+      simpa only [rhoCostDerivedGeneratorColor, rho_costParallelCollection,
+        collapseParallel] using
+        canonicalize_parallel_collapse
+          (costStaticReflectivePresentationDecl rhoCIGSLT (rhoCostAlgebraColor rule)
+            rhoReflectivePresentation.toReflectivePresentationDecl) []
+
+/-- Every derived law is absorbed by an actual generated reflective
+presentation. The declaration colour matters for the generated unit laws. -/
+theorem rho_costDerivedInstance_canonicalize_eq
+    {redex contractum : Pattern}
+    (derived : EquationSemantics.DerivedInstance
+      rhoCIGSLT.costWholeLanguage redex contractum) :
+    ∃ declaration ∈ rhoCIGSLT.costWholeReflectionProfile.presentations,
+      canonicalize declaration redex = canonicalize declaration contractum := by
+  obtain ⟨witness, _⟩ := EquationSemantics.DerivedGeneratorWitness.exists_erasing_to derived
+  refine ⟨costStaticReflectivePresentationDecl rhoCIGSLT
+    (rhoCostDerivedGeneratorColor witness)
+      rhoReflectivePresentation.toReflectivePresentationDecl, ?_,
+    rho_costDerivedGenerator_canonicalize_eq witness⟩
+  exact costStaticReflectivePresentationDecl_mem rhoCIGSLT
+    (rhoCostDerivedGeneratorColor witness)
+    rhoReflectivePresentation.toReflectivePresentationDecl
+    rhoReflectivePresentation_mem_source
+
+end DerivedAlgebra
+
+/-- A generated rho derived-law edge remains a single reflective edge after
+ambient binder renaming. Algebra laws use their declaration's exact static
+colour, while rho has no generated set carrier. -/
+private theorem rho_costDerivedEquationContextStep_renameAmbientBVarsAt
+    (rename : Nat → Nat) (depth : Nat) (context : OneHoleContext)
+    {redex contractum : Pattern}
+    (derived : EquationSemantics.DerivedInstance
+      rhoCIGSLT.costWholeLanguage redex contractum) :
+    ReflectiveEquationSemantics.ReflectiveEquationContextStep
+      rhoCIGSLT.costWholeReflectionProfile defaultBasePremises
+      rhoCIGSLT.costWholeLanguage
+      (ContextSubstitution.renameAmbientBVarsAt rename depth
+        (context.fill redex))
+      (ContextSubstitution.renameAmbientBVarsAt rename depth
+        (context.fill contractum)) := by
+  obtain ⟨declaration, membership, representatives⟩ :=
+    rho_costDerivedInstance_canonicalize_eq derived
+  exact reflectiveEquationContextStep_renameAmbientBVarsAt_of_validate_eq_nil
+    (profile := rhoCIGSLT.costWholeReflectionProfile)
+    rhoCIGSLT.costWholeLanguage rhoCIGSLT.costWholeLanguage_validate
+    rhoCIGSLT.costWholeReflectionProfile_validate rename depth context
+    membership representatives
+
+/-- Presentation-derived generated-rho laws are natural under every
+order-preserving ambient binder embedding. -/
+theorem rho_costDerivedEquationAmbientRenamingStable :
+    DerivedEquationAmbientRenamingStable
+      (profile := rhoCIGSLT.costWholeReflectionProfile)
+      rhoCIGSLT.costWholeLanguage := by
+  intro rename _strict depth context redex contractum derived
+  exact Relation.EqvGen.rel _ _
+    (rho_costDerivedEquationContextStep_renameAmbientBVarsAt
+      rename depth context derived)
+
+/-- Proof-relevant transport of each source rho derived-law occurrence into a
+selected Cost colour.  The source occurrence remains data, while the target
+meaning is witnessed by that colour's reflective canonical section. -/
+def rho_derivedGeneratorMapCostStatic (color : CostStaticColor) :
+    DerivedGeneratorMapCostStatic rhoCIGSLT color := by
+  intro left right witness
+  let declaration := costStaticReflectivePresentationDecl rhoCIGSLT color
+    rhoReflectivePresentation.toReflectivePresentationDecl
+  have membership : declaration ∈
+      rhoCIGSLT.costWholeReflectionProfile.presentations := by
+    simpa [declaration] using
+      costStaticReflectivePresentationDecl_mem rhoCIGSLT color
+        rhoReflectivePresentation.toReflectivePresentationDecl
+        rhoReflectivePresentation_mem_source
+  apply ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness.reflective
+    .hole ⟨declaration, membership⟩
+  apply canonicalize_eq_mapCostStatic rhoCIGSLT color
+    rhoReflectivePresentation.toReflectivePresentationDecl
+    rhoReflectivePresentation_mem_source
+  have sourceCanonical :
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
+          rhoReflectivePresentation left =
+        Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
+          rhoReflectivePresentation right := by
+    simpa only [CanonicalMatch.derivedCanonicalize_eq,
+      OneHoleContext.fill_hole] using
+      LanguageDefSemanticAgreement.rhoEquationContextStep_canonicalize_eq
+        (ReflectiveEquationSemantics.ReflectiveEquationContextStep.core
+          (EquationSemantics.EquationContextStep.inContext .hole
+            (.inr witness.erase)))
+  exact sourceCanonical
+
+/-- Support-level corollary of the proof-relevant derived-law translator. -/
+theorem rho_derivedEquationMapCostStaticStable (color : CostStaticColor) :
+    DerivedEquationMapCostStaticStable rhoCIGSLT color :=
+  DerivedGeneratorMapCostStatic.toDerivedEquationStable
+    (rho_derivedGeneratorMapCostStatic color)
+
 /-- The generated ordinary rho equation table is natural under every
 order-preserving ambient binder embedding.  Each equation instance is first
 identified with its matching generated reflective edge, after which the
 generic declaration-derived ambient-renaming theorem applies. -/
-theorem rho_costAuthoredEquationAmbientRenamingStable :
-    AuthoredEquationAmbientRenamingStable (profile := rhoCIGSLT.costWholeReflectionProfile) rhoCIGSLT.costWholeLanguage := by
+theorem rho_costDeclaredEquationAmbientRenamingStable :
+    DeclaredEquationAmbientRenamingStable (profile := rhoCIGSLT.costWholeReflectionProfile) rhoCIGSLT.costWholeLanguage := by
   intro rename strict depth context redex contractum instanceWitness
   obtain ⟨fuel, bounded⟩ := instanceWitness
   obtain ⟨declaration, membership, representatives⟩ :=
@@ -2323,11 +2655,12 @@ and reflective declaration tables. -/
 theorem rho_costSupportedEquationAmbientRenamingStable :
     SupportedEquationAmbientRenamingStable (profile := rhoCIGSLT.costWholeReflectionProfile)
       rhoCIGSLT.costWholeLanguage :=
-  ⟨rho_costAuthoredEquationAmbientRenamingStable,
-    reflectiveEquationAmbientRenamingStable_of_validate_eq_nil
+  { authored := rho_costDeclaredEquationAmbientRenamingStable
+    derived := rho_costDerivedEquationAmbientRenamingStable
+    reflective := reflectiveEquationAmbientRenamingStable_of_validate_eq_nil
       (profile := rhoCIGSLT.costWholeReflectionProfile)
       rhoCIGSLT.costWholeLanguage rhoCIGSLT.costWholeLanguage_validate
-        rhoCIGSLT.costWholeReflectionProfile_validate⟩
+        rhoCIGSLT.costWholeReflectionProfile_validate }
 
 /-- Every generated rho equation generator remains one generated equation
 generator after an arbitrary ambient binder embedding.  Ordinary generated
@@ -2346,16 +2679,19 @@ theorem rho_costEquationContextStepAmbientRenamingStable
   | core coreStep =>
       cases coreStep with
       | inContext context instanceWitness =>
-          obtain ⟨fuel, bounded⟩ := instanceWitness
-          obtain ⟨declaration, membership, representatives⟩ :=
-            rho_costEquationInstanceAt_canonicalize_eq bounded
-          exact
-            reflectiveEquationContextStep_renameAmbientBVarsAt_of_validate_eq_nil
-              (profile := rhoCIGSLT.costWholeReflectionProfile)
-              rhoCIGSLT.costWholeLanguage
-              rhoCIGSLT.costWholeLanguage_validate
-              rhoCIGSLT.costWholeReflectionProfile_validate
-              rename depth context membership representatives
+          rcases instanceWitness with authored | derived
+          · obtain ⟨fuel, bounded⟩ := authored
+            obtain ⟨declaration, membership, representatives⟩ :=
+              rho_costEquationInstanceAt_canonicalize_eq bounded
+            exact
+              reflectiveEquationContextStep_renameAmbientBVarsAt_of_validate_eq_nil
+                (profile := rhoCIGSLT.costWholeReflectionProfile)
+                rhoCIGSLT.costWholeLanguage
+                rhoCIGSLT.costWholeLanguage_validate
+                rhoCIGSLT.costWholeReflectionProfile_validate
+                rename depth context membership representatives
+          · exact rho_costDerivedEquationContextStep_renameAmbientBVarsAt
+              rename depth context derived
   | reflectiveInContext context membership representatives =>
       exact
         reflectiveEquationContextStep_renameAmbientBVarsAt_of_validate_eq_nil
@@ -2409,6 +2745,7 @@ theorem rho_costStaticMappedThickenedGeneratorFiberAction
       (mapPattern (color.symbols rhoCIGSLT) left.term.1)
       (mapPattern (color.symbols rhoCIGSLT) right.term.1) := by
     apply equationContextStep_mapCostStatic rhoCIGSLT color
+    · exact rho_derivedEquationMapCostStaticStable color
     exact generator
   have thickened := rho_costEquationContextStepAmbientRenamingStable
     thinning.toTargetIndex 0 mapped
@@ -2418,7 +2755,7 @@ theorem rho_costStaticMappedThickenedGeneratorFiberAction
       (left.mappedThickenedAvailable thinning).pattern
       (right.mappedThickenedAvailable thinning).pattern
   simpa only [CostStaticSourceTerm.mappedThickenedAvailable_pattern,
-    CostStaticBinderThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
+    CostStaticTypeThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
     using thickened
 
 /-- Every source-authored rho equation generator acts soundly after mapping
@@ -2526,7 +2863,7 @@ theorem rho_costStaticCanonicalPathSafe :
     CostStaticCanonicalPathSafe rhoCIGSLT := by
   intro color targetFree node
   apply Relation.EqvGen.rel _ _
-  unfold CostStaticSourceTerm.generator
+  unfold ContinuationDecorationProfile.StaticSourceTerm.generator
   apply ReflectiveEquationSemantics.ReflectiveEquationContextStep.reflectiveInContext .hole
     (declaration :=
       rhoReflectivePresentation.toReflectivePresentationDecl)
@@ -2578,8 +2915,11 @@ theorem rho_costStaticCollectionUnambiguous
       rfl
     rw [sourceTerms]
     cases sourceExpected <;>
-      simp [bareCostStaticCollectionTypingChoices,
+      simp +instances [bareCostStaticCollectionTypingChoices,
         List.filterMap, CostCandidateFamilyUnambiguous, rhoCalc,
+        ContinuationRetypingPlan.wrappedLabels, ContinuationDecorationProfile.wrappedLabels,
+        ContinuationDecorationProfile.ofRetypingPlan, ContinuationDecorationProfile.primary,
+        rhoCIGSLT,
         WellSorted.bareCollectionElementType?, TypeExpr.name, TypeExpr.proc,
         TypeExpr.bag, TypeExpr.baseType]
     all_goals

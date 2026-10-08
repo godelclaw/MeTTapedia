@@ -11,9 +11,8 @@ variable {Const : Ty Base → Type v} {Const' : Ty Base → Type w}
 /--
 An extensional overlay of the small HOL derivation core.
 
-This keeps the original calculus in
-`lean/mettapedia/Mettapedia/Logic/HOL/Derivation.lean`
-intact, while adding the missing argument-congruence strength needed by standard
+This keeps the original calculus in `Mettapedia.Logic.HOL.Derivation` intact,
+while adding the missing argument-congruence strength needed by standard
 extensional HOL equality.
 -/
 inductive ExtDerivation (Const : Ty Base → Type v) :
@@ -395,7 +394,7 @@ theorem abstractConstAt_etaBody
         (Mettapedia.Logic.HOL.substConst f) := by
   simp [weakenHyps, List.map_map, Function.comp, Mettapedia.Logic.HOL.substConst_weaken]
 
-def ofBase {Γ : Ctx Base} {Δ : List (Formula Const Γ)} {φ : Formula Const Γ} :
+theorem ofBase {Γ : Ctx Base} {Δ : List (Formula Const Γ)} {φ : Formula Const Γ} :
     Derivation Const Δ φ → ExtDerivation Const Δ φ
   | .hyp h => .hyp h
   | .topI => .topI

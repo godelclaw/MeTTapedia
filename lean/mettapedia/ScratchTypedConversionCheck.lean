@@ -1,0 +1,10 @@
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.SyntacticJudgmentalSigmaId
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.JudgmentalSigmaId
+
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
+open Mettapedia.TypeTheory.UniverseLevel
+
+#check Mettapedia.TypeTheory.JudgmentalEquality.ConversionEvidence.refl
+#check @Mettapedia.TypeTheory.JudgmentalEquality.ConversionEvidence.refl
+#check @Mettapedia.TypeTheory.JudgmentalEquality.ConversionEvidence.rec
+#check @Mettapedia.TypeTheory.JudgmentalEquality.ConversionEvidence.recOn

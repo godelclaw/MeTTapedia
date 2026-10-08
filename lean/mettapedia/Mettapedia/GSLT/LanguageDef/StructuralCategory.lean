@@ -4,12 +4,12 @@ import Mettapedia.OSLF.MeTTaIL.Syntax
 import Mettapedia.OSLF.MeTTaIL.DerivedContexts
 
 /-!
-# Structural category of validated language definitions
+# Structural maps of validated language definitions
 
-This module keeps the authored `LanguageDef` as the sole presentation root.
+This module keeps `LanguageDef` as the sole source object.
 Objects pair that exact value with its existing validation result.  Morphisms
 are structural maps of the five-field operational theory: they map sort and
-constructor symbols, preserve binder and collection shape, and carry authored
+constructor symbols, preserve binder and collection shape, and carry declared
 equations and rewrite schemas into declarations of the target.
 
 These maps are deliberately distinct from behavioral `GSLT.Morphism`s and
@@ -23,7 +23,7 @@ namespace Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 
-/-- An authored language definition together with the result of its existing
+/-- A language definition together with the result of its existing
 validation gate.  The declaration data is retained verbatim. -/
 structure ValidatedLanguageDef where
   language : LanguageDef
@@ -38,17 +38,17 @@ end ValidatedLanguageDef
 /-- Renaming data for the symbol namespaces occurring in the operational
 theory of a `LanguageDef`. -/
 @[ext]
-structure PresentationSymbols where
+structure LanguageDefSymbolMap where
   sort : String → String
   constructor : String → String
   relation : String → String
   equation : String → String
   rewrite : String → String
 
-namespace PresentationSymbols
+namespace LanguageDefSymbolMap
 
 /-- Identity symbol map. -/
-def id : PresentationSymbols where
+def id : LanguageDefSymbolMap where
   sort := _root_.id
   constructor := _root_.id
   relation := _root_.id
@@ -56,19 +56,19 @@ def id : PresentationSymbols where
   rewrite := _root_.id
 
 /-- Apply `first` and then `second`. -/
-def comp (first second : PresentationSymbols) : PresentationSymbols where
+def comp (first second : LanguageDefSymbolMap) : LanguageDefSymbolMap where
   sort := second.sort ∘ first.sort
   constructor := second.constructor ∘ first.constructor
   relation := second.relation ∘ first.relation
   equation := second.equation ∘ first.equation
   rewrite := second.rewrite ∘ first.rewrite
 
-end PresentationSymbols
+end LanguageDefSymbolMap
 
 /-! ## Structural action on declaration data -/
 
 /-- Map every base sort while retaining arrow, binder, and collection shape. -/
-def mapTypeExpr (symbols : PresentationSymbols) : TypeExpr → TypeExpr
+def mapTypeExpr (symbols : LanguageDefSymbolMap) : TypeExpr → TypeExpr
   | .base sort => .base (symbols.sort sort)
   | .arrow domain codomain =>
       .arrow (mapTypeExpr symbols domain) (mapTypeExpr symbols codomain)
@@ -77,26 +77,32 @@ def mapTypeExpr (symbols : PresentationSymbols) : TypeExpr → TypeExpr
       .collection collectionType (mapTypeExpr symbols element)
 
 /-- Map a declared carrier sort. -/
-def mapTypeDecl (symbols : PresentationSymbols) (declaration : TypeDecl) : TypeDecl :=
+def mapTypeDecl (symbols : LanguageDefSymbolMap) (declaration : TypeDecl) : TypeDecl :=
   { declaration with name := symbols.sort declaration.name }
 
 /-- Map the types of a constructor parameter without changing whether it is a
 plain argument, a single binder, or a multiple binder. -/
-def mapTermParam (symbols : PresentationSymbols) : TermParam → TermParam
+def mapTermParam (symbols : LanguageDefSymbolMap) : TermParam → TermParam
   | .simple name type => .simple name (mapTypeExpr symbols type)
   | .abstractionNamed binder body type =>
       .abstractionNamed binder body (mapTypeExpr symbols type)
   | .multiAbstractionNamed binders body type =>
       .multiAbstractionNamed binders body (mapTypeExpr symbols type)
 
-/-- Map a constructor declaration.  Authored notation and evaluation policy
-are retained; the algebraic label, result sort, and parameter sorts are mapped. -/
-def mapGrammarRule (symbols : PresentationSymbols)
+/-- Rename the unit constructor reference while preserving flattening. -/
+def StructuralMorphism.mapCollectionAlgebra (constructor : String → String)
+    (algebra : CollectionAlgebra) : CollectionAlgebra :=
+  { algebra with unit := algebra.unit.map constructor }
+
+/-- Map a constructor declaration, including every declared unit reference.
+Declared notation and evaluation policy are retained. -/
+def mapGrammarRule (symbols : LanguageDefSymbolMap)
     (rule : GrammarRule) : GrammarRule :=
   { rule with
     label := symbols.constructor rule.label
     category := symbols.sort rule.category
-    params := rule.params.map (mapTermParam symbols) }
+    params := rule.params.map (mapTermParam symbols)
+    algebra? := rule.algebra?.map (StructuralMorphism.mapCollectionAlgebra symbols.constructor) }
 
 /- Structural action on the shared locally nameless term carrier.  Binder
 metadata, de Bruijn indices, collection kind, order, multiplicity, and rest
@@ -104,7 +110,7 @@ variables are preserved.  The list companion keeps this traversal genuinely
 structural, so its constructor equations remain definitionally available to
 dependent consumers. -/
 mutual
-  def mapPattern (symbols : PresentationSymbols) : Pattern → Pattern
+  def mapPattern (symbols : LanguageDefSymbolMap) : Pattern → Pattern
     | .bvar index => .bvar index
     | .fvar name => .fvar name
     | .apply constructor arguments =>
@@ -118,7 +124,7 @@ mutual
     | .collection collectionType elements rest =>
         .collection collectionType (mapPatternList symbols elements) rest
 
-  def mapPatternList (symbols : PresentationSymbols) : List Pattern →
+  def mapPatternList (symbols : LanguageDefSymbolMap) : List Pattern →
       List Pattern
     | [] => []
     | pattern :: patterns =>
@@ -127,7 +133,7 @@ end
 
 /-- The structurally recursive list companion agrees with ordinary mapping. -/
 @[simp]
-theorem mapPatternList_eq_map (symbols : PresentationSymbols)
+theorem mapPatternList_eq_map (symbols : LanguageDefSymbolMap)
     (patterns : List Pattern) :
     mapPatternList symbols patterns = patterns.map (mapPattern symbols) := by
   induction patterns with
@@ -135,13 +141,19 @@ theorem mapPatternList_eq_map (symbols : PresentationSymbols)
   | cons pattern patterns inductionHypothesis =>
       simp [mapPatternList, inductionHypothesis]
 
-/-- Map an authored premise.  Metavariable names remain local to the schema;
+/-- Map a declared premise.  Metavariable names remain local to the schema;
 only term constructors and declared relation symbols are translated. -/
-def mapPremise (symbols : PresentationSymbols) : Premise → Premise
+def mapPremise (symbols : LanguageDefSymbolMap) : Premise → Premise
   | .freshness condition =>
       .freshness { condition with term := mapPattern symbols condition.term }
   | .congruence left right =>
       .congruence (mapPattern symbols left) (mapPattern symbols right)
+  | .scopedStep step =>
+      .scopedStep { step with
+        binders := step.binders.map (mapTypeExpr symbols)
+        resultType := mapTypeExpr symbols step.resultType
+        source := mapPattern symbols step.source
+        target := mapPattern symbols step.target }
   | .relationQuery relation arguments =>
       .relationQuery (symbols.relation relation)
         (arguments.map (mapPattern symbols))
@@ -149,26 +161,43 @@ def mapPremise (symbols : PresentationSymbols) : Premise → Premise
       .forAll collection parameter (mapPremise symbols body)
 
 /-- Map the sort annotations of a rule or equation metavariable context. -/
-def mapTypeContext (symbols : PresentationSymbols)
+def mapTypeContext (symbols : LanguageDefSymbolMap)
     (context : List (String × TypeExpr)) : List (String × TypeExpr) :=
   context.map fun entry => (entry.1, mapTypeExpr symbols entry.2)
 
-/-- Map an authored bidirectional equation. -/
-def mapEquation (symbols : PresentationSymbols) (equation : Equation) : Equation :=
-  { name := symbols.equation equation.name
+/-- A rule occurrence keeps its site and address while its supplied object
+terms follow the constructor map. -/
+def mapMetavariableOccurrence (symbols : LanguageDefSymbolMap)
+    (occurrence : MetavariableOccurrence) : MetavariableOccurrence :=
+  { occurrence with arguments := occurrence.arguments.map (mapPattern symbols) }
+
+/-- Structural action on the authored dependency and occurrence contract. -/
+def mapRuleBindingSpec (symbols : LanguageDefSymbolMap)
+    (spec : RuleBindingSpec) : RuleBindingSpec :=
+  { dependencies := spec.dependencies.map fun entry =>
+      (entry.1, entry.2.map (mapTypeExpr symbols))
+    occurrences := spec.occurrences.map (mapMetavariableOccurrence symbols) }
+
+/-- Map a declared bidirectional equation. -/
+def mapEquation (symbols : LanguageDefSymbolMap) (equation : Equation) : Equation :=
+  { equation with
+    name := symbols.equation equation.name
     typeContext := mapTypeContext symbols equation.typeContext
     premises := equation.premises.map (mapPremise symbols)
     left := mapPattern symbols equation.left
-    right := mapPattern symbols equation.right }
+    right := mapPattern symbols equation.right
+    bindings := equation.bindings.map (mapRuleBindingSpec symbols) }
 
-/-- Map an authored directional rewrite schema. -/
-def mapRewriteRule (symbols : PresentationSymbols)
+/-- Map a declared directional rewrite schema. -/
+def mapRewriteRule (symbols : LanguageDefSymbolMap)
     (rewrite : RewriteRule) : RewriteRule :=
-  { name := symbols.rewrite rewrite.name
+  { rewrite with
+    name := symbols.rewrite rewrite.name
     typeContext := mapTypeContext symbols rewrite.typeContext
     premises := rewrite.premises.map (mapPremise symbols)
     left := mapPattern symbols rewrite.left
-    right := mapPattern symbols rewrite.right }
+    right := mapPattern symbols rewrite.right
+    bindings := rewrite.bindings.map (mapRuleBindingSpec symbols) }
 
 /-! ## Identity and composition laws for the induced action -/
 
@@ -190,21 +219,21 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
   exact List.map_congr_left agrees
 
 @[simp] theorem mapTypeExpr_id (type : TypeExpr) :
-    mapTypeExpr PresentationSymbols.id type = type := by
-  induction type <;> simp_all [mapTypeExpr, PresentationSymbols.id]
+    mapTypeExpr LanguageDefSymbolMap.id type = type := by
+  induction type <;> simp_all [mapTypeExpr, LanguageDefSymbolMap.id]
 
-@[simp] theorem mapTypeExpr_comp (first second : PresentationSymbols)
+@[simp] theorem mapTypeExpr_comp (first second : LanguageDefSymbolMap)
     (type : TypeExpr) :
     mapTypeExpr (first.comp second) type =
       mapTypeExpr second (mapTypeExpr first type) := by
-  induction type <;> simp_all [mapTypeExpr, PresentationSymbols.comp]
+  induction type <;> simp_all [mapTypeExpr, LanguageDefSymbolMap.comp]
 
 @[simp] theorem mapTypeDecl_id (declaration : TypeDecl) :
-    mapTypeDecl PresentationSymbols.id declaration = declaration := by
+    mapTypeDecl LanguageDefSymbolMap.id declaration = declaration := by
   cases declaration
   rfl
 
-@[simp] theorem mapTypeDecl_comp (first second : PresentationSymbols)
+@[simp] theorem mapTypeDecl_comp (first second : LanguageDefSymbolMap)
     (declaration : TypeDecl) :
     mapTypeDecl (first.comp second) declaration =
       mapTypeDecl second (mapTypeDecl first declaration) := by
@@ -212,40 +241,44 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
   rfl
 
 @[simp] theorem mapTermParam_id (parameter : TermParam) :
-    mapTermParam PresentationSymbols.id parameter = parameter := by
+    mapTermParam LanguageDefSymbolMap.id parameter = parameter := by
   cases parameter <;> simp [mapTermParam]
 
-@[simp] theorem mapTermParam_comp (first second : PresentationSymbols)
+@[simp] theorem mapTermParam_comp (first second : LanguageDefSymbolMap)
     (parameter : TermParam) :
     mapTermParam (first.comp second) parameter =
       mapTermParam second (mapTermParam first parameter) := by
   cases parameter <;> simp [mapTermParam]
 
 @[simp] theorem mapGrammarRule_id (rule : GrammarRule) :
-    mapGrammarRule PresentationSymbols.id rule = rule := by
+    mapGrammarRule LanguageDefSymbolMap.id rule = rule := by
   cases rule
-  simp only [mapGrammarRule, PresentationSymbols.id, id_eq]
+  simp only [mapGrammarRule, LanguageDefSymbolMap.id, id_eq]
   congr 1
-  exact list_map_eq_self_of_mem _ _ fun parameter _ => mapTermParam_id parameter
+  · exact list_map_eq_self_of_mem _ _ fun parameter _ => mapTermParam_id parameter
+  · rename_i algebra
+    cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra]
 
-@[simp] theorem mapGrammarRule_comp (first second : PresentationSymbols)
+@[simp] theorem mapGrammarRule_comp (first second : LanguageDefSymbolMap)
     (rule : GrammarRule) :
     mapGrammarRule (first.comp second) rule =
       mapGrammarRule second (mapGrammarRule first rule) := by
   cases rule
-  simp only [mapGrammarRule, PresentationSymbols.comp, Function.comp_apply]
+  simp only [mapGrammarRule, LanguageDefSymbolMap.comp, Function.comp_apply]
   congr 1
-  exact list_map_comp_of_mem _ _ _ _ fun parameter _ =>
-    mapTermParam_comp first second parameter
+  · exact list_map_comp_of_mem _ _ _ _ fun parameter _ =>
+      mapTermParam_comp first second parameter
+  · rename_i algebra
+    cases algebra <;> simp [StructuralMorphism.mapCollectionAlgebra, Option.map_map]
 
 @[simp] theorem mapPattern_id (pattern : Pattern) :
-    mapPattern PresentationSymbols.id pattern = pattern := by
+    mapPattern LanguageDefSymbolMap.id pattern = pattern := by
   induction pattern using Pattern.inductionOn with
   | hbvar index => simp [mapPattern]
   | hfvar name => simp [mapPattern]
   | happly constructor arguments inductionHypothesis =>
       simp only [mapPattern, mapPatternList_eq_map,
-        PresentationSymbols.id, id_eq]
+        LanguageDefSymbolMap.id, id_eq]
       congr 1
       exact list_map_eq_self_of_mem _ _ inductionHypothesis
   | hlambda binder body inductionHypothesis =>
@@ -262,7 +295,7 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
       congr 1
       exact list_map_eq_self_of_mem _ _ inductionHypothesis
 
-@[simp] theorem mapPattern_comp (first second : PresentationSymbols)
+@[simp] theorem mapPattern_comp (first second : LanguageDefSymbolMap)
     (pattern : Pattern) :
     mapPattern (first.comp second) pattern =
       mapPattern second (mapPattern first pattern) := by
@@ -271,7 +304,7 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
   | hfvar name => simp [mapPattern]
   | happly constructor arguments inductionHypothesis =>
       simp only [mapPattern, mapPatternList_eq_map,
-        PresentationSymbols.comp, Function.comp_apply]
+        LanguageDefSymbolMap.comp, Function.comp_apply]
       congr 1
       exact list_map_comp_of_mem _ _ _ _ inductionHypothesis
   | hlambda binder body inductionHypothesis =>
@@ -291,7 +324,7 @@ private theorem list_map_comp_of_mem {α β γ : Type*}
 namespace CIGSLT
 
 /-- Structural action on the derivative of the shared pattern carrier. -/
-def mapOneHoleContext (symbols : PresentationSymbols) :
+def mapOneHoleContext (symbols : LanguageDefSymbolMap) :
     OneHoleContext → OneHoleContext
   | .hole => .hole
   | .apply constructor before inner after =>
@@ -316,7 +349,7 @@ def mapOneHoleContext (symbols : PresentationSymbols) :
         (after.map (mapPattern symbols)) rest
 
 @[simp]
-theorem mapOneHoleContext_fill (symbols : PresentationSymbols)
+theorem mapOneHoleContext_fill (symbols : LanguageDefSymbolMap)
     (context : OneHoleContext) (pattern : Pattern) :
     (mapOneHoleContext symbols context).fill (mapPattern symbols pattern) =
       mapPattern symbols (context.fill pattern) := by
@@ -326,14 +359,14 @@ theorem mapOneHoleContext_fill (symbols : PresentationSymbols)
 
 @[simp]
 theorem mapPatternList_id (patterns : List Pattern) :
-    patterns.map (mapPattern PresentationSymbols.id) = patterns := by
+    patterns.map (mapPattern LanguageDefSymbolMap.id) = patterns := by
   calc
-    patterns.map (mapPattern PresentationSymbols.id) =
+    patterns.map (mapPattern LanguageDefSymbolMap.id) =
         patterns.map _root_.id :=
       List.map_congr_left fun pattern _ => mapPattern_id pattern
     _ = patterns := List.map_id patterns
 
-theorem mapPatternList_comp (first second : PresentationSymbols)
+theorem mapPatternList_comp (first second : LanguageDefSymbolMap)
     (patterns : List Pattern) :
     patterns.map (mapPattern (first.comp second)) =
       (patterns.map (mapPattern first)).map (mapPattern second) := by
@@ -342,7 +375,7 @@ theorem mapPatternList_comp (first second : PresentationSymbols)
 
 @[simp]
 theorem mapOneHoleContext_id (context : OneHoleContext) :
-    mapOneHoleContext PresentationSymbols.id context = context := by
+    mapOneHoleContext LanguageDefSymbolMap.id context = context := by
   induction context with
   | hole => rfl
   | apply constructor before inner after ih =>
@@ -357,7 +390,7 @@ theorem mapOneHoleContext_id (context : OneHoleContext) :
   | collection collectionType before inner after rest ih =>
       simp [mapOneHoleContext, ih]
 
-theorem mapOneHoleContext_comp (first second : PresentationSymbols)
+theorem mapOneHoleContext_comp (first second : LanguageDefSymbolMap)
     (context : OneHoleContext) :
     mapOneHoleContext (first.comp second) context =
       mapOneHoleContext second (mapOneHoleContext first context) := by
@@ -377,7 +410,7 @@ theorem mapOneHoleContext_comp (first second : PresentationSymbols)
 
 /-- Structural translation preserves composition of one-hole contexts. -/
 @[simp]
-theorem mapOneHoleContext_contextComp (symbols : PresentationSymbols)
+theorem mapOneHoleContext_contextComp (symbols : LanguageDefSymbolMap)
     (outer inner : OneHoleContext) :
     mapOneHoleContext symbols (outer.comp inner) =
       (mapOneHoleContext symbols outer).comp
@@ -388,7 +421,7 @@ theorem mapOneHoleContext_contextComp (symbols : PresentationSymbols)
 end CIGSLT
 
 @[simp] theorem mapPremise_id (premise : Premise) :
-    mapPremise PresentationSymbols.id premise = premise := by
+    mapPremise LanguageDefSymbolMap.id premise = premise := by
   induction premise with
   | freshness condition =>
       cases condition
@@ -397,6 +430,16 @@ end CIGSLT
   | congruence left right =>
       simp only [mapPremise]
       rw [mapPattern_id, mapPattern_id]
+  | scopedStep step =>
+      cases step with
+      | mk binders resultType source target =>
+          have hbinders : binders.map (mapTypeExpr LanguageDefSymbolMap.id) =
+              binders := by
+            simpa only [List.map_id] using
+              (List.map_congr_left (l := binders)
+                (f := mapTypeExpr LanguageDefSymbolMap.id) (g := id)
+                (fun type _ => mapTypeExpr_id type))
+          simp [mapPremise, hbinders, mapTypeExpr_id, mapPattern_id]
   | relationQuery relation arguments =>
       simp only [mapPremise]
       congr 1
@@ -405,7 +448,7 @@ end CIGSLT
       simp only [mapPremise]
       rw [inductionHypothesis]
 
-@[simp] theorem mapPremise_comp (first second : PresentationSymbols)
+@[simp] theorem mapPremise_comp (first second : LanguageDefSymbolMap)
     (premise : Premise) :
     mapPremise (first.comp second) premise =
       mapPremise second (mapPremise first premise) := by
@@ -417,6 +460,10 @@ end CIGSLT
   | congruence left right =>
       simp only [mapPremise]
       rw [mapPattern_comp, mapPattern_comp]
+  | scopedStep step =>
+      cases step with
+      | mk binders resultType source target =>
+          simp [mapPremise, mapTypeExpr_comp, mapPattern_comp]
   | relationQuery relation arguments =>
       simp only [mapPremise]
       congr 1
@@ -427,13 +474,13 @@ end CIGSLT
       rw [inductionHypothesis]
 
 @[simp] theorem mapTypeContext_id (context : List (String × TypeExpr)) :
-    mapTypeContext PresentationSymbols.id context = context := by
+    mapTypeContext LanguageDefSymbolMap.id context = context := by
   apply list_map_eq_self_of_mem
   intro entry membership
   rcases entry with ⟨name, type⟩
   simp only [mapTypeExpr_id]
 
-@[simp] theorem mapTypeContext_comp (first second : PresentationSymbols)
+@[simp] theorem mapTypeContext_comp (first second : LanguageDefSymbolMap)
     (context : List (String × TypeExpr)) :
     mapTypeContext (first.comp second) context =
       mapTypeContext second (mapTypeContext first context) := by
@@ -442,47 +489,148 @@ end CIGSLT
   rcases entry with ⟨name, type⟩
   simp only [mapTypeExpr_comp]
 
+@[simp] theorem mapMetavariableOccurrence_id
+    (occurrence : MetavariableOccurrence) :
+    mapMetavariableOccurrence LanguageDefSymbolMap.id occurrence = occurrence := by
+  cases occurrence
+  simp [mapMetavariableOccurrence]
+
+@[simp] theorem mapMetavariableOccurrence_comp
+    (first second : LanguageDefSymbolMap)
+    (occurrence : MetavariableOccurrence) :
+    mapMetavariableOccurrence (first.comp second) occurrence =
+      mapMetavariableOccurrence second (mapMetavariableOccurrence first occurrence) := by
+  cases occurrence
+  simp [mapMetavariableOccurrence, List.map_map]
+
+@[simp] theorem mapRuleBindingSpec_id (spec : RuleBindingSpec) :
+    mapRuleBindingSpec LanguageDefSymbolMap.id spec = spec := by
+  cases spec
+  simp only [mapRuleBindingSpec, RuleBindingSpec.mk.injEq]
+  constructor
+  · apply list_map_eq_self_of_mem
+    intro entry _
+    rcases entry with ⟨name, types⟩
+    exact congrArg (name, ·) (list_map_eq_self_of_mem _ _
+      (fun type _ => mapTypeExpr_id type))
+  · exact list_map_eq_self_of_mem _ _
+      (fun occurrence _ => mapMetavariableOccurrence_id occurrence)
+
+@[simp] theorem mapRuleBindingSpec_comp
+    (first second : LanguageDefSymbolMap) (spec : RuleBindingSpec) :
+    mapRuleBindingSpec (first.comp second) spec =
+      mapRuleBindingSpec second (mapRuleBindingSpec first spec) := by
+  cases spec
+  simp only [mapRuleBindingSpec, RuleBindingSpec.mk.injEq]
+  constructor
+  · apply list_map_comp_of_mem
+    intro entry _
+    rcases entry with ⟨name, types⟩
+    exact congrArg (name, ·) (list_map_comp_of_mem _ _ _ _
+      (fun type _ => mapTypeExpr_comp first second type))
+  · exact list_map_comp_of_mem _ _ _ _
+      (fun occurrence _ => mapMetavariableOccurrence_comp first second occurrence)
+
+/-- A square on sorts and object patterns induces the same square on a
+rule's dependency contexts and occurrence substitutions. -/
+theorem mapRuleBindingSpec_square
+    (upper left lower right : LanguageDefSymbolMap)
+    (types : ∀ type,
+      mapTypeExpr upper (mapTypeExpr left type) =
+        mapTypeExpr right (mapTypeExpr lower type))
+    (patterns : ∀ pattern,
+      mapPattern upper (mapPattern left pattern) =
+        mapPattern right (mapPattern lower pattern))
+    (spec : RuleBindingSpec) :
+    mapRuleBindingSpec upper (mapRuleBindingSpec left spec) =
+      mapRuleBindingSpec right (mapRuleBindingSpec lower spec) := by
+  rcases spec with ⟨dependencies, occurrences⟩
+  simp only [mapRuleBindingSpec, RuleBindingSpec.mk.injEq, List.map_map]
+  constructor
+  · apply List.map_congr_left
+    intro entry _
+    rcases entry with ⟨name, dependencyTypes⟩
+    exact congrArg (name, ·) (by
+      simpa only [List.map_map, Function.comp_def] using
+        (List.map_congr_left (fun type _ => types type) :
+          dependencyTypes.map (fun type =>
+            mapTypeExpr upper (mapTypeExpr left type)) =
+          dependencyTypes.map (fun type =>
+            mapTypeExpr right (mapTypeExpr lower type))))
+  · apply List.map_congr_left
+    intro occurrence _
+    rcases occurrence with ⟨name, site, path, arguments⟩
+    change MetavariableOccurrence.mk name site path
+        ((arguments.map (mapPattern left)).map (mapPattern upper)) =
+      MetavariableOccurrence.mk name site path
+        ((arguments.map (mapPattern lower)).map (mapPattern right))
+    congr 1
+    simpa only [List.map_map, Function.comp_def] using
+      (List.map_congr_left (fun pattern _ => patterns pattern) :
+        arguments.map (fun pattern => mapPattern upper (mapPattern left pattern)) =
+        arguments.map (fun pattern => mapPattern right (mapPattern lower pattern)))
+
 @[simp] theorem mapEquation_id (equation : Equation) :
-    mapEquation PresentationSymbols.id equation = equation := by
-  cases equation
+    mapEquation LanguageDefSymbolMap.id equation = equation := by
+  rcases equation with ⟨name, typeContext, premises, left, right, bindings⟩
   simp only [mapEquation]
   rw [mapTypeContext_id]
   rw [list_map_eq_self_of_mem _ _ fun premise _ => mapPremise_id premise]
   rw [mapPattern_id, mapPattern_id]
-  rfl
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_id]
+      rfl
 
-@[simp] theorem mapEquation_comp (first second : PresentationSymbols)
+@[simp] theorem mapEquation_comp (first second : LanguageDefSymbolMap)
     (equation : Equation) :
     mapEquation (first.comp second) equation =
       mapEquation second (mapEquation first equation) := by
-  cases equation
+  rcases equation with ⟨name, typeContext, premises, left, right, bindings⟩
   simp only [mapEquation]
   rw [mapTypeContext_comp]
   rw [list_map_comp_of_mem _ _ _ _ fun premise _ =>
     mapPremise_comp first second premise]
   rw [mapPattern_comp, mapPattern_comp]
-  rfl
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_comp]
+      rfl
 
 @[simp] theorem mapRewriteRule_id (rewrite : RewriteRule) :
-    mapRewriteRule PresentationSymbols.id rewrite = rewrite := by
-  cases rewrite
+    mapRewriteRule LanguageDefSymbolMap.id rewrite = rewrite := by
+  rcases rewrite with ⟨name, typeContext, premises, left, right, bindings⟩
   simp only [mapRewriteRule]
   rw [mapTypeContext_id]
   rw [list_map_eq_self_of_mem _ _ fun premise _ => mapPremise_id premise]
   rw [mapPattern_id, mapPattern_id]
-  rfl
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_id]
+      rfl
 
-@[simp] theorem mapRewriteRule_comp (first second : PresentationSymbols)
+@[simp] theorem mapRewriteRule_comp (first second : LanguageDefSymbolMap)
     (rewrite : RewriteRule) :
     mapRewriteRule (first.comp second) rewrite =
       mapRewriteRule second (mapRewriteRule first rewrite) := by
-  cases rewrite
+  rcases rewrite with ⟨name, typeContext, premises, left, right, bindings⟩
   simp only [mapRewriteRule]
   rw [mapTypeContext_comp]
   rw [list_map_comp_of_mem _ _ _ _ fun premise _ =>
     mapPremise_comp first second premise]
   rw [mapPattern_comp, mapPattern_comp]
-  rfl
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_comp]
+      rfl
 
 /-! ## Signature and structural morphisms -/
 
@@ -491,7 +639,7 @@ Constructor profiles are preserved, while parser notation and host evaluator
 metadata may change or disappear.  Equations and rewrites are deliberately
 outside this interface. -/
 structure TypingMorphism (source target : ValidatedLanguageDef) where
-  symbols : PresentationSymbols
+  symbols : LanguageDefSymbolMap
   mapsTypes : ∀ declaration, List.Mem declaration source.language.types →
     List.Mem (mapTypeDecl symbols declaration) target.language.types
   mapsTerms : ∀ rule, List.Mem rule source.language.terms →
@@ -513,9 +661,9 @@ theorem ext {source target : ValidatedLanguageDef}
   cases symbols
   rfl
 
-/-- Identity on the typed profile of a validated presentation. -/
+/-- Identity on the typed profile of a validated language. -/
 def id (language : ValidatedLanguageDef) : TypingMorphism language language where
-  symbols := PresentationSymbols.id
+  symbols := LanguageDefSymbolMap.id
   mapsTypes declaration membership := by
     rw [mapTypeDecl_id]
     exact membership
@@ -552,11 +700,11 @@ def comp {first second third : ValidatedLanguageDef}
 
 end TypingMorphism
 
-/-- A map of the full typed signature underlying a validated presentation.
-It preserves complete authored sort and constructor declarations, including
+/-- A map of the full typed signature underlying a validated language.
+It preserves complete declared sort and constructor declarations, including
 concrete-syntax metadata, but says nothing about equations or rewrites. -/
 structure SignatureMorphism (source target : ValidatedLanguageDef) where
-  symbols : PresentationSymbols
+  symbols : LanguageDefSymbolMap
   mapsTypes : ∀ declaration, List.Mem declaration source.language.types →
     List.Mem (mapTypeDecl symbols declaration) target.language.types
   mapsTerms : ∀ rule, List.Mem rule source.language.terms →
@@ -589,7 +737,7 @@ theorem ext {source target : ValidatedLanguageDef}
 /-- Identity on a validated typed signature. -/
 def id (language : ValidatedLanguageDef) :
     SignatureMorphism language language where
-  symbols := PresentationSymbols.id
+  symbols := LanguageDefSymbolMap.id
   mapsTypes declaration membership := by
     rw [mapTypeDecl_id]
     exact membership
@@ -613,10 +761,10 @@ def comp {first second third : ValidatedLanguageDef}
 end SignatureMorphism
 
 /-- A structural map between exact validated language definitions.  Each
-source declaration is carried to an authored declaration of the target; the
+source declaration is carried to a declaration of the target; the
 target may contain additional declarations. -/
 structure StructuralMorphism (source target : ValidatedLanguageDef) where
-  symbols : PresentationSymbols
+  symbols : LanguageDefSymbolMap
   mapsTypes : ∀ declaration, List.Mem declaration source.language.types →
     List.Mem (mapTypeDecl symbols declaration) target.language.types
   mapsTerms : ∀ rule, List.Mem rule source.language.terms →
@@ -629,7 +777,7 @@ structure StructuralMorphism (source target : ValidatedLanguageDef) where
 namespace StructuralMorphism
 
 /-- Forget equation and rewrite preservation while retaining
-the exact typed-signature action of a structural presentation map. -/
+the exact typed-signature action of a structural `LanguageDef` map. -/
 def toSignature {source target : ValidatedLanguageDef}
     (morphism : StructuralMorphism source target) :
     SignatureMorphism source target where
@@ -643,62 +791,62 @@ def toTyping {source target : ValidatedLanguageDef}
     TypingMorphism source target :=
   morphism.toSignature.toTyping
 
-/-! ### Action on authored declarations -/
+/-! ### Action on declared symbols -/
 
-/-- A carrier sort selected from the exact authored declaration list. -/
-abbrev AuthoredSort (presentation : ValidatedLanguageDef) :=
-  { declaration : TypeDecl // List.Mem declaration presentation.language.types }
+/-- A carrier sort selected from the exact declaration list. -/
+abbrev DeclaredSort (language : ValidatedLanguageDef) :=
+  { declaration : TypeDecl // List.Mem declaration language.language.types }
 
-/-- A constructor selected from the exact authored declaration list. -/
-abbrev AuthoredConstructor (presentation : ValidatedLanguageDef) :=
-  { declaration : GrammarRule // List.Mem declaration presentation.language.terms }
+/-- A constructor selected from the exact declaration list. -/
+abbrev DeclaredConstructor (language : ValidatedLanguageDef) :=
+  { declaration : GrammarRule // List.Mem declaration language.language.terms }
 
-/-- An equation selected from the exact authored declaration list. -/
-abbrev AuthoredEquation (presentation : ValidatedLanguageDef) :=
-  { declaration : Equation // List.Mem declaration presentation.language.equations }
+/-- An equation selected from the exact declaration list. -/
+abbrev DeclaredEquation (language : ValidatedLanguageDef) :=
+  { declaration : Equation // List.Mem declaration language.language.equations }
 
-/-- A rewrite selected from the exact authored declaration list. -/
-abbrev AuthoredRewrite (presentation : ValidatedLanguageDef) :=
-  { declaration : RewriteRule // List.Mem declaration presentation.language.rewrites }
+/-- A rewrite selected from the exact declaration list. -/
+abbrev DeclaredRewrite (language : ValidatedLanguageDef) :=
+  { declaration : RewriteRule // List.Mem declaration language.language.rewrites }
 
-/-- Validation makes the name projection from authored carrier sorts
+/-- Validation makes the name projection from declared carrier sorts
 injective, so a typed generated namespace may retain declaration identity
 without relying on raw strings. -/
-theorem authoredSortName_injective (presentation : ValidatedLanguageDef) :
+theorem declaredSortName_injective (language : ValidatedLanguageDef) :
     Function.Injective
-      (fun sort : AuthoredSort presentation => sort.1.name) := by
+      (fun sort : DeclaredSort language => sort.1.name) := by
   intro left right equality
   apply Subtype.ext
   exact List.inj_on_of_nodup_map
     (LanguageDef.typeNames_nodup_of_validate_eq_nil
-      presentation.language presentation.valid)
+      language.language language.valid)
     left.2 right.2 equality
 
-/-- Structural maps carry authored carrier sorts to authored carrier sorts. -/
+/-- Structural maps carry declared carrier sorts to declared carrier sorts. -/
 def mapSort {source target : ValidatedLanguageDef}
     (morphism : StructuralMorphism source target)
-    (sort : AuthoredSort source) : AuthoredSort target :=
+    (sort : DeclaredSort source) : DeclaredSort target :=
   ⟨mapTypeDecl morphism.symbols sort.1,
     morphism.mapsTypes sort.1 sort.2⟩
 
-/-- Structural maps carry authored constructors to authored constructors. -/
+/-- Structural maps carry declared constructors to declared constructors. -/
 def mapConstructor {source target : ValidatedLanguageDef}
     (morphism : StructuralMorphism source target)
-    (constructor : AuthoredConstructor source) : AuthoredConstructor target :=
+    (constructor : DeclaredConstructor source) : DeclaredConstructor target :=
   ⟨mapGrammarRule morphism.symbols constructor.1,
     morphism.mapsTerms constructor.1 constructor.2⟩
 
-/-- Structural maps carry authored equations to authored equations. -/
+/-- Structural maps carry declared equations to declared equations. -/
 def mapEquation {source target : ValidatedLanguageDef}
     (morphism : StructuralMorphism source target)
-    (equation : AuthoredEquation source) : AuthoredEquation target :=
+    (equation : DeclaredEquation source) : DeclaredEquation target :=
   ⟨Mettapedia.GSLT.LanguageDef.mapEquation morphism.symbols equation.1,
     morphism.mapsEquations equation.1 equation.2⟩
 
-/-- Structural maps carry authored rewrites to authored rewrites. -/
+/-- Structural maps carry declared rewrites to declared rewrites. -/
 def mapRewrite {source target : ValidatedLanguageDef}
     (morphism : StructuralMorphism source target)
-    (rewrite : AuthoredRewrite source) : AuthoredRewrite target :=
+    (rewrite : DeclaredRewrite source) : DeclaredRewrite target :=
   ⟨mapRewriteRule morphism.symbols rewrite.1,
     morphism.mapsRewrites rewrite.1 rewrite.2⟩
 
@@ -715,7 +863,7 @@ theorem ext {source target : ValidatedLanguageDef}
 
 /-- Identity structural morphism. -/
 def id (language : ValidatedLanguageDef) : StructuralMorphism language language where
-  symbols := PresentationSymbols.id
+  symbols := LanguageDefSymbolMap.id
   mapsTypes declaration membership := by
     rw [mapTypeDecl_id]
     exact membership
@@ -748,23 +896,23 @@ def comp {first second third : ValidatedLanguageDef}
     rw [mapRewriteRule_comp]
     exact right.mapsRewrites _ (left.mapsRewrites rewrite membership)
 
-@[simp] theorem mapSort_id (presentation : ValidatedLanguageDef)
-    (sort : AuthoredSort presentation) :
-    (id presentation).mapSort sort = sort := by
+@[simp] theorem mapSort_id (language : ValidatedLanguageDef)
+    (sort : DeclaredSort language) :
+    (id language).mapSort sort = sort := by
   apply Subtype.ext
   exact mapTypeDecl_id sort.1
 
 @[simp] theorem mapSort_comp {first second third : ValidatedLanguageDef}
     (left : StructuralMorphism first second)
     (right : StructuralMorphism second third)
-    (sort : AuthoredSort first) :
+    (sort : DeclaredSort first) :
     (comp left right).mapSort sort = right.mapSort (left.mapSort sort) := by
   apply Subtype.ext
   exact mapTypeDecl_comp left.symbols right.symbols sort.1
 
-@[simp] theorem mapConstructor_id (presentation : ValidatedLanguageDef)
-    (constructor : AuthoredConstructor presentation) :
-    (id presentation).mapConstructor constructor = constructor := by
+@[simp] theorem mapConstructor_id (language : ValidatedLanguageDef)
+    (constructor : DeclaredConstructor language) :
+    (id language).mapConstructor constructor = constructor := by
   apply Subtype.ext
   exact mapGrammarRule_id constructor.1
 
@@ -772,38 +920,38 @@ def comp {first second third : ValidatedLanguageDef}
     {first second third : ValidatedLanguageDef}
     (left : StructuralMorphism first second)
     (right : StructuralMorphism second third)
-    (constructor : AuthoredConstructor first) :
+    (constructor : DeclaredConstructor first) :
     (comp left right).mapConstructor constructor =
       right.mapConstructor (left.mapConstructor constructor) := by
   apply Subtype.ext
   exact mapGrammarRule_comp left.symbols right.symbols constructor.1
 
-@[simp] theorem mapEquation_id (presentation : ValidatedLanguageDef)
-    (equation : AuthoredEquation presentation) :
-    (id presentation).mapEquation equation = equation := by
+@[simp] theorem mapEquation_id (language : ValidatedLanguageDef)
+    (equation : DeclaredEquation language) :
+    (id language).mapEquation equation = equation := by
   apply Subtype.ext
   exact Mettapedia.GSLT.LanguageDef.mapEquation_id equation.1
 
 @[simp] theorem mapEquation_comp {first second third : ValidatedLanguageDef}
     (left : StructuralMorphism first second)
     (right : StructuralMorphism second third)
-    (equation : AuthoredEquation first) :
+    (equation : DeclaredEquation first) :
     (comp left right).mapEquation equation =
       right.mapEquation (left.mapEquation equation) := by
   apply Subtype.ext
   exact Mettapedia.GSLT.LanguageDef.mapEquation_comp
     left.symbols right.symbols equation.1
 
-@[simp] theorem mapRewrite_id (presentation : ValidatedLanguageDef)
-    (rewrite : AuthoredRewrite presentation) :
-    (id presentation).mapRewrite rewrite = rewrite := by
+@[simp] theorem mapRewrite_id (language : ValidatedLanguageDef)
+    (rewrite : DeclaredRewrite language) :
+    (id language).mapRewrite rewrite = rewrite := by
   apply Subtype.ext
   exact mapRewriteRule_id rewrite.1
 
 @[simp] theorem mapRewrite_comp {first second third : ValidatedLanguageDef}
     (left : StructuralMorphism first second)
     (right : StructuralMorphism second third)
-    (rewrite : AuthoredRewrite first) :
+    (rewrite : DeclaredRewrite first) :
     (comp left right).mapRewrite rewrite =
       right.mapRewrite (left.mapRewrite rewrite) := by
   apply Subtype.ext

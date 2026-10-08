@@ -68,7 +68,6 @@ private def equality_N := regN "equality"
 private def contract_N := regN "contract"
 private def scope_N := regN "scope"
 private def tracker_N := regN "tracker"
-private def scope_N := regN "scope"
 private def parity_N := regN "parity"
 private def overview_N := regN "overview"
 private def usage_N := regN "usage"
@@ -543,7 +542,7 @@ def renderOSLFClaim : OSLFClaim → String
       let subj := properNameNP "It"
       let parserNP := linDetCN aIndefArt (linUseN parser_N)
       let standardNP := linDetCN aIndefArt
-        (linAdjCN (linPositA (compoundA "syntax"))
+        (linAdjCN (linPositA (compoundA "concrete"))
           (linAdjCN (linPositA (compoundA "syntax"))
             (linUseN standard_N)))
       let coordCompl := linConjNP or_Conj [parserNP, standardNP]
@@ -607,9 +606,9 @@ def renderOSLFClaim : OSLFClaim → String
               (linUseN (regN "ingestion")))))
       capitalizeFirst <| mkPresNegCopulaNP subj complement
 
-  -- "`Mettapedia/OSLF/NativeType/` formalizes the strict NTT claim scope"
+  -- "`Mettapedia/OSLF/PresheafNativeType/` formalizes the strict NTT claim scope"
   | .nttClaimScopeIsFormalizedInNativeType =>
-      let subj := properNameNP "`Mettapedia/OSLF/NativeType/`"
+      let subj := properNameNP "`Mettapedia/OSLF/PresheafNativeType/`"
       let objNP := linDetCN theDefArt
         (linAdjCN (linPositA (compoundA "strict"))
           (linAdjCN (linPositA (compoundA "NTT"))
@@ -711,7 +710,7 @@ private def formulaApiItems : List ApiItem :=
 
 private def nttEndpointApiItems : List ApiItem :=
   [ { path := "Construction.lean"
-      members := [ "NatType", "piType", "sigmaType", "TheoryMorphism" ] }
+      members := [ "NativeType", "piType", "sigmaType", "TheoryMorphism" ] }
   , { path := "CodomainFibration.lean"
       members := [ "Prop 12", "Prop 14", "Prop 17", "Def 21", "Sec 4", "Thm 23" ] }
   , { path := "Mettapedia/OSLF/Framework/NTTClaimTracker.lean"

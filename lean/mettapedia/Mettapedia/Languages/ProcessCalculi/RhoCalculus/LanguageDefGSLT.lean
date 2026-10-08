@@ -71,9 +71,9 @@ theorem rhoProcessEquations_iff_structuralCongruence
       StructuralCongruence left.1 right.1 := by
   have leftTyped := ((rhoClosedTermWellSorted_process_iff left.1).mp left.2).1
   have rightTyped := ((rhoClosedTermWellSorted_process_iff right.1).mp right.2).1
-  have leftPure := PureBoundary.rhoProcWellSorted_hashSetFree leftTyped
-  have rightPure := PureBoundary.rhoProcWellSorted_hashSetFree rightTyped
-  exact (structuralCongruence_iff_canonicalize_eq leftPure rightPure).symm
+  have leftTwoSort := PureBoundary.rhoProcWellSorted_hashSetFree leftTyped
+  have rightTwoSort := PureBoundary.rhoProcWellSorted_hashSetFree rightTyped
+  exact (structuralCongruence_iff_canonicalize_eq leftTwoSort rightTwoSort).symm
 
 /-- Compute one representative for every closed-process equation class. -/
 def rhoProcessRepresentative : Quotient rhoProcessEquations → RhoProcess :=
@@ -143,7 +143,7 @@ def rhoLanguageDefGSLT : GSLT where
   rewrites_resp_left := rhoProcessRewrites_resp_left
   rewrites_resp_right := rhoProcessRewrites_resp_right
 
-/-- Every authored base step embeds into the equation-saturated rho GSLT. -/
+/-- Every authored base step embeds into the modulo-equations rho GSLT. -/
 theorem rhoRewriteSystem_reduces_to_gsltStep
     {source target : RhoProcess}
     (step : rhoRewriteSystem.Reduces source target) :

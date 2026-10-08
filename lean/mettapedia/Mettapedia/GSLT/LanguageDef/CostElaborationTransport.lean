@@ -19,7 +19,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.Framework.ConstructorCategory
 
-namespace EquationSemantics.AuthoredEquationInstanceWitness
+namespace EquationSemantics.DeclaredEquationInstanceWitness
 
 /-- Map one exact authored equation occurrence into either generated static
 Cost copy.  The selected source declaration, orientation, and bindings remain
@@ -27,9 +27,9 @@ computational data; this is stronger than merely proving that some generated
 equation instance exists between the mapped endpoints. -/
 def mapCostStatic (source : CIGSLT) (color : CostStaticColor)
     {input output : Pattern}
-    (witness : AuthoredEquationInstanceWitness defaultBasePremises
+    (witness : DeclaredEquationInstanceWitness defaultBasePremises
       source.theory.presentation.presentation.language input output) :
-    AuthoredEquationInstanceWitness defaultBasePremises
+    DeclaredEquationInstanceWitness defaultBasePremises
       source.costWholeLanguage
       (mapPattern (color.symbols source) input)
       (mapPattern (color.symbols source) output) := by
@@ -133,20 +133,51 @@ def mapCostStatic (source : CIGSLT) (color : CostStaticColor)
 proposition-valued Cost embedding of the same source occurrence. -/
 theorem erase_mapCostStatic (source : CIGSLT) (color : CostStaticColor)
     {input output : Pattern}
-    (witness : AuthoredEquationInstanceWitness defaultBasePremises
+    (witness : DeclaredEquationInstanceWitness defaultBasePremises
       source.theory.presentation.presentation.language input output) :
     (witness.mapCostStatic source color).erase =
       equationInstance_mapCostStatic source color witness.erase :=
   Subsingleton.elim _ _
 
-end EquationSemantics.AuthoredEquationInstanceWitness
+end EquationSemantics.DeclaredEquationInstanceWitness
+
+/-- Proof-relevant meaning formula for transporting presentation-derived
+collection laws into one generated Cost colour.  Unlike authored equation
+instances, a derived law need not remain a derived law after retagging: the
+target occurrence may instead be justified by an admitted reflective
+canonical section. -/
+def DerivedGeneratorMapCostStatic (source : CIGSLT)
+    (color : CostStaticColor) : Type :=
+  ∀ {left right : Pattern},
+    EquationSemantics.DerivedGeneratorWitness
+      source.theory.presentation.presentation.language left right →
+    ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness
+      source.costWholeReflectionProfile defaultBasePremises
+      source.costWholeLanguage
+      (mapPattern (color.symbols source) left)
+      (mapPattern (color.symbols source) right)
+
+namespace DerivedGeneratorMapCostStatic
+
+/-- Erasing an exact derived-occurrence translation supplies the support-level
+meaning formula used by equation-class transport. -/
+theorem toDerivedEquationStable {source : CIGSLT} {color : CostStaticColor}
+    (mapping : DerivedGeneratorMapCostStatic source color) :
+    DerivedEquationMapCostStaticStable source color := by
+  intro left right derived
+  obtain ⟨witness, _⟩ :=
+    EquationSemantics.DerivedGeneratorWitness.exists_erasing_to derived
+  exact (mapping witness).erase
+
+end DerivedGeneratorMapCostStatic
 
 namespace ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness
 
-/-- Map one exact authored contextual generator occurrence into either static
-Cost copy.  Equation and reflective identities are transported, rather than
-forgotten and existentially reconstructed afterward. -/
+/-- Map one exact contextual generator occurrence into either static Cost
+copy.  Authored equation and reflective identities transport structurally;
+presentation-derived laws use their explicit proof-relevant meaning formula. -/
 def mapCostStatic (source : CIGSLT) (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     {left right : Pattern}
     (witness : ReflectiveAuthoredGeneratorWitness source.reflection.1
       defaultBasePremises source.theory.presentation.presentation.language
@@ -164,6 +195,11 @@ def mapCostStatic (source : CIGSLT) (color : CostStaticColor)
       exact .core (.equation
         (CIGSLT.mapOneHoleContext (color.symbols source) context)
         (instanceWitness.mapCostStatic source color))
+    | @derived context redex contractum lawWitness =>
+      rw [← CIGSLT.mapOneHoleContext_fill,
+        ← CIGSLT.mapOneHoleContext_fill]
+      exact (derivedMap lawWitness).inContext
+        (CIGSLT.mapOneHoleContext (color.symbols source) context)
   | @reflective context declaration redex contractum representatives =>
       rw [← CIGSLT.mapOneHoleContext_fill,
         ← CIGSLT.mapOneHoleContext_fill]
@@ -175,15 +211,20 @@ def mapCostStatic (source : CIGSLT) (color : CostStaticColor)
         (canonicalize_eq_mapCostStatic source color declaration.1 declaration.2
           representatives)
 
-/-- Support erasure commutes with the proof-relevant Cost embedding. -/
+/-- Erasing the proof-relevant Cost embedding yields the supported target
+equation edge carried by that same authored occurrence. -/
 theorem erase_mapCostStatic (source : CIGSLT) (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     {left right : Pattern}
     (witness : ReflectiveAuthoredGeneratorWitness source.reflection.1
       defaultBasePremises source.theory.presentation.presentation.language
         left right) :
-    (witness.mapCostStatic source color).erase =
-      equationContextStep_mapCostStatic source color witness.erase :=
-  Subsingleton.elim _ _
+    ReflectiveEquationSemantics.ReflectiveEquationContextStep
+      source.costWholeReflectionProfile
+      defaultBasePremises source.costWholeLanguage
+      (mapPattern (color.symbols source) left)
+      (mapPattern (color.symbols source) right) :=
+  (witness.mapCostStatic source color derivedMap).erase
 
 /-- The exact mapped occurrence remains an authored equation path after any
 certified ambient binder embedding.  Occurrence identity is retained by the
@@ -191,6 +232,7 @@ input witness; the proposition-valued conclusion is its semantic support
 projection. -/
 theorem mapCostStatic_renameAmbientBVarsAt
     (source : CIGSLT) (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     (stable : WellSorted.SupportedEquationAmbientRenamingStable
       (profile := source.costWholeReflectionProfile) source.costWholeLanguage)
     (rename : Nat → Nat) (strict : StrictMono rename) (depth : Nat)
@@ -205,12 +247,13 @@ theorem mapCostStatic_renameAmbientBVarsAt
       (ContextSubstitution.renameAmbientBVarsAt rename depth
         (mapPattern (color.symbols source) right)) :=
   WellSorted.equationContextStep_renameAmbientBVarsAt stable rename strict depth
-    (witness.mapCostStatic source color).erase
+    (witness.mapCostStatic source color derivedMap).erase
 
 /-- Specialize exact occurrence transport to the intrinsic binder thinning
 used by Cost static regions. -/
 theorem mapCostStatic_thickenAmbientBVars
     (source : CIGSLT) (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     (stable : WellSorted.SupportedEquationAmbientRenamingStable
       (profile := source.costWholeReflectionProfile) source.costWholeLanguage)
     {sourceBound targetBound : List TypeExpr}
@@ -225,8 +268,8 @@ theorem mapCostStatic_thickenAmbientBVars
         (mapPattern (color.symbols source) left))
       (thinning.thickenAmbientBVars depth
         (mapPattern (color.symbols source) right)) := by
-  simpa only [CostStaticBinderThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
-    using witness.mapCostStatic_renameAmbientBVarsAt source color stable
+  simpa only [CostStaticTypeThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
+    using witness.mapCostStatic_renameAmbientBVarsAt source color derivedMap stable
       thinning.toTargetIndex thinning.toTargetIndex_strictMono depth
 
 /-- Supported substitution acts on the exact mapped occurrence whenever its
@@ -234,6 +277,7 @@ two endpoints are packaged in the same certified support fibre.  This is the
 substitution half of the Cost action before ambient binder reinsertion. -/
 theorem mapCostStatic_substitute
     (source : CIGSLT) (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     (stable : WellSorted.SupportedEquationSubstitutionStable
       (profile := source.costWholeReflectionProfile) source.costWholeLanguage)
     {sourceFree targetFree : WellSorted.FreeTypeContext}
@@ -262,7 +306,7 @@ theorem mapCostStatic_substitute
   apply WellSorted.SupportSafeOpenPattern.equationGenerator_substitute stable
     assignment leftEndpoint rightEndpoint
   simpa [WellSorted.SupportSafeOpenPattern.equationGenerator, left_eq,
-    right_eq] using (witness.mapCostStatic source color).erase
+    right_eq] using (witness.mapCostStatic source color derivedMap).erase
 
 end ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness
 
@@ -1043,14 +1087,14 @@ inductive IntroducedByGenerator {source : CIGSLT} :
           source.theory.presentation.presentation.language left right →
         CostStaticChoiceOccurrence source → Prop where
   | equation (context : OneHoleContext) {redex contractum : Pattern}
-      (instanceWitness : EquationSemantics.AuthoredEquationInstanceWitness
+      (instanceWitness : EquationSemantics.DeclaredEquationInstanceWitness
         defaultBasePremises source.theory.presentation.presentation.language
         redex contractum)
       {relative : OneHoleContext} {sourceLabel : String}
       {arguments : List Pattern}
       {constructor : source.DeclaredCostConstructor}
       (template :
-        EquationSemantics.AuthoredEquationInstanceWitness.TargetApplicationTemplate
+        EquationSemantics.DeclaredEquationInstanceWitness.TargetApplicationTemplate
         instanceWitness relative sourceLabel arguments) :
       IntroducedByGenerator
         (.core (EquationSemantics.AuthoredGeneratorWitness.equation context
@@ -1232,7 +1276,7 @@ namespace CostStaticPlanLift
 
 /-- Forget a plan edge's proof-relevant authored occurrence and recover the
 ordinary source equation generator. -/
-def erasesToSourceGenerator {source : CIGSLT}
+theorem erasesToSourceGenerator {source : CIGSLT}
     (staticLift : CostStaticPlanLift source)
     {first second : CostStaticPlanDecoration source}
     {sourceBoundaries targetBoundaries :
@@ -1251,6 +1295,7 @@ unrelated edge with the same endpoints. -/
 def mappedGeneratorWitness {source : CIGSLT}
     (staticLift : CostStaticPlanLift source)
     (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     {first second : CostStaticPlanDecoration source}
     {sourceBoundaries targetBoundaries :
       List (CostRegionBoundary × CostTreeDecoration source)}
@@ -1260,22 +1305,25 @@ def mappedGeneratorWitness {source : CIGSLT}
         source.costWholeLanguage
       (mapPattern (color.symbols source) first.abstractPattern)
       (mapPattern (color.symbols source) second.abstractPattern) :=
-  (staticLift.generatorWitness edge).mapCostStatic source color
+  (staticLift.generatorWitness edge).mapCostStatic source color derivedMap
 
-/-- Forgetting the mapped plan occurrence is exactly the old support-level
-Cost map applied to the very same source occurrence. -/
+/-- Forgetting the mapped plan occurrence exposes its supported target
+equation edge. -/
 theorem mappedGeneratorWitness_erase {source : CIGSLT}
     (staticLift : CostStaticPlanLift source)
     (color : CostStaticColor)
+    (derivedMap : DerivedGeneratorMapCostStatic source color)
     {first second : CostStaticPlanDecoration source}
     {sourceBoundaries targetBoundaries :
       List (CostRegionBoundary × CostTreeDecoration source)}
     (edge : staticLift.Edge first second sourceBoundaries targetBoundaries) :
-    (staticLift.mappedGeneratorWitness color edge).erase =
-      equationContextStep_mapCostStatic source color
-        (staticLift.erasesToSourceGenerator edge) :=
+    ReflectiveEquationSemantics.ReflectiveEquationContextStep
+      source.costWholeReflectionProfile defaultBasePremises
+      source.costWholeLanguage
+      (mapPattern (color.symbols source) first.abstractPattern)
+      (mapPattern (color.symbols source) second.abstractPattern) :=
   ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness.erase_mapCostStatic
-    source color (staticLift.generatorWitness edge)
+    source color derivedMap (staticLift.generatorWitness edge)
 
 /-- Exact template provenance implies the coarser positional redex fact. -/
 theorem introducedChoiceInRedex {source : CIGSLT}

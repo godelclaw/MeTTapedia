@@ -13,7 +13,7 @@ This module exposes a concrete atom-level endpoint for the composed route:
 - MeTTaFullLegacy-to-NTT evidence lifting, and
 - WM query-judgment obligations.
 
-It is intentionally assumption-parameterized and does not change PureKernel/
+It is intentionally assumption-parameterized and does not change TwoSortPiSigmaId/
 OSLF semantics.
 -/
 
@@ -36,6 +36,34 @@ section AtomTriangle
 variable {State : Type*}
 variable [EvidenceType State] [BinaryWorldModel State Pattern]
 
+/-- The support of formula evidence as a predicate in the canonical OSLF.
+`mettaFull` has no equation generators, so the required invariance is the
+equation-free specialization rather than a separate raw semantics. -/
+noncomputable def formulaEvidenceSupportUsing
+    (relEnv : MeTTaIL.Engine.RelationEnv)
+    (W : State) (queryOfAtom : String → Pattern → Pattern)
+    (φf : OSLFFormula) :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing
+        relEnv MeTTaToNTT.mettaFull) :=
+  Mettapedia.OSLF.Framework.TypeSynthesis.equationPredicateUsingOfEquationFree
+    relEnv (by rfl)
+    (fun q => MeTTaToNTT.mettaSemE relEnv W queryOfAtom φf q ≠ ⊥)
+
+/-- The same canonical predicate stated through the NTT evidence component. -/
+noncomputable def nttFormulaEvidenceSupportUsing
+    (relEnv : MeTTaIL.Engine.RelationEnv)
+    (W : State) (queryOfAtom : String → Pattern → Pattern)
+    (φf : OSLFFormula) (Xobj : PLNObj) :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing
+        relEnv MeTTaToNTT.mettaFull) :=
+  Mettapedia.OSLF.Framework.TypeSynthesis.equationPredicateUsingOfEquationFree
+    relEnv (by rfl)
+    (fun q =>
+      (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf q Xobj).2 ≠ ⊥)
+
+set_option backward.isDefEq.respectTransparency false in
 /--
 Atom-level OSLF -> NTT -> WM triangle endpoint.
 
@@ -52,15 +80,14 @@ theorem oslf_atom_ntt_wm_triangle
     (a : String) (p : Pattern) (X : PLNObj) (e : BinaryEvidence)
     (hDer : XiDerivesAtomEvidence Ξ W a p e)
     (hW : WMJudgment W) :
-    semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-      (wmEvidenceAtomSemQ W Ξ.queryOfAtom) (.atom a) p = e
+    MeTTaToNTT.mettaSemE relEnv W Ξ.queryOfAtom (.atom a) p = e
     ∧ (MeTTaToNTT.mettaFormulaToNT relEnv W Ξ.queryOfAtom (.atom a) p X).2 = e
     ∧ WMQueryJudgment W (Ξ.queryOfAtom a p) e := by
   have hSem :
-      semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-        (wmEvidenceAtomSemQ W Ξ.queryOfAtom) (.atom a) p = e :=
+      MeTTaToNTT.mettaSemE relEnv W Ξ.queryOfAtom (.atom a) p = e :=
     xiDerivesAtomEvidence_sound (Ξ := Ξ)
-      (R := Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
+      (R := Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing
+        relEnv MeTTaToNTT.mettaFull)
       hDer
 
   have hAtomEq : BinaryWorldModel.evidence W (Ξ.queryOfAtom a p) = e := by
@@ -93,8 +120,7 @@ theorem oslf_atom_ntt_wm_triangle_categorical
     (a : String) (p : Pattern) (X : PLNObj) (e : BinaryEvidence)
     (hDer : XiDerivesAtomEvidence Ξ W a p e)
     (hW : WMJudgment W) :
-    semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-      (wmEvidenceAtomSemQ W Ξ.queryOfAtom) (.atom a) p = e
+    MeTTaToNTT.mettaSemE relEnv W Ξ.queryOfAtom (.atom a) p = e
     ∧ (MeTTaToNTT.mettaFormulaToNT relEnv W Ξ.queryOfAtom (.atom a) p X).2 = e
     ∧ WMQueryJudgment W (Ξ.queryOfAtom a p) e :=
   oslf_atom_ntt_wm_triangle
@@ -119,11 +145,10 @@ theorem oslf_formula_ntt_evidence_component
     (W : State)
     (queryOfAtom : String → Pattern → Pattern)
     (φf : OSLFFormula) (p : Pattern) (X : PLNObj) :
-    semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-      (wmEvidenceAtomSemQ W queryOfAtom) φf p
+    MeTTaToNTT.mettaSemE relEnv W queryOfAtom φf p
       =
     (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf p X).2 := by
-  simp [MeTTaToNTT.mettaSemE, wmEvidenceAtomSemQ_pattern_eq]
+  rfl
 
 /--
 Formula-level explicit reduction-graph witness transport for diamond predicates.
@@ -140,9 +165,7 @@ theorem oslf_dia_formula_graph_witness_transport
     (p : Pattern) :
     Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
         relEnv MeTTaToNTT.mettaFull
-        (fun q =>
-          semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-            (wmEvidenceAtomSemQ W queryOfAtom) φf q ≠ ⊥)
+        (formulaEvidenceSupportUsing relEnv W queryOfAtom φf)
         p
       ↔
     ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -151,19 +174,16 @@ theorem oslf_dia_formula_graph_witness_transport
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
         relEnv MeTTaToNTT.mettaFull).source.app X e).down = p ∧
-      (semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-        (wmEvidenceAtomSemQ W queryOfAtom) φf
+      formulaEvidenceSupportUsing relEnv W queryOfAtom φf
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
-          relEnv MeTTaToNTT.mettaFull).target.app X e).down ≠ ⊥) := by
+          relEnv MeTTaToNTT.mettaFull).target.app X e).down := by
   simpa using
     (Mettapedia.OSLF.Framework.ToposReduction.langDiamondUsing_iff_exists_graphStep
       (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
       (relEnv := relEnv) (lang := MeTTaToNTT.mettaFull)
       (X := X)
-      (φ := fun q =>
-        semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-          (wmEvidenceAtomSemQ W queryOfAtom) φf q ≠ ⊥)
+      (φ := formulaEvidenceSupportUsing relEnv W queryOfAtom φf)
       (p := p))
 
 /--
@@ -181,8 +201,7 @@ theorem oslf_dia_formula_ntt_graph_witness_transport
     (p : Pattern) :
     Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
         relEnv MeTTaToNTT.mettaFull
-        (fun q =>
-          (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf q Xobj).2 ≠ ⊥)
+        (nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj)
         p
       ↔
     ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -191,17 +210,14 @@ theorem oslf_dia_formula_ntt_graph_witness_transport
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
         relEnv MeTTaToNTT.mettaFull).source.app X e).down = p ∧
-      ((MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf
+      nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
-          relEnv MeTTaToNTT.mettaFull).target.app X e).down
-        Xobj).2 ≠ ⊥) := by
+          relEnv MeTTaToNTT.mettaFull).target.app X e).down := by
   change
     Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
         relEnv MeTTaToNTT.mettaFull
-        (fun q =>
-          semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-            (wmEvidenceAtomSemQ W queryOfAtom) φf q ≠ ⊥)
+        (formulaEvidenceSupportUsing relEnv W queryOfAtom φf)
         p
       ↔
     ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -210,11 +226,10 @@ theorem oslf_dia_formula_ntt_graph_witness_transport
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
         relEnv MeTTaToNTT.mettaFull).source.app X e).down = p ∧
-      (semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-        (wmEvidenceAtomSemQ W queryOfAtom) φf
+      formulaEvidenceSupportUsing relEnv W queryOfAtom φf
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
-          relEnv MeTTaToNTT.mettaFull).target.app X e).down ≠ ⊥)
+          relEnv MeTTaToNTT.mettaFull).target.app X e).down
   exact oslf_dia_formula_graph_witness_transport
     (relEnv := relEnv) (W := W) (queryOfAtom := queryOfAtom)
     (φf := φf) (X := X) (p := p)
@@ -231,15 +246,13 @@ theorem oslf_formula_ntt_graph_triangle
     (φf : OSLFFormula) (Xobj : PLNObj)
     {X : Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)}
     (p : Pattern) :
-    semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-      (wmEvidenceAtomSemQ W queryOfAtom) φf p
+    MeTTaToNTT.mettaSemE relEnv W queryOfAtom φf p
       =
       (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf p Xobj).2
     ∧
     (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
         relEnv MeTTaToNTT.mettaFull
-        (fun q =>
-          (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf q Xobj).2 ≠ ⊥)
+        (nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj)
         p
       ↔
     ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -248,11 +261,10 @@ theorem oslf_formula_ntt_graph_triangle
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
         relEnv MeTTaToNTT.mettaFull).source.app X e).down = p ∧
-      ((MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf
+      nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
-          relEnv MeTTaToNTT.mettaFull).target.app X e).down
-        Xobj).2 ≠ ⊥)) := by
+          relEnv MeTTaToNTT.mettaFull).target.app X e).down) := by
   constructor
   · exact oslf_formula_ntt_evidence_component
       (relEnv := relEnv) (W := W) (queryOfAtom := queryOfAtom)
@@ -276,15 +288,13 @@ abbrev FormulaGraphEndpoint
     (φf : OSLFFormula) (Xobj : PLNObj)
     {X : Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)}
     (p : Pattern) : Prop :=
-  semE (Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv MeTTaToNTT.mettaFull)
-      (wmEvidenceAtomSemQ W queryOfAtom) φf p
+  MeTTaToNTT.mettaSemE relEnv W queryOfAtom φf p
       =
       (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf p Xobj).2
     ∧
     (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
         relEnv MeTTaToNTT.mettaFull
-        (fun q =>
-          (MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf q Xobj).2 ≠ ⊥)
+        (nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj)
         p
       ↔
     ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -293,11 +303,10 @@ abbrev FormulaGraphEndpoint
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
         relEnv MeTTaToNTT.mettaFull).source.app X e).down = p ∧
-      ((MeTTaToNTT.mettaFormulaToNT relEnv W queryOfAtom φf
+      nttFormulaEvidenceSupportUsing relEnv W queryOfAtom φf Xobj
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj MeTTaToNTT.mettaFull)
-          relEnv MeTTaToNTT.mettaFull).target.app X e).down
-        Xobj).2 ≠ ⊥))
+          relEnv MeTTaToNTT.mettaFull).target.app X e).down)
 
 /--
 Formula-level unified categorical endpoint:

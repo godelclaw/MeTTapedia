@@ -1,5 +1,5 @@
 import Mettapedia.Languages.Metamath.MMLean4Bridge
-import Mettapedia.Languages.Metamath.ModeInterpretationOrder
+import Metamath.ModeInterpretationOrder
 import Mettapedia.Languages.Metamath.GroundedSemantics
 import Mettapedia.Languages.Metamath.LanguageDefDSL
 import Mettapedia.Languages.Metamath.BridgeConformance
@@ -26,6 +26,7 @@ import Mettapedia.Languages.Metamath.InferenceNormalByteReflection
 import Mettapedia.Languages.Metamath.InferenceNormalProvabilitySoundness
 import Mettapedia.Languages.Metamath.InferenceSourceAdmission
 import Mettapedia.Languages.Metamath.SourceInferenceDeclarativeAdequacy
+import Mettapedia.Languages.Metamath.SourceInferenceProjectionValidation
 import Mettapedia.Languages.Metamath.NIKAuthority
 import Mettapedia.Languages.Metamath.NIKDefault
 import Mettapedia.Languages.Metamath.DatabaseNIKAuthority
@@ -37,20 +38,49 @@ import Mettapedia.Languages.Metamath.SourceStateGSLT
 import Mettapedia.Languages.Metamath.SourceStateNativeTypes
 import Mettapedia.Languages.Metamath.MM2DataEncoding
 import Mettapedia.Languages.Metamath.MM2SourceEventTransformation
+import Mettapedia.Languages.Metamath.MM2NormalDataRows
 import Mettapedia.Languages.Metamath.MM2Target
 import Mettapedia.Languages.Metamath.MM2OrderedEventVerifier
 import Mettapedia.Languages.Metamath.MM2Transformation
 import Mettapedia.Languages.Metamath.MM2SourceActionPlan
+import Mettapedia.Languages.Metamath.MM2SourceAssertionPlan
+import Mettapedia.Languages.Metamath.MM2SourceAssertionExecution
 import Mettapedia.Languages.Metamath.MM2SourceActionExecution
+import Mettapedia.Languages.Metamath.MM2SourceObjectLookup
+import Mettapedia.Languages.Metamath.MM2SourceConstantDeclaration
+import Mettapedia.Languages.Metamath.MM2SourceVariableDeclaration
+import Mettapedia.Languages.Metamath.MM2SourceScopeExecution
+import Mettapedia.Languages.Metamath.MM2SourceVariableTypecodeLookup
+import Mettapedia.Languages.Metamath.MM2SourceFloatingDeclaration
+import Mettapedia.Languages.Metamath.MM2SourceDVLicenseProjection
+import Mettapedia.Languages.Metamath.MM2SourceDVOccurrenceLookup
+import Mettapedia.Languages.Metamath.MM2SourceDVPairPlan
+import Mettapedia.Languages.Metamath.MM2SourceDVPairCommit
+import Mettapedia.Languages.Metamath.MM2SourceDVNameValidation
+import Mettapedia.Languages.Metamath.MM2SourceDVPairValidation
+import Mettapedia.Languages.Metamath.MM2SourceActiveFloatingLookup
+import Mettapedia.Languages.Metamath.MM2SourceDVEndpointClassification
+import Mettapedia.Languages.Metamath.MM2SourceDVDeclaration
+import Mettapedia.Languages.Metamath.MM2SourceFormulaValidation
+import Mettapedia.Languages.Metamath.MM2SourceEssentialDeclaration
+import Mettapedia.Languages.Metamath.MM2NormalDVRuleScopedReload
+import Mettapedia.Languages.Metamath.MM2CompressedProofRuleScopedLoad
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalDirectHit
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalDecoratedAssertionLaunch
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalAssertionLaunchToDispatch
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalAssertionReloadPublication
+import Mettapedia.Languages.Metamath.MM2CompressedProofReservedSaveFrame
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalNormalResult
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalAssertionRejoin
+import Mettapedia.Languages.Metamath.MM2CompressedProofPhysicalSpeculativeResume
 import Mettapedia.Languages.Metamath.MM2NormalStackCorrespondence
 import Mettapedia.Languages.Metamath.MM2NormalProofCorrespondence
-import Mettapedia.Languages.Metamath.MM2TransformationCanary
-import Mettapedia.Languages.Metamath.MM2AssembledNormalExecution
+import Mettapedia.Languages.Metamath.MM2AssembledNormalExecutionCore
 import Mettapedia.Languages.Metamath.SourceGSLTCompressedMMLean4
 import Mettapedia.Languages.Metamath.SourceGSLTCompressedExecutionMMLean4
 import Mettapedia.Languages.Metamath.SourceGSLTCompressedParserMMLean4
 import Mettapedia.Languages.Metamath.SourceGSLTRawByteLexical
-import Mettapedia.Languages.Metamath.InferenceSupportedProvableBoundary
+import Metamath.Spec.FixedFrameCounterexample
 import Mettapedia.Languages.Metamath.InferenceSemanticFiniteSupport
 import Mettapedia.Languages.Metamath.SourceGSLTSpecGrounding
 import Mettapedia.Languages.Metamath.InferenceDummyAllocation
@@ -76,6 +106,12 @@ import Mettapedia.Languages.Metamath.SourceGSLTParserStatementSimulation
 
 /-!
 # Metamath Bridge Interface
+
+The MM2 execution theory is available through
+`MM2AssembledNormalExecutionCore` without running its concrete examples.
+Those positive and negative examples remain in `MM2AssembledNormalExecution`
+and can be checked explicitly with `lake build MetamathProofRegression`.
+Direct imports of that example module also expose the reusable theory.
 
 Positive example:
 - this umbrella exposes the verified `mm-lean4` bridge layer used for rebuilding

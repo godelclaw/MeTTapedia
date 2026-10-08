@@ -48,7 +48,7 @@ private theorem mem_freeFvarNames_liftBVars_iff
         simp [liftBVars, Pattern.freeFvarNames, shifted]
   | hfvar variableName => simp [liftBVars, Pattern.freeFvarNames]
   | happly constructor arguments inductionHypothesis =>
-      simp only [liftBVars, Pattern.freeFvarNames, List.mem_flatMap,
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.freeFvarNames, List.mem_flatMap,
         List.mem_map]
       constructor
       · rintro ⟨normalized, ⟨argument, membership, rfl⟩, support⟩
@@ -68,7 +68,7 @@ private theorem mem_freeFvarNames_liftBVars_iff
       simp [liftBVars, Pattern.freeFvarNames,
         bodyInduction (cutoff + 1), replacementInduction cutoff]
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [liftBVars, Pattern.freeFvarNames, List.mem_append,
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.freeFvarNames, List.mem_append,
         List.mem_flatMap, List.mem_map]
       constructor
       · rintro (⟨normalized, ⟨element, membership, rfl⟩, support⟩ | support)
@@ -161,10 +161,19 @@ private theorem rho_costEquationContextStep_mem_freeFvarNames_iff
   | core coreStep =>
       cases coreStep with
       | @inContext context redex contractum instanceWitness =>
-          obtain ⟨fuel, bounded⟩ := instanceWitness
-          obtain ⟨declaration, _membership, representatives⟩ :=
-            CostCanonicalLaws.rho_costEquationInstanceAt_canonicalize_eq
-              bounded
+          obtain ⟨declaration, representatives⟩ : ∃ declaration,
+              Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
+                  declaration redex =
+                Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
+                  declaration contractum := by
+            rcases instanceWitness with ⟨fuel, bounded⟩ | derived
+            · obtain ⟨declaration, _membership, representatives⟩ :=
+                CostCanonicalLaws.rho_costEquationInstanceAt_canonicalize_eq
+                  bounded
+              exact ⟨declaration, representatives⟩
+            · obtain ⟨declaration, _membership, representatives⟩ :=
+                CostCanonicalLaws.rho_costDerivedInstance_canonicalize_eq derived
+              exact ⟨declaration, representatives⟩
           apply mem_freeFvarNames_fill_iff_of_iff context name
           calc
             name ∈ redex.freeFvarNames ↔
@@ -412,6 +421,7 @@ private theorem restrictTo_idempotent
   by_cases membership : name ∈ names <;>
     simp [WellSorted.FreeTypeContext.restrictTo, membership]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The supported hereditary executor is structurally independent of unused
 ambient free-context entries.  No compiler parametricity assumption is
 needed: both executions run in the same finite restricted context. -/
@@ -784,7 +794,7 @@ def RhoHereditaryReflectiveSupportPreserving : Prop :=
 remaining semantic closure obligations.  All contextual free-name laws,
 typed unary soundness, generator transport to the supported executor, and
 wrapped-constructor preservation are discharged here. -/
-def rhoHereditaryCompactOpenNormalizerLaws_of
+theorem rhoHereditaryCompactOpenNormalizerLaws_of
     (alignable : CostOpenGeneratorTreeAlignable rhoCIGSLT
       rhoHereditaryNormalizationKernel)
     (preservesReflectiveSupport : RhoHereditaryReflectiveSupportPreserving) :

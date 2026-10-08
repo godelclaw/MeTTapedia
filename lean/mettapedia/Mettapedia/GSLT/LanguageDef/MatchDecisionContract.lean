@@ -1,5 +1,6 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.Infix
+import Mathlib.Data.Finset.Card
 
 /-!
 # The candidate-selection (match-decision) contract, as an algebra
@@ -574,6 +575,28 @@ theorem Realizes.anti {t : Term V} {s s' : Skeleton V}
     (hle : s ⊑ₛ s') (h : Realizes t s') : Realizes t s :=
   fun p => Obs.holds_anti (hle p) (h p)
 
+/-- A bounded index stops at selected subtree roots. A stopped subtree is
+unknown, including all its descendants; it is never an observed absence. The
+cut selection may depend on both a depth limit and a remaining token budget. -/
+def forgetSubtrees (cuts : List Path) (source : Skeleton V) : Skeleton V :=
+  fun path => if cuts.any (fun cut => decide (cut <+: path)) then
+    .unknown else source path
+
+/-- Forgetting a subtree removes information and cannot invent a constructor
+or an absence. This holds for the actual cut construction, for every cut set. -/
+theorem forgetSubtrees_le (cuts : List Path) (source : Skeleton V) :
+    forgetSubtrees cuts source ⊑ₛ source := by
+  intro path
+  simp only [forgetSubtrees]
+  split
+  · trivial
+  · exact Obs.le.refl _
+
+theorem Realizes.forgetSubtrees {term : Term V} {source : Skeleton V}
+    (realized : Realizes term source) (cuts : List Path) :
+    Realizes term (forgetSubtrees cuts source) :=
+  realized.anti (forgetSubtrees_le cuts source)
+
 variable [DecidableEq V]
 
 /-- Skeleton-level conflict: some point's table row fires. -/
@@ -608,6 +631,46 @@ theorem conflictsOn_sound {ps : List Path} {o s : Skeleton V}
     (h : conflictsOn ps o s = true) : Conflicts o s := by
   obtain ⟨p, _, hp⟩ := List.any_eq_true.mp h
   exact ⟨p, hp⟩
+
+/-- Every full match survives a bounded index: wildcard cuts weaken only
+its stored observations. The query and its demanded positions are unchanged. -/
+theorem pruned_index_retains {term : Term V} {query pattern : Skeleton V}
+    (queryRealized : Realizes term query) (patternRealized : Realizes term pattern)
+    (cuts samples : List Path) :
+    Bool.not (conflictsOn samples query (forgetSubtrees cuts pattern)) = true := by
+  cases conflict : conflictsOn samples query (forgetSubtrees cuts pattern) with
+  | false => rfl
+  | true =>
+      obtain ⟨path, disagrees⟩ := conflictsOn_sound conflict
+      exact False.elim (Obs.conflictB_sound disagrees (queryRealized path)
+        ((patternRealized.forgetSubtrees cuts) path))
+
+/-- Only positions constrained by the pattern can refute a structural match.
+This drops no binding or cross-position equality obligation of a full unifier. -/
+def demandedPaths (ps : List Path) (pat : Skeleton V) : List Path :=
+  ps.filter fun p => match pat p with
+    | .unknown => false
+    | _ => true
+
+/-- Erasing wildcard observations preserves structural rejection exactly. -/
+theorem conflictsOn_demandedPaths (ps : List Path) (o pat : Skeleton V) :
+    conflictsOn (demandedPaths ps pat) o pat = conflictsOn ps o pat := by
+  unfold conflictsOn demandedPaths
+  rw [List.any_filter]
+  congr 1
+  funext p
+  cases hp : pat p <;> cases ho : o p <;>
+    simp [posConflict, Obs.conflictB, hp, ho]
+
+example : demandedPaths [[], [0]]
+    (fun p => if p = [] then Obs.present (7 : Nat) else Obs.unknown) = [[]] := by
+  decide
+
+/-- A rigid absence observation cannot be erased as a wildcard. -/
+example : conflictsOn [[]] (fun _ => Obs.present (7 : Nat))
+      (fun _ => Obs.absent) ≠
+    conflictsOn [] (fun _ => Obs.present (7 : Nat))
+      (fun _ => Obs.absent) := by decide
 
 /-- Refutations persist as information grows. -/
 theorem conflictsOn_mono_obs {ps : List Path} {o o' s : Skeleton V}
@@ -935,5 +998,245 @@ example :
 end Examples
 
 end Shaped
+
+/-! ## A shared budget for serialized index observations
+
+An expanded expression reserves one token per immediate child before any
+child is visited. A cut child uses its reserved token as a wildcard. The
+root adds one token. Thus wide nodes as well as deep graphs are bounded;
+a depth limit alone does not provide this property.
+-/
+
+namespace ExpansionBudget
+
+structure Budget where
+  expressions : Nat
+  childTokens : Nat
+  deriving DecidableEq, Repr
+
+/-- The native admission test for one expression expansion. -/
+def reserve (depthLimit depth arity : Nat) (before : Budget) : Option Budget :=
+  if depth < depthLimit ∧ 0 < before.expressions ∧ arity ≤ before.childTokens then
+    some ⟨before.expressions - 1, before.childTokens - arity⟩
+  else none
+
+theorem reserve_conservation {limit depth arity : Nat} {before after : Budget}
+    (accepted : reserve limit depth arity before = some after) :
+    before.expressions = after.expressions + 1 ∧
+      before.childTokens = after.childTokens + arity := by
+  unfold reserve at accepted
+  split at accepted
+  · rename_i permitted
+    cases accepted
+    dsimp
+    omega
+  · simp at accepted
+
+/-- Execute the reservations made by a traversal. Rejected expansions leave
+both budgets unchanged and contribute no children to the serialized path. -/
+def run (limit : Nat) : List (Nat × Nat) → Budget → Budget × List Nat
+  | [], before => (before, [])
+  | (depth, arity) :: rest, before =>
+      match reserve limit depth arity before with
+      | none => run limit rest before
+      | some middle =>
+          let (after, children) := run limit rest middle
+          (after, arity :: children)
+
+theorem run_conservation (limit : Nat) (requests : List (Nat × Nat)) (before : Budget) :
+    before.expressions = (run limit requests before).1.expressions +
+        (run limit requests before).2.length ∧
+      before.childTokens = (run limit requests before).1.childTokens +
+        (run limit requests before).2.sum := by
+  induction requests generalizing before with
+  | nil => simp [run]
+  | cons request rest ih =>
+      rcases request with ⟨depth, arity⟩
+      cases accepted : reserve limit depth arity before with
+      | none => simpa only [run, accepted] using ih before
+      | some middle =>
+          have first := reserve_conservation accepted
+          have next := ih middle
+          simp only [run, accepted, List.length_cons, List.sum_cons]
+          omega
+
+/-- Distinct DAG nodes may occur repeatedly in the index, but the complete
+serialized observation remains within the one root's token budget. -/
+theorem serialized_tokens_bounded (limit : Nat) (requests : List (Nat × Nat))
+    (before : Budget) :
+    1 + (run limit requests before).2.sum ≤ 1 + before.childTokens := by
+  have account := (run_conservation limit requests before).2
+  omega
+
+/-- The same account bounds the number of expanded expressions. -/
+theorem expression_expansions_bounded (limit : Nat) (requests : List (Nat × Nat))
+    (before : Budget) : (run limit requests before).2.length ≤ before.expressions := by
+  have account := (run_conservation limit requests before).1
+  omega
+
+example : reserve 8 0 512 ⟨128, 511⟩ = none := rfl
+example : reserve 8 8 2 ⟨128, 511⟩ = none := rfl
+example : run 8 [(0, 3), (1, 5), (1, 2)] ⟨128, 7⟩ = (⟨126, 2⟩, [3, 2]) := rfl
+
+end ExpansionBudget
+
+/-! ### Exact-key compiled-artifact repositories
+
+Candidate selection is normally invoked many times while an evaluation tree
+remains pinned to one source revision and one semantic authority.  Compilation
+may be shared across those invocations only when every input on which the
+compiled decision depends is identical.  The key below deliberately includes
+the ordered equation occurrences: changing order or multiplicity changes the
+key even when the underlying set of equations is unchanged.
+
+The small theorem in this section states the precise optimality available at
+this abstraction layer.  Among repositories that retain one artifact for each
+exact semantic key they cover, compiling the finite set of requested keys is
+cardinality-minimal.  This is a compilation-count theorem, not a claim about
+minimum bytes, latency, or machine instructions.
+-/
+
+section ArtifactRepository
+
+/-- Every authority on which a compiled match decision depends.  Equation
+occurrences are a list rather than a set so authored order and duplicates
+remain observable parts of the key. -/
+structure ArtifactKey
+    (Revision Semantics Mode Head Equation : Type*) where
+  revision : Revision
+  semantics : Semantics
+  mode : Mode
+  head : Head
+  arity : Nat
+  orderedEquations : List Equation
+deriving DecidableEq
+
+variable {Key : Type*} [DecidableEq Key]
+
+/-- The distinct exact keys demanded by a finite execution trace. -/
+def requiredArtifacts (requests : List Key) : Finset Key :=
+  requests.toFinset
+
+/-- A repository covers a trace when it contains an artifact for every exact
+key requested by that trace. -/
+def RepositoryCovers (requests : List Key) (repository : Finset Key) : Prop :=
+  requiredArtifacts requests ⊆ repository
+
+/-- Compiling once per distinct exact key. -/
+def compileOnceCost (requests : List Key) : Nat :=
+  (requiredArtifacts requests).card
+
+/-- The canonical exact-key repository covers every request. -/
+theorem requiredArtifacts_covers (requests : List Key) :
+    RepositoryCovers requests (requiredArtifacts requests) :=
+  Finset.Subset.rfl
+
+/-- Any exact-key repository covering the trace has at least as many entries
+as there are distinct requested keys. -/
+theorem repository_compile_lower_bound
+    (requests : List Key) (repository : Finset Key)
+    (h : RepositoryCovers requests repository) :
+    compileOnceCost requests ≤ repository.card := by
+  exact Finset.card_le_card h
+
+/-- Hence the compile-once repository attains the exact-key cardinality lower
+bound. -/
+theorem requiredArtifacts_cardinality_minimal
+    (requests : List Key) (repository : Finset Key)
+    (h : RepositoryCovers requests repository) :
+    (requiredArtifacts requests).card ≤ repository.card :=
+  repository_compile_lower_bound requests repository h
+
+private abbrev ExampleArtifactKey :=
+  ArtifactKey Nat Bool Nat Nat Nat
+
+private def artifactA : ExampleArtifactKey :=
+  { revision := 7
+    semantics := true
+    mode := 2
+    head := 11
+    arity := 2
+    orderedEquations := [20, 21, 20] }
+
+private def artifactDifferentRevision : ExampleArtifactKey :=
+  { artifactA with revision := 8 }
+
+private def artifactDifferentOrder : ExampleArtifactKey :=
+  { artifactA with orderedEquations := [20, 20, 21] }
+
+/-- Positive: repeated requests for one exact key require one compilation. -/
+example : compileOnceCost [artifactA, artifactA, artifactA] = 1 := by decide
+
+/-- Negative: a revision change is a genuinely different artifact key. -/
+example : compileOnceCost [artifactA, artifactDifferentRevision] = 2 := by
+  decide
+
+/-- Negative: authored equation order is not quotiented away. -/
+example : compileOnceCost [artifactA, artifactDifferentOrder] = 2 := by decide
+
+end ArtifactRepository
+
+
+/-! ## Observation bounds for stable pivot selection -/
+
+namespace Shaped
+
+/-- Occurrences unconstrained at one path survive every observation of it. -/
+def wildcardOccurrences {V : Type*} (p : Path) (source : List (Candidate V)) :=
+  source.filter fun c => match c.pat p with
+    | .unknown => true
+    | _ => false
+
+theorem wildcardOccurrences_sublist_candidates {V : Type*} [DecidableEq V]
+    (p : Path) (o : Skeleton V) (source : List (Candidate V)) :
+    (wildcardOccurrences p source).Sublist (candidates [p] o source) := by
+  apply List.monotone_filter_right
+  intro c hc
+  cases hp : c.pat p <;>
+    simp_all [conflictsOn, posConflict, Obs.conflictB_unknown_right]
+
+/-- A lower bound on candidate count, counting duplicate occurrences. -/
+theorem wildcardOccurrences_length_le {V : Type*} [DecidableEq V]
+    (p : Path) (o : Skeleton V) (source : List (Candidate V)) :
+    (wildcardOccurrences p source).length ≤ (candidates [p] o source).length :=
+  (wildcardOccurrences_sublist_candidates p o source).length_le
+
+end Shaped
+
+/-- One step of a stable minimum-cost pivot selection. Unknown costs do not
+replace an incumbent; equal costs preserve its occurrence identity. -/
+def improvePivot {ι : Type*} (best : Option (ι × Nat)) (path : ι)
+    (cost : Option Nat) : Option (ι × Nat) :=
+  match cost, best with
+  | none, _ => best
+  | some n, none => some (path, n)
+  | some n, some (_, old) => if n < old then some (path, n) else best
+
+/-- Skip an observation whose lower bound cannot improve the incumbent. -/
+def improvePivotBounded {ι : Type*} (best : Option (ι × Nat)) (path : ι)
+    (lower : Nat) (observe : Unit → Option Nat) : Option (ι × Nat) :=
+  match best with
+  | some (_, old) => if old ≤ lower then best else improvePivot best path (observe ())
+  | none => improvePivot best path (observe ())
+
+theorem improvePivotBounded_eq {ι : Type*} (best : Option (ι × Nat)) (path : ι)
+    (lower : Nat) (observe : Unit → Option Nat)
+    (bound : ∀ n, observe () = some n → lower ≤ n) :
+    improvePivotBounded best path lower observe = improvePivot best path (observe ()) := by
+  cases best with
+  | none => rfl
+  | some best =>
+    rcases best with ⟨id, old⟩
+    by_cases h : old ≤ lower
+    · cases hc : observe () with
+      | none => simp [improvePivotBounded, improvePivot, h]
+      | some n =>
+        have hn : ¬ n < old := Nat.not_lt.mpr (h.trans (bound n hc))
+        simp [improvePivotBounded, improvePivot, h, hn]
+    · simp [improvePivotBounded, h]
+
+-- Equal cost preserves the first occurrence; a genuinely better path wins.
+example : improvePivotBounded (some (10, 2)) 20 2 (fun _ => some 2) = some (10, 2) := rfl
+example : improvePivotBounded (some (10, 3)) 20 2 (fun _ => some 2) = some (20, 2) := rfl
 
 end Mettapedia.GSLT.LanguageDef.MatchDecisionContract

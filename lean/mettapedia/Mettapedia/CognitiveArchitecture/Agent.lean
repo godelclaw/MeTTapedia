@@ -8,12 +8,16 @@ import Mettapedia.CognitiveArchitecture.Agent.EffectReceiptProjection
 import Mettapedia.CognitiveArchitecture.Agent.EffectBrokerNoninterference
 import Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext
 import Mettapedia.CognitiveArchitecture.Agent.WorldOfViewsBridge
+import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildView
+import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildReplay
+import Mettapedia.CognitiveArchitecture.Agent.RevisionLineage
+import Mettapedia.CognitiveArchitecture.Agent.ProtectedSelfRevision
+import Mettapedia.CognitiveArchitecture.Agent.PatienthoodWellbeing
+import Mettapedia.CognitiveArchitecture.Agent.WellbeingObserverTransformationBoundary
 import Mettapedia.CognitiveArchitecture.Agent.ContextCertificate
 import Mettapedia.CognitiveArchitecture.Agent.TaskPhase
 import Mettapedia.CognitiveArchitecture.Agent.PermissiveActionGraph
 import Mettapedia.CognitiveArchitecture.Agent.AddressedEffects
-import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildView
-import Mettapedia.CognitiveArchitecture.Agent.ReproducibleBuildReplay
 import Mettapedia.CognitiveArchitecture.Agent.RelationalAtlas
 import Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation
 
@@ -25,7 +29,5 @@ effect receipts, and authority-preserving execution boundaries.  These
 interfaces are architecture-neutral; particular agents are downstream
 instances.  Reproducible event histories use the same weakest-sufficient-view
 boundary without treating a bounded context as the authoritative ledger;
-declared build views connect to that order through a separate bridge.  The
-relational Atlas instance retains revision identity, explicit audit state,
-projection loss, and visible as well as hidden conflict witnesses.
+declared build views connect to that order through a separate bridge.
 -/

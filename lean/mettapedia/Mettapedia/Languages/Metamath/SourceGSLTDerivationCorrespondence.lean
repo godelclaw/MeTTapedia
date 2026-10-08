@@ -1,6 +1,6 @@
 import Mettapedia.Languages.Metamath.SourceGSLTRawSourceComposition
 import Mettapedia.Languages.Metamath.SourceGSLTStatementAuthority
-import Mettapedia.Languages.Metamath.SourceGSLTParserExport
+import Mettapedia.Languages.Metamath.SourceGSLTParserDefinition
 import Mathlib.Tactic.IntervalCases
 
 /-!
@@ -10,7 +10,7 @@ Item 2's derivation legs.  The authored `sourceGrammar` carries no
 token-sort productions — lexical leaves enter only through the generic
 `lexicalizedLanguage` extension (one leaf rule per classified source
 token), exactly as the checked parser path
-(`admitLexicalDAGPresentation`) consumes them.  The correspondence is
+(`admitLexicalDAGDefinition`) consumes them.  The correspondence is
 therefore stated over any language satisfying the two honest
 interfaces:
 
@@ -3517,7 +3517,7 @@ theorem derives_lexicalized_of_source {source : ClassifiedSource} :
           exact walk _ _ _ hkids hitems
 
 
-open Mettapedia.Languages.Metamath.SourceGSLTParserExport
+open Mettapedia.Languages.Metamath.SourceGSLTParserDefinition
   Mettapedia.GSLT.Parsing.LanguageDefSyntaxCorrespondence
   Mettapedia.GSLT.Parsing.LanguageDefSyntaxCompiler in
 /-- The compiled structural-rule boundary embeds into the lexicalized

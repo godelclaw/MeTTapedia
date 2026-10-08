@@ -1,4 +1,4 @@
-import Mathlib.Combinatorics.SimpleGraph.Coloring
+import Mathlib.Combinatorics.SimpleGraph.Coloring.Vertex
 
 open Classical
 
@@ -30,7 +30,8 @@ def bicoloredSet (C : G.Coloring α) (a b : α) : Set V :=
   Iff.rfl
 
 /-- The induced subgraph on the vertices colored `a` or `b`. -/
-abbrev bicoloredSubgraph (C : G.Coloring α) (a b : α) : SimpleGraph ↥(C.bicoloredSet a b) :=
+abbrev bicoloredSubgraph (C : G.Coloring α) (a b : α) :
+    SimpleGraph ↥(C.bicoloredSet a b) :=
   G.induce (C.bicoloredSet a b)
 
 /-- The vertex set of a connected component of the `a`/`b`-subgraph. -/
@@ -47,7 +48,8 @@ lemma mem_bicoloredSet_of_mem_kempeComponentSet (C : G.Coloring α) {a b : α}
 
 lemma mem_kempeComponentSet_self (C : G.Coloring α) {a b : α} {v : V}
     (hv : v ∈ C.bicoloredSet a b) :
-    v ∈ C.kempeComponentSet a b ((C.bicoloredSubgraph a b).connectedComponentMk ⟨v, hv⟩) := by
+    v ∈ C.kempeComponentSet a b
+      ((C.bicoloredSubgraph a b).connectedComponentMk ⟨v, hv⟩) := by
   exact ⟨hv, rfl⟩
 
 lemma mem_kempeComponentSet_of_adj (C : G.Coloring α) {a b : α}
@@ -64,7 +66,8 @@ lemma mem_kempeComponentSet_of_adj (C : G.Coloring α) {a b : α}
     exact ConnectedComponent.connectedComponentMk_eq_of_adj hadj'
   rw [← hcomp, hK]
 
-lemma color_ne_of_adj_of_mem_kempeComponentSet_of_not_mem (C : G.Coloring α) {a b : α}
+lemma color_ne_of_adj_of_mem_kempeComponentSet_of_not_mem
+    (C : G.Coloring α) {a b : α}
     {K : (C.bicoloredSubgraph a b).ConnectedComponent} {u v : V}
     (hu : u ∈ C.kempeComponentSet a b K) (hadj : G.Adj u v)
     (hv : v ∉ C.kempeComponentSet a b K) :
@@ -72,12 +75,14 @@ lemma color_ne_of_adj_of_mem_kempeComponentSet_of_not_mem (C : G.Coloring α) {a
   constructor
   · intro hva
     apply hv
-    exact C.mem_kempeComponentSet_of_adj hu hadj (by simpa [bicoloredSet] using Or.inl hva)
+    exact C.mem_kempeComponentSet_of_adj hu hadj
+      (by simpa [bicoloredSet] using Or.inl hva)
   · intro hvb
     apply hv
-    exact C.mem_kempeComponentSet_of_adj hu hadj (by simpa [bicoloredSet] using Or.inr hvb)
+    exact C.mem_kempeComponentSet_of_adj hu hadj
+      (by simpa [bicoloredSet] using Or.inr hvb)
 
-/-- Swap two colors on a single connected component of the `a`/`b`-subgraph. -/
+/-- Swap two colors on one connected component of their bicolored subgraph. -/
 noncomputable def swapOnKempeComponent [DecidableEq α] (C : G.Coloring α) (a b : α)
     (K : (C.bicoloredSubgraph a b).ConnectedComponent) :
     G.Coloring α :=
@@ -106,7 +111,8 @@ noncomputable def swapOnKempeComponent [DecidableEq α] (C : G.Coloring α) (a b
           · simpa [hu, hv, hcv] using hcu.1
         · simpa [hu, hv] using C.valid hadj)
 
-@[simp] lemma swapOnKempeComponent_apply_of_mem [DecidableEq α] (C : G.Coloring α) {a b : α}
+@[simp] lemma swapOnKempeComponent_apply_of_mem [DecidableEq α]
+    (C : G.Coloring α) {a b : α}
     {K : (C.bicoloredSubgraph a b).ConnectedComponent} {v : V}
     (hv : v ∈ C.kempeComponentSet a b K) :
     C.swapOnKempeComponent a b K v = Equiv.swap a b (C v) := by
@@ -114,8 +120,9 @@ noncomputable def swapOnKempeComponent [DecidableEq α] (C : G.Coloring α) (a b
     Equiv.swap a b (C v)
   simp [hv]
 
-@[simp] lemma swapOnKempeComponent_apply_of_not_mem [DecidableEq α] (C : G.Coloring α)
-    {a b : α} {K : (C.bicoloredSubgraph a b).ConnectedComponent} {v : V}
+@[simp] lemma swapOnKempeComponent_apply_of_not_mem [DecidableEq α]
+    (C : G.Coloring α) {a b : α}
+    {K : (C.bicoloredSubgraph a b).ConnectedComponent} {v : V}
     (hv : v ∉ C.kempeComponentSet a b K) :
     C.swapOnKempeComponent a b K v = C v := by
   change (if v ∈ C.kempeComponentSet a b K then Equiv.swap a b (C v) else C v) = C v

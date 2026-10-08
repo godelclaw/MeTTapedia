@@ -25,7 +25,6 @@ The positive and negative examples distinguish:
 * a separating loop from a forming loop.
 
 Reference: "On the Ontology of Joy and Pain, Happiness and Suffering",
-https://gardenofminds.art/bubbles/on-the-ontology-of-joy-and-pain-happiness-and-suffering/,
 Garden of Minds.
 -/
 

@@ -26,9 +26,9 @@ theorem ofPlan_plan {source : CIGSLT} {color : CostStaticColor}
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree
       targetBound (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (rootStatic : plan.isStaticRoot = true) :
     (CostStaticRegionNode.ofPlan term plan rootStatic).plan = plan :=
@@ -75,19 +75,19 @@ theorem mappedTerm_pattern {source target : CIGSLT}
 /-- The sole structural plan transported to the target node indices. -/
 def mappedPlan {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) :
     CostStaticRegionPlan target color
       (targetFree.map morphism.costWholeStructural.symbols)
-      (CostStaticBinderThinning.sourceContextOfTarget target color
+      (CostStaticTypeThinning.sourceContextOfTarget target.theory color
         (node.targetBound.map
           (mapTypeExpr morphism.costWholeStructural.symbols)))
       (node.targetBound.map
         (mapTypeExpr morphism.costWholeStructural.symbols))
-      (CostStaticBinderThinning.ofTargetThinning target color
+      (CostStaticTypeThinning.ofTargetThinning target.theory color
         (node.targetBound.map
           (mapTypeExpr morphism.costWholeStructural.symbols)))
       (node.targetBound.map
@@ -97,14 +97,14 @@ def mappedPlan {source target : CIGSLT}
   let rawPlan := mapCostStaticRegionPlan morphism scope laws node.plan
     node.term.2.2.2.1
   have sourceBoundEquality :
-      (CostStaticBinderThinning.sourceContextOfTarget source color
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color
           node.targetBound).map
           (mapTypeExpr
             morphism.underlying.structural.structural.symbols) =
-        CostStaticBinderThinning.sourceContextOfTarget target color
+        CostStaticTypeThinning.sourceContextOfTarget target.theory color
           (node.targetBound.map
             (mapTypeExpr morphism.costWholeStructural.symbols)) :=
-    (CostStaticBinderThinning.sourceContextOfTarget_natural morphism color
+    (CostStaticTypeThinning.sourceContextOfTarget_natural morphism color
       node.targetBound).symm
   have outerEquality :
       CIGSLT.mapOneHoleContext morphism.costWholeStructural.symbols
@@ -120,7 +120,7 @@ def mappedPlan {source target : CIGSLT}
         .base (node.mappedSourceSort morphism).1 := by
     rfl
   exact CostStaticRegionPlan.reindex
-    (thinning₂ := CostStaticBinderThinning.ofTargetThinning target color
+    (thinning₂ := CostStaticTypeThinning.ofTargetThinning target.theory color
       (node.targetBound.map
         (mapTypeExpr morphism.costWholeStructural.symbols)))
     sourceBoundEquality rfl rfl outerEquality patternEquality
@@ -129,14 +129,16 @@ def mappedPlan {source target : CIGSLT}
 /-- Transporting a node plan preserves its maximal-static-root witness. -/
 theorem mappedPlan_isStaticRoot {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) :
     (node.mappedPlan morphism scope laws).isStaticRoot = true := by
   unfold mappedPlan
-  rw [CostStaticRegionPlan.reindex_isStaticRoot]
+  refine (CostStaticRegionPlan.reindex_isStaticRoot _ _ _ _ _ _
+    (mapCostStaticRegionPlan morphism scope laws node.plan
+      node.term.2.2.2.1)).trans ?_
   exact (mapCostStaticRegionPlan_isStaticRoot morphism scope laws node.plan
     node.term.2.2.2.1).trans node.rootStatic
 
@@ -144,7 +146,7 @@ theorem mappedPlan_isStaticRoot {source target : CIGSLT}
 rebuilding all redundant node evidence through `ofPlan`. -/
 def map {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -158,7 +160,7 @@ def map {source target : CIGSLT}
 /-- Mapping the retained plan maps the complete ordered boundary packet. -/
 theorem mappedPlan_boundaryPacket {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -167,7 +169,9 @@ theorem mappedPlan_boundaryPacket {source target : CIGSLT}
       TypedCostRegionBoundaryPacket.map morphism scope color
         node.plan.boundaryPacket := by
   unfold mappedPlan
-  rw [CostStaticRegionPlan.reindex_boundaryPacket]
+  refine (CostStaticRegionPlan.reindex_boundaryPacket _ _ _ _ _ _
+    (mapCostStaticRegionPlan morphism scope laws node.plan
+      node.term.2.2.2.1)).trans ?_
   exact mapCostStaticRegionPlan_boundaryPacket morphism scope laws node.plan
     node.term.2.2.2.1
 
@@ -175,7 +179,7 @@ theorem mappedPlan_boundaryPacket {source target : CIGSLT}
 by its source plan. -/
 theorem map_boundaryPacket {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -183,13 +187,16 @@ theorem map_boundaryPacket {source target : CIGSLT}
     (node.map morphism scope laws).plan.boundaryPacket =
       TypedCostRegionBoundaryPacket.map morphism scope color
         node.plan.boundaryPacket := by
-  rw [map, CostStaticRegionNode.ofPlan_plan]
-  exact node.mappedPlan_boundaryPacket morphism scope laws
+  exact congrArg CostStaticRegionPlan.boundaryPacket
+    (CostStaticRegionNode.ofPlan_plan (node.mappedTerm morphism)
+      (node.mappedPlan morphism scope laws)
+      (node.mappedPlan_isStaticRoot morphism scope laws)) |>.trans
+        (node.mappedPlan_boundaryPacket morphism scope laws)
 
 @[simp]
 theorem map_targetBound {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -202,7 +209,7 @@ theorem map_targetBound {source target : CIGSLT}
 @[simp]
 theorem map_sourceSort {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -214,14 +221,13 @@ theorem map_sourceSort {source target : CIGSLT}
 @[simp]
 theorem map_term_pattern {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) :
     (node.map morphism scope laws).term.1 =
       mapPattern morphism.costWholeStructural.symbols node.term.1 := by
-  rw [map]
   exact node.mappedTerm_pattern morphism
 
 end CostStaticRegionNode
@@ -257,13 +263,27 @@ def CostRegionBoundaryTrees.reindexPacket {source : CIGSLT}
   subst targetPacket
   exact trees
 
+/-- Grammar-rule mapping preserves its declared result type. -/
+theorem mapGrammarRule_resultType (symbols : LanguageDefSymbolMap)
+    (rule : GrammarRule) :
+    (.base (mapGrammarRule symbols rule).category : TypeExpr) =
+      mapTypeExpr symbols (.base rule.category) := by
+  rfl
+
+/-- Mapping a collection type preserves its collection constructor. -/
+theorem mapTypeExpr_collection_result (symbols : LanguageDefSymbolMap)
+    (collectionType : CollType) (elementType : TypeExpr) :
+    (.collection collectionType (mapTypeExpr symbols elementType) : TypeExpr) =
+      mapTypeExpr symbols (.collection collectionType elementType) := by
+  rfl
+
 mutual
   /-- Map one complete proof-relevant region tree.  Static nodes retain their
   mapped plan and mapped occurrence forest; neutral frames are transported
   structurally. -/
   def mapCostRegionTree {source target : CIGSLT}
       (morphism : source.Morphism target)
-      (scope : CostGeneratedReflectiveScopePreserving morphism)
+      (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
       (laws : CostElaborationReindexLaws morphism)
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {pattern : Pattern}
@@ -352,15 +372,15 @@ mutual
                 (mapPattern morphism.costWholeStructural.symbols))) =
               mapPattern morphism.costWholeStructural.symbols
                 (.apply rule.label arguments) := by
-          simp [mapPattern, mapPatternList_eq_map, mapGrammarRule]
+          simp only [mapPattern, mapPatternList_eq_map, mapGrammarRule]
         have typeEquality :
             (.base
               (mapGrammarRule
                 morphism.costWholeStructural.symbols rule).category :
                 TypeExpr) =
               mapTypeExpr morphism.costWholeStructural.symbols
-                (.base rule.category) := by
-          rfl
+                (.base rule.category) :=
+          mapGrammarRule_resultType morphism.costWholeStructural.symbols rule
         exact CostRegionTree.reindex rfl rfl patternEquality typeEquality
           mappedTree
     | @CostRegionTree.neutralApplicationQuote _ _ available outer rule
@@ -420,15 +440,15 @@ mutual
                 (mapPattern morphism.costWholeStructural.symbols))) =
               mapPattern morphism.costWholeStructural.symbols
                 (.apply rule.label arguments) := by
-          simp [mapPattern, mapPatternList_eq_map, mapGrammarRule]
+          simp only [mapPattern, mapPatternList_eq_map, mapGrammarRule]
         have typeEquality :
             (.base
               (mapGrammarRule
                 morphism.costWholeStructural.symbols rule).category :
                 TypeExpr) =
               mapTypeExpr morphism.costWholeStructural.symbols
-                (.base rule.category) := by
-          rfl
+                (.base rule.category) :=
+          mapGrammarRule_resultType morphism.costWholeStructural.symbols rule
         exact CostRegionTree.reindex rfl rfl patternEquality typeEquality
           mappedTree
     | @CostRegionTree.lambda _ _ available outer binder body domain codomain
@@ -463,21 +483,22 @@ mutual
                 (mapPattern morphism.costWholeStructural.symbols)) rest) =
               mapPattern morphism.costWholeStructural.symbols
                 (.collection collectionType elements rest) := by
-          simp [mapPattern, mapPatternList_eq_map]
+          simp only [mapPattern, mapPatternList_eq_map]
         have typeEquality :
             (.collection collectionType
               (mapTypeExpr morphism.costWholeStructural.symbols elementType) :
                 TypeExpr) =
               mapTypeExpr morphism.costWholeStructural.symbols
-                (.collection collectionType elementType) := by
-          rfl
+                (.collection collectionType elementType) :=
+          mapTypeExpr_collection_result morphism.costWholeStructural.symbols
+            collectionType elementType
         exact CostRegionTree.reindex rfl rfl patternEquality typeEquality
           mappedTree
 
   /-- Map an ordered constructor-argument forest. -/
   def mapCostRegionArgumentTrees {source target : CIGSLT}
       (morphism : source.Morphism target)
-      (scope : CostGeneratedReflectiveScopePreserving morphism)
+      (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
       (laws : CostElaborationReindexLaws morphism)
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {arguments : List Pattern}
@@ -508,7 +529,7 @@ mutual
   /-- Map a homogeneous collection-element forest. -/
   def mapCostRegionElementTrees {source target : CIGSLT}
       (morphism : source.Morphism target)
-      (scope : CostGeneratedReflectiveScopePreserving morphism)
+      (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
       (laws : CostElaborationReindexLaws morphism)
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {elements : List Pattern}
@@ -530,7 +551,7 @@ mutual
   /-- Map a recursive forest aligned with an exact finite boundary table. -/
   def mapCostRegionBoundaryTrees {source target : CIGSLT}
       (morphism : source.Morphism target)
-      (scope : CostGeneratedReflectiveScopePreserving morphism)
+      (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
       (laws : CostElaborationReindexLaws morphism)
       {targetFree : WellSorted.FreeTypeContext} {color : CostStaticColor}
       {occurrences : List CostRegionOccurrence}
@@ -567,7 +588,7 @@ compiler.  The mapped tree retains the source decomposition choices and
 ordered boundary occurrences. -/
 def CostOpenElaboration.map {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {targetFree : WellSorted.FreeTypeContext}
     {targetBound : List TypeExpr}
@@ -582,7 +603,7 @@ def CostOpenElaboration.map {source target : CIGSLT}
 /-- Transport one intrinsically typed proof-relevant Cost term. -/
 def CostElabTerm.map {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     {targetFree : WellSorted.FreeTypeContext}
     {targetBound : List TypeExpr}
@@ -597,7 +618,7 @@ def CostElabTerm.map {source target : CIGSLT}
 /-- Transport an arbitrary member of the sigma-bundled elaboration fibre. -/
 def mapCostElaborationFiber {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (laws : CostElaborationReindexLaws morphism)
     (fiber : CostElaborationFiber source) : CostElaborationFiber target :=
   ⟨fiber.1.map morphism, fiber.2.map morphism scope laws⟩

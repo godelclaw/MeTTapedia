@@ -26,6 +26,7 @@ inductive ClaimStatus where
   | proven          -- fully formalized as a theorem
   | assumptionScoped -- proven under explicit, necessity-audited assumptions
   | counterexample  -- paper claim is too strong; counterexample shows failure
+  | partiallyFormalized -- related endpoint exists, but full source action or laws do not
   deriving DecidableEq, Repr
 
 /-- A single paper claim with its formalization status. -/
@@ -43,11 +44,11 @@ def paperClaimList : List PaperClaim :=
   [ ⟨"oslf.pdf", "Def 1", "Rewrite system: sorts, terms, one-step reduction",
     "RewriteSystem", .proven⟩
   , ⟨"oslf.pdf", "§3", "Step-future operator ◇",
-    "langDiamond / possiblyProp", .proven⟩
+    "semanticDiamond / langDiamond", .proven⟩
   , ⟨"oslf.pdf", "§3", "Step-past operator □",
-    "langBox / relyProp", .proven⟩
+    "semanticBox / langBox", .proven⟩
   , ⟨"oslf.pdf", "§4", "Galois connection ◇ ⊣ □",
-    "langGalois / galois_connection", .proven⟩
+    "semanticGalois / langGalois", .proven⟩
   , ⟨"oslf.pdf", "§6", "OSLF type system output (frame + modalities)",
     "OSLFTypeSystem / langOSLF", .proven⟩
   , ⟨"oslf.pdf", "Thm 1", "Behavioral equiv → same native types (forward)",
@@ -70,7 +71,7 @@ def paperClaimList : List PaperClaim :=
     "dependent_parametric_generated_type_system_extension", .proven⟩
   -- Native Type Theory paper (Native_Type_Theory.pdf), OSLF-facing subset
   , ⟨"NTT.pdf", "§3", "Native type = (sort, predicate) pair",
-    "NativeTypeOf / NatType / NatTypeFiber", .proven⟩
+    "NativeTypeOf / NativeType / NativeTypeFiber", .proven⟩
   , ⟨"NTT.pdf", "§3-§5 (endpoint subset)", "Full presheaf Grothendieck category endpoint",
     "fullPresheafGrothendieckCategory", .proven⟩
   , ⟨"NTT.pdf", "§3-§5 (endpoint subset)", "Scoped ↔ full presheaf comparison endpoint",
@@ -79,12 +80,12 @@ def paperClaimList : List PaperClaim :=
     "topos_full_internal_logic_bridge_package", .proven⟩
   , ⟨"NTT.pdf", "§4 (fiber-logic subset)", "Frame-derived →/¬ in fibers",
     "topos_full_internal_logic_bridge_package (Heyting clause)", .proven⟩
-  , ⟨"NTT.pdf", "§4 (endpoint subset)", "Representable Π/Σ transport package (rule-pack-first; Prop-12 compatibility wrappers)",
+  , ⟨"NTT.pdf", "§4 (endpoint subset)", "Representable Π/Σ transport package; closure/fixpoint wrappers require their own strength and transport hypotheses, not general evidence-to-strength",
     "topos_representable_patternPred_piSigma_transport_pack_via_rulePack / topos_representable_patternPred_piSigma_transport_via_rulePack / topos_representable_patternPred_piSigma_transport_pack_via_prop12 / topos_representable_patternPred_piSigma_transport_via_prop12_pack / canonical_rulePack_transport_pack_and_fixpoint_endpoint_of_goal / canonical_prop12_transport_pack_and_fixpoint_endpoint_of_goal / canonical_rulePack_transport_pack_and_fixpoint_endpoint_of_transportGoal / canonical_prop12_transport_pack_and_fixpoint_endpoint_of_transportGoal / canonical_rulePack_transport_piSigma_and_fixpoint_of_transportGoal / canonical_prop12_transport_piSigma_and_fixpoint_of_transportGoal", .proven⟩
-  , ⟨"NTT.pdf", "§5", "Theory morphism preservation (Π/Σ/Ω/Prop endpoint)",
-    "TheoryMorphism.piSigmaOmegaProp_translation_endpoint", .proven⟩
-  , ⟨"NTT.pdf", "§5", "Colax Π/Σ/Prop rules",
-    "TheoryMorphism.piSigmaProp_colax_rules", .proven⟩
+  , ⟨"NTT.pdf", "§5", "Theory translation by presheaf precomposition; Π/Ω preservation needs additional hypotheses",
+    "TheoryMorphism.piSigmaOmegaProp_translation_endpoint assumes stronger fiber-algebra laws and has no source base-functor/precomposition/substitution action", .partiallyFormalized⟩
+  , ⟨"NTT.pdf", "§5", "Colax Π/Σ/Prop rules for the source theory-translation action",
+    "TheoryMorphism.piSigmaProp_colax_rules derives rules from exact fiber-operation preservation; source precomposition/substitution compatibility remains unproved", .partiallyFormalized⟩
   -- TOGL paper (togl.pdf)
   , ⟨"togl.pdf", "§2", "Graph reduction structure",
     "reductionGraphObjUsing", .proven⟩
@@ -102,23 +103,25 @@ def paperClaimList : List PaperClaim :=
 def claimCountByStatus (s : ClaimStatus) : Nat :=
   (paperClaimList.filter (fun c => c.status == s)).length
 
-/-- All claims are resolved (proven or assumption-scoped). -/
-theorem paperClaimList_all_resolved :
-    paperClaimList.all (fun c => c.status == .proven
-      || c.status == .assumptionScoped
-      || c.status == .counterexample) = true := by
+/-- The unresolved source actions in this endpoint-subset inventory. -/
+theorem paperClaimList_remaining_locations :
+    (paperClaimList.filter (fun c => c.status == .partiallyFormalized)).map
+      (fun c => (c.paper, c.loc)) = [("NTT.pdf", "§5"), ("NTT.pdf", "§5")] := by
   decide
 
 /-- Count of fully proven claims. -/
-theorem provenCount_eq : claimCountByStatus .proven = 26 := by decide
+theorem provenCount_eq : claimCountByStatus .proven = 24 := by decide
+
+/-- Count of endpoint rows whose full source action remains unproved. -/
+theorem partialCount_eq : claimCountByStatus .partiallyFormalized = 2 := by decide
 
 /-- Count of assumption-scoped claims. -/
 theorem assumptionScopedCount_eq : claimCountByStatus .assumptionScoped = 1 := by decide
 
-/-- Full NTT parity is closed: all strict NTT claims are resolved. -/
-theorem fullNTTParity_closed :
-    Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemainingCount = 0 :=
-  Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemainingCount_zero
+/-- The OSLF-facing subset does not close the strict NTT source obligations. -/
+theorem strictNTTParity_open :
+    Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemainingCount ≠ 0 :=
+  Mettapedia.OSLF.Framework.NTTClaimTracker.fullNTTParity_open
 
 /-! ## Code-Reference Anchors -/
 
@@ -129,9 +132,8 @@ theorem fullNTTParity_closed :
 #check @Mettapedia.OSLF.Framework.TypeSynthesis.langBox
 #check @Mettapedia.OSLF.Framework.TypeSynthesis.langGalois
 #check @Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF
-#check @Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.possiblyProp
-#check @Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.relyProp
-#check @Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction.galois_connection
+#check @Mettapedia.OSLF.Framework.RhoInstance.rhoOSLF
+#check @Mettapedia.OSLF.Framework.RhoInstance.rho_mathlib_galois
 #check @Mettapedia.OSLF.Framework.Theorem1SubstitutabilityEquiv
 #check @Mettapedia.OSLF.Framework.theorem1_substitutability_forward
 #check @Mettapedia.OSLF.Framework.theorem1_substitutability_imageFinite
@@ -141,19 +143,19 @@ theorem fullNTTParity_closed :
 #check @Mettapedia.OSLF.Framework.GeneratedTyping.dependent_parametric_generated_type_system_extension
 
 -- Native Type Theory
-#check @Mettapedia.OSLF.NativeType.NatTypeFiber
-#check @Mettapedia.OSLF.NativeType.fullPresheafGrothendieckCategory
-#check @Mettapedia.OSLF.NativeType.scoped_full_scoped_obj_roundtrip
-#check @Mettapedia.OSLF.NativeType.full_route_restriction_equivalence_package
+#check @Mettapedia.OSLF.PresheafNativeType.NativeTypeFiber
+#check @Mettapedia.OSLF.PresheafNativeType.fullPresheafGrothendieckCategory
+#check @Mettapedia.OSLF.PresheafNativeType.scoped_full_scoped_obj_roundtrip
+#check @Mettapedia.OSLF.PresheafNativeType.full_route_restriction_equivalence_package
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.topos_full_internal_logic_bridge_package
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.topos_representable_patternPred_piSigma_transport_via_rulePack
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.topos_representable_patternPred_piSigma_transport_pack_via_rulePack
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.topos_representable_patternPred_piSigma_transport_pack_via_prop12
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.topos_representable_patternPred_piSigma_transport_via_prop12_pack
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piOmega_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piSigmaOmegaProp_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piProp_colax_rules
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piSigmaProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piOmega_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piSigmaOmegaProp_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piSigmaProp_colax_rules
 
 -- TOGL
 #check @Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
@@ -167,7 +169,7 @@ theorem fullNTTParity_closed :
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.hClosed_necessary_for_fragment
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.not_global_hImageFinite_rhoCoreStarRel
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.not_global_hPredFinite_rhoStep
-#check @fullNTTParity_closed
+#check @strictNTTParity_open
 
 -- Unified endpoint
 #check @Mettapedia.OSLF.coreMain_paper_parity_full_package

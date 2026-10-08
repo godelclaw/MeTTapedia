@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.LanguageDef.Cost.StaticTypeImageRejection
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryParallelFrontier
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryTreeAvailabilityTransposition
 
@@ -201,32 +202,13 @@ theorem rho_typedBoundary_nameApplication_content_isWellScopedAt_zero
 
 @[simp]
 theorem decodeCostBaseSortName_wrapped_eq_none :
-    decodeCostBaseSortName costWrappedSortName = none := by
-  cases decoded : decodeCostBaseSortName costWrappedSortName with
-  | none => rfl
-  | some sourceName =>
-      have encoded : costWrappedSortName = costBaseSortTag ++ sourceName :=
-        (decodeTaggedPayload_eq_some_iff costBaseSortTag costWrappedSortName
-          sourceName).mp (by
-            simpa only [decodeCostBaseSortName] using decoded)
-      exact False.elim
-        (costBaseSortName_ne_wrapped sourceName (by
-          simpa only [costBaseSortName] using encoded.symm))
+    decodeCostBaseSortName costWrappedSortName = none :=
+  CostStaticTypeImage.decodeBaseSort_wrapped
 
 @[simp]
 theorem decodeCostBaseSortName_apparatus_eq_none (kind : String) :
-    decodeCostBaseSortName (costApparatusSortName kind) = none := by
-  cases decoded : decodeCostBaseSortName (costApparatusSortName kind) with
-  | none => rfl
-  | some sourceName =>
-      have encoded : costApparatusSortName kind =
-          costBaseSortTag ++ sourceName :=
-        (decodeTaggedPayload_eq_some_iff costBaseSortTag
-          (costApparatusSortName kind) sourceName).mp (by
-            simpa only [decodeCostBaseSortName] using decoded)
-      exact False.elim
-        (costBaseSortName_ne_apparatus sourceName kind (by
-          simpa only [costBaseSortName] using encoded.symm))
+    decodeCostBaseSortName (costApparatusSortName kind) = none :=
+  CostStaticTypeImage.decodeBaseSort_apparatus kind
 
 @[simp]
 theorem costApparatusSortName_ne_wrapped (kind : String) :
@@ -286,22 +268,22 @@ theorem rho_typedBoundary_application_sourceType_name_or_proc
           category | category
       · left
         have decoded := congrArg
-          (decodeCostStaticTypeExpr rhoCIGSLT color) mappedTypeEq
-        rw [decodeCostStaticTypeExpr_mapTypeExpr] at decoded
+          (CostStaticTypeImage.decode rhoCIGSLT.theory color) mappedTypeEq
+        rw [CostStaticTypeImage.decode_mapTypeExpr] at decoded
         cases color <;>
-          simp [CIGSLT.materializeDeclaredCostConstructor,
-            costBaseConstructor, category, decodeCostStaticTypeExpr,
-            decodeCostBaseSortName_encode, costBaseSortName_ne_wrapped,
+          simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+            costBaseConstructor_def, category, CostStaticTypeImage.decode,
+            costBaseSortName_ne_wrapped,
             interactingSort] at decoded
         all_goals exact decoded
       · right
         have decoded := congrArg
-          (decodeCostStaticTypeExpr rhoCIGSLT color) mappedTypeEq
-        rw [decodeCostStaticTypeExpr_mapTypeExpr] at decoded
+          (CostStaticTypeImage.decode rhoCIGSLT.theory color) mappedTypeEq
+        rw [CostStaticTypeImage.decode_mapTypeExpr] at decoded
         cases color <;>
-          simp [CIGSLT.materializeDeclaredCostConstructor,
-            costBaseConstructor, category, decodeCostStaticTypeExpr,
-            decodeCostBaseSortName_encode, costBaseSortName_ne_wrapped,
+          simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+            costBaseConstructor_def, category, CostStaticTypeImage.decode,
+            costBaseSortName_ne_wrapped,
             interactingSort] at decoded
         all_goals exact decoded
   | wrapped sourceConstructor =>
@@ -309,32 +291,34 @@ theorem rho_typedBoundary_application_sourceType_name_or_proc
           category | category
       · left
         have decoded := congrArg
-          (decodeCostStaticTypeExpr rhoCIGSLT color) mappedTypeEq
-        rw [decodeCostStaticTypeExpr_mapTypeExpr] at decoded
+          (CostStaticTypeImage.decode rhoCIGSLT.theory color) mappedTypeEq
+        rw [CostStaticTypeImage.decode_mapTypeExpr] at decoded
         cases color <;>
-          simp [CIGSLT.materializeDeclaredCostConstructor,
-            costWrappedConstructor, category, decodeCostStaticTypeExpr,
-            decodeCostBaseSortName_encode, costBaseSortName_ne_wrapped,
+          simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+            costWrappedConstructor, category, CostStaticTypeImage.decode,
+            costBaseSortName_ne_wrapped,
             interactingSort] at decoded
         all_goals exact decoded
       · right
         have decoded := congrArg
-          (decodeCostStaticTypeExpr rhoCIGSLT color) mappedTypeEq
-        rw [decodeCostStaticTypeExpr_mapTypeExpr] at decoded
+          (CostStaticTypeImage.decode rhoCIGSLT.theory color) mappedTypeEq
+        rw [CostStaticTypeImage.decode_mapTypeExpr] at decoded
         cases color <;>
-          simp [CIGSLT.materializeDeclaredCostConstructor,
-            costWrappedConstructor, category, decodeCostStaticTypeExpr,
+          simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+            costWrappedConstructor, category, CostStaticTypeImage.decode,
             interactingSort] at decoded
         all_goals exact decoded
   | apparatus kind =>
       have decoded := congrArg
-        (decodeCostStaticTypeExpr rhoCIGSLT color) mappedTypeEq
-      rw [decodeCostStaticTypeExpr_mapTypeExpr] at decoded
+        (CostStaticTypeImage.decode rhoCIGSLT.theory color) mappedTypeEq
+      rw [CostStaticTypeImage.decode_mapTypeExpr] at decoded
       right
       cases color <;> cases kind <;>
-        simp [CIGSLT.materializeDeclaredCostConstructor,
-          CostApparatusConstructor.grammarRule, decodeCostStaticTypeExpr,
+        simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
+          CostApparatusConstructor.grammarRule, CostStaticTypeImage.decode,
           costSignatureSortName,
+          costKeySortName, costKeyLeafConstructor, costKeyBranchConstructor,
+          costSignatureCommitConstructor,
           costTokenStackSortName, costSignatureUnitConstructor,
           costSignatureProductConstructor, costSignedConstructor,
           costTokenStackEmptyConstructor, costTokenStackConsConstructor,

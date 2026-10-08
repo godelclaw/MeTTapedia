@@ -450,9 +450,293 @@ elab_rules : term <= expectedType
   | `(metta_program_file% he $path:str) =>
       elaborateProgramFile MeTTailCore.MeTTaSyntax.he path expectedType
 
+/-! ## Source S-expressions before pattern lowering -/
+
+private partial def quoteSExpr :
+    Algorithms.MeTTa.Simple.Parser.SExpr → MacroM (TSyntax `term)
+  | .atom token =>
+      `(Algorithms.MeTTa.Simple.Parser.SExpr.atom $(mkStringTerm token))
+  | .list elements => do
+      let elements ← elements.mapM quoteSExpr >>= mkTermList
+      `(Algorithms.MeTTa.Simple.Parser.SExpr.list $elements)
+
+private def expandSExprSource (spec : SyntaxSpec) (contents : String)
+    (origin : Syntax) : MacroM (TSyntax `term) := do
+  match Algorithms.MeTTa.Simple.Parser.parseSExprWithDetailed spec contents with
+  | .ok expression => quoteSExpr expression
+  | .error error =>
+      Macro.throwErrorAt origin s!"MeTTa S-expression parse failed: {error.render}"
+
+/-- Quote the existing reader's S-expression without erasing list structure.
+Unlike pattern quotation, `name` and `(name)` remain distinguishable. -/
+scoped syntax "metta_sexpr% " (&"petta" <|> &"he") str : term
+
+scoped macro_rules
+  | `(metta_sexpr% petta $source:str) =>
+      expandSExprSource MeTTailCore.MeTTaSyntax.petta source.getString source
+  | `(metta_sexpr% he $source:str) =>
+      expandSExprSource MeTTailCore.MeTTaSyntax.he source.getString source
+
+scoped syntax "metta_sexpr_file% " (&"petta" <|> &"he") str : term
+
+private def elaborateSExprFile (spec : SyntaxSpec) (path : TSyntax `str)
+    (expectedType : Expr) : TermElabM Expr := do
+  let context ← readThe Lean.Core.Context
+  let currentFile := System.FilePath.mk context.fileName
+  let some parent := currentFile.parent
+    | throwErrorAt path "cannot determine the quoting file's parent directory"
+  let contents ← IO.FS.readFile (parent / path.getString)
+  let quoted ← liftMacroM <| expandSExprSource spec contents path
+  elabTerm quoted expectedType
+
+elab_rules : term <= expectedType
+  | `(metta_sexpr_file% petta $path:str) =>
+      elaborateSExprFile MeTTailCore.MeTTaSyntax.petta path expectedType
+  | `(metta_sexpr_file% he $path:str) =>
+      elaborateSExprFile MeTTailCore.MeTTaSyntax.he path expectedType
+
+/-- Quote all top-level S-expressions with their physical starting lines.
+This is the existing program scanner before lossy pattern lowering, not the
+line-oriented answer-stream reader below. Parsing remains an executable
+boundary, not a kernel theorem about source bytes. -/
+scoped syntax "metta_sexpr_program_file% " (&"petta" <|> &"he") str : term
+
+/-- Balanced list construction keeps whole-program quotation depth logarithmic
+in the number of top-level forms without changing their order or carrier. -/
+private partial def quoteProgramRows
+    (rows : List (Nat × Algorithms.MeTTa.Simple.Parser.SExpr)) :
+    MacroM (TSyntax `term) := do
+  match rows with
+  | [] => `([])
+  | [(line, expression)] =>
+    let tree ← quoteSExpr expression
+    `([ (($(quote line) : Nat), $tree) ])
+  | _ =>
+    let (first, rest) := rows.splitAt (rows.length / 2)
+    let left ← quoteProgramRows first
+    let right ← quoteProgramRows rest
+    `($left ++ $right)
+
+private def elaborateSExprProgramFile (spec : SyntaxSpec) (path : TSyntax `str)
+    (expectedType : Expr) : TermElabM Expr := do
+  let context ← readThe Lean.Core.Context
+  let currentFile := System.FilePath.mk context.fileName
+  let some parent := currentFile.parent
+    | throwErrorAt path "cannot determine the quoting file's parent directory"
+  let contents ← IO.FS.readFile (parent / path.getString)
+  match Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed spec contents with
+  | .error error => throwErrorAt path s!"MeTTa source program parse failed: {error.render}"
+  | .ok rows =>
+    let quoted ← liftMacroM (quoteProgramRows rows)
+    elabTerm quoted expectedType
+
+elab_rules : term <= expectedType
+  | `(metta_sexpr_program_file% petta $path:str) =>
+      elaborateSExprProgramFile MeTTailCore.MeTTaSyntax.petta path expectedType
+  | `(metta_sexpr_program_file% he $path:str) =>
+      elaborateSExprProgramFile MeTTailCore.MeTTaSyntax.he path expectedType
+
+#guard Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed
+    MeTTailCore.MeTTaSyntax.petta "; heading\na\n(a)\n; middle\n(f\n  $x)\na\n" =
+  .ok [(2, .atom "a"), (3, .list [.atom "a"]),
+    (5, .list [.atom "f", .atom "$x"]), (7, .atom "a")]
+
+#guard (Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed
+  MeTTailCore.MeTTaSyntax.he "(a)\n(b\n").isOk = false
+
+#guard (Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed
+  MeTTailCore.MeTTaSyntax.petta "(quote \"; (still a string)\")\n(empty)\n").isOk = true
+
+/-- Whole source commands, retaining the evaluation-prefix bit separately
+from the raw expression. This does not execute imports or assert queries. -/
+scoped syntax "metta_sexpr_commands_file% " (&"petta" <|> &"he") str : term
+
+/-- The same complete command stream, stored in ordinary finite list chunks.
+Flattening is its ordered list view; no command or subtree is filtered. -/
+scoped syntax "metta_sexpr_command_chunks_file% " (&"petta" <|> &"he") str : term
+
+private def sourceListExpr (type : Expr) (elements : List Expr) : Expr :=
+  elements.foldr (fun value rest => mkAppN (Lean.mkConst ``List.cons [.zero]) #[type, value, rest])
+    (mkApp (Lean.mkConst ``List.nil [.zero]) type)
+
+private partial def sourceSExprExpr : Algorithms.MeTTa.Simple.Parser.SExpr → Expr
+  | .atom token => mkApp (Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr.atom) (toExpr token)
+  | .list children => mkApp (Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr.list)
+      (sourceListExpr (Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr) (children.map sourceSExprExpr))
+
+/-- Construct typed constructor expressions directly. Re-elaborating hundreds
+of large quoted syntax trees needlessly repeats name and type resolution. The
+kernel still checks these ordinary constructor terms. -/
+private partial def sourceCommandsExpr
+    (rows : List (Nat × Bool × Algorithms.MeTTa.Simple.Parser.SExpr)) : Expr :=
+  let treeType := Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr
+  let tailType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Bool) treeType
+  let rowType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Nat) tailType
+  match rows with
+  | [] => sourceListExpr rowType []
+  | [(line, query, expression)] =>
+      let tail := mkAppN (Lean.mkConst ``Prod.mk [.zero, .zero])
+        #[Lean.mkConst ``Bool, treeType, toExpr query, sourceSExprExpr expression]
+      sourceListExpr rowType [mkAppN (Lean.mkConst ``Prod.mk [.zero, .zero])
+        #[Lean.mkConst ``Nat, tailType, toExpr line, tail]]
+  | _ =>
+      let (first, rest) := rows.splitAt (rows.length / 2)
+      mkAppN (Lean.mkConst ``List.append [.zero])
+        #[rowType, sourceCommandsExpr first, sourceCommandsExpr rest]
+
+/-- Named ordinary definitions keep compilation of the aggregate from
+normalizing one enormous constructor spine. Each chunk remains transparent,
+kernel-checked source data; its size is a quotation layout choice. -/
+private partial def sourceCommandChunkRefs
+    (rows : List (Nat × Bool × Algorithms.MeTTa.Simple.Parser.SExpr)) : TermElabM (List Expr) := do
+  if rows.isEmpty then
+    return []
+  else if rows.length ≤ 16 then
+    let treeType := Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr
+    let tailType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Bool) treeType
+    let rowType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Nat) tailType
+    let chunkType := mkApp (Lean.mkConst ``List [.zero]) rowType
+    let chunk ← Lean.Meta.mkAuxDefinition (← mkAuxName `sourceCommandChunk) chunkType
+      (sourceCommandsExpr rows)
+    return [chunk]
+  else
+    let (first, rest) := rows.splitAt (rows.length / 2)
+    return (← sourceCommandChunkRefs first) ++ (← sourceCommandChunkRefs rest)
+
+private def sourceCommandChunksExpr
+    (rows : List (Nat × Bool × Algorithms.MeTTa.Simple.Parser.SExpr)) : TermElabM Expr := do
+  let treeType := Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr
+  let tailType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Bool) treeType
+  let rowType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Nat) tailType
+  let chunkType := mkApp (Lean.mkConst ``List [.zero]) rowType
+  return sourceListExpr chunkType (← sourceCommandChunkRefs rows)
+
+private def elaborateSExprCommandsFile (spec : SyntaxSpec) (path : TSyntax `str)
+    (chunked : Bool := false) : TermElabM Expr := do
+  let context ← readThe Lean.Core.Context
+  let currentFile := System.FilePath.mk context.fileName
+  let some parent := currentFile.parent
+    | throwErrorAt path "cannot determine the quoting file's parent directory"
+  let contents ← IO.FS.readFile (parent / path.getString)
+  match Algorithms.MeTTa.Simple.Parser.parseSExprCommandsWithDetailed spec contents with
+  | .error error => throwErrorAt path s!"MeTTa source command parse failed: {error.render}"
+  | .ok rows =>
+      let chunks ← sourceCommandChunksExpr rows
+      if chunked then return chunks
+      let treeType := Lean.mkConst ``Algorithms.MeTTa.Simple.Parser.SExpr
+      let tailType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Bool) treeType
+      let rowType := mkApp2 (Lean.mkConst ``Prod [.zero, .zero]) (Lean.mkConst ``Nat) tailType
+      return mkApp2 (Lean.mkConst ``List.flatten [.zero]) rowType chunks
+
+elab_rules : term
+  | `(metta_sexpr_commands_file% petta $path:str) =>
+      elaborateSExprCommandsFile MeTTailCore.MeTTaSyntax.petta path
+  | `(metta_sexpr_commands_file% he $path:str) =>
+      elaborateSExprCommandsFile MeTTailCore.MeTTaSyntax.he path
+  | `(metta_sexpr_command_chunks_file% petta $path:str) =>
+      elaborateSExprCommandsFile MeTTailCore.MeTTaSyntax.petta path true
+  | `(metta_sexpr_command_chunks_file% he $path:str) =>
+      elaborateSExprCommandsFile MeTTailCore.MeTTaSyntax.he path true
+
+/-- Read a line-oriented sequence through the existing single-expression
+reader. Blank lines are skipped; each other line must contain exactly one
+complete expression. Neither list structure nor repeated rows are erased.
+The first malformed row fails the entire read with its physical line number. -/
+def parseSExprLinesWithDetailed (spec : SyntaxSpec) (contents : String) :
+    Except ParseError (List Algorithms.MeTTa.Simple.Parser.SExpr) := do
+  let rows := (contents.splitOn "\n").zipIdx 1
+  let rows := rows.filter fun row => !row.1.trimAscii.isEmpty
+  rows.mapM fun (line, number) =>
+    (Algorithms.MeTTa.Simple.Parser.parseSExprWithDetailed spec line).mapError
+      fun error => { error with line := some number }
+
+/-- Qualification quotation for a line-oriented structured answer stream.
+This reuses the existing dialect reader; it does not define a new production
+grammar or assert correctness of that reader's byte-level implementation. -/
+scoped syntax "metta_sexpr_lines_file% " (&"petta" <|> &"he") str : term
+
+private def expandSExprLinesSource (spec : SyntaxSpec) (contents : String)
+    (origin : Syntax) : MacroM (TSyntax `term) := do
+  match parseSExprLinesWithDetailed spec contents with
+  | .ok rows => rows.mapM quoteSExpr >>= mkTermList
+  | .error error =>
+      Macro.throwErrorAt origin s!"MeTTa S-expression stream parse failed: {error.render}"
+
+scoped syntax "metta_sexpr_lines% " (&"petta" <|> &"he") str : term
+
+scoped macro_rules
+  | `(metta_sexpr_lines% petta $source:str) =>
+      expandSExprLinesSource MeTTailCore.MeTTaSyntax.petta source.getString source
+  | `(metta_sexpr_lines% he $source:str) =>
+      expandSExprLinesSource MeTTailCore.MeTTaSyntax.he source.getString source
+
+private def elaborateSExprLinesFile (spec : SyntaxSpec) (path : TSyntax `str)
+    (expectedType : Expr) : TermElabM Expr := do
+  let context ← readThe Lean.Core.Context
+  let currentFile := System.FilePath.mk context.fileName
+  let some parent := currentFile.parent
+    | throwErrorAt path "cannot determine the quoting file's parent directory"
+  let contents ← IO.FS.readFile (parent / path.getString)
+  let quoted ← liftMacroM <| expandSExprLinesSource spec contents path
+  elabTerm quoted expectedType
+
+elab_rules : term <= expectedType
+  | `(metta_sexpr_lines_file% petta $path:str) =>
+      elaborateSExprLinesFile MeTTailCore.MeTTaSyntax.petta path expectedType
+  | `(metta_sexpr_lines_file% he $path:str) =>
+      elaborateSExprLinesFile MeTTailCore.MeTTaSyntax.he path expectedType
+
 /-! ## Executable and elaborated controls -/
 
 open scoped MeTTaSyntaxQuotation
+
+/-- The quoted constructor sequence retains order, duplicate rows, and the
+atom/nullary-list distinction. The byte-reader remains the existing executable
+qualification boundary, as for the single-expression quotation. -/
+theorem source_lines_preserve_order_multiplicity_and_nullary_structure :
+    (metta_sexpr_lines% petta "a\n(a)\n\na\n") =
+      [Algorithms.MeTTa.Simple.Parser.SExpr.atom "a", .list [.atom "a"], .atom "a"] := rfl
+
+theorem source_lines_he_preserve_nullary_structure :
+    (metta_sexpr_lines% he "a\n(a)\n") =
+      [Algorithms.MeTTa.Simple.Parser.SExpr.atom "a", .list [.atom "a"]] := rfl
+
+-- Executable reader controls, not proofs of byte-level parser correctness.
+#guard (parseSExprLinesWithDetailed MeTTailCore.MeTTaSyntax.petta "a\n(b\nc\n").isOk = false
+#guard (parseSExprLinesWithDetailed MeTTailCore.MeTTaSyntax.he "a b\n").isOk = false
+#guard match parseSExprLinesWithDetailed MeTTailCore.MeTTaSyntax.petta "\n a\n(b\n" with
+  | .error error => error.line == some 3
+  | .ok _ => false
+
+theorem source_atom_and_nullary_call_are_distinct :
+    (metta_sexpr% petta "bnf-v1:suffix-start") ≠
+      (metta_sexpr% petta "(bnf-v1:suffix-start)") := by
+  intro equality
+  cases equality
+
+/-- Pattern lowering is a lossy view of source S-expressions. -/
+theorem pattern_lowering_identifies_atom_and_nullary_call :
+    (metta% petta "bnf-v1:suffix-start") =
+      (metta% petta "(bnf-v1:suffix-start)") := rfl
+
+theorem no_pattern_decoder_recovers_both_source_forms
+    (decode : Pattern → Algorithms.MeTTa.Simple.Parser.SExpr) :
+    ¬ (decode (metta% petta "bnf-v1:suffix-start") =
+          (metta_sexpr% petta "bnf-v1:suffix-start") ∧
+       decode (metta% petta "(bnf-v1:suffix-start)") =
+          (metta_sexpr% petta "(bnf-v1:suffix-start)")) := by
+  rintro ⟨atom, call⟩
+  rw [← pattern_lowering_identifies_atom_and_nullary_call, atom] at call
+  cases call
+
+theorem source_comments_separate_tokens :
+    (metta_sexpr% petta "; prelude\n(f a; comment\nb)") =
+      Algorithms.MeTTa.Simple.Parser.SExpr.list
+        [.atom "f", .atom "a", .atom "b"] := rfl
+
+theorem source_quoted_comment_character_is_retained :
+    (metta_sexpr% petta "(f \";\")") =
+      Algorithms.MeTTa.Simple.Parser.SExpr.list [.atom "f", .atom "\";\""] := rfl
 
 /-- Positive: authored PeTTa syntax expands to the exact specification AST. -/
 example :

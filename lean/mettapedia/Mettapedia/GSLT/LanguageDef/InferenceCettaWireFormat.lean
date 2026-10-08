@@ -1,18 +1,20 @@
 import Mettapedia.GSLT.LanguageDef.InferenceRuntimeAdequacy
+import Mettapedia.GSLT.LanguageDef.CettaWireTerm
 
 /-!
-# Exact CeTTa carrier for inference presentations and articles
+# Exact CeTTa carrier for inference languages and articles
 
 The generic inference checker already has a canonical symbolic `WireTerm`
 carrier.  CeTTa consumes a distinct MeTTa-shaped carrier: quoted strings are
 different from symbols, lists are encoded by `LNil`/`LCons`, and inference
-packages use the `GPresentationV1` and `GProof` constructors.
+packages use the `GInferenceLanguageV1` and `GProof` constructors.
 
-This module gives that physical carrier an independent datatype, total
-canonical encoders, fail-closed decoders, and round-trip theorems.  Both the
-logical `WPresentation` carrier and the CeTTa carrier decode to the same
-`RuntimePresentation`; the bridge theorem below therefore states their exact
-semantic relationship without identifying their different syntaxes.
+This module instantiates the shared physical carrier with total canonical
+encoders, fail-closed decoders, and round-trip theorems for inference data.
+Both the logical `WInferenceLanguage` carrier and the CeTTa carrier decode to
+the same `RuntimeInferenceLanguage`; the bridge theorem below therefore states
+their exact semantic relationship without identifying their different
+syntaxes.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.InferenceCettaWire
@@ -20,60 +22,36 @@ namespace Mettapedia.GSLT.LanguageDef.InferenceCettaWire
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
-open Mettapedia.GSLT.LanguageDef.InferencePresentationWire
+open Mettapedia.GSLT.LanguageDef.InferenceLanguageWire
 
-/-! ## Physical S-expression carrier -/
+/-! ## Shared physical carrier and algebraic-list compatibility surface -/
 
-/-- The distinctions retained by CeTTa's parsed S-expression carrier. -/
-inductive CettaTerm where
-  | symbol (name : String)
-  | string (value : String)
-  | natural (value : Nat)
-  | application (head : String) (arguments : List CettaTerm)
-deriving Repr
+abbrev CettaTerm := Mettapedia.GSLT.LanguageDef.CettaWire.Term
 
-mutual
+namespace CettaTerm
 
-/-- Render one physical carrier value using CeTTa's authored catalog syntax. -/
-def CettaTerm.render : CettaTerm → String
-  | .symbol name => name
-  | .string value => reprStr value
-  | .natural value => toString value
-  | .application head arguments =>
-      "(" ++ head ++ CettaTerm.renderArguments arguments ++ ")"
+abbrev symbol := Mettapedia.GSLT.LanguageDef.CettaWire.Term.symbol
+abbrev string := Mettapedia.GSLT.LanguageDef.CettaWire.Term.string
+abbrev natural := Mettapedia.GSLT.LanguageDef.CettaWire.Term.natural
+abbrev application := Mettapedia.GSLT.LanguageDef.CettaWire.Term.application
+abbrev render := Mettapedia.GSLT.LanguageDef.CettaWire.Term.render
 
-def CettaTerm.renderArguments : List CettaTerm → String
-  | [] => ""
-  | argument :: arguments =>
-      " " ++ argument.render ++ CettaTerm.renderArguments arguments
+end CettaTerm
 
-end
+def encodeList (encode : α → CettaTerm) (values : List α) : CettaTerm :=
+  Mettapedia.GSLT.LanguageDef.CettaWire.encodeList encode values
 
-/-! ## Exact algebraic-list carrier -/
-
-def encodeList (encode : α → CettaTerm) : List α → CettaTerm
-  | [] => .symbol "LNil"
-  | value :: values =>
-      .application "LCons" [encode value, encodeList encode values]
-
-def decodeList (decode : CettaTerm → Option α) :
-    CettaTerm → Option (List α)
-  | .symbol "LNil" => some []
-  | .application "LCons" [value, values] => do
-      let head ← decode value
-      let tail ← decodeList decode values
-      some (head :: tail)
-  | _ => none
+def decodeList (decode : CettaTerm → Option α)
+    (term : CettaTerm) : Option (List α) :=
+  Mettapedia.GSLT.LanguageDef.CettaWire.decodeList decode term
 
 theorem decodeList_encodeList (decode : CettaTerm → Option α)
     (encode : α → CettaTerm)
     (roundTrip : ∀ value, decode (encode value) = some value)
     (values : List α) :
-    decodeList decode (encodeList encode values) = some values := by
-  induction values with
-  | nil => rfl
-  | cons value values inductionHypothesis =>
-      simp [encodeList, decodeList, roundTrip, inductionHypothesis]
+    decodeList decode (encodeList encode values) = some values :=
+  Mettapedia.GSLT.LanguageDef.CettaWire.decodeList_encodeList
+    decode encode roundTrip values
 
 /-! ## Exact Pattern carrier -/
 
@@ -242,7 +220,7 @@ theorem encodePatterns_injective : Function.Injective encodePatterns := by
   have decoded := congrArg decodePatterns equality
   simpa using decoded
 
-/-! ## Exact presentation carrier -/
+/-! ## Exact definition carrier -/
 
 def encodeConstructor (declaration : ConstructorSignature) : CettaTerm :=
   .application "CDecl"
@@ -329,22 +307,22 @@ def decodeConversion : CettaTerm → Option (Option ConversionDecl)
       some (some ⟨judgmentHead, version⟩)
   | _ => none
 
-def encodeRuntimePresentation
-    (presentation : RuntimePresentation) : CettaTerm :=
-  .application "GPresentationV1"
-    [.natural presentationWireVersion,
-      encodeList encodeConstructor presentation.constructors,
-      encodeList encodeJudgment presentation.judgments,
-      encodeList encodeRule presentation.rules,
-      encodeConversion presentation.conversion]
+def encodeRuntimeInferenceLanguage
+    (definition : RuntimeInferenceLanguage) : CettaTerm :=
+  .application "GInferenceLanguageV1"
+    [.natural inferenceLanguageWireVersion,
+      encodeList encodeConstructor definition.constructors,
+      encodeList encodeJudgment definition.judgments,
+      encodeList encodeRule definition.rules,
+      encodeConversion definition.conversion]
 
-def encodePresentation (presentation : Presentation) : CettaTerm :=
-  encodeRuntimePresentation (RuntimePresentation.ofPresentation presentation)
+def encodeDefinition (definition : CalculusLanguageDef) : CettaTerm :=
+  encodeRuntimeInferenceLanguage (RuntimeInferenceLanguage.ofDefinition definition)
 
-def decodeRuntimePresentation : CettaTerm → Option RuntimePresentation
-  | .application "GPresentationV1"
+def decodeRuntimeInferenceLanguage : CettaTerm → Option RuntimeInferenceLanguage
+  | .application "GInferenceLanguageV1"
       [.natural version, constructors, judgments, rules, conversion] => do
-      if version != presentationWireVersion then none
+      if version != inferenceLanguageWireVersion then none
       let decodedConstructors ← decodeList decodeConstructor constructors
       let decodedJudgments ← decodeList decodeJudgment judgments
       let decodedRules ← decodeList decodeRule rules
@@ -390,24 +368,24 @@ def decodeRuntimePresentation : CettaTerm → Option RuntimePresentation
   | none => rfl
   | some declaration => cases declaration; rfl
 
-@[simp] theorem decodeRuntimePresentation_encodeRuntimePresentation
-    (presentation : RuntimePresentation) :
-    decodeRuntimePresentation (encodeRuntimePresentation presentation) =
-      some presentation := by
-  cases presentation
-  simp [encodeRuntimePresentation, decodeRuntimePresentation,
-    presentationWireVersion, decodeList_encodeList]
+@[simp] theorem decodeRuntimeInferenceLanguage_encodeRuntimeInferenceLanguage
+    (definition : RuntimeInferenceLanguage) :
+    decodeRuntimeInferenceLanguage (encodeRuntimeInferenceLanguage definition) =
+      some definition := by
+  cases definition
+  simp [encodeRuntimeInferenceLanguage, decodeRuntimeInferenceLanguage,
+    inferenceLanguageWireVersion, decodeList_encodeList]
 
-@[simp] theorem decodeRuntimePresentation_encodePresentation
-    (presentation : Presentation) :
-    decodeRuntimePresentation (encodePresentation presentation) =
-      some (RuntimePresentation.ofPresentation presentation) := by
-  simp [encodePresentation]
+@[simp] theorem decodeRuntimeInferenceLanguage_encodeDefinition
+    (definition : CalculusLanguageDef) :
+    decodeRuntimeInferenceLanguage (encodeDefinition definition) =
+      some (RuntimeInferenceLanguage.ofDefinition definition) := by
+  simp [encodeDefinition]
 
-theorem encodeRuntimePresentation_injective :
-    Function.Injective encodeRuntimePresentation := by
+theorem encodeRuntimeInferenceLanguage_injective :
+    Function.Injective encodeRuntimeInferenceLanguage := by
   intro left right equality
-  have decoded := congrArg decodeRuntimePresentation equality
+  have decoded := congrArg decodeRuntimeInferenceLanguage equality
   simpa using decoded
 
 /-! ## Exact proof-tree carrier -/
@@ -583,61 +561,61 @@ theorem encodeWireArticle_injective : Function.Injective encodeWireArticle := by
 
 /-- Decode the physical article and invoke the exact logical CertificateGSLT
 checker.  This function performs no proof search and preserves sharing. -/
-def checkDAGPacket (presentation : ValidatedPresentation)
+def checkDAGPacket (definition : ValidatedCalculusLanguageDef)
     (articleTerm : CettaTerm) : Bool :=
   match decodeWireArticle articleTerm with
-  | some article => checkWireArticle presentation article
+  | some article => checkWireArticle definition article
   | none => false
 
-@[simp] theorem checkDAGPacket_encode (presentation : ValidatedPresentation)
+@[simp] theorem checkDAGPacket_encode (definition : ValidatedCalculusLanguageDef)
     (article : WireArticle) :
-    checkDAGPacket presentation (encodeWireArticle article) =
-      checkWireArticle presentation article := by
+    checkDAGPacket definition (encodeWireArticle article) =
+      checkWireArticle definition article := by
   simp [checkDAGPacket]
 
-theorem checkDAGPacket_encode_sound (presentation : ValidatedPresentation)
+theorem checkDAGPacket_encode_sound (definition : ValidatedCalculusLanguageDef)
     (article : WireArticle)
     (accepted :
-      checkDAGPacket presentation (encodeWireArticle article) = true) :
-    Nonempty (Derivation presentation article.target) := by
+      checkDAGPacket definition (encodeWireArticle article) = true) :
+    Nonempty (Derivation definition article.target) := by
   exact checkWireArticle_sound (by simpa using accepted)
 
 /-! ## Checker and logical-wire refinement -/
 
 /-- Decode all three CeTTa-facing inputs and replay the exact checker. -/
-def checkPacket (presentationTerm goalTerm proofTerm : CettaTerm) :
+def checkPacket (languageTerm goalTerm proofTerm : CettaTerm) :
     Option Bool := do
-  let presentation ← decodeRuntimePresentation presentationTerm
+  let definition ← decodeRuntimeInferenceLanguage languageTerm
   let goal ← decodePattern goalTerm
   let proof ← decodeRawProof proofTerm
-  some (presentation.checkRaw goal proof)
+  some (definition.checkRaw goal proof)
 
 @[simp] theorem checkPacket_encode
-    (presentation : RuntimePresentation) (goal : Pattern) (proof : RawProof) :
-    checkPacket (encodeRuntimePresentation presentation)
+    (definition : RuntimeInferenceLanguage) (goal : Pattern) (proof : RawProof) :
+    checkPacket (encodeRuntimeInferenceLanguage definition)
         (encodePattern goal) (encodeRawProof proof) =
-      some (presentation.checkRaw goal proof) := by
+      some (definition.checkRaw goal proof) := by
   simp [checkPacket]
 
 /-- An accepted canonical CeTTa packet denotes a typed derivation under the
-authored validated presentation, and that derivation erases to the identical
+authored validated definition, and that derivation erases to the identical
 raw article.  The runtime profile is deliberately stricter about constructor
 vocabulary, so no unrestricted converse is asserted. -/
 theorem checkPacket_encode_acceptance_sound
-    (presentation : ValidatedPresentation) (goal : Pattern)
+    (definition : ValidatedCalculusLanguageDef) (goal : Pattern)
     (proof : RawProof)
     (hypothesis :
       checkPacket
-          (encodeRuntimePresentation
-            (RuntimePresentation.ofPresentation presentation.1))
+          (encodeRuntimeInferenceLanguage
+            (RuntimeInferenceLanguage.ofDefinition definition.1))
           (encodePattern goal) (encodeRawProof proof) = some true) :
-    ∃ derivation : Derivation presentation goal,
+    ∃ derivation : Derivation definition goal,
       derivation.erase = proof := by
   have runtimeAccepted :
-      (RuntimePresentation.ofPresentation presentation.1).checkRaw
+      (RuntimeInferenceLanguage.ofDefinition definition.1).checkRaw
           goal proof = true := by
     simpa using hypothesis
-  have logicalAccepted := RuntimePresentation.checkRaw_sound presentation
+  have logicalAccepted := RuntimeInferenceLanguage.checkRaw_sound definition
     goal proof runtimeAccepted
   exact G2_checkRaw_iff_exists_derivation_erases_to.mp logicalAccepted
 
@@ -645,60 +623,60 @@ theorem checkPacket_encode_acceptance_sound
 constructor vocabulary, the canonical CeTTa packet is accepted exactly when
 it denotes a typed derivation with the identical raw erasure. -/
 theorem checkPacket_encode_adequate_of_payloadsValid
-    (presentation : ValidatedPresentation) (goal : Pattern)
+    (definition : ValidatedCalculusLanguageDef) (goal : Pattern)
     (proof : RawProof)
     (payloadValid :
-      (RuntimePresentation.ofPresentation presentation.1).proofPayloadsValid
+      (RuntimeInferenceLanguage.ofDefinition definition.1).proofPayloadsValid
         proof = true) :
     checkPacket
-          (encodeRuntimePresentation
-            (RuntimePresentation.ofPresentation presentation.1))
+          (encodeRuntimeInferenceLanguage
+            (RuntimeInferenceLanguage.ofDefinition definition.1))
           (encodePattern goal) (encodeRawProof proof) = some true ↔
-      ∃ derivation : Derivation presentation goal,
+      ∃ derivation : Derivation definition goal,
         derivation.erase = proof := by
   constructor
-  · exact checkPacket_encode_acceptance_sound presentation goal proof
+  · exact checkPacket_encode_acceptance_sound definition goal proof
   · rintro ⟨derivation, erases⟩
     have genericAccepted :
-        InferenceChecker.checkRaw presentation goal proof = true := by
+        InferenceChecker.checkRaw definition goal proof = true := by
       rw [← erases]
       exact checkRaw_erase derivation
     have runtimeAccepted :=
-      RuntimePresentation.checkRaw_complete
-        presentation goal proof genericAccepted payloadValid
+      RuntimeInferenceLanguage.checkRaw_complete
+        definition goal proof genericAccepted payloadValid
     rw [checkPacket_encode]
     exact congrArg some runtimeAccepted
 
-/-- Project a physical CeTTa presentation to the canonical logical carrier.
+/-- Project a physical CeTTa definition to the canonical logical carrier.
 Malformed physical packets have no logical interpretation. -/
-def toLogicalPresentation? (term : CettaTerm) : Option WireTerm := do
-  let presentation ← decodeRuntimePresentation term
-  some (InferencePresentationWire.encodeRuntimePresentation presentation)
+def toLogicalLanguage? (term : CettaTerm) : Option WireTerm := do
+  let definition ← decodeRuntimeInferenceLanguage term
+  some (InferenceLanguageWire.encodeRuntimeInferenceLanguage definition)
 
-@[simp] theorem toLogicalPresentation_encodeRuntimePresentation
-    (presentation : RuntimePresentation) :
-    toLogicalPresentation? (encodeRuntimePresentation presentation) =
-      some (InferencePresentationWire.encodeRuntimePresentation
-        presentation) := by
-  simp [toLogicalPresentation?]
+@[simp] theorem toLogicalLanguage_encodeRuntimeInferenceLanguage
+    (definition : RuntimeInferenceLanguage) :
+    toLogicalLanguage? (encodeRuntimeInferenceLanguage definition) =
+      some (InferenceLanguageWire.encodeRuntimeInferenceLanguage
+        definition) := by
+  simp [toLogicalLanguage?]
 
 /-- Both exact carriers replay the same checker because they decode to the
 same checker projection. -/
 theorem physical_and_logical_check_agree
-    (presentation : RuntimePresentation) (goal : Pattern) (proof : RawProof) :
-    checkPacket (encodeRuntimePresentation presentation)
+    (definition : RuntimeInferenceLanguage) (goal : Pattern) (proof : RawProof) :
+    checkPacket (encodeRuntimeInferenceLanguage definition)
         (encodePattern goal) (encodeRawProof proof) =
-      InferencePresentationWire.checkEncodedPresentation
-        (InferencePresentationWire.encodeRuntimePresentation presentation)
+      InferenceLanguageWire.checkEncodedLanguage
+        (InferenceLanguageWire.encodeRuntimeInferenceLanguage definition)
         goal proof := by
   rw [checkPacket_encode,
-    InferencePresentationWire.checkEncodedPresentation_encodeRuntimePresentation]
+    InferenceLanguageWire.checkEncodedLanguage_encodeRuntimeInferenceLanguage]
 
 /-! ## Negative carrier canaries -/
 
 theorem wrong_version_rejects :
-    decodeRuntimePresentation
-      (.application "GPresentationV1"
+    decodeRuntimeInferenceLanguage
+      (.application "GInferenceLanguageV1"
         [.natural 0, .symbol "LNil", .symbol "LNil", .symbol "LNil",
           .symbol "GNoConversion"]) = none := by
   rfl
@@ -719,9 +697,9 @@ theorem missing_side_condition_field_rejects :
 
 /-- A version not admitted by the logical article ABI remains rejected through
 the physical CeTTa carrier. -/
-theorem dag_wrong_version_rejects (presentation : ValidatedPresentation)
+theorem dag_wrong_version_rejects (definition : ValidatedCalculusLanguageDef)
     (article : WireArticle) (wrong : article.version ≠ wireArticleVersion) :
-    checkDAGPacket presentation (encodeWireArticle article) = false := by
+    checkDAGPacket definition (encodeWireArticle article) = false := by
   rw [checkDAGPacket_encode]
   exact checkWireArticle_version_gate wrong
 

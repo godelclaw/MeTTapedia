@@ -5,6 +5,8 @@ import Mettapedia.Languages.Metamath.SourceGSLTRuntimeCompressedTransport
 import Mettapedia.Languages.Metamath.SourceGSLTCompressedReflection
 import Mettapedia.Languages.Metamath.InferenceNormalByteReflection
 
+open Mettapedia.GSLT.LanguageDef
+
 /-!
 # Prefix bisimulation for the Metamath source GSLT and shipped reader
 
@@ -565,8 +567,8 @@ theorem checkBytesRun_calls_after_errorFree
 /-! ## Erasing comment administration -/
 
 /-- Any call erased by the reader's significant-token projection is
-database-transparent on an accepted run.  A nested opener would create an
-error, so the success premise eliminates precisely that malformed branch. -/
+database-transparent on an accepted run.  Success excludes enforced text
+errors, while modes which ignore comment text preserve the state directly. -/
 theorem insignificantCall_db_eq (call : TokenCall)
     (afterErrorFree : call.after.db.error? = none)
     (insignificant : significantCall? call = none) :
@@ -576,12 +578,8 @@ theorem insignificantCall_db_eq (call : TokenCall)
   | comment inner =>
       by_cases closeToken : call.origin.token.eqArray "$)".toAscii = true
       · simp [ParserState.feedToken, modeEq, closeToken]
-      · by_cases nestedOpen :
-            call.origin.token.eqArray "$(".toAscii = true
-        · simp [ParserState.feedToken, modeEq, closeToken, nestedOpen,
-            ParserState.mkErrorFromEvidence, ParserState.withDB,
-            DB.mkErrorFromEvidence, DB.mkErrorWithEvidence] at afterErrorFree
-        · simp [ParserState.feedToken, modeEq, closeToken, nestedOpen]
+      · rw [feedToken_commentNonClose_eq_of_errorFree call.before
+          call.origin.parserOffset call.origin.token inner modeEq closeToken afterErrorFree]
   | start =>
       have commentOpen : call.origin.token.eqArray "$(".toAscii = true := by
         simp [significantCall?, significantToken?, modeEq] at insignificant
@@ -714,13 +712,9 @@ theorem insignificantCall_logicalMode_eq (call : TokenCall)
   | comment inner =>
       by_cases closeToken : call.origin.token.eqArray "$)".toAscii = true
       · simp [ParserState.feedToken, modeEq, closeToken, logicalTokenMode]
-      · by_cases nestedOpen :
-            call.origin.token.eqArray "$(".toAscii = true
-        · simp [ParserState.feedToken, modeEq, closeToken, nestedOpen,
-            ParserState.mkErrorFromEvidence, ParserState.withDB,
-            DB.mkErrorFromEvidence, DB.mkErrorWithEvidence] at afterErrorFree
-        · simp [ParserState.feedToken, modeEq, closeToken, nestedOpen,
-            logicalTokenMode]
+      · rw [feedToken_commentNonClose_eq_of_errorFree call.before
+          call.origin.parserOffset call.origin.token inner modeEq closeToken afterErrorFree]
+        rw [modeEq]
   | start =>
       have commentOpen : call.origin.token.eqArray "$(".toAscii = true := by
         simp [significantCall?, significantToken?, modeEq] at insignificant
@@ -1222,31 +1216,31 @@ example :
 theorem toMath_eq_fold (token : ByteSlice) :
     Metamath.Verify.toMath token =
       (((sliceBytes token).foldl
-          (fun (result : MProd Bool String) byte =>
+          (fun (result : Prod Bool String) byte =>
             ⟨if Metamath.Verify.isMathChar byte then result.fst else false,
               result.snd.push (Metamath.Verify.uint8ToChar byte)⟩)
           ⟨true, ""⟩).fst,
         ((sliceBytes token).foldl
-          (fun (result : MProd Bool String) byte =>
+          (fun (result : Prod Bool String) byte =>
             ⟨if Metamath.Verify.isMathChar byte then result.fst else false,
               result.snd.push (Metamath.Verify.uint8ToChar byte)⟩)
           ⟨true, ""⟩).snd) := by
   have run_eq : Metamath.Verify.toMath token =
-      (fun (result : MProd Bool String) => (result.fst, result.snd))
+      (fun (result : Prod Bool String) => (result.fst, result.snd))
         (ByteSlice.forIn (m := Id) token
-          (⟨true, ""⟩ : MProd Bool String)
+          (⟨true, ""⟩ : Prod Bool String)
           (fun byte result =>
             if Metamath.Verify.isMathChar byte = true then
               pure (ForInStep.yield
                 (⟨result.fst,
                   result.snd.push (Metamath.Verify.uint8ToChar byte)⟩ :
-                    MProd Bool String))
+                    Prod Bool String))
             else
               pure (ForInStep.yield
                 (⟨false,
                   result.snd.push (Metamath.Verify.uint8ToChar byte)⟩ :
-                    MProd Bool String)))) := rfl
-  rw [run_eq, byteSlice_forIn_yield (β := MProd Bool String) token _
+                    Prod Bool String)))) := rfl
+  rw [run_eq, byteSlice_forIn_yield (β := Prod Bool String) token _
     (fun byte result =>
       ⟨if Metamath.Verify.isMathChar byte then result.fst else false,
         result.snd.push (Metamath.Verify.uint8ToChar byte)⟩)
@@ -1259,7 +1253,7 @@ theorem toMath_eq_fold (token : ByteSlice) :
 theorem mathFold_fst (bytes : List UInt8) :
     ∀ (initialValid : Bool) (initialText : String),
       (bytes.foldl
-          (fun (result : MProd Bool String) byte =>
+          (fun (result : Prod Bool String) byte =>
             ⟨if Metamath.Verify.isMathChar byte then result.fst else false,
               result.snd.push (Metamath.Verify.uint8ToChar byte)⟩)
           ⟨initialValid, initialText⟩).fst =
@@ -1276,7 +1270,7 @@ theorem mathFold_fst (bytes : List UInt8) :
 theorem mathFold_snd (bytes : List UInt8) :
     ∀ (initialValid : Bool) (initialText : String),
       (bytes.foldl
-          (fun (result : MProd Bool String) byte =>
+          (fun (result : Prod Bool String) byte =>
             ⟨if Metamath.Verify.isMathChar byte then result.fst else false,
               result.snd.push (Metamath.Verify.uint8ToChar byte)⟩)
           ⟨initialValid, initialText⟩).snd =
@@ -3123,12 +3117,12 @@ noncomputable def ReaderFinishedNormalProof.toNormalDischarge
     (anchor : ParserProofAnchor db runtimeFormula labelPos label initial)
     (finished : ReaderFinishedNormalProof anchor sourceLabels entries final)
     (agreement : RuntimeDBAgrees db before)
-    (runtimeTarget sourceTarget : ValidatedPresentation)
+    (runtimeTarget sourceTarget : ValidatedCalculusLanguageDef)
     (runtimePresentation :
-      presentationOfSourcePrefix? (runtimePrefix before) =
+      calculusLanguageDefOfSourcePrefix? (runtimePrefix before) =
         some runtimeTarget.1)
     (sourcePresentation :
-      presentationOfSourcePrefix? before.toSourcePrefix =
+      calculusLanguageDefOfSourcePrefix? before.toSourcePrefix =
         some sourceTarget.1)
     (formula : ConstantHeadedFormula)
     (formula_eq : runtimeFormula = formula.toRuntime) :
@@ -3144,9 +3138,9 @@ noncomputable def ReaderFinishedNormalProof.toNormalDischarge
     rw [finished.ledger.anchor_eq, anchor.database_eq]
     exact agreement.projectPrefix_eq
   have runtimeProjection :
-      presentationOfProjection? (runtimePrefix before).toProjection =
+      calculusLanguageDefOfProjection? (runtimePrefix before).toProjection =
         some runtimeTarget.1 := by
-    rw [← presentationOfSourcePrefix?_eq_runtime]
+    rw [← calculusLanguageDefOfSourcePrefix?_eq_runtime]
     exact runtimePresentation
   have targetFormulaEq : ledger.targetFormula = formula.toRuntime :=
     finished.ledger.target_formula_eq.trans formula_eq
@@ -3315,12 +3309,12 @@ noncomputable def SpelledCallTrace.verifiedNormalStatement
       .ok (.const typecode.name :: bodySymbols))
     (inserted : insertAssertion? before label.name
       ⟨typecode.name, bodySymbols⟩ = some after)
-    (runtimeTarget sourceTarget : ValidatedPresentation)
+    (runtimeTarget sourceTarget : ValidatedCalculusLanguageDef)
     (runtimePresentation :
-      presentationOfSourcePrefix? (runtimePrefix before) =
+      calculusLanguageDefOfSourcePrefix? (runtimePrefix before) =
         some runtimeTarget.1)
     (sourcePresentation :
-      presentationOfSourcePrefix? before.toSourcePrefix =
+      calculusLanguageDefOfSourcePrefix? before.toSourcePrefix =
         some sourceTarget.1) :
     ReaderVerifiedNormalStatement before after
       ⟨typecode.name, bodySymbols⟩
@@ -3679,7 +3673,7 @@ noncomputable def SpelledCallTrace.compressedHeader :
 
 /-- The retained closing `)` changes only the proof-token phase and enters
 compressed decoding between proof steps. -/
-noncomputable def SpelledCallTrace.compressedClose_final
+theorem SpelledCallTrace.compressedClose_final
     {fileId : String} {db : DB} {before : RuntimeProofState}
     {entries : List (LocatedToken × TokenCall)}
     {final : ParserObservedState}
@@ -4126,7 +4120,7 @@ noncomputable def ReaderCompressedBody.reflectProgram
     initial body.after tokensValid savePlacement
       (by simpa [tokens] using body.execution)
   have finishConditions :=
-    Metamath.ParserAnyModeEquivalence.finishProof_success_stack_conditions
+    Metamath.ParserAnyFormatEquivalence.finishProof_success_stack_conditions
       parser body.after finishSuccess
   have finalPhaseComplete : reflected.finalPhase = .betweenSteps ∨
       reflected.finalPhase = .justCompletedStep := by
@@ -4540,7 +4534,7 @@ noncomputable def SpelledCallTrace.acceptedCompressedStatement
     have actionLabel := program.preservesLabel
     exact actionLabel.trans (headerIdentity.1.trans (by rfl))
   have finishConditions :=
-    Metamath.ParserAnyModeEquivalence.finishProof_success_stack_conditions
+    Metamath.ParserAnyFormatEquivalence.finishProof_success_stack_conditions
       anchor.state bodyRun.after finished.finish_success
   have bodyStack : bodyRun.after.stack = #[bodyRun.after.fmla] :=
     array_eq_singleton_of_size_getElem bodyRun.after.stack
@@ -4625,12 +4619,12 @@ noncomputable def ReaderAcceptedCompressedStatement.toVerified
     (accepted : ReaderAcceptedCompressedStatement db before after label
       formula header words final)
     (verifiedWords : VerifiedCompressedWords words)
-    (runtimeTarget sourceTarget : ValidatedPresentation)
+    (runtimeTarget sourceTarget : ValidatedCalculusLanguageDef)
     (runtimePresentation :
-      presentationOfSourcePrefix? (runtimePrefix before) =
+      calculusLanguageDefOfSourcePrefix? (runtimePrefix before) =
         some runtimeTarget.1)
     (sourcePresentation :
-      presentationOfSourcePrefix? before.toSourcePrefix =
+      calculusLanguageDefOfSourcePrefix? before.toSourcePrefix =
         some sourceTarget.1)
     (headerAdmitted : ∀ explicitLabel ∈ header,
       explicitLabel ∉
@@ -4746,12 +4740,12 @@ noncomputable def SpelledCallTrace.verifiedCompressedStatement
       .ok (.const typecode.name :: bodySymbols))
     (inserted : insertAssertion? before label.name
       ⟨typecode.name, bodySymbols⟩ = some after)
-    (runtimeTarget sourceTarget : ValidatedPresentation)
+    (runtimeTarget sourceTarget : ValidatedCalculusLanguageDef)
     (runtimePresentation :
-      presentationOfSourcePrefix? (runtimePrefix before) =
+      calculusLanguageDefOfSourcePrefix? (runtimePrefix before) =
         some runtimeTarget.1)
     (sourcePresentation :
-      presentationOfSourcePrefix? before.toSourcePrefix =
+      calculusLanguageDefOfSourcePrefix? before.toSourcePrefix =
         some sourceTarget.1)
     (headerAdmitted : ∀ explicitLabel ∈ header.map LocatedName.name,
       explicitLabel ∉

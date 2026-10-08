@@ -2,33 +2,22 @@ import Mettapedia.Computability.CantorSpace
 import Mathlib.Computability.PartrecCode
 
 /-!
-# Probabilistic Turing Machines
+# Partial-recursive finite-prefix experiments
 
-This file defines probabilistic Turing machines using Mathlib's `Nat.Partrec.Code`
-combined with the random bit stream from `CantorSpace`.
+Each experiment runs a `Nat.Partrec.Code` on a pair containing the input and a
+packed finite random prefix. Changing the prefix changes the code's entire input.
+The existential output event therefore need not assign one output per tape; this
+is not yet a sequential probabilistic Turing-machine representation.
 
-## Main Definitions
+The legacy `PTMIndex`, `runPTMBounded`, and output-event names remain the interfaces
+used by the oracle-experiment modules. `evaln`'s budget bounds numbers encountered
+during evaluation, not just a number of machine steps.
 
-* `PTM`: A probabilistic Turing machine is a partial recursive code that reads random bits
-* `PTM.runN`: Run a PTM for n steps with bounded fuel
-* `PTM.outputProb`: The probability that the machine outputs a given value
-
-## Implementation Notes
-
-We model a probabilistic TM as a function that takes:
-1. An input `x : ℕ` (encoded)
-2. A random bit stream `r : CantorSpace` (infinite random bits)
-
-The machine can query `r i` to get the i-th random bit. The computation is deterministic
-given the random bits; randomness comes from the fair coin measure on CantorSpace.
-
-## Mathematical Model
-
-For a PTM M and input x:
-- `outputProb M x k` = μ({r ∈ CantorSpace | M(x, r) terminates with output k})
-
-where μ is the fair coin measure on Cantor space.
-
+`ProbabilisticPrefixExperiment` accumulates all bounded prefix experiments and
+proves convergence of explicit finite-count rational approximations.
+`ProbabilisticPrefixConsistency` gives a nonvacuous semantic condition for unique
+outputs. `ProbabilisticTMBoundary` proves the failure of the unrestricted raw
+diagonal and the vacuity of the refined same-budget prefix condition.
 -/
 
 open MeasureTheory Measure Filter
@@ -36,31 +25,25 @@ open scoped ENNReal NNReal
 
 namespace Mettapedia.Computability
 
-/-! ## Probabilistic Turing Machines -/
+/-! ## Finite-prefix execution -/
 
-/-- A probabilistic Turing machine index.
-
-We represent a PTM as a `Nat.Partrec.Code` that takes a pair (input, random_bits_used_so_far).
-The random bits are encoded as a natural number (binary representation).
--/
+/-- A partial-recursive code evaluated on packed-prefix inputs.
+    The name is shared with existing oracle-experiment interfaces. -/
 abbrev PTMIndex := Nat.Partrec.Code
 
 /-- Encode the first n bits of a random sequence as a natural number. -/
 def encodeRandomBits (r : CantorSpace) (n : ℕ) : ℕ :=
   (List.finRange n).foldl (fun acc i => acc * 2 + if r i then 1 else 0) 0
 
-/-- Run a PTM for at most k steps with n random bits.
-
-This is a bounded, decidable approximation of PTM execution.
-Returns `some output` if the machine halts, `none` if it needs more time/bits.
--/
+/-- Run one experiment with the evaluator budget and packed prefix specified.
+    This bounds the evaluator's encountered numbers; the prefix is ordinary input. -/
 def runPTMBounded (M : PTMIndex) (x : ℕ) (r : CantorSpace) (fuel : ℕ) (numBits : ℕ) : Option ℕ :=
   -- Encode input and random bits as a pair
   let input := Nat.pair x (encodeRandomBits r numBits)
   -- Use Mathlib's bounded evaluation
   Nat.Partrec.Code.evaln fuel M input
 
-/-- A PTM halts with output k if there exist sufficient fuel and random bits. -/
+/-- Some finite-prefix experiment produces the given output. -/
 def PTMHaltsWithOutput (M : PTMIndex) (x : ℕ) (r : CantorSpace) (k : ℕ) : Prop :=
   ∃ fuel numBits, runPTMBounded M x r fuel numBits = some k
 
@@ -161,7 +144,7 @@ theorem boundedOutputSet_measurable (M : PTMIndex) (x : ℕ) (fuel numBits k : �
   have h_eq : {r : CantorSpace | runPTMBounded M x r fuel numBits = some k} =
               (prefixProj numBits) ⁻¹' {bits | runPTMBoundedViaPrefix M x fuel numBits bits = some k} := by
     ext r
-    simp only [Set.mem_setOf_eq, Set.mem_preimage]
+    simp only [Set.mem_ofPred_eq, Set.mem_preimage]
     rw [runPTMBounded_eq_factored]
   rw [h_eq]
   -- The preimage of a measurable set under a measurable function is measurable
@@ -179,7 +162,7 @@ theorem outputSet_measurable (M : PTMIndex) (x : ℕ) (k : ℕ) :
   -- Countable union over fuel and numBits
   have : {r : CantorSpace | ∃ fuel numBits, runPTMBounded M x r fuel numBits = some k} =
          ⋃ (fuel : ℕ) (numBits : ℕ), {r | runPTMBounded M x r fuel numBits = some k} := by
-    ext r; simp only [Set.mem_setOf_eq, Set.mem_iUnion]
+    ext r; simp only [Set.mem_ofPred_eq, Set.mem_iUnion]
   rw [this]
   apply MeasurableSet.iUnion
   intro fuel
@@ -189,15 +172,11 @@ theorem outputSet_measurable (M : PTMIndex) (x : ℕ) (k : ℕ) :
 
 /-! ## Output Probabilities -/
 
-/-- The probability that PTM M on input x outputs 1.
-
-This is the key quantity for Reflective Oracles: we want to compute/bound
-this probability.
--/
+/-- Measure of the existential one-output experiment event. -/
 noncomputable def outputProb (M : PTMIndex) (x : ℕ) : ℝ≥0∞ :=
   coinMeasure (outputOneSet M x)
 
-/-- The probability that PTM M on input x outputs 0. -/
+/-- Measure of the existential zero-output experiment event. -/
 noncomputable def outputProbZero (M : PTMIndex) (x : ℕ) : ℝ≥0∞ :=
   coinMeasure (outputZeroSet M x)
 
@@ -219,27 +198,9 @@ theorem outputProb_nonneg (M : PTMIndex) (x : ℕ) : 0 ≤ outputProb M x := by
 For practical proofs, we work with bounded approximations of output probability.
 -/
 
-/-- A PTM is well-behaved if giving it more random bits never invalidates a
-halting computation with the same fuel and output. This is the explicit form of
-the modeling assumption used below. -/
-def isWellBehavedPTM (M : PTMIndex) : Prop :=
-  ∀ (x : ℕ) (r : CantorSpace) (fuel numBits₁ numBits₂ : ℕ) (k : ℕ),
-    numBits₁ ≤ numBits₂ →
-    runPTMBounded M x r fuel numBits₁ = some k →
-    runPTMBounded M x r fuel numBits₂ = some k
-
-/-- Probability of outputting 1 within fuel steps using numBits random bits. -/
+/-- Measure of one experiment with its budget and prefix length fixed. -/
 noncomputable def boundedOutputProb (M : PTMIndex) (x : ℕ) (fuel numBits : ℕ) : ℝ≥0∞ :=
   coinMeasure {r : CantorSpace | runPTMBounded M x r fuel numBits = some 1}
-
-/-- More fuel preserves a successful bounded run. -/
-theorem runPTMBounded_mono_fuel (M : PTMIndex) (x : ℕ) (r : CantorSpace) (numBits : ℕ)
-    {fuel₁ fuel₂ : ℕ} (h : fuel₁ ≤ fuel₂) {k : ℕ}
-    (hr : runPTMBounded M x r fuel₁ numBits = some k) :
-    runPTMBounded M x r fuel₂ numBits = some k := by
-  unfold runPTMBounded at hr ⊢
-  have h_mem : k ∈ Nat.Partrec.Code.evaln fuel₁ M (Nat.pair x (encodeRandomBits r numBits)) := hr
-  exact Nat.Partrec.Code.evaln_mono h h_mem
 
 /-- Bounded approximations are monotone in fuel. -/
 theorem boundedOutputProb_mono_fuel (M : PTMIndex) (x : ℕ) (numBits : ℕ)
@@ -249,99 +210,16 @@ theorem boundedOutputProb_mono_fuel (M : PTMIndex) (x : ℕ) (numBits : ℕ)
   unfold boundedOutputProb
   apply measure_mono
   intro r hr
-  simp only [Set.mem_setOf_eq] at hr ⊢
+  simp only [Set.mem_ofPred_eq] at hr ⊢
   -- Use evaln_mono: if evaln k₁ c n = some x, then evaln k₂ c n = some x for k₂ ≥ k₁
   unfold runPTMBounded at hr ⊢
   have h_mem : (1 : ℕ) ∈ Nat.Partrec.Code.evaln fuel₁ M (Nat.pair x (encodeRandomBits r numBits)) := hr
   exact Nat.Partrec.Code.evaln_mono h h_mem
 
-/-- For well-behaved PTMs, more random bits preserve a successful bounded run. -/
-theorem runPTMBounded_mono_bits (M : PTMIndex) (hM : isWellBehavedPTM M)
-    (x : ℕ) (r : CantorSpace) (fuel : ℕ)
-    {numBits₁ numBits₂ : ℕ} (h : numBits₁ ≤ numBits₂) {k : ℕ}
-    (hr : runPTMBounded M x r fuel numBits₁ = some k) :
-    runPTMBounded M x r fuel numBits₂ = some k :=
-  hM x r fuel numBits₁ numBits₂ k h hr
-
-/-- Combined monotonicity for well-behaved PTMs. -/
-theorem runPTMBounded_mono (M : PTMIndex) (hM : isWellBehavedPTM M)
-    (x : ℕ) (r : CantorSpace)
-    {fuel₁ fuel₂ numBits₁ numBits₂ : ℕ} (hf : fuel₁ ≤ fuel₂) (hn : numBits₁ ≤ numBits₂) {k : ℕ}
-    (hr : runPTMBounded M x r fuel₁ numBits₁ = some k) :
-    runPTMBounded M x r fuel₂ numBits₂ = some k := by
-  have h_bits := runPTMBounded_mono_bits M hM x r fuel₁ hn hr
-  exact runPTMBounded_mono_fuel M x r numBits₂ hf h_bits
-
-/-- Diagonal bounded output sets are monotone for well-behaved PTMs. -/
-theorem boundedOutputProb_mono_diag (M : PTMIndex) (hM : isWellBehavedPTM M) (x : ℕ)
-    {n₁ n₂ : ℕ} (h : n₁ ≤ n₂) :
-    boundedOutputProb M x n₁ n₁ ≤ boundedOutputProb M x n₂ n₂ := by
-  unfold boundedOutputProb
-  apply measure_mono
-  intro r hr
-  simp only [Set.mem_setOf_eq] at hr ⊢
-  exact runPTMBounded_mono M hM x r h h hr
-
-/-- The diagonal bounded sets cover the full output set for well-behaved PTMs. -/
-theorem outputOneSet_eq_iUnion (M : PTMIndex) (hM : isWellBehavedPTM M) (x : ℕ) :
-    outputOneSet M x = ⋃ n : ℕ, {r : CantorSpace | runPTMBounded M x r n n = some 1} := by
-  ext r
-  simp only [outputOneSet, PTMHaltsWithOutput, Set.mem_setOf_eq, Set.mem_iUnion]
-  constructor
-  · intro hr
-    rcases hr with ⟨fuel, numBits, hrun⟩
-    refine ⟨max fuel numBits, ?_⟩
-    exact runPTMBounded_mono M hM x r (le_max_left _ _) (le_max_right _ _) hrun
-  · intro hr
-    rcases hr with ⟨n, hrun⟩
-    exact ⟨n, n, hrun⟩
-
-/-- Every bounded approximation is below the full output probability. -/
-theorem boundedOutputProb_le_outputProb (M : PTMIndex) (x : ℕ) (fuel numBits : ℕ) :
-    boundedOutputProb M x fuel numBits ≤ outputProb M x := by
-  unfold boundedOutputProb outputProb
-  apply measure_mono
-  intro r hr
-  exact ⟨fuel, numBits, hr⟩
-
-/-- Bounded approximations converge to the true probability.
-
-NOTE: The current encoding needs the explicit `isWellBehavedPTM` hypothesis.
+/-!
+The raw diagonal changes the code's input at every stage and does not generally
+converge to the existential output event. Accumulated finite events and their exact
+rational counts are developed in `ProbabilisticPrefixExperiment`.
 -/
-theorem boundedOutputProb_tendsto (M : PTMIndex) (x : ℕ) (hM : isWellBehavedPTM M) :
-    Filter.Tendsto (fun n => boundedOutputProb M x n n) Filter.atTop
-      (nhds (outputProb M x)) := by
-  unfold outputProb boundedOutputProb
-  rw [outputOneSet_eq_iUnion M hM x]
-  have h_mono : Monotone (fun n : ℕ => {r : CantorSpace | runPTMBounded M x r n n = some 1}) := by
-    intro n₁ n₂ h r hr
-    simp only [Set.mem_setOf_eq] at hr ⊢
-    exact runPTMBounded_mono M hM x r h h hr
-  exact tendsto_measure_iUnion_atTop h_mono
-
-/-! ## Connection to Reflective Oracles
-
-The key property for reflective oracles is that we can compute/approximate
-the output probability from below and above.
--/
-
-/-- The output probability can be approximated from below by a monotone
-sequence of bounded probabilities.
-
-NOTE: With the current encoding this lives naturally in `ℝ≥0∞`; the bounded
-probabilities are genuine measures and converge from below under
-`isWellBehavedPTM`.
--/
-theorem outputProb_limit_computable_below (M : PTMIndex) (x : ℕ) (hM : isWellBehavedPTM M) :
-    ∃ f : ℕ → ℝ≥0∞, (∀ n, f n ≤ outputProb M x) ∧
-                    Monotone f ∧
-                    Filter.Tendsto f Filter.atTop
-                      (nhds (outputProb M x)) := by
-  refine ⟨fun n => boundedOutputProb M x n n, ?_, ?_, ?_⟩
-  · intro n
-    exact boundedOutputProb_le_outputProb M x n n
-  · intro n₁ n₂ h
-    exact boundedOutputProb_mono_diag M hM x h
-  · exact boundedOutputProb_tendsto M x hM
 
 end Mettapedia.Computability

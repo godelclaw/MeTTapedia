@@ -1,4 +1,6 @@
-import Mettapedia.Languages.MeTTa.PeTTa.Effects
+import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Commands
+
+open Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite (RewriteResults)
 
 /-!
 # MeTTa Type System (Minimal Fragment)
@@ -205,8 +207,9 @@ theorem all_spaces_well_typed (s : PeTTaSpace) : s.isWellTyped :=
 theorem addAnnotation_wellTyped (s : PeTTaSpace) (p₀ t₀ : Pattern) :
     (s.addAtom (typeAnnotationPat p₀ t₀)).isWellTyped := by
   intro p t h
-  simp only [PeTTaSpace.addAtom, List.mem_cons] at h
-  rcases h with heq | hh
+  simp only [PeTTaSpace.addAtom, List.mem_append, List.mem_singleton] at h
+  rcases h with hh | heq
+  · exact MeTTaType.typeAnnotation p t (PeTTaSpace.mem_facts_addAtom hh)
   · -- heq : typeAnnotationPat p t = typeAnnotationPat p₀ t₀
     -- inject through .apply ":" [_, _]
     have hinj : p = p₀ ∧ t = t₀ := by
@@ -222,8 +225,6 @@ theorem addAnnotation_wellTyped (s : PeTTaSpace) (p₀ t₀ : Pattern) :
     obtain ⟨rfl, rfl⟩ := hinj
     -- After subst, p = p₀ and t = t₀, so the goal uses p and t
     exact MeTTaType.typeAnnotation p t (PeTTaSpace.mem_facts_addAtom_self s _)
-  · -- hh : typeAnnotationPat p t ∈ s.facts — old annotation
-    exact MeTTaType.typeAnnotation p t (List.mem_cons_of_mem _ hh)
 
 /-! ## Type Monotonicity -/
 
@@ -248,16 +249,31 @@ theorem typeOf_mono_addAtom {s : PeTTaSpace} {p t : Pattern} (newFact : Pattern)
 
 /-! ## Typing of PeTTaEval Results -/
 
-/-- **Type preservation for `var`**: free variables evaluate to themselves
-    and thus preserve their type (trivially). -/
+/-! Preservation below is stated **along a specific evaluation rule**, and the
+statements mention the answer list that rule produces.  General preservation —
+`PeTTaEval s p as → MeTTaType s p t → ∀ q ∈ as, MeTTaType s q t` for arbitrary
+`p` — is *not* proved here: it would need the `ruleApp` case, where the answer
+is the rule's right-hand side under a substitution and nothing yet relates its
+type to the left-hand side's. -/
+
+/-- **Preservation along the `var` rule.**  `PeTTaEval.var` sends a free
+variable to the single answer `[x]`, so every answer it produces carries the
+variable's type. -/
 theorem typePreserved_var (s : PeTTaSpace) (x : String) (t : Pattern)
     (ht : MeTTaType s (.fvar x) t) :
-    MeTTaType s (.fvar x) t := ht
+    ∀ q ∈ ([Pattern.fvar x] : RewriteResults), MeTTaType s q t := by
+  intro q hq
+  rcases List.mem_singleton.mp hq with rfl
+  exact ht
 
-/-- **Type preservation for `ground`**: ground atoms evaluate to themselves. -/
+/-- **Preservation along the `ground` rule.**  `PeTTaEval.ground` sends a
+nullary application to the single answer `[c]`. -/
 theorem typePreserved_ground (s : PeTTaSpace) (c : String) (t : Pattern)
     (ht : MeTTaType s (.apply c []) t) :
-    MeTTaType s (.apply c []) t := ht
+    ∀ q ∈ ([Pattern.apply c []] : RewriteResults), MeTTaType s q t := by
+  intro q hq
+  rcases List.mem_singleton.mp hq with rfl
+  exact ht
 
 /-- Every evaluated pattern has `%Undefined%` as a type (trivially by `undefinedIsTop`).
     This shows the type system is always satisfiable — no term is type-less. -/

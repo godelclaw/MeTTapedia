@@ -263,7 +263,8 @@ omit [Fact (0 < m)] in
         have hi : i.1 < xs.length - m + 1 := i.2
         have hj : j.1 < m := j.2
         omega⟩ := by
-  simp [contextPathOfWord]
+  unfold contextPathOfWord
+  exact congrFun (List.getElem_ofFn _) j
 
 omit [Fact (0 < m)] in
 @[simp] theorem contextPathOfWord_zero
@@ -273,7 +274,8 @@ omit [Fact (0 < m)] in
         rw [List.length_take]
         omega) := by
   funext j
-  simp [contextOfList, contextPathOfWord]
+  simpa only [contextOfList, List.get_eq_getElem, List.getElem_take, Nat.zero_add] using!
+    contextPathOfWord_get xs hxs ⟨0, by omega⟩ j
 
 /-- Recover the raw symbol word determined by a nonempty finite context
 prefix. -/
@@ -409,7 +411,7 @@ theorem measurable_symbolSequenceOfContextTrajectory :
   · let idx : Fin m := ⟨n, h⟩
     -- 4.31: the `Measurable.comp` term is `(· ⟨n,h⟩) ∘ (· 0)`, defeq to the eta-reduced goal
     -- `fun x => x 0 ⟨n,⋯⟩`; `simp only [Function.comp_def]` bridges the two normal forms.
-    simp only [symbolSequenceOfContextTrajectory, h, idx, ↓reduceDIte]
+    simp only [symbolSequenceOfContextTrajectory, h, ↓reduceDIte]
     exact ((measurable_pi_apply (a := idx) :
       Measurable (fun ctx : Context k m => ctx idx)).comp
         (measurable_pi_apply (a := (0 : ℕ))))
@@ -901,7 +903,9 @@ theorem wordOfContextPrefix_contextPrefixMap_eq_symbolPrefix
               symbolSequenceOfContextTrajectory (k := k) (m := m) ω i.1)).get
               ⟨i, hiSeq⟩ := by
             rw [List.get_ofFn]
-            simp [symbolSequenceOfContextTrajectory, hi]
+            change ω 0 ⟨i, hi⟩ =
+              symbolSequenceOfContextTrajectory (k := k) (m := m) ω i
+            simp only [symbolSequenceOfContextTrajectory, dif_pos hi]
     · have hiSeq' : i < m + n := by
         simpa using hiSeq
       let j : Fin n := ⟨i - m, by omega⟩

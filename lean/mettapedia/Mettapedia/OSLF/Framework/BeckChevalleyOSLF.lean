@@ -4,7 +4,7 @@ import Mettapedia.OSLF.Framework.TypeSynthesis
 import Mettapedia.OSLF.Framework.ToposReduction
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.GSLT.Topos.PredicateFibration
-import Mettapedia.OSLF.NativeType.CodomainFibration
+import Mettapedia.OSLF.PresheafNativeType.InternalLanguage
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SemanticSubstitution
 
@@ -67,9 +67,10 @@ open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.Framework.ConstructorFibration
 open Mettapedia.OSLF.Framework.ModalEquivalence
 open Mettapedia.OSLF.Framework.TypeSynthesis
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
-open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction (possiblyProp)
+open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction (rawStepFuture)
 
 /-! ## Presheaf Beck–Chevalley Transport into OSLF Layer
 
@@ -112,6 +113,7 @@ theorem presheaf_beckChevalley_square_direct
     (Mettapedia.GSLT.Topos.beckChevalleyPresheaf
       (C := C) pi1 pi2 f g hpb φ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Representable-object Beck–Chevalley corollary for predicates obtained from
 `Pattern → Prop` via `languageSortFiber_ofPatternPred`.
 
@@ -150,6 +152,7 @@ theorem representable_patternPred_beckChevalley
     (φ := Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_subobject
       lang s seed φ hNat)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Σ-facing representable Beck–Chevalley wrapper on the canonical
 predicate-fiber object (`Pattern → Prop` lifted to `Sub(y(s))`).
 
@@ -186,6 +189,7 @@ theorem representable_patternPred_sigma_beckChevalley
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Σ-facing representable transport wrapper:
 left-adjoint (`∃`) law over the canonical predicate object, routed through the
 Prop-12 ΠΣ rule pack endpoint. -/
@@ -212,7 +216,7 @@ theorem representable_patternPred_sigma_transport_via_prop12_pack
         from Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
           lang s seed φ hNat)
       ≤ ((Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).pullback f) ψ) := by
-  let Δ : Mettapedia.OSLF.NativeType.PresheafDepCtx (C := ConstructorObj lang) :=
+  let Δ : Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx (C := ConstructorObj lang) :=
     { A := Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang s
       B := D
       f := f }
@@ -229,9 +233,9 @@ theorem representable_patternPred_sigma_transport_via_prop12_pack
           from Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
             lang s seed φ hNat)
         ≤ ((Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).pullback f) ψ) := by
-    simpa [Δ, Mettapedia.OSLF.NativeType.PresheafDepCtx.pb,
-      Mettapedia.OSLF.NativeType.PresheafDepCtx.sigmaForm] using!
-      (Mettapedia.OSLF.NativeType.prop12_sigmaEta_presheaf
+    simpa [Δ, Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.pb,
+      Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.sigmaForm] using!
+      (Mettapedia.OSLF.PresheafNativeType.prop12_sigmaEta_presheaf
         (C := ConstructorObj lang) (Δ := Δ)
         (φ := (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
           lang s seed φ hNat :
@@ -240,6 +244,7 @@ theorem representable_patternPred_sigma_transport_via_prop12_pack
         (ψ := ψ))
   exact hSigmaEta
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Π-facing representable transport wrapper:
 right-adjoint (`∀`) law over the same canonical predicate object.
 
@@ -266,7 +271,7 @@ theorem representable_patternPred_pi_transport_via_prop12_pack
       (Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).universalImage f
         (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
           lang s seed φ hNat)) := by
-  let Δ : Mettapedia.OSLF.NativeType.PresheafDepCtx (C := ConstructorObj lang) :=
+  let Δ : Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx (C := ConstructorObj lang) :=
     { A := Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang s
       B := D
       f := f }
@@ -279,15 +284,16 @@ theorem representable_patternPred_pi_transport_via_prop12_pack
         (Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).universalImage f
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
             lang s seed φ hNat)) := by
-    simpa [Δ, Mettapedia.OSLF.NativeType.PresheafDepCtx.pb,
-      Mettapedia.OSLF.NativeType.PresheafDepCtx.piForm] using!
-      (Mettapedia.OSLF.NativeType.prop12_piEta_presheaf
+    simpa [Δ, Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.pb,
+      Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.piForm] using!
+      (Mettapedia.OSLF.PresheafNativeType.prop12_piEta_presheaf
         (C := ConstructorObj lang) (Δ := Δ)
         (ψ := χ)
         (φ := Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
           lang s seed φ hNat))
   exact hPiEta
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Π-facing representable transport wrapper:
 right-adjoint (`∀`) law over the same canonical predicate object.
 
@@ -318,6 +324,7 @@ theorem representable_patternPred_pi_transport
     (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
     (f := f) (χ := χ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Unified representable Π/Σ transport endpoint over the canonical predicate
 object, with both adjoint laws routed through the Prop-12 ΠΣ rule pack. -/
 theorem representable_patternPred_piSigma_transport_via_rulePack
@@ -327,7 +334,7 @@ theorem representable_patternPred_piSigma_transport_via_rulePack
       Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality
         lang s seed φ)
     (hPiSigmaPack :
-      Mettapedia.OSLF.NativeType.PiSigmaPredicateRulePack.{0, 0, 0}
+      Mettapedia.OSLF.PresheafNativeType.PiSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj lang))
     {D : CategoryTheory.Functor (Opposite (ConstructorObj lang)) Type}
     (f :
@@ -356,7 +363,7 @@ theorem representable_patternPred_piSigma_transport_via_rulePack
         ((Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).universalImage f)
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
             lang s seed φ hNat))) := by
-  let Δ : Mettapedia.OSLF.NativeType.PresheafDepCtx (C := ConstructorObj lang) :=
+  let Δ : Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx (C := ConstructorObj lang) :=
     { A := Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang s
       B := D
       f := f }
@@ -373,8 +380,8 @@ theorem representable_patternPred_piSigma_transport_via_rulePack
           from Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
             lang s seed φ hNat)
         ≤ ((Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).pullback f) ψ) := by
-    simpa [Δ, Mettapedia.OSLF.NativeType.PresheafDepCtx.pb,
-      Mettapedia.OSLF.NativeType.PresheafDepCtx.sigmaForm] using!
+    simpa [Δ, Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.pb,
+      Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.sigmaForm] using!
       (hPiSigmaPack.sigmaEta Δ
         (φ := (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
           lang s seed φ hNat :
@@ -390,8 +397,8 @@ theorem representable_patternPred_piSigma_transport_via_rulePack
         (Mettapedia.GSLT.Topos.presheafChangeOfBase (C := ConstructorObj lang)).universalImage f
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
             lang s seed φ hNat)) := by
-    simpa [Δ, Mettapedia.OSLF.NativeType.PresheafDepCtx.pb,
-      Mettapedia.OSLF.NativeType.PresheafDepCtx.piForm] using!
+    simpa [Δ, Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.pb,
+      Mettapedia.OSLF.PresheafNativeType.PresheafDepCtx.piForm] using!
       (hPiSigmaPack.piEta Δ
         (ψ := χ)
         (φ := (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
@@ -401,6 +408,7 @@ theorem representable_patternPred_piSigma_transport_via_rulePack
         )
   exact ⟨hSigmaEta, hPiEta⟩
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Unified representable Π/Σ transport endpoint over the canonical predicate
 object, with both adjoint laws routed through the Prop-12 ΠΣ rule pack. -/
 theorem representable_patternPred_piSigma_transport_via_prop12_pack
@@ -438,10 +446,11 @@ theorem representable_patternPred_piSigma_transport_via_prop12_pack
             lang s seed φ hNat))) := by
   exact representable_patternPred_piSigma_transport_via_rulePack
     (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
-    (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+    (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
       (C := ConstructorObj lang))
     (f := f) (χ := χ) (ψ := ψ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Packaged representable Π/Σ transport API on the canonical predicate object:
 includes Σ-Beck-Chevalley transport plus Σ/Π adjoint transport laws, all routed
 through the Prop-12 predicate-fibration rule pack exports. -/
@@ -532,7 +541,7 @@ theorem representable_patternPred_piSigma_transport_pack_via_rulePack
       Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality
         lang s seed φ)
     (hPiSigmaPack :
-      Mettapedia.OSLF.NativeType.PiSigmaPredicateRulePack.{0, 0, 0}
+      Mettapedia.OSLF.PresheafNativeType.PiSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj lang))
     {D : CategoryTheory.Functor (Opposite (ConstructorObj lang)) Type}
     (f :
@@ -579,7 +588,7 @@ theorem representable_patternPred_piSigma_transport_pack_via_prop12
       (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat) (f := f) := by
   exact representable_patternPred_piSigma_transport_pack_via_rulePack
     (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
-    (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+    (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
       (C := ConstructorObj lang))
     (f := f)
 
@@ -599,7 +608,7 @@ theorem transport_pack_via_prop12_eq_via_rulePack
       lang s seed φ hNat f =
     representable_patternPred_piSigma_transport_pack_via_rulePack
       lang s seed φ hNat
-      (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+      (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj lang))
       f := rfl
 
@@ -620,7 +629,7 @@ theorem transport_via_prop12_pack_eq_via_rulePack
       lang s seed φ hNat f χ ψ =
     representable_patternPred_piSigma_transport_via_rulePack
       lang s seed φ hNat
-      (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+      (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj lang))
       f χ ψ := rfl
 
@@ -632,13 +641,14 @@ the binary relation presentation. -/
 theorem langDiamondUsing_graph_transport
     (C : Type _) [CategoryTheory.Category C]
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
-    (lang : LanguageDef) {X : Opposite C} (φ : Pattern → Prop) (p : Pattern) :
+    (lang : LanguageDef) {X : Opposite C}
+    (φ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
     langDiamondUsing relEnv lang φ p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := C) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv lang).source.app X e).down = p ∧
-        φ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
+        φ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv lang).target.app X e).down) := by
   simpa using
     (Mettapedia.OSLF.Framework.ToposReduction.langDiamondUsing_iff_exists_graphStep
@@ -649,13 +659,14 @@ presheaf reduction graph (`E`,`source`,`target`) built in `ToposReduction`. -/
 theorem langBoxUsing_graph_transport
     (C : Type _) [CategoryTheory.Category C]
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
-    (lang : LanguageDef) {X : Opposite C} (φ : Pattern → Prop) (p : Pattern) :
+    (lang : LanguageDef) {X : Opposite C}
+    (φ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
     langBoxUsing relEnv lang φ p ↔
       ∀ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := C) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv lang).target.app X e).down = p →
-        φ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
+        φ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv lang).source.app X e).down) := by
   simpa using
     (Mettapedia.OSLF.Framework.ToposReduction.langBoxUsing_iff_forall_graphIncoming
@@ -714,6 +725,28 @@ def commPb (q : Pattern) : (Pattern → Prop) → (Pattern → Prop) := pb (comm
 /-- Direct image: `∃_σ(ψ)(r) = ∃ p, commSubst p q = r ∧ ψ p`. -/
 def commDi (q : Pattern) : (Pattern → Prop) → (Pattern → Prop) := di (commMap q)
 
+/-- A COMM direct image equipped with the equation-invariance proof required
+to use it as an OSLF predicate. -/
+def commDiPredicateUsing
+    (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (lang : LanguageDef) (q : Pattern) (φ : Pattern → Prop)
+    (invariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ)) :
+    EquationPredicate (langGSLTUsing relEnv lang) :=
+  ⟨commDi q φ, invariant⟩
+
+/-- The COMM direct image for an equation-free presentation of the canonical
+OSLF.  This is not a second predicate semantics: the equation-free certificate
+makes every authored predicate invariant, so the same quotient construction
+reduces to ordinary predicates. -/
+def commDiPredicateUsingOfEquationFree
+    (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (lang : LanguageDef) (equationFree : lang.isEquationFree = true)
+    (q : Pattern) (φ : Pattern → Prop) :
+    EquationPredicate (langGSLTUsing relEnv lang) :=
+  commDiPredicateUsing relEnv lang q φ
+    (equationInvariant_langGSLTUsing_of_equation_free
+      relEnv equationFree (commDi q φ))
+
 /-- Universal image: `∀_σ(ψ)(r) = ∀ p, commSubst p q = r → ψ p`. -/
 def commUi (q : Pattern) : (Pattern → Prop) → (Pattern → Prop) := ui (commMap q)
 
@@ -760,6 +793,7 @@ theorem commPbSemantic_apply (q : Pattern) (φ : Pattern → Prop) (pBody : Patt
 theorem commDiSemantic_apply (q : Pattern) (ψ : Pattern → Prop) (r : Pattern) :
     commDiSemantic q ψ r = (∃ p, semanticCommSubst p q = r ∧ ψ p) := rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Representable-fiber Beck-Chevalley instance specialized to the
 COMM substitution direct image predicate `commDi q φ`.
 
@@ -796,6 +830,7 @@ theorem representable_commDi_patternPred_beckChevalley
     (hNat := hNatComm) (pi1 := pi1) (pi2 := pi2)
     (f := f) (g := g) (hpb := hpb) (hf := hf) (hpi2 := hpi2)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Derived COMM representable Beck–Chevalley corollary from the named
 structural lifting condition.
 
@@ -840,6 +875,7 @@ theorem representable_commDi_patternPred_beckChevalley_of_lifting
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `representable_commDi_patternPred_beckChevalley` with naturality derived via
 the path-based lifting constructor (`commDiWitnessLifting_of_pathSemLift`). -/
 theorem representable_commDi_patternPred_beckChevalley_of_pathSemLift
@@ -891,6 +927,7 @@ theorem representable_commDi_patternPred_beckChevalley_of_pathSemLift
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `representable_commDi_patternPred_beckChevalley` with naturality derived via
 canonical path-semantics closure (`PathSemClosedPred`).
 
@@ -942,6 +979,7 @@ theorem representable_commDi_patternPred_beckChevalley_of_pathSemClosed
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Package form of `representable_commDi_patternPred_beckChevalley_of_pathSemClosed`. -/
 theorem representable_commDi_patternPred_beckChevalley_of_pathSemLiftPkg
     (lang : LanguageDef) (s : LangSort lang)
@@ -988,8 +1026,10 @@ theorem commDi_diamond_graph_step_iff
     (C : Type _) [CategoryTheory.Category C]
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (lang : LanguageDef) {X : Opposite C}
-    (q p : Pattern) (φ : Pattern → Prop) :
-    langDiamondUsing relEnv lang (commDi q φ) p ↔
+    (q p : Pattern) (φ : Pattern → Prop)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ)) :
+    langDiamondUsing relEnv lang
+        (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := C) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1000,18 +1040,22 @@ theorem commDi_diamond_graph_step_iff
               (C := C) relEnv lang).target.app X e).down ∧
           φ u := by
   rw [langDiamondUsing_graph_transport (C := C) (relEnv := relEnv) (lang := lang)
-    (X := X) (φ := commDi q φ) (p := p)]
+    (X := X) (φ := commDiPredicateUsing relEnv lang q φ hInvariant) (p := p)]
   constructor
   · rintro ⟨e, hs, hcomm⟩
     rcases (by simpa [commDi_apply] using hcomm) with ⟨u, hu, hφ⟩
     exact ⟨e, hs, u, hu, hφ⟩
   · rintro ⟨e, hs, u, hu, hφ⟩
     refine ⟨e, hs, ?_⟩
+    change commDi q φ
+      (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
+        (C := C) relEnv lang).target.app X e).down)
     exact (by simpa [commDi_apply] using (show ∃ u : Pattern,
       commSubst u q =
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv lang).target.app X e).down ∧ φ u from ⟨u, hu, hφ⟩))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- One-step composition theorem: representable COMM-BC plus graph-`◇` form.
 
 This packages the representable Beck–Chevalley specialization for COMM
@@ -1035,6 +1079,7 @@ theorem representable_commDi_bc_and_graphDiamond
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ))
     {X : Opposite (ConstructorObj lang)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
@@ -1046,7 +1091,8 @@ theorem representable_commDi_bc_and_graphDiamond
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_subobject
             lang s seed (commDi q φ) hNatComm)))
     ∧
-    (langDiamondUsing relEnv lang (commDi q φ) p ↔
+    (langDiamondUsing relEnv lang
+        (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj lang) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1064,8 +1110,9 @@ theorem representable_commDi_bc_and_graphDiamond
   · simpa using
       (commDi_diamond_graph_step_iff
         (C := ConstructorObj lang) (relEnv := relEnv) (lang := lang)
-        (X := X) (q := q) (p := p) (φ := φ))
+        (X := X) (q := q) (p := p) (φ := φ) hInvariant)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `representable_commDi_bc_and_graphDiamond` with naturality synthesized from
 `commDiWitnessLifting`. -/
 theorem representable_commDi_bc_and_graphDiamond_of_lifting
@@ -1086,6 +1133,7 @@ theorem representable_commDi_bc_and_graphDiamond_of_lifting
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ))
     {X : Opposite (ConstructorObj lang)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
@@ -1101,7 +1149,8 @@ theorem representable_commDi_bc_and_graphDiamond_of_lifting
             (Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality_commDi
               lang s seed q φ hLift))))
     ∧
-    (langDiamondUsing relEnv lang (commDi q φ) p ↔
+    (langDiamondUsing relEnv lang
+        (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj lang) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1118,8 +1167,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_lifting
         lang s seed q φ hLift)
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
-    (relEnv := relEnv) (X := X) (p := p)
+    (relEnv := relEnv) (hInvariant := hInvariant) (X := X) (p := p)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `representable_commDi_bc_and_graphDiamond` with naturality derived via the
 path-based lifting constructor (`commDiWitnessLifting_of_pathSemLift`). -/
 theorem representable_commDi_bc_and_graphDiamond_of_pathSemLift
@@ -1147,6 +1197,7 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLift
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ))
     {X : Opposite (ConstructorObj lang)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
@@ -1166,7 +1217,8 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLift
               (Mettapedia.OSLF.Framework.CategoryBridge.commDiWitnessLifting_of_pathSemLift
                 lang s seed q φ hLiftEq hClosed)))))
     ∧
-    (langDiamondUsing relEnv lang (commDi q φ) p ↔
+    (langDiamondUsing relEnv lang
+        (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj lang) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1183,8 +1235,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLift
         lang s seed q φ hLiftEq hClosed)
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
-    (relEnv := relEnv) (X := X) (p := p)
+    (relEnv := relEnv) (hInvariant := hInvariant) (X := X) (p := p)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- `representable_commDi_bc_and_graphDiamond` with naturality derived via
 canonical path-semantics closure (`PathSemClosedPred`).
 
@@ -1213,6 +1266,8 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemClosed
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang)
+      (commDi q (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)))
     {X : Opposite (ConstructorObj lang)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
@@ -1235,7 +1290,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemClosed
                 lang s seed q φ hLiftEq)))))
     ∧
     (langDiamondUsing relEnv lang
-      (commDi q (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)) p ↔
+      (commDiPredicateUsing relEnv lang q
+        (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)
+        hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj lang) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1253,8 +1310,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemClosed
         lang s seed q φ hLiftEq)
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
-    (relEnv := relEnv) (X := X) (p := p)
+    (relEnv := relEnv) (hInvariant := hInvariant) (X := X) (p := p)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Package form of `representable_commDi_bc_and_graphDiamond_of_pathSemClosed`. -/
 theorem representable_commDi_bc_and_graphDiamond_of_pathSemLiftPkg
     (lang : LanguageDef) (s : LangSort lang)
@@ -1274,6 +1332,8 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLiftPkg
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang)
+      (commDi q (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)))
     {X : Opposite (ConstructorObj lang)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
@@ -1292,7 +1352,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLiftPkg
               lang s seed q φ hPkg))))
     ∧
     (langDiamondUsing relEnv lang
-      (commDi q (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)) p ↔
+      (commDiPredicateUsing relEnv lang q
+        (Mettapedia.OSLF.Framework.CategoryBridge.PathSemClosedPred lang φ)
+        hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj lang) relEnv lang).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1307,8 +1369,9 @@ theorem representable_commDi_bc_and_graphDiamond_of_pathSemLiftPkg
     (hLiftEq := hPkg.liftEq)
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
-    (relEnv := relEnv) (X := X) (p := p)
+    (relEnv := relEnv) (hInvariant := hInvariant) (X := X) (p := p)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Specialized rho-Proc version of the path-lift BC+graph theorem, consuming
 the concrete package `rho_proc_pathSemLift_pkg`. -/
 theorem rhoProc_commDi_bc_and_graphDiamond_of_pathSemLift_pkg
@@ -1327,26 +1390,28 @@ theorem rhoProc_commDi_bc_and_graphDiamond_of_pathSemLift_pkg
     (hpb : CategoryTheory.IsPullback pi1 pi2 f g)
     (hf : CategoryTheory.Mono f) (hpi2 : CategoryTheory.Mono pi2)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv rhoCalc) (commDi q φ.1))
     {X : Opposite (ConstructorObj rhoCalc)} (p : Pattern) :
     ((CategoryTheory.Subobject.map pi2).obj
         ((CategoryTheory.Subobject.pullback pi1).obj
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_subobject
-            rhoCalc rhoProc seed (commDi q φ)
+            rhoCalc rhoProc seed (commDi q φ.1)
             (Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality_commDi
-              rhoCalc rhoProc seed q φ
+              rhoCalc rhoProc seed q φ.1
               (Mettapedia.OSLF.Framework.CategoryBridge.rho_proc_commDiWitnessLifting_of_pkg
                 seed q φ hPkg))))
       =
     (CategoryTheory.Subobject.pullback g).obj
         ((CategoryTheory.Subobject.map f).obj
           (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_subobject
-            rhoCalc rhoProc seed (commDi q φ)
+            rhoCalc rhoProc seed (commDi q φ.1)
             (Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality_commDi
-              rhoCalc rhoProc seed q φ
+              rhoCalc rhoProc seed q φ.1
               (Mettapedia.OSLF.Framework.CategoryBridge.rho_proc_commDiWitnessLifting_of_pkg
                 seed q φ hPkg)))))
     ∧
-    (langDiamondUsing relEnv rhoCalc (commDi q φ) p ↔
+    (langDiamondUsing relEnv rhoCalc
+      (commDiPredicateUsing relEnv rhoCalc q φ.1 hInvariant) p ↔
       ∃ e : (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := ConstructorObj rhoCalc) relEnv rhoCalc).Edge.obj X,
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
@@ -1355,13 +1420,13 @@ theorem rhoProc_commDi_bc_and_graphDiamond_of_pathSemLift_pkg
           commSubst u q =
             ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
               (C := ConstructorObj rhoCalc) relEnv rhoCalc).target.app X e).down ∧
-          φ u) := by
+          φ.1 u) := by
   exact representable_commDi_bc_and_graphDiamond_of_pathSemLift
-    (lang := rhoCalc) (s := rhoProc) (seed := seed) (q := q) (φ := φ)
+    (lang := rhoCalc) (s := rhoProc) (seed := seed) (q := q) (φ := φ.1)
     (hLiftEq := hPkg.1) (hClosed := hPkg.2)
     (pi1 := pi1) (pi2 := pi2) (f := f) (g := g)
     (hpb := hpb) (hf := hf) (hpi2 := hpi2)
-    (relEnv := relEnv) (X := X) (p := p)
+    (relEnv := relEnv) (hInvariant := hInvariant) (X := X) (p := p)
 
 /-- Substitution/rewrite square theorem stated directly over a packaged
 `ReductionGraphObj`.
@@ -1373,28 +1438,36 @@ theorem commDi_diamond_graphObj_square
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (lang : LanguageDef)
     (G : Mettapedia.OSLF.Framework.ToposReduction.ReductionGraphObj C relEnv lang)
-    {X : Opposite C} (q p : Pattern) (φ : Pattern → Prop) :
-    langDiamondUsing relEnv lang (commDi q φ) p ↔
+    {X : Opposite C} (q p : Pattern) (φ : Pattern → Prop)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ)) :
+    langDiamondUsing relEnv lang
+      (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : G.Edge.obj X,
         (G.source.app X e).down = p ∧
         ∃ u : Pattern, commSubst u q = (G.target.app X e).down ∧ φ u := by
   constructor
   · intro h
-    rcases (langDiamondUsing_spec relEnv lang (commDi q φ) p).1 h with ⟨r, hred, hcomm⟩
+    rcases (langDiamondUsing_spec relEnv lang
+      (commDiPredicateUsing relEnv lang q φ hInvariant) p).1 h with ⟨r, hred, hcomm⟩
     rcases (G.edge_endpoints_iff (X := X) (p := p) (q := r)).2 hred with ⟨e, hs, ht⟩
-    rcases (by simpa [commDi_apply] using hcomm) with ⟨u, hu, hφ⟩
+    change commDi q φ r at hcomm
+    rw [commDi_apply] at hcomm
+    rcases hcomm with ⟨u, hu, hφ⟩
     refine ⟨e, hs, u, ?_, hφ⟩
     simpa [ht] using hu
   · rintro ⟨e, hs, u, hu, hφ⟩
     let r : Pattern := (G.target.app X e).down
-    have hred : langReducesUsing relEnv lang p r :=
+    have hred : langSemanticReducesUsing relEnv lang p r :=
       (G.edge_endpoints_iff (X := X) (p := p) (q := r)).1 ⟨e, hs, rfl⟩
-    refine (langDiamondUsing_spec relEnv lang (commDi q φ) p).2 ?_
+    refine (langDiamondUsing_spec relEnv lang
+      (commDiPredicateUsing relEnv lang q φ hInvariant) p).2 ?_
     refine ⟨r, hred, ?_⟩
     have hcomm : ∃ t : Pattern, commSubst t q = r ∧ φ t := by
       refine ⟨u, ?_, hφ⟩
       simpa [r] using hu
-    simpa [commDi_apply] using hcomm
+    change commDi q φ r
+    rw [commDi_apply]
+    exact hcomm
 
 /-- Graph-object substitution/rewrite square, proved through the graph-form
 `◇` characterization over `ReductionGraphObj`.
@@ -1406,24 +1479,25 @@ theorem commDi_diamond_graphObj_square_direct
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (lang : LanguageDef)
     (G : Mettapedia.OSLF.Framework.ToposReduction.ReductionGraphObj C relEnv lang)
-    {X : Opposite C} (q p : Pattern) (φ : Pattern → Prop) :
-    langDiamondUsing relEnv lang (commDi q φ) p ↔
+    {X : Opposite C} (q p : Pattern) (φ : Pattern → Prop)
+    (hInvariant : EquationInvariant (langGSLTUsing relEnv lang) (commDi q φ)) :
+    langDiamondUsing relEnv lang
+      (commDiPredicateUsing relEnv lang q φ hInvariant) p ↔
       ∃ e : G.Edge.obj X,
         (G.source.app X e).down = p ∧
         ∃ u : Pattern, commSubst u q = (G.target.app X e).down ∧ φ u := by
   rw [Mettapedia.OSLF.Framework.ToposReduction.langDiamondUsing_iff_exists_graphObjStep
     (C := C) (relEnv := relEnv) (lang := lang) (G := G) (X := X)
-    (φ := commDi q φ) (p := p)]
+    (φ := commDiPredicateUsing relEnv lang q φ hInvariant) (p := p)]
   constructor
   · rintro ⟨e, hs, hcomm⟩
     rcases (by simpa [commDi_apply] using hcomm) with ⟨u, hu, hφ⟩
     exact ⟨e, hs, u, hu, hφ⟩
   · rintro ⟨e, hs, u, hu, hφ⟩
     refine ⟨e, hs, ?_⟩
-    exact (by
-      simpa [commDi_apply] using
-        (show ∃ t : Pattern, commSubst t q = (G.target.app X e).down ∧ φ t from
-          ⟨u, hu, hφ⟩))
+    change commDi q φ ((G.target.app X e).down)
+    rw [commDi_apply]
+    exact ⟨u, hu, hφ⟩
 
 /-! ## Composed Galois Connections: Modal + Substitution
 
@@ -1433,15 +1507,33 @@ capture the combined effect of reduction modalities and substitution. -/
 
 variable (lang : LanguageDef)
 
+/-- COMM substitution may act on OSLF predicates only after proving that it
+descends through the language's equation theory. -/
+def commEquationMap (q : Pattern)
+    (hComm : ∀ {left right : Pattern},
+      (langGSLT lang).Equiv left right →
+        (langGSLT lang).Equiv (commSubst left q) (commSubst right q)) :
+    EquationRespectingMap (langGSLT lang) (langGSLT lang) where
+  toFun term := commSubst term q
+  map_equiv := hComm
+
 /-- `◇ ∘ ∃_σ ⊣ σ* ∘ □`: Diamond composed with substitution direct image.
 
     `langDiamond(∃_σ(φ)) ≤ ψ  ↔  φ ≤ σ*(□ψ)`
 
     "It's possible to reduce from some COMM-image satisfying φ to reach ψ"
     iff "φ is bounded by the pullback of box-ψ along the COMM substitution." -/
-theorem diamond_commDi_galois (q : Pattern) :
-    GaloisConnection (langDiamond lang ∘ commDi q) (commPb q ∘ langBox lang) :=
-  galoisConnection_comp (comm_di_pb_adj q) (langGalois lang)
+theorem diamond_commDi_galois (q : Pattern)
+    (hComm : ∀ {left right : Pattern},
+      (langGSLT lang).Equiv left right →
+        (langGSLT lang).Equiv (commSubst left q) (commSubst right q)) :
+    let map := commEquationMap lang q hComm
+    GaloisConnection (langDiamond lang ∘ map.directImage)
+      (map.pullback ∘ langBox lang) := by
+  dsimp only
+  exact galoisConnection_comp
+    (commEquationMap lang q hComm).directImage_pullback_galois
+    (langGalois lang)
 
 /-- `∃_σ ∘ ◇ ⊣ □ ∘ σ*`: Substitution direct image composed with diamond.
 
@@ -1449,9 +1541,16 @@ theorem diamond_commDi_galois (q : Pattern) :
 
     "The COMM-image of diamond-φ is bounded by ψ"
     iff "φ is bounded by box of the pullback of ψ along COMM." -/
-theorem commDi_diamond_galois (q : Pattern) :
-    GaloisConnection (commDi q ∘ langDiamond lang) (langBox lang ∘ commPb q) :=
-  galoisConnection_comp (langGalois lang) (comm_di_pb_adj q)
+theorem commDi_diamond_galois (q : Pattern)
+    (hComm : ∀ {left right : Pattern},
+      (langGSLT lang).Equiv left right →
+        (langGSLT lang).Equiv (commSubst left q) (commSubst right q)) :
+    let map := commEquationMap lang q hComm
+    GaloisConnection (map.directImage ∘ langDiamond lang)
+      (langBox lang ∘ map.pullback) := by
+  dsimp only
+  exact galoisConnection_comp (langGalois lang)
+    (commEquationMap lang q hComm).directImage_pullback_galois
 
 /-! ## Properties of COMM Change-of-Base -/
 
@@ -1554,7 +1653,7 @@ theorem comm_beck_chevalley
     {φ : Pattern → Prop}
     {L : List String}
     (hbody : ∀ z, z ∉ L →
-      HasType (Γ.extend z ⟨"Name", possiblyProp (fun _ => True), by simp⟩)
+      HasType (Γ.extend z ⟨"Name", rawStepFuture (fun _ => True), by simp⟩)
         (openBVar 0 (.fvar z) pBody) ⟨"Proc", φ, by simp⟩)
     (hq : HasType Γ q ⟨"Proc", fun _ => True, by simp⟩)
     (hlc_q : lc q = true) :
@@ -1572,7 +1671,7 @@ theorem comm_beck_chevalley_semantic_of_agreement
     {φ : Pattern → Prop}
     {L : List String}
     (hbody : ∀ z, z ∉ L →
-      HasType (Γ.extend z ⟨"Name", possiblyProp (fun _ => True), by simp⟩)
+      HasType (Γ.extend z ⟨"Name", rawStepFuture (fun _ => True), by simp⟩)
         (openBVar 0 (.fvar z) pBody) ⟨"Proc", φ, by simp⟩)
     (hq : HasType Γ q ⟨"Proc", fun _ => True, by simp⟩)
     (hlc_q : lc q = true)
@@ -1600,7 +1699,7 @@ theorem comm_beck_chevalley_semantic_upToSubjectEquiv_of_agreement
     {φ : Pattern → Prop}
     {L : List String}
     (hbody : ∀ z, z ∉ L →
-      HasType (Γ.extend z ⟨"Name", possiblyProp (fun _ => True), by simp⟩)
+      HasType (Γ.extend z ⟨"Name", rawStepFuture (fun _ => True), by simp⟩)
         (openBVar 0 (.fvar z) pBody) ⟨"Proc", φ, by simp⟩)
     (hq : HasType Γ q ⟨"Proc", fun _ => True, by simp⟩)
     (hlc_q : lc q = true)
@@ -1634,7 +1733,7 @@ theorem comm_beck_chevalley_semantic_upToSubjectEquiv_of_strictCoreCommBody
     {φ : Pattern → Prop}
     {L : List String}
     (hbody : ∀ z, z ∉ L →
-      HasType (Γ.extend z ⟨"Name", possiblyProp (fun _ => True), by simp⟩)
+      HasType (Γ.extend z ⟨"Name", rawStepFuture (fun _ => True), by simp⟩)
         (openBVar 0 (.fvar z) pBody) ⟨"Proc", φ, by simp⟩)
     (hq : HasType Γ q ⟨"Proc", fun _ => True, by simp⟩)
     (hlc_q : lc q = true)
@@ -1652,7 +1751,7 @@ theorem comm_beck_chevalley_semantic_saturated_typedAt_of_strictCoreCommBody
     {φ : Pattern → Prop}
     {L : List String}
     (hbody : ∀ z, z ∉ L →
-      HasType (Γ.extend z ⟨"Name", possiblyProp (fun _ => True), by simp⟩)
+      HasType (Γ.extend z ⟨"Name", rawStepFuture (fun _ => True), by simp⟩)
         (openBVar 0 (.fvar z) pBody) ⟨"Proc", φ, by simp⟩)
     (hq : HasType Γ q ⟨"Proc", fun _ => True, by simp⟩)
     (hlc_q : lc q = true)

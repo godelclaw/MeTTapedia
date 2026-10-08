@@ -145,7 +145,7 @@ theorem finiteExchangeable_perm_values {Ω : Type*} [MeasurableSpace Ω] {n : �
   -- These are the same set: substitute j = σ i, so i = σ.symm j
   congr 1
   ext ω
-  simp only [Set.mem_setOf_eq]
+  simp only [Set.mem_ofPred_eq]
   constructor <;> intro h' i
   · -- h' : ∀ i, X (σ i) ω = vals i, need X i ω = vals (σ.symm i)
     have := h' (σ.symm i)
@@ -323,8 +323,9 @@ theorem card_filter_countTrue_eq (m k : ℕ) :
       (Finset.powersetCard k (Finset.univ : Finset (Fin m))).card := by
     apply Finset.card_bij (fun v _ => Finset.univ.filter (fun i => v i = true))
     · intro v hv
-      simp only [Finset.mem_filter, countTrue] at hv
-      rw [Finset.mem_powersetCard]; exact ⟨Finset.filter_subset _ _, hv.2⟩
+      have hvCount := (Finset.mem_filter.mp hv).2
+      rw [Finset.mem_powersetCard]
+      exact ⟨Finset.filter_subset _ _, hvCount⟩
     · intro v₁ _ v₂ _ heq
       funext i
       have : (v₁ i = true) ↔ (v₂ i = true) := by
@@ -337,7 +338,9 @@ theorem card_filter_countTrue_eq (m k : ℕ) :
     · intro S hS
       rw [Finset.mem_powersetCard] at hS
       refine ⟨fun i => decide (i ∈ S), ?_, ?_⟩
-      · simp only [Finset.mem_filter, Finset.mem_univ, true_and, countTrue]
+      · apply Finset.mem_filter.mpr
+        refine ⟨Finset.mem_univ _, ?_⟩
+        change (Finset.univ.filter fun i => decide (i ∈ S) = true).card = k
         have : (Finset.univ.filter fun i => decide (i ∈ S) = true) = S := by
           ext i; simp [decide_eq_true_eq]
         rw [this]; exact hS.2
@@ -363,7 +366,7 @@ theorem exchangeable_count_prob_partition
   have hdecomp : {ω : Ω | countTrue (fun i => X i ω) = countTrue vals} =
       ⋃ v ∈ S_k, {ω | ∀ i, X i ω = v i} := by
     ext ω
-    simp only [S_k, Set.mem_setOf_eq, Set.mem_iUnion, Finset.mem_filter,
+    simp only [S_k, Set.mem_ofPred_eq, Set.mem_iUnion, Finset.mem_filter,
       Finset.mem_univ, true_and, exists_prop]
     constructor
     · intro h; exact ⟨fun i => X i ω, h, fun i => rfl⟩

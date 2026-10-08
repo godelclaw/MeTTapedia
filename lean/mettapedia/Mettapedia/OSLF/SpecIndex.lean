@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.Main
+import Mettapedia.OSLF.DeliverableAudit
 import Mettapedia.OSLF.CoreMain
 import Mettapedia.Languages.MeTTa.PeTTa
 import Mettapedia.Logic.LP
@@ -30,33 +31,19 @@ formalization. Serves as a traceability matrix for review.
 ## Architecture Overview
 
 ```
-                    LanguageDef
+       (presentation, admitted interpretation)
                         |
-          authored rewrite rules
+          InterpretedPresentation.toGSLTUsing
                         |
-           ContextualStep.Step
-       (least generated relation)
+             equation-aware GSLT (E;R;E)
                         |
-       +----------------+----------------+
-       |                                 |
- langReduces (empty env)       langReducesUsing (explicit env)
-       |                                 |
-       +------ exact compiler bridge ----+
+             gsltSpan / semanticDiamond
+                        |   semanticBox
+                        |   semanticGalois
+                        v
+                    gsltOSLF
                         |
-             ContextualStep.rewriteAt
-             (explicit finite depth)
-                        |
-                langRewriteSystem
-                        |
-                    langSpan
-                   /        \
-            langDiamond    langBox
-                   \        /
-                 langGalois (automatic)
-                        |
-                   langOSLF
-              /       |       \
-         rhoOSLF  lambdaOSLF  petriOSLF
+                     rhoOSLF
 ```
 
 ## I. Core OSLF Framework (INPUT/OUTPUT)
@@ -80,25 +67,26 @@ formalization. Serves as a traceability matrix for review.
 
 ### Step-Future (◇)
 - Paper [MS] §3: "◇φ(p) = ∃q. p ⇝ q ∧ φ(q)"
-- Lean (hand-proven): `possiblyProp` (RhoCalculus/Reduction.lean:103)
-- Lean (derived): `derivedDiamond` (Framework/DerivedModalities.lean:143)
-- Lean (generic): `langDiamond` (Framework/TypeSynthesis.lean:93)
-- Bridge: `derived_diamond_eq_possiblyProp` (Framework/DerivedModalities.lean:208)
+- Lean (span construction): `derivedDiamond` (Framework/DerivedModalities.lean)
+- Lean (equation-quotient construction): `semanticDiamond`
+  (Framework/GSLTTypeSynthesis.lean)
+- Lean (LanguageDef specialization): `langDiamond`
+  (Framework/TypeSynthesis.lean)
 
 ### Step-Past (□)
 - Paper [MS] §3: "□φ(p) = ∀q. q ⇝ p → φ(q)"
-- Lean (hand-proven): `relyProp` (RhoCalculus/Reduction.lean:107)
-- Lean (derived): `derivedBox` (Framework/DerivedModalities.lean:151)
-- Lean (generic): `langBox` (Framework/TypeSynthesis.lean:101)
-- Bridge: `derived_box_eq_relyProp` (Framework/DerivedModalities.lean:216)
+- Lean (span construction): `derivedBox` (Framework/DerivedModalities.lean)
+- Lean (equation-quotient construction): `semanticBox`
+  (Framework/GSLTTypeSynthesis.lean)
+- Lean (LanguageDef specialization): `langBox`
+  (Framework/TypeSynthesis.lean)
 
 ### Galois Connection (◇ ⊣ □)
 - Paper [MS] §4: "The adjoint pair ◇ ⊣ □ forms a Galois connection."
-- Lean (hand-proven): `galois_connection` (RhoCalculus/Reduction.lean:113)
-- Lean (derived): `derived_galois` (Framework/DerivedModalities.lean:161)
-- Lean (generic): `langGalois` (Framework/TypeSynthesis.lean:108)
-- Lean (Mathlib): `rho_mathlib_galois` (Framework/RhoInstance.lean:117)
-- Bridge: `rho_galois_from_span` (Framework/DerivedModalities.lean:224)
+- Lean (span construction): `derived_galois` (Framework/DerivedModalities.lean)
+- Lean (equation quotient): `semanticGalois` (Framework/GSLTTypeSynthesis.lean)
+- Lean (LanguageDef specialization): `langGalois` (Framework/TypeSynthesis.lean)
+- Lean (rho specialization): `rho_mathlib_galois` (Framework/RhoInstance.lean)
 
 ## III. ρ-Calculus Concrete Layer
 
@@ -162,8 +150,6 @@ formalization. Serves as a traceability matrix for review.
 - Lean (legacy sort-wise wrappers): `predFibrationSortApprox`,
   `oslf_fibrationSortApprox`
 - Agreement theorem (discrete-base): `predFibration_presheafSortApprox_agreement`
-- Agreement theorem (concrete type-sorted instance):
-  `typeSortsOSLFFibrationUsing_presheafAgreement`
 - Agreement theorem (generic language-wrapper instance):
   `langOSLFFibrationUsing_presheafAgreement`
 - Agreement theorem (concrete language-wrapper instance):
@@ -221,7 +207,9 @@ formalization. Serves as a traceability matrix for review.
 ### 1. ρ-Calculus (rhoCalc)
 - Lean: `rhoCalc` (MeTTaIL/Syntax.lean)
 - OSLF: `rhoOSLF` (Framework/RhoInstance.lean:90)
-- Galois: proven via `galois_connection` and `rho_mathlib_galois`
+- Generated NTT: `rhoGeneratedNTT` (generic `generateNTT`), with
+  `rhoGeneratedNTT_sees_communication`
+- Galois: `rho_mathlib_galois`, specialized from `semanticGalois`
 - Diagnostics: 6 generic-engine examples and 8 generic-vs-specialized
   comparisons (Engine.lean); the comparison corpus includes disagreements and
   is not an adequacy certificate
@@ -233,20 +221,27 @@ formalization. Serves as a traceability matrix for review.
 - Canaries: 8 demos + capture-safety canaries 7-8
 
 ### 3. Petri Nets (petriNet)
-- Lean: `petriNet` (Framework/PetriNetInstance.lean)
+- Admitted presentation: `validatedPetriNet` with `petriNet_validate`
+  (Framework/PetriNetInstance.lean)
 - OSLF: `petriOSLF` (Framework/PetriNetInstance.lean)
+- Generated NTT: `petriGeneratedNTT` (generic `generateNTT`)
 - Galois: `petriGalois` (automatic from langGalois)
 - Canaries: 8 demos + proved dead marking `D_is_dead` + `AB_has_one_reduct`
+  + the equation-sensitive pair `petriNet_BA_semanticStep_DC` /
+    `petriNet_BA_not_rawStep_DC`
+  + generated-native-type inhabitation `petriNet_BA_satisfies_DC_nativeType`
+  + the same witness through the literal generic constructor,
+    `petriGeneratedNTT_accepts_BA_to_DC`
 
 ## VIII. Key Bridge Theorems (Traceability Matrix)
 
 | # | Theorem | File | Statement |
 |---|---------|------|-----------|
-| 1 | `galois_connection` | Reduction.lean:113 | hand-proven ◇ ⊣ □ for ρ-calc |
-| 2 | `derived_galois` | DerivedModalities.lean:161 | generic ◇ ⊣ □ from span |
-| 3 | `rho_galois_from_span` | DerivedModalities.lean:224 | ρ-calc Galois as corollary |
-| 4 | `langGalois` | TypeSynthesis.lean:108 | automatic for any LanguageDef |
-| 5 | `langModalAdjunction` | CategoryBridge.lean:162 | Galois → categorical Adjunction |
+| 1 | `derived_galois` | DerivedModalities.lean | generic ◇ ⊣ □ from span |
+| 2 | `semanticGalois` | GSLTTypeSynthesis.lean | ◇ ⊣ □ on equation-invariant predicates |
+| 3 | `rho_mathlib_galois` | RhoInstance.lean | rho specialization of semantic Galois |
+| 4 | `langGalois` | TypeSynthesis.lean | automatic for any LanguageDef |
+| 5 | `langModalAdjunction` | CategoryBridge.lean | Galois → categorical Adjunction |
 | 6 | `mem_rewriteAt_iff_stepAt` | ContextualStep.lean | bounded compiler exactness |
 | 7 | `exists_mem_rewriteAt_iff_step` | ContextualStep.lean | finite compiled witness iff least generated step |
 | 8 | `matchPattern_sound` | MatchSpec.lean:336 | executable → relational match |
@@ -276,11 +271,11 @@ runtime/behavioral layer:
 | 6 | `runtime_mode_diamond_transport_comp` | MATTProvableNow.lean | composed runtime morphism diamond witness transport |
 | 7 | `matt_canonical_runtime_behavioral_package` | MATTClaimMap.lean | canonical composed package: doctrine + mapPred functoriality + commuting squares + transport |
 | 8 | `pure_mode_isolation` | MATTProvableNow.lean | current pure boundary: any morphism touching pure is pure identity |
-| 9 | `mettaPure_runtime_behavioral_transport` | MATTProvableNow.lean | specialized runtime→behavioral witness transport for `mettaPure` |
+| 9 | `twoSortDependent_runtime_behavioral_transport` | MATTProvableNow.lean | specialized runtime→behavioral witness transport for `twoSortDependent` |
 
 Intentionally out of current theorem scope:
 - full mode-2-category formalization
-- pure-mode morphism theory (deferred until MeTTa-Pure bridge is established)
+- pure-mode morphism theory (deferred until two-sort experiment bridge is established)
 
 ## X. Sorry / Axiom Census
 
@@ -318,10 +313,13 @@ open Mettapedia.OSLF
 #check @exists_mem_rewriteAt_iff_step
 #check @OSLFTypeSystem
 #check @RewriteSystem
-#check @langOSLF
-#check @langGalois
-#check @langDiamond
-#check @langBox
+#check @toOSLFUsing
+#check @rhoOSLF
+#check @presentedRhoQuotientEndpointRuntime
+#check @presentedRhoNormalizedSuccessorClasses_exact
+#check @semanticGalois
+#check @semanticDiamond
+#check @semanticBox
 #check @Mettapedia.OSLF.Framework.ImageFinite.imageFinite_langReducesAtUsing
 #check @Mettapedia.OSLF.Framework.ImageFinite.hm_converse_langReducesAtUsing
 #check @Mettapedia.OSLF.Framework.LangMorphism.sem_transfer_of_broadFragment
@@ -397,59 +395,59 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.counterexample_hDiaTopAll_for_global_diaBox_transfer
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.not_commDiWitnessLifting_rho_example
 #check @Mettapedia.OSLF.Framework.AssumptionNecessity.commDiWitnessLifting_not_derivable_globally
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.preserves_piType
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.preserves_omegaTop
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.preserves_propImp
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_piType
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.lax_piType
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_propImp
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.lax_propImp
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_pi_elim
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_pi_intro
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_prop_mp
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.colax_prop_intro
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.PiPropColaxRuleSet
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.PiSigmaPropColaxRuleSet
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piProp_colax_rules
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piSigmaProp_colax_rules
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.comp
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.comp_piProp_colax_rules
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.comp_piSigmaProp_colax_rules
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piOmega_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piOmegaProp_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piSigmaOmegaProp_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.piOmegaProp_with_constructor_transport_bundle
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.comp_piOmegaProp_with_constructor_transport_bundle
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.id_piOmega_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.id_piOmegaProp_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.TheoryMorphism.id_piSigmaOmegaProp_translation_endpoint
-#check @Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack
-#check @Mettapedia.OSLF.NativeType.prop12_piEta_presheaf
-#check @Mettapedia.OSLF.NativeType.prop12_sigmaEta_presheaf
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.preserves_piType
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.preserves_omegaTop
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.preserves_propImp
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_piType
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.lax_piType
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_propImp
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.lax_propImp
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_pi_elim
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_pi_intro
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_prop_mp
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.colax_prop_intro
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.PiPropColaxRuleSet
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.PiSigmaPropColaxRuleSet
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piSigmaProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.comp
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.comp_piProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.comp_piSigmaProp_colax_rules
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piOmega_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piOmegaProp_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piSigmaOmegaProp_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.piOmegaProp_with_constructor_transport_bundle
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.comp_piOmegaProp_with_constructor_transport_bundle
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.id_piOmega_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.id_piOmegaProp_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.TheoryMorphism.id_piSigmaOmegaProp_translation_endpoint
+#check @Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack
+#check @Mettapedia.OSLF.PresheafNativeType.prop12_piEta_presheaf
+#check @Mettapedia.OSLF.PresheafNativeType.prop12_sigmaEta_presheaf
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.RepresentablePiSigmaTransportPack
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_piSigma_transport_pack_via_rulePack
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_piSigma_transport_pack_via_prop12
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_piSigma_transport_via_rulePack
-#check @Mettapedia.OSLF.NativeType.constructorPredFiberFunctorDual
-#check @Mettapedia.OSLF.NativeType.ConstructorGrothendieckDual
-#check @Mettapedia.OSLF.NativeType.constructorNatType_toGrothObj
-#check @Mettapedia.OSLF.NativeType.grothObj_to_constructorNatType
-#check @Mettapedia.OSLF.NativeType.constructorNatType_obj_roundtrip
-#check @Mettapedia.OSLF.NativeType.constructorNatTypeHom_to_grothHom
-#check @Mettapedia.OSLF.NativeType.grothHom_to_constructorNatTypeHom
-#check @Mettapedia.OSLF.NativeType.constructorNatTypeHom_groth_roundtrip
-#check @Mettapedia.OSLF.NativeType.fullPredFiberFunctorDual
-#check @Mettapedia.OSLF.NativeType.FullPresheafGrothendieckObj
-#check @Mettapedia.OSLF.NativeType.FullPresheafGrothendieckHom
-#check @Mettapedia.OSLF.NativeType.ScopedConstructorPred
-#check @Mettapedia.OSLF.NativeType.ScopedConstructorPred.toFullGrothObj
-#check @Mettapedia.OSLF.NativeType.ScopedConstructorPredHom
-#check @Mettapedia.OSLF.NativeType.ScopedConstructorPredHom.toFullGrothHom
-#check @Mettapedia.OSLF.NativeType.ScopedConstructorPredHom.toFullGrothHom_comp
-#check @Mettapedia.OSLF.NativeType.scoped_full_constructor_comparison_package
-#check @Mettapedia.OSLF.NativeType.scoped_full_constructor_obj_comparison
-#check @Mettapedia.OSLF.NativeType.scoped_fullGroth_base_eq_representable
+#check @Mettapedia.OSLF.PresheafNativeType.constructorPredFiberFunctorDual
+#check @Mettapedia.OSLF.PresheafNativeType.ConstructorGrothendieckDual
+#check @Mettapedia.OSLF.PresheafNativeType.constructorNativeType_toGrothObj
+#check @Mettapedia.OSLF.PresheafNativeType.grothObj_to_constructorNativeType
+#check @Mettapedia.OSLF.PresheafNativeType.constructorNativeType_obj_roundtrip
+#check @Mettapedia.OSLF.PresheafNativeType.constructorNativeTypeHom_to_grothHom
+#check @Mettapedia.OSLF.PresheafNativeType.grothHom_to_constructorNativeTypeHom
+#check @Mettapedia.OSLF.PresheafNativeType.constructorNativeTypeHom_groth_roundtrip
+#check @Mettapedia.OSLF.PresheafNativeType.fullPredFiberFunctorDual
+#check @Mettapedia.OSLF.PresheafNativeType.FullPresheafGrothendieckObj
+#check @Mettapedia.OSLF.PresheafNativeType.FullPresheafGrothendieckHom
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPred
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPred.toFullGrothObj
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom.toFullGrothHom
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom.toFullGrothHom_comp
+#check @Mettapedia.OSLF.PresheafNativeType.scoped_full_constructor_comparison_package
+#check @Mettapedia.OSLF.PresheafNativeType.scoped_full_constructor_obj_comparison
+#check @Mettapedia.OSLF.PresheafNativeType.scoped_fullGroth_base_eq_representable
 #check @SortPresheafCategory
 #check @predFibration
 #check @oslf_fibration
@@ -498,10 +496,10 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.graphChain2_eq_graphChainN_2
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.diamondIterN_iff_graphChainN
 #check @Mettapedia.OSLF.Framework.ToposTOGLBridge.togl_complete_graph_bridge_package
-#check @Mettapedia.OSLF.NativeType.full_presheaf_comparison_bundle
-#check @Mettapedia.OSLF.NativeType.ScopedReachable
-#check @Mettapedia.OSLF.NativeType.full_presheaf_comparison_bundle_reachable
-#check @Mettapedia.OSLF.NativeType.full_presheaf_comparison_bundle_reachable_fragment
+#check @Mettapedia.OSLF.PresheafNativeType.full_presheaf_comparison_bundle
+#check @Mettapedia.OSLF.PresheafNativeType.ScopedReachable
+#check @Mettapedia.OSLF.PresheafNativeType.full_presheaf_comparison_bundle_reachable
+#check @Mettapedia.OSLF.PresheafNativeType.full_presheaf_comparison_bundle_reachable_fragment
 #check @languageSortFiber_ofPatternPred_characteristicMap
 #check @languageSortFiber_ofPatternPred_characteristicMap_spec
 #check @rhoProc_langOSLF_predicate_to_fiber_mem_iff
@@ -521,12 +519,18 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_sigma_transport_via_prop12_pack
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_pi_transport_via_prop12_pack
 #check @Mettapedia.OSLF.Framework.BeckChevalleyOSLF.representable_patternPred_piSigma_transport_via_prop12_pack
-#check @possiblyProp
-#check @relyProp
-#check @galois_connection
 #check @rhoOSLF
+#check @rhoGeneratedNTT
+#check @rhoGeneratedNTT_sees_communication
 #check @lambdaOSLF
 #check @petriOSLF
+#check @petriNet_validate
+#check @validatedPetriNet
+#check @petriGeneratedNTT
+#check @petriNet_BA_semanticStep_DC
+#check @petriNet_BA_not_rawStep_DC
+#check @petriNet_BA_satisfies_DC_nativeType
+#check @petriGeneratedNTT_accepts_BA_to_DC
 #check @Mettapedia.OSLF.Framework.TinyMLInstance.tinyML_checker_sat_to_pathSemClosed_commDi_bc_graph
 #check @Mettapedia.OSLF.Framework.TinyMLInstance.tinyML_commDiPathSemLiftPkg_of_liftEq
 #check @Mettapedia.OSLF.Framework.TinyMLInstance.tinyML_checker_sat_to_pathSemClosed_commDi_bc_graph_of_liftEq
@@ -544,10 +548,7 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Formula.checkLangUsing_sat_sound_sort_fiber
 #check @Mettapedia.OSLF.Formula.checkLangUsing_sat_sound_sort_fiber_mem_iff
 #check @checkLangUsing_sat_sound_proc_fiber
-#check @checkLangUsing_sat_sound_proc_fiber_using
-#check @checkLangUsing_sat_sound_proc_fiber_using_mem_iff
 #check @checkLang_sat_sound_proc_fiber
-#check @checkLang_sat_sound_proc_fiber_using
 #check @Mettapedia.OSLF.Formula.checkLangUsingWithPred_sat_sound_graphObj_dia
 #check @Mettapedia.OSLF.Formula.checkLangUsingWithPred_sat_sound_graphObj_box
 #check @sem_dia_eq_langDiamond
@@ -560,7 +561,7 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.coreMain_theorem1_canonical_contract
 #check @Mettapedia.OSLF.coreMain_theorem1_substitutability_forward
 #check @Mettapedia.OSLF.coreMain_theorem1_substitutability_imageFinite
-#check @Mettapedia.OSLF.coreMain_theorem1_langReduces_of_finite
+#check @Mettapedia.OSLF.coreMain_theorem1_langSemanticReduces_of_finite
 #check @Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoCoreCanonicalSCQuotRelOn
 #check @Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.rhoDerivedCanonicalSCQuotRelOn
 #check @Mettapedia.OSLF.Framework.PiRhoCanonicalBridge.predFinite_rhoCoreCanonicalSCQuotRelOn
@@ -574,15 +575,15 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.CoreMainHMEndpointMap
 #check @Mettapedia.OSLF.coreMain_hm_endpoint_recommendation_map
 #check @Mettapedia.OSLF.coreMain_paper_parity_theorem_package
-#check @Mettapedia.OSLF.coreMain_paper_parity_theorem_package_langReduces_of_finite
+#check @Mettapedia.OSLF.coreMain_paper_parity_theorem_package_langSemanticReduces_of_finite
 #check @Mettapedia.OSLF.CoreMainPaperParityCanonicalPackage
 #check @Mettapedia.OSLF.coreMain_paper_parity_canonical_package
 -- Paper-parity M1+M2: Category instance + equivalence at representables
-#check @Mettapedia.OSLF.NativeType.fullPresheafGrothendieckCategory
-#check @Mettapedia.OSLF.NativeType.fullGrothObj_to_scopedConstructorPred_at_representable
-#check @Mettapedia.OSLF.NativeType.scoped_full_scoped_obj_roundtrip
-#check @Mettapedia.OSLF.NativeType.FullRouteRestrictionEquivalence
-#check @Mettapedia.OSLF.NativeType.full_route_restriction_equivalence_package
+#check @Mettapedia.OSLF.PresheafNativeType.fullPresheafGrothendieckCategory
+#check @Mettapedia.OSLF.PresheafNativeType.fullGrothObj_to_scopedConstructorPred_at_representable
+#check @Mettapedia.OSLF.PresheafNativeType.scoped_full_scoped_obj_roundtrip
+#check @Mettapedia.OSLF.PresheafNativeType.FullRouteRestrictionEquivalence
+#check @Mettapedia.OSLF.PresheafNativeType.full_route_restriction_equivalence_package
 -- Unified paper-parity full package
 #check @Mettapedia.OSLF.coreMain_paper_parity_full_package
 #check @Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness.progress
@@ -593,13 +594,14 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Framework.PaperParityCanaries.lambdaCalc_paper_parity_canary
 #check @Mettapedia.OSLF.Framework.PaperParityCanaries.negative_canary_nonclosed_fragment
 -- Paper-claim tracker
-#check @Mettapedia.OSLF.Framework.PaperClaimTracker.paperClaimList_all_resolved
+#check @Mettapedia.OSLF.Framework.PaperClaimTracker.paperClaimList_remaining_locations
 #check @Mettapedia.OSLF.Framework.PaperClaimTracker.provenCount_eq
+#check @Mettapedia.OSLF.Framework.PaperClaimTracker.partialCount_eq
 #check @Mettapedia.OSLF.Framework.PaperClaimTracker.assumptionScopedCount_eq
--- Strict NTT theorem-number parity tracker (fully closed)
-#check @Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemaining_empty
-#check @Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemainingCount_zero
-#check @Mettapedia.OSLF.Framework.NTTClaimTracker.fullNTTParity_closed
+-- Strict NTT source-obligation tracker (five partial source claims)
+#check @Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemaining_locations
+#check @Mettapedia.OSLF.Framework.NTTClaimTracker.nttRemainingCount_eq
+#check @Mettapedia.OSLF.Framework.NTTClaimTracker.fullNTTParity_open
 -- Canonical OSLF -> NTT -> WM closure wrappers
 #check @Mettapedia.OSLF.Framework.OSLFNTTWMCanonicalClosure.oslf_formula_ntt_wm_star_sound_of_pathOrder
 #check @Mettapedia.OSLF.Framework.OSLFNTTWMCanonicalClosure.oslf_formula_ntt_wm_step_sound_of_pathOrder
@@ -614,20 +616,20 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.Framework.MATTProvableNow.runtime_behavioral_square_coherence
 #check @Mettapedia.OSLF.Framework.MATTProvableNow.runtime_mode_diamond_transport_comp
 #check @Mettapedia.OSLF.Framework.MATTProvableNow.pure_mode_isolation
-#check @Mettapedia.OSLF.Framework.MATTProvableNow.mettaPure_runtime_behavioral_transport
+#check @Mettapedia.OSLF.Framework.MATTProvableNow.twoSortDependent_runtime_behavioral_transport
 #check @Mettapedia.OSLF.Framework.MATTClaimMap.matt_pure_boundary_package
 #check @Mettapedia.OSLF.Framework.MATTClaimMap.matt_canonical_runtime_behavioral_package
 -- NTT endpoints
-#check @Mettapedia.OSLF.NativeType.prop12_package
-#check @Mettapedia.OSLF.NativeType.prop14_cosmicFibration
-#check @Mettapedia.OSLF.NativeType.prop17_reification
-#check @Mettapedia.OSLF.NativeType.def21_codomainFibration
-#check @Mettapedia.OSLF.NativeType.def21_cartesianLift_proj
-#check @Mettapedia.OSLF.NativeType.def21_cartesianLift_universal_comp
-#check @Mettapedia.OSLF.NativeType.imageComprehensionAdjunction
-#check @Mettapedia.OSLF.NativeType.imageComprehension_iff
-#check @Mettapedia.OSLF.NativeType.thm23_internalLanguagePackage
-#check @Mettapedia.OSLF.NativeType.thm23_functorialLaws
+#check @Mettapedia.OSLF.PresheafNativeType.prop12_package
+#check @Mettapedia.OSLF.PresheafNativeType.prop14_cosmicFibration
+#check @Mettapedia.OSLF.PresheafNativeType.prop17_reification
+#check @Mettapedia.OSLF.PresheafNativeType.def21_codomainFibration
+#check @Mettapedia.OSLF.PresheafNativeType.def21_cartesianLift_proj
+#check @Mettapedia.OSLF.PresheafNativeType.def21_cartesianLift_universal_comp
+#check @Mettapedia.OSLF.PresheafNativeType.imageComprehensionAdjunction
+#check @Mettapedia.OSLF.PresheafNativeType.imageComprehension_iff
+#check @Mettapedia.OSLF.PresheafNativeType.thm23_internalLanguagePackage
+#check @Mettapedia.OSLF.PresheafNativeType.thm23_functorialLaws
 
 -- X. PathMap algebraic interface (ring.rs formalization)
 -- AlgebraicResult carries the structural-sharing result tag from ring.rs
@@ -741,7 +743,7 @@ open Mettapedia.OSLF
 -- ZipperSpace: zipper-backed RelationalSpace
 #check @Mettapedia.OSLF.PathMap.ZipperExecution.ZipperSpace
 -- ZAM soundness: zipper-backed OSLF reduction = flat-env reduction
-#check @Mettapedia.OSLF.PathMap.ZipperExecution.zam_oslf_sound
+#check @Mettapedia.OSLF.PathMap.ZipperExecution.zam_semantic_reduction_sound
 #check @Mettapedia.OSLF.PathMap.ZipperExecution.zam_diamond_sound
 #check @Mettapedia.OSLF.PathMap.ZipperExecution.zam_box_sound
 -- FlatZipper: reference ZipperIterationSound instance (list-backed)
@@ -793,18 +795,6 @@ open Mettapedia.OSLF
 #check @Mettapedia.OSLF.PathMap.Trie.ZamContracts.zam_substitution_reduction_fusion
 #check @Mettapedia.OSLF.PathMap.Trie.ZamContracts.trieZipperSpace
 
--- PeTTa OSLF instance (PeTTa → OSLF → mettail-rust pipeline)
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaOSLF
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaGalois
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaDiamond_spec
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaBox_spec
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaOSLF_lp_sound
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaRenderRust
-#check @Mettapedia.Languages.MeTTa.PeTTa.OSLFInstance.pettaWriteRust
--- PeTTa GSLT fiber
-#check @Mettapedia.Languages.MeTTa.PeTTa.GSLTVertex.pettaIdMorphism
-#check @Mettapedia.Languages.MeTTa.PeTTa.GSLTVertex.pettaForwardFiber
-#check @Mettapedia.Languages.MeTTa.PeTTa.GSLTVertex.pettaForwardFiber_oslf
 
 -- LP Kernel (unified semantic core; Datalog retired to _archive/Datalog/)
 -- LP-M1: Core syntax (generalizes Datalog with function symbols)

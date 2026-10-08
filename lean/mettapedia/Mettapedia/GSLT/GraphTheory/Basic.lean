@@ -2,6 +2,7 @@ import Mettapedia.GSLT.Core.Web
 import Mettapedia.GSLT.Core.LambdaTheoryCategory
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Lattice
+import Mathlib.Logic.Relation
 
 /-!
 # Graph Lambda Theories
@@ -15,21 +16,23 @@ This file formalizes graph lambda theories from Bucciarelli-Salibra
 * `Interpretation` - Interpretation of terms in a graph model
 * `TheoryOf` - Lambda-theory induced by a graph model
 * `GraphTheory` - The class of graph lambda theories
-* `Sensible` - Theories equating all unsolvable terms
+* `Sensible` - Consistent theories equating all unsolvable terms
 * `Semisensible` - Theories where unsolvables only equal unsolvables
 
 ## Key Insights from Bucciarelli-Salibra
 
 A **lambda-theory** is a congruence relation on lambda terms extending β-equality.
 
-A theory T is **sensible** if it equates all unsolvable terms:
+A theory T is **sensible** if it is consistent and equates all unsolvable terms:
   T ⊢ Ω = λx.Ω
 where Ω = (λx.xx)(λx.xx).
 
 A theory T is **semisensible** if unsolvable terms only equal unsolvable terms:
   T ⊢ M = N with M unsolvable implies N is unsolvable.
 
-Every graph theory is semisensible (Bucciarelli-Salibra §4).
+Semisensibility requires the source's stratification hypotheses; it does not
+hold for every graph model. Every sensible theory is semisensible;
+the proof is in `Solvability`.
 
 ## References
 
@@ -93,6 +96,10 @@ def subst (j : Nat) (s : LambdaTerm) : LambdaTerm → LambdaTerm
 These lemmas establish the interaction between shift and subst operations,
 which are essential for proving that parallel reduction is preserved under
 substitution. The proofs involve careful de Bruijn index arithmetic. -/
+
+/-- Index equality tests are reflexive. Proved by `decide`: the generic lemma
+resolves `ReflBEq ℕ` through order instances that depend on `Classical.choice`. -/
+private theorem index_beq_self (n : Nat) : (n == n) = true := decide_eq_true rfl
 
 /-- Shifting a variable below the cutoff leaves it unchanged. -/
 @[simp]
@@ -324,7 +331,7 @@ theorem subst_shift_comm_general (d n c : Nat) (hnc : n >= c) (s t : LambdaTerm)
         subst hmn
         -- Goal: subst (n + d) (shift d c s) (var (n + d)) = shift d c s
         -- LHS: since (n+d) == (n+d), result is shift d c s
-        simp only [beq_self_eq_true, ↓reduceIte]
+        simp only [index_beq_self, ↓reduceIte]
       · by_cases hmgn : m > n
         · -- m > n: variable decrements
           have hmdne : (m + d == n + d) = false := by simp [beq_eq_false_iff_ne]; omega
@@ -413,14 +420,14 @@ theorem subst_subst_composition_general (t u s : LambdaTerm) (k n : Nat) :
     by_cases hmk : m = k
     · -- m = k: inner subst gives (shift k 0 u)
       subst hmk
-      simp only [beq_self_eq_true, ↓reduceIte]
+      simp only [index_beq_self, ↓reduceIte]
       -- Now k is replaced by m in the goal. We work with m.
       -- LHS: subst (n+m) (shift m 0 s) (shift m 0 u)
       -- RHS: subst m (shift m 0 (subst n s u)) (subst (n+m+1) (shift (m+1) 0 s) (var m))
       -- RHS inner: since m < n+m+1, gives var m
       have hmne : (m == n + m + 1) = false := by simp [beq_eq_false_iff_ne]; omega
       have hmng : ¬(m > n + m + 1) := by omega
-      simp only [subst, hmne, Bool.false_eq_true, ↓reduceIte, hmng, beq_self_eq_true]
+      simp only [subst, hmne, Bool.false_eq_true, ↓reduceIte, hmng, index_beq_self]
       -- Now RHS is: shift m 0 (subst n s u)
       -- LHS is: subst (n+m) (shift m 0 s) (shift m 0 u)
       -- This is exactly subst_shift_comm!
@@ -451,7 +458,7 @@ theorem subst_subst_composition_general (t u s : LambdaTerm) (k n : Nat) :
           -- LHS outer: subst (n+k) (shift k 0 s) (var (n+k)) = shift k 0 s
           -- RHS inner: subst (n+k+1) (shift (k+1) 0 s) (var (n+k+1)) = shift (k+1) 0 s
           -- RHS outer: subst k _ (shift (k+1) 0 s) = shift k 0 s by subst_shift_high
-          simp only [beq_self_eq_true, ↓reduceIte, Nat.add_sub_cancel, subst]
+          simp only [index_beq_self, ↓reduceIte, Nat.add_sub_cancel, subst]
           -- Now goal: shift k 0 s = subst k _ (shift (k+1) 0 s)
           exact (subst_shift_high k (shift k 0 (subst n s u)) s).symm
         · -- m ≠ n + k + 1
@@ -471,10 +478,10 @@ theorem subst_subst_composition_general (t u s : LambdaTerm) (k n : Nat) :
               subst hmenk
               -- After inner substs: LHS = subst (n+k) _ (var (n+k-1)), RHS = subst k _ (var (n+k))
               -- Both outer substs give var (n+k-1)
-              have hnknekbeq : (n + k == k) = false := by simp [beq_eq_false_iff_ne]; omega
+              have hnknekbeq : (n + k == k) = false := decide_eq_false (by omega)
               have hnkgk : n + k > k := by omega
               -- For the outer LHS subst: var (n+k-1) with index (n+k)
-              have hnk1_ne_nk : (n + k - 1 == n + k) = false := by simp [beq_eq_false_iff_ne]; omega
+              have hnk1_ne_nk : (n + k - 1 == n + k) = false := decide_eq_false (by omega)
               have hnk1_ng_nk : ¬(n + k - 1 > n + k) := by omega
               simp only [subst, hmnennk1beq, Bool.false_eq_true, ↓reduceIte, hmgnk1,
                          hnknekbeq, hnkgk, hnk1_ne_nk, hnk1_ng_nk]
@@ -523,7 +530,7 @@ theorem subst_subst_composition (t u s : LambdaTerm) (n : Nat) :
     · omega  -- m < 0 impossible for Nat
     · -- m = 0
       subst hm0
-      simp only [subst, beq_self_eq_true, ↓reduceIte]
+      simp only [subst, index_beq_self, ↓reduceIte]
       -- Goal: subst n s u = subst 0 (subst n s u) (if (0 == n+1) = true then ... else ...)
       -- The if-then-else simplifies to var 0 since 0 ≠ n+1 and 0 ≯ n+1
       have hne : (0 == n + 1) = false := by cases n <;> rfl
@@ -532,7 +539,7 @@ theorem subst_subst_composition (t u s : LambdaTerm) (n : Nat) :
       simp only [hne, Bool.false_eq_true, ↓reduceIte, hng]
       -- Now goal: subst n s u = subst 0 (subst n s u) (var 0)
       -- Since 0 == 0 is true, we get subst n s u on RHS
-      simp only [subst, beq_self_eq_true, ↓reduceIte]
+      simp only [subst, index_beq_self, ↓reduceIte]
     · -- m > 0
       rcases Nat.lt_trichotomy m (n + 1) with hmn1 | hmn1 | hmn1
       · -- 0 < m < n + 1
@@ -567,7 +574,7 @@ theorem subst_subst_composition (t u s : LambdaTerm) (n : Nat) :
         have hne0 : ((n + 1) == 0) = false := by cases n <;> rfl
         have hgt0 : n + 1 > 0 := by omega
         simp only [subst, hne0, Bool.false_eq_true, ↓reduceIte, hgt0,
-                   Nat.add_sub_cancel, beq_self_eq_true]
+                   Nat.add_sub_cancel, index_beq_self]
         -- LHS = s
         -- RHS: subst (n+1) (shift 1 0 s) (var (n+1)) = shift 1 0 s
         -- Then subst 0 _ (shift 1 0 s) = s by subst_shift_cancel
@@ -617,7 +624,7 @@ theorem subst_subst_composition (t u s : LambdaTerm) (n : Nat) :
 @[simp]
 theorem subst_var_eq (n : Nat) (s : LambdaTerm) :
     subst n s (LambdaTerm.var n) = s := by
-  simp only [subst, beq_self_eq_true, ↓reduceIte]
+  simp only [subst, index_beq_self, ↓reduceIte]
 
 /-- Substituting into a variable at a greater index shifts it down. -/
 @[simp]
@@ -703,10 +710,32 @@ def LambdaTerm.isHNF : LambdaTerm → Bool
   | .lam t => t.isHNF
   | .app t _ => t.isAppHead
 
-/-- A term is solvable if it has a head normal form.
-    Equivalently: ∃ M₁...Mₙ. t M₁ ... Mₙ →*_β I -/
+/-- Parallel beta reduction, shared with complete-development and confluence
+proofs. Declaring it before solvability lets the latter use actual reduction. -/
+inductive ParRed : LambdaTerm → LambdaTerm → Prop where
+  | var (n : Nat) : ParRed (.var n) (.var n)
+  | lam {t t' : LambdaTerm} : ParRed t t' → ParRed (.lam t) (.lam t')
+  | app {t t' s s' : LambdaTerm} : ParRed t t' → ParRed s s' →
+      ParRed (.app t s) (.app t' s')
+  | beta {t t' s s' : LambdaTerm} : ParRed t t' → ParRed s s' →
+      ParRed (.app (.lam t) s) (LambdaTerm.subst 0 s' t')
+
+notation:50 t " ⇛ " t' => ParRed t t'
+
+/-- Every term admits a reflexive parallel reduction. -/
+theorem ParRed.refl : ∀ t : LambdaTerm, t ⇛ t
+  | .var n => .var n
+  | .lam t => .lam (ParRed.refl t)
+  | .app t s => .app (ParRed.refl t) (ParRed.refl s)
+
+/-- The reflexive-transitive closure of the shared parallel reduction. -/
+def ParRedStar := Relation.ReflTransGen ParRed
+
+notation:50 t " ⇛* " t' => ParRedStar t t'
+
+/-- A term is solvable when a head normal form is reachable by beta reduction. -/
 def LambdaTerm.Solvable (t : LambdaTerm) : Prop :=
-  ∃ (args : List LambdaTerm), (args.foldl .app t).isHNF = true
+  ∃ hnf : LambdaTerm, ParRedStar t hnf ∧ hnf.isHNF = true
 
 /-- A term is unsolvable if it is not solvable -/
 def LambdaTerm.Unsolvable (t : LambdaTerm) : Prop := ¬t.Solvable
@@ -759,13 +788,48 @@ private theorem foldl_app_Omega_not_isHNF (args : List LambdaTerm) :
     (args.foldl .app LambdaTerm.Omega).isHNF = false :=
   foldl_app_preserves_not_isHNF LambdaTerm.Omega args Omega_not_isAppHead Omega_not_isHNF
 
-/-- Omega is the canonical unsolvable term -/
+/-- A term already in head normal form is solvable. -/
+theorem LambdaTerm.solvable_of_isHNF {t : LambdaTerm} (h : t.isHNF = true) :
+    t.Solvable := ⟨t, Relation.ReflTransGen.refl, h⟩
+
+/-- Solvability propagates backwards along the actual reduction path. -/
+theorem LambdaTerm.solvable_of_reduces {t s : LambdaTerm}
+    (h : t ⇛* s) (hs : s.Solvable) : t.Solvable := by
+  obtain ⟨hnf, hpath, hhead⟩ := hs
+  exact ⟨hnf, h.trans hpath, hhead⟩
+
+private theorem omega_parRed_only {t : LambdaTerm}
+    (h : LambdaTerm.omega ⇛ t) : t = LambdaTerm.omega := by
+  cases h with
+  | lam h =>
+      cases h with
+      | app h₁ h₂ => cases h₁; cases h₂; rfl
+
+private theorem Omega_parRed_only {t : LambdaTerm}
+    (h : LambdaTerm.Omega ⇛ t) : t = LambdaTerm.Omega := by
+  cases h with
+  | app h₁ h₂ => rw [omega_parRed_only h₁, omega_parRed_only h₂]; rfl
+  | beta hBody hArg =>
+      cases hBody with
+      | app hLeft hRight =>
+          cases hLeft; cases hRight
+          rw [omega_parRed_only hArg]
+          rfl
+
+private theorem Omega_reduces_only {t : LambdaTerm}
+    (h : LambdaTerm.Omega ⇛* t) : t = LambdaTerm.Omega := by
+  induction h with
+  | refl => rfl
+  | tail _ hstep ih =>
+      subst ih
+      exact Omega_parRed_only hstep
+
+/-- Omega is the canonical unsolvable term. Its reductions remain Omega. -/
 theorem Omega_unsolvable : LambdaTerm.Omega.Unsolvable := by
   unfold LambdaTerm.Unsolvable LambdaTerm.Solvable
-  intro ⟨args, h⟩
-  -- Omega applied to any arguments never reaches HNF
-  rw [foldl_app_Omega_not_isHNF args] at h
-  exact Bool.false_ne_true h
+  intro ⟨hnf, hpath, hhead⟩
+  rw [Omega_reduces_only hpath] at hhead
+  exact Bool.false_ne_true hhead
 
 /-! ## Lambda Theories
 
@@ -813,9 +877,18 @@ instance : LE LambdaTheory := ⟨le⟩
 /-- A theory is consistent if it doesn't equate I and K -/
 def Consistent (T : LambdaTheory) : Prop := ¬T.equates LambdaTerm.I LambdaTerm.K
 
-/-- A theory is sensible if all unsolvable terms are equal -/
-def Sensible (T : LambdaTheory) : Prop :=
+/-- All unsolvable terms are equal. This property alone permits the total theory. -/
+def EquatesUnsolvables (T : LambdaTheory) : Prop :=
   ∀ t s, t.Unsolvable → s.Unsolvable → T.equates t s
+
+/-- A sensible theory is consistent and equates all unsolvable terms. -/
+def Sensible (T : LambdaTheory) : Prop :=
+  T.Consistent ∧ T.EquatesUnsolvables
+
+theorem Sensible.consistent {T : LambdaTheory} (h : T.Sensible) : T.Consistent := h.1
+
+theorem Sensible.equates_unsolvables {T : LambdaTheory} (h : T.Sensible) :
+    T.EquatesUnsolvables := h.2
 
 /-- A theory is semisensible if unsolvable terms only equal unsolvable terms -/
 def Semisensible (T : LambdaTheory) : Prop :=
@@ -825,30 +898,10 @@ end LambdaTheory
 
 /-! ## Sensibility
 
-A theory is sensible if it equates all unsolvable terms.
+`Solvability` proves that a sensible theory is semisensible
+(`sensible_imp_semisensible`), from head-reduction completeness for
+solvable terms and closure of unsolvability under head contexts.
 -/
-
-/-- Sensible and consistent implies semisensible.
-
-    The proof requires consistency: if T equates a solvable s with unsolvable t,
-    and T is sensible (all unsolvables equal), then ALL unsolvables equal s.
-    Combined with the fact that I and K are both solvable and the theory axioms,
-    this leads to I = K, contradicting consistency.
-
-    This is a deep result requiring showing that:
-    1. I and K are solvable (they have HNF)
-    2. If T equates solvable s with all unsolvables, then T equates I = K
-
-    We axiomatize this as it requires extensive lambda calculus machinery.
--/
-theorem sensible_consistent_imp_semisensible {T : LambdaTheory}
-    (hSens : T.Sensible) (hCons : T.Consistent) : T.Semisensible := by
-  sorry
-
-/-- Convenience version: sensible theories that don't equate I and K are semisensible -/
-theorem sensible_imp_semisensible {T : LambdaTheory}
-    (h : T.Sensible) (hCons : T.Consistent) : T.Semisensible :=
-  sensible_consistent_imp_semisensible h hCons
 
 /-! ## Graph Theories
 
@@ -856,27 +909,26 @@ The lambda-theory induced by a graph model D is the set of equations
 valid in all interpretations in D.
 -/
 
-/-- An environment maps free variables to graph model elements -/
-def Env (D : GraphModel) := Nat → D.Carrier
+/-- Free variables denote subsets of the web, the actual graph-model domain. -/
+abbrev Env (D : GraphModel) := Nat → Set D.Carrier
+
+/-- Extend an environment by the denotation of the innermost variable. -/
+def Env.extend {D : GraphModel} (ρ : Env D) (argument : Set D.Carrier) : Env D
+  | 0 => argument
+  | n + 1 => ρ n
 
 /-- Interpretation of lambda terms in a graph model.
 
-    For graph models, the key insight is that a lambda abstraction λx.t
-    is interpreted as the set of pairs (a, d) such that if the argument
-    satisfies a, then the result is d.
-
-    This is a simplified placeholder for the full graph-theoretic interpretation.
-    The full version requires careful handling of the coding function.
+    Abstraction codes observations of its body at finite argument sets;
+    application reads a code from its function denotation and requires every
+    token in that finite input to belong to the argument denotation.
 -/
 noncomputable def interpret (D : GraphModel) (ρ : Env D) : LambdaTerm → Set D.Carrier
-  | .var n => {ρ n}
+  | .var n => ρ n
   | .lam t =>
-      -- For now, we use a simplified interpretation
-      -- Full version: { c(a, d) | ∀ x ∈ a, d ∈ ⟦t⟧(ρ[0 ↦ x]) }
-      { d | ∃ x, d ∈ interpret D (fun n => if n = 0 then x else ρ (n - 1)) t }
+      D.abstraction (fun argument => interpret D (ρ.extend argument) t)
   | .app t s =>
-      -- d · e = { x | ∃ d' ∈ ⟦t⟧ρ, ∃ e ∈ ⟦s⟧ρ, x ∈ d' · e }
-      { x | ∃ d' ∈ interpret D ρ t, ∃ e ∈ interpret D ρ s, x ∈ D.apply d' e }
+      D.apply (interpret D ρ t) (interpret D ρ s)
 
 /-- Two terms are equal in a graph model if they have equal interpretations -/
 def validates (D : GraphModel) (eq : LambdaEq) : Prop :=
@@ -891,45 +943,24 @@ def theoryOf (D : GraphModel) : Set LambdaEq :=
 def IsGraphTheory (T : LambdaTheory) : Prop :=
   ∃ D : GraphModel, T.equations = theoryOf D
 
-/-! ## Key Theorems (Statements)
+/-! ## Source scope
 
-From Bucciarelli-Salibra:
+The source's semisensibility theorem concerns canonical completions of proper
+partial pairs. Neither an arbitrary graph model nor an arbitrary natural-number
+level assignment supplies those hypotheses. Its weak-product theorem states
+containment in the intersection of factor theories, generally not equality.
 
-1. Every graph theory is semisensible
-2. Every graph theory contains the Böhm theory B
-3. B is the maximal sensible graph theory
+The empty-family intersection is the universal equational relation. The actual
+interpreter's induced theories distinguish I from K, so this intersection is not
+a graph theory. The proof and nonconstant model controls are in
+`Interpretation` and `InterpretationControls`.
+
+`PartialPairCompletion` constructs the source-correct canonical completion;
+`FactorInterpretation` proves actual interpretation comparison and the
+two-factor graph-theory lower bound. Source stratification, approximation,
+and exact family-intersection realization remain separate obligations. No
+unrestricted substitute is declared here.
 -/
-
-/-- Every graph theory is semisensible (Bucciarelli-Salibra Theorem 29).
-
-    The proof relies on the fact that in graph models:
-    1. Unsolvable terms have "empty" approximations at all finite levels
-    2. Solvable terms have non-empty finite approximations
-    3. The interpretation function preserves this distinction
-    4. If t = s in D with t unsolvable, the empty approximation of t
-       must match some approximation of s, forcing s to be unsolvable
-
-    See: Bucciarelli & Salibra, "Graph Lambda Theories" (2008), Theorem 29
--/
-theorem graphTheory_semisensible (T : LambdaTheory) (h : IsGraphTheory T) : T.Semisensible := by
-  sorry
-
-/-- The intersection of graph theories is a graph theory.
-
-    The proof uses the weak product construction: given graph models D_i,
-    the weak product ◇_i D_i is a graph model whose theory is contained
-    in the intersection of the individual theories.
-
-    More precisely: Th(◇_i D_i) ⊆ ⋂_i Th(D_i)
-
-    For an arbitrary intersection, we take the weak product of all models
-    representing the theories in S.
-
-    See: Bucciarelli & Salibra, "Graph Lambda Theories" (2008), §3
--/
-theorem graphTheories_inter_closed (S : Set LambdaTheory) (hS : ∀ T ∈ S, IsGraphTheory T) :
-    ∃ T : LambdaTheory, IsGraphTheory T ∧ T.equations = ⋂ T ∈ S, LambdaTheory.equations T := by
-  sorry
 
 /-! ## Summary
 
@@ -940,15 +971,13 @@ This file establishes the basic definitions for graph lambda theories:
 3. **Sensible/Semisensible**: Properties of theories regarding unsolvability
 4. **GraphModel.theory**: Lambda-theory induced by a graph model
 
-**Key Results (Bucciarelli-Salibra)**:
-- Every graph theory is semisensible
-- The intersection of graph theories is a graph theory
-- The Böhm theory B is the maximal sensible graph theory
+`Interpretation` proves substitution, continuity, beta soundness, and genuine
+lambda-theory closure for these definitions. The source's stratified-model and
+greatest-sensible-graph-theory results require further constructions.
 
 **Next Steps**:
 - `BohmTree.lean`: Böhm trees and the Böhm theory B
 - `WeakProduct.lean`: Weak product of graph models
-- `Stratified.lean`: Stratified models and their properties
 -/
 
 end Mettapedia.GSLT.GraphTheory

@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTOpen
 import Mathlib.CategoryTheory.Category.Basic
+import Mathlib.CategoryTheory.Limits.Shapes.BinaryProducts
 
 /-!
 # The classifying category of a CertificateGSLT
@@ -34,59 +35,71 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open CategoryTheory
 
 /-- An object of the classifying category: an ordered context of premise
-occurrences for the fixed presentation. -/
-structure ClassifyingContext (presentation : ValidatedPresentation) where
+occurrences for the fixed definition. -/
+structure ClassifyingContext (definition : ValidatedCalculusLanguageDef) where
   judgments : List Pattern
 
 namespace ClassifyingContext
 
-variable {presentation : ValidatedPresentation}
+variable {definition : ValidatedCalculusLanguageDef}
 
 /-- Contexts and open-derivation vectors form a category: identity is the
 assumption environment and composition is substitution.  Each law is one of
 the already-proved substitution theorems. -/
-instance instCategory (presentation : ValidatedPresentation) :
-    CategoryTheory.Category (ClassifyingContext presentation) where
+instance instCategory (definition : ValidatedCalculusLanguageDef) :
+    CategoryTheory.Category (ClassifyingContext definition) where
   Hom source target :=
-    OpenDerivationList presentation source.judgments target.judgments
-  id source := assumptionEnvironment presentation source.judgments
+    OpenDerivationList definition source.judgments target.judgments
+  id source := assumptionEnvironment definition source.judgments
   comp first second := second.bind first
   id_comp first := OpenDerivationList.bind_assumptionEnvironment first
   comp_id first := OpenDerivationList.assumptionEnvironment_bind first
   assoc first second third :=
     (OpenDerivationList.bind_assoc third second first).symm
 
-@[simp] theorem id_def (source : ClassifyingContext presentation) :
-    𝟙 source = assumptionEnvironment presentation source.judgments := rfl
+@[simp] theorem id_def (source : ClassifyingContext definition) :
+    𝟙 source = assumptionEnvironment definition source.judgments := rfl
 
-@[simp] theorem comp_def {source middle target : ClassifyingContext presentation}
+@[simp] theorem comp_def {source middle target : ClassifyingContext definition}
     (first : source ⟶ middle) (second : middle ⟶ target) :
     first ≫ second = second.bind first := rfl
 
 /-! ## The empty context is terminal -/
 
 /-- The empty premise context. -/
-def emptyContext (presentation : ValidatedPresentation) :
-    ClassifyingContext presentation :=
+def emptyContext (definition : ValidatedCalculusLanguageDef) :
+    ClassifyingContext definition :=
   ⟨[]⟩
 
 /-- The unique morphism into the empty context. -/
-def toEmpty (source : ClassifyingContext presentation) :
-    source ⟶ emptyContext presentation :=
+def toEmpty (source : ClassifyingContext definition) :
+    source ⟶ emptyContext definition :=
   .nil
 
 /-- Every open-derivation vector with no goals is empty. -/
 theorem OpenDerivationList.eq_nil {context : List Pattern}
-    (derivations : OpenDerivationList presentation context []) :
+    (derivations : OpenDerivationList definition context []) :
     derivations = .nil := by
   cases derivations
   rfl
 
 /-- The empty context admits exactly one morphism from every context. -/
-theorem toEmpty_unique {source : ClassifyingContext presentation}
-    (morphism : source ⟶ emptyContext presentation) :
+theorem toEmpty_unique {source : ClassifyingContext definition}
+    (morphism : source ⟶ emptyContext definition) :
     morphism = toEmpty source :=
   OpenDerivationList.eq_nil morphism
+
+/-- The empty premise context is terminal by the actual uniqueness of empty
+derivation vectors, not by forgetting derivations. -/
+def emptyIsTerminal (definition : ValidatedCalculusLanguageDef) :
+    CategoryTheory.Limits.IsTerminal (emptyContext definition) :=
+  CategoryTheory.Limits.IsTerminal.ofUniqueHom
+    (fun source => toEmpty source)
+    (fun _ morphism => toEmpty_unique morphism)
+
+instance hasTerminal (definition : ValidatedCalculusLanguageDef) :
+    CategoryTheory.Limits.HasTerminal (ClassifyingContext definition) :=
+  (emptyIsTerminal definition).hasTerminal
 
 end ClassifyingContext
 
@@ -94,36 +107,90 @@ end ClassifyingContext
 
 namespace OpenDerivationList
 
-variable {presentation : ValidatedPresentation}
+variable {definition : ValidatedCalculusLanguageDef}
 
 /-- Concatenate two ordered derivation vectors over one shared context. -/
 def append {context firstGoals secondGoals : List Pattern}
-    (left : OpenDerivationList presentation context firstGoals)
-    (right : OpenDerivationList presentation context secondGoals) :
-    OpenDerivationList presentation context (firstGoals ++ secondGoals) :=
+    (left : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals) :
+    OpenDerivationList definition context (firstGoals ++ secondGoals) :=
   match left with
   | .nil => right
   | .cons head tail => .cons head (tail.append right)
 
+/-- Recover the left vector from a vector over concatenated goals, preserving
+each derivation rather than merely its conclusion. -/
+def takeLeft {context : List Pattern} :
+    (firstGoals secondGoals : List Pattern) →
+      OpenDerivationList definition context (firstGoals ++ secondGoals) →
+        OpenDerivationList definition context firstGoals
+  | [], _, _ => .nil
+  | _ :: firstGoals, secondGoals, .cons head tail =>
+      .cons head (takeLeft firstGoals secondGoals tail)
+
+/-- Recover the right vector from a vector over concatenated goals. -/
+def takeRight {context : List Pattern} :
+    (firstGoals secondGoals : List Pattern) →
+      OpenDerivationList definition context (firstGoals ++ secondGoals) →
+        OpenDerivationList definition context secondGoals
+  | [], _, derivations => derivations
+  | _ :: firstGoals, secondGoals, .cons _ tail =>
+      takeRight firstGoals secondGoals tail
+
+/-- Ordered derivation vectors split and reassemble on the nose. -/
+theorem append_take {context firstGoals secondGoals : List Pattern}
+    (derivations : OpenDerivationList definition context
+      (firstGoals ++ secondGoals)) :
+    (takeLeft firstGoals secondGoals derivations).append
+      (takeRight firstGoals secondGoals derivations) = derivations := by
+  induction firstGoals with
+  | nil => rfl
+  | cons goal goals inductionHypothesis =>
+      cases derivations with
+      | cons head tail =>
+          exact congrArg (OpenDerivationList.cons head)
+            (inductionHypothesis tail)
+
+@[simp] theorem takeLeft_append {context firstGoals secondGoals : List Pattern}
+    (left : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals) :
+    takeLeft firstGoals secondGoals (left.append right) = left := by
+  cases left with
+  | nil => rfl
+  | cons head tail =>
+      exact congrArg (OpenDerivationList.cons head)
+        (takeLeft_append tail right)
+termination_by sizeOf left
+
+@[simp] theorem takeRight_append {context firstGoals secondGoals : List Pattern}
+    (left : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals) :
+    takeRight firstGoals secondGoals (left.append right) = right := by
+  cases left with
+  | nil => rfl
+  | cons head tail =>
+      exact takeRight_append tail right
+termination_by sizeOf left
+
 @[simp] theorem nil_append {context secondGoals : List Pattern}
-    (right : OpenDerivationList presentation context secondGoals) :
+    (right : OpenDerivationList definition context secondGoals) :
     (OpenDerivationList.nil).append right = right := rfl
 
 @[simp] theorem cons_append {context : List Pattern} {goal : Pattern}
     {firstGoals secondGoals : List Pattern}
-    (head : OpenDerivation presentation context goal)
-    (tail : OpenDerivationList presentation context firstGoals)
-    (right : OpenDerivationList presentation context secondGoals) :
+    (head : OpenDerivation definition context goal)
+    (tail : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals) :
     (OpenDerivationList.cons head tail).append right =
       .cons head (tail.append right) := rfl
 
 /-- Substitution distributes over concatenation. -/
 @[simp] theorem append_bind
     {sourceContext targetContext firstGoals secondGoals : List Pattern}
-    (left : OpenDerivationList presentation sourceContext firstGoals)
-    (right : OpenDerivationList presentation sourceContext secondGoals)
+    (left : OpenDerivationList definition sourceContext firstGoals)
+    (right : OpenDerivationList definition sourceContext secondGoals)
     (environment :
-      OpenDerivationList presentation targetContext sourceContext) :
+      OpenDerivationList definition targetContext sourceContext) :
     (left.append right).bind environment =
       (left.bind environment).append (right.bind environment) := by
   cases left with
@@ -174,9 +241,9 @@ theorem get_right {firstGoals secondGoals : List Pattern}
 /-- Substituting through a transported derivation transports the result. -/
 theorem cast_bind {sourceContext targetContext : List Pattern}
     {firstGoal secondGoal : Pattern} (equal : firstGoal = secondGoal)
-    (derivation : OpenDerivation presentation sourceContext firstGoal)
+    (derivation : OpenDerivation definition sourceContext firstGoal)
     (environment :
-      OpenDerivationList presentation targetContext sourceContext) :
+      OpenDerivationList definition targetContext sourceContext) :
     (equal ▸ derivation).bind environment =
       equal ▸ (derivation.bind environment) := by
   cases equal
@@ -184,8 +251,8 @@ theorem cast_bind {sourceContext targetContext : List Pattern}
 
 /-- Selecting a left-block entry of a concatenated vector. -/
 theorem append_get_left {context firstGoals secondGoals : List Pattern}
-    (left : OpenDerivationList presentation context firstGoals)
-    (right : OpenDerivationList presentation context secondGoals)
+    (left : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals)
     (index : Fin firstGoals.length) :
     (left.append right).get ⟨index.1, length_left index⟩ =
       (get_left index).symm ▸ left.get index := by
@@ -198,8 +265,8 @@ theorem append_get_left {context firstGoals secondGoals : List Pattern}
 
 /-- Selecting a right-block entry of a concatenated vector. -/
 theorem append_get_right {context firstGoals secondGoals : List Pattern}
-    (left : OpenDerivationList presentation context firstGoals)
-    (right : OpenDerivationList presentation context secondGoals)
+    (left : OpenDerivationList definition context firstGoals)
+    (right : OpenDerivationList definition context secondGoals)
     (index : Fin secondGoals.length) :
     (left.append right).get
         ⟨index.1 + firstGoals.length, length_right index⟩ =
@@ -211,7 +278,7 @@ theorem append_get_right {context firstGoals secondGoals : List Pattern}
 /-- Transporting a derivation and then transporting back is the identity. -/
 theorem cast_cast {context : List Pattern}
     {firstGoal secondGoal : Pattern} (equal : firstGoal = secondGoal)
-    (derivation : OpenDerivation presentation context secondGoal) :
+    (derivation : OpenDerivation definition context secondGoal) :
     equal ▸ (equal.symm ▸ derivation) = derivation := by
   cases equal
   rfl
@@ -221,7 +288,7 @@ theorem cast_cast {context : List Pattern}
 /-- Derive every left-block judgment from its own premise occurrence inside
 the concatenated context. -/
 def leftProjection (firstGoals secondGoals : List Pattern) :
-    OpenDerivationList presentation (firstGoals ++ secondGoals) firstGoals :=
+    OpenDerivationList definition (firstGoals ++ secondGoals) firstGoals :=
   OpenDerivationList.ofFn firstGoals fun index =>
     get_left index ▸
       OpenDerivation.assumption ⟨index.1, length_left index⟩
@@ -229,7 +296,7 @@ def leftProjection (firstGoals secondGoals : List Pattern) :
 /-- Derive every right-block judgment from its own premise occurrence inside
 the concatenated context. -/
 def rightProjection (firstGoals secondGoals : List Pattern) :
-    OpenDerivationList presentation (firstGoals ++ secondGoals) secondGoals :=
+    OpenDerivationList definition (firstGoals ++ secondGoals) secondGoals :=
   OpenDerivationList.ofFn secondGoals fun index =>
     get_right index ▸
       OpenDerivation.assumption
@@ -239,8 +306,8 @@ def rightProjection (firstGoals secondGoals : List Pattern) :
 recovers the left vector exactly. -/
 theorem leftProjection_bind_append
     {context firstGoals secondGoals : List Pattern}
-    (toFirst : OpenDerivationList presentation context firstGoals)
-    (toSecond : OpenDerivationList presentation context secondGoals) :
+    (toFirst : OpenDerivationList definition context firstGoals)
+    (toSecond : OpenDerivationList definition context secondGoals) :
     (leftProjection firstGoals secondGoals).bind (toFirst.append toSecond) =
       toFirst := by
   unfold leftProjection
@@ -255,8 +322,8 @@ theorem leftProjection_bind_append
 recovers the right vector exactly. -/
 theorem rightProjection_bind_append
     {context firstGoals secondGoals : List Pattern}
-    (toFirst : OpenDerivationList presentation context firstGoals)
-    (toSecond : OpenDerivationList presentation context secondGoals) :
+    (toFirst : OpenDerivationList definition context firstGoals)
+    (toSecond : OpenDerivationList definition context secondGoals) :
     (rightProjection firstGoals secondGoals).bind (toFirst.append toSecond) =
       toSecond := by
   unfold rightProjection
@@ -273,44 +340,129 @@ end OpenDerivationList
 
 namespace ClassifyingContext
 
-variable {presentation : ValidatedPresentation}
+variable {definition : ValidatedCalculusLanguageDef}
 
 /-- The product context: concatenation of premise contexts. -/
-def concat (first second : ClassifyingContext presentation) :
-    ClassifyingContext presentation :=
+def concat (first second : ClassifyingContext definition) :
+    ClassifyingContext definition :=
   ⟨first.judgments ++ second.judgments⟩
 
 /-- First projection: each left-block judgment is its own premise
 occurrence inside the concatenated context. -/
-def fstProjection (first second : ClassifyingContext presentation) :
+def fstProjection (first second : ClassifyingContext definition) :
     concat first second ⟶ first :=
   OpenDerivationList.leftProjection first.judgments second.judgments
 
 /-- Second projection: each right-block judgment is its own premise
 occurrence inside the concatenated context. -/
-def sndProjection (first second : ClassifyingContext presentation) :
+def sndProjection (first second : ClassifyingContext definition) :
     concat first second ⟶ second :=
   OpenDerivationList.rightProjection first.judgments second.judgments
 
 /-- Pairing: concatenate the two derivation vectors. -/
-def pair {source first second : ClassifyingContext presentation}
+def pair {source first second : ClassifyingContext definition}
     (toFirst : source ⟶ first) (toSecond : source ⟶ second) :
     source ⟶ concat first second :=
   OpenDerivationList.append toFirst toSecond
 
 /-- The first projection law: pairing then projecting left recovers the
 left derivation vector exactly. -/
-@[simp] theorem pair_fst {source first second : ClassifyingContext presentation}
+@[simp] theorem pair_fst {source first second : ClassifyingContext definition}
     (toFirst : source ⟶ first) (toSecond : source ⟶ second) :
     pair toFirst toSecond ≫ fstProjection first second = toFirst :=
   OpenDerivationList.leftProjection_bind_append toFirst toSecond
 
 /-- The second projection law: pairing then projecting right recovers the
 right derivation vector exactly. -/
-@[simp] theorem pair_snd {source first second : ClassifyingContext presentation}
+@[simp] theorem pair_snd {source first second : ClassifyingContext definition}
     (toFirst : source ⟶ first) (toSecond : source ⟶ second) :
     pair toFirst toSecond ≫ sndProjection first second = toSecond :=
   OpenDerivationList.rightProjection_bind_append toFirst toSecond
+
+/-- Every map into a concatenated context is exactly the pairing of its two
+projections. In particular, this keeps each proof occurrence, not just each
+conclusion, in the product universal property. -/
+theorem pair_eta {source first second : ClassifyingContext definition}
+    (morphism : source ⟶ concat first second) :
+    pair (morphism ≫ fstProjection first second)
+      (morphism ≫ sndProjection first second) = morphism := by
+  let left := OpenDerivationList.takeLeft first.judgments second.judgments morphism
+  let right := OpenDerivationList.takeRight first.judgments second.judgments morphism
+  have decompose : pair left right = morphism :=
+    OpenDerivationList.append_take morphism
+  have leftLaw : morphism ≫ fstProjection first second = left := by
+    rw [← decompose]
+    exact pair_fst left right
+  have rightLaw : morphism ≫ sndProjection first second = right := by
+    rw [← decompose]
+    exact pair_snd left right
+  calc
+    pair (morphism ≫ fstProjection first second)
+        (morphism ≫ sndProjection first second) = pair left right := by
+          rw [leftLaw, rightLaw]
+    _ = morphism := decompose
+
+/-- Concatenation satisfies the full binary-product universal property. -/
+theorem pair_unique {source first second : ClassifyingContext definition}
+    (toFirst : source ⟶ first) (toSecond : source ⟶ second)
+    (morphism : source ⟶ concat first second)
+    (firstEq : morphism ≫ fstProjection first second = toFirst)
+    (secondEq : morphism ≫ sndProjection first second = toSecond) :
+    morphism = pair toFirst toSecond := by
+  calc
+    morphism = pair (morphism ≫ fstProjection first second)
+        (morphism ≫ sndProjection first second) := (pair_eta morphism).symm
+    _ = pair toFirst toSecond := by rw [firstEq, secondEq]
+
+/-- Pairing commutes with contextual substitution, with both derivation
+vectors and their premise occurrences retained exactly. -/
+@[simp] theorem comp_pair {prior source first second : ClassifyingContext definition}
+    (substitution : prior ⟶ source)
+    (toFirst : source ⟶ first) (toSecond : source ⟶ second) :
+    substitution ≫ pair toFirst toSecond =
+      pair (substitution ≫ toFirst) (substitution ≫ toSecond) := by
+  apply pair_unique (substitution ≫ toFirst) (substitution ≫ toSecond)
+  · rw [Category.assoc, pair_fst]
+  · rw [Category.assoc, pair_snd]
+
+/-- The explicit cone of ordered-context concatenation is limiting. -/
+def concatIsLimit (first second : ClassifyingContext definition) :
+    CategoryTheory.Limits.IsLimit
+      (CategoryTheory.Limits.BinaryFan.mk
+        (fstProjection first second) (sndProjection first second)) :=
+  CategoryTheory.Limits.BinaryFan.IsLimit.mk _
+    (fun toFirst toSecond => pair toFirst toSecond)
+    (fun toFirst toSecond => pair_fst toFirst toSecond)
+    (fun toFirst toSecond => pair_snd toFirst toSecond)
+    (fun toFirst toSecond morphism firstEq secondEq =>
+      pair_unique toFirst toSecond morphism firstEq secondEq)
+
+instance hasLimitPair (first second : ClassifyingContext definition) :
+    CategoryTheory.Limits.HasLimit (CategoryTheory.Limits.pair first second) :=
+  ⟨⟨CategoryTheory.Limits.BinaryFan.mk
+      (fstProjection first second) (sndProjection first second),
+    concatIsLimit first second⟩⟩
+
+instance hasBinaryProducts (definition : ValidatedCalculusLanguageDef) :
+    CategoryTheory.Limits.HasBinaryProducts (ClassifyingContext definition) :=
+  CategoryTheory.Limits.hasBinaryProducts_of_hasLimit_pair
+    (ClassifyingContext definition)
+
+/-- Two equal judgment labels at different ordered premise positions remain
+different proof terms. Binary products above therefore do not collapse the
+classifying category to an extensional relation on conclusions. -/
+theorem duplicate_assumptions_distinct
+    (definition : ValidatedCalculusLanguageDef) (judgment : Pattern) :
+    (OpenDerivation.assumption (definition := definition)
+      (context := [judgment, judgment]) (0 : Fin 2)) ≠
+    OpenDerivation.assumption (definition := definition)
+      (context := [judgment, judgment]) (1 : Fin 2) := by
+  intro equal
+  cases equal
+
+#print axioms ClassifyingContext.emptyIsTerminal
+#print axioms ClassifyingContext.concatIsLimit
+#print axioms duplicate_assumptions_distinct
 
 end ClassifyingContext
 

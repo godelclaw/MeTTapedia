@@ -26,12 +26,13 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostGeneratorInvariantCount
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryCanonicalCanary
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryRouteBreadthCanary
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The wrapped static image of `Name` is its base-tagged generated sort. -/
 theorem rhoBreadthWrappedNameTypeForAtomCanary :
     (.base (costBaseSortName "Name") : TypeExpr) =
       mapTypeExpr (CostStaticColor.wrapped.symbols rhoCIGSLT)
         (.base "Name") := by
-  simp [mapTypeExpr, CostStaticColor.symbols,
+  simp [mapTypeExpr, CostStaticColor.symbols, CostStaticColor.symbolsOf,
     costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
     rhoInteractivePresentation, rhoCalc, TypeDecl.plain,
     show "Name" ≠ "Proc" by decide]
@@ -80,6 +81,7 @@ theorem rhoBreadthBoundaryA_sameFiber_structural :
   · exact rhoBreadthBoundaryWitnessA.targetType_eq
   · exact rhoBreadthBoundaryWitnessA.targetSupport_eq
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected Quote/Drop child and its structural contractum are aligned
 before either is packaged as a parent semantic atom. -/
 noncomputable def rhoBreadthBoundaryChildA_structuralAlignment :

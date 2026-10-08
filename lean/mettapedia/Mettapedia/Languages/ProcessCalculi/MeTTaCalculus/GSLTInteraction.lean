@@ -29,20 +29,20 @@ def mettaCalcValidatedLanguageDef : ValidatedLanguageDef :=
   ⟨mettaCalc, mettaCalc_validate_eq_nil⟩
 
 /-- The authored process sort. -/
-def mettaCalcProcessSort : AuthoredSort mettaCalcValidatedLanguageDef :=
+def mettaCalcProcessSort : DeclaredSort mettaCalcValidatedLanguageDef :=
   ⟨mettaCalc.types[0], by
     change List.Mem mettaCalc.types[0] mettaCalc.types
     exact List.getElem_mem (by simp [mettaCalc])⟩
 
 /-- The authored bare hash-bag constructor used by `pPar`. -/
 def mettaCalcParallelConstructor :
-    AuthoredConstructor mettaCalcValidatedLanguageDef :=
+    DeclaredConstructor mettaCalcValidatedLanguageDef :=
   ⟨mettaCalc.terms[1], by
     change List.Mem mettaCalc.terms[1] mettaCalc.terms
     exact List.getElem_mem (by simp [mettaCalc])⟩
 
 /-- The authored symmetric communication rewrite. -/
-def mettaCalcCommRewrite : AuthoredRewrite mettaCalcValidatedLanguageDef :=
+def mettaCalcCommRewrite : DeclaredRewrite mettaCalcValidatedLanguageDef :=
   ⟨mettaCalc.rewrites[0], by
     change List.Mem mettaCalc.rewrites[0] mettaCalc.rewrites
     exact List.getElem_mem (by simp [mettaCalc])⟩
@@ -82,13 +82,11 @@ theorem executable_step_to_mettaCalcGSLT
 
 theorem mettaCalc_contact_constructor_label :
     mettaCalcInteractivePresentation.contactConstructor.1.label = "MPar" := by
-  simp [mettaCalcInteractivePresentation, mettaCalcParallelConstructor,
-    mettaCalc]
+  rfl
 
 theorem mettaCalc_interaction_rewrite_name :
     mettaCalcInteractivePresentation.interactionRewrite.1.name = "CommSym" := by
-  simp [mettaCalcInteractivePresentation, mettaCalcCommRewrite, mettaCalc,
-    commSymRule]
+  rfl
 
 /-- Positive control: symmetric `COMM` is selected as collection contact. -/
 theorem mettaCalc_comm_interaction_headed :
@@ -122,6 +120,6 @@ theorem mettaCalc_rho_interaction_rewrites_distinct :
     mettaCalcInteractivePresentation.interactionRewrite.1.name ≠
       rhoInteractivePresentation.interactionRewrite.1.name := by
   rw [mettaCalc_interaction_rewrite_name]
-  simp [rhoInteractivePresentation, rhoCalc, rhoCommRewrite]
+  decide +kernel
 
 end Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.GSLTInteraction

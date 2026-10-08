@@ -4,13 +4,13 @@ import Mettapedia.GSLT.LanguageDef.InferenceChecker
 # Relational MeTTa projection of LanguageDef inference rules
 
 Renders the inference rules of a constructor-only `LanguageDef`
-presentation as an EXECUTABLE MeTTa relational program: one ordered clause
+calculus language definition as an EXECUTABLE MeTTa relational program: one ordered equation
 per rule, judgment applications as ordinary applications, metavariables as
 MeTTa variables, and premises as a `let`-chain over the private derivation
-token `ptg-true`.  Clause backtracking then realizes derivation search.
+token `ptg-true`.  Equation choice then realizes derivation search.
 
 This is the executable sibling of `InferenceMeTTaRender` (which serializes
-the same presentation as DATA for the operational generic checker): two
+the same definition as DATA for the operational generic checker): two
 projections of one authored root, kept in the authored rule order.
 
 Fail-closed contract: rules with side conditions, binder-arity
@@ -52,15 +52,15 @@ termination_by patterns => 2 * sizeOf patterns + 1
 end
 
 /-- Premises chain through `let` on the derivation token: each premise must
-evaluate to `ptg-true`, with clause choice supplying backtracking across
+evaluate to `ptg-true`, with equation choice supplying backtracking across
 alternative derivations. -/
 def renderPremiseChain : List String → String
   | [] => derivationToken
   | premise :: premises =>
       s!"(let {derivationToken} {premise} {renderPremiseChain premises})"
 
-/-- One executable clause per rule, in authored order. -/
-def renderClause? (rule : RuleSchema) : Option String := do
+/-- One executable equation per rule, in authored order. -/
+def renderEquation? (rule : RuleSchema) : Option String := do
   if !rule.sideConditions.isEmpty then
     none
   else if !(rule.metavariables.all fun formal => formal.2 == 0) then
@@ -70,12 +70,12 @@ def renderClause? (rule : RuleSchema) : Option String := do
     let premises ← renderTerms? rule.premises
     some s!"(= {conclusion} {renderPremiseChain premises})"
 
-def renderClauses? (rules : List RuleSchema) : Option (List String) :=
+def renderEquations? (rules : List RuleSchema) : Option (List String) :=
   match rules with
   | [] => some []
   | rule :: rest => do
-      let head ← renderClause? rule
-      let tail ← renderClauses? rest
+      let head ← renderEquation? rule
+      let tail ← renderEquations? rest
       some (head :: tail)
 
 mutual
@@ -95,7 +95,7 @@ def sourceSyntaxOkList : List Pattern → Bool
 end
 
 /-- Decidable structural totality: exactly the fail-closed conditions of
-`renderClause?`.  The exporter still refuses at runtime on any rule this
+`renderEquation?`.  The exporter still refuses at runtime on any rule this
 predicate would reject; proving `rules.all projectable` by `decide` moves
 that refusal to build time without kernel-evaluating string construction. -/
 def projectable (rule : RuleSchema) : Bool :=
@@ -104,10 +104,10 @@ def projectable (rule : RuleSchema) : Bool :=
   sourceSyntaxOk rule.conclusion &&
   rule.premises.all sourceSyntaxOk
 
-/-- The full relational program for a presentation's rules, or `none` if
+/-- The full relational program for a language definition's rules, or `none` if
 any rule falls outside the projectable fragment. -/
-def renderProgram? (presentation : Presentation) : Option String := do
-  let clauses ← renderClauses? presentation.rules
-  some (String.intercalate "\n" clauses ++ "\n")
+def renderProgram? (definition : CalculusLanguageDef) : Option String := do
+  let equations ← renderEquations? definition.rules
+  some (String.intercalate "\n" equations ++ "\n")
 
 end Mettapedia.GSLT.LanguageDef.InferenceRelationalMeTTaRender

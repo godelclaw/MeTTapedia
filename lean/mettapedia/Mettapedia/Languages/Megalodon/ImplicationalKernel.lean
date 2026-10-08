@@ -6,10 +6,11 @@ import Mettapedia.GSLT.LanguageDef.InferenceChecker
 
 This module isolates the `Imp`, `Hyp`, `PPfAp`, and `PLam` fragment of
 Megalodon's checked `Mathdata` proof terms.  It gives the fragment an authored
-CertificateGSLT presentation and compiles its intrinsic proof terms to generic NIK
-articles.  The result is an exact fragment authority, not a claim of adequacy
-for the full Megalodon parser, dynamic-operator environment, polymorphism,
-definitions, or HOTG theory.
+CertificateGSLT definition and compiles its intrinsic proof terms to generic
+external proof articles.  This is a certificate-facing projection of one
+native proof calculus, not a definition of NIK.  The result is an exact
+fragment authority, not a claim of adequacy for the full Megalodon parser,
+dynamic-operator environment, polymorphism, definitions, or HOTG theory.
 -/
 
 set_option autoImplicit false
@@ -211,27 +212,25 @@ by the generic NIK checker. -/
       some definition.toCalculus :=
   definition.toExtended_elaborate_authoredSource
 
-def presentation : Presentation := definition.toNested
-
 private theorem language_validate : definition.toLanguageDef.validate = [] := by
   apply LanguageDef.validate_eq_nil_of_constructorOnly <;>
     simp [definition, expressionType, expressionConstructor,
       LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
       TypeExpr.baseNames]
 
-theorem presentation_valid : presentation.isValidV2 = true := by
-  have hvalidate : presentation.language.validate = [] := by
-    simpa [presentation] using language_validate
-  unfold Presentation.isValidV2 Presentation.isValidV1
+theorem definition_valid : definition.isValid = true := by
+  have hvalidate : definition.toLanguageDef.validate = [] := by
+    simpa [definition] using language_validate
+  unfold CalculusLanguageDef.isValid CalculusLanguageDef.hasValidLocalRules
   rw [hvalidate]
-  simp [presentation, definition, Presentation.ruleIds,
-    Presentation.judgmentSignatureValid, Presentation.judgmentHeads,
-    Presentation.conversionDeclarationValid, Presentation.lookupJudgment?,
-    RuleSchema.isValidIn, RuleSchema.isValidV1, RuleSchema.metavariableNames,
+  simp [definition, definition, CalculusLanguageDef.ruleIds,
+    CalculusLanguageDef.judgmentSignatureValid, CalculusLanguageDef.judgmentHeads,
+    CalculusLanguageDef.conversionDeclarationValid, CalculusLanguageDef.lookupJudgment?,
+    RuleSchema.isValidIn, RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
     RuleSchema.occurrences, RuleSchema.patterns,
     patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
     patternHasNoCollectionRest, patternsHaveNoCollectionRest,
-    Presentation.judgmentSchemaValid, fixedConstructorsValid,
+    CalculusLanguageDef.judgmentSchemaValid, fixedConstructorsValid,
     fixedConstructorListsValid, languageHasConstructorArity,
     Pattern.isWellScoped, Pattern.isWellScopedAt,
     Pattern.isWellScopedListAt, Pattern.hasCanonicalBinderMetadata,
@@ -241,12 +240,288 @@ theorem presentation_valid : presentation.isValidV2 = true := by
     proves, ruleId]
   decide
 
-def validated : ValidatedPresentation := ⟨presentation, presentation_valid⟩
+def validated : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
+
+/-! ## Exhaustive authored-rule boundary -/
+
+/-- Public raw implication constructor for semantic interpretations of the
+authored calculus. -/
+def implicationPattern (domain codomain : Pattern) : Pattern :=
+  .apply "MImp" [domain, codomain]
+
+/-- Public raw context-extension constructor for semantic interpretations of
+the authored calculus. -/
+def contextConsPattern (formula context : Pattern) : Pattern :=
+  .apply "MCtxCons" [formula, context]
+
+/-- Public raw proof-judgment constructor for semantic interpretations of the
+authored calculus. -/
+def judgmentPattern (context formula : Pattern) : Pattern :=
+  .apply "MProves" [context, formula]
+
+/-- Exhaustive semantic shape of one admitted authored rule application.
+Argument safety obligations remain in the original `RuleApplication`; this
+view exposes only the instantiated logical boundary. -/
+inductive AuthoredRuleShape : List Pattern → Pattern → Prop where
+  | hypothesisZero (context formula : Pattern) :
+      AuthoredRuleShape []
+        (judgmentPattern (contextConsPattern formula context) formula)
+  | weakening (context formula head : Pattern) :
+      AuthoredRuleShape [judgmentPattern context formula]
+        (judgmentPattern (contextConsPattern head context) formula)
+  | implicationIntroduction (context domain codomain : Pattern) :
+      AuthoredRuleShape
+        [judgmentPattern (contextConsPattern domain context) codomain]
+        (judgmentPattern context (implicationPattern domain codomain))
+  | implicationElimination (context domain codomain : Pattern) :
+      AuthoredRuleShape
+        [judgmentPattern context (implicationPattern domain codomain),
+          judgmentPattern context domain]
+        (judgmentPattern context codomain)
+
+private theorem lookup_hypZero_of_ruleId
+    {rule : RuleSchema}
+    (lookup : definition.lookupRule? (ruleId "megalodon-hyp-zero") = some rule) :
+    rule = hypZeroRule := by
+  simpa [definition, CalculusLanguageDef.lookupRule?, hypZeroRule, weakenRule,
+    implicationIntroductionRule, implicationEliminationRule, ruleId] using lookup.symm
+
+private theorem lookup_weaken_of_ruleId
+    {rule : RuleSchema}
+    (lookup : definition.lookupRule? (ruleId "megalodon-weaken") = some rule) :
+    rule = weakenRule := by
+  simpa [definition, CalculusLanguageDef.lookupRule?, hypZeroRule, weakenRule,
+    implicationIntroductionRule, implicationEliminationRule, ruleId] using lookup.symm
+
+private theorem lookup_impIntro_of_ruleId
+    {rule : RuleSchema}
+    (lookup : definition.lookupRule? (ruleId "megalodon-imp-intro") = some rule) :
+    rule = implicationIntroductionRule := by
+  simpa [definition, CalculusLanguageDef.lookupRule?, hypZeroRule, weakenRule,
+    implicationIntroductionRule, implicationEliminationRule, ruleId] using lookup.symm
+
+private theorem lookup_impElim_of_ruleId
+    {rule : RuleSchema}
+    (lookup : definition.lookupRule? (ruleId "megalodon-imp-elim") = some rule) :
+    rule = implicationEliminationRule := by
+  simpa [definition, CalculusLanguageDef.lookupRule?, hypZeroRule, weakenRule,
+    implicationIntroductionRule, implicationEliminationRule, ruleId] using lookup.symm
+
+private theorem no_lookup_of_other_ruleId
+    (id : RuleId)
+    (notHyp : id ≠ ruleId "megalodon-hyp-zero")
+    (notWeaken : id ≠ ruleId "megalodon-weaken")
+    (notIntro : id ≠ ruleId "megalodon-imp-intro")
+    (notElim : id ≠ ruleId "megalodon-imp-elim") :
+    definition.lookupRule? id = none := by
+  rcases id with ⟨value⟩
+  have notHypValue : "megalodon-hyp-zero" ≠ value := by
+    intro equal
+    apply notHyp
+    cases equal
+    rfl
+  have notWeakenValue : "megalodon-weaken" ≠ value := by
+    intro equal
+    apply notWeaken
+    cases equal
+    rfl
+  have notIntroValue : "megalodon-imp-intro" ≠ value := by
+    intro equal
+    apply notIntro
+    cases equal
+    rfl
+  have notElimValue : "megalodon-imp-elim" ≠ value := by
+    intro equal
+    apply notElim
+    cases equal
+    rfl
+  simp [definition, CalculusLanguageDef.lookupRule?, hypZeroRule, weakenRule,
+    implicationIntroductionRule, implicationEliminationRule, ruleId,
+    notHypValue, notWeakenValue, notIntroValue, notElimValue]
+
+private theorem hypShape_of_application
+    {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern}
+    (ruleName : ruleInstance.ruleId = ruleId "megalodon-hyp-zero")
+    (application : RuleApplication validated ruleInstance premises conclusion) :
+    AuthoredRuleShape premises conclusion := by
+  rcases application with
+    ⟨rule, lookup, argumentsValid, _sideConditionsValid,
+      premisesInstantiate, conclusionInstantiates⟩
+  change definition.lookupRule? ruleInstance.ruleId = some rule at lookup
+  rw [ruleName] at lookup
+  have ruleEqual := lookup_hypZero_of_ruleId lookup
+  subst rule
+  rcases ruleInstance with ⟨ruleIdentifier, arguments⟩
+  cases arguments with
+  | nil => simp [hypZeroRule, argumentsValidAt] at argumentsValid
+  | cons context tail =>
+      cases tail with
+      | nil => simp [hypZeroRule, argumentsValidAt] at argumentsValid
+      | cons formula tail =>
+          cases tail with
+          | nil =>
+              have premisesValue := instantiateSchemasAt?_complete
+                premisesInstantiate
+              have conclusionValue := instantiateSchemaAt?_complete
+                conclusionInstantiates
+              simp [hypZeroRule, ruleId, proves, instantiateSchemasAt?,
+                instantiateSchemaAt?, lookupArgumentAt?] at premisesValue conclusionValue
+              subst premises
+              subst conclusion
+              exact .hypothesisZero context formula
+          | cons extra rest =>
+              simp [hypZeroRule, argumentsValidAt] at argumentsValid
+
+private theorem weakenShape_of_application
+    {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern}
+    (ruleName : ruleInstance.ruleId = ruleId "megalodon-weaken")
+    (application : RuleApplication validated ruleInstance premises conclusion) :
+    AuthoredRuleShape premises conclusion := by
+  rcases application with
+    ⟨rule, lookup, argumentsValid, _sideConditionsValid,
+      premisesInstantiate, conclusionInstantiates⟩
+  change definition.lookupRule? ruleInstance.ruleId = some rule at lookup
+  rw [ruleName] at lookup
+  have ruleEqual := lookup_weaken_of_ruleId lookup
+  subst rule
+  rcases ruleInstance with ⟨ruleIdentifier, arguments⟩
+  cases arguments with
+  | nil => simp [weakenRule, argumentsValidAt] at argumentsValid
+  | cons context tail =>
+      cases tail with
+      | nil => simp [weakenRule, argumentsValidAt] at argumentsValid
+      | cons formula tail =>
+          cases tail with
+          | nil => simp [weakenRule, argumentsValidAt] at argumentsValid
+          | cons head tail =>
+              cases tail with
+              | nil =>
+                  have premisesValue := instantiateSchemasAt?_complete
+                    premisesInstantiate
+                  have conclusionValue := instantiateSchemaAt?_complete
+                    conclusionInstantiates
+                  simp [weakenRule, ruleId, proves, instantiateSchemasAt?,
+                    instantiateSchemaAt?, lookupArgumentAt?] at premisesValue conclusionValue
+                  subst premises
+                  subst conclusion
+                  exact .weakening context formula head
+              | cons extra rest =>
+                  simp [weakenRule, argumentsValidAt] at argumentsValid
+
+private theorem impIntroShape_of_application
+    {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern}
+    (ruleName : ruleInstance.ruleId = ruleId "megalodon-imp-intro")
+    (application : RuleApplication validated ruleInstance premises conclusion) :
+    AuthoredRuleShape premises conclusion := by
+  rcases application with
+    ⟨rule, lookup, argumentsValid, _sideConditionsValid,
+      premisesInstantiate, conclusionInstantiates⟩
+  change definition.lookupRule? ruleInstance.ruleId = some rule at lookup
+  rw [ruleName] at lookup
+  have ruleEqual := lookup_impIntro_of_ruleId lookup
+  subst rule
+  rcases ruleInstance with ⟨ruleIdentifier, arguments⟩
+  cases arguments with
+  | nil =>
+      simp [implicationIntroductionRule, argumentsValidAt] at argumentsValid
+  | cons context tail =>
+      cases tail with
+      | nil =>
+          simp [implicationIntroductionRule, argumentsValidAt] at argumentsValid
+      | cons domain tail =>
+          cases tail with
+          | nil =>
+              simp [implicationIntroductionRule, argumentsValidAt] at argumentsValid
+          | cons codomain tail =>
+              cases tail with
+              | nil =>
+                  have premisesValue := instantiateSchemasAt?_complete
+                    premisesInstantiate
+                  have conclusionValue := instantiateSchemaAt?_complete
+                    conclusionInstantiates
+                  simp [implicationIntroductionRule, ruleId, proves,
+                    instantiateSchemasAt?, instantiateSchemaAt?,
+                    lookupArgumentAt?] at premisesValue conclusionValue
+                  subst premises
+                  subst conclusion
+                  exact .implicationIntroduction context domain codomain
+              | cons extra rest =>
+                  simp [implicationIntroductionRule, argumentsValidAt] at argumentsValid
+
+private theorem impElimShape_of_application
+    {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern}
+    (ruleName : ruleInstance.ruleId = ruleId "megalodon-imp-elim")
+    (application : RuleApplication validated ruleInstance premises conclusion) :
+    AuthoredRuleShape premises conclusion := by
+  rcases application with
+    ⟨rule, lookup, argumentsValid, _sideConditionsValid,
+      premisesInstantiate, conclusionInstantiates⟩
+  change definition.lookupRule? ruleInstance.ruleId = some rule at lookup
+  rw [ruleName] at lookup
+  have ruleEqual := lookup_impElim_of_ruleId lookup
+  subst rule
+  rcases ruleInstance with ⟨ruleIdentifier, arguments⟩
+  cases arguments with
+  | nil =>
+      simp [implicationEliminationRule, argumentsValidAt] at argumentsValid
+  | cons context tail =>
+      cases tail with
+      | nil =>
+          simp [implicationEliminationRule, argumentsValidAt] at argumentsValid
+      | cons domain tail =>
+          cases tail with
+          | nil =>
+              simp [implicationEliminationRule, argumentsValidAt] at argumentsValid
+          | cons codomain tail =>
+              cases tail with
+              | nil =>
+                  have premisesValue := instantiateSchemasAt?_complete
+                    premisesInstantiate
+                  have conclusionValue := instantiateSchemaAt?_complete
+                    conclusionInstantiates
+                  simp [implicationEliminationRule, ruleId, proves,
+                    instantiateSchemasAt?, instantiateSchemaAt?,
+                    lookupArgumentAt?] at premisesValue conclusionValue
+                  subst premises
+                  subst conclusion
+                  exact .implicationElimination context domain codomain
+              | cons extra rest =>
+                  simp [implicationEliminationRule, argumentsValidAt] at argumentsValid
+
+/-- Every accepted local rule application has exactly one of the four authored
+logical shapes.  This is the source-level eliminator needed by independent
+semantic models; consumers need not inspect the private rule-table encoding. -/
+theorem ruleApplication_shape
+    {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern}
+    (application : RuleApplication validated ruleInstance premises conclusion) :
+    AuthoredRuleShape premises conclusion := by
+  by_cases hyp : ruleInstance.ruleId = ruleId "megalodon-hyp-zero"
+  · exact hypShape_of_application hyp application
+  · by_cases weaken : ruleInstance.ruleId = ruleId "megalodon-weaken"
+    · exact weakenShape_of_application weaken application
+    · by_cases introRule :
+          ruleInstance.ruleId = ruleId "megalodon-imp-intro"
+      · exact impIntroShape_of_application introRule application
+      · by_cases elimRule :
+            ruleInstance.ruleId = ruleId "megalodon-imp-elim"
+        · exact impElimShape_of_application elimRule application
+        · rcases application with
+            ⟨rule, lookup, _argumentsValid, _sideConditionsValid,
+              _premisesInstantiate, _conclusionInstantiates⟩
+          change definition.lookupRule? ruleInstance.ruleId = some rule at lookup
+          rw [no_lookup_of_other_ruleId ruleInstance.ruleId hyp weaken
+            introRule elimRule] at lookup
+          contradiction
 
 /-- The admitted fragment denotes one semantic GSLT.  Since the fragment has
 no object-language equations, its equation-compatibility law is immediate. -/
 def semanticGSLT : Mettapedia.GSLT.GSLT :=
-  definition.toGSLTOfNoEquations presentation_valid rfl
+  definition.toGSLTOfEquationFree definition_valid rfl
 
 private def ruleInstance (id : String) (arguments : List Pattern) :
     RuleInstance :=
@@ -279,9 +554,9 @@ private theorem hypZero_instantiates
         [encodeContext context, encodeFormula formula]) =
       some ([],
         proves (encodeContext (formula :: context)) (encodeFormula formula)) := by
-  simp [validated, presentation, definition, hypZeroRule, weakenRule,
+  simp [validated, definition, definition, hypZeroRule, weakenRule,
     implicationIntroductionRule, implicationEliminationRule, ruleInstance,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, proves, encodeContext, encodeFormula_ground,
@@ -296,9 +571,9 @@ private theorem weaken_instantiates
       some
         ([proves (encodeContext context) (encodeFormula formula)],
           proves (encodeContext (head :: context)) (encodeFormula formula)) := by
-  simp [validated, presentation, definition, hypZeroRule, weakenRule,
+  simp [validated, definition, definition, hypZeroRule, weakenRule,
     implicationIntroductionRule, implicationEliminationRule, ruleInstance,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, proves, encodeContext, encodeFormula_ground,
@@ -313,9 +588,9 @@ private theorem implicationIntroduction_instantiates
       some
         ([proves (encodeContext (domain :: context)) (encodeFormula codomain)],
           proves (encodeContext context) (encodeFormula (.imp domain codomain))) := by
-  simp [validated, presentation, definition, hypZeroRule, weakenRule,
+  simp [validated, definition, definition, hypZeroRule, weakenRule,
     implicationIntroductionRule, implicationEliminationRule, ruleInstance,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, proves, encodeFormula, encodeContext,
@@ -331,9 +606,9 @@ private theorem implicationElimination_instantiates
         ([ proves (encodeContext context) (encodeFormula (.imp domain codomain)),
            proves (encodeContext context) (encodeFormula domain) ],
           proves (encodeContext context) (encodeFormula codomain)) := by
-  simp [validated, presentation, definition, hypZeroRule, weakenRule,
+  simp [validated, definition, definition, hypZeroRule, weakenRule,
     implicationIntroductionRule, implicationEliminationRule, ruleInstance,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, proves, encodeFormula, encodeFormula_ground,
@@ -446,7 +721,7 @@ private theorem compile_hyp_checked
                 (tailIH hrecursive)
 
 /-- Every article emitted by the fragment compiler is accepted by the exact
-authored CertificateGSLT presentation at the same inferred endpoint. -/
+authored CertificateGSLT definition at the same inferred endpoint. -/
 theorem compile_checked
     {context : List Formula} {proof : Proof} {formula : Formula}
     {article : RawProof}
@@ -553,8 +828,8 @@ theorem modus_ponens_semantic_reachability :
   have derivations :
       DerivationList validated [modusPonensGoal] :=
     .cons derivation .nil
-  exact (definition.toGSLT_derivability presentation_valid
-    (TotalGSLT.ReductionRespectsEquations.of_no_equations rfl)
+  exact (definition.toGSLT_derivability definition_valid
+    (TotalGSLT.ReductionRespectsEquations.of_equation_free rfl)
     [modusPonensGoal]).mp ⟨derivations⟩
 
 def wrongExactGoal : Pattern :=

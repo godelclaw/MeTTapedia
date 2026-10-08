@@ -1,0 +1,646 @@
+import Mettapedia.OSLF.PresheafNativeType.PresheafSemantics
+import Mettapedia.GSLT.Topos.PresheafPredicateCartesianClosed
+import Mettapedia.GSLT.Topos.PresheafLogicalTransport
+import Mettapedia.GSLT.Topos.PresheafPredicateReification
+import Mettapedia.GSLT.Topos.PresheafPredicateYonedaRestriction
+import Mathlib.CategoryTheory.Comma.Arrow
+import Mathlib.CategoryTheory.Limits.Shapes.Pullback.HasPullback
+import Mathlib.CategoryTheory.Types.Basic
+
+/-!
+# Internal dependent language of the presheaf topos
+
+This file bundles presheaf infrastructure into endpoints keyed to:
+  Williams & Stay, "Native Type Theory" (ACT 2021).
+
+## Constructed endpoints and boundaries
+
+- **Prop 12**: Indexed adjoints with Beck-Chevalley
+- **Prop 14**: Actual cartesian closed total category and closed projection,
+  using the existing products and curry/uncurry adjunction. The total
+  constructions use a common universe for the base and values.
+- **Prop 18**: Small limits and colimits in the total category, preserved by
+  the projection, with their cone and cocone universal properties.
+- **Prop 17**: Function-object reification is right adjoint to curried
+  evaluation on predicate fibres (`GSLT.Topos.reify_adjunction`). The older
+  same-fiber infimum below is a separate, weaker construction.
+- **Def 21**: Codomain fibration with strongly Cartesian lifts and unique
+  factorization, registered as a Mathlib `IsFibered` instance
+- **Sec 4**: The actual image-comprehension adjunction is imported from
+  `PresheafImageComprehension`; the elementary factorization helpers remain below
+- **Thm 23**: Presheaf restriction now acts on both total categories and on
+  theory natural transformations, with identity/composition, whiskering and
+  adjunction compatibility in `PresheafLogicalTransport`. The all-toposes
+  2-functor into higher-order dependent theories remains a separate obligation.
+-/
+
+open CategoryTheory
+
+universe u v w
+
+namespace Mettapedia.OSLF.PresheafNativeType
+
+-- These imports and declaration anchors join the total/function-object
+-- constructions to the established native-language entry point.
+#check GSLT.Topos.expHomEquiv
+#check GSLT.Topos.expCurry_naturality
+#check GSLT.Topos.projection_preserves_cartesianClosed
+#check GSLT.Topos.reify_adjunction
+#check GSLT.Topos.yonedaExpPredicate
+#check GSLT.Topos.PredicateCartesianClosed.closed
+#check GSLT.Topos.PredicateCartesianClosed.projectionClosed
+#check GSLT.Topos.PredicateLimits.liftedIsLimit
+#check GSLT.Topos.PredicateLimits.liftedIsColimit
+#check GSLT.Topos.ImageComprehension.adjunction
+#check GSLT.Topos.LogicalTransport.predicateTranslationFunctor
+
+/-! ## NTT Proposition 12: Indexed Adjoints with Beck-Chevalley -/
+
+/-- NTT Prop 12: the predicate fibration has indexed sums and products.
+    Reference: Williams & Stay, NTT (ACT 2021), Prop 12. -/
+theorem prop12_indexedAdjoints (C : Type u) [Category.{w} C]
+    {X Y : Cᵒᵖ ⥤ Type v} (f : X ⟶ Y) :
+    GaloisConnection
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).directImage f)
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback f)
+    ∧
+    GaloisConnection
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback f)
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).universalImage f) :=
+  ⟨(GSLT.Topos.presheafChangeOfBase.{u, v, w} C).direct_pullback_adj f,
+   (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback_universal_adj f⟩
+
+/-- NTT Prop 12 (Beck-Chevalley). -/
+theorem prop12_beckChevalley (C : Type u) [Category.{w} C] :
+    GSLT.Topos.BeckChevalleyCondition
+      (GSLT.Topos.presheafPredicateFib.{u, v, w} C)
+      (GSLT.Topos.presheafChangeOfBase.{u, v, w} C) :=
+  GSLT.Topos.beckChevalleyCondition_presheafChangeOfBase.{u, w, v} C
+
+/-- NTT Prop 12 full package. -/
+structure Prop12_IndexedAdjoints (C : Type u) [Category.{w} C] where
+  existLeft : ∀ {X Y : Cᵒᵖ ⥤ Type v} (f : X ⟶ Y),
+    GaloisConnection
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).directImage f)
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback f)
+  univRight : ∀ {X Y : Cᵒᵖ ⥤ Type v} (f : X ⟶ Y),
+    GaloisConnection
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback f)
+      ((GSLT.Topos.presheafChangeOfBase.{u, v, w} C).universalImage f)
+  beckChevalley :
+    GSLT.Topos.BeckChevalleyCondition
+      (GSLT.Topos.presheafPredicateFib.{u, v, w} C)
+      (GSLT.Topos.presheafChangeOfBase.{u, v, w} C)
+
+theorem prop12_package (C : Type u) [Category.{w} C] :
+    Prop12_IndexedAdjoints.{u, v, w} C where
+  existLeft f := (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).direct_pullback_adj f
+  univRight f := (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback_universal_adj f
+  beckChevalley := GSLT.Topos.beckChevalleyCondition_presheafChangeOfBase.{u, w, v} C
+
+/-! ### Prop 12 Export: Explicit Π/Σ Predicate Rule Package -/
+
+section PiSigmaPredicateRules
+
+variable {C : Type u} [Category.{w} C]
+
+/-- A small context bundle for predicate-fibration Π/Σ transport over a map
+`f : A ⟶ B` in the presheaf base. -/
+structure PresheafDepCtx where
+  A : Cᵒᵖ ⥤ Type v
+  B : Cᵒᵖ ⥤ Type v
+  f : A ⟶ B
+
+namespace PresheafDepCtx
+
+/-- Reindexing/pullback along the dependent projection. -/
+noncomputable def pb (Δ : PresheafDepCtx.{u, v, w} (C := C)) :
+    CategoryTheory.Subfunctor Δ.B → CategoryTheory.Subfunctor Δ.A :=
+  (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback Δ.f
+
+/-- Σ-forming operator (left adjoint to pullback). -/
+noncomputable def sigmaForm (Δ : PresheafDepCtx.{u, v, w} (C := C)) :
+    CategoryTheory.Subfunctor Δ.A → CategoryTheory.Subfunctor Δ.B :=
+  (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).directImage Δ.f
+
+/-- Π-forming operator (right adjoint to pullback). -/
+noncomputable def piForm (Δ : PresheafDepCtx.{u, v, w} (C := C)) :
+    CategoryTheory.Subfunctor Δ.A → CategoryTheory.Subfunctor Δ.B :=
+  (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).universalImage Δ.f
+
+/-- Σ-η/adjunction law in predicate-fibration form. -/
+theorem sigmaEta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {φ : CategoryTheory.Subfunctor Δ.A}
+    {ψ : CategoryTheory.Subfunctor Δ.B} :
+    Δ.sigmaForm φ ≤ ψ ↔ φ ≤ Δ.pb ψ := by
+  change
+    (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).directImage Δ.f φ ≤ ψ ↔
+      φ ≤ (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback Δ.f ψ
+  exact (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).direct_pullback_adj Δ.f φ ψ
+
+/-- Π-η/adjunction law in predicate-fibration form. -/
+theorem piEta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {ψ : CategoryTheory.Subfunctor Δ.B}
+    {φ : CategoryTheory.Subfunctor Δ.A} :
+    Δ.pb ψ ≤ φ ↔ ψ ≤ Δ.piForm φ := by
+  change
+    (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback Δ.f ψ ≤ φ ↔
+      ψ ≤ (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).universalImage Δ.f φ
+  exact (GSLT.Topos.presheafChangeOfBase.{u, v, w} C).pullback_universal_adj Δ.f ψ φ
+
+/-- Σ-introduction (unit specialization). -/
+theorem sigmaIntro_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C)) (φ : CategoryTheory.Subfunctor Δ.A) :
+    φ ≤ Δ.pb (Δ.sigmaForm φ) := by
+  exact (sigmaEta_presheaf (C := C) (Δ := Δ)).1 le_rfl
+
+/-- Σ-elimination (left-adjoint direction). -/
+theorem sigmaElim_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {φ : CategoryTheory.Subfunctor Δ.A}
+    {ψ : CategoryTheory.Subfunctor Δ.B}
+    (h : φ ≤ Δ.pb ψ) :
+    Δ.sigmaForm φ ≤ ψ := by
+  exact (sigmaEta_presheaf (C := C) (Δ := Δ)).2 h
+
+/-- Σ-β (counit specialization). -/
+theorem sigmaBeta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C)) (ψ : CategoryTheory.Subfunctor Δ.B) :
+    Δ.sigmaForm (Δ.pb ψ) ≤ ψ := by
+  exact (sigmaEta_presheaf (C := C) (Δ := Δ)).2 le_rfl
+
+/-- Π-introduction (right-adjoint direction). -/
+theorem piIntro_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {ψ : CategoryTheory.Subfunctor Δ.B}
+    {φ : CategoryTheory.Subfunctor Δ.A}
+    (h : Δ.pb ψ ≤ φ) :
+    ψ ≤ Δ.piForm φ := by
+  exact (piEta_presheaf (C := C) (Δ := Δ)).1 h
+
+/-- Π-elimination (adjunction converse). -/
+theorem piElim_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {ψ : CategoryTheory.Subfunctor Δ.B}
+    {φ : CategoryTheory.Subfunctor Δ.A}
+    (h : ψ ≤ Δ.piForm φ) :
+    Δ.pb ψ ≤ φ := by
+  exact (piEta_presheaf (C := C) (Δ := Δ)).2 h
+
+/-- Π-β (counit specialization). -/
+theorem piBeta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C)) (φ : CategoryTheory.Subfunctor Δ.A) :
+    Δ.pb (Δ.piForm φ) ≤ φ := by
+  exact (piEta_presheaf (C := C) (Δ := Δ)).2 le_rfl
+
+end PresheafDepCtx
+
+/-- Reusable theorem package exporting Prop 12 as explicit Π/Σ rule endpoints. -/
+structure PiSigmaPredicateRulePack (C : Type u) [Category.{w} C] where
+  piIntro :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C))
+      {ψ : CategoryTheory.Subfunctor Δ.B}
+      {φ : CategoryTheory.Subfunctor Δ.A},
+      Δ.pb ψ ≤ φ → ψ ≤ Δ.piForm φ
+  piElim :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C))
+      {ψ : CategoryTheory.Subfunctor Δ.B}
+      {φ : CategoryTheory.Subfunctor Δ.A},
+      ψ ≤ Δ.piForm φ → Δ.pb ψ ≤ φ
+  piBeta :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C)) (φ : CategoryTheory.Subfunctor Δ.A),
+      Δ.pb (Δ.piForm φ) ≤ φ
+  piEta :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C))
+      {ψ : CategoryTheory.Subfunctor Δ.B}
+      {φ : CategoryTheory.Subfunctor Δ.A},
+      Δ.pb ψ ≤ φ ↔ ψ ≤ Δ.piForm φ
+  sigmaIntro :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C)) (φ : CategoryTheory.Subfunctor Δ.A),
+      φ ≤ Δ.pb (Δ.sigmaForm φ)
+  sigmaElim :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C))
+      {φ : CategoryTheory.Subfunctor Δ.A}
+      {ψ : CategoryTheory.Subfunctor Δ.B},
+      φ ≤ Δ.pb ψ → Δ.sigmaForm φ ≤ ψ
+  sigmaBeta :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C)) (ψ : CategoryTheory.Subfunctor Δ.B),
+      Δ.sigmaForm (Δ.pb ψ) ≤ ψ
+  sigmaEta :
+    ∀ (Δ : PresheafDepCtx.{u, v, w} (C := C))
+      {φ : CategoryTheory.Subfunctor Δ.A}
+      {ψ : CategoryTheory.Subfunctor Δ.B},
+      Δ.sigmaForm φ ≤ ψ ↔ φ ≤ Δ.pb ψ
+
+/-- Prop 12 packaged as explicit Π/Σ predicate rules over presheaf fibers. -/
+theorem prop12_piSigmaPredicateRulePack :
+    PiSigmaPredicateRulePack.{u, v, w} C where
+  piIntro := by
+    intro Δ ψ φ h
+    exact PresheafDepCtx.piIntro_presheaf (C := C) (Δ := Δ) h
+  piElim := by
+    intro Δ ψ φ h
+    exact PresheafDepCtx.piElim_presheaf (C := C) (Δ := Δ) h
+  piBeta := by
+    intro Δ φ
+    exact PresheafDepCtx.piBeta_presheaf (C := C) (Δ := Δ) φ
+  piEta := by
+    intro Δ ψ φ
+    exact PresheafDepCtx.piEta_presheaf (C := C) (Δ := Δ)
+  sigmaIntro := by
+    intro Δ φ
+    exact PresheafDepCtx.sigmaIntro_presheaf (C := C) (Δ := Δ) φ
+  sigmaElim := by
+    intro Δ φ ψ h
+    exact PresheafDepCtx.sigmaElim_presheaf (C := C) (Δ := Δ) h
+  sigmaBeta := by
+    intro Δ ψ
+    exact PresheafDepCtx.sigmaBeta_presheaf (C := C) (Δ := Δ) ψ
+  sigmaEta := by
+    intro Δ φ ψ
+    exact PresheafDepCtx.sigmaEta_presheaf (C := C) (Δ := Δ)
+
+/-- Direct exported Π-η endpoint from the Prop 12 ΠΣ rule pack.
+This avoids consumers needing to project fields from the packed structure. -/
+theorem prop12_piEta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {ψ : CategoryTheory.Subfunctor Δ.B}
+    {φ : CategoryTheory.Subfunctor Δ.A} :
+    Δ.pb ψ ≤ φ ↔ ψ ≤ Δ.piForm φ := by
+  simpa using (prop12_piSigmaPredicateRulePack (C := C)).piEta Δ (ψ := ψ) (φ := φ)
+
+/-- Direct exported Σ-η endpoint from the Prop 12 ΠΣ rule pack.
+This avoids consumers needing to project fields from the packed structure. -/
+theorem prop12_sigmaEta_presheaf
+    (Δ : PresheafDepCtx.{u, v, w} (C := C))
+    {φ : CategoryTheory.Subfunctor Δ.A}
+    {ψ : CategoryTheory.Subfunctor Δ.B} :
+    Δ.sigmaForm φ ≤ ψ ↔ φ ≤ Δ.pb ψ := by
+  simpa using
+    (prop12_piSigmaPredicateRulePack (C := C)).sigmaEta Δ (φ := φ) (ψ := ψ)
+
+end PiSigmaPredicateRules
+
+/-! ## NTT Proposition 14: Cosmic Fibration -/
+
+/-- Indexed adjoints and frame fibers relevant to NTT Props 14 and 19.
+This package does not construct the cartesian closed total category/fibration. -/
+structure Prop14_CosmicFibration (C : Type u) [Category.{w} C] where
+  indexed : Prop12_IndexedAdjoints.{u, v, w} C
+  frameFibers : ∀ (F : Cᵒᵖ ⥤ Type v), Order.Frame (Subfunctor F)
+
+noncomputable def prop14_cosmicFibration (C : Type u) [Category.{w} C] :
+    Prop14_CosmicFibration.{u, v, w} C where
+  indexed := prop12_package C
+  frameFibers F := GSLT.Topos.presheafSubfunctorFrame (C := Cᵒᵖ) F
+
+/-! ## Same-fiber predicate-transformer infimum -/
+
+/-- The infimum of `phi => F(phi)` in one predicate fiber. NTT Prop 17 instead
+requires predicates on a function object and an adjunction to curried evaluation;
+neither is established by this construction. -/
+noncomputable def reificationPred
+    (L : CategoryTheory.LambdaTheories.LambdaTheory)
+    (S : L.Obj)
+    (F : L.fibration.Sub S → L.fibration.Sub S) : L.fibration.Sub S :=
+  sInf { ψ | ∃ φ : L.fibration.Sub S, ψ = φ ⇨ F φ }
+
+/-- The reification predicate is monotone in F. -/
+theorem reificationPred_mono
+    (L : CategoryTheory.LambdaTheories.LambdaTheory)
+    (S : L.Obj) (F G : L.fibration.Sub S → L.fibration.Sub S)
+    (hFG : ∀ φ, F φ ≤ G φ) :
+    reificationPred L S F ≤ reificationPred L S G := by
+  unfold reificationPred
+  apply le_sInf
+  intro ψ hψ
+  rcases hψ with ⟨φ, rfl⟩
+  exact le_trans (sInf_le ⟨φ, rfl⟩) (himp_le_himp_left (hFG φ))
+
+/-- Monotonicity and a one-sided bound for the same-fiber infimum.
+These laws do not assert the function-object adjunction of NTT Prop 17. -/
+structure Prop17_Reification
+    (L : CategoryTheory.LambdaTheories.LambdaTheory) where
+  reify : ∀ (S : L.Obj),
+    (L.fibration.Sub S → L.fibration.Sub S) → L.fibration.Sub S
+  reify_mono : ∀ (S : L.Obj) (F G : L.fibration.Sub S → L.fibration.Sub S),
+    (∀ φ, F φ ≤ G φ) → reify S F ≤ reify S G
+  reify_le_himp : ∀ (S : L.Obj)
+    (F : L.fibration.Sub S → L.fibration.Sub S)
+    (φ : L.fibration.Sub S), reify S F ≤ φ ⇨ F φ
+
+noncomputable def prop17_reification
+    (L : CategoryTheory.LambdaTheories.LambdaTheory) :
+    Prop17_Reification L where
+  reify S F := reificationPred L S F
+  reify_mono S F G hFG := reificationPred_mono L S F G hFG
+  reify_le_himp S F φ := by
+    apply sInf_le
+    exact ⟨φ, rfl⟩
+
+/-! ## NTT Definition 21: Codomain Fibration -/
+
+/-- NTT Def 21: dependent types = arrow category.
+    Reference: Williams & Stay, NTT (ACT 2021), Def 21. -/
+abbrev DepTypeCategory (C : Type u) [Category.{v} C] := Arrow C
+
+def codomainFunctor (C : Type u) [Category.{v} C] : Arrow C ⥤ C :=
+  Arrow.rightFunc
+
+def domainFunctor (C : Type u) [Category.{v} C] : Arrow C ⥤ C :=
+  Arrow.leftFunc
+
+structure Def21_CodomainFibration (C : Type u) [Category.{v} C] where
+  totalCat : Type (max u v)
+  totalCatCategory : Category.{v} totalCat
+  codomain : @Functor totalCat totalCatCategory C _
+  domain : @Functor totalCat totalCatCategory C _
+
+def def21_codomainFibration (C : Type u) [Category.{v} C] :
+    Def21_CodomainFibration C where
+  totalCat := Arrow C
+  totalCatCategory := inferInstance
+  codomain := codomainFunctor C
+  domain := domainFunctor C
+
+/-! ### Def 21 Strengthening: Cartesian Lifts via Pullbacks
+
+Given an arrow `arr : A ⟶ B` and a base morphism `f : Y ⟶ B`, the pullback
+provides a Cartesian lift `pullback.snd : pullback arr.hom f ⟶ Y` in Arrow(C).
+This witnesses that the codomain fibration is a Grothendieck fibration when
+the base category has pullbacks (standard for presheaf toposes). -/
+
+section CartesianLift
+
+variable {C : Type u} [Category.{v} C]
+
+/-- Cartesian lift: the pullback-induced arrow over the target of `f`. -/
+noncomputable def def21_cartesianLift [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right) : Arrow C :=
+  Arrow.mk (Limits.pullback.snd arr.hom f)
+
+/-- The morphism from the Cartesian lift to the original arrow,
+    given by the pullback square. -/
+noncomputable def def21_cartesianLiftMorphism [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right) :
+    def21_cartesianLift arr f ⟶ arr :=
+  Arrow.homMk (Limits.pullback.fst arr.hom f) f Limits.pullback.condition
+
+/-- The codomain functor maps the lift morphism to the base morphism `f`. -/
+theorem def21_cartesianLift_proj [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right) :
+    (codomainFunctor C).map (def21_cartesianLiftMorphism arr f) = f := rfl
+
+/-- Cartesian universality: any morphism `τ : w ⟶ arr` in Arrow(C) that
+    projects to `g ≫ f` in the base factors through the Cartesian lift. -/
+noncomputable def def21_cartesianLift_universal [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right)
+    {w : Arrow C} (τ : w ⟶ arr) (g : w.right ⟶ Y)
+    (hg : g ≫ f = τ.right) :
+    w ⟶ def21_cartesianLift arr f := by
+  let hpb : τ.left ≫ arr.hom = (w.hom ≫ g) ≫ f := by
+    rw [Category.assoc, hg, Arrow.w]
+  exact Arrow.homMk
+    (Limits.pullback.lift τ.left (w.hom ≫ g) hpb)
+    g
+    (by
+      dsimp [def21_cartesianLift]
+      exact Limits.pullback.lift_snd τ.left (w.hom ≫ g) hpb)
+
+/-- The universal factorization composes to give the original morphism. -/
+theorem def21_cartesianLift_universal_comp [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right)
+    {w : Arrow C} (τ : w ⟶ arr) (g : w.right ⟶ Y)
+    (hg : g ≫ f = τ.right) :
+    def21_cartesianLift_universal arr f τ g hg ≫
+      def21_cartesianLiftMorphism arr f = τ := by
+  let hpb : τ.left ≫ arr.hom = (w.hom ≫ g) ≫ f := by
+    rw [Category.assoc, hg, Arrow.w]
+  ext
+  · change
+      Limits.pullback.lift τ.left (w.hom ≫ g) hpb ≫
+          Limits.pullback.fst arr.hom f = τ.left
+    exact Limits.pullback.lift_fst τ.left (w.hom ≫ g) hpb
+  · change g ≫ f = τ.right
+    exact hg
+
+
+/-- The pullback factorization is unique among arrows over the given base map. -/
+theorem def21_cartesianLift_universal_unique [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right)
+    {w : Arrow C} (τ : w ⟶ arr) (g : w.right ⟶ Y)
+    (hg : g ≫ f = τ.right)
+    (candidate : w ⟶ def21_cartesianLift arr f)
+    (hbase : candidate.right = g)
+    (fac : candidate ≫ def21_cartesianLiftMorphism arr f = τ) :
+    candidate = def21_cartesianLift_universal arr f τ g hg := by
+  apply Arrow.hom_ext
+  · apply Limits.pullback.hom_ext
+    · have h := congrArg Arrow.Hom.left fac
+      change candidate.left ≫ Limits.pullback.fst arr.hom f = τ.left at h
+      exact h.trans (Limits.pullback.lift_fst _ _ _).symm
+    · change candidate.left ≫ Limits.pullback.snd arr.hom f = _
+      exact candidate.w.trans ((congrArg (w.hom ≫ ·) hbase).trans
+        (Limits.pullback.lift_snd _ _ _).symm)
+  · exact hbase
+
+/-- The constructed lift satisfies the full Cartesian universal property. -/
+instance def21_cartesianLift_stronglyCartesian [Limits.HasPullbacks C]
+    (arr : Arrow C) {Y : C} (f : Y ⟶ arr.right) :
+    (codomainFunctor C).IsStronglyCartesian f (def21_cartesianLiftMorphism arr f) where
+  toIsHomLift := by
+    change (codomainFunctor C).IsHomLift
+      ((codomainFunctor C).map (def21_cartesianLiftMorphism arr f)) _
+    infer_instance
+  universal_property' := by
+    intro w g τ hτ
+    have hg : g ≫ f = τ.right :=
+      @IsHomLift.eq_of_isHomLift _ _ _ _ (codomainFunctor C) w arr (g ≫ f) τ hτ
+    refine ⟨def21_cartesianLift_universal arr f τ g hg, ⟨?_, ?_⟩, ?_⟩
+    · change (codomainFunctor C).IsHomLift
+        ((codomainFunctor C).map (def21_cartesianLift_universal arr f τ g hg)) _
+      infer_instance
+    · exact def21_cartesianLift_universal_comp arr f τ g hg
+    · intro candidate hc
+      exact def21_cartesianLift_universal_unique arr f τ g hg candidate
+        (@IsHomLift.eq_of_isHomLift _ _ _ _ (codomainFunctor C) w
+          (def21_cartesianLift arr f) g candidate hc.1).symm hc.2
+
+/-- The codomain functor is a Grothendieck fibration whenever pullbacks exist. -/
+instance codomain_fibered [Limits.HasPullbacks C] : (codomainFunctor C).IsFibered :=
+  Functor.IsFibered.of_exists_isStronglyCartesian (fun arr _ f =>
+    ⟨def21_cartesianLift arr f, def21_cartesianLiftMorphism arr f,
+      def21_cartesianLift_stronglyCartesian arr f⟩)
+
+end CartesianLift
+
+/-! ## Image-Comprehension Adjunction (NTT Sec 4) -/
+
+section ImageComprehension
+
+variable {C : Type u} [Category.{w} C]
+
+/-- Comprehension: predicate to dependent type (arrow). -/
+def comprehension (F : Cᵒᵖ ⥤ Type v) (φ : Subfunctor F) :
+    Arrow (Cᵒᵖ ⥤ Type v) :=
+  Arrow.mk φ.ι
+
+/-- Image predicate: arrow to its range subfunctor. -/
+def imagePredicate {G F : Cᵒᵖ ⥤ Type v} (p : G ⟶ F) :
+    Subfunctor F :=
+  Subfunctor.range p
+
+theorem subfunctor_le_image_of_ι (F : Cᵒᵖ ⥤ Type v)
+    (φ : Subfunctor F) : φ ≤ imagePredicate φ.ι := by
+  intro U x hx
+  exact Set.mem_range_self (⟨x, hx⟩ : φ.obj U)
+
+theorem image_of_ι_le_subfunctor (F : Cᵒᵖ ⥤ Type v)
+    (φ : Subfunctor F) : imagePredicate φ.ι ≤ φ := by
+  intro U x hx
+  obtain ⟨⟨y, hy⟩, hxy⟩ := hx
+  simp [Subfunctor.ι] at hxy
+  rwa [← hxy]
+
+theorem image_comprehension_roundtrip (F : Cᵒᵖ ⥤ Type v)
+    (φ : Subfunctor F) : imagePredicate φ.ι = φ :=
+  le_antisymm (image_of_ι_le_subfunctor F φ) (subfunctor_le_image_of_ι F φ)
+
+theorem imageComprehension_galois_key {G F : Cᵒᵖ ⥤ Type v}
+    (p : G ⟶ F) (φ : Subfunctor F)
+    (h : imagePredicate p ≤ φ) :
+    ∃ (lift : G ⟶ φ.toFunctor), lift ≫ φ.ι = p := by
+  refine ⟨?_, ?_⟩
+  · exact
+    { app := fun U =>
+        ConcreteCategory.ofHom
+          (TypeCat.Fun.mk (fun x => ⟨p.app U x, h U (Set.mem_range_self x)⟩))
+      naturality := by
+        intro U V f
+        apply ConcreteCategory.hom_injective
+        apply TypeCat.Fun.ext
+        funext x
+        simp [Subfunctor.toFunctor]
+    }
+  · ext U x
+    rfl
+
+/-- Reverse Galois direction: factoring through `φ.ι` implies `range(p) ≤ φ`.
+    If `p = lift ≫ φ.ι`, then `range(p) ⊆ range(φ.ι) = φ`. -/
+theorem imageComprehension_galois_reverse {G F : Cᵒᵖ ⥤ Type v}
+    (p : G ⟶ F) (φ : Subfunctor F)
+    (h : ∃ (lift : G ⟶ φ.toFunctor), lift ≫ φ.ι = p) :
+    imagePredicate p ≤ φ := by
+  obtain ⟨lift, rfl⟩ := h
+  intro U x ⟨y, hy⟩
+  have : φ.ι.app U (lift.app U y) = x := hy
+  rw [← this]
+  exact (lift.app U y).property
+
+/-- Existence of factorization through a predicate inclusion. The actual
+natural hom-set bijection, including uniqueness and arbitrary context maps,
+is `GSLT.Topos.ImageComprehension.homEquiv`. -/
+theorem imageComprehension_iff {G F : Cᵒᵖ ⥤ Type v}
+    (p : G ⟶ F) (φ : Subfunctor F) :
+    imagePredicate p ≤ φ ↔ ∃ (lift : G ⟶ φ.toFunctor), lift ≫ φ.ι = p :=
+  ⟨imageComprehension_galois_key p φ, imageComprehension_galois_reverse p φ⟩
+
+/-- Object-level image/comprehension operations and the factorization criterion.
+The categorical functors and adjunction are in `GSLT.Topos.ImageComprehension`. -/
+structure ImageComprehensionAdjunction (C : Type u) [Category.{w} C] where
+  /-- Comprehension: predicate to dependent type (arrow) -/
+  comp : ∀ (F : Cᵒᵖ ⥤ Type v), Subfunctor F → Arrow (Cᵒᵖ ⥤ Type v)
+  /-- Image factorization: morphism to its range predicate -/
+  img : ∀ {G F : Cᵒᵖ ⥤ Type v}, (G ⟶ F) → Subfunctor F
+  /-- Roundtrip: range of an inclusion equals the original predicate -/
+  roundtrip : ∀ (F : Cᵒᵖ ⥤ Type v) (φ : Subfunctor F),
+    Subfunctor.range φ.ι = φ
+  /-- Galois factorization: range(p) ≤ φ implies p factors through φ.ι -/
+  factorization : ∀ {G F : Cᵒᵖ ⥤ Type v} (p : G ⟶ F) (φ : Subfunctor F),
+    img p ≤ φ → ∃ (lift : G ⟶ φ.toFunctor), lift ≫ φ.ι = p
+  /-- Full iff: hom-set characterization of the adjunction i ⊣ c -/
+  iff_characterization : ∀ {G F : Cᵒᵖ ⥤ Type v} (p : G ⟶ F) (φ : Subfunctor F),
+    img p ≤ φ ↔ ∃ (lift : G ⟶ φ.toFunctor), lift ≫ φ.ι = p
+
+def imageComprehensionAdjunction (C : Type u) [Category.{w} C] :
+    ImageComprehensionAdjunction.{u, v, w} C where
+  comp := comprehension
+  img := imagePredicate
+  roundtrip F φ := image_comprehension_roundtrip F φ
+  factorization p φ h := imageComprehension_galois_key p φ h
+  iff_characterization p φ := imageComprehension_iff p φ
+
+end ImageComprehension
+
+/-! ## NTT Theorem 23: Internal Language Package -/
+
+/-- Object-level predicate/codomain and image-comprehension data relevant to
+NTT Thm 23. Its categorical action and coherence are not fields of this package. -/
+structure InternalLanguagePackage (C : Type u) [Category.{w} C] where
+  predicateFib : Prop14_CosmicFibration.{u, v, w} C
+  codomainFib : Def21_CodomainFibration (Cᵒᵖ ⥤ Type v)
+  imageComprehension : ImageComprehensionAdjunction.{u, v, w} C
+
+noncomputable def thm23_internalLanguagePackage
+    (C : Type u) [Category.{w} C] :
+    InternalLanguagePackage.{u, v, w} C where
+  predicateFib := prop14_cosmicFibration C
+  codomainFib := def21_codomainFibration (Cᵒᵖ ⥤ Type v)
+  imageComprehension := imageComprehensionAdjunction C
+
+/-! ### Identity and composite operation-preservation endpoints
+
+These endpoints concern identity and composition of law-bearing fiber-algebra
+maps, whose fields already require Π/Ω/Prop preservation. No source base
+functor, presheaf-precomposition action or substitution compatibility is supplied.
+These endpoints do not construct morphisms of internal-language packages or
+prove an internal-language map's identity/composition laws. The 2-functor of
+NTT Thm 23 remains a separate obligation. -/
+
+open Mettapedia.CategoryTheory.LambdaTheories in
+open TheoryMorphism in
+/-- Preservation of Π/Ω/Prop by identity and composite theory morphisms.
+Despite the existing name, this is not a package of internal-language functor laws. -/
+structure InternalLanguageFunctorialLaws where
+  /-- Identity morphism preserves Π/Ω/Prop. -/
+  map_id : ∀ (L : LambdaTheory.{u}) (S : L.Obj)
+    (types : Set (L.fibration.Sub S)) (φ ψ : L.fibration.Sub S),
+    (TheoryMorphism.id L).mapPred (piType L S types) =
+      piType L ((TheoryMorphism.id L).mapSort S) ((TheoryMorphism.id L).mapPred '' types)
+    ∧
+    ((TheoryMorphism.id L).mapNativeType (NativeType.full S)).pred =
+      (NativeType.full ((TheoryMorphism.id L).mapSort S)).pred
+    ∧
+    (TheoryMorphism.id L).mapPred (implType L S φ ψ) =
+      implType L ((TheoryMorphism.id L).mapSort S)
+        ((TheoryMorphism.id L).mapPred φ) ((TheoryMorphism.id L).mapPred ψ)
+  /-- Composition of morphisms preserves Π/Ω/Prop. -/
+  map_comp : ∀ {L₁ L₂ L₃ : LambdaTheory.{u}}
+    (F : TheoryMorphism L₁ L₂) (G : TheoryMorphism L₂ L₃)
+    (S : L₁.Obj) (types : Set (L₁.fibration.Sub S)) (φ ψ : L₁.fibration.Sub S),
+    (TheoryMorphism.comp G F).mapPred (piType L₁ S types) =
+      piType L₃ ((TheoryMorphism.comp G F).mapSort S)
+        ((TheoryMorphism.comp G F).mapPred '' types)
+    ∧
+    ((TheoryMorphism.comp G F).mapNativeType (NativeType.full S)).pred =
+      (NativeType.full ((TheoryMorphism.comp G F).mapSort S)).pred
+    ∧
+    (TheoryMorphism.comp G F).mapPred (implType L₁ S φ ψ) =
+      implType L₃ ((TheoryMorphism.comp G F).mapSort S)
+        ((TheoryMorphism.comp G F).mapPred φ)
+        ((TheoryMorphism.comp G F).mapPred ψ)
+
+open Mettapedia.CategoryTheory.LambdaTheories in
+open TheoryMorphism in
+/-- The identity and composite theory morphisms satisfy the stated
+operation-preservation endpoints. -/
+theorem thm23_functorialLaws : InternalLanguageFunctorialLaws.{u} where
+  map_id L S types φ ψ :=
+    TheoryMorphism.id_piOmegaProp_translation_endpoint L S types φ ψ
+  map_comp F G S types φ ψ :=
+    TheoryMorphism.piOmegaProp_translation_endpoint
+      (F := TheoryMorphism.comp G F) S types φ ψ
+
+end Mettapedia.OSLF.PresheafNativeType

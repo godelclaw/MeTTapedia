@@ -12,9 +12,11 @@ variable {V α : Type*} {G : SimpleGraph V} [DecidableEq α]
 /-- Swapping colors on a Kempe component preserves the underlying two-color support. -/
 lemma mem_bicoloredSet_swapOnKempeComponent_iff (C : G.Coloring α) (a b : α)
     (K : (C.bicoloredSubgraph a b).ConnectedComponent) (v : V) :
-    v ∈ (C.swapOnKempeComponent a b K).bicoloredSet a b ↔ v ∈ C.bicoloredSet a b := by
+    v ∈ (C.swapOnKempeComponent a b K).bicoloredSet a b ↔
+      v ∈ C.bicoloredSet a b := by
   by_cases hv : v ∈ C.kempeComponentSet a b K
-  · have hmemC : v ∈ C.bicoloredSet a b := C.mem_bicoloredSet_of_mem_kempeComponentSet hv
+  · have hmemC : v ∈ C.bicoloredSet a b :=
+      C.mem_bicoloredSet_of_mem_kempeComponentSet hv
     have hmemSwap : v ∈ (C.swapOnKempeComponent a b K).bicoloredSet a b := by
       rcases hmemC with hca | hcb
       · simp [Coloring.bicoloredSet, C.swapOnKempeComponent_apply_of_mem hv, hca]
@@ -33,14 +35,14 @@ end Coloring
 
 variable {V α : Type*} (G : SimpleGraph V) [DecidableEq α]
 
-/-- One Kempe move: swap two colors on a connected component of the corresponding bicolored
-subgraph. This is the abstract step underlying the Kempe closure used in Goertzel v23,
-Definition 4.8. -/
+/-- One Kempe move swaps two colors on one connected component of the
+corresponding bicolored subgraph. -/
 def KempeStep : G.Coloring α → G.Coloring α → Prop :=
   fun C C' => ∃ a, ∃ b, ∃ K : (C.bicoloredSubgraph a b).ConnectedComponent,
     C' = C.swapOnKempeComponent a b K
 
-/-- The Kempe closure of a base coloring: all colorings reachable by finitely many Kempe moves. -/
+/-- The Kempe closure of a base coloring consists of the colorings reachable
+by finitely many Kempe moves. -/
 def KempeClosure (C₀ : G.Coloring α) : Set (G.Coloring α) :=
   {C | Relation.ReflTransGen G.KempeStep C₀ C}
 

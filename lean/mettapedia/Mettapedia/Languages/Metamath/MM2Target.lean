@@ -14,7 +14,7 @@ supplied target GSLT before its native transition types are used.
 
 namespace Mettapedia.Languages.Metamath.MM2Transformation
 
-open Mettapedia.GSLT.ProofRelevantPresentation
+open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK
 open Mettapedia.Languages.ProcessCalculi.MORK.MM2Surface
@@ -22,7 +22,7 @@ open Mettapedia.Languages.ProcessCalculi.MORK.MM2Surface
 /-- An operational MM2 target supplied to a transformation.  The embedding
 and two-sided step law are the target capability boundary. -/
 structure MM2Target where
-  operational : PresentedGSLT
+  operational : ProofRelevantGSLT
   embedSpace : Space → operational.theory.Term
   embedSpace_injective : Function.Injective embedSpace
   step_iff : ∀ source target,
@@ -39,7 +39,7 @@ noncomputable def ordinaryMM2Target : MM2Target where
   render := renderProgram?
   render_eq_canonical := fun _ => rfl
 
-/-- A supplied operational embedding cannot smuggle an unrelated surface
+/-- A supplied operational embedding cannot smuggle an unrelated syntax
 artifact through a constant or otherwise lawless renderer.  Text parsing and
 MORK execution adequacy are deliberately separate obligations. -/
 @[simp] theorem MM2Target.render_eq_renderProgram (target : MM2Target)
@@ -52,9 +52,7 @@ renderer that the former lawless field permitted. -/
 theorem MM2Target.renderer_not_constant_empty (target : MM2Target) :
     target.render [.symbol "ok"] ≠ some "" := by
   rw [target.render_eq_renderProgram]
-  simp [renderProgram?, renderAtom?, atomSafe, bareSymbolSafe,
-    hasNoBareDelimiters, isBareSymbolDelimiter, isWhitespace,
-    morkUtf8Bytes, Char.utf8Size]
+  decide +kernel
 
 /-- OSLF is run over the actual target GSLT supplied to the compiler.  On the
 embedded MM2 image, its exact-target native type is equivalent to one ordinary

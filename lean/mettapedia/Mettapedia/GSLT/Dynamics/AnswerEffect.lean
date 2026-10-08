@@ -409,6 +409,7 @@ theorem bagToSupport_not_faithful : Not bagToSupport.{0}.Faithful := by
         bagToSupport.{0}.map ({(), ()} : Multiset Unit) := by
     classical
     simp
+    rfl
   have impossible : ({()} : Multiset Unit) = {(), ()} :=
     faithful sameImage
   have cardEquality := congrArg Multiset.card impossible
@@ -429,6 +430,7 @@ theorem no_bag_recovery_from_support :
         bagToSupport.{0}.map ({(), ()} : Multiset Unit) := by
     classical
     simp
+    rfl
   rw [sameSupport, two] at one
   have cardEquality := congrArg Multiset.card one
   simp at cardEquality
@@ -521,10 +523,10 @@ theorem occurrenceStep_target_isNormalForm [DecidableEq Answer]
 
 /-- The generated occurrence theory has the generic one-step-terminal
 capability. -/
-def occurrenceOneStepTerminal [DecidableEq Answer]
+theorem occurrenceOneStepTerminal [DecidableEq Answer]
     (source : OccurrenceSource Space Request Answer) :
-    OneStepTerminal (occurrenceGSLT source) where
-  target_normal := occurrenceStep_target_isNormalForm source
+    OneStepTerminal (occurrenceGSLT source) :=
+  ⟨occurrenceStep_target_isNormalForm source⟩
 
 /-- No generated occurrence theory has internal re-entry. -/
 theorem occurrenceGSLT_not_hasComposableSteps [DecidableEq Answer]

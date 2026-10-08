@@ -1,5 +1,5 @@
 import Mettapedia.Languages.Megalodon.DefinitionConversionKernel
-import Mettapedia.GSLT.LanguageDef.InferencePresentationExtension
+import Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
 
 /-!
 # Megalodon theory admission kernel
@@ -306,11 +306,15 @@ def proofKnownRule : RuleSchema :=
       (m "typeDepth") (m "termContext") (m "proofContext")
       (m "target"))
 
+/-- Prefix-polymorphic propositions are permitted at the theorem boundary,
+but a proof-lambda hypothesis must have ordinary type `Prop`. -/
 def proofImpIntroRule : RuleSchema :=
   rule "megalodon-theory-proof-imp-intro"
     ["primitives", "declarations", "signature", "known", "typeDepth",
       "termContext", "proofContext", "sourceDomain", "domain", "codomain"]
-    [ propositionRepresentative
+    [ hasType (m "primitives") (m "signature") (m "typeDepth")
+        (m "termContext") (m "sourceDomain") (a "MTpProp"),
+      propositionRepresentative
         (m "primitives") (m "declarations") (m "signature")
         (m "typeDepth") (m "termContext") (m "sourceDomain") (m "domain"),
       DefinitionConversionKernel.fullProves
@@ -459,14 +463,16 @@ def admitDefinitionRule : RuleSchema :=
             [m "identifier", m "type", m "body", m "declarations"],
           m "known" ]))
 
+/-- A source axiom may quantify over a prefix of simple types, just like a
+source theorem. Formation is checked; truth remains an explicit assumption.
+This does not permit prefix-polymorphic propositions as local hypotheses. -/
 def admitAxiomRule : RuleSchema :=
   rule "megalodon-theory-admit-axiom"
     ["primitives", "declarations", "signature", "known", "identifier",
       "proposition"]
-    [ DefinitionConversionKernel.projectSignature
-        (m "declarations") (m "signature"),
-      hasType (m "primitives") (m "signature") (a "MNZero")
-        (a "MTyCtxNil") (m "proposition") (a "MTpProp") ]
+    [ propositionRepresentative
+        (m "primitives") (m "declarations") (m "signature")
+        (a "MNZero") (a "MTyCtxNil") (m "proposition") (m "proposition") ]
     (admits
       (a "MFullEnvironment"
         [m "primitives", m "declarations", m "known"])
@@ -475,14 +481,20 @@ def admitAxiomRule : RuleSchema :=
         [ m "primitives", m "declarations",
           a "MKnownCons" [m "identifier", m "proposition", m "known"] ]))
 
+/-- Formation of the declared proposition is checked independently of its
+proof. A reflexive representative permits prefix type quantification without
+requiring a chosen normal form; conversion remains the proof judgment's job. -/
 def admitTheoremRule : RuleSchema :=
   rule "megalodon-theory-admit-theorem"
-    ["primitives", "declarations", "known", "identifier", "proposition"]
-    [DefinitionConversionKernel.fullProves
-      (a "MFullEnvironment"
-        [m "primitives", m "declarations", m "known"])
-      (a "MNZero") (a "MTyCtxNil") (a "MPfCtxNil")
-      (m "proposition")]
+    ["primitives", "declarations", "signature", "known", "identifier", "proposition"]
+    [ propositionRepresentative
+        (m "primitives") (m "declarations") (m "signature")
+        (a "MNZero") (a "MTyCtxNil") (m "proposition") (m "proposition"),
+      DefinitionConversionKernel.fullProves
+        (a "MFullEnvironment"
+          [m "primitives", m "declarations", m "known"])
+        (a "MNZero") (a "MTyCtxNil") (a "MPfCtxNil")
+        (m "proposition") ]
     (admits
       (a "MFullEnvironment"
         [m "primitives", m "declarations", m "known"])
@@ -544,10 +556,8 @@ def definition : CalculusLanguageDef :=
       additionalJudgments
     rules := DefinitionConversionKernel.definition.rules ++ additionalRules }
 
-def presentation : Presentation := definition.toNested
-
 def admissionExtension :
-    InferencePresentationExtension.PresentationExtension :=
+    CalculusLanguageExtension :=
   { newTerms := additionalConstructors.map fun declaration =>
       TermQuantifiedKernel.expressionConstructor declaration.1 declaration.2
     newJudgments := additionalJudgments
@@ -555,28 +565,28 @@ def admissionExtension :
     rename := some definition.name }
 
 @[simp] theorem admissionExtension_apply :
-    admissionExtension.apply DefinitionConversionKernel.presentation =
-      presentation := by
+    admissionExtension.apply DefinitionConversionKernel.definition =
+      definition := by
   rfl
 
 theorem admissionExtension_disjoint :
     admissionExtension.disjointFrom
-      DefinitionConversionKernel.presentation = true := by
+      DefinitionConversionKernel.definition = true := by
   rfl
 
 private theorem admissionTermDisjoint
     {newTerm oldTerm : GrammarRule}
     (newMember : newTerm ∈ admissionExtension.newTerms)
     (oldMember : oldTerm ∈
-      DefinitionConversionKernel.presentation.language.terms) :
+      DefinitionConversionKernel.definition.toLanguageDef.terms) :
     newTerm.label ≠ oldTerm.label := by
   have disjoint := admissionExtension_disjoint
-  unfold InferencePresentationExtension.PresentationExtension.disjointFrom at disjoint
+  unfold CalculusLanguageExtension.disjointFrom at disjoint
   simp only [Bool.and_eq_true] at disjoint
-  have fresh := List.all_eq_true.mp disjoint.1.1 newTerm newMember
+  have fresh := List.all_eq_true.mp disjoint.1.1.1.1.2 newTerm newMember
   intro equalLabels
   have collision :
-      DefinitionConversionKernel.presentation.language.terms.any
+      DefinitionConversionKernel.definition.toLanguageDef.terms.any
           (fun existing => existing.label == newTerm.label) = true :=
     List.any_eq_true.mpr
       ⟨oldTerm, oldMember, by simp [equalLabels]⟩
@@ -586,15 +596,15 @@ private theorem admissionJudgmentDisjoint
     {newJudgment oldJudgment : JudgmentDecl}
     (newMember : newJudgment ∈ admissionExtension.newJudgments)
     (oldMember : oldJudgment ∈
-      DefinitionConversionKernel.presentation.judgments) :
+      DefinitionConversionKernel.definition.judgments) :
     newJudgment.head ≠ oldJudgment.head := by
   have disjoint := admissionExtension_disjoint
-  unfold InferencePresentationExtension.PresentationExtension.disjointFrom at disjoint
+  unfold CalculusLanguageExtension.disjointFrom at disjoint
   simp only [Bool.and_eq_true] at disjoint
   have fresh := List.all_eq_true.mp disjoint.1.2 newJudgment newMember
   intro equalHeads
   have collision :
-      DefinitionConversionKernel.presentation.judgments.any
+      DefinitionConversionKernel.definition.judgments.any
           (fun existing => existing.head == newJudgment.head) = true :=
     List.any_eq_true.mpr
       ⟨oldJudgment, oldMember, by simp [equalHeads]⟩
@@ -604,15 +614,15 @@ private theorem admissionJudgmentDisjoint
 private theorem constructorLookup_preserved (head : String) (arity : Nat)
     (sourceValid :
       languageHasConstructorArity
-        DefinitionConversionKernel.presentation.language head arity = true) :
-    languageHasConstructorArity presentation.language head arity = true := by
+        DefinitionConversionKernel.definition.toLanguageDef head arity = true) :
+    languageHasConstructorArity definition.toLanguageDef head arity = true := by
   unfold languageHasConstructorArity at sourceValid ⊢
-  rw [show presentation.language.terms =
-      DefinitionConversionKernel.presentation.language.terms ++
+  rw [show definition.toLanguageDef.terms =
+      DefinitionConversionKernel.definition.toLanguageDef.terms ++
         admissionExtension.newTerms by rfl,
     List.filter_append]
   generalize sourceFiltered :
-      DefinitionConversionKernel.presentation.language.terms.filter
+      DefinitionConversionKernel.definition.toLanguageDef.terms.filter
         (fun declaration => declaration.label == head) = filtered at sourceValid ⊢
   cases filtered with
   | nil => simp at sourceValid
@@ -621,7 +631,7 @@ private theorem constructorLookup_preserved (head : String) (arity : Nat)
       | nil =>
           have declarationFiltered :
               declaration ∈
-                DefinitionConversionKernel.presentation.language.terms.filter
+                DefinitionConversionKernel.definition.toLanguageDef.terms.filter
                   (fun candidate => candidate.label == head) := by
             rw [sourceFiltered]
             simp
@@ -644,16 +654,16 @@ private theorem constructorLookup_preserved (head : String) (arity : Nat)
 
 private theorem judgmentLookup_preserved (head : String) (arity : Nat)
     (sourceValid :
-      (DefinitionConversionKernel.presentation.lookupJudgment?
+      (DefinitionConversionKernel.definition.lookupJudgment?
         head arity).isSome = true) :
-    (presentation.lookupJudgment? head arity).isSome = true := by
-  unfold Presentation.lookupJudgment? at sourceValid ⊢
-  rw [show presentation.judgments =
-      DefinitionConversionKernel.presentation.judgments ++
+    (definition.lookupJudgment? head arity).isSome = true := by
+  unfold CalculusLanguageDef.lookupJudgment? at sourceValid ⊢
+  rw [show definition.judgments =
+      DefinitionConversionKernel.definition.judgments ++
         admissionExtension.newJudgments by rfl,
     List.filter_append]
   generalize sourceFiltered :
-      DefinitionConversionKernel.presentation.judgments.filter
+      DefinitionConversionKernel.definition.judgments.filter
         (fun declaration =>
           declaration.head == head && declaration.arity == arity) = filtered at sourceValid ⊢
   cases filtered with
@@ -663,7 +673,7 @@ private theorem judgmentLookup_preserved (head : String) (arity : Nat)
       | nil =>
           have declarationFiltered :
               declaration ∈
-                DefinitionConversionKernel.presentation.judgments.filter
+                DefinitionConversionKernel.definition.judgments.filter
                   (fun candidate =>
                     candidate.head == head && candidate.arity == arity) := by
             rw [sourceFiltered]
@@ -692,8 +702,8 @@ mutual
   private theorem fixedConstructorsValid_preserved (pattern : Pattern)
       (sourceValid :
         fixedConstructorsValid
-          DefinitionConversionKernel.presentation.language pattern = true) :
-      fixedConstructorsValid presentation.language pattern = true := by
+          DefinitionConversionKernel.definition.toLanguageDef pattern = true) :
+      fixedConstructorsValid definition.toLanguageDef pattern = true := by
     cases pattern with
     | bvar index => simp [fixedConstructorsValid]
     | fvar name => simp [fixedConstructorsValid]
@@ -718,8 +728,8 @@ mutual
   private theorem fixedConstructorListsValid_preserved (patterns : List Pattern)
       (sourceValid :
         fixedConstructorListsValid
-          DefinitionConversionKernel.presentation.language patterns = true) :
-      fixedConstructorListsValid presentation.language patterns = true := by
+          DefinitionConversionKernel.definition.toLanguageDef patterns = true) :
+      fixedConstructorListsValid definition.toLanguageDef patterns = true := by
     cases patterns with
     | nil => simp [fixedConstructorListsValid]
     | cons pattern patterns =>
@@ -730,30 +740,30 @@ end
 
 private theorem judgmentSchemaValid_preserved (judgment : Pattern)
     (sourceValid :
-      DefinitionConversionKernel.presentation.judgmentSchemaValid judgment =
+      DefinitionConversionKernel.definition.judgmentSchemaValid judgment =
         true) :
-    presentation.judgmentSchemaValid judgment = true := by
+    definition.judgmentSchemaValid judgment = true := by
   cases judgment with
   | apply head arguments =>
-      simp only [Presentation.judgmentSchemaValid, Bool.and_eq_true] at sourceValid ⊢
+      simp only [CalculusLanguageDef.judgmentSchemaValid, Bool.and_eq_true] at sourceValid ⊢
       exact ⟨judgmentLookup_preserved head arguments.length sourceValid.1,
         fixedConstructorListsValid_preserved arguments sourceValid.2⟩
-  | bvar index => simp [Presentation.judgmentSchemaValid] at sourceValid
-  | fvar name => simp [Presentation.judgmentSchemaValid] at sourceValid
+  | bvar index => simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
+  | fvar name => simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
   | lambda binder body =>
-      simp [Presentation.judgmentSchemaValid] at sourceValid
+      simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
   | multiLambda arity binder body =>
-      simp [Presentation.judgmentSchemaValid] at sourceValid
+      simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
   | subst body replacement =>
-      simp [Presentation.judgmentSchemaValid] at sourceValid
+      simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
   | collection kind elements rest =>
-      simp [Presentation.judgmentSchemaValid] at sourceValid
+      simp [CalculusLanguageDef.judgmentSchemaValid] at sourceValid
 
 private theorem ruleIsValidIn_preserved (candidate : RuleSchema)
     (sourceValid :
-      RuleSchema.isValidIn DefinitionConversionKernel.presentation candidate =
+      RuleSchema.isValidIn DefinitionConversionKernel.definition candidate =
         true) :
-    RuleSchema.isValidIn presentation candidate = true := by
+    RuleSchema.isValidIn definition candidate = true := by
   unfold RuleSchema.isValidIn at sourceValid ⊢
   simp only [Bool.and_eq_true] at sourceValid ⊢
   refine ⟨sourceValid.1, ?_, sourceValid.2.2⟩
@@ -764,39 +774,39 @@ private theorem ruleIsValidIn_preserved (candidate : RuleSchema)
 
 set_option maxRecDepth 200000 in
 set_option maxHeartbeats 12000000 in
-theorem presentation_valid : presentation.isValidV2 = true := by
-  have hbaseValid := DefinitionConversionKernel.presentation_valid
-  unfold Presentation.isValidV2 at hbaseValid
+theorem definition_valid : definition.isValid = true := by
+  have hbaseValid := DefinitionConversionKernel.definition_valid
+  unfold CalculusLanguageDef.isValid at hbaseValid
   simp only [Bool.and_eq_true] at hbaseValid
   have hbaseV1 := hbaseValid.1.1.1
   have hbaseJudgments := hbaseValid.1.1.2
   have hbaseRulesIn := hbaseValid.1.2
   have hbaseConversion := hbaseValid.2
-  unfold Presentation.isValidV1 at hbaseV1
+  unfold CalculusLanguageDef.hasValidLocalRules at hbaseV1
   simp only [Bool.and_eq_true] at hbaseV1
   have hbaseRulesV1 := hbaseV1.1.2
   change DefinitionConversionKernel.definition.rules.all
-      RuleSchema.isValidV1 = true at hbaseRulesV1
+      RuleSchema.isLocallyValid = true at hbaseRulesV1
   change DefinitionConversionKernel.definition.rules.all
-      (RuleSchema.isValidIn DefinitionConversionKernel.presentation) = true at hbaseRulesIn
+      (RuleSchema.isValidIn DefinitionConversionKernel.definition) = true at hbaseRulesIn
   have hbaseRulesInTarget :
       DefinitionConversionKernel.definition.rules.all
-        (RuleSchema.isValidIn presentation) = true := by
+        (RuleSchema.isValidIn definition) = true := by
     apply List.all_eq_true.mpr
     intro candidate member
     exact ruleIsValidIn_preserved candidate
       (List.all_eq_true.mp hbaseRulesIn candidate member)
   have hadditionalRulesIn :
-      additionalRules.all (RuleSchema.isValidIn presentation) = true := by
+      additionalRules.all (RuleSchema.isValidIn definition) = true := by
     simp (config := { maxSteps := 12000000, decide := true })
-      [ presentation, definition, additionalConstructors,
+      [ definition, definition, additionalConstructors,
         additionalJudgments, additionalRules,
-        Presentation.lookupJudgment?, RuleSchema.isValidIn,
-        RuleSchema.isValidV1, RuleSchema.metavariableNames,
+        CalculusLanguageDef.lookupJudgment?, RuleSchema.isValidIn,
+        RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
         RuleSchema.occurrences, RuleSchema.patterns,
         patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
         patternHasNoCollectionRest, patternsHaveNoCollectionRest,
-        Presentation.judgmentSchemaValid, fixedConstructorsValid,
+        CalculusLanguageDef.judgmentSchemaValid, fixedConstructorsValid,
         fixedConstructorListsValid, languageHasConstructorArity,
         Pattern.isWellScoped, Pattern.isWellScopedAt,
         Pattern.isWellScopedListAt, Pattern.hasCanonicalBinderMetadata,
@@ -827,14 +837,14 @@ theorem presentation_valid : presentation.isValidV2 = true := by
         DefinitionConversionKernel.fullProves, DefinitionConversionKernel.a,
         PolymorphicKernel.hasType, PolymorphicKernel.a]
   have htargetRulesIn :
-      presentation.rules.all (RuleSchema.isValidIn presentation) = true := by
+      definition.rules.all (RuleSchema.isValidIn definition) = true := by
     change (DefinitionConversionKernel.definition.rules ++ additionalRules).all
-      (RuleSchema.isValidIn presentation) = true
+      (RuleSchema.isValidIn definition) = true
     simp only [List.all_append, hbaseRulesInTarget, hadditionalRulesIn,
       Bool.and_self]
-  have hvalidate : presentation.language.validate = [] := by
+  have hvalidate : definition.toLanguageDef.validate = [] := by
     apply LanguageDef.validate_eq_nil_of_constructorOnly <;>
-      simp [presentation, definition, additionalConstructors,
+      simp [definition, definition, additionalConstructors,
         DefinitionConversionKernel.definition,
         DefinitionConversionKernel.additionalConstructors,
         DefinitionConversionKernel.definitionParameterName,
@@ -850,16 +860,16 @@ theorem presentation_valid : presentation.isValidV2 = true := by
         LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
         TypeExpr.baseNames]
   have hstatic :
-      presentation.isValidV1 = true ∧
-        presentation.judgmentSignatureValid = true ∧
-        presentation.conversionDeclarationValid = true := by
-    unfold Presentation.isValidV1
+      definition.hasValidLocalRules = true ∧
+        definition.judgmentSignatureValid = true ∧
+        definition.conversionDeclarationValid = true := by
+    unfold CalculusLanguageDef.hasValidLocalRules
     rw [hvalidate]
     simp (config := { maxSteps := 12000000, decide := true })
-      [ presentation, definition, additionalConstructors,
+      [ definition, definition, additionalConstructors,
         additionalJudgments, additionalRules,
-        Presentation.ruleIds,
-        RuleSchema.isValidV1, RuleSchema.metavariableNames,
+        CalculusLanguageDef.ruleIds,
+        RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
         RuleSchema.occurrences, RuleSchema.patterns,
         patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
         patternHasNoCollectionRest, patternsHaveNoCollectionRest,
@@ -893,119 +903,196 @@ theorem presentation_valid : presentation.isValidV2 = true := by
         DefinitionConversionKernel.a, PolymorphicKernel.hasType,
         PolymorphicKernel.a,
         hbaseRulesV1]
-  unfold Presentation.isValidV2
+  unfold CalculusLanguageDef.isValid
   simp only [Bool.and_eq_true]
   exact ⟨⟨⟨hstatic.1, hstatic.2.1⟩, htargetRulesIn⟩, hstatic.2.2⟩
 
-def validated : ValidatedPresentation := ⟨presentation, presentation_valid⟩
+def validated : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
 
 private theorem lookupBaseRule (id : RuleId) (candidate : RuleSchema)
-    (lookup : DefinitionConversionKernel.presentation.lookupRule? id =
+    (lookup : DefinitionConversionKernel.definition.lookupRule? id =
       some candidate) :
-    presentation.lookupRule? id = some candidate :=
-  Presentation.lookupRule?_append_of_eq_some
-    DefinitionConversionKernel.presentation additionalRules lookup
+    definition.lookupRule? id = some candidate :=
+  CalculusLanguageDef.lookupRule?_append_of_eq_some
+    DefinitionConversionKernel.definition additionalRules lookup
 
 private theorem lookupAdditionalRule (id : String) (candidate : RuleSchema)
-    (missing : DefinitionConversionKernel.presentation.lookupRule?
+    (missing : DefinitionConversionKernel.definition.lookupRule?
       (ruleId id) = none)
     (lookup : additionalRules.find?
       (fun existing => decide (existing.id = ruleId id)) = some candidate) :
-    presentation.lookupRule? (ruleId id) = some candidate := by
-  unfold Presentation.lookupRule? at missing ⊢
+    definition.lookupRule? (ruleId id) = some candidate := by
+  unfold CalculusLanguageDef.lookupRule? at missing ⊢
   change List.find? (fun existing => decide (existing.id = ruleId id))
-      (DefinitionConversionKernel.presentation.rules ++ additionalRules) =
+      (DefinitionConversionKernel.definition.rules ++ additionalRules) =
     some candidate
   rw [List.find?_append]
   rw [missing]
   exact lookup
 
-@[simp] private theorem lookup_checksConsRule :
-    presentation.lookupRule?
+@[simp] theorem lookup_checksConsRule :
+    definition.lookupRule?
         ({ value := "megalodon-theory-checks-cons" } : RuleId) =
       some checksConsRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
-@[simp] private theorem lookup_checksNilRule :
-    presentation.lookupRule?
+@[simp] theorem lookup_checksNilRule :
+    definition.lookupRule?
         ({ value := "megalodon-theory-checks-nil" } : RuleId) =
       some checksNilRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_admitPrimitiveRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-admit-primitive" } : RuleId) =
       some admitPrimitiveRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_admitAxiomRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-admit-axiom" } : RuleId) =
       some admitAxiomRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_admitTheoremRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-admit-theorem" } : RuleId) =
       some admitTheoremRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
+private def proofNode (id : String) (arguments : List Pattern)
+    (children : List RawProof := []) : RawProof :=
+  .node { ruleId := ruleId id, arguments } children
+
+/-- In every source environment, an accepted axiom-admission node contains
+accepted formation evidence for the actual declared proposition. This is a
+formation guarantee, not validation of the assumed proposition's truth. -/
+theorem admitted_axiom_requires_formation
+    (primitives declarations signature known identifier proposition goal : Pattern)
+    (formation : RawProof)
+    (accepted : checkRaw validated goal
+      (proofNode "megalodon-theory-admit-axiom"
+        [primitives, declarations, signature, known, identifier, proposition]
+        [formation]) = true) :
+    checkRaw validated
+      (propositionRepresentative primitives declarations signature
+        (a "MNZero") (a "MTyCtxNil") proposition proposition) formation = true := by
+  simp [proofNode, checkRaw, instantiateRule?, validated,
+    ruleId, admitAxiomRule, rule, a, m, propositionRepresentative, admits,
+    instantiateSchemas?, instantiateSchema?, instantiateSchemasAt?,
+    instantiateSchemaAt?, lookupArgumentAt?] at accepted ⊢
+  split_ifs at accepted
+  simp_all [checkRawChildren]
+
+/-- The corresponding theorem node must supply both formation and a proof
+in its exact pre-admission environment. Neither premise replaces the other. -/
+theorem admitted_theorem_requires_formation_and_proof
+    (primitives declarations signature known identifier proposition goal : Pattern)
+    (formation proof : RawProof)
+    (accepted : checkRaw validated goal
+      (proofNode "megalodon-theory-admit-theorem"
+        [primitives, declarations, signature, known, identifier, proposition]
+        [formation, proof]) = true) :
+    checkRaw validated
+      (propositionRepresentative primitives declarations signature
+        (a "MNZero") (a "MTyCtxNil") proposition proposition) formation = true ∧
+    checkRaw validated
+      (DefinitionConversionKernel.fullProves
+        (a "MFullEnvironment" [primitives, declarations, known])
+        (a "MNZero") (a "MTyCtxNil") (a "MPfCtxNil") proposition) proof = true := by
+  simp [proofNode, checkRaw, instantiateRule?, validated,
+    ruleId, admitTheoremRule, rule, a, m, propositionRepresentative, admits,
+    DefinitionConversionKernel.fullProves, DefinitionConversionKernel.a,
+    instantiateSchemas?, instantiateSchema?, instantiateSchemasAt?,
+    instantiateSchemaAt?, lookupArgumentAt?] at accepted ⊢
+  split_ifs at accepted
+  simp_all [checkRawChildren]
+
+#print axioms admitted_axiom_requires_formation
+#print axioms admitted_theorem_requires_formation_and_proof
+
+/-- Sequential checking joins the first admission to the remainder at the
+same intermediate environment. Neither an unconnected tail nor a missing
+admission is accepted as a checked source sequence. -/
+theorem checked_cons_requires_connected_admission
+    (initial item items middle final goal : Pattern)
+    (admission remainder : RawProof)
+    (accepted : checkRaw validated goal
+      (proofNode "megalodon-theory-checks-cons"
+        [initial, item, items, middle, final] [admission, remainder]) = true) :
+    checkRaw validated (admits initial item middle) admission = true ∧
+      checkRaw validated (checks middle items final) remainder = true := by
+  simp [proofNode, checkRaw, instantiateRule?, validated,
+    ruleId, checksConsRule, rule, a, m, admits, checks,
+    instantiateSchemas?, instantiateSchema?, instantiateSchemasAt?,
+    instantiateSchemaAt?, lookupArgumentAt?] at accepted ⊢
+  split_ifs at accepted
+  simp_all [checkRawChildren]
+
+#print axioms checked_cons_requires_connected_admission
+
 @[simp] private theorem lookup_primitiveAppendZeroRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-primitive-append-zero" } : RuleId) =
       some primitiveAppendZeroRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_primitiveTypeZeroRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-primitive-type-zero" } : RuleId) =
       some primitiveTypeZeroRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_typePrimitiveRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-term-primitive" } : RuleId) =
       some typePrimitiveRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
 @[simp] private theorem lookup_proofKnownRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-theory-proof-known" } : RuleId) =
       some proofKnownRule :=
   lookupAdditionalRule _ _ (by rfl) (by rfl)
 
+@[simp] private theorem lookup_propositionPlainRule :
+    definition.lookupRule?
+        ({ value := "megalodon-theory-proposition-plain" } : RuleId) =
+      some propositionPlainRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
 @[simp] private theorem lookup_projectNilRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-def-project-nil" } : RuleId) =
       some DefinitionConversionKernel.projectNilRule :=
   lookupBaseRule _ _ (by rfl)
 
 @[simp] private theorem lookup_projectDefinitionRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-def-project-definition" } : RuleId) =
       some DefinitionConversionKernel.projectDefinitionRule :=
   lookupBaseRule _ _ (by rfl)
 
 @[simp] private theorem lookup_polyTypePlainRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-def-poly-type-plain" } : RuleId) =
       some DefinitionConversionKernel.polyTypePlainRule :=
   lookupBaseRule _ _ (by rfl)
 
 @[simp] private theorem lookup_plainTypePropRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-poly-type-prop" } : RuleId) =
       some PolymorphicKernel.plainPropRule :=
   lookupBaseRule _ _ (by rfl)
 
 @[simp] private theorem lookup_knownHereRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-env-known-here" } : RuleId) =
       some EnvironmentKernel.knownHereRule :=
   lookupBaseRule _ _ (by rfl)
 
 @[simp] private theorem lookup_pathReflRule :
-    presentation.lookupRule?
+    definition.lookupRule?
         ({ value := "megalodon-def-path-refl" } : RuleId) =
       some DefinitionConversionKernel.pathReflRule :=
   lookupBaseRule _ _ (by rfl)
@@ -1027,10 +1114,6 @@ def coGSLTSource : coGSLTDefinition.authoredGSLT.Term :=
   definition.toExtended_elaborate_authoredSource
 
 /-! ## Ordered admission canaries -/
-
-private def proofNode (id : String) (arguments : List Pattern)
-    (children : List RawProof := []) : RawProof :=
-  .node { ruleId := ruleId id, arguments } children
 
 def canaryPrimitiveIdentifier : Pattern := a "MTheoryCanaryPrimitive"
 def canaryAxiomIdentifier : Pattern := a "MTheoryCanaryAxiom"
@@ -1090,7 +1173,7 @@ def canaryItems : Pattern :=
           a "MTheoryItemsCons"
             [canaryTheoremItem, a "MTheoryItemsNil"] ] ]
 
-private def canaryPrimitiveAdmissionArticle : RawProof :=
+def canaryPrimitiveAdmissionArticle : RawProof :=
   proofNode "megalodon-theory-admit-primitive"
     [ a "MPrimNil", a "MDeclNil", a "MKnownNil",
       canaryPrimitiveIdentifier, a "MNZero", a "MTpProp",
@@ -1100,11 +1183,14 @@ private def canaryPrimitiveAdmissionArticle : RawProof :=
         [proofNode "megalodon-poly-type-prop" [a "MNZero"]],
       proofNode "megalodon-theory-primitive-append-zero" [a "MTpProp"] ]
 
-private def canaryAxiomAdmissionArticle : RawProof :=
+def canaryAxiomAdmissionArticle : RawProof :=
   proofNode "megalodon-theory-admit-axiom"
     [ canaryPrimitiveTypes, canaryDeclarations, canarySignature,
       a "MKnownNil", canaryAxiomIdentifier, canaryProposition ]
-    [ proofNode "megalodon-def-project-definition"
+    [ proofNode "megalodon-theory-proposition-plain"
+      [ canaryPrimitiveTypes, canaryDeclarations, canarySignature,
+        a "MNZero", a "MTyCtxNil", canaryProposition, canaryProposition ]
+      [ proofNode "megalodon-def-project-definition"
         [ canaryPrimitiveIdentifier, a "MTpProp", canaryProposition,
           a "MDeclNil", a "MSigNil" ]
         [proofNode "megalodon-def-project-nil" []],
@@ -1112,7 +1198,9 @@ private def canaryAxiomAdmissionArticle : RawProof :=
         [ canaryPrimitiveTypes, canarySignature, a "MNZero",
           a "MTyCtxNil", a "MNZero", a "MTpProp" ]
         [ proofNode "megalodon-theory-primitive-type-zero"
-            [a "MTpProp", a "MPrimNil"] ] ]
+            [a "MTpProp", a "MPrimNil"] ],
+        proofNode "megalodon-def-path-refl"
+          [canaryDeclarations, canaryProposition] ] ]
 
 private def canaryKnownProofArticle : RawProof :=
   proofNode "megalodon-theory-proof-known"
@@ -1124,11 +1212,27 @@ private def canaryKnownProofArticle : RawProof :=
       proofNode "megalodon-def-path-refl"
         [canaryDeclarations, canaryProposition] ]
 
-private def canaryTheoremAdmissionArticle : RawProof :=
+private def canaryPropositionFormationArticle : RawProof :=
+  proofNode "megalodon-theory-proposition-plain"
+    [ canaryPrimitiveTypes, canaryDeclarations, canarySignature,
+      a "MNZero", a "MTyCtxNil", canaryProposition, canaryProposition ]
+    [ proofNode "megalodon-def-project-definition"
+        [ canaryPrimitiveIdentifier, a "MTpProp", canaryProposition,
+          a "MDeclNil", a "MSigNil" ]
+        [proofNode "megalodon-def-project-nil" []],
+      proofNode "megalodon-theory-term-primitive"
+        [ canaryPrimitiveTypes, canarySignature, a "MNZero",
+          a "MTyCtxNil", a "MNZero", a "MTpProp" ]
+        [proofNode "megalodon-theory-primitive-type-zero"
+          [a "MTpProp", a "MPrimNil"]],
+      proofNode "megalodon-def-path-refl"
+        [canaryDeclarations, canaryProposition] ]
+
+def canaryTheoremAdmissionArticle : RawProof :=
   proofNode "megalodon-theory-admit-theorem"
-    [ canaryPrimitiveTypes, canaryDeclarations, canaryAxiomKnown,
+    [ canaryPrimitiveTypes, canaryDeclarations, canarySignature, canaryAxiomKnown,
       canaryTheoremIdentifier, canaryProposition ]
-    [canaryKnownProofArticle]
+    [canaryPropositionFormationArticle, canaryKnownProofArticle]
 
 def canaryArticle : RawProof :=
   proofNode "megalodon-theory-checks-cons"
@@ -1162,20 +1266,21 @@ theorem ordered_primitive_axiom_theorem_accepted :
     checkRaw validated canaryGoal canaryArticle = true := by
   simp only [ canaryGoal, canaryArticle, canaryItems,
     canaryPrimitiveAdmissionArticle, canaryAxiomAdmissionArticle,
-    canaryTheoremAdmissionArticle, canaryKnownProofArticle, proofNode,
+    canaryTheoremAdmissionArticle, canaryPropositionFormationArticle,
+    canaryKnownProofArticle, proofNode,
     checkRaw, validated, instantiateRule? ]
   simp (config := { maxSteps := 12000000, decide := true })
     [ lookup_checksConsRule, lookup_checksNilRule,
       lookup_admitPrimitiveRule, lookup_admitAxiomRule,
       lookup_admitTheoremRule, lookup_primitiveAppendZeroRule,
       lookup_primitiveTypeZeroRule, lookup_typePrimitiveRule,
-      lookup_proofKnownRule, lookup_projectNilRule,
+      lookup_proofKnownRule, lookup_propositionPlainRule, lookup_projectNilRule,
       lookup_projectDefinitionRule, lookup_polyTypePlainRule,
       lookup_plainTypePropRule, lookup_knownHereRule, lookup_pathReflRule,
       checkRaw, checkRawChildren, instantiateRule?,
       checksConsRule, checksNilRule, admitPrimitiveRule, admitAxiomRule,
       admitTheoremRule, primitiveAppendZeroRule, primitiveTypeZeroRule,
-      typePrimitiveRule, proofKnownRule,
+      typePrimitiveRule, proofKnownRule, propositionPlainRule,
       PolymorphicKernel.plainPropRule, EnvironmentKernel.knownHereRule,
       DefinitionConversionKernel.pathReflRule,
       DefinitionConversionKernel.projectNilRule,
@@ -1203,7 +1308,7 @@ theorem ordered_primitive_axiom_theorem_accepted :
       canaryAxiomItem, canaryTheoremItem, canaryProposition,
       canaryPrimitiveIdentifier, canaryAxiomIdentifier,
       canaryTheoremIdentifier, primitiveTypeAt, primitiveAppendAt,
-      hasType, admits, checks, rule, ruleId, a, m]
+      hasType, propositionRepresentative, admits, checks, rule, ruleId, a, m]
 
 def wrongPrimitiveIndexItem : Pattern :=
   a "MTheoryPrimitive"
@@ -1245,13 +1350,15 @@ theorem skipped_primitive_index_rejected :
 
 def prematureTheoremArticle : RawProof :=
   proofNode "megalodon-theory-admit-theorem"
-    [ canaryPrimitiveTypes, canaryDeclarations, a "MKnownNil",
+    [ canaryPrimitiveTypes, canaryDeclarations, canarySignature, a "MKnownNil",
       canaryTheoremIdentifier, canaryProposition ]
-    [ canaryKnownProofArticle ]
+    [ canaryPropositionFormationArticle, canaryKnownProofArticle ]
 
 def prematureTheoremGoal : Pattern :=
   admits canaryPrimitiveEnvironment canaryTheoremItem
-    canaryAxiomEnvironment
+    (a "MFullEnvironment"
+      [canaryPrimitiveTypes, canaryDeclarations,
+        a "MKnownCons" [canaryTheoremIdentifier, canaryProposition, a "MKnownNil"]])
 
 set_option maxRecDepth 200000 in
 set_option maxHeartbeats 12000000 in
@@ -1260,16 +1367,331 @@ theorem theorem_before_axiom_rejected :
       prematureTheoremArticle = false := by
   simp only [ prematureTheoremGoal, prematureTheoremArticle,
     canaryKnownProofArticle,
-    canaryPrimitiveEnvironment, canaryAxiomEnvironment,
+    canaryPrimitiveEnvironment,
     canaryPrimitiveTypes, canaryDeclarations, canaryAxiomKnown,
     canaryTheoremItem, canaryTheoremIdentifier, canaryProposition,
     proofNode, checkRaw, validated, instantiateRule? ]
   simp (config := { maxSteps := 12000000, decide := true })
-    [ lookup_admitTheoremRule, checkRawChildren,
-      admitTheoremRule, admits, DefinitionConversionKernel.fullProves,
-      DefinitionConversionKernel.a,
+    [ lookup_admitTheoremRule, checkRaw, checkRawChildren, instantiateRule?,
+      admitTheoremRule, proofKnownRule, admits, propositionRepresentative,
+      DefinitionConversionKernel.fullProves,
+      DefinitionConversionKernel.reductionPath, EnvironmentKernel.knownMember,
+      DefinitionConversionKernel.a, EnvironmentKernel.a,
       instantiateSchemas?, instantiateSchema?, instantiateSchemasAt?,
       instantiateSchemaAt?, lookupArgumentAt?,
       rule, ruleId, a, m]
+
+/-! ## Ordinary hypotheses and prefix-polymorphic theorem formation -/
+
+namespace FormationBoundary
+
+private def zero : Pattern := a "MNZero"
+private def one : Pattern := a "MNSucc" [zero]
+private def propType : Pattern := a "MTpProp"
+private def emptyTypes : Pattern := a "MTyCtxNil"
+private def emptyProofs : Pattern := a "MPfCtxNil"
+private def emptySignature : Pattern := a "MSigNil"
+private def emptyDeclarations : Pattern := a "MDeclNil"
+private def emptyPrimitives : Pattern := a "MPrimNil"
+private def emptyKnown : Pattern := a "MKnownNil"
+private def emptyEnvironment : Pattern :=
+  a "MFullEnvironment" [emptyPrimitives, emptyDeclarations, emptyKnown]
+
+/-- A well-formed ordinary proposition; no assertion of its truth is made. -/
+def body : Pattern := a "MTmAll" [propType, a "MTmVar" [zero]]
+
+/-- The same proposition under a legitimate prefix type quantifier. -/
+def prefixProposition : Pattern := a "MTmTypeAll" [body]
+
+private def bodyTypeArticle (depth : Pattern) : RawProof :=
+  proofNode "megalodon-theory-term-all"
+    [emptyPrimitives, emptySignature, depth, emptyTypes, propType, a "MTmVar" [zero]]
+    [ proofNode "megalodon-poly-type-prop" [depth],
+      proofNode "megalodon-theory-term-var-zero"
+        [emptyPrimitives, emptySignature, depth, emptyTypes, propType] ]
+
+private def bodyFormationArticle (depth : Pattern) : RawProof :=
+  proofNode "megalodon-theory-proposition-plain"
+    [emptyPrimitives, emptyDeclarations, emptySignature, depth, emptyTypes, body, body]
+    [ proofNode "megalodon-def-project-nil" [], bodyTypeArticle depth,
+      proofNode "megalodon-def-path-refl" [emptyDeclarations, body] ]
+
+private def prefixFormationArticle : RawProof :=
+  proofNode "megalodon-theory-proposition-type-all"
+    [emptyPrimitives, emptyDeclarations, emptySignature, zero, emptyTypes, body, body]
+    [bodyFormationArticle one]
+
+private def hypothesisArticle (depth proposition : Pattern) : RawProof :=
+  proofNode "megalodon-theory-proof-hyp-zero"
+    [emptyEnvironment, depth, emptyTypes, emptyProofs, proposition]
+
+private def ordinaryIdentityArticle (depth : Pattern) : RawProof :=
+  proofNode "megalodon-theory-proof-imp-intro"
+    [emptyPrimitives, emptyDeclarations, emptySignature, emptyKnown, depth,
+      emptyTypes, emptyProofs, body, body, body]
+    [bodyTypeArticle depth, bodyFormationArticle depth, hypothesisArticle depth body]
+
+/-- A correctly sized article attempts to use prefix-proposition evidence
+where the ordinary-`Prop` premise is required. -/
+private def prefixHypothesisArticle : RawProof :=
+  proofNode "megalodon-theory-proof-imp-intro"
+    [emptyPrimitives, emptyDeclarations, emptySignature, emptyKnown, zero,
+      emptyTypes, emptyProofs, prefixProposition, prefixProposition, prefixProposition]
+    [prefixFormationArticle, prefixFormationArticle, hypothesisArticle zero prefixProposition]
+
+private def identityBody : Pattern := a "MTmImp" [body, body]
+private def prefixIdentity : Pattern := a "MTmTypeAll" [identityBody]
+
+private def identityFormationArticle (depth : Pattern) : RawProof :=
+  proofNode "megalodon-theory-proposition-plain"
+    [emptyPrimitives, emptyDeclarations, emptySignature, depth, emptyTypes,
+      identityBody, identityBody]
+    [ proofNode "megalodon-def-project-nil" [],
+      proofNode "megalodon-theory-term-imp"
+        [emptyPrimitives, emptySignature, depth, emptyTypes, body, body]
+        [bodyTypeArticle depth, bodyTypeArticle depth],
+      proofNode "megalodon-def-path-refl" [emptyDeclarations, identityBody] ]
+
+private def prefixIdentityFormationArticle : RawProof :=
+  proofNode "megalodon-theory-proposition-type-all"
+    [emptyPrimitives, emptyDeclarations, emptySignature, zero, emptyTypes,
+      identityBody, identityBody]
+    [identityFormationArticle one]
+
+private def prefixIdentityProofArticle : RawProof :=
+  proofNode "megalodon-theory-proof-type-intro" [emptyEnvironment, zero, identityBody]
+    [ordinaryIdentityArticle one]
+
+private def theoremArticle : RawProof :=
+  proofNode "megalodon-theory-admit-theorem"
+    [emptyPrimitives, emptyDeclarations, emptySignature, emptyKnown,
+      canaryTheoremIdentifier, prefixIdentity]
+    [prefixIdentityFormationArticle, prefixIdentityProofArticle]
+
+private def theoremGoal : Pattern :=
+  admits emptyEnvironment (a "MTheoryTheorem" [canaryTheoremIdentifier, prefixIdentity])
+    (a "MFullEnvironment" [emptyPrimitives, emptyDeclarations,
+      a "MKnownCons" [canaryTheoremIdentifier, prefixIdentity, emptyKnown]])
+
+private def axiomArticle (proposition : Pattern) (formation : RawProof) : RawProof :=
+  proofNode "megalodon-theory-admit-axiom"
+    [emptyPrimitives, emptyDeclarations, emptySignature, emptyKnown,
+      canaryAxiomIdentifier, proposition] [formation]
+
+private def axiomGoal (proposition : Pattern) : Pattern :=
+  admits emptyEnvironment (a "MTheoryAxiom" [canaryAxiomIdentifier, proposition])
+    (a "MFullEnvironment" [emptyPrimitives, emptyDeclarations,
+      a "MKnownCons" [canaryAxiomIdentifier, proposition, emptyKnown]])
+
+private def malformedProposition : Pattern := a "MTmImp" [prefixProposition, prefixProposition]
+private def unformedKnown : Pattern :=
+  a "MKnownCons" [canaryAxiomIdentifier, malformedProposition, emptyKnown]
+private def unformedEnvironment : Pattern :=
+  a "MFullEnvironment" [emptyPrimitives, emptyDeclarations, unformedKnown]
+
+private def unformedKnownProof : RawProof :=
+  proofNode "megalodon-theory-proof-known"
+    [emptyPrimitives, emptyDeclarations, unformedKnown, zero, emptyTypes, emptyProofs,
+      canaryAxiomIdentifier, malformedProposition, malformedProposition]
+    [ proofNode "megalodon-env-known-here"
+        [canaryAxiomIdentifier, malformedProposition, emptyKnown],
+      proofNode "megalodon-def-path-refl" [emptyDeclarations, malformedProposition] ]
+
+private def guardedTheoremArticle (formation proof : RawProof) : RawProof :=
+  proofNode "megalodon-theory-admit-theorem"
+    [emptyPrimitives, emptyDeclarations, emptySignature, unformedKnown,
+      canaryTheoremIdentifier, malformedProposition]
+    [formation, proof]
+
+private def guardedTheoremGoal : Pattern :=
+  admits unformedEnvironment
+    (a "MTheoryTheorem" [canaryTheoremIdentifier, malformedProposition])
+    (a "MFullEnvironment" [emptyPrimitives, emptyDeclarations,
+      a "MKnownCons" [canaryTheoremIdentifier, malformedProposition, unformedKnown]])
+
+@[simp] private theorem lookup_typeAllRule :
+    definition.lookupRule? (ruleId "megalodon-theory-term-all") = some typeAllRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_typeVarZeroRule :
+    definition.lookupRule? (ruleId "megalodon-theory-term-var-zero") = some typeVarZeroRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_typeImpRule :
+    definition.lookupRule? (ruleId "megalodon-theory-term-imp") = some typeImpRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_propositionTypeAllRule :
+    definition.lookupRule? (ruleId "megalodon-theory-proposition-type-all") =
+      some propositionTypeAllRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_proofHypZeroRule :
+    definition.lookupRule? (ruleId "megalodon-theory-proof-hyp-zero") = some proofHypZeroRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_proofImpIntroRule :
+    definition.lookupRule? (ruleId "megalodon-theory-proof-imp-intro") = some proofImpIntroRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_proofTypeIntroRule :
+    definition.lookupRule? (ruleId "megalodon-theory-proof-type-intro") = some proofTypeIntroRule :=
+  lookupAdditionalRule _ _ (by rfl) (by rfl)
+
+@[simp] private theorem lookup_propositionPlain :
+    definition.lookupRule? (ruleId "megalodon-theory-proposition-plain") =
+      some propositionPlainRule := lookup_propositionPlainRule
+
+@[simp] private theorem lookup_proofKnown :
+    definition.lookupRule? (ruleId "megalodon-theory-proof-known") =
+      some proofKnownRule := lookup_proofKnownRule
+
+@[simp] private theorem lookup_admitTheorem :
+    definition.lookupRule? (ruleId "megalodon-theory-admit-theorem") =
+      some admitTheoremRule := lookup_admitTheoremRule
+
+@[simp] private theorem lookup_admitAxiom :
+    definition.lookupRule? (ruleId "megalodon-theory-admit-axiom") =
+      some admitAxiomRule := lookup_admitAxiomRule
+
+@[simp] private theorem lookup_projectNil :
+    definition.lookupRule? (ruleId "megalodon-def-project-nil") =
+      some DefinitionConversionKernel.projectNilRule := lookup_projectNilRule
+
+@[simp] private theorem lookup_plainProp :
+    definition.lookupRule? (ruleId "megalodon-poly-type-prop") =
+      some PolymorphicKernel.plainPropRule := lookup_plainTypePropRule
+
+@[simp] private theorem lookup_knownHere :
+    definition.lookupRule? (ruleId "megalodon-env-known-here") =
+      some EnvironmentKernel.knownHereRule := lookup_knownHereRule
+
+@[simp] private theorem lookup_pathRefl :
+    definition.lookupRule? (ruleId "megalodon-def-path-refl") =
+      some DefinitionConversionKernel.pathReflRule := lookup_pathReflRule
+
+attribute [local simp] zero one propType emptyTypes emptyProofs emptySignature
+  emptyDeclarations emptyPrimitives emptyKnown emptyEnvironment body prefixProposition
+  bodyTypeArticle bodyFormationArticle prefixFormationArticle hypothesisArticle
+  ordinaryIdentityArticle prefixHypothesisArticle identityBody prefixIdentity
+  identityFormationArticle prefixIdentityFormationArticle prefixIdentityProofArticle
+  theoremArticle theoremGoal malformedProposition unformedKnown unformedEnvironment
+  axiomArticle axiomGoal admitAxiomRule
+  unformedKnownProof guardedTheoremArticle guardedTheoremGoal proofNode
+  typeAllRule typeVarZeroRule typeImpRule propositionPlainRule propositionTypeAllRule
+  proofHypZeroRule proofImpIntroRule proofTypeIntroRule proofKnownRule admitTheoremRule
+  PolymorphicKernel.plainPropRule DefinitionConversionKernel.projectNilRule
+  DefinitionConversionKernel.pathReflRule
+  DefinitionConversionKernel.projectSignature DefinitionConversionKernel.reductionPath
+  DefinitionConversionKernel.fullProves EnvironmentKernel.plainType
+  EnvironmentKernel.knownHereRule EnvironmentKernel.knownMember
+  EnvironmentKernel.rule EnvironmentKernel.ruleId EnvironmentKernel.m
+  PolymorphicKernel.plainType hasType propositionRepresentative admits
+  DefinitionConversionKernel.rule DefinitionConversionKernel.ruleId
+  DefinitionConversionKernel.a DefinitionConversionKernel.m
+  PolymorphicKernel.rule PolymorphicKernel.ruleId PolymorphicKernel.a PolymorphicKernel.m
+  EnvironmentKernel.a rule a m
+  checkRaw checkRawChildren instantiateRule? instantiateSchemas? instantiateSchema?
+  instantiateSchemasAt? instantiateSchemaAt? lookupArgumentAt? validated
+
+/-- A prefix-polymorphic proposition still has checked formation evidence. -/
+theorem prefix_formation_accepted :
+    checkRaw validated
+      (propositionRepresentative emptyPrimitives emptyDeclarations emptySignature
+        zero emptyTypes prefixProposition prefixProposition) prefixFormationArticle = true := by
+  simp (config := { decide := true })
+
+/-- A valid prefix-formation article cannot stand for ordinary-`Prop` typing. -/
+theorem prefix_formation_not_ordinary_type :
+    checkRaw validated
+      (hasType emptyPrimitives emptySignature zero emptyTypes prefixProposition propType)
+      prefixFormationArticle = false := by
+  simp (config := { decide := true })
+
+/-- Implication introduction retains an actual ordinary hypothesis proof. -/
+theorem ordinary_identity_accepted :
+    checkRaw validated
+      (DefinitionConversionKernel.fullProves emptyEnvironment zero emptyTypes emptyProofs
+        identityBody) (ordinaryIdentityArticle zero) = true := by
+  simp (config := { decide := true })
+
+/-- The malformed prefix hypothesis is rejected despite correct child count
+and genuine prefix-formation evidence. -/
+theorem prefix_hypothesis_rejected :
+    checkRaw validated
+      (DefinitionConversionKernel.fullProves emptyEnvironment zero emptyTypes emptyProofs
+        (a "MTmImp" [prefixProposition, prefixProposition])) prefixHypothesisArticle = false := by
+  simp (config := { decide := true })
+
+/-- Prefix quantification remains available at actual theorem admission. -/
+theorem prefix_theorem_admitted : checkRaw validated theoremGoal theoremArticle = true := by
+  simp (config := { decide := true })
+
+/-- A polymorphic axiom is admitted as an assumption, not as a proved theorem. -/
+theorem prefix_axiom_admitted :
+    checkRaw validated (axiomGoal prefixProposition)
+      (axiomArticle prefixProposition prefixFormationArticle) = true := by
+  simp (config := { decide := true })
+
+/-- Even axiom admission requires formation of the actual declared formula. -/
+theorem axiom_requires_formation (proposition : Pattern) (formation : RawProof)
+    (accepted : checkRaw validated (axiomGoal proposition)
+      (axiomArticle proposition formation) = true) :
+    checkRaw validated
+      (propositionRepresentative emptyPrimitives emptyDeclarations emptySignature
+        zero emptyTypes proposition proposition) formation = true := by
+  exact admitted_axiom_requires_formation _ _ _ _ _ _ _ _ accepted
+
+/-- An admitted axiom cannot use formation evidence for a different formula. -/
+theorem malformed_axiom_rejected :
+    checkRaw validated (axiomGoal malformedProposition)
+      (axiomArticle malformedProposition prefixFormationArticle) = false := by
+  simp (config := { decide := true })
+
+/-- Formation of a polymorphic axiom is not a proof of that axiom. -/
+theorem axiom_formation_is_not_proof :
+    checkRaw validated
+      (DefinitionConversionKernel.fullProves emptyEnvironment zero emptyTypes emptyProofs
+        prefixProposition) prefixFormationArticle = false := by
+  simp (config := { decide := true })
+
+/-- Raw known-inventory lookup is not a theorem-formation judgment. This
+fixture deliberately does not claim that its initial inventory was admitted. -/
+theorem unformed_inventory_proof_accepted :
+    checkRaw validated
+      (DefinitionConversionKernel.fullProves unformedEnvironment zero emptyTypes emptyProofs
+        malformedProposition) unformedKnownProof = true := by
+  simp (config := { decide := true })
+
+/-- Every accepted article at this malformed-theorem boundary must discharge
+the distinct formation premise, not merely the raw proof premise. -/
+theorem theorem_requires_formation (formation proof : RawProof)
+    (accepted : checkRaw validated guardedTheoremGoal
+      (guardedTheoremArticle formation proof) = true) :
+    checkRaw validated
+      (propositionRepresentative emptyPrimitives emptyDeclarations emptySignature zero
+        emptyTypes malformedProposition malformedProposition) formation = true := by
+  exact (admitted_theorem_requires_formation_and_proof _ _ _ _ _ _ _ _ _ accepted).1
+
+/-- Even genuine proof evidence cannot replace the separate formation
+evidence required for document admission. Both children are supplied. -/
+theorem proof_without_formation_rejected :
+    checkRaw validated guardedTheoremGoal
+      (guardedTheoremArticle unformedKnownProof unformedKnownProof) = false := by
+  simp (config := { decide := true })
+
+#print axioms prefix_formation_accepted
+#print axioms ordinary_identity_accepted
+#print axioms prefix_hypothesis_rejected
+#print axioms prefix_theorem_admitted
+#print axioms prefix_axiom_admitted
+#print axioms axiom_requires_formation
+#print axioms malformed_axiom_rejected
+#print axioms axiom_formation_is_not_proof
+#print axioms unformed_inventory_proof_accepted
+#print axioms theorem_requires_formation
+#print axioms proof_without_formation_rejected
+
+end FormationBoundary
 
 end Mettapedia.Languages.Megalodon.TheoryAdmissionKernel

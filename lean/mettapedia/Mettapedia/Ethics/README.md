@@ -77,7 +77,7 @@ top of it.
 |------|----------|
 | `GewirthPGC.lean` | The PGC argument: modal operators (□ᴰ, □ₐ, □ₚ, ◇ₐ, ◇ₚ), `Oi` (ideal obligation), `PPA` (purposeful purposive action), `RightTo`, `PGCInterpretation`, `PGCAssumptions`; main theorem `PGC_strong`; helper `CJ_14p`; bundled wrapper `PGC_strong_ofAssumptions` |
 | `GewirthBridge.lean` | Connects PGC to the rest of Mettapedia: `PGCFullFrame` → `DDLPlusFrame` → `GovFrame`; `pgc_is_governance_norm` — the PGC conclusion is a governance norm in the DDLPlus framework |
-| `GewirthTheory.lean` | Theory-level presentation: `PGCAssumptionTheory`, `pgcSemantics`, `entails_PGC_strong`; AFP-aligned route `entails_PGC_strong_from_AFPTheory` matching the Carmo-Jones DDL embedding |
+| `GewirthTheory.lean` | Theory-level formulation: `PGCAssumptionTheory`, `pgcSemantics`, `entails_PGC_strong`; AFP-aligned route `entails_PGC_strong_from_AFPTheory` matching the Carmo-Jones DDL embedding |
 
 ### FOET semantic core (cross-paradigm translation framework)
 
@@ -93,7 +93,7 @@ top of it.
 | `ChoicePoint.lean` | `ChoicePoint` and the four dilemma notions (value/deontic/utilitarian/virtue-target) with their equivalence lemmas (`deonticMoralDilemma_iff_valueMoralDilemma`, etc.) |
 | `StructuredSentence.lean` | `StructuredSentence` inductive, `map`/`Sat`/`semantics`, and `relLift`/`witnessedLift` plus `sat_map_iff` transport |
 | `StructuredParadigms.lean` | Structured imperative↔value atoms and `entails_structuredImperative_iff_entails_structuredValue` |
-| `CredalValueAttributionCaseTable.lean` | Reusable case-table interface for moral-value attribution over the credal concept-formation surface |
+| `CredalValueAttributionCaseTable.lean` | Reusable case-table interface for moral-value attribution over the credal concept-formation interface |
 | `CredalValueAttributionExample.lean` | Small worked example: lenient vs strict acceptance gates yield one stable attribution and one genuinely ambiguous one |
 | `Dignity.lean` | Placeholder only — no formal dignity theory is exported yet (earlier toy `True`/`False` definitions were deliberately removed as over-signaling); reserved for a future nontrivial formalization |
 

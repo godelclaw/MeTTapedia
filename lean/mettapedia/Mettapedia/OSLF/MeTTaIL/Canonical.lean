@@ -10,6 +10,29 @@ inductive CanonicalEvalPolicy where
   | hostCodeOnly
 deriving DecidableEq, Repr
 
+namespace CanonicalEvalPolicy
+
+/-- Stable canonical spelling, independent of the partial debug formatter. -/
+def serialize : CanonicalEvalPolicy → String
+  | .rewrite => "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.rewrite"
+  | .fold => "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.fold"
+  | .hostCodeOnly => "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.hostCodeOnly"
+
+@[simp] theorem serialize_rewrite :
+    serialize .rewrite = "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.rewrite" := rfl
+
+@[simp] theorem serialize_fold :
+    serialize .fold = "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.fold" := rfl
+
+@[simp] theorem serialize_hostCodeOnly :
+    serialize .hostCodeOnly = "Mettapedia.OSLF.MeTTaIL.Canonical.CanonicalEvalPolicy.hostCodeOnly" := rfl
+
+theorem serialize_injective : Function.Injective serialize := by
+  intro left right equalSpelling
+  cases left <;> cases right <;> revert equalSpelling <;> decide +kernel
+
+end CanonicalEvalPolicy
+
 private def quote (s : String) : String :=
   "\"" ++ (s.replace "\\" "\\\\").replace "\"" "\\\"" ++ "\""
 
@@ -79,6 +102,33 @@ private def renderRuleContext (ctx : List (String × TypeExpr)) (premises : List
   else
     String.intercalate " | " blocks ++ " "
 
+/-- Preserve the authored binding contract in canonical rule identity. -/
+private def renderPatternSite : RulePatternSite → String
+  | .left => "left"
+  | .right => "right"
+  | .premise index quantifiers argument =>
+      s!"premise({index},{quantifiers},{argument})"
+
+private def renderBindingType : TypeExpr → String
+  | .base name => "base(" ++ quote name ++ ")"
+  | .arrow domain codomain =>
+      "arrow(" ++ renderBindingType domain ++ "," ++ renderBindingType codomain ++ ")"
+  | .multiBinder inner => "multi(" ++ renderBindingType inner ++ ")"
+  | .collection kind inner =>
+      "collection(" ++ renderCollType kind ++ "," ++ renderBindingType inner ++ ")"
+
+private def renderRuleBindings : Option RuleBindingSpec → String
+  | none => ""
+  | some spec =>
+      let dependencies := spec.dependencies.map fun (name, types) =>
+        quote name ++ ":[" ++ String.intercalate "," (types.map renderBindingType) ++ "]"
+      let occurrences := spec.occurrences.map fun row =>
+        quote row.name ++ "@" ++ renderPatternSite row.site ++ "[" ++
+          String.intercalate "," (row.path.map toString) ++ "](" ++
+          String.intercalate "," (row.arguments.map Pattern.renderJson) ++ ")"
+      " {bindings:[" ++ String.intercalate "," dependencies ++ "]|[" ++
+        String.intercalate "," occurrences ++ "]}"
+
 /-- Lean-side verbose canonical rendering. Preserves full authored details
     (parameter names, types, syntax patterns, declaration order).
     NOT the same as Rust's zone1_shared_core, which sorts and projects. -/
@@ -99,10 +149,10 @@ def verboseCanonical (lang : LanguageDef) : String :=
       out := out ++ s!"  {term.label} . {ctx}|-{synpat}:{term.category}\n"
     out := out ++ "equations:\n"
     for eqn in lang.equations do
-      out := out ++ s!"  {eqn.name} . {renderRuleContext eqn.typeContext eqn.premises}|-{eqn.left.renderJson}={eqn.right.renderJson}\n"
+      out := out ++ s!"  {eqn.name} . {renderRuleContext eqn.typeContext eqn.premises}|-{eqn.left.renderJson}={eqn.right.renderJson}{renderRuleBindings eqn.bindings}\n"
     out := out ++ "rewrites:\n"
     for rw in lang.rewrites do
-      out := out ++ s!"  {rw.name} . {renderRuleContext rw.typeContext rw.premises}|-{rw.left.renderJson}~>{rw.right.renderJson}\n"
+      out := out ++ s!"  {rw.name} . {renderRuleContext rw.typeContext rw.premises}|-{rw.left.renderJson}~>{rw.right.renderJson}{renderRuleBindings rw.bindings}\n"
     return out
 
 /-- Render a term in Zone-1 shared-core format: label/category/arity/shape only.
@@ -137,12 +187,12 @@ def zone1SharedCore (lang : LanguageDef) : String :=
     let sortedEqs := lang.equations.toArray.qsort (fun a b => a.name < b.name) |>.toList
     out := out ++ "equations:\n"
     for eqn in sortedEqs do
-      out := out ++ s!"  {eqn.name} . {renderRuleContext eqn.typeContext eqn.premises}|-{eqn.left.renderJson}={eqn.right.renderJson}\n"
+      out := out ++ s!"  {eqn.name} . {renderRuleContext eqn.typeContext eqn.premises}|-{eqn.left.renderJson}={eqn.right.renderJson}{renderRuleBindings eqn.bindings}\n"
     -- Rewrites: sorted by name
     let sortedRws := lang.rewrites.toArray.qsort (fun a b => a.name < b.name) |>.toList
     out := out ++ "rewrites:\n"
     for rw in sortedRws do
-      out := out ++ s!"  {rw.name} . {renderRuleContext rw.typeContext rw.premises}|-{rw.left.renderJson}~>{rw.right.renderJson}\n"
+      out := out ++ s!"  {rw.name} . {renderRuleContext rw.typeContext rw.premises}|-{rw.left.renderJson}~>{rw.right.renderJson}{renderRuleBindings rw.bindings}\n"
     return out
 
 private def termPolicy : Option TermEvalPolicy → CanonicalEvalPolicy
@@ -155,35 +205,17 @@ def zone2WithEvalPolicy (lang : LanguageDef) : String :=
     let mut out := zone1SharedCore lang
     out := out ++ "term-policies:\n"
     for term in lang.terms do
-      out := out ++ s!"  {term.label}={reprStr (termPolicy term.evalPolicy?)}\n"
+      out := out ++ s!"  {term.label}={(termPolicy term.evalPolicy?).serialize}\n"
     return out
 
-/-- Zone-2 rendering is a pure function: the same LanguageDef always produces
-    the same canonical string. This is trivially true (by `rfl`) and serves
-    only as a sanity check that the function is deterministic.
+/-! ## Canonical rendering congruence
 
-    NOTE: This is NOT a retraction proof (project ∘ embed = id). A real
-    retraction would require parsing the canonical string back into a
-    LanguageDef and proving round-trip equality, which is future work. -/
-theorem zone2_deterministic (lang : LanguageDef) :
-    zone2WithEvalPolicy lang = zone2WithEvalPolicy lang := rfl
+The following theorem assumes equality of sorted record arrays; it does not
+prove sorting invariant under permutation. A full order-independence theorem
+must establish that sorting law, using the duplicate-free keys exposed by
+structural validation. -/
 
-/-! ## Meaningful canonical property: order-independence
-
-The key property Codex identified as missing: the canonical rendering
-is ORDER-INDEPENDENT — two LanguageDefs with the same content but
-different declaration orders produce the same zone1SharedCore output.
-
-This is the property that makes the canonical contract meaningful:
-it factorizes out the arbitrary author-specified ordering. -/
-
-/-- Two LanguageDefs with identical sorted content produce the same canonical.
-
-    This is the non-trivial contract property: zone1SharedCore is determined
-    by the sorted structural content, not by the author-specified declaration
-    order. If two LanguageDefs agree on name, sorted types, sorted terms,
-    sorted equations, and sorted rewrites, they produce the
-    same canonical string. -/
+/-- Equal names and sorted structural contents yield equal Zone-1 renderings. -/
 theorem zone1SharedCore_determined_by_sorted_content
     (lang1 lang2 : LanguageDef)
     (hname : lang1.name = lang2.name)

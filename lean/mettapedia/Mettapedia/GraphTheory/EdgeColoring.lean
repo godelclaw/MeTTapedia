@@ -5,10 +5,11 @@ namespace SimpleGraph
 
 variable {V α : Type*}
 
-/-- An edge coloring of `G` is a vertex coloring of the line graph of `G`. -/
+/-- An edge coloring of `G` is a vertex coloring of its line graph. -/
 abbrev EdgeColoring (G : SimpleGraph V) (α : Type*) := G.lineGraph.Coloring α
 
-/-- `G` is edge-colorable with `n` colors if its line graph is vertex-colorable with `n` colors. -/
+/-- `G` is edge-colorable with `n` colors when its line graph is vertex-colorable
+with `n` colors. -/
 abbrev EdgeColorable (G : SimpleGraph V) (n : ℕ) : Prop := G.lineGraph.Colorable n
 
 variable (G : SimpleGraph V) [DecidableEq α]
@@ -17,7 +18,7 @@ variable (G : SimpleGraph V) [DecidableEq α]
 abbrev EdgeKempeStep : G.EdgeColoring α → G.EdgeColoring α → Prop :=
   G.lineGraph.KempeStep
 
-/-- The edge-Kempe closure is the Kempe closure in the line graph. -/
+/-- Edge-Kempe closure is Kempe closure in the line graph. -/
 abbrev EdgeKempeClosure (C₀ : G.EdgeColoring α) : Set (G.EdgeColoring α) :=
   G.lineGraph.KempeClosure C₀
 
@@ -41,7 +42,8 @@ theorem mem_edgeKempeClosure_of_mem_of_step {C₀ C : G.EdgeColoring α}
     (hC : C ∈ G.EdgeKempeClosure C₀) (a b : α)
     (K : (C.bicoloredSubgraph a b).ConnectedComponent) :
     C.swapOnKempeComponent a b K ∈ G.EdgeKempeClosure C₀ :=
-  G.mem_edgeKempeClosure_of_step hC (G.edgeKempeStep_swapOnKempeComponent C a b K)
+  G.mem_edgeKempeClosure_of_step hC
+    (G.edgeKempeStep_swapOnKempeComponent C a b K)
 
 theorem lineGraph_adj_of_edgeSet_common_vertex
     {V : Type*} {G : SimpleGraph V} {e f : G.edgeSet} {v : V}

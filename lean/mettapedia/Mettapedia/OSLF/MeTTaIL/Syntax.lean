@@ -5,12 +5,16 @@ import Mettapedia.Util.LinearHash
 /-!
 # MeTTaIL Language Definition Syntax (Locally Nameless)
 
-Formalization of the MeTTaIL `language!` macro structure from the
-`mettail-rust` source tree.
+The authored language-definition format used by Mettapedia's GSLT and OSLF
+constructions. Its notation is based on MeTTaIL's `language!` macro in
+`mettail-rust`; its Lean semantics, dependent extensions and execution
+contracts are defined in this development. This is not an assertion that
+the evolving Rust implementation realizes every Lean construction.
 
 Uses **locally nameless** representation: bound variables are de Bruijn indices
-(`.bvar n`), free variables / metavariables are named (`.fvar x`). Binders
-carry no names — α-equivalent patterns are syntactically identical.
+(`.bvar n`), free variables / metavariables are named (`.fvar x`). Patterns
+retain optional binder display names for source diagnostics. The existing
+alpha-canonicalization boundary erases those names for semantic admission.
 
 ## References
 
@@ -24,7 +28,15 @@ namespace Mettapedia.OSLF.MeTTaIL.Syntax
 
 /-! ## Collection Types -/
 
-/-- Collection types supported by MeTTaIL -/
+/-- Collection representations supported by MeTTaIL.
+
+The tag determines the equality and multiplicity discipline of the immediate
+collection payload in a realization: vectors retain order, bags forget order
+but retain counts, and sets forget both order and duplicate occurrences.  It
+does not by itself select a language operator, flatten nested occurrences, or
+name a unit term.  Associativity/flattening and unit equations therefore need
+an explicit algebraic presentation tying a constructor to this collection
+representation; idempotence is appropriate only for the set case. -/
 inductive CollType where
   | vec      : CollType  -- Vec(T): ordered list
   | hashBag  : CollType  -- HashBag(T): multiset (with counts)
@@ -79,6 +91,16 @@ def baseType (name : String) : TypeExpr := .base name
 def proc : TypeExpr := baseType "Proc"
 def name : TypeExpr := baseType "Name"
 def term : TypeExpr := baseType "Term"
+
+/-- Whether a type expression mentions a collection of the given kind at any
+    depth. -/
+def mentionsCollection (kind : CollType) : TypeExpr → Bool
+  | .base _ => false
+  | .arrow domain codomain =>
+      mentionsCollection kind domain || mentionsCollection kind codomain
+  | .multiBinder body => mentionsCollection kind body
+  | .collection collectionType element =>
+      collectionType == kind || mentionsCollection kind element
 def funType (dom cod : TypeExpr) : TypeExpr := .arrow dom cod
 def bag (elem : TypeExpr) : TypeExpr := .collection .hashBag elem
 def vec (elem : TypeExpr) : TypeExpr := .collection .vec elem
@@ -371,15 +393,36 @@ inductive TermEvalPolicy where
   | oracle
 deriving Repr, DecidableEq
 
+/-- Declared algebraic laws of a collection constructor beyond its collection
+    tag.  A bag tag by itself justifies permutation invariance with
+    multiplicity, and a set tag adds idempotence; neither justifies flattening
+    a nested occurrence into the enclosing collection or a unit element,
+    because those laws name the operator and its unit.  This declaration
+    supplies them for the rule it is attached to:
+    - `flatten`: a nested occurrence of the same collection constructor is
+      equivalent to its elements spliced in place, and a singleton collection
+      is equivalent to its element;
+    - `unit`: the named nullary constructor is absorbed inside the collection,
+      and the empty collection is equivalent to it.
+    The laws are generated only for collections sorted at the rule's category,
+    so two bag sorts of one language never exchange laws. -/
+structure CollectionAlgebra where
+  flatten : Bool := true
+  unit : Option String := none
+deriving Repr, DecidableEq
+
 /-- A grammar rule defines a constructor. `syntaxPattern` is the single
     authored syntax authority and may contain both plain tokens/nonterminals and
-    Rust-style metasyntax operators. -/
+    Rust-style metasyntax operators.  `algebra?` declares the flattening and
+    unit laws of a bare collection constructor; it is meaningful only when the
+    rule's single parameter is a collection of the rule's own category. -/
 structure GrammarRule where
   label : String
   category : String
   params : List TermParam
   syntaxPattern : List SyntaxItem
   evalPolicy? : Option TermEvalPolicy := none
+  algebra? : Option CollectionAlgebra := none
 deriving Repr, DecidableEq
 
 /-! ## Patterns (Locally Nameless) -/
@@ -509,6 +552,24 @@ end
 instance : DecidableEq Pattern := decEqPattern
 instance : BEq Pattern := ⟨fun a b => decide (a = b)⟩
 
+/-- Proves a decreasing goal `sizeOf a < sizeOf b` of a recursion over `Pattern`
+or `List Pattern` measured by `sizeOf`.  It substitutes pending equations,
+rewrites with the constructors' size equations only, uses
+`List.sizeOf_lt_of_mem` when the recursive argument is a list member, and
+closes the arithmetic with `omega`.  The default `decreasing_tactic` runs the
+full simplifier instead, whose ordered-monoid lemmas make the termination
+proof depend on `Classical.choice`. -/
+macro "sizeOf_pattern_dec" : tactic =>
+  `(tactic| (
+    subst_vars
+    (try simp only [Pattern.bvar.sizeOf_spec, Pattern.fvar.sizeOf_spec,
+      Pattern.apply.sizeOf_spec, Pattern.lambda.sizeOf_spec,
+      Pattern.multiLambda.sizeOf_spec, Pattern.subst.sizeOf_spec,
+      Pattern.collection.sizeOf_spec, List.cons.sizeOf_spec]) <;>
+      first
+      | omega
+      | (have := List.sizeOf_lt_of_mem ‹_›; omega)))
+
 namespace Pattern
 
 /-- Backward-compatible alias used by legacy process-calculus files. -/
@@ -591,6 +652,20 @@ private def jsonStrSyntax (s : String) : String :=
 private def jsonNatSyntax (n : Nat) : String :=
   toString n
 
+/-- JSON encoding of the complete sort expression used by scoped premises. -/
+def TypeExpr.renderJson : TypeExpr → String
+  | .base name => "{\"kind\":\"base\",\"name\":" ++ jsonStrSyntax name ++ "}"
+  | .arrow domain codomain =>
+      "{\"kind\":\"arrow\",\"domain\":" ++ domain.renderJson
+        ++ ",\"codomain\":" ++ codomain.renderJson ++ "}"
+  | .multiBinder body =>
+      "{\"kind\":\"multi_binder\",\"body\":" ++ body.renderJson ++ "}"
+  | .collection kind element =>
+      "{\"kind\":\"collection\",\"collection_kind\":"
+        ++ jsonStrSyntax (match kind with
+          | .vec => "vec" | .hashBag => "hash_bag" | .hashSet => "hash_set")
+        ++ ",\"element\":" ++ element.renderJson ++ "}"
+
 mutual
   partial def Pattern.renderJson : Pattern → String
     | .bvar n => "{\"kind\":\"bvar\",\"index\":" ++ jsonNatSyntax n ++ "}"
@@ -654,7 +729,7 @@ both Pattern and List Pattern simultaneously.
 -/
 
 /-- Custom induction principle for Pattern that handles nested List Pattern. -/
-def Pattern.inductionOn {motive : Pattern → Prop}
+theorem Pattern.inductionOn {motive : Pattern → Prop}
     (p : Pattern)
     (hbvar : ∀ n, motive (.bvar n))
     (hfvar : ∀ x, motive (.fvar x))
@@ -686,11 +761,7 @@ def Pattern.inductionOn {motive : Pattern → Prop}
     hcollection ct elems rest (fun q _hq =>
       inductionOn q hbvar hfvar happly hlambda hmultiLambda hsubst hcollection)
 termination_by sizeOf p
-decreasing_by
-  all_goals simp_wf
-  all_goals first
-    | (have h := List.sizeOf_lt_of_mem _hq; omega)
-    | omega
+decreasing_by all_goals sizeOf_pattern_dec
 
 /-! ## Premises -/
 
@@ -700,10 +771,36 @@ structure FreshnessCondition where
   term : Pattern
 deriving Repr, DecidableEq
 
+/-- A step premise with its own local binders and a common endpoint sort.
+The endpoints live in the local binders followed by the ambient rule context.
+Typing and well-scopedness are checked when the premise is admitted. -/
+structure ScopedStepPremise where
+  binders : List TypeExpr
+  resultType : TypeExpr
+  source : Pattern
+  target : Pattern
+deriving Repr, DecidableEq
+
+/-- A root premise is the case with no premise-local binders. -/
+def ScopedStepPremise.root (resultType : TypeExpr)
+    (source target : Pattern) : ScopedStepPremise where
+  binders := []
+  resultType := resultType
+  source := source
+  target := target
+
+def ScopedStepPremise.renderJson (premise : ScopedStepPremise) : String :=
+  "{\"kind\":\"scoped_step\",\"binders\":["
+    ++ String.intercalate "," (premise.binders.map TypeExpr.renderJson)
+    ++ "],\"result_type\":" ++ premise.resultType.renderJson
+    ++ ",\"source\":" ++ premise.source.renderJson
+    ++ ",\"target\":" ++ premise.target.renderJson ++ "}"
+
 /-- Premises for rules -/
 inductive Premise where
   | freshness : FreshnessCondition → Premise
   | congruence : Pattern → Pattern → Premise
+  | scopedStep : ScopedStepPremise → Premise
   | relationQuery : String → List Pattern → Premise
   | forAll : String → String → Premise → Premise
 deriving Repr, DecidableEq
@@ -715,6 +812,7 @@ def Premise.renderJson : Premise → String
   | .congruence lhs rhs =>
       "{\"kind\":\"congruence\",\"lhs\":" ++ lhs.renderJson
         ++ ",\"rhs\":" ++ rhs.renderJson ++ "}"
+  | .scopedStep premise => premise.renderJson
   | .relationQuery rel args =>
       "{\"kind\":\"relation_query\",\"relation\":" ++ jsonStrSyntax rel
         ++ ",\"args\":[" ++ String.intercalate "," (args.map Pattern.renderJson) ++ "]}"
@@ -725,6 +823,38 @@ def Premise.renderJson : Premise → String
 
 /-! ## Equations -/
 
+/-- A pattern within an authored conditional rule. A quantified premise has
+one body; `quantifiers` selects that many enclosing `forAll` bodies. The
+argument is the relation argument, the freshness subject (zero), or the
+source/target of a congruence (zero/one). -/
+inductive RulePatternSite where
+  | left
+  | right
+  | premise (index quantifiers argument : Nat)
+deriving Repr, DecidableEq
+
+/-- An explicit occurrence substitution for a rule metavariable. Child paths
+use ordered constructor/collection indices, zero for a binder body, and
+zero/one for an explicit substitution's body/replacement. A collection rest
+has the child index immediately after its explicit elements. Arguments are
+object terms in the occurrence's context, in declared dependency order. -/
+structure MetavariableOccurrence where
+  name : String
+  site : RulePatternSite
+  path : List Nat
+  arguments : List Pattern
+deriving Repr, DecidableEq
+
+/-- Rule-local dependency contexts. The result types remain in the rule's
+existing `typeContext`; these entries add only the sorts of permitted bound
+dependencies. Ambient object variables are separate from these dependencies.
+An omitted occurrence substitution is inferable only for an empty dependency
+context. Constructor binders still come from the original grammar. -/
+structure RuleBindingSpec where
+  dependencies : List (String × List TypeExpr)
+  occurrences : List MetavariableOccurrence := []
+deriving Repr, DecidableEq
+
 /-- An equation defines bidirectional equality -/
 structure Equation where
   name : String
@@ -732,6 +862,7 @@ structure Equation where
   premises : List Premise
   left : Pattern
   right : Pattern
+  bindings : Option RuleBindingSpec := none
 deriving Repr
 
 /-! ## Rewrite Rules -/
@@ -743,6 +874,7 @@ structure RewriteRule where
   premises : List Premise
   left : Pattern
   right : Pattern
+  bindings : Option RuleBindingSpec := none
 deriving Repr
 
 /-! ## Declarative reflective substitution -/
@@ -754,6 +886,10 @@ compile paper-style name equality and reflective substitution.  Input and
 output constructors are deliberately absent: they belong to a particular
 process syntax, while canonical matching and substitution also apply to
 derived presentations whose interaction constructors have been retyped.
+The pair `parallelCollection`/`parallelUnitConstructor` is also why a bare
+`CollType` is insufficient to infer monoidal equations: the collection tag
+supplies the immediate payload discipline, while this declaration selects the
+operator whose nested occurrences flatten and the term acting as its unit.
 The `quoteDropEquation` field links the compiler to an equation already
 authored in the same `LanguageDef`; it does not silently add an equation. -/
 structure ReflectivePresentationDecl where
@@ -965,9 +1101,8 @@ namespace LanguageDef
 def empty (name : String) : LanguageDef :=
   { name, types := [], terms := [], equations := [], rewrites := [] }
 
-/-- Construct the original operational core while leaving every optional
-    extension at its declared default.  Keeping this wrapper stable prevents
-    additions to `LanguageDef` from shifting generated positional arguments. -/
+/-- Construct the five-field language definition. Dependent capability
+    extensions are separate values, not optional fields of this core. -/
 def ofCore
     (name : String)
     (types : List TypeDecl)
@@ -979,6 +1114,28 @@ def ofCore
     terms
     equations
     rewrites }
+
+/-- Whether some authored constructor parameter mentions a collection of the
+    given kind.  A presentation that never declares a bag or set carries none
+    of the tag-derived laws. -/
+def usesCollection (lang : LanguageDef) (kind : CollType) : Bool :=
+  lang.terms.any fun rule => rule.params.any fun parameter =>
+    (TermParam.typeExpr parameter).mentionsCollection kind
+
+/-- Whether any authored constructor carries a collection-algebra
+    declaration. -/
+def hasAlgebraDeclarations (lang : LanguageDef) : Bool :=
+  lang.terms.any fun rule => rule.algebra?.isSome
+
+/-- A presentation generates no static equations: no authored equations, no
+    bag or set collections, and no collection-algebra declarations.  Binder
+    alpha-equivalence is already canonicalized at the semantic carrier
+    boundary and therefore is not an additional generated equation.  This is
+    the exact condition under which the generated equation theory is
+    syntactic equality. -/
+def isEquationFree (lang : LanguageDef) : Bool :=
+  lang.equations.isEmpty && !lang.usesCollection .hashBag &&
+    !lang.usesCollection .hashSet && !lang.hasAlgebraDeclarations
 
 def addType (lang : LanguageDef) (typeName : String) : LanguageDef :=
   { lang with types := lang.types ++ [TypeDecl.plain typeName] }
@@ -1108,6 +1265,7 @@ def freeFvarNames : Pattern → List String
   | .subst body replacement => freeFvarNames body ++ freeFvarNames replacement
   | .collection _ elems rest =>
       elems.flatMap freeFvarNames ++ rest.toList
+decreasing_by all_goals sizeOf_pattern_dec
 
 mutual
 
@@ -1183,6 +1341,173 @@ def hasCanonicalBinderMetadataList : List Pattern → Bool
 
 end
 
+/-! ## Generic alpha quotient
+
+`Pattern` retains binder display names for source-preserving diagnostics, but
+those names are not part of object-language binding.  The generic semantic
+boundary erases them once; de Bruijn indices continue to carry all binding
+information.  Thus alpha-equivalence is equality after this erasure, and the
+canonical locally nameless carrier is a section of the resulting quotient.
+-/
+
+/-- Erase source-only binder display names while preserving the complete term
+shape and every de Bruijn index. -/
+def eraseBinderMetadata : Pattern → Pattern
+  | .bvar index => .bvar index
+  | .fvar name => .fvar name
+  | .apply constructor arguments =>
+      .apply constructor (arguments.map eraseBinderMetadata)
+  | .lambda _ body => .lambda none body.eraseBinderMetadata
+  | .multiLambda arity _ body =>
+      .multiLambda arity [] body.eraseBinderMetadata
+  | .subst body replacement =>
+      .subst body.eraseBinderMetadata replacement.eraseBinderMetadata
+  | .collection kind elements rest =>
+      .collection kind (elements.map eraseBinderMetadata) rest
+decreasing_by all_goals sizeOf_pattern_dec
+
+/-- The Boolean canonical-metadata predicate is pointwise on lists. -/
+theorem hasCanonicalBinderMetadataList_eq_true_iff (patterns : List Pattern) :
+    hasCanonicalBinderMetadataList patterns = true ↔
+      ∀ pattern ∈ patterns, pattern.hasCanonicalBinderMetadata = true := by
+  induction patterns with
+  | nil => simp [hasCanonicalBinderMetadataList]
+  | cons pattern patterns inductionHypothesis =>
+      simp [hasCanonicalBinderMetadataList, inductionHypothesis,
+        or_imp, forall_and]
+
+/-- Erasure always lands in the canonical locally nameless representation. -/
+theorem eraseBinderMetadata_hasCanonicalBinderMetadata (pattern : Pattern) :
+    pattern.eraseBinderMetadata.hasCanonicalBinderMetadata = true := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => simp [eraseBinderMetadata, hasCanonicalBinderMetadata]
+  | hfvar name => simp [eraseBinderMetadata, hasCanonicalBinderMetadata]
+  | happly constructor arguments inductionHypothesis =>
+      simp only [eraseBinderMetadata, hasCanonicalBinderMetadata]
+      rw [hasCanonicalBinderMetadataList_eq_true_iff]
+      intro normalized membership
+      rw [List.mem_map] at membership
+      obtain ⟨argument, argumentMember, rfl⟩ := membership
+      exact inductionHypothesis argument argumentMember
+  | hlambda binder body inductionHypothesis =>
+      simpa [eraseBinderMetadata, hasCanonicalBinderMetadata] using
+        inductionHypothesis
+  | hmultiLambda arity binders body inductionHypothesis =>
+      simpa [eraseBinderMetadata, hasCanonicalBinderMetadata] using
+        inductionHypothesis
+  | hsubst body replacement bodyHypothesis replacementHypothesis =>
+      simp [eraseBinderMetadata, hasCanonicalBinderMetadata,
+        bodyHypothesis, replacementHypothesis]
+  | hcollection kind elements rest inductionHypothesis =>
+      simp only [eraseBinderMetadata, hasCanonicalBinderMetadata]
+      rw [hasCanonicalBinderMetadataList_eq_true_iff]
+      intro normalized membership
+      rw [List.mem_map] at membership
+      obtain ⟨element, elementMember, rfl⟩ := membership
+      exact inductionHypothesis element elementMember
+
+/-- Erasing an already canonical pattern changes nothing. -/
+theorem eraseBinderMetadata_eq_self_of_canonical {pattern : Pattern}
+    (canonical : pattern.hasCanonicalBinderMetadata = true) :
+    pattern.eraseBinderMetadata = pattern := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => simp [eraseBinderMetadata]
+  | hfvar name => simp [eraseBinderMetadata]
+  | happly constructor arguments inductionHypothesis =>
+      simp only [hasCanonicalBinderMetadata] at canonical
+      simp only [eraseBinderMetadata]
+      apply congrArg (Pattern.apply constructor)
+      simpa only [List.map_id, id_eq] using
+        (List.map_congr_left (l := arguments)
+          (f := eraseBinderMetadata) (g := id) (fun argument membership =>
+            inductionHypothesis argument membership
+              ((hasCanonicalBinderMetadataList_eq_true_iff arguments).mp
+                canonical argument membership)))
+  | hlambda binder body inductionHypothesis =>
+      simp only [hasCanonicalBinderMetadata, Bool.and_eq_true,
+        Option.isNone_iff_eq_none] at canonical
+      obtain ⟨rfl, bodyCanonical⟩ := canonical
+      simp [eraseBinderMetadata, inductionHypothesis bodyCanonical]
+  | hmultiLambda arity binders body inductionHypothesis =>
+      simp only [hasCanonicalBinderMetadata, Bool.and_eq_true,
+        List.isEmpty_iff] at canonical
+      obtain ⟨rfl, bodyCanonical⟩ := canonical
+      simp [eraseBinderMetadata, inductionHypothesis bodyCanonical]
+  | hsubst body replacement bodyHypothesis replacementHypothesis =>
+      simp only [hasCanonicalBinderMetadata, Bool.and_eq_true] at canonical
+      simp [eraseBinderMetadata, bodyHypothesis canonical.1,
+        replacementHypothesis canonical.2]
+  | hcollection kind elements rest inductionHypothesis =>
+      simp only [hasCanonicalBinderMetadata] at canonical
+      simp only [eraseBinderMetadata]
+      apply congrArg (fun normalized => Pattern.collection kind normalized rest)
+      simpa only [List.map_id, id_eq] using
+        (List.map_congr_left (l := elements)
+          (f := eraseBinderMetadata) (g := id) (fun element membership =>
+            inductionHypothesis element membership
+              ((hasCanonicalBinderMetadataList_eq_true_iff elements).mp
+                canonical element membership)))
+
+/-- Binder-metadata erasure is a genuine normalization. -/
+@[simp]
+theorem eraseBinderMetadata_idempotent (pattern : Pattern) :
+    pattern.eraseBinderMetadata.eraseBinderMetadata =
+      pattern.eraseBinderMetadata :=
+  eraseBinderMetadata_eq_self_of_canonical
+    (eraseBinderMetadata_hasCanonicalBinderMetadata pattern)
+
+/-- Generic alpha-equivalence on source-preserving patterns. -/
+def AlphaEquiv (left right : Pattern) : Prop :=
+  left.eraseBinderMetadata = right.eraseBinderMetadata
+
+/-- Alpha-equivalence is the setoid presented by binder-metadata erasure. -/
+def alphaSetoid : Setoid Pattern where
+  r := AlphaEquiv
+  iseqv :=
+    { refl := fun _ => rfl
+      symm := fun equality => equality.symm
+      trans := fun first second => first.trans second }
+
+/-- Canonical patterns have no residual alpha quotient: alpha-equivalence is
+literal equality there. -/
+theorem alphaEquiv_iff_eq_of_canonical {left right : Pattern}
+    (leftCanonical : left.hasCanonicalBinderMetadata = true)
+    (rightCanonical : right.hasCanonicalBinderMetadata = true) :
+    AlphaEquiv left right ↔ left = right := by
+  rw [AlphaEquiv,
+    eraseBinderMetadata_eq_self_of_canonical leftCanonical,
+    eraseBinderMetadata_eq_self_of_canonical rightCanonical]
+
+/-- Select the canonical locally nameless representative of an alpha class. -/
+def alphaRepresentative : Quotient alphaSetoid → Pattern :=
+  Quotient.lift eraseBinderMetadata (fun _ _ equivalent => equivalent)
+
+@[simp]
+theorem alphaRepresentative_mk (pattern : Pattern) :
+    alphaRepresentative (Quotient.mk alphaSetoid pattern) =
+      pattern.eraseBinderMetadata :=
+  rfl
+
+/-- The selected representative belongs to the original alpha class. -/
+theorem alphaRepresentative_spec (equivalenceClass : Quotient alphaSetoid) :
+    Quotient.mk alphaSetoid (alphaRepresentative equivalenceClass) =
+      equivalenceClass := by
+  refine Quotient.inductionOn equivalenceClass ?_
+  intro pattern
+  apply Quotient.sound
+  exact eraseBinderMetadata_idempotent pattern
+
+/-- Positive canary: changing a display name does not change binding. -/
+example (body : Pattern) :
+    AlphaEquiv (.lambda (some "x") body) (.lambda (some "y") body) := by
+  simp [AlphaEquiv, eraseBinderMetadata]
+
+/-- Negative canary: erasure does not confuse binder arity. -/
+example :
+    ¬ AlphaEquiv (.lambda (some "x") (.bvar 0))
+        (.multiLambda 1 ["x"] (.bvar 0)) := by
+  simp [AlphaEquiv, eraseBinderMetadata]
+
 end Pattern
 
 namespace Premise
@@ -1191,6 +1516,7 @@ namespace Premise
 def relationRefs : Premise → List String
   | .freshness _ => []
   | .congruence _ _ => []
+  | .scopedStep _ => []
   | .relationQuery rel _ => [rel]
   | .forAll _ _ body => relationRefs body
 
@@ -1199,6 +1525,7 @@ bodies. -/
 def relationCalls : Premise → List (String × Nat)
   | .freshness _ => []
   | .congruence _ _ => []
+  | .scopedStep _ => []
   | .relationQuery relation args => [(relation, args.length)]
   | .forAll _ _ body => relationCalls body
 
@@ -1391,6 +1718,18 @@ theorem baseName_mem_of_validateTypeExpr_eq_nil
   by_contra missing
   simp [missing] at component
 
+/-- Type-expression validation succeeds exactly when every referenced base
+sort is declared. This interface also applies beneath compound types. -/
+theorem validateTypeExpr_eq_nil_iff
+    (knownTypes : List String) (context : String) (ty : TypeExpr) :
+    validateTypeExpr knownTypes context ty = [] ↔
+      ∀ name ∈ ty.baseNames, name ∈ knownTypes := by
+  constructor
+  · intro clean name membership
+    exact baseName_mem_of_validateTypeExpr_eq_nil
+      knownTypes context ty clean membership
+  · exact validateTypeExpr_eq_nil_of_baseNames knownTypes context ty
+
 mutual
 
 private def validateSyntaxPatternOp
@@ -1414,7 +1753,8 @@ private def validateSyntaxPatternOp
       validateSyntaxPatternItems ctx bound inner
 termination_by sizeOf op
 decreasing_by
-  all_goals simp_wf
+  all_goals simp only [SyntaxPatternOp.sep.sizeOf_spec, SyntaxPatternOp.map.sizeOf_spec,
+    SyntaxPatternOp.opt.sizeOf_spec, Option.some.sizeOf_spec]
   all_goals omega
 
 private def validateSyntaxPatternItem
@@ -1430,7 +1770,8 @@ private def validateSyntaxPatternItem
   | .op op => validateSyntaxPatternOp ctx bound op
 termination_by sizeOf item
 decreasing_by
-  all_goals simp_wf
+  all_goals simp only [SyntaxItem.op.sizeOf_spec]
+  all_goals omega
 
 private def validateSyntaxPatternItems
     (ctx : String)
@@ -1443,7 +1784,7 @@ private def validateSyntaxPatternItems
         validateSyntaxPatternItems ctx bound rest
 termination_by sizeOf items
 decreasing_by
-  all_goals simp_wf
+  all_goals simp only [List.cons.sizeOf_spec]
   all_goals omega
 
 end
@@ -1619,18 +1960,41 @@ def patternBinderNames : Pattern → List String
   | .subst a b => patternBinderNames a ++ patternBinderNames b
   | .collection _ elems _ =>
       elems.attach.flatMap (fun ⟨q, _⟩ => patternBinderNames q)
+decreasing_by all_goals sizeOf_pattern_dec
 
 def premisePatterns : Premise → List Pattern
   | .freshness fc => [fc.term]
   | .congruence l r => [l, r]
+  | .scopedStep step => [step.source, step.target]
   | .relationQuery _ args => args
   | .forAll _ _ p => premisePatterns p
+
+/-- Check each premise in its own local binder context. Quantified collection
+parameters are named schema variables and do not add de Bruijn binders. -/
+def premiseLocallyScoped : Premise → Bool
+  | .freshness fc => fc.term.isWellScoped
+  | .congruence source target =>
+      source.isWellScoped && target.isWellScoped
+  | .scopedStep step =>
+      step.source.isWellScopedAt step.binders.length &&
+        step.target.isWellScopedAt step.binders.length
+  | .relationQuery _ args => args.all Pattern.isWellScoped
+  | .forAll _ _ body => premiseLocallyScoped body
+
+/-- All explicit sorts contributed by scoped step premises, including those
+inside collection quantification. -/
+def premiseStepTypeExprs : Premise → List TypeExpr
+  | .freshness _ | .congruence _ _ | .relationQuery _ _ => []
+  | .scopedStep step => step.resultType :: step.binders
+  | .forAll _ _ body => premiseStepTypeExprs body
 
 /-- Free fvars in a premise, respecting the local parameter of `forAll`. -/
 def premiseFvarNames (bound : List String) : Premise → List String
   | .freshness fc => patternFvarNames bound fc.term
   | .congruence left right =>
       patternFvarNames bound left ++ patternFvarNames bound right
+  | .scopedStep step =>
+      patternFvarNames bound step.source ++ patternFvarNames bound step.target
   | .relationQuery _ args => args.flatMap (patternFvarNames bound)
   | .forAll _ param body => premiseFvarNames (param :: bound) body
 
@@ -1641,6 +2005,7 @@ target, and relation queries match their argument patterns against rows. -/
 def premiseProducedFvarNames (bound : List String) : Premise → List String
   | .freshness _ => []
   | .congruence _ target => patternFvarNames bound target
+  | .scopedStep step => patternFvarNames bound step.target
   | .relationQuery _ args => args.flatMap (patternFvarNames bound)
   | .forAll _ _ _ => []
 
@@ -1662,7 +2027,8 @@ def validateRulePatterns
     (left right : Pattern) : List ValidationError :=
   let premPats := premises.flatMap premisePatterns
   let scopeErrors :=
-    if ([left, right] ++ premPats).all Pattern.isWellScoped then
+    if left.isWellScoped && right.isWellScoped &&
+        premises.all premiseLocallyScoped then
       []
     else
       [mkValidationError ctx "rule contains an out-of-scope de Bruijn index"]
@@ -1710,6 +2076,8 @@ def validateEquation (lang : LanguageDef) (equation : Equation) :
   let ctx := s!"equation {equation.name}"
   let ctxTypeErrs := equation.typeContext.flatMap fun (_, type) =>
     validateTypeExpr knownTypes ctx type
+  let premiseTypeErrs := (equation.premises.flatMap premiseStepTypeExprs).flatMap
+    (validateTypeExpr knownTypes (ctx ++ " premise"))
   let lhsCtorErrs :=
     validatePatternConstructors (ctx ++ " lhs") lang.terms equation.left
   let rhsCtorErrs :=
@@ -1719,7 +2087,7 @@ def validateEquation (lang : LanguageDef) (equation : Equation) :
   let wildcardErrs :=
     validateRulePatterns ctx knownConstructors equation.typeContext
       equation.premises equation.left equation.right
-  ctxTypeErrs ++ lhsCtorErrs ++ rhsCtorErrs ++
+  ctxTypeErrs ++ premiseTypeErrs ++ lhsCtorErrs ++ rhsCtorErrs ++
     premiseCtorErrs ++ wildcardErrs
 
 /-- Validation errors contributed by one rewrite rule in a language.  This is
@@ -1732,6 +2100,8 @@ def validateRewrite (lang : LanguageDef) (rewrite : RewriteRule) :
   let ctx := s!"rewrite {rewrite.name}"
   let ctxTypeErrs := rewrite.typeContext.flatMap fun (_, type) =>
     validateTypeExpr knownTypes ctx type
+  let premiseTypeErrs := (rewrite.premises.flatMap premiseStepTypeExprs).flatMap
+    (validateTypeExpr knownTypes (ctx ++ " premise"))
   let lhsCtorErrs :=
     validatePatternConstructors (ctx ++ " lhs") lang.terms rewrite.left
   let rhsCtorErrs :=
@@ -1741,7 +2111,7 @@ def validateRewrite (lang : LanguageDef) (rewrite : RewriteRule) :
   let wildcardErrs :=
     validateRulePatterns ctx knownConstructors rewrite.typeContext
       rewrite.premises rewrite.left rewrite.right
-  ctxTypeErrs ++ lhsCtorErrs ++ rhsCtorErrs ++
+  ctxTypeErrs ++ premiseTypeErrs ++ lhsCtorErrs ++ rhsCtorErrs ++
     premiseCtorErrs ++ wildcardErrs
 
 private def reflectiveConstructorErrors
@@ -2866,6 +3236,10 @@ private def checkPremiseFlow
             let sourceErrors := availabilityErrors ctx "congruence source"
               state.termAvail source.freeFvarNames
             (state.addBindings target.freeFvarNames, sourceErrors)
+        | .scopedStep step =>
+            let sourceErrors := availabilityErrors ctx "step source"
+              state.termAvail step.source.freeFvarNames
+            (state.addBindings step.target.freeFvarNames, sourceErrors)
         | .relationQuery relation args =>
             match modes.lookup? relation args.length with
             | none =>
@@ -2901,6 +3275,54 @@ private def directedRuleFlowErrors
   premiseErrors ++ availabilityErrors ctx "right-hand side"
     finalState.termAvail right.freeFvarNames
 
+private theorem availabilityErrors_eq_nil_of_subset
+    (ctx role : String) (available required : List String)
+    (subset : ∀ name, name ∈ required → name ∈ available) :
+    availabilityErrors ctx role available required = [] := by
+  unfold availabilityErrors missingNames
+  apply List.map_eq_nil_iff.mpr
+  apply List.filter_eq_nil_iff.mpr
+  intro name member
+  have requiredMember := List.mem_eraseDups.mp member
+  simp [subset name requiredMember]
+
+/-- An input-only binary relation premise needs only the variables already
+present in the redex. It adds no output bindings, so the contractum must also
+use only redex variables. This is the local flow law for a declared guard. -/
+private theorem directedRuleFlowErrors_binaryInputGuard
+    (modes : RelationModeTable) (ctx relation : String)
+    (first second left right : Pattern)
+    (mode : modes.lookup? relation 2 = some [.input, .input])
+    (firstBound : ∀ name, name ∈ first.freeFvarNames →
+      name ∈ left.freeFvarNames)
+    (secondBound : ∀ name, name ∈ second.freeFvarNames →
+      name ∈ left.freeFvarNames)
+    (rightBound : ∀ name, name ∈ right.freeFvarNames →
+      name ∈ left.freeFvarNames) :
+    directedRuleFlowErrors modes ctx
+      [.relationQuery relation [first, second]] left right = [] := by
+  have firstAvailable : ∀ name, name ∈ first.freeFvarNames →
+      name ∈ left.freeFvarNames.eraseDups := by
+    intro name member
+    exact List.mem_eraseDups.mpr (firstBound name member)
+  have secondAvailable : ∀ name, name ∈ second.freeFvarNames →
+      name ∈ left.freeFvarNames.eraseDups := by
+    intro name member
+    exact List.mem_eraseDups.mpr (secondBound name member)
+  have rightAvailable : ∀ name, name ∈ right.freeFvarNames →
+      name ∈ left.freeFvarNames.eraseDups := by
+    intro name member
+    exact List.mem_eraseDups.mpr (rightBound name member)
+  simp [directedRuleFlowErrors, checkPremiseFlow, mode,
+    FlowState.addBindings]
+  constructor
+  · exact availabilityErrors_eq_nil_of_subset _ _ _ _ firstAvailable
+  constructor
+  · exact availabilityErrors_eq_nil_of_subset _ _ _ _ secondAvailable
+  · apply availabilityErrors_eq_nil_of_subset
+    intro name member
+    exact List.mem_eraseDups.mpr (rightAvailable name member)
+
 /-- Ordered binding-flow errors for a selected execution profile. Rewrites
 are checked left-to-right; equations are checked in both orientations. -/
 def executionFlowErrors (lang : LanguageDef) (modes : RelationModeTable) :
@@ -2913,6 +3335,33 @@ def executionFlowErrors (lang : LanguageDef) (modes : RelationModeTable) :
       equation.premises equation.left equation.right ++
     directedRuleFlowErrors modes s!"equation {equation.name} (reverse)"
       equation.premises equation.right equation.left)
+
+/-- Adding a binary input-only guard preserves execution-flow admission when
+its arguments and contractum use only variables bound by the redex. The old
+equations and rules retain exactly their previous flow checks. -/
+theorem executionFlowErrors_append_binaryInputGuard
+    (lang : LanguageDef) (modes : RelationModeTable)
+    (rule : RewriteRule) (relation : String) (first second : Pattern)
+    (oldFlow : lang.executionFlowErrors modes = [])
+    (premises : rule.premises = [.relationQuery relation [first, second]])
+    (mode : modes.lookup? relation 2 = some [.input, .input])
+    (firstBound : ∀ name, name ∈ first.freeFvarNames →
+      name ∈ rule.left.freeFvarNames)
+    (secondBound : ∀ name, name ∈ second.freeFvarNames →
+      name ∈ rule.left.freeFvarNames)
+    (rightBound : ∀ name, name ∈ rule.right.freeFvarNames →
+      name ∈ rule.left.freeFvarNames) :
+    ({ lang with rewrites := lang.rewrites ++ [rule] }).executionFlowErrors
+      modes = [] := by
+  have guardFlow := directedRuleFlowErrors_binaryInputGuard modes
+    s!"rewrite {rule.name}" relation first second rule.left rule.right
+    mode firstBound secondBound rightBound
+  rw [← premises] at guardFlow
+  unfold executionFlowErrors at oldFlow ⊢
+  simp only [List.flatMap_append, List.flatMap_cons, List.flatMap_nil,
+    List.append_nil]
+  rw [guardFlow]
+  simpa only [List.append_nil, List.append_assoc] using oldFlow
 
 /-- A premise-free rewrite presentation passes ordered-flow admission when
 every contractum variable already occurs in its redex.  This exposes the
@@ -3034,6 +3483,22 @@ def executionAdmissionErrors (lang : LanguageDef) (modes : RelationModeTable)
   lang.validate ++ relationModeErrors lang modes signatures ++
     lang.executionFlowErrors modes
 
+/-- A single declared execution mode is admitted when its name and arity
+agree with its unique declared relation signature and the structural and
+ordered-flow gates pass. -/
+theorem executionAdmissionErrors_eq_nil_of_single_mode
+    (lang : LanguageDef) (mode : RelationModeDecl)
+    (signature : LogicRelationDecl)
+    (name : mode.relation = signature.name)
+    (arity : mode.args.length = signature.argTypes.length)
+    (valid : lang.validate = [])
+    (flow : lang.executionFlowErrors [mode] = []) :
+    lang.executionAdmissionErrors [mode] [signature] = [] := by
+  unfold executionAdmissionErrors
+  rw [valid, flow]
+  simp [relationModeErrors, duplicateErrors, duplicateErrorsAux,
+    name, arity]
+
 /-- With no external relation modes, structural validity and ordered-flow
 validity are the complete admission obligations. -/
 theorem executionAdmissionErrors_eq_nil_of_emptyModes
@@ -3135,7 +3600,11 @@ def rhoCalc : LanguageDef := {
     -- PPar . ps:HashBag(Proc) |- "{" ps.*sep("|") "}" : Proc
     { label := "PPar", category := "Proc",
       params := [.simple "ps" (TypeExpr.bag TypeExpr.proc)],
-      syntaxPattern := [.terminal "{", .nonTerminal "ps", .separator "|", .terminal "}"] },
+      syntaxPattern := [.terminal "{", .nonTerminal "ps", .separator "|", .terminal "}"],
+      -- Parallel composition is associative (nested bags flatten, a
+      -- singleton bag is its element) with unit `PZero`; commutativity and
+      -- multiplicity already follow from the bag tag.
+      algebra? := some { flatten := true, unit := some "PZero" } },
 
     -- POutput . n:Name, q:Proc |- n "!" "(" q ")" : Proc
     { label := "POutput", category := "Proc",
@@ -3187,6 +3656,7 @@ theorem rhoCalc_validate_eq_nil : rhoCalc.validate = [] := by
     LanguageDef.patternFvarNames, LanguageDef.patternBinderNames,
     LanguageDef.premiseProducedFvarNames, LanguageDef.premisePatterns,
     LanguageDef.premiseFvarNames, LanguageDef.premiseForAllParams,
+    LanguageDef.premiseStepTypeExprs, LanguageDef.premiseLocallyScoped,
     Pattern.constructorRefs, Pattern.constructorRefsList,
     Pattern.freeFvarNames, Pattern.isWellScoped, Pattern.isWellScopedAt,
     Pattern.isWellScopedListAt]
@@ -3224,6 +3694,18 @@ theorem rhoCalc_executionAdmissionErrors_eq_nil :
     LanguageDef.FlowState.addBindings, rhoCalc, rhoCommRewrite,
     rhoParCongRewrite, LanguageDef.duplicateErrors,
     LanguageDef.duplicateErrorsAux, Pattern.freeFvarNames]
+
+/-- The strict rho core has no relation-query premises, so its ordered-flow
+check passes under every supplied mode table. This lets independently
+declared guarded rules extend the same authored core. -/
+theorem rhoCalc_executionFlowErrors_any_modes
+    (modes : RelationModeTable) :
+    rhoCalc.executionFlowErrors modes = [] := by
+  simp [LanguageDef.executionFlowErrors,
+    LanguageDef.directedRuleFlowErrors, LanguageDef.checkPremiseFlow,
+    LanguageDef.availabilityErrors, LanguageDef.missingNames,
+    LanguageDef.FlowState.addBindings, rhoCalc, rhoCommRewrite,
+    rhoParCongRewrite, Pattern.freeFvarNames]
 
 /-! ## Nullary-constructor resolution in authored patterns
 
@@ -3271,6 +3753,10 @@ def Premise.resolveNullary (ls bound : List String) : Premise → Premise
       .freshness { fc with term := fc.term.resolveNullary ls bound }
   | .congruence l r =>
       .congruence (l.resolveNullary ls bound) (r.resolveNullary ls bound)
+  | .scopedStep step =>
+      .scopedStep { step with
+        source := step.source.resolveNullary ls bound
+        target := step.target.resolveNullary ls bound }
   | .relationQuery rel args =>
       .relationQuery rel (Pattern.resolveNullaryList ls bound args)
   | .forAll collection param p =>
@@ -3304,6 +3790,8 @@ def Premise.nullaryClean (ls bound : List String) : Premise → Bool
   | .freshness fc => fc.term.nullaryClean ls bound
   | .congruence left right =>
       left.nullaryClean ls bound && right.nullaryClean ls bound
+  | .scopedStep step =>
+      step.source.nullaryClean ls bound && step.target.nullaryClean ls bound
   | .relationQuery _ args => Pattern.nullaryCleanList ls bound args
   | .forAll _ param body => Premise.nullaryClean ls (param :: bound) body
 
@@ -3381,9 +3869,11 @@ def LanguageDef.nullaryFvarCollisions (lang : LanguageDef) : List String :=
     | .multiLambda _ _ body => patNames bound body
     | .subst a b => patNames bound a ++ patNames bound b
     | .collection _ elems _ => elems.attach.flatMap (fun ⟨p, _⟩ => patNames bound p)
+    decreasing_by all_goals sizeOf_pattern_dec
   let rec premiseNames (bound : List String) : Premise → List String
     | .freshness fc => patNames bound fc.term
     | .congruence left right => patNames bound left ++ patNames bound right
+    | .scopedStep step => patNames bound step.source ++ patNames bound step.target
     | .relationQuery _ args => args.flatMap (patNames bound)
     | .forAll _ param body => premiseNames (param :: bound) body
   ((lang.rewrites.flatMap (fun r =>
@@ -3491,6 +3981,13 @@ theorem Premise.resolveNullary_eq_self_of_clean
       simp [Premise.resolveNullary,
         Pattern.resolveNullary_eq_self_of_clean ls bound left hclean.1,
         Pattern.resolveNullary_eq_self_of_clean ls bound right hclean.2]
+  | scopedStep step =>
+      simp only [Premise.nullaryClean, Bool.and_eq_true] at hclean
+      cases step with
+      | mk binders resultType source target =>
+          simp [Premise.resolveNullary,
+            Pattern.resolveNullary_eq_self_of_clean ls bound source hclean.1,
+            Pattern.resolveNullary_eq_self_of_clean ls bound target hclean.2]
   | relationQuery relation args =>
       simp only [Premise.nullaryClean] at hclean
       simp [Premise.resolveNullary,
@@ -3574,6 +4071,10 @@ theorem Premise.resolveNullary_idem (ls bound : List String) (premise : Premise)
       simp [Premise.resolveNullary, Pattern.resolveNullary_idem]
   | congruence left right =>
       simp [Premise.resolveNullary, Pattern.resolveNullary_idem]
+  | scopedStep step =>
+      cases step with
+      | mk binders resultType source target =>
+          simp [Premise.resolveNullary, Pattern.resolveNullary_idem]
   | relationQuery relation args =>
       simp [Premise.resolveNullary, Pattern.resolveNullaryList_idem]
   | forAll collection param body ih =>
@@ -3689,58 +4190,58 @@ private def wildToy (rw : RewriteRule) : LanguageDef :=
     rewrites := [rw] }
 
 -- (f) free pattern variable colliding with an arity-1 label F = silent wildcard
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "K" []) (.fvar "F"))).validate ≠ [])
 -- unknown nullary applications are not implicitly accepted as data
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "Ghost" []) (.apply "K" []))).validate ≠ [])
 -- declared constructors must be used at their exact grammar arity
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "F" []) (.apply "K" []))).validate ≠ [])
 -- locally nameless schemas cannot contain an out-of-scope de Bruijn index
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.bvar 0) (.apply "K" []))).validate ≠ [])
 -- constructor validation traverses premise patterns as well as endpoints
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.freshness { varName := "x", term := .apply "Ghost" [] }]
     (.apply "F" [.fvar "x"]) (.fvar "x"))).validate ≠ [])
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.congruence (.apply "F" []) (.fvar "x")]
     (.apply "K" []) (.fvar "x"))).validate ≠ [])
 -- (b) binder shadowing a declared label
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.lambda (some "K") (.bvar 0)) (.apply "K" []))).validate ≠ [])
 -- (b-forAll) the second field is the scoped parameter and must be checked
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.forAll "items" "K" (.congruence (.fvar "K") (.fvar "K"))]
     (.apply "K" []) (.apply "K" []))).validate ≠ [])
 -- (d) typeContext colliding with a declared label
-#guard decide ((wildToy (RewriteRule.mk "r" [("K", .base "T")] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [("K", .base "T")] []
     (.apply "K" []) (.apply "K" []))).validate ≠ [])
 -- (dangling) RHS variable bound nowhere
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "K" []) (.fvar "ghost"))).validate ≠ [])
 -- freshness checks do not manufacture bindings for variables in their terms
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.freshness { varName := "v", term := .fvar "ghost" }]
     (.apply "K" []) (.fvar "ghost"))).validate ≠ [])
 -- a `forAll` parameter is local to its body and cannot escape to the RHS
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.forAll "items" "x" (.congruence (.fvar "x") (.fvar "x"))]
     (.apply "K" []) (.fvar "x"))).validate ≠ [])
 -- congruence target matching may introduce a binding used by the RHS
-#guard decide ((wildToy (RewriteRule.mk "r" []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" []
     [.congruence (.fvar "x") (.fvar "y")]
     (.apply "F" [.fvar "x"]) (.fvar "y"))).validate = [])
 -- and a fully-clean rule validates
-#guard decide ((wildToy (RewriteRule.mk "r" [] []
+#guard decide ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "F" [.fvar "x"]) (.fvar "x"))).validate = [])
 
 private def ioRelationModes : RelationModeTable :=
   [{ relation := "rel", args := [.input, .output] }]
 
 private def modeCheckedFlowToy : LanguageDef :=
-  wildToy (RewriteRule.mk "flow" []
+  wildToy (RewriteRule.mk (bindings := none) "flow" []
       [.relationQuery "rel" [.fvar "source", .fvar "target"]]
       (.apply "F" [.fvar "source"]) (.fvar "target"))
 
@@ -3749,7 +4250,7 @@ private def ioRelationSignatures : List LogicRelationDecl :=
 
 private def wrongRelationArityToy : LanguageDef :=
   { modeCheckedFlowToy with
-    rewrites := [RewriteRule.mk "flow" []
+    rewrites := [RewriteRule.mk (bindings := none) "flow" []
       [.relationQuery "rel" [.fvar "source"]]
       (.apply "F" [.fvar "source"]) (.fvar "source")] }
 
@@ -3768,14 +4269,14 @@ private def wrongRelationArityToy : LanguageDef :=
       ioRelationSignatures).isEmpty
 
 private def duplicateRuleNameToy : LanguageDef :=
-  let rule := RewriteRule.mk "duplicate" [] []
+  let rule := RewriteRule.mk (bindings := none) "duplicate" [] []
     (.apply "F" [.fvar "x"]) (.fvar "x")
   { wildToy rule with rewrites := [rule, rule] }
 
 #guard !duplicateRuleNameToy.validate.isEmpty
 
 -- Freshness subjects and collection rests must be actual matcher bindings.
-#guard (wildToy (RewriteRule.mk "flow" []
+#guard (wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.freshness
       { varName := "x"
         term := .collection .hashBag [] (some "rest") }]
@@ -3784,7 +4285,7 @@ private def duplicateRuleNameToy : LanguageDef :=
     (.collection .hashBag [] (some "rest")))).executionFlowErrors [] |>.isEmpty
 
 -- Lambda display names are metadata ignored by matching, not binding evidence.
-#guard !((wildToy (RewriteRule.mk "flow" []
+#guard !((wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.freshness
       { varName := "x"
         term := .collection .hashBag [] (some "rest") }]
@@ -3793,38 +4294,38 @@ private def duplicateRuleNameToy : LanguageDef :=
     (.collection .hashBag [] (some "rest")))).executionFlowErrors []).isEmpty
 
 -- Congruence consumes its source and produces bindings from its target.
-#guard (wildToy (RewriteRule.mk "flow" []
+#guard (wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.congruence (.fvar "source") (.fvar "target")]
     (.apply "F" [.fvar "source"]) (.fvar "target"))).executionFlowErrors [] |>.isEmpty
 
 -- A mode-declared relation can produce a value that a later freshness check
 -- and the RHS consume.
-#guard (wildToy (RewriteRule.mk "flow" []
+#guard (wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.relationQuery "rel" [.fvar "source", .fvar "target"],
      .freshness { varName := "target", term := .fvar "source" }]
     (.apply "F" [.fvar "source"]) (.fvar "target"))).executionFlowErrors
       ioRelationModes |>.isEmpty
 
 -- Freshness consumes no bindings and cannot use names that are wholly absent.
-#guard !((wildToy (RewriteRule.mk "flow" []
+#guard !((wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.freshness { varName := "ghost", term := .fvar "missing" }]
     (.apply "K" []) (.apply "K" []))).executionFlowErrors []).isEmpty
 
 -- Premise order matters: a later relation output cannot justify an earlier
 -- freshness check.
-#guard !((wildToy (RewriteRule.mk "flow" []
+#guard !((wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.freshness { varName := "target", term := .fvar "source" },
      .relationQuery "rel" [.fvar "source", .fvar "target"]]
     (.apply "F" [.fvar "source"]) (.fvar "target"))).executionFlowErrors
       ioRelationModes).isEmpty
 
 -- A congruence source must already be available.
-#guard !((wildToy (RewriteRule.mk "flow" []
+#guard !((wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.congruence (.fvar "source") (.fvar "target")]
     (.apply "K" []) (.fvar "target"))).executionFlowErrors []).isEmpty
 
 -- `forAll` remains an explicit unsupported capability in this flow profile.
-#guard !((wildToy (RewriteRule.mk "flow" []
+#guard !((wildToy (RewriteRule.mk (bindings := none) "flow" []
     [.forAll "items" "x" (.congruence (.fvar "x") (.fvar "x"))]
     (.apply "K" []) (.apply "K" []))).executionFlowErrors []).isEmpty
 
@@ -3837,7 +4338,7 @@ private def asymmetricFlowEquation : Equation :=
 
 -- Equation admission checks both orientations; this mode assignment supports
 -- the forward direction but not the reverse one.
-#guard !(({ wildToy (RewriteRule.mk "noop" [] []
+#guard !(({ wildToy (RewriteRule.mk (bindings := none) "noop" [] []
       (.apply "K" []) (.apply "K" [])) with
     rewrites := []
     equations := [asymmetricFlowEquation] }).executionFlowErrors
@@ -3845,9 +4346,9 @@ private def asymmetricFlowEquation : Equation :=
 
 -- The wrapper is fail-closed but intentionally claims only structural and
 -- ordered-flow admission, not source adequacy.
-#guard ((wildToy (RewriteRule.mk "r" [] []
+#guard ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "F" [.fvar "x"]) (.fvar "x"))).admitExecutionFlow? []).isSome
-#guard ((wildToy (RewriteRule.mk "r" [] []
+#guard ((wildToy (RewriteRule.mk (bindings := none) "r" [] []
     (.apply "K" []) (.fvar "ghost"))).admitExecutionFlow? []).isNone
 
 example : binderToy.resolveNullaryPatterns.resolveNullaryPatterns =

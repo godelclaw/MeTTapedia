@@ -110,7 +110,7 @@ its role is that colour's static role, which a retained endpoint excludes. -/
 
 /-- The exact rho nullary process constructor. -/
 def rhoZeroConstructor :
-    StructuralMorphism.AuthoredConstructor rhoValidatedLanguageDef :=
+    StructuralMorphism.DeclaredConstructor rhoValidatedLanguageDef :=
   ⟨rhoCalc.terms[0], List.getElem_mem (by simp [rhoCalc])⟩
 
 /-- `PZero` is a wrapped-fragment constructor: it is neither interaction
@@ -267,7 +267,7 @@ theorem materialize_category_ne_name
         by_contra notPrincipal
         have role : rhoCIGSLT.declaredCostConstructorRole
             ⟨.base sourceConstructor, declared⟩ = .static .base := by
-          simp [CIGSLT.declaredCostConstructorRole, notPrincipal]
+          simp [CIGSLT.declaredCostConstructorRole, ContinuationDecorationProfile.declaredCostConstructorRole, notPrincipal]
         rcases neutral with equality | ⟨kind, equality⟩ <;>
           rw [role] at equality <;> cases equality
       have category : sourceConstructor.1.category = "Proc" := by
@@ -292,6 +292,9 @@ theorem materialize_category_ne_name
       rw [category]
       cases kind
       · exact (costBaseSortName_ne_apparatus "Name" "signature").symm
+      · exact (costBaseSortName_ne_apparatus "Name" "signature").symm
+      · exact (costBaseSortName_ne_apparatus "Name" "key").symm
+      · exact (costBaseSortName_ne_apparatus "Name" "key").symm
       · exact (costBaseSortName_ne_apparatus "Name" "signature").symm
       · exact (costBaseSortName_ne_wrapped "Name").symm
       · exact (costBaseSortName_ne_apparatus "Name" "token-stack").symm

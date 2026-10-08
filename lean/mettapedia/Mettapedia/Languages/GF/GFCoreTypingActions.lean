@@ -3,7 +3,7 @@ import Mettapedia.Languages.GF.GFCoreNTTDiagnostics
 import Mettapedia.Languages.GF.SemanticKernelDSL
 import Mettapedia.OSLF.Framework.DerivedTyping
 import Mettapedia.OSLF.Framework.ConstructorFibration
-import Mettapedia.OSLF.NativeType.Construction
+import Mettapedia.OSLF.PresheafNativeType.PresheafSemantics
 
 /-!
 # GF Typing Actions + Change-of-Base + Fiber Instantiation
@@ -20,7 +20,7 @@ This module extends the real GFCore NTT diagnostics with:
 3. **Diamond-pullback interaction**: connects OSLF ◇ with the constructor
    fibration change-of-base.
 
-4. **Grothendieck instantiation**: `ConstructorNatType` and `ConstructorNatTypeHom`
+4. **Grothendieck instantiation**: `ConstructorNativeType` and `ConstructorNativeTypeHom`
    for GF with nontrivial linguistic predicates.
 
 ## Why UseN/PassV2 are neutral
@@ -36,7 +36,7 @@ the fiber-level Grothendieck construction instead.
 
 - TinyMLInstance.lean (lines 294-325): pattern for classifyArrow + typingAction
 - ConstructorFibration.lean (lines 99-106, 180-198): change-of-base + rho examples
-- NativeType/Construction.lean (lines 269-360): ConstructorNatType machinery
+- NativeType/Construction.lean (lines 269-360): ConstructorNativeType machinery
 -/
 
 namespace Mettapedia.Languages.GF.GFCoreTypingActions
@@ -49,7 +49,8 @@ open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.Framework.ConstructorFibration
 open Mettapedia.OSLF.Framework.DerivedTyping
 open Mettapedia.OSLF.Framework.TypeSynthesis
-open Mettapedia.OSLF.NativeType
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+open Mettapedia.OSLF.PresheafNativeType
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open CategoryTheory
@@ -79,6 +80,13 @@ abbrev paperLangKR : LanguageDef :=
     gfTypingActionSupportTerms
     [Mettapedia.Languages.GF.SemanticKernelDSL.embedPresentRewrite]
     []
+
+/-- The current GF typing-action presentation is certified equation-free.
+Its semantic predicates therefore use the corresponding specialization of the
+sole generated OSLF. -/
+def paperEquationPredicate (predicate : Pattern → Prop) :
+    EquationPredicate (langGSLT paperLangKR) :=
+  equationPredicateOfEquationFree rfl predicate
 
 abbrev paperNSort : LangSort paperLangKR :=
   LangSort.mk' paperLangKR "N" (by decide)
@@ -140,12 +148,12 @@ theorem passV2_is_neutral :
 
     When `n : (N, φ)`, the typing rule gives `UseN(n) : (CN, φ)` — same
     predicate, no ◇ or □ wrapping. -/
-theorem useN_action_eq_id (φ : Pattern → Prop) :
+theorem useN_action_eq_id (φ : EquationPredicate (langGSLT paperLangKR)) :
     typingAction paperLangKR "S" useNArrow φ = φ := by
   simp [typingAction, useN_is_neutral, roleAction]
 
 /-- PassV2 typing action = identity (neutral). -/
-theorem passV2_action_eq_id (φ : Pattern → Prop) :
+theorem passV2_action_eq_id (φ : EquationPredicate (langGSLT paperLangKR)) :
     typingAction paperLangKR "S" passV2Arrow φ = φ := by
   simp [typingAction, passV2_is_neutral, roleAction]
 
@@ -228,8 +236,11 @@ theorem useN_universalImage_sem (ψ : Pattern → Prop) (q : Pattern) :
     change-of-base: modal reachability at the N fiber factors through
     the UseN constructor crossing to the CN fiber. -/
 theorem useN_diamond_pullback_spec (φ : Pattern → Prop) (p : Pattern) :
-    langDiamond paperLangKR (constructorPullback paperLangKR useNMor φ) p ↔
-    ∃ q, langReduces paperLangKR p q ∧ φ (.apply "UseN" [q]) := by
+    langDiamond paperLangKR
+        (paperEquationPredicate
+          (constructorPullback paperLangKR useNMor φ)) p ↔
+    ∃ q, langSemanticReduces paperLangKR p q ∧
+      φ (.apply "UseN" [q]) := by
   constructor
   · intro h
     rw [langDiamond_spec] at h
@@ -241,8 +252,11 @@ theorem useN_diamond_pullback_spec (φ : Pattern → Prop) (p : Pattern) :
 
 /-- Analogous for PassV2. -/
 theorem passV2_diamond_pullback_spec (φ : Pattern → Prop) (p : Pattern) :
-    langDiamond paperLangKR (constructorPullback paperLangKR passV2Mor φ) p ↔
-    ∃ q, langReduces paperLangKR p q ∧ φ (.apply "PassV2" [q]) := by
+    langDiamond paperLangKR
+        (paperEquationPredicate
+          (constructorPullback paperLangKR passV2Mor φ)) p ↔
+    ∃ q, langSemanticReduces paperLangKR p q ∧
+      φ (.apply "PassV2" [q]) := by
   constructor
   · intro h
     rw [langDiamond_spec] at h
@@ -259,13 +273,13 @@ theorem passV2_diamond_pullback_spec (φ : Pattern → Prop) (p : Pattern) :
 /-- Native type at N sort: the concrete man_N predicate.
     Positive example: this is a linguistically meaningful predicate,
     not just ⊤. -/
-def gf_N_manPred : ConstructorNatType paperLangKR where
+def gf_N_manPred : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperNSort
   pred := fun p => p = .apply "man_N" []
 
 /-- Native type at CN sort: the UseN-image predicate.
     All patterns that are in the image of UseN. -/
-def gf_CN_useNImage : ConstructorNatType paperLangKR where
+def gf_CN_useNImage : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperCNSort
   pred := fun p => ∃ n, p = .apply "UseN" [n]
 
@@ -275,7 +289,7 @@ def gf_CN_useNImage : ConstructorNatType paperLangKR where
     Unfolding: for all p, if p = man_N, then ∃ n, UseN(p) = UseN(n).
     Take n := p. -/
 def gf_useN_manToImage_hom :
-    ConstructorNatTypeHom paperLangKR gf_N_manPred gf_CN_useNImage where
+    ConstructorNativeTypeHom paperLangKR gf_N_manPred gf_CN_useNImage where
   sortMap := useNMor
   predLe := by
     intro p hp
@@ -283,36 +297,36 @@ def gf_useN_manToImage_hom :
     exact ⟨p, rfl⟩
 
 /-- Top-typed native type at N sort (for comparison). -/
-def gf_N_top : ConstructorNatType paperLangKR where
+def gf_N_top : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperNSort
   pred := fun _ => True
 
 /-- Top-typed native type at CN sort (for comparison). -/
-def gf_CN_top : ConstructorNatType paperLangKR where
+def gf_CN_top : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperCNSort
   pred := fun _ => True
 
 /-- UseN morphism at the top level (trivial predLe). -/
 def gf_useN_top_hom :
-    ConstructorNatTypeHom paperLangKR gf_N_top gf_CN_top where
+    ConstructorNativeTypeHom paperLangKR gf_N_top gf_CN_top where
   sortMap := useNMor
   predLe := by
     intro _ _
     trivial
 
 /-- Top-typed native type at V2 sort. -/
-def gf_V2_top : ConstructorNatType paperLangKR where
+def gf_V2_top : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperV2Sort
   pred := fun _ => True
 
 /-- Top-typed native type at VP sort. -/
-def gf_VP_top : ConstructorNatType paperLangKR where
+def gf_VP_top : ConstructorNativeType paperLangKR where
   sort := ConstructorObj.mk paperVPSort
   pred := fun _ => True
 
 /-- PassV2 morphism at top level. -/
 def gf_passV2_top_hom :
-    ConstructorNatTypeHom paperLangKR gf_V2_top gf_VP_top where
+    ConstructorNativeTypeHom paperLangKR gf_V2_top gf_VP_top where
   sortMap := passV2Mor
   predLe := by
     intro _ _
@@ -320,13 +334,13 @@ def gf_passV2_top_hom :
 
 /-- Identity morphism for the man_N native type (sanity check). -/
 def gf_N_manPred_id :
-    ConstructorNatTypeHom paperLangKR gf_N_manPred gf_N_manPred :=
-  ConstructorNatTypeHom.id paperLangKR gf_N_manPred
+    ConstructorNativeTypeHom paperLangKR gf_N_manPred gf_N_manPred :=
+  ConstructorNativeTypeHom.id paperLangKR gf_N_manPred
 
 /-- Weakening morphism: UseN-image → top at CN.
     Any pattern in the UseN-image is trivially in ⊤. -/
 def gf_useNImage_to_top :
-    ConstructorNatTypeHom paperLangKR gf_CN_useNImage gf_CN_top where
+    ConstructorNativeTypeHom paperLangKR gf_CN_useNImage gf_CN_top where
   sortMap := SortPath.nil
   predLe := by
     intro _ _
@@ -336,8 +350,8 @@ def gf_useNImage_to_top :
 /-- Composition: man_N → UseN-image → top at CN.
     Demonstrates that the Grothendieck composition works on GF types. -/
 def gf_manToImage_top_comp :
-    ConstructorNatTypeHom paperLangKR gf_N_manPred gf_CN_top :=
-  ConstructorNatTypeHom.comp paperLangKR gf_useN_manToImage_hom gf_useNImage_to_top
+    ConstructorNativeTypeHom paperLangKR gf_N_manPred gf_CN_top :=
+  ConstructorNativeTypeHom.comp paperLangKR gf_useN_manToImage_hom gf_useNImage_to_top
 
 -- ═══════════════════════════════════════════════════════════════════
 -- Section 6: Concrete witnesses connecting GF linguistics to NTT
@@ -417,7 +431,8 @@ theorem embedS_is_quoting :
     This recovers the de re reading: "the fact that John sees Anna"
     carries the diamond modality because the embedded sentence could
     reduce (e.g., via active→passive: "the fact that Anna is seen by John"). -/
-theorem embedS_action_eq_diamond (φ : Pattern → Prop) :
+theorem embedS_action_eq_diamond
+    (φ : EquationPredicate (langGSLT paperLangKR)) :
     typingAction paperLangKR "S" embedSArrow φ = langDiamond paperLangKR φ := by
   simp [typingAction, embedS_is_quoting, roleAction]
 
@@ -473,8 +488,11 @@ def embedSPresentPattern : Pattern :=
 /-- Diamond-pullback factoring for EmbedS: "can the quotation reduce?"
     factors through the quoting arrow's change-of-base. -/
 theorem embedS_diamond_pullback_spec (φ : Pattern → Prop) (s : Pattern) :
-    langDiamond paperLangKR (constructorPullback paperLangKR embedSMor φ) s ↔
-    ∃ q, langReduces paperLangKR s q ∧ φ (.apply "EmbedS" [q]) := by
+    langDiamond paperLangKR
+        (paperEquationPredicate
+          (constructorPullback paperLangKR embedSMor φ)) s ↔
+    ∃ q, langSemanticReduces paperLangKR s q ∧
+      φ (.apply "EmbedS" [q]) := by
   constructor
   · intro h
     rw [langDiamond_spec] at h

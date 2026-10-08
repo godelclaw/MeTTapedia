@@ -34,8 +34,13 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.Framework.TypeSynthesis
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
+
+private def wmCoreEquationPredicate (predicate : Pattern → Prop) :
+    EquationPredicate (langGSLT wmCoreLanguageDef) :=
+  equationPredicateOfEquationFree (by rfl) predicate
 
 /-! ## Section 1: Computable Encoder -/
 
@@ -170,7 +175,9 @@ private theorem wmCoreLangReduces_evidenceAdd (pw₁ pw₂ pq : Pattern) :
   · simp [wmCoreLanguageDef, coreRules]
   · simp [bs, ruleEvidenceAdd, pExtract, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleEvidenceAdd, applyPremisesWithEnv]
-  · simp [bs, ruleEvidenceAdd, pExtract, pCombine, applyBindings]
+  · rw [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_applyBindings
+      _ _ _ (by decide +kernel)]
+    simp [bs, ruleEvidenceAdd, pExtract, pCombine, applyBindings]
 
 private theorem wmCoreLangReduces_revisionComm (pw₁ pw₂ : Pattern) :
     langReduces wmCoreLanguageDef
@@ -185,7 +192,9 @@ private theorem wmCoreLangReduces_revisionComm (pw₁ pw₂ : Pattern) :
   · simp [wmCoreLanguageDef, coreRules]
   · simp [bs, ruleRevisionComm, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionComm, applyPremisesWithEnv]
-  · simp [bs, ruleRevisionComm, pRevise, applyBindings]
+  · rw [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_applyBindings
+      _ _ _ (by decide +kernel)]
+    simp [bs, ruleRevisionComm, pRevise, applyBindings]
 
 private theorem wmCoreLangReduces_revisionAssoc (pw₁ pw₂ pw₃ : Pattern) :
     langReduces wmCoreLanguageDef
@@ -200,7 +209,9 @@ private theorem wmCoreLangReduces_revisionAssoc (pw₁ pw₂ pw₃ : Pattern) :
   · simp [wmCoreLanguageDef, coreRules]
   · simp [bs, ruleRevisionAssoc, pRevise, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleRevisionAssoc, applyPremisesWithEnv]
-  · simp [bs, ruleRevisionAssoc, pRevise, applyBindings]
+  · rw [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_applyBindings
+      _ _ _ (by decide +kernel)]
+    simp [bs, ruleRevisionAssoc, pRevise, applyBindings]
 
 private theorem wmCoreLangReduces_combineComm (pe₁ pe₂ : Pattern) :
     langReduces wmCoreLanguageDef
@@ -215,7 +226,9 @@ private theorem wmCoreLangReduces_combineComm (pe₁ pe₂ : Pattern) :
   · simp [wmCoreLanguageDef, coreRules]
   · simp [bs, ruleCombineComm, pCombine, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleCombineComm, applyPremisesWithEnv]
-  · simp [bs, ruleCombineComm, pCombine, applyBindings]
+  · rw [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_applyBindings
+      _ _ _ (by decide +kernel)]
+    simp [bs, ruleCombineComm, pCombine, applyBindings]
 
 private theorem wmCoreLangReduces_combineZero (pe : Pattern) :
     langReduces wmCoreLanguageDef
@@ -230,7 +243,9 @@ private theorem wmCoreLangReduces_combineZero (pe : Pattern) :
   · simp [wmCoreLanguageDef, coreRules]
   · simp [bs, ruleCombineZero, pCombine, pEvidenceZero, matchPattern, matchArgs, mergeBindings]
   · simp [bs, ruleCombineZero, applyPremisesWithEnv]
-  · simp [bs, ruleCombineZero, applyBindings]
+  · rw [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_applyBindings
+      _ _ _ (by decide +kernel)]
+    simp [bs, ruleCombineZero, applyBindings]
 
 /-- Soundness: every `WMStep` lifts to a `langReduces wmCoreLanguageDef` step. -/
 theorem wmStep_sound {s : WMSort} (t₁ t₂ : WMTerm s) :
@@ -283,7 +298,11 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
   obtain ⟨fuel, bounded⟩ := h
   cases bounded with
   | @rule _ _ _ r bs bs' hr hmatch hprem happly =>
-    simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule] at hmatch
+    simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?] at hmatch
     simp [Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule] at happly
   -- r must be one of the 5 core rules
     simp [wmCoreLanguageDef, coreRules] at hr
@@ -297,6 +316,7 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
           simp [encodeWM, pExtract, pRevise, ruleEvidenceAdd, matchPattern,
                 matchArgs, mergeBindings] at hmatch
           subst hmatch
+          rw [applyRuleBindings_eq_applyBindings _ _ (by decide +kernel)] at happly
           simp [ruleEvidenceAdd, applyBindings, pCombine, pExtract] at happly
           subst happly
           exact ⟨.combine (.extract s₁ tq) (.extract s₂ tq),
@@ -313,6 +333,7 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
         simp [encodeWM, pRevise, ruleRevisionComm, matchPattern,
               matchArgs, mergeBindings] at hmatch
         subst hmatch
+        rw [applyRuleBindings_eq_applyBindings _ _ (by decide +kernel)] at happly
         simp [ruleRevisionComm, applyBindings, pRevise] at happly
         subst happly
         exact ⟨.revise s₂ s₁, .revision_comm s₁ s₂,
@@ -328,6 +349,7 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
           simp [encodeWM, pRevise, ruleRevisionAssoc, matchPattern,
                 matchArgs, mergeBindings] at hmatch
           subst hmatch
+          rw [applyRuleBindings_eq_applyBindings _ _ (by decide +kernel)] at happly
           simp [ruleRevisionAssoc, applyBindings, pRevise] at happly
           subst happly
           exact ⟨.revise s₁ (.revise s₂ t₃), .revision_assoc s₁ s₂ t₃,
@@ -344,6 +366,7 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
         simp [encodeWM, pCombine, ruleCombineComm, matchPattern,
               matchArgs, mergeBindings] at hmatch
         subst hmatch
+        rw [applyRuleBindings_eq_applyBindings _ _ (by decide +kernel)] at happly
         simp [ruleCombineComm, applyBindings, pCombine] at happly
         subst happly
         exact ⟨.combine e₂ e₁, .combine_comm e₁ e₂,
@@ -359,6 +382,7 @@ theorem wmStep_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern) :
           simp [encodeWM, pCombine, pEvidenceZero, ruleCombineZero, matchPattern,
                 matchArgs, mergeBindings] at hmatch
           subst hmatch
+          rw [applyRuleBindings_eq_applyBindings _ _ (by decide +kernel)] at happly
           simp [ruleCombineZero, applyBindings] at happly
           subst happly
           exact ⟨e₁, .combine_zero e₁, by simp [encodeWM, pCombine, pExtract, pRevise, pEvidenceZero]⟩
@@ -387,7 +411,9 @@ theorem wmStepStar_sound {s : WMSort} {t₁ t₂ : WMTerm s}
   unfold WMStepStar at h
   induction h with
   | refl => exact .refl _
-  | tail _ hab ih => exact ih.trans (LangReducesStar.single (wmStep_sound _ _ hab))
+  | tail _ hab ih =>
+      exact ih.trans (LangReducesStar.single
+        (langReduces_to_semantic wmCoreLanguageDef (wmStep_sound _ _ hab)))
 
 /-- Backward: `LangReducesStar` from an encoded term yields an encoded result. -/
 theorem wmStepStar_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern)
@@ -399,7 +425,10 @@ theorem wmStepStar_complete {s : WMSort} (t₁ : WMTerm s) (q : Pattern)
   | refl _ => exact ⟨t₁, .refl, hp⟩
   | step hstep _hstar ih =>
     subst hp
-    obtain ⟨t_mid, hstep_wm, hencode_mid⟩ := wmStep_complete _ _ hstep
+    have hstepRaw : langReduces wmCoreLanguageDef (encodeWM t₁) _ :=
+      (langSemanticReduces_iff_langReduces_of_equation_free
+        (by rfl) _ _).mp hstep
+    obtain ⟨t_mid, hstep_wm, hencode_mid⟩ := wmStep_complete _ _ hstepRaw
     obtain ⟨t₂, hstar_wm, hencode₂⟩ := ih t_mid hencode_mid
     exact ⟨t₂, Relation.ReflTransGen.head hstep_wm hstar_wm, hencode₂⟩
 
@@ -427,31 +456,40 @@ does NOT hold because `ruleCombineZero` can produce Pattern-level predecessors
 `encodeWM` for leaf-sorted terms. The biconditional on image is the correct
 formulation. -/
 
-/-- Single-step biconditional: `WMStep t₁ t₂ ↔ langReduces ... (encodeWM t₁) (encodeWM t₂)`. -/
+/-- Single-step biconditional against the sole equation-respecting semantic
+relation.  Here it agrees with the internal engine step by the
+empty-equations recovery theorem. -/
 theorem wmStep_iff {s : WMSort} (t₁ t₂ : WMTerm s) :
-    WMStep t₁ t₂ ↔ langReduces wmCoreLanguageDef (encodeWM t₁) (encodeWM t₂) := by
+    WMStep t₁ t₂ ↔
+      langSemanticReduces wmCoreLanguageDef (encodeWM t₁) (encodeWM t₂) := by
   constructor
-  · exact wmStep_sound t₁ t₂
   · intro h
-    obtain ⟨t₂', hstep, hencode⟩ := wmStep_complete t₁ _ h
+    exact langReduces_to_semantic wmCoreLanguageDef (wmStep_sound t₁ t₂ h)
+  · intro h
+    have hRaw : langReduces wmCoreLanguageDef (encodeWM t₁) (encodeWM t₂) :=
+      (langSemanticReduces_iff_langReduces_of_equation_free
+        (by rfl) _ _).mp h
+    obtain ⟨t₂', hstep, hencode⟩ := wmStep_complete t₁ _ hRaw
     have := encodeWM_injective hencode
     subst this
     exact hstep
 
 /-- Box soundness: `langBox` implies all WMStep predecessors satisfy φ. -/
 theorem wmBox_sound {s : WMSort} (t : WMTerm s) (φ : Pattern → Prop)
-    (h : langBox wmCoreLanguageDef φ (encodeWM t)) :
+    (h : langBox wmCoreLanguageDef (wmCoreEquationPredicate φ) (encodeWM t)) :
     ∀ t' : WMTerm s, WMStep t' t → φ (encodeWM t') := by
   intro t' hstep
   rw [langBox_spec] at h
-  exact h (encodeWM t') (wmStep_sound t' t hstep)
+  exact h (encodeWM t')
+    (langReduces_to_semantic wmCoreLanguageDef (wmStep_sound t' t hstep))
 
 /-- Diamond completeness: if `WMStep t t'` then `langDiamond φ (encodeWM t)`,
     for any `φ` satisfied by `encodeWM t'`. -/
 theorem wmDiamond_complete {s : WMSort} (t t' : WMTerm s) (φ : Pattern → Prop)
     (hstep : WMStep t t') (hφ : φ (encodeWM t')) :
-    langDiamond wmCoreLanguageDef φ (encodeWM t) := by
+    langDiamond wmCoreLanguageDef (wmCoreEquationPredicate φ) (encodeWM t) := by
   rw [langDiamond_spec]
-  exact ⟨encodeWM t', wmStep_sound t t' hstep, hφ⟩
+  exact ⟨encodeWM t',
+    langReduces_to_semantic wmCoreLanguageDef (wmStep_sound t t' hstep), hφ⟩
 
 end Mettapedia.OSLF.Framework.WMCalculusEncoding

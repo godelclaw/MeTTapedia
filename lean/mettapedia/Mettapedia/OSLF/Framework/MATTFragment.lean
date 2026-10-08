@@ -26,7 +26,7 @@ category of `LanguageDef`s — not the syntactic MTT of Gratzer et al.
 
 | MeTTa layer     | Theory                                      |
 |-----------------|---------------------------------------------|
-| MeTTa-Pure      | DTT / CwF (pure dependent kernel)           |
+| two-sort experiment      | DTT / CwF (pure dependent kernel)           |
 | MeTTa-IL runtime| Operational type theory (PathMap/rewriting) |
 | MeTTa-IL + OSLF | **2-mode indexed hyperdoctrine** (this file)|
 
@@ -35,7 +35,7 @@ category of `LanguageDef`s — not the syntactic MTT of Gratzer et al.
 This file does **NOT** claim:
 - Full 2-category structure with 2-morphisms between mode morphisms (out of scope)
 - Syntactic MTT modal type formers □_μ A, locks, context extension (out of scope)
-- MeTTa-Pure subject reduction (separate work in SubjectReduction.lean)
+- two-sort experiment subject reduction (separate work in SubjectReduction.lean)
 - Full modalization of the pure boundary (pure is isolated, not yet modalized)
 
 ## References
@@ -55,6 +55,7 @@ open Mettapedia.OSLF.Framework.LanguageEqCategory
 open Mettapedia.OSLF.Framework.Mode2Skeleton
 open Mettapedia.OSLF.Framework.ModeTheory
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.MATTProvableNow
 open Mettapedia.OSLF.Framework.ModeMapPredCommutingSquares
 
@@ -80,11 +81,11 @@ structure TwoModeAdjointDocFrag where
                    (f : ModeHom W X) (g : ModeHom X Y) (h : ModeHom Y Z),
                    (f ≫ g) ≫ h = f ≫ (g ≫ h)
   /-- Doctrine: predicate pullback is identity on identity morphisms -/
-  predId       : ∀ (X : ModeObj) (ψ : Pattern → Prop),
+  predId       : ∀ (X : ModeObj) (ψ : ModePred X),
                    ModeHom.mapPred (ModeHom.id (X := X)) ψ = ψ
   /-- Doctrine: predicate pullback is contravariantly functorial -/
   predComp     : ∀ {X Y Z : ModeObj}
-                   (f : ModeHom X Y) (g : ModeHom Y Z) (ψ : Pattern → Prop),
+                   (f : ModeHom X Y) (g : ModeHom Y Z) (ψ : ModePred Z),
                    ModeHom.mapPred (f ≫ g) ψ =
                      ModeHom.mapPred f (ModeHom.mapPred g ψ)
   /-- Modal adjunction: the doctrine's Galois field agrees with the OSLF framework -/
@@ -96,12 +97,14 @@ structure TwoModeAdjointDocFrag where
                      Mettapedia.OSLF.Framework.CategoryBridge.langModalAdjunction L
   /-- Beck-Chevalley: runtime/runtime commuting square -/
   rtRtSquare   : ∀ {L₁ L₂ L₃ : LanguageDef}
-                   (f : Hom L₁ L₂) (g : Hom L₂ L₃) (ψ : Pattern → Prop),
+                   (f : Hom L₁ L₂) (g : Hom L₂ L₃)
+                   (ψ : EquationPredicate (langGSLT L₃)),
                    ModeHom.mapPred (ModeHom.runtimeMap (comp f g)) ψ =
                      mapPred (comp f g) ψ
   /-- Beck-Chevalley: runtime/behavioral commuting square -/
   rtBehSquare  : ∀ {L₁ L₂ L₃ : LanguageDef}
-                   (f : Hom L₁ L₂) (g : Hom L₂ L₃) (ψ : Pattern → Prop),
+                   (f : Hom L₁ L₂) (g : Hom L₂ L₃)
+                   (ψ : EquationPredicate (langGSLT L₃)),
                    ModeHom.mapPred (ModeHom.runtimeToBehavioral (comp f g)) ψ =
                      mapPred (comp f g) ψ
 

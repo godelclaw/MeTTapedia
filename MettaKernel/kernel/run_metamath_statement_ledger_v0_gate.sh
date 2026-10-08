@@ -229,7 +229,7 @@ run_tree_substitution_rejection() {
   local digest="$2"
   local log="$LOGDIR/tree-substitution.rejection.log"
   local expression
-  expression="!(case (fs:read-text \"$source\") ((\$text (case (lib_parse:mm-lex-string \$text) (((Ok \$tokens) (case (lib_parse:mm-parse-database-shared \"$GRAMMAR\" \$tokens) (((Unique \$tree) (case (lib_parse:dag-presentation-candidate (lib_parse:mm-database-grammar) \"$digest\" \$tokens) (((LPInferencePresentation (GPresentation \$constructors \$judgments \$rules)) (case (gparse:inference-dag-proof (lib_parse:mm-database-grammar) \"$digest\" outer_database \$tokens \$tree) (((LPInferenceDagBlocks \$goal \$root \$blocks \$node-count) (case (gic-build-pathmap-index-parts \$constructors \$judgments \$rules) (((GICIndexOK \$space) (metamath-ledger:checked-dag-ledger \$space \"negative/tree-substitution\" \"$digest\" \$tokens (EpsC) \$goal \$root \$blocks \$node-count)) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))"
+  expression="!(case (fs:read-text \"$source\") ((\$text (case (lib_parse:mm-lex-string \$text) (((Ok \$tokens) (case (lib_parse:mm-parse-database-shared \"$GRAMMAR\" \$tokens) (((Unique \$tree) (case (lib_parse:dag-language-candidate (lib_parse:mm-database-grammar) \"$digest\" \$tokens) (((LPInferenceLanguage \$language) (case (gparse:inference-dag-proof (lib_parse:mm-database-grammar) \"$digest\" outer_database \$tokens \$tree) (((LPInferenceDagBlocks \$goal \$root \$blocks \$node-count) (case (gic-build-pathmap-index \$language) (((GICIndexOK \$space) (metamath-ledger:checked-dag-ledger \$space \"negative/tree-substitution\" \"$digest\" \$tokens (EpsC) \$goal \$root \$blocks \$node-count)) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))) (\$error \$error)))"
   if ! (
     cd "$ROOT"
     "$CETTA" --lang he --profile he-prime --import-mode ancestor-walk \
@@ -478,6 +478,7 @@ if ! git -C "$AIHUB/Mettapedia" diff --check -- \
     MettaKernel/kernel/run_metamath_statement_ledger_v0_gate.sh \
     lean/mettapedia/Mettapedia/Languages/Metamath/SourceGSLT.lean \
     lean/mettapedia/Mettapedia/Languages/Metamath/SourceGSLTMeTTaExport.lean \
+    lean/mettapedia/Mettapedia/Languages/Metamath/SourceGSLTParserDefinition.lean \
     lean/mettapedia/Mettapedia/Languages/Metamath/SourceGSLTParserExport.lean \
     lean/mettapedia/Mettapedia/Languages/Metamath/VerifiedCheckerSemantics.lean \
     lean/mettapedia/Mettapedia/Languages/Metamath/SourceGSLTCheckerAlignment.lean \
@@ -496,6 +497,7 @@ fi
 if rg -n '\bsorry\b|\badmit\b|_wanted\b|\bnative_decide\b|^\s*axiom\b' \
     "$LEAN_ROOT/Mettapedia/Languages/Metamath/SourceGSLT.lean" \
     "$LEAN_ROOT/Mettapedia/Languages/Metamath/SourceGSLTMeTTaExport.lean" \
+    "$LEAN_ROOT/Mettapedia/Languages/Metamath/SourceGSLTParserDefinition.lean" \
     "$LEAN_ROOT/Mettapedia/Languages/Metamath/SourceGSLTParserExport.lean" \
     "$LEAN_ROOT/Mettapedia/Languages/Metamath/VerifiedCheckerSemantics.lean" \
     "$LEAN_ROOT/Mettapedia/Languages/Metamath/SourceGSLTCheckerAlignment.lean" \

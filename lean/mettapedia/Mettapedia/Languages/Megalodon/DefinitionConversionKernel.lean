@@ -12,7 +12,7 @@ the exact type signature used by the existing checked-environment kernel and
 requires the synthesized and declared propositions to have a witnessed common
 reduct.
 
-The conversion presentation covers the beta, delta, and eta steps needed by
+The conversion definition covers the beta, delta, and eta steps needed by
 real Megalodon definition-bearing documents.  Eta reuses the already-admitted
 term-shift judgment: shifting the proposed reduct by one reconstructs the
 function beneath the lambda, which is proof-relevant evidence that the bound
@@ -493,11 +493,17 @@ private def fullConvertRule : RuleSchema :=
         [m "primitives", m "declarations", m "known"])
       (m "typeDepth") (m "termContext") (m "proofContext") (m "target"))
 
+/-- A proof-lambda hypothesis has ordinary type `Prop`, even though the
+general proposition representative also supports prefix type quantification.
+The extra typing premise matches the native `PLam` check. -/
 private def fullImpIntroRule : RuleSchema :=
   rule "megalodon-def-proof-imp-intro"
     ["primitives", "declarations", "signature", "known", "typeDepth",
       "termContext", "proofContext", "sourceDomain", "domain", "codomain"]
-    [ propositionRepresentative
+    [ EnvironmentKernel.baseHasType
+        (m "signature") (m "typeDepth") (m "termContext")
+        (m "sourceDomain") (a "MTpProp"),
+      propositionRepresentative
         (m "declarations") (m "signature") (m "typeDepth")
         (m "termContext") (m "sourceDomain") (m "domain"),
       fullProves
@@ -637,14 +643,12 @@ def definition : CalculusLanguageDef :=
       { judgmentHead := "MDefinitionConverts"
         version := "megalodon-beta-delta-eta-v1" } }
 
-def presentation : Presentation := definition.toNested
-
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 5000000 in
-theorem presentation_valid : presentation.isValidV2 = true := by
-  have hvalidate : presentation.language.validate = [] := by
+theorem definition_valid : definition.isValid = true := by
+  have hvalidate : definition.toLanguageDef.validate = [] := by
     apply LanguageDef.validate_eq_nil_of_constructorOnly <;>
-      simp [presentation, definition, additionalConstructors,
+      simp [definition, definition, additionalConstructors,
         definitionParameterName, identityDefinitionName,
         EnvironmentKernel.definition, EnvironmentKernel.additionalConstructors,
         MathdataKernel.polymorphicReuseName,
@@ -656,20 +660,20 @@ theorem presentation_valid : presentation.isValidV2 = true := by
         TermQuantifiedKernel.expressionConstructor,
         LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
         TypeExpr.baseNames]
-  unfold Presentation.isValidV2 Presentation.isValidV1
+  unfold CalculusLanguageDef.isValid CalculusLanguageDef.hasValidLocalRules
   rw [hvalidate]
   simp (config := { maxSteps := 5000000, decide := true })
-    [ presentation, definition, additionalConstructors,
+    [ definition, definition, additionalConstructors,
       definitionParameterName, identityDefinitionName,
       additionalJudgments, additionalRules,
-      Presentation.ruleIds, Presentation.judgmentSignatureValid,
-      Presentation.judgmentHeads, Presentation.conversionDeclarationValid,
-      Presentation.lookupJudgment?, RuleSchema.isValidIn,
-      RuleSchema.isValidV1, RuleSchema.metavariableNames,
+      CalculusLanguageDef.ruleIds, CalculusLanguageDef.judgmentSignatureValid,
+      CalculusLanguageDef.judgmentHeads, CalculusLanguageDef.conversionDeclarationValid,
+      CalculusLanguageDef.lookupJudgment?, RuleSchema.isValidIn,
+      RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
       RuleSchema.occurrences, RuleSchema.patterns,
       patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
       patternHasNoCollectionRest, patternsHaveNoCollectionRest,
-      Presentation.judgmentSchemaValid, fixedConstructorsValid,
+      CalculusLanguageDef.judgmentSchemaValid, fixedConstructorsValid,
       fixedConstructorListsValid, languageHasConstructorArity,
       Pattern.isWellScoped, Pattern.isWellScopedAt,
       Pattern.isWellScopedListAt, Pattern.hasCanonicalBinderMetadata,
@@ -762,115 +766,115 @@ theorem presentation_valid : presentation.isValidV2 = true := by
       TermQuantifiedKernel.proves, TermQuantifiedKernel.a,
       TermQuantifiedKernel.m, List.eraseDups, List.eraseDupsBy]
 
-def validated : ValidatedPresentation := ⟨presentation, presentation_valid⟩
+def validated : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
 
 @[simp] private theorem lookup_projectNilRule :
-    presentation.lookupRule? (ruleId "megalodon-def-project-nil") =
+    definition.lookupRule? (ruleId "megalodon-def-project-nil") =
       some projectNilRule := by
   rfl
 
 @[simp] private theorem lookup_projectParameterRule :
-    presentation.lookupRule? (ruleId "megalodon-def-project-parameter") =
+    definition.lookupRule? (ruleId "megalodon-def-project-parameter") =
       some projectParameterRule := by
   rfl
 
 @[simp] private theorem lookup_projectDefinitionRule :
-    presentation.lookupRule? (ruleId "megalodon-def-project-definition") =
+    definition.lookupRule? (ruleId "megalodon-def-project-definition") =
       some projectDefinitionRule := by
   rfl
 
 @[simp] private theorem lookup_definitionHereRule :
-    presentation.lookupRule? (ruleId "megalodon-def-member-here") =
+    definition.lookupRule? (ruleId "megalodon-def-member-here") =
       some definitionHereRule := by
   rfl
 
 @[simp] private theorem lookup_reduceDeltaRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-delta") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-delta") =
       some reduceDeltaRule := by
   rfl
 
 @[simp] private theorem lookup_reduceBetaRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-beta") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-beta") =
       some reduceBetaRule := by
   rfl
 
 @[simp] private theorem lookup_reduceEtaRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-eta") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-eta") =
       some reduceEtaRule := by
   rfl
 
 @[simp] private theorem lookup_reduceAppFunctionRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-app-function") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-app-function") =
       some reduceAppFunctionRule := by
   rfl
 
 @[simp] private theorem lookup_reduceImpDomainRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-imp-domain") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-imp-domain") =
       some reduceImpDomainRule := by
   rfl
 
 @[simp] private theorem lookup_reduceImpCodomainRule :
-    presentation.lookupRule? (ruleId "megalodon-def-reduce-imp-codomain") =
+    definition.lookupRule? (ruleId "megalodon-def-reduce-imp-codomain") =
       some reduceImpCodomainRule := by
   rfl
 
 @[simp] private theorem lookup_pathReflRule :
-    presentation.lookupRule? (ruleId "megalodon-def-path-refl") =
+    definition.lookupRule? (ruleId "megalodon-def-path-refl") =
       some pathReflRule := by
   rfl
 
 @[simp] private theorem lookup_pathStepRule :
-    presentation.lookupRule? (ruleId "megalodon-def-path-step") =
+    definition.lookupRule? (ruleId "megalodon-def-path-step") =
       some pathStepRule := by
   rfl
 
 @[simp] private theorem lookup_conversionCommonRule :
-    presentation.lookupRule? (ruleId "megalodon-def-conversion-common") =
+    definition.lookupRule? (ruleId "megalodon-def-conversion-common") =
       some conversionCommonRule := by
   rfl
 
 @[simp] private theorem lookup_fullProofRule :
-    presentation.lookupRule? (ruleId "megalodon-def-proof") =
+    definition.lookupRule? (ruleId "megalodon-def-proof") =
       some fullProofRule := by
   rfl
 
 @[simp] private theorem lookup_environmentProofBaseRule :
-    presentation.lookupRule? (ruleId "megalodon-env-proof-base") =
+    definition.lookupRule? (ruleId "megalodon-env-proof-base") =
       some EnvironmentKernel.proofBaseRule := by
   rfl
 
 @[simp] private theorem lookup_typeNamedZeroRule :
-    presentation.lookupRule? (ruleId "megalodon-poly-term-named-zero") =
+    definition.lookupRule? (ruleId "megalodon-poly-term-named-zero") =
       some PolymorphicKernel.typeNamedZeroRule := by
   rfl
 
 @[simp] private theorem lookup_typeNamedSuccRule :
-    presentation.lookupRule? (ruleId "megalodon-poly-term-named-succ") =
+    definition.lookupRule? (ruleId "megalodon-poly-term-named-succ") =
       some PolymorphicKernel.typeNamedSuccRule := by
   rfl
 
 @[simp] private theorem lookup_typeAppRule :
-    presentation.lookupRule? (ruleId "megalodon-poly-term-app") =
+    definition.lookupRule? (ruleId "megalodon-poly-term-app") =
       some PolymorphicKernel.typeAppRule := by
   rfl
 
 @[simp] private theorem lookup_proofHypZeroRule :
-    presentation.lookupRule? (ruleId "megalodon-poly-proof-hyp-zero") =
+    definition.lookupRule? (ruleId "megalodon-poly-proof-hyp-zero") =
       some PolymorphicKernel.proofHypZeroRule := by
   rfl
 
 @[simp] private theorem lookup_proofImpIntroRule :
-    presentation.lookupRule? (ruleId "megalodon-poly-proof-imp-intro") =
+    definition.lookupRule? (ruleId "megalodon-poly-proof-imp-intro") =
       some PolymorphicKernel.proofImpIntroRule := by
   rfl
 
 @[simp] private theorem lookup_shiftNamedRule :
-    presentation.lookupRule? (ruleId "megalodon-term-shift-named") =
+    definition.lookupRule? (ruleId "megalodon-term-shift-named") =
       some TermQuantifiedKernel.shiftNamedRule := by
   rfl
 
 @[simp] private theorem lookup_substVarEqualRule :
-    presentation.lookupRule? (ruleId "megalodon-term-subst-var-equal") =
+    definition.lookupRule? (ruleId "megalodon-term-subst-var-equal") =
       some TermQuantifiedKernel.substVarEqualRule := by
   rfl
 
@@ -1119,7 +1123,7 @@ theorem mathdata_accepts_definition_identity :
     MathdataKernel.inferProof, definitionEnvironment, identityProof,
     definitionGoal, definitionDomain, identityDeclaration,
     parameterDeclaration, definitionParameterName, identityDefinitionName,
-    MathdataKernel.checkProposition, MathdataKernel.inferTerm,
+    MathdataKernel.inferTerm,
     MathdataKernel.normalize, MathdataKernel.deltaNormalize,
     MathdataKernel.Tm.normalize, MathdataKernel.Tm.normalizeOne,
     MathdataKernel.Environment.lookupTerm?, MathdataKernel.lookupTermList?,
@@ -1695,21 +1699,21 @@ theorem definition_identity_wrong_goal_rejected :
     TermQuantifiedKernel.a, fullProves, a]
     at goalsEqual
 
-open Mettapedia.GSLT.LanguageDef.InferencePresentationWire
+open Mettapedia.GSLT.LanguageDef.InferenceLanguageWire
 
 set_option maxRecDepth 100000 in
 set_option maxHeartbeats 5000000 in
 /-- Every fixed constructor occurrence in the exact definition article is
 declared by the checker-facing runtime projection. -/
 theorem definition_identity_closed_payload :
-    (RuntimePresentation.ofPresentation presentation).proofPayloadsValid
+    (RuntimeInferenceLanguage.ofDefinition definition).proofPayloadsValid
         definitionIdentityArticle = true := by
   simp (config := { maxSteps := 5000000, decide := true })
-    [ RuntimePresentation.ofPresentation,
-      RuntimePresentation.proofPayloadsValid,
-      RuntimePresentation.proofPayloadListsValid,
-      RuntimePresentation.fixedConstructorListsValid,
-      RuntimePresentation.fixedConstructorsValid,
+    [ RuntimeInferenceLanguage.ofDefinition,
+      RuntimeInferenceLanguage.proofPayloadsValid,
+      RuntimeInferenceLanguage.proofPayloadListsValid,
+      RuntimeInferenceLanguage.fixedConstructorListsValid,
+      RuntimeInferenceLanguage.fixedConstructorsValid,
       definitionIdentityArticle, node, compileProjection,
       environmentIdentityArticle, baseIdentityArticle, baseHypArticle,
       domainTypeArticle, identityTypeArticle, parameterTypeArticle,
@@ -1718,7 +1722,7 @@ theorem definition_identity_closed_payload :
       reduceDefinitionDomainDeltaArticle, deltaIdentityArticle,
       definitionHereArticle, reduceDefinitionDomainBetaArticle,
       betaSubstitutionArticle, betaShiftArticle,
-      presentation, definition, additionalConstructors,
+      definition, definition, additionalConstructors,
       EnvironmentKernel.definition, EnvironmentKernel.additionalConstructors,
       PolymorphicKernel.definition, TermQuantifiedKernel.definition,
       TermQuantifiedKernel.constructors,
@@ -1742,5 +1746,103 @@ theorem definition_identity_direct_and_cogslt :
         identityProof definitionGoal = true ∧
       checkRaw validated definitionIdentityGoal definitionIdentityArticle = true :=
   ⟨mathdata_accepts_definition_identity, definition_identity_article_accepted⟩
+
+/-! ## Prefix formation is not ordinary hypothesis formation -/
+
+namespace FormationBoundary
+
+private def zero : Pattern := a "MNZero"
+private def one : Pattern := a "MNSucc" [zero]
+private def propType : Pattern := a "MTpProp"
+private def emptyTypes : Pattern := a "MTyCtxNil"
+private def emptyProofs : Pattern := a "MPfCtxNil"
+private def emptySignature : Pattern := a "MSigNil"
+private def emptyDeclarations : Pattern := a "MDeclNil"
+private def emptyPrimitives : Pattern := a "MPrimNil"
+private def emptyKnown : Pattern := a "MKnownNil"
+private def emptyEnvironment : Pattern :=
+  a "MFullEnvironment" [emptyPrimitives, emptyDeclarations, emptyKnown]
+
+private def body : Pattern := a "MTmAll" [propType, a "MTmVar" [zero]]
+private def prefixProposition : Pattern := a "MTmTypeAll" [body]
+
+private def bodyTypeArticle : RawProof :=
+  node "megalodon-poly-term-all"
+    [emptySignature, one, emptyTypes, propType, a "MTmVar" [zero]]
+    [ node "megalodon-poly-type-prop" [one],
+      node "megalodon-poly-term-var-zero" [emptySignature, one, emptyTypes, propType] ]
+
+private def prefixFormationArticle : RawProof :=
+  node "megalodon-def-proposition-type-all"
+    [emptyDeclarations, emptySignature, zero, emptyTypes, body, body]
+    [ node "megalodon-def-proposition-plain"
+        [emptyDeclarations, emptySignature, one, emptyTypes, body, body]
+        [ node "megalodon-def-project-nil" [], bodyTypeArticle,
+          node "megalodon-def-path-refl" [emptyDeclarations, body] ] ]
+
+private def prefixHypothesisArticle (continuation : RawProof) : RawProof :=
+  node "megalodon-def-proof-imp-intro"
+    [emptyPrimitives, emptyDeclarations, emptySignature, emptyKnown, zero,
+      emptyTypes, emptyProofs, prefixProposition, prefixProposition, prefixProposition]
+    [prefixFormationArticle, prefixFormationArticle, continuation]
+
+@[simp] private theorem lookup_typeAllRule :
+    definition.lookupRule? (ruleId "megalodon-poly-term-all") =
+      some PolymorphicKernel.typeAllRule := by rfl
+
+@[simp] private theorem lookup_typeVarZeroRule :
+    definition.lookupRule? (ruleId "megalodon-poly-term-var-zero") =
+      some PolymorphicKernel.typeVarZeroRule := by rfl
+
+@[simp] private theorem lookup_plainPropRule :
+    definition.lookupRule? (ruleId "megalodon-poly-type-prop") =
+      some PolymorphicKernel.plainPropRule := by rfl
+
+@[simp] private theorem lookup_propositionPlainRule :
+    definition.lookupRule? (ruleId "megalodon-def-proposition-plain") =
+      some propositionPlainRule := by rfl
+
+@[simp] private theorem lookup_propositionTypeAllRule :
+    definition.lookupRule? (ruleId "megalodon-def-proposition-type-all") =
+      some propositionTypeAllRule := by rfl
+
+@[simp] private theorem lookup_fullImpIntroRule :
+    definition.lookupRule? (ruleId "megalodon-def-proof-imp-intro") =
+      some fullImpIntroRule := by rfl
+
+attribute [local simp] zero one propType emptyTypes emptyProofs emptySignature
+  emptyDeclarations emptyPrimitives emptyKnown emptyEnvironment body prefixProposition
+  bodyTypeArticle prefixFormationArticle prefixHypothesisArticle node
+  propositionPlainRule propositionTypeAllRule fullImpIntroRule
+  PolymorphicKernel.typeAllRule PolymorphicKernel.typeVarZeroRule
+  PolymorphicKernel.plainPropRule projectNilRule pathReflRule
+  projectSignature reductionPath fullProves propositionRepresentative
+  EnvironmentKernel.baseHasType EnvironmentKernel.plainType
+  PolymorphicKernel.plainType PolymorphicKernel.hasType
+  PolymorphicKernel.rule PolymorphicKernel.ruleId PolymorphicKernel.a PolymorphicKernel.m
+  EnvironmentKernel.a rule a m
+  checkRaw checkRawChildren instantiateRule? instantiateSchemas? instantiateSchema?
+  instantiateSchemasAt? instantiateSchemaAt? lookupArgumentAt? validated
+
+/-- The general proposition relation retains legitimate prefix quantification. -/
+theorem prefix_formation_accepted :
+    checkRaw validated
+      (propositionRepresentative emptyDeclarations emptySignature zero emptyTypes
+        prefixProposition prefixProposition) prefixFormationArticle = true := by
+  simp (config := { decide := true })
+
+/-- An accepted prefix-formation proof cannot discharge ordinary hypothesis
+typing, independently of the continuation supplied to implication introduction. -/
+theorem prefix_hypothesis_rejected (continuation : RawProof) :
+    checkRaw validated
+      (fullProves emptyEnvironment zero emptyTypes emptyProofs
+        (a "MTmImp" [prefixProposition, prefixProposition]))
+      (prefixHypothesisArticle continuation) = false := by
+  simp (config := { decide := true })
+
+#print axioms prefix_formation_accepted
+#print axioms prefix_hypothesis_rejected
+
+end FormationBoundary
 
 end Mettapedia.Languages.Megalodon.DefinitionConversionKernel

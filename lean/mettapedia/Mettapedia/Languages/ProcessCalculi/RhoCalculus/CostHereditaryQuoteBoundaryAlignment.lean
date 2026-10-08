@@ -211,6 +211,7 @@ theorem CostRegionBoundaryTrees.getEntry_normal_eq_of_availabilitySuffix
   exact normalized.trans (by
     simp [smallBoundary, largeBoundary, largeTree])
 
+set_option backward.isDefEq.respectTransparency false in
 theorem CostStaticPlanReached.exists_visibleQuoteRootTree
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {payload rootAbstract : Pattern}
@@ -221,10 +222,10 @@ theorem CostStaticPlanReached.exists_visibleQuoteRootTree
       rhoReflectivePresentation.quoteConstructor) :
     ∃ (sealed : List TypeExpr)
         (rootPlan : CostStaticRegionPlan rhoCIGSLT color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT color
+          (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory color
             reached.sourceAvailable)
           reached.sourceAvailable
-          (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color
+          (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color
             reached.sourceAvailable)
           reached.sourceAvailable .hole payload reached.sourceType)
         (_rootStatic : rootPlan.isStaticRoot = true)
@@ -254,10 +255,10 @@ theorem CostStaticPlanReached.exists_visibleQuoteRootTree
     rhoReflectivePresentation.quoteConstructor at quoteRoot
   change ∃ (sealed : List TypeExpr)
       (rootPlan : CostStaticRegionPlan rhoCIGSLT color targetFree
-        (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT color
+        (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory color
           state.sourceAvailable)
         state.sourceAvailable
-        (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color
+        (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color
           state.sourceAvailable)
         state.sourceAvailable .hole payload state.sourceType)
       (_rootStatic : rootPlan.isStaticRoot = true)
@@ -308,6 +309,7 @@ theorem CostStaticPlanReached.exists_visibleQuoteRootTree
     (state.payloadTreeOfWellSorted admission.wellSorted)
     admission.object
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Rebuild an admitted reached bare parallel at its visible `Proc` root.
 
 The reached plan may sit below a contextual binder suffix, but recompiling the
@@ -326,10 +328,10 @@ theorem CostStaticPlanReached.exists_visibleParallelRootTree
       (mapTypeExpr (color.symbols rhoCIGSLT) reached.sourceType)) :
     ∃ (sealed : List TypeExpr)
         (rootPlan : CostStaticRegionPlan rhoCIGSLT color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT color
+          (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory color
             reached.sourceAvailable)
           reached.sourceAvailable
-          (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color
+          (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color
             reached.sourceAvailable)
           reached.sourceAvailable .hole payload reached.sourceType)
         (_rootStatic : rootPlan.isStaticRoot = true)
@@ -361,10 +363,10 @@ theorem CostStaticPlanReached.exists_visibleParallelRootTree
     (mapTypeExpr (color.symbols rhoCIGSLT) state.sourceType) at admissible
   change ∃ (sealed : List TypeExpr)
       (rootPlan : CostStaticRegionPlan rhoCIGSLT color targetFree
-        (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT color
+        (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory color
           state.sourceAvailable)
         state.sourceAvailable
-        (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color
+        (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color
           state.sourceAvailable)
         state.sourceAvailable .hole payload state.sourceType)
       (_rootStatic : rootPlan.isStaticRoot = true)
@@ -1455,7 +1457,7 @@ noncomputable def CostStaticRegionPlan.restrictedCanonicalRestoresTogether
     unfold declaration
     rw [costStaticReflectivePresentationDecl_eq_map]
     simp only [mapReflectivePresentation,
-      CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+      CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
     rw [reflectiveIsQuoteConstructor_mapCostStatic]
     rw [show rhoCIGSLT.reflection.1 = rhoReflectionProfile from rfl]
     simp [ReflectiveContextSupport.isQuoteConstructor, rhoReflectionProfile]
@@ -1482,7 +1484,7 @@ noncomputable def CostStaticRegionPlan.restrictedCanonicalRestoresTogether
       unfold declaration
       rw [costStaticReflectivePresentationDecl_eq_map]
       simp only [mapReflectivePresentation,
-        CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+        CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
       constructor
       · intro recognized
         apply congrArg (color.symbols rhoCIGSLT).constructor
@@ -1623,7 +1625,7 @@ noncomputable def CostStaticRegionPlan.restrictedThickenedCanonicalRestoresToget
     unfold declaration
     rw [costStaticReflectivePresentationDecl_eq_map]
     simp only [mapReflectivePresentation,
-      CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+      CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
     rw [reflectiveIsQuoteConstructor_mapCostStatic]
     rw [show rhoCIGSLT.reflection.1 = rhoReflectionProfile from rfl]
     simp [ReflectiveContextSupport.isQuoteConstructor, rhoReflectionProfile]
@@ -1650,7 +1652,7 @@ noncomputable def CostStaticRegionPlan.restrictedThickenedCanonicalRestoresToget
       unfold declaration
       rw [costStaticReflectivePresentationDecl_eq_map]
       simp only [mapReflectivePresentation,
-        CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+        CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
       constructor
       · intro recognized
         apply congrArg (color.symbols rhoCIGSLT).constructor
@@ -1923,7 +1925,7 @@ noncomputable def CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normali
     unfold declaration
     rw [costStaticReflectivePresentationDecl_eq_map]
     simp only [mapReflectivePresentation,
-      CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+      CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
     rw [reflectiveIsQuoteConstructor_mapCostStatic]
     rw [show rhoCIGSLT.reflection.1 = rhoReflectionProfile from rfl]
     simp [ReflectiveContextSupport.isQuoteConstructor, rhoReflectionProfile]
@@ -1950,7 +1952,7 @@ noncomputable def CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normali
       unfold declaration
       rw [costStaticReflectivePresentationDecl_eq_map]
       simp only [mapReflectivePresentation,
-        CostStaticColor.reflectiveSymbols_toPresentationSymbols]
+        CostStaticColor.reflectiveSymbols_toLanguageDefSymbolMap]
       constructor
       · intro recognized
         apply congrArg (color.symbols rhoCIGSLT).constructor
@@ -1999,6 +2001,7 @@ noncomputable def CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normali
         (largeEnvironment.reify largePlan.abstractPattern)))
   exact canonicalAligned.toRestoresTogether
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A reached authored Quote, interpreted in the enclosing static
 environment, restores to the hereditary normal form of its payload tree. -/
 noncomputable def CostStaticPlanReached.parentQuoteFrame_restoresToPayloadNormal
@@ -2420,7 +2423,7 @@ theorem CostStaticPlanReached.parentCanonicalFrame_atomCovered
           environment)
         rhoReflectivePresentation availableDepth scopeDepth
         (environment.reify reached.plan.abstractPattern)).freeFvarNames := by
-    simpa [CostStaticBinderThinning.freeFvarNames_thickenAmbientBVars,
+    simpa [CostStaticTypeThinning.freeFvarNames_thickenAmbientBVars,
       StructuralMorphism.mapPattern_freeFvarNames] using membership
   have reachedMembership : name ∈
       (environment.reify reached.plan.abstractPattern).freeFvarNames :=
@@ -2453,11 +2456,12 @@ theorem CostStaticPlanReached.parentCanonicalFrame_atomCovered
       (parentNode.reifyTargetFrame environment).freeFvarNames := by
     rw [parentNode.reifyTargetFrame_eq_map_reifiedSourceFrame]
     simpa [reify, CostStaticRegionNode.reifiedSourceFrame,
-      CostStaticBinderThinning.freeFvarNames_thickenAmbientBVars,
+      CostStaticTypeThinning.freeFvarNames_thickenAmbientBVars,
       StructuralMorphism.mapPattern_freeFvarNames] using rootMembership
   exact parentNode.reifyTargetFrame_atomCovered environment name
     targetMembership
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A certified boundary facing an admitted authored Quote reduces the exact
 plan-stop source-alignment obligation to the recursively normalized payload
 pair and the Quote plan's sealed positional forest. -/
@@ -2757,8 +2761,7 @@ noncomputable def boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_
   intro sourceDepth
   unfold ReflectiveContextSupport.RestoresTogether
   intro restorationDepth
-  simp only [mapPattern,
-    CostStaticBinderThinning.thickenAmbientBVars]
+  simp only [mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar]
   have leftName : leftEnvironment.reifyName
       (costRegionBoundaryVariableName
         leftBoundary.stopped.certified.typed.boundary) =
@@ -2794,7 +2797,7 @@ noncomputable def boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_
           (rightEnvironment.reify
             rightReached.plan.abstractPattern)).freeFvarNames := by
       simpa [rightFrame,
-        CostStaticBinderThinning.freeFvarNames_thickenAmbientBVars,
+        CostStaticTypeThinning.freeFvarNames_thickenAmbientBVars,
         StructuralMorphism.mapPattern_freeFvarNames] using
           membership
     have reachedMembership : name ∈
@@ -2831,7 +2834,7 @@ noncomputable def boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_
         (rightNode.reifyTargetFrame rightEnvironment).freeFvarNames := by
       rw [rightNode.reifyTargetFrame_eq_map_reifiedSourceFrame]
       simpa [rightReify, CostStaticRegionNode.reifiedSourceFrame,
-        CostStaticBinderThinning.freeFvarNames_thickenAmbientBVars,
+        CostStaticTypeThinning.freeFvarNames_thickenAmbientBVars,
         StructuralMorphism.mapPattern_freeFvarNames] using
           rootMembership
     exact rightNode.reifyTargetFrame_atomCovered rightEnvironment name

@@ -41,13 +41,13 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryRouteBreadthC
 /-- Collapsed endpoint of the base Quote/Drop cell: the plain free name. -/
 def rhoPairFvarAPlan :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] .hole (.fvar "a") (.base "Name") :=
   .fvar (by
     simp [rhoCutOrderFree, FreeTypeContext.ofList, mapTypeExpr,
-      CostStaticColor.symbols, costBaseStaticSymbols,
-      costBasePresentationSymbols])
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+      costBaseLanguageDefSymbolMap])
 
 theorem rhoPairSourceReflectiveDecl_mem :
     rhoReflectivePresentation.toReflectivePresentationDecl ∈
@@ -56,6 +56,7 @@ theorem rhoPairSourceReflectiveDecl_mem :
     ReflectionExtension.rhoReflectionProfile.presentations
   simp [ReflectionExtension.rhoReflectionProfile]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The base Quote/Drop collapse as a source-language reflective occurrence
 between the two decoration skeletons. -/
 def rhoPairCollapseWitness :
@@ -77,7 +78,8 @@ def rhoPairCollapseWitness :
       CostStaticPlanDecoration.abstractPattern,
       CostStaticPlanDecorationNode.abstractPattern,
       rhoBreadthBaseQuotePreimage, rhoBreadthBaseDropPreimage,
-      costStaticConstructorPreimage, rhoBreadthBaseQuoteDeclared,
+      costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage, rhoBreadthBaseQuoteDeclared,
       rhoBreadthBaseDropDeclared, rhoCalc]
   have rightEq : rhoPairFvarAPlan.decoration.abstractPattern =
       .fvar (costRegionSourceVariableName "a") := by
@@ -145,6 +147,7 @@ def rhoPairQuoteResetLeftReached :
     simp only [CostStaticRegionPlan.abstractPattern,
       CostStaticArgumentPlan.abstractPatterns, OneHoleContext.fill,
       rhoBreadthBaseQuotePreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
       rhoBreadthBaseQuoteDeclared, rhoCalc, List.nil_append]
     rfl
 
@@ -207,6 +210,7 @@ theorem rhoPairQuoteReset_reached_mappedSourceTypes_ne :
   exact (show "Proc" ≠ "Name" by decide)
     (costBaseSortName_injective (TypeExpr.base.inj equality))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The same lawful pair also refutes cancellation of root canonical
 equality through its unequal contexts.  After the complete source-to-static
 map and binder reinsertion, the reached children are still `PDrop a` and
@@ -232,6 +236,7 @@ theorem rhoPairQuoteReset_reached_childCanonical_ne :
           simp [CostStaticRegionPlan.abstractPattern,
             CostStaticArgumentPlan.abstractPatterns,
             rhoBreadthBaseDropPreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
             rhoBreadthBaseDropDeclared, rhoCalc]),
     show rhoPairQuoteResetRightReached.plan.abstractPattern =
       .fvar (costRegionSourceVariableName "a") by
@@ -241,8 +246,8 @@ theorem rhoPairQuoteReset_reached_childCanonical_ne :
       (by rfl) 0,
     rhoPairQuoteResetRightReached.thinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
       (by rfl) 0]
-  simp [mapPattern, CostStaticColor.symbols, costBaseStaticSymbols,
-    costBasePresentationSymbols, costStaticReflectivePresentationDecl,
+  simp [mapPattern, CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+    costBaseLanguageDefSymbolMap, costStaticReflectivePresentationDecl,
     costBaseReflectivePresentationDecl,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeList,

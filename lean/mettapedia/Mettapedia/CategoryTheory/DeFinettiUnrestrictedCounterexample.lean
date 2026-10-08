@@ -17,7 +17,7 @@ import Mathlib.Analysis.SpecificLimits.Basic
 
 namespace Mettapedia.CategoryTheory
 
-open CategoryTheory MeasureTheory Filter
+open _root_.Mettapedia.CategoryTheory MeasureTheory Filter
 open scoped ENNReal
 
 -- ============================================================
@@ -41,7 +41,7 @@ private lemma mixedSeq_prefix_countTrue (n : ℕ) (hn : 1 ≤ n) :
   simp only [Mettapedia.ProbabilityTheory.Exchangeability.countTrue, mixedSeq]
   have : (Finset.univ.filter (fun i : Fin n => ((i : ℕ) == 0) = true)) =
       ({⟨0, by omega⟩} : Finset (Fin n)) := by ext i; simp [Fin.ext_iff, beq_iff_eq]
-  rw [this]; simp
+  exact (congrArg Finset.card this).trans (Finset.card_singleton _)
 
 private lemma mixedSeq_prefix_countFalse (n : ℕ) (hn : 1 ≤ n) :
     Mettapedia.ProbabilityTheory.Exchangeability.countFalse (fun i : Fin n => mixedSeq i) = n - 1 := by

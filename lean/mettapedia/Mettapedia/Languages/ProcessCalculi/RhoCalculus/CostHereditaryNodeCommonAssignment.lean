@@ -1136,6 +1136,7 @@ theorem rho_processPlan_frontier_crossTies
   exact CostStaticAtomKeyCospan.CommonRestorationApex.reindex leftEndpointEq
     rightEndpointEq subplanApex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- A paired authored quotation reached under a foreign declaration has a
 common restoration apex once every strictly smaller argument stop has one.
 The proof coordinates the only root-changing Quote/Drop case through the
@@ -1260,7 +1261,7 @@ noncomputable def rho_quotePlanStops_commonRestorationApex_of_below
         rightView.node.thinning.thickenAmbientBVars depth pattern := by
     simpa only [CostStaticRegionNode.thinning] using congrArg
       (fun targetBound =>
-        (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color targetBound)
+        (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color targetBound)
           |>.thickenAmbientBVars depth pattern)
       (leftView.targetBound_eq_targetBound rightView)
   have argumentsApexWithLeftThinning :=
@@ -1306,7 +1307,7 @@ noncomputable def rho_quotePlanStops_commonRestorationApex_of_below
             targetDeclaration rootDepth
           simpa [CostStaticAtomEnvironment.reify, Pattern.renameFVars,
             canonicalizeByDepths, mapPattern,
-            CostStaticBinderThinning.thickenAmbientBVars,
+            CostStaticTypeThinning.thickenAmbientBVars_fvar,
             CostStaticAtomKeyCospan.reifyLeft,
             CostStaticAtomKeyCospan.reifyRight, targetDeclaration,
             costStaticReflectivePresentationDecl_eq_map] using memberApex)
@@ -1434,7 +1435,6 @@ noncomputable def rho_quotePlanStops_commonRestorationApex_of_below
     leftEnvironment.reify_eq_renameFVars,
     rightEnvironment.reify_eq_renameFVars,
     Pattern.renameFVars, mapPattern,
-    CostStaticBinderThinning.thickenAmbientBVars,
     CostStaticAtomKeyCospan.reifyLeft, CostStaticAtomKeyCospan.reifyRight,
     CostStaticAtomKeyCospan.reifyWith, mapPatternList_eq_map, List.map_map,
     Function.comp_def, costStaticReflectivePresentationDecl_eq_map,

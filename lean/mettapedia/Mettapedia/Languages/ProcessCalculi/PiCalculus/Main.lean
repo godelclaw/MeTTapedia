@@ -1,6 +1,12 @@
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.Syntax
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.StructuralCongruence
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.Reduction
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.AuthoredSemantics
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.AuthoredRFComparison
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.AuthoredControls
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.ReflectionControls
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.StaticEquationFamily
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.PresentationBoundary
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.MultiStep
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.RhoEncoding
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.ForwardSimulation
@@ -11,6 +17,8 @@ import Mettapedia.Languages.ProcessCalculi.PiCalculus.BranchingBisim
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.OpenMapBridgeRegression
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.EncodingMorphism
 import Mettapedia.Languages.ProcessCalculi.PiCalculus.BackwardAdminReflection
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.Bridges.RhoScopedControls
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.Bridges.RhoScopedAllocationRunsControls
 
 /-!
 # π-Calculus Formalization
@@ -21,13 +29,22 @@ Main entry point that re-exports the core π-calculus modules plus open-map brid
 - Syntax: Process syntax and names
 - StructuralCongruence: α-equivalence and ≡ relation
 - Reduction: Operational semantics
+- AuthoredStepReflection / FrontierCompleteness: exact internal execution and complete finite frontiers
+- EquationAdequacy / ObservationBoundary: declared monoid equations and atomic native observations
+- StaticEquationFamily: intrinsic scope and guarded unfolding laws joined with generated parallel laws
 - MultiStep: Reflexive-transitive closure of reduction
 - ForwardSimulation: π→ρ simulation infrastructure
 - WeakBisim / WeakBisimDerived: restricted weak bisimilarity
 - WeakBisimOpenMapBridge / BranchingBisim: generalized open-map bridges
 - OpenMapBridgeRegression: theorem-level bridge regressions
-- RhoEncoding: Encoding π → ρ (Lybech 2022)
+- RhoEncoding: maintained restriction-free comparison and separate derived-extension sketch
+- RhoScopedServers / RhoScopedNamed / RhoScopedAllocation: actual core server and allocator firing blocks
 -/
+
+/-! The older non-RF administrative theorems below concern the explicitly
+derived rho relation. They do not establish core-rho scoped compilation or
+reflection of arbitrary target endpoints. The core replacement blocks are
+available from the scoped bridges above, with their own stated observations. -/
 
 namespace Mettapedia.Languages.ProcessCalculi.PiCalculus
 
@@ -1384,6 +1401,7 @@ theorem userObs_excludes_ns_z_of_encodingFresh
     "ns_z" ∉ N := by
   exact ns_z_notin_obs_of_subset_freeNames (P := P) (N := N) hobs hfresh
 
+set_option backward.isDefEq.respectTransparency false in
 /-- User-observation hygiene corollary for `n_init`. -/
 theorem userObs_excludes_n_init_of_encodingFresh
     {N : Finset String} {P : Process}
@@ -1392,9 +1410,9 @@ theorem userObs_excludes_n_init_of_encodingFresh
     "n_init" ∉ N := by
   exact reserved_notin_obs_of_subset_freeNames
     (P := P) (N := N) (r := "n_init") hobs hfresh (by
-      simp [fullEncodeReservedNames]
-      decide +kernel)
+      simp [fullEncodeReservedNames])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- User-observation hygiene corollary for `v_init`. -/
 theorem userObs_excludes_v_init_of_encodingFresh
     {N : Finset String} {P : Process}
@@ -1403,9 +1421,9 @@ theorem userObs_excludes_v_init_of_encodingFresh
     "v_init" ∉ N := by
   exact reserved_notin_obs_of_subset_freeNames
     (P := P) (N := N) (r := "v_init") hobs hfresh (by
-      simp [fullEncodeReservedNames]
-      decide +kernel)
+      simp [fullEncodeReservedNames])
 
+set_option backward.isDefEq.respectTransparency false in
 /-- User-observation hygiene corollary for `ns_x`. -/
 theorem userObs_excludes_ns_x_of_encodingFresh
     {N : Finset String} {P : Process}
@@ -1414,8 +1432,7 @@ theorem userObs_excludes_ns_x_of_encodingFresh
     "ns_x" ∉ N := by
   exact reserved_notin_obs_of_subset_freeNames
     (P := P) (N := N) (r := "ns_x") hobs hfresh (by
-      simp [fullEncodeReservedNames]
-      decide +kernel)
+      simp [fullEncodeReservedNames])
 
 /-- User-observation hygiene (general reserved-name form):
 under `N ⊆ fn(P)` and `EncodingFresh P`, any reserved full-encode name is
@@ -1429,6 +1446,7 @@ theorem userObs_excludes_reserved_name_of_encodingFresh
   exact reserved_notin_obs_of_subset_freeNames
     (P := P) (N := N) (r := r) hobs hfresh hr
 
+set_option backward.isDefEq.respectTransparency false in
 /-- User-observation hygiene corollary for `ns_seed`. -/
 theorem userObs_excludes_ns_seed_of_encodingFresh
     {N : Finset String} {P : Process}
@@ -1437,8 +1455,7 @@ theorem userObs_excludes_ns_seed_of_encodingFresh
     "ns_seed" ∉ N := by
   exact userObs_excludes_reserved_name_of_encodingFresh
     (P := P) (N := N) (r := "ns_seed") hobs hfresh (by
-      simp [fullEncodeReservedNames]
-      decide +kernel)
+      simp [fullEncodeReservedNames])
 
 /-- Bundled user-observation hygiene result for all concrete reserved
 full-encode names/channels. -/

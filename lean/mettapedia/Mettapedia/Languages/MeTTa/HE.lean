@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Types
 import Mettapedia.Languages.MeTTa.HE.Space
+import Mettapedia.Languages.MeTTa.HE.ModuleSpace
+import Mettapedia.Languages.MeTTa.HE.ModuleInvalidation
 import Mettapedia.Languages.MeTTa.HE.Matching
 import Mettapedia.Languages.MeTTa.HE.TypeCheck
 import Mettapedia.Languages.MeTTa.HE.EvalSpec
@@ -29,6 +31,8 @@ import Mettapedia.Languages.MeTTa.HE.SmallStepContext
 import Mettapedia.Languages.MeTTa.HE.SmallStepMaster
 import Mettapedia.Languages.MeTTa.HE.MatcherBridge
 import Mettapedia.Languages.MeTTa.HE.OutcomeListContracts
+import Mettapedia.Languages.MeTTa.HE.LanguageDefRuleInventory
+import Mettapedia.Languages.MeTTa.HE.NativeGroundFastPath
 
 /-!
 # Hyperon Experimental MeTTa Semantics
@@ -53,7 +57,7 @@ Authoritative Lean 4 formalization of the HE MeTTa evaluation specification.
 - `SyntaxSpec` — Authoritative HE syntax profiles
 - `Conformance` — Derivation-tree conformance witnesses
 - `Properties` — Universal theorems by induction on derivations
-- `DeclarativeSpec` — Unified spec interface (clause forms, examples, audit index)
+- `DeclarativeSpec` — Unified spec interface (rule forms, examples, audit index)
 - `ExecutableBoundary` — Additive implementation-refined top-level HE boundary
 - `LetChainResumption` — Resumable source/body frame refinement for `let`/`chain`
 - `Certification` — Light public entry point for the exported top-level

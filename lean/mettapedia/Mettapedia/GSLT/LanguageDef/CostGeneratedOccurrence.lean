@@ -5,16 +5,52 @@ import Mettapedia.GSLT.LanguageDef.ReflectiveEquationOccurrence
 # Authored origins of generated Cost occurrences
 
 Every ordinary or reflective generator in a Cost language is one of the two
-static images of an authored source declaration.  This module retains that
-origin in `Type` and proves coverage for the proof-relevant occurrence layer.
-Equation and reflection remain distinct until a later semantic normalization
-span evaluates them.
+static images of an authored source declaration, and every presentation-derived
+generator is a law of an authored collection carrier or algebra rule of the
+generated language.  This module retains that origin in `Type` and proves
+coverage for the proof-relevant occurrence layer.  Equation, reflection, and
+derived law remain distinct until a later semantic normalization span
+evaluates them; a derived law has no static colour of its own.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.ConstructorCategory
+
+namespace EquationSemantics.DerivedGeneratorWitness
+
+/-- The declaring collection-carrier or algebra rule of a presentation-derived
+occurrence. -/
+def rule {language : LanguageDef} {left right : Pattern} :
+    DerivedGeneratorWitness language left right → GrammarRule
+  | .bagPerm rule _ _ _ _ _ => rule
+  | .setPerm rule _ _ _ _ _ => rule
+  | .setDedup rule _ _ _ _ => rule
+  | .flatten rule _ _ _ _ _ _ _ _ => rule
+  | .singleton rule _ _ _ _ _ _ => rule
+  | .unitElim rule _ _ _ _ _ _ _ _ => rule
+  | .emptyUnit rule _ _ _ _ _ _ => rule
+
+/-- The declaring rule is authored by the language. -/
+theorem rule_mem {language : LanguageDef} {left right : Pattern} :
+    (witness : DerivedGeneratorWitness language left right) →
+      witness.rule ∈ language.terms
+  | .bagPerm _ _ _ carrier _ _ => carrier.authored
+  | .setPerm _ _ _ carrier _ _ => carrier.authored
+  | .setDedup _ _ _ carrier _ => carrier.authored
+  | .flatten _ _ _ _ _ _ algebra _ _ => algebra.authored
+  | .singleton _ _ _ _ algebra _ _ => algebra.authored
+  | .unitElim _ _ _ _ _ _ algebra _ _ => algebra.authored
+  | .emptyUnit _ _ _ _ algebra _ _ => algebra.authored
+
+end EquationSemantics.DerivedGeneratorWitness
+
+/-- Origin of a presentation-derived occurrence: the declaring carrier or
+algebra rule, authored by the generated Cost language.  Such a law is not the
+static image of a coloured declaration. -/
+structure CostDerivedGeneratorOrigin (source : CIGSLT) (rule : GrammarRule) : Type where
+  membership : rule ∈ source.costWholeLanguage.terms
 
 /-- Exact authored source and colour of one generated Cost equation
 declaration. -/
@@ -45,7 +81,7 @@ theorem nonempty_costEquationDeclarationOrigin_of_mem
     (membership : target ∈ source.costWholeLanguage.equations) :
     Nonempty (CostEquationDeclarationOrigin source target) := by
   have staticMembership : target ∈ source.costStaticEquations := by
-    simpa only [CIGSLT.costWholeLanguage_equations] using membership
+    simpa only [WrappableIGSLT.costWholeLanguage_equations] using membership
   obtain ⟨color, sourceEquation, sourceMembership, target_eq⟩ :=
     (mem_costStaticEquations_iff_exists_source source).1 staticMembership
   exact ⟨⟨color, sourceEquation, sourceMembership, target_eq⟩⟩
@@ -59,7 +95,7 @@ theorem nonempty_costReflectiveDeclarationOrigin_of_mem
     Nonempty (CostReflectiveDeclarationOrigin source target) := by
   have staticMembership : target ∈
       source.costStaticReflectivePresentations := by
-    simpa only [CIGSLT.costWholeReflectionProfile_presentations] using
+    simpa only [WrappableIGSLT.costWholeReflectionProfile_presentations] using
       membership
   obtain ⟨color, sourceDeclaration, sourceMembership, target_eq⟩ :=
     (mem_costStaticReflectivePresentations_iff_exists_source source).1
@@ -71,7 +107,7 @@ instance itself continues to retain orientation, bindings, premise evidence,
 and exact endpoints. -/
 def CostEquationInstanceOrigin (source : CIGSLT)
     {redex contractum : Pattern}
-    (witness : EquationSemantics.AuthoredEquationInstanceWitness
+    (witness : EquationSemantics.DeclaredEquationInstanceWitness
       defaultBasePremises source.costWholeLanguage redex contractum) : Type :=
   match witness with
   | .forward _ equation _ _ _ _ _ =>
@@ -83,7 +119,7 @@ def CostEquationInstanceOrigin (source : CIGSLT)
 declaration origin. -/
 theorem nonempty_costEquationInstanceOrigin
     (source : CIGSLT) {redex contractum : Pattern}
-    (witness : EquationSemantics.AuthoredEquationInstanceWitness
+    (witness : EquationSemantics.DeclaredEquationInstanceWitness
       defaultBasePremises source.costWholeLanguage redex contractum) :
     Nonempty (CostEquationInstanceOrigin source witness) := by
   cases witness with
@@ -105,6 +141,8 @@ def CostAuthoredGeneratorOrigin (source : CIGSLT)
   match witness with
   | .core (.equation _ instanceWitness) =>
       CostEquationInstanceOrigin source instanceWitness
+  | .core (.derived _ lawWitness) =>
+      CostDerivedGeneratorOrigin source lawWitness.rule
   | .reflective _ declaration _ =>
       CostReflectiveDeclarationOrigin source declaration.1
 
@@ -122,26 +160,31 @@ theorem nonempty_costAuthoredGeneratorOrigin
       cases witness with
       | equation context instanceWitness =>
           exact nonempty_costEquationInstanceOrigin source instanceWitness
+      | derived context lawWitness =>
+          exact ⟨⟨lawWitness.rule_mem⟩⟩
   | reflective context declaration representatives =>
       exact nonempty_costReflectiveDeclarationOrigin_of_mem source
         declaration.2
 
-/-- Static colour retained by an authored generated-occurrence origin. -/
+/-- Static colour retained by an authored generated-occurrence origin: the
+colour of the selected declaration, and none for a presentation-derived
+occurrence, which is not the image of a coloured declaration. -/
 def CostAuthoredGeneratorOrigin.color
     {source : CIGSLT} {left right : Pattern}
     {witness : ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness
       source.costWholeReflectionProfile defaultBasePremises
       source.costWholeLanguage left right} :
-    CostAuthoredGeneratorOrigin source witness → CostStaticColor :=
+    CostAuthoredGeneratorOrigin source witness → Option CostStaticColor :=
   match witness with
   | .core (.equation _ instanceWitness) =>
       match instanceWitness with
       | .forward _ _ _ _ _ _ _ => fun origin =>
-          CostEquationDeclarationOrigin.color origin
+          some (CostEquationDeclarationOrigin.color origin)
       | .reverse _ _ _ _ _ _ _ => fun origin =>
-          CostEquationDeclarationOrigin.color origin
+          some (CostEquationDeclarationOrigin.color origin)
+  | .core (.derived _ _) => fun _ => none
   | .reflective _ _ _ => fun origin =>
-      CostReflectiveDeclarationOrigin.color origin
+      some (CostReflectiveDeclarationOrigin.color origin)
 
 /-- A typed generated Cost edge together with its exact proof-relevant
 occurrence and authored two-colour declaration origin.
@@ -192,7 +235,7 @@ theorem nonempty_costTypedGeneratorOccurrence
 namespace CostTypedGeneratorOccurrence
 
 /-- Static colour of the exact generated declaration selected by a typed
-occurrence. -/
+occurrence; none for a presentation-derived occurrence. -/
 def declarationColor
     {source : CIGSLT}
     {targetFree : WellSorted.FreeTypeContext}
@@ -206,7 +249,7 @@ def declarationColor
       source.costWholeLanguage targetFree targetBound (.base targetSort.1)
       left right}
     (occurrence : CostTypedGeneratorOccurrence source generator) :
-    CostStaticColor := occurrence.origin.color
+    Option CostStaticColor := occurrence.origin.color
 
 end CostTypedGeneratorOccurrence
 

@@ -13,7 +13,7 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInterac
 
 /-- The authored rho quotation has exactly one process parameter. -/
 theorem rhoCalc_params_eq_singleton_process_of_label_eq_quote
-    (rule : StructuralMorphism.AuthoredConstructor
+    (rule : StructuralMorphism.DeclaredConstructor
       rhoIGSLT.presentation.presentation)
     (label : rule.1.label = rhoReflectivePresentation.quoteConstructor) :
     rule.1.params = [.simple "p" (.base "Proc")] := by
@@ -34,7 +34,7 @@ theorem rhoCalc_params_eq_singleton_process_of_label_eq_quote
 
 /-- The authored rho Drop has exactly one name parameter. -/
 theorem rhoCalc_params_eq_singleton_name_of_label_eq_drop
-    (rule : StructuralMorphism.AuthoredConstructor
+    (rule : StructuralMorphism.DeclaredConstructor
       rhoIGSLT.presentation.presentation)
     (label : rule.1.label = rhoReflectivePresentation.dropConstructor) :
     rule.1.params = [.simple "n" (.base "Name")] := by
@@ -55,7 +55,7 @@ theorem rhoCalc_params_eq_singleton_name_of_label_eq_drop
 
 /-- The exact authored rho Drop constructor. -/
 def rhoDropConstructor :
-    StructuralMorphism.AuthoredConstructor rhoValidatedLanguageDef :=
+    StructuralMorphism.DeclaredConstructor rhoValidatedLanguageDef :=
   ⟨rhoCalc.terms[1], List.getElem_mem (by simp [rhoCalc])⟩
 
 /-- Drop belongs to the wrapped rho fragment. -/
@@ -485,7 +485,7 @@ def CostStaticPlanReached.quoteArgumentRoute
       · simpa only [rhoCIGSLT.costWholeLanguage_terms] using
           rhoCIGSLT.materializeDeclaredCostConstructor_mem constructor
       · intro targetBare
-        exact notBare (preimage.source_usesBareCollection current targetBare)
+        exact notBare (preimage.usesBareCollection_iff.mp targetBare)
       · rw [preimage.parametersMap]
         apply List.mem_map_of_mem
         rw [paramsShape]
@@ -1362,8 +1362,7 @@ theorem CostStaticPlanReached.parentNameFrame_canonicalizeByAt_depth_independent
     dsimp only [frame]
     simp_rw [environment.reify_eq_renameFVars,
       cospan.reifyWith_eq_renameFVars]
-    simp only [Pattern.renameFVars, mapPattern, mapPatternList_eq_map,
-      CostStaticBinderThinning.thickenAmbientBVars, List.map_map]
+    simp only [Pattern.renameFVars, mapPattern, mapPatternList_eq_map, CostStaticTypeThinning.thickenAmbientBVars_apply, List.map_map]
     rfl
   obtain ⟨sourceBound, targetBound, thinning, sourceAvailable, outer,
       sourceType, plan, skeletonContext, abstractEq⟩ := reached
@@ -1376,16 +1375,14 @@ theorem CostStaticPlanReached.parentNameFrame_canonicalizeByAt_depth_independent
   | bvar sourceIndex lookup correspondence availableScope =>
       simp [frame, CostStaticRegionPlan.abstractPattern,
         Pattern.renameFVars, mapPattern,
-        CostStaticBinderThinning.thickenAmbientBVars, canonicalizeByAt]
+        CostStaticTypeThinning.thickenAmbientBVars_bvar, canonicalizeByAt]
   | fvar lookup =>
       simp [frame, CostStaticRegionPlan.abstractPattern,
-        Pattern.renameFVars, mapPattern,
-        CostStaticBinderThinning.thickenAmbientBVars, canonicalizeByAt]
+        Pattern.renameFVars, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar, canonicalizeByAt]
   | boundaryApplication constructor rendered outsideCurrent certified
       certifies =>
       simp [frame, CostStaticRegionPlan.abstractPattern,
-        Pattern.renameFVars, mapPattern,
-        CostStaticBinderThinning.thickenAmbientBVars, canonicalizeByAt]
+        Pattern.renameFVars, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar, canonicalizeByAt]
   | application constructor rendered current preimage notBare children =>
       by_cases labelEq : preimage.sourceConstructor.1.label =
           rhoReflectivePresentation.quoteConstructor
@@ -1425,8 +1422,7 @@ theorem CostStaticPlanReached.parentNameFrame_canonicalizeByAt_depth_independent
   | boundaryCollection currentRejected oppositeChoice oppositeSelected
       certified certifies =>
       simp [frame, CostStaticRegionPlan.abstractPattern,
-        Pattern.renameFVars, mapPattern,
-        CostStaticBinderThinning.thickenAmbientBVars, canonicalizeByAt]
+        Pattern.renameFVars, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar, canonicalizeByAt]
 
 /-- The parent-cospan keyed frame of a Quote whose process argument exposes a
 unique Drop is exactly the keyed frame of the surviving reached Name. -/
@@ -1502,8 +1498,7 @@ theorem CostStaticPlanReached.parentCanonicalFrame_eq_nameFrame_of_quoteCanonica
     dsimp only [frame]
     simp_rw [environment.reify_eq_renameFVars,
       cospan.reifyWith_eq_renameFVars]
-    simp only [Pattern.renameFVars, mapPattern, mapPatternList_eq_map,
-      CostStaticBinderThinning.thickenAmbientBVars, List.map_map]
+    simp only [Pattern.renameFVars, mapPattern, mapPatternList_eq_map, CostStaticTypeThinning.thickenAmbientBVars_apply, List.map_map]
     rfl
   have reachedNaturality :=
     ParallelFrontier.reached_parentCanonicalFrame_commonReify parentNode
@@ -2247,6 +2242,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_canonicalDrops
   exact CostStaticAtomKeyCospan.CommonRestorationApex.reindex
     leftEndpointEq.symm rightEndpointEq.symm namesApex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Two reached authored Quotes close in their parent semantic cospan when
 their unique process arguments have the same selected-colour canonical form.
 The recursive argument apex is formed at quote depth zero and then lifted
@@ -2559,7 +2555,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_argumentCanonical
     leftArgumentFrame, rightArgumentFrame, canonicalizeByDepths,
     canonicalizeListByDepths, canonicalizeListByDepths_eq_map,
     CostStaticAtomEnvironment.reify, Pattern.renameFVars, mapPattern,
-    CostStaticBinderThinning.thickenAmbientBVars,
+    CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection,
     CostStaticAtomKeyCospan.reifyLeft, CostStaticAtomKeyCospan.reifyRight,
     CostStaticAtomKeyCospan.reifyWith, mapPatternList_eq_map, List.map_map,
     Function.comp_def, costStaticReflectivePresentationDecl_eq_map,

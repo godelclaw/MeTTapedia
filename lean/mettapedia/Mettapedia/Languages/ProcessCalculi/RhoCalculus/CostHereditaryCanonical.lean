@@ -659,7 +659,7 @@ theorem normalizeHereditaryWithInventory_pattern
 equality of two rho hereditary static evaluations.  Both evaluators already
 factor definitionally through their selected canonical frame; this theorem
 records that factorization without exposing either boundary-table index. -/
-def normalizeHereditaryWithInventoryEvaluationBridge
+theorem normalizeHereditaryWithInventoryEvaluationBridge
     {leftColor rightColor : CostStaticColor}
     {targetFree : FreeTypeContext}
     (leftNode : CostStaticRegionNode rhoCIGSLT leftColor targetFree)
@@ -773,7 +773,7 @@ def normalizeHereditaryWithInventoryPackedBridgeOfCommonEquality
 /-- The local rho evaluator factors through a common-restoration atom cospan.
 Unlike the stronger frame bridge, this permits distinct proof-relevant atoms
 whose restored compact values coincide. -/
-def normalizeHereditaryWithInventoryRestorationEvaluationBridge
+theorem normalizeHereditaryWithInventoryRestorationEvaluationBridge
     {leftColor rightColor : CostStaticColor}
     {targetFree : FreeTypeContext}
     (leftNode : CostStaticRegionNode rhoCIGSLT leftColor targetFree)
@@ -998,7 +998,7 @@ theorem semanticCanonicalizedSourceTerm_equationSetoid
         (semanticCanonicalizedSourceTerm node environment)
         (node.reifiedSourceTerm environment) := by
   apply Relation.EqvGen.rel _ _
-  unfold CostStaticSourceTerm.generator
+  unfold ContinuationDecorationProfile.StaticSourceTerm.generator
   apply
     ReflectiveEquationSemantics.ReflectiveEquationContextStep.reflectiveInContext
       .hole (declaration := rhoReflectivePresentation.toReflectivePresentationDecl)
@@ -1149,8 +1149,7 @@ theorem normalizeHereditaryRawWithInventory_quoteDrop_restore
     inventory, reifiedFrame]
   unfold rhoCostStaticActionAt
   rw [canonicalizeByDepths_quote_drop _ rhoReflectivePresentation (by decide)]
-  simp only [canonicalizeByDepths, mapPattern,
-    CostStaticBinderThinning.thickenAmbientBVars]
+  simp only [canonicalizeByDepths, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar]
   rfl
 
 /-- Total-inventory form of the open hereditary Quote/Drop root bridge.  The
@@ -1402,7 +1401,7 @@ theorem canonicalizeReifiedTargetFrame_wrappedParallelTwoDrops
     simp [sourceSemanticPatternKeyAt,
       Mettapedia.GSLT.LanguageDef.CostStaticRegionNode.semanticPatternKeyAt,
       CostStaticAtomEnvironment.restoreAt, mapPattern,
-      CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+      CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
         node.thinning closed,
       ReflectiveContextSupport.substituteAt, costWrappedConstructorName,
       CostStaticColor.constructorTag]
@@ -1416,7 +1415,7 @@ theorem canonicalizeReifiedTargetFrame_wrappedParallelTwoDrops
     simp [sourceSemanticPatternKeyAt,
       Mettapedia.GSLT.LanguageDef.CostStaticRegionNode.semanticPatternKeyAt,
       CostStaticAtomEnvironment.restoreAt, mapPattern,
-      CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+      CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
         node.thinning closed,
       ReflectiveContextSupport.substituteAt, costWrappedConstructorName,
       CostStaticColor.constructorTag]
@@ -1453,12 +1452,11 @@ theorem canonicalizeReifiedTargetFrame_wrappedParallelTwoDrops
     rw [sortPatternsBy_pair_eq_of_le _ _ _ keyOrderLiteral]
   rw [canonicalizeReifiedTargetFrame_eq_map_sourceCanonicalize node
     environment]
-  rw [CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+  rw [CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
     node.thinning closed]
   have targetDepth : node.targetBound.length = 0 := by simp [closed]
   rw [targetDepth, reifiedFrame, canonicalized]
-  simp [mapPattern, mapPatternList_eq_map,
-    CostStaticColor.symbols_constructor, CostStaticColor.constructorTag,
+  simp [mapPattern, mapPatternList_eq_map, CostStaticColor.constructorTag,
     costWrappedConstructorName, rhoReflectivePresentation]
   exact ⟨rfl, rfl⟩
 
@@ -1664,7 +1662,8 @@ theorem normalizeHereditary_available_equationSetoid
           (normalizeHereditary node values) := by
     apply WellSorted.AvailableOpenPattern.ext
     rw [CostStaticSourceTerm.actAvailable_pattern,
-      WellSorted.AvailableOpenPattern.ofOpenPattern_pattern]
+      WellSorted.AvailableOpenPattern.ofOpenPattern_pattern
+        (normalizeHereditary node values)]
     have hereditaryPattern : (normalizeHereditary node values).1 =
         rhoCostStaticActionAt node.thinning
           environment.restorationSupportedOpenAssignment [] node.targetBound
@@ -1849,9 +1848,18 @@ theorem rhoCommonSourceAction_canonicalize_eq
     (rightNode.reifiedSourceTerm rightEnvironment)
   let sourceBoundEq : leftNode.sourceBound = rightNode.sourceBound :=
     congrArg
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT color)
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory color)
       sameTargetBound
   let rightCommon := rightCommonRaw.reindex sourceBoundEq sameTargetBound rfl
+  have leftPattern := leftEnvironment.reifySourceTermToCommon_pattern cospan
+    cospan.leftSlot cospan.leftCommutes
+    (leftNode.reifiedSourceTerm leftEnvironment)
+  have rightRawPattern := rightEnvironment.reifySourceTermToCommon_pattern cospan
+    cospan.rightSlot cospan.rightCommutes
+    (rightNode.reifiedSourceTerm rightEnvironment)
+  have rightPattern :=
+    (CostStaticRegionNode.CostStaticSourceTerm.reindex_pattern rightCommonRaw
+      sourceBoundEq sameTargetBound rfl).trans rightRawPattern
   have actionEquality :=
     rhoCostStaticActionAt_canonicalize_eq_of_canonicalize_eq
       (inner := []) (available := leftNode.targetBound) leftNode.thinning
@@ -1859,12 +1867,11 @@ theorem rhoCommonSourceAction_canonicalize_eq
       leftCommon.safe rightCommon.safe leftCommon.supported.constructorsWithin
       rightCommon.supported.constructorsWithin leftCommon.term.2.1.2.2.1
       rightCommon.term.2.1.2.2.1 (by
-        simpa [leftCommon, rightCommon,
-          CostStaticRegionNode.CostStaticSourceTerm.reindex_pattern,
-          CostStaticRegionNode.reifiedSourceTerm,
-          CostStaticRegionNode.reifiedSourceFrame_pattern,
-          rightCommonRaw, leftEnvironment, rightEnvironment, cospan] using
-            commonSourceCanonical)
+        exact (congrArg (canonicalize rhoReflectivePresentation.toReflectivePresentationDecl)
+          leftPattern).trans
+          (commonSourceCanonical.trans
+            (congrArg (canonicalize rhoReflectivePresentation.toReflectivePresentationDecl)
+              rightPattern).symm))
   have rightAction :
       rhoCostStaticActionAt leftNode.thinning assignment []
           leftNode.targetBound rightCommon.term.1 =
@@ -1876,10 +1883,8 @@ theorem rhoCommonSourceAction_canonicalize_eq
         (CostStaticRegionNode.CostStaticSourceTerm.reindex_act_ofTarget
           rightCommonRaw sameTargetBound rfl assignment)
   rw [rightAction] at actionEquality
-  simpa [leftCommon, rightCommonRaw,
-    CostStaticRegionNode.reifiedSourceTerm,
-    CostStaticRegionNode.reifiedSourceFrame_pattern, leftEnvironment,
-    rightEnvironment, cospan, assignment] using actionEquality
+  rw [leftPattern, rightRawPattern] at actionEquality
+  exact actionEquality
 
 /-- Structural alignment of the two already-canonical authored frames is a
 sufficient, occurrence-sensitive interface to the common-source Cost action.

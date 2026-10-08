@@ -1,3 +1,6 @@
+import Mettapedia.GSLT.LanguageDef.Cost.RegionBoundaryEvidence
+import Mettapedia.GSLT.LanguageDef.Cost.RegionBoundaryData
+import Mettapedia.GSLT.LanguageDef.Cost.StaticTypeImage
 import Mettapedia.GSLT.LanguageDef.CostInteractive
 import Mettapedia.GSLT.LanguageDef.ReflectiveCanonicalSection
 import Mettapedia.GSLT.LanguageDef.CostStaticTyping
@@ -35,34 +38,6 @@ open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open StructuralMorphism
 open ReflectionExtension
 open ReflectiveEquationSemantics
-
-/-- Remove one exact reserved string prefix. -/
-def decodeTaggedPayload (tag name : String) : Option String :=
-  (dropListPrefix? tag.toList name.toList).map String.ofList
-
-@[simp]
-theorem decodeTaggedPayload_append (tag payload : String) :
-    decodeTaggedPayload tag (tag ++ payload) = some payload := by
-  simp [decodeTaggedPayload, String.toList_append]
-
-/-- Successful prefix decoding reconstructs the original string exactly. -/
-theorem decodeTaggedPayload_eq_some_iff (tag name payload : String) :
-    decodeTaggedPayload tag name = some payload ↔
-      name = tag ++ payload := by
-  constructor
-  · intro decoded
-    unfold decodeTaggedPayload at decoded
-    cases decodedPrefix : dropListPrefix? tag.toList name.toList with
-    | none => simp [decodedPrefix] at decoded
-    | some suffix =>
-        simp only [decodedPrefix, Option.map_some, Option.some.injEq] at decoded
-        have reconstructed : tag ++ String.ofList suffix = name := by
-          apply String.toList_inj.mp
-          simpa [String.toList_append] using
-            append_eq_of_dropListPrefix?_eq_some decodedPrefix
-        simpa [decoded] using reconstructed.symm
-  · rintro rfl
-    exact decodeTaggedPayload_append _ _
 
 /-- Decode the constructor label of one selected static namespace. -/
 def decodeCostStaticConstructor (color : CostStaticColor)
@@ -111,169 +86,19 @@ theorem CostStaticColor.hereditaryConstructorImage_decodes
 
 /-- Decode a sort name in the uniform base fiber. -/
 def decodeCostBaseSortName (name : String) : Option String :=
-  decodeTaggedPayload costBaseSortTag name
+  CostStaticTypeImage.decodeBaseSort name
 
 @[simp]
 theorem decodeCostBaseSortName_encode (name : String) :
     decodeCostBaseSortName (costBaseSortName name) = some name := by
   exact decodeTaggedPayload_append _ _
 
-/-- Decode the type action of one static Cost copy.  In the wrapped copy the
-distinguished interacting sort is represented by the single wrapped carrier;
-every other base sort remains in the tagged base fiber. -/
-def decodeCostStaticTypeExpr (source : CIGSLT)
-    (color : CostStaticColor) : TypeExpr → Option TypeExpr
-  | .base sort =>
-      match color with
-      | .base => (decodeCostBaseSortName sort).map TypeExpr.base
-      | .wrapped =>
-          if sort = costWrappedSortName then
-            some (.base source.theory.presentation.interactingSort.1.name)
-          else do
-            let sourceSort ← decodeCostBaseSortName sort
-            if sourceSort =
-                source.theory.presentation.interactingSort.1.name then
-              none
-            else
-              some (.base sourceSort)
-  | .arrow domain codomain => do
-      let sourceDomain ← decodeCostStaticTypeExpr source color domain
-      let sourceCodomain ← decodeCostStaticTypeExpr source color codomain
-      pure (.arrow sourceDomain sourceCodomain)
-  | .multiBinder body => do
-      let sourceBody ← decodeCostStaticTypeExpr source color body
-      pure (.multiBinder sourceBody)
-  | .collection collectionType element => do
-      let sourceElement ← decodeCostStaticTypeExpr source color element
-      pure (.collection collectionType sourceElement)
-
-/-- Decoding is a computable left inverse of either exact static type action.
-The wrapped interacting sort is separated from every tagged base sort by the
-reserved namespace theorem of the generated signature. -/
-@[simp]
-theorem decodeCostStaticTypeExpr_mapTypeExpr (source : CIGSLT)
-    (color : CostStaticColor) (type : TypeExpr) :
-    decodeCostStaticTypeExpr source color
-        (mapTypeExpr (color.symbols source) type) = some type := by
-  induction type with
-  | base sort =>
-      cases color with
-      | base =>
-          change decodeCostStaticTypeExpr source .base
-              (mapTypeExpr costBaseStaticSymbols (.base sort)) = _
-          rw [mapTypeExpr_costBaseStaticSymbols]
-          simp [decodeCostStaticTypeExpr, costBaseTypeExpr,
-            decodeCostBaseSortName_encode]
-      | wrapped =>
-          change decodeCostStaticTypeExpr source .wrapped
-              (mapTypeExpr (costWrappedStaticSymbols source.theory)
-                (.base sort)) = _
-          rw [mapTypeExpr_costWrappedStaticSymbols]
-          by_cases interacting :
-              sort = source.theory.presentation.interactingSort.1.name
-          · subst sort
-            simp [decodeCostStaticTypeExpr, costWrappedTypeExpr]
-          · simp [decodeCostStaticTypeExpr, costWrappedTypeExpr,
-              interacting, costBaseSortName_ne_wrapped,
-              decodeCostBaseSortName_encode]
-  | arrow domain codomain domainHypothesis codomainHypothesis =>
-      simp [decodeCostStaticTypeExpr, mapTypeExpr,
-        domainHypothesis, codomainHypothesis]
-  | multiBinder body inductionHypothesis =>
-      simp [decodeCostStaticTypeExpr, mapTypeExpr, inductionHypothesis]
-  | collection collectionType element inductionHypothesis =>
-      simp [decodeCostStaticTypeExpr, mapTypeExpr, inductionHypothesis]
-
-/-- A successfully decoded static type lies in the exact image of the
-selected Cost fiber.  In the wrapped fiber the base-tagged interacting sort
-is deliberately rejected: its only image is the distinguished wrapped sort.
-Together with `decodeCostStaticTypeExpr_mapTypeExpr`, this makes decoding a
-partial equivalence rather than a merely one-sided parser. -/
-theorem mapTypeExpr_decodeCostStaticTypeExpr (source : CIGSLT)
-    (color : CostStaticColor) {target sourceType : TypeExpr}
-    (decoded : decodeCostStaticTypeExpr source color target =
-      some sourceType) :
-    mapTypeExpr (color.symbols source) sourceType = target := by
-  induction target generalizing sourceType with
-  | base sort =>
-      cases color with
-      | base =>
-          cases decodedSort : decodeCostBaseSortName sort with
-          | none =>
-              simp [decodeCostStaticTypeExpr, decodedSort] at decoded
-          | some sourceSort =>
-              simp [decodeCostStaticTypeExpr, decodedSort] at decoded
-              subst sourceType
-              have sortEquality : sort = costBaseSortName sourceSort :=
-                (decodeTaggedPayload_eq_some_iff
-                  costBaseSortTag sort sourceSort).mp decodedSort
-              subst sort
-              simp [CostStaticColor.symbols, costBaseStaticSymbols,
-                costBasePresentationSymbols, mapTypeExpr]
-      | wrapped =>
-          by_cases wrapped : sort = costWrappedSortName
-          · subst sort
-            simp [decodeCostStaticTypeExpr] at decoded
-            subst sourceType
-            simp [CostStaticColor.symbols, costWrappedStaticSymbols,
-              mapTypeExpr]
-          · cases decodedSort : decodeCostBaseSortName sort with
-            | none =>
-                simp [decodeCostStaticTypeExpr, wrapped, decodedSort] at decoded
-            | some sourceSort =>
-                by_cases interacting : sourceSort =
-                    source.theory.presentation.interactingSort.1.name
-                · simp [decodeCostStaticTypeExpr, wrapped, decodedSort,
-                    interacting] at decoded
-                · simp [decodeCostStaticTypeExpr, wrapped, decodedSort,
-                    interacting] at decoded
-                  subst sourceType
-                  have sortEquality : sort = costBaseSortName sourceSort :=
-                    (decodeTaggedPayload_eq_some_iff
-                      costBaseSortTag sort sourceSort).mp decodedSort
-                  subst sort
-                  simp [CostStaticColor.symbols, costWrappedStaticSymbols,
-                    mapTypeExpr, interacting]
-  | arrow domain codomain domainHypothesis codomainHypothesis =>
-      cases decodedDomain : decodeCostStaticTypeExpr source color domain with
-      | none =>
-          simp [decodeCostStaticTypeExpr, decodedDomain] at decoded
-      | some sourceDomain =>
-          cases decodedCodomain :
-              decodeCostStaticTypeExpr source color codomain with
-          | none =>
-              simp [decodeCostStaticTypeExpr, decodedDomain,
-                decodedCodomain] at decoded
-          | some sourceCodomain =>
-              simp [decodeCostStaticTypeExpr, decodedDomain,
-                decodedCodomain] at decoded
-              subst sourceType
-              simp [mapTypeExpr,
-                domainHypothesis decodedDomain,
-                codomainHypothesis decodedCodomain]
-  | multiBinder body inductionHypothesis =>
-      cases decodedBody : decodeCostStaticTypeExpr source color body with
-      | none =>
-          simp [decodeCostStaticTypeExpr, decodedBody] at decoded
-      | some sourceBody =>
-          simp [decodeCostStaticTypeExpr, decodedBody] at decoded
-          subst sourceType
-          simp [mapTypeExpr, inductionHypothesis decodedBody]
-  | collection collectionType element inductionHypothesis =>
-      cases decodedElement : decodeCostStaticTypeExpr source color element with
-      | none =>
-          simp [decodeCostStaticTypeExpr, decodedElement] at decoded
-      | some sourceElement =>
-          simp [decodeCostStaticTypeExpr, decodedElement] at decoded
-          subst sourceType
-          simp [mapTypeExpr, inductionHypothesis decodedElement]
-
 /-- Each static type action is injective. -/
 theorem mapTypeExpr_costStatic_injective (source : CIGSLT)
     (color : CostStaticColor) :
     Function.Injective (mapTypeExpr (color.symbols source)) := by
   intro left right equality
-  have decoded := congrArg (decodeCostStaticTypeExpr source color) equality
+  have decoded := congrArg (CostStaticTypeImage.decode source.theory color) equality
   simpa using decoded
 
 mutual
@@ -636,21 +461,21 @@ theorem mergeBindings_mapCostStaticBindings (source : CIGSLT)
 
 /-- Translate an authored matcher pattern into one static Cost copy.  Schema
 variables and constructor symbols occupy independent injective namespaces. -/
-def mapCostStaticSchemaPattern (source : CIGSLT)
+def mapCostStaticSchemaPattern (source : WrappableIGSLT)
     (color : CostStaticColor) (pattern : Pattern) : Pattern :=
   mapPatternSchemaNames costSourceSchemaName
     (mapPattern (color.symbols source) pattern)
 
 /-- The authored equation declaration selected by one generated static
 fiber. -/
-def costStaticEquationDecl (source : CIGSLT) (color : CostStaticColor)
+def costStaticEquationDecl (source : WrappableIGSLT) (color : CostStaticColor)
     (equation : Equation) : Equation :=
   match color with
   | .base => costBaseEquationDecl equation
   | .wrapped => costWrappedEquationDecl source.theory equation
 
 @[simp]
-theorem costStaticEquationDecl_left (source : CIGSLT)
+theorem costStaticEquationDecl_left (source : WrappableIGSLT)
     (color : CostStaticColor) (equation : Equation) :
     (costStaticEquationDecl source color equation).left =
       mapCostStaticSchemaPattern source color equation.left := by
@@ -658,7 +483,7 @@ theorem costStaticEquationDecl_left (source : CIGSLT)
     rfl
 
 @[simp]
-theorem costStaticEquationDecl_right (source : CIGSLT)
+theorem costStaticEquationDecl_right (source : WrappableIGSLT)
     (color : CostStaticColor) (equation : Equation) :
     (costStaticEquationDecl source color equation).right =
       mapCostStaticSchemaPattern source color equation.right := by
@@ -702,7 +527,7 @@ theorem mem_costStaticEquations_iff_exists_source
         sourceEquation ∈
             source.theory.presentation.presentation.language.equations ∧
           target = costStaticEquationDecl source color sourceEquation := by
-  rw [CIGSLT.costStaticEquations, List.mem_append]
+  rw [WrappableIGSLT.costStaticEquations_def, List.mem_append]
   constructor
   · rintro (baseMembership | wrappedMembership)
     · obtain ⟨sourceEquation, membership, equality⟩ :=
@@ -769,7 +594,7 @@ theorem mem_costStaticReflectivePresentations_iff_exists_source
         sourceDeclaration ∈ source.reflection.1.presentations ∧
           target = costStaticReflectivePresentationDecl source color
             sourceDeclaration := by
-  rw [CIGSLT.costStaticReflectivePresentations, List.mem_append]
+  rw [WrappableIGSLT.costStaticReflectivePresentations_def, List.mem_append]
   constructor
   · rintro (baseMembership | wrappedMembership)
     · obtain ⟨sourceDeclaration, membership, equality⟩ :=
@@ -899,10 +724,26 @@ mutual
     | multiLambda body =>
         simp only [mapCostStaticSchemaPattern_multiLambda, mapPattern]
         exact .multiLambda (matchRel_mapCostStatic source color body)
-    | collection bag =>
+    | collection notVector bag =>
         simp only [mapCostStaticSchemaPattern_collection, mapPattern,
           mapPatternList_eq_map]
-        exact .collection (matchBagRel_mapCostStatic source color bag)
+        exact .collection notVector (matchBagRel_mapCostStatic source color bag)
+    | vector arguments =>
+        simp only [mapCostStaticSchemaPattern_collection, mapPattern,
+          mapPatternList_eq_map, Option.map_none]
+        exact .vector (matchArgsRel_mapCostStatic source color arguments)
+    | vectorRest prefixMatch mergeEquality =>
+        simp only [mapCostStaticSchemaPattern_collection, mapPattern,
+          mapPatternList_eq_map, Option.map_some]
+        apply Mettapedia.OSLF.MeTTaIL.MatchSpec.MatchRel.vectorRest
+        · simpa only [List.length_map, List.map_take] using
+            matchArgsRel_mapCostStatic source color prefixMatch
+        · have mappedMerge := congrArg
+            (Option.map (mapCostStaticBindings source color)) mergeEquality
+          rw [mergeBindings_mapCostStaticBindings] at mappedMerge
+          simpa only [Option.map_some, mapCostStaticBindings_cons,
+            mapCostStaticBindings_nil, mapPattern, mapPatternList_eq_map,
+            List.length_map, List.map_drop] using mappedMerge
     | subst body replacement mergeEquality =>
         simp only [mapCostStaticSchemaPattern_subst, mapPattern]
         have mappedMerge := congrArg
@@ -1026,9 +867,24 @@ mutual
     | multiLambda body =>
         exact matchRel_coversPattern body name
           (by simpa [Pattern.freeFvarNames] using membership)
-    | collection bag =>
+    | collection _ bag =>
         exact matchBagRel_coversPatterns bag name
           (by simpa [Pattern.freeFvarNames] using membership)
+    | vector arguments =>
+        exact matchArgsRel_coversPatterns arguments name
+          (by simpa [Pattern.freeFvarNames] using membership)
+    | vectorRest prefixMatch mergeEquality =>
+        simp only [Pattern.freeFvarNames, List.mem_append,
+          Option.toList_some, List.mem_singleton] at membership
+        rcases membership with prefixMembership | rfl
+        · rcases matchArgsRel_coversPatterns prefixMatch name prefixMembership
+            with ⟨value, found⟩
+          exact ⟨value,
+            Mettapedia.OSLF.MeTTaIL.MatchSpec.mergeBindings_subsumed_left
+              mergeEquality found⟩
+        · exact ⟨_,
+            Mettapedia.OSLF.MeTTaIL.MatchSpec.mergeBindings_subsumed_right
+              mergeEquality (by simp; rfl)⟩
     | subst body replacement mergeEquality =>
         simp only [Pattern.freeFvarNames, List.mem_append] at membership
         rcases membership with bodyMembership | replacementMembership
@@ -1123,7 +979,7 @@ end
 
 /-- Constructor translation commutes with de Bruijn lifting.  This is the
 binder-sensitive ingredient of explicit-substitution transport. -/
-theorem mapPattern_liftBVars (symbols : PresentationSymbols)
+theorem mapPattern_liftBVars (symbols : LanguageDefSymbolMap)
     (cutoff shift : Nat) (pattern : Pattern) :
     mapPattern symbols (liftBVars cutoff shift pattern) =
       liftBVars cutoff shift (mapPattern symbols pattern) := by
@@ -1133,7 +989,7 @@ theorem mapPattern_liftBVars (symbols : PresentationSymbols)
         simp [liftBVars, mapPattern, shifted]
   | hfvar name => simp [mapPattern, liftBVars]
   | happly constructor arguments inductionHypothesis =>
-      simp only [mapPattern, mapPatternList_eq_map, liftBVars, List.map_map]
+      simp only [mapPattern, mapPatternList_eq_map, liftBVars, Mettapedia.OSLF.MeTTaIL.Substitution.liftBVarsList_eq_map, List.map_map]
       congr 1
       apply List.map_congr_left
       intro argument membership
@@ -1145,7 +1001,7 @@ theorem mapPattern_liftBVars (symbols : PresentationSymbols)
   | hsubst body replacement bodyInduction replacementInduction =>
       simp [mapPattern, liftBVars, bodyInduction, replacementInduction]
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [mapPattern, mapPatternList_eq_map, liftBVars, List.map_map]
+      simp only [mapPattern, mapPatternList_eq_map, liftBVars, Mettapedia.OSLF.MeTTaIL.Substitution.liftBVarsList_eq_map, List.map_map]
       congr 1
       apply List.map_congr_left
       intro element membership
@@ -1153,7 +1009,7 @@ theorem mapPattern_liftBVars (symbols : PresentationSymbols)
 
 /-- Constructor translation commutes with elimination of one locally
 nameless binder, including the lift performed beneath nested binders. -/
-theorem mapPattern_instantiateBVarAt (symbols : PresentationSymbols)
+theorem mapPattern_instantiateBVarAt (symbols : LanguageDefSymbolMap)
     (depth : Nat) (replacement body : Pattern) :
     mapPattern symbols (instantiateBVarAt depth replacement body) =
       instantiateBVarAt depth (mapPattern symbols replacement)
@@ -1190,7 +1046,7 @@ theorem mapPattern_instantiateBVarAt (symbols : PresentationSymbols)
       exact inductionHypothesis element membership depth
 
 @[simp]
-theorem mapPattern_instantiateBVar (symbols : PresentationSymbols)
+theorem mapPattern_instantiateBVar (symbols : LanguageDefSymbolMap)
     (replacement body : Pattern) :
     mapPattern symbols (instantiateBVar replacement body) =
       instantiateBVar (mapPattern symbols replacement)
@@ -1670,8 +1526,7 @@ theorem canonicalize_costStatic_factor (source : CIGSLT)
           simp [mapPattern,
             Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize,
             Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeList,
-            Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply,
-            CostStaticColor.symbols_constructor, mappedDropNeQuote]
+            Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply, mappedDropNeQuote]
         · have sourceDoesNotCollapse :
               Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply
                   declaration declaration.quoteConstructor normalizedArguments =
@@ -1864,10 +1719,28 @@ theorem canonicalize_eq_mapCostStatic (source : CIGSLT)
     canonicalize_costStatic_factor source color declaration membership right,
     representatives]
 
+/-- Extra meaning formula required for a static Cost colour to transport the
+presentation-derived part of the source equation theory.  Authored equations
+and admitted reflective generators map from the ordinary CIGSLT data; derived
+collection laws need this additional witness because a wrapped raw term need
+not lie in the generated sorted carrier. -/
+def DerivedEquationMapCostStaticStable (source : CIGSLT)
+    (color : CostStaticColor) : Prop :=
+  ∀ {input output : Pattern},
+    EquationSemantics.DerivedInstance
+        source.theory.presentation.presentation.language input output →
+      ReflectiveEquationContextStep source.costWholeReflectionProfile
+        defaultBasePremises source.costWholeLanguage
+        (mapPattern (color.symbols source) input)
+        (mapPattern (color.symbols source) output)
+
 /-- Every source contextual equation generator maps to the corresponding
-generator of the one authored Cost presentation. -/
+generator of the generated Cost presentation, provided the selected colour
+also validates the derived-law meaning formula. -/
 theorem equationContextStep_mapCostStatic (source : CIGSLT)
-    (color : CostStaticColor) {input output : Pattern}
+    (color : CostStaticColor)
+    (derivedStable : DerivedEquationMapCostStaticStable source color)
+    {input output : Pattern}
     (derivation : ReflectiveEquationContextStep source.reflection.1
       defaultBasePremises source.theory.presentation.presentation.language
       input output) :
@@ -1879,11 +1752,20 @@ theorem equationContextStep_mapCostStatic (source : CIGSLT)
   | core coreStep =>
       cases coreStep with
       | inContext context equationWitness =>
-        rw [← CIGSLT.mapOneHoleContext_fill,
-          ← CIGSLT.mapOneHoleContext_fill]
-        exact .core (EquationSemantics.EquationContextStep.inContext
-          (CIGSLT.mapOneHoleContext (color.symbols source) context)
-          (equationInstance_mapCostStatic source color equationWitness))
+        cases equationWitness with
+        | inl authored =>
+            rw [← CIGSLT.mapOneHoleContext_fill,
+              ← CIGSLT.mapOneHoleContext_fill]
+            exact .core (EquationSemantics.EquationContextStep.inContext
+              (CIGSLT.mapOneHoleContext (color.symbols source) context)
+              (.inl (equationInstance_mapCostStatic source color authored)))
+        | inr derived =>
+            rw [← CIGSLT.mapOneHoleContext_fill,
+              ← CIGSLT.mapOneHoleContext_fill]
+            exact EquationSemantics.reflectiveEquationContextStep_fill
+              (profile := source.costWholeReflectionProfile)
+              (CIGSLT.mapOneHoleContext (color.symbols source) context)
+              (derivedStable derived)
   | reflectiveInContext context membership representatives =>
       rw [← CIGSLT.mapOneHoleContext_fill,
         ← CIGSLT.mapOneHoleContext_fill]
@@ -1896,7 +1778,9 @@ theorem equationContextStep_mapCostStatic (source : CIGSLT)
 /-- The entire least contextual equivalence generated by the source static
 theory maps into the generated Cost equivalence. -/
 theorem equationEquiv_mapCostStatic (source : CIGSLT)
-    (color : CostStaticColor) {input output : Pattern}
+    (color : CostStaticColor)
+    (derivedStable : DerivedEquationMapCostStaticStable source color)
+    {input output : Pattern}
     (derivation : ReflectiveEquationEquiv source.reflection.1
       defaultBasePremises source.theory.presentation.presentation.language
       input output) :
@@ -1907,7 +1791,7 @@ theorem equationEquiv_mapCostStatic (source : CIGSLT)
   induction derivation with
   | rel left right step =>
       exact Relation.EqvGen.rel _ _
-        (equationContextStep_mapCostStatic source color step)
+        (equationContextStep_mapCostStatic source color derivedStable step)
   | refl pattern => exact Relation.EqvGen.refl _
   | symm left right relation inductionHypothesis =>
       exact Relation.EqvGen.symm _ _ inductionHypothesis
@@ -1930,9 +1814,11 @@ theorem canonicalize_mapCostStatic_equationEquiv
         (Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
           declaration pattern))
       (mapPattern (color.symbols source) pattern) := by
-  exact equationEquiv_mapCostStatic source color
-    (ReflectiveEquationSemantics.canonicalize_equationEquiv_self
-      membership pattern)
+  apply Relation.EqvGen.rel _ _
+  apply ReflectiveEquationContextStep.reflectiveInContext .hole
+    (costStaticReflectivePresentationDecl_mem source color _ membership)
+  exact (canonicalize_costStatic_factor source color declaration membership
+    pattern).symm
 
 /-! The target Cost canonicalizer also has its ordinary representative
 equivalence on mapped terms.  Keeping this separate from the factorization
@@ -1960,6 +1846,7 @@ a second equation relation. -/
 
 theorem reflectiveOpenEquationSetoid_mapCostStatic (source : CIGSLT)
     (color : CostStaticColor)
+    (derivedStable : DerivedEquationMapCostStaticStable source color)
     {free : WellSorted.FreeTypeContext} {bound : List TypeExpr}
     {sort : LangSort source.theory.presentation.presentation.language}
     {left right : ReflectiveWellSorted.OpenTerm source.reflection.1
@@ -1976,7 +1863,7 @@ theorem reflectiveOpenEquationSetoid_mapCostStatic (source : CIGSLT)
   induction derivation with
   | rel left right step =>
       exact Relation.EqvGen.rel _ _
-        (equationContextStep_mapCostStatic source color step)
+        (equationContextStep_mapCostStatic source color derivedStable step)
   | refl term =>
       exact Relation.EqvGen.refl _
   | symm left right relation inductionHypothesis =>
@@ -1986,53 +1873,17 @@ theorem reflectiveOpenEquationSetoid_mapCostStatic (source : CIGSLT)
 
 /-! ## Stable keys for opaque region boundaries -/
 
-/-- A boundary is identified by its canonical content together with the
-authored result type and the reflective binder support at which it may be
-filled.  Content alone is insufficient: the same raw pattern at two sorts or
-across two quotation supports is not one typed structural parameter. -/
-structure CostRegionBoundary where
-  /-- Type of the rigid placeholder presented to the source canonicalizer. -/
-  type : TypeExpr
-  /-- Binder support of that placeholder in the source open fiber. -/
-  support : List TypeExpr
-  /-- Exact type of the restored content in the generated Cost fiber.  This
-  need not be the uniform static image of `type`: a boundary at a selected
-  continuation is retyped by the authored interaction cut. -/
-  targetType : TypeExpr
-  /-- Exact binder support of the restored content in the Cost fiber. -/
-  targetSupport : List TypeExpr
-  content : Pattern
-deriving Repr, DecidableEq
+/-- Target-content evidence for the existing continued Cost language.
+Source type/support are retained key coordinates; the checked region plan
+separately establishes their source-fibre coherence. -/
+abbrev TypedCostRegionBoundary (source : CIGSLT)
+    (color : CostStaticColor) (targetFree : WellSorted.FreeTypeContext) :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundary source.costWholeLanguage
+    source.costWholeReflectionProfile color targetFree
 
-/-- A boundary together with the typing evidence needed to restore its
-content in the selected Cost fiber.  The raw record remains the stable,
-serializable key; this dependent layer certifies that its source type and
-support are transported to the exact type and binder context inhabited by
-the Cost term. -/
-structure TypedCostRegionBoundary (source : CIGSLT)
-    (color : CostStaticColor)
-    (targetFree : WellSorted.FreeTypeContext) where
-  boundary : CostRegionBoundary
-  contentTyped : WellSorted.HasType source.costWholeLanguage targetFree
-    boundary.targetSupport boundary.content boundary.targetType
-  contentCanonicalBinderMetadata :
-    boundary.content.hasCanonicalBinderMetadata = true
-  contentObjectPattern :
-    WellSorted.isObjectPattern boundary.content = true
-  contentReflectiveScopeSafe :
-    ReflectiveWellSorted.ReflectiveScopeSafeAt
-      source.costWholeReflectionProfile
-      boundary.targetSupport.length boundary.content
-
-/-- One occurrence of a maximal foreign region in a Cost static stratum.
-`context` is traversal evidence only: filling it with `content` reconstructs
-the surrounding root for occurrences emitted by the certified collector
-below.  It is deliberately absent from `CostRegionBoundary`, whose semantic
-identity remains type, reflective support, and canonical content. -/
-structure CostRegionOccurrence where
-  context : OneHoleContext
-  content : Pattern
-deriving Repr, DecidableEq
+namespace TypedCostRegionBoundary
+export CostRegionBoundaryEvidence.TypedCostRegionBoundary (mk)
+end TypedCostRegionBoundary
 
 /-- Occurrence-sensitive assignment of semantic boundary data.  Different
 occurrences may share a semantic boundary, but an assignment can no longer
@@ -4079,7 +3930,7 @@ def costStaticAbstractionFreeContext (source : CIGSLT)
   fun name =>
     match decodeCostRegionSourceVariableName name with
     | some sourceName =>
-        (targetFree sourceName).bind (decodeCostStaticTypeExpr source color)
+        (targetFree sourceName).bind (CostStaticTypeImage.decode source.theory color)
     | none =>
         (resolveCostRegionBoundaryData boundary regions name).map (·.type)
 
@@ -4092,7 +3943,7 @@ theorem costStaticAbstractionFreeContext_source
     (sourceName : String) :
     costStaticAbstractionFreeContext source color targetFree boundary regions
         (costRegionSourceVariableName sourceName) =
-      (targetFree sourceName).bind (decodeCostStaticTypeExpr source color) := by
+      (targetFree sourceName).bind (CostStaticTypeImage.decode source.theory color) := by
   simp [costStaticAbstractionFreeContext]
 
 /-- Boundary-variable names are outside the namespace used to preserve
@@ -4144,7 +3995,7 @@ def typedCostStaticAbstractionFreeContext (source : CIGSLT)
   fun name =>
     match decodeCostRegionSourceVariableName name with
     | some sourceName =>
-        (targetFree sourceName).bind (decodeCostStaticTypeExpr source color)
+        (targetFree sourceName).bind (CostStaticTypeImage.decode source.theory color)
     | none =>
         (resolveTypedCostRegionBoundaryData boundary regions name).map
           (fun typedBoundary => typedBoundary.boundary.type)
@@ -4165,7 +4016,7 @@ def mappedCostStaticAbstractionFreeContext (source : CIGSLT)
     match decodeCostRegionSourceVariableName name with
     | some sourceName =>
         ((targetFree sourceName).bind
-          (decodeCostStaticTypeExpr source color)).map
+          (CostStaticTypeImage.decode source.theory color)).map
             (mapTypeExpr (color.symbols source))
     | none =>
         (resolveTypedCostRegionBoundaryData boundary regions name).map
@@ -4250,7 +4101,7 @@ def costStaticSupportedAssignment (source : CIGSLT)
               at lookup
         | some targetType =>
             cases decodedType :
-                decodeCostStaticTypeExpr source color targetType with
+                CostStaticTypeImage.decode source.theory color targetType with
             | none =>
                 simp [mappedCostStaticAbstractionFreeContext,
                   decodedName, targetLookup, decodedType] at lookup
@@ -4258,7 +4109,7 @@ def costStaticSupportedAssignment (source : CIGSLT)
                 have encodedType :
                     mapTypeExpr (color.symbols source) sourceType =
                       targetType :=
-                  mapTypeExpr_decodeCostStaticTypeExpr source color decodedType
+                  CostStaticTypeImage.mapTypeExpr_decode source.theory color decodedType
                 have mappedType :
                     mapTypeExpr (color.symbols source) sourceType = type := by
                   simpa [mappedCostStaticAbstractionFreeContext,
@@ -5472,6 +5323,7 @@ theorem normalizeCostStaticStratum_eq_of_reflectiveOpenEquationGenerator
 
 theorem normalizeCostStaticStratum_equationEquiv
     (source : CIGSLT) (color : CostStaticColor)
+    (derivedStable : DerivedEquationMapCostStaticStable source color)
     {free : WellSorted.FreeTypeContext} {bound : List TypeExpr}
     {sort : LangSort source.theory.presentation.presentation.language}
     (skeleton : ReflectiveWellSorted.OpenTerm source.reflection.1
@@ -5480,7 +5332,7 @@ theorem normalizeCostStaticStratum_equationEquiv
       defaultBasePremises source.costWholeLanguage
       (normalizeCostStaticStratum source color skeleton)
       (mapPattern (color.symbols source) skeleton.1) := by
-  exact reflectiveOpenEquationSetoid_mapCostStatic source color
+  exact reflectiveOpenEquationSetoid_mapCostStatic source color derivedStable
     (source.openCanonical.equivalent skeleton)
 
 /-- On a certified monochromatic source term, the stratum is exactly the

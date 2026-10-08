@@ -1,9 +1,34 @@
 import Mettapedia.GSLT.Core.LambdaTheoryCategory
+import Mettapedia.GSLT.Core.ContextualLadder
+import Mettapedia.GSLT.Core.ContextualLadderBaseCategory
+import Mettapedia.GSLT.Core.ContextualLadderTerminal
+import Mettapedia.GSLT.Core.ContextualFamilyPresheaf
+import Mettapedia.GSLT.Core.ContextualFamilyMorphism
+import Mettapedia.GSLT.Core.ContextualStrictCwfMorphism
+import Mettapedia.GSLT.Core.ContextualTypeCategory
+import Mettapedia.GSLT.Core.ContextualTypeReindexing
+import Mettapedia.GSLT.Core.ContextualTypeReindexingCoherence
+import Mettapedia.GSLT.Core.ContextualPseudoCwfMorphism
+import Mettapedia.GSLT.Core.ContextualPseudoCwfTransformation
+import Mettapedia.GSLT.Core.ContextualPseudoCwfBicategory
+import Mettapedia.GSLT.Core.ContextualPseudoCwfBasePseudofunctor
+import Mettapedia.GSLT.Core.ContextualProfileInclusions
 import Mettapedia.GSLT.Core.BranchingTemporal
+import Mettapedia.GSLT.Causality.ResourceFrontier
+import Mettapedia.GSLT.Core.TickAutomatonLaneRecurrence
+import Mettapedia.GSLT.Core.SearchControlProperties
+import Mettapedia.GSLT.Core.OpenTotalityObservation
+import Mettapedia.GSLT.Core.ObservationIndexedPruning
 import Mettapedia.GSLT.Core.Web
 import Mettapedia.GSLT.Core.ChangeOfBase
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.Core.GSLTConstructions
+import Mettapedia.GSLT.Core.CostedOperational
+import Mettapedia.GSLT.Core.SemanticInvariant
+import Mettapedia.GSLT.Core.SemanticTransport
+import Mettapedia.GSLT.Core.LooseRelationPredicateTransformers
+import Mettapedia.GSLT.Core.SemanticQuery
+import Mettapedia.GSLT.Core.ObservedConceptFormation
 import Mettapedia.GSLT.HierarchicalComplexity
 import Mettapedia.GSLT.ReproducibleBuild
 import Mettapedia.GSLT.Core.CertifiedPlanning
@@ -11,16 +36,47 @@ import Mettapedia.GSLT.Core.ClosureCriteria
 import Mettapedia.GSLT.Core.InteractionEvent
 import Mettapedia.GSLT.Core.InteractionComposition
 import Mettapedia.GSLT.Core.Ultrainfinite
+import Mettapedia.GSLT.Core.UltrainfiniteDoctrineFactorization
+import Mettapedia.GSLT.Core.GenerativeCantorAtomlessness
+import Mettapedia.GSLT.Core.StagePerspectiveProfunctor
+import Mettapedia.GSLT.Core.StagePerspectiveProfunctorCanary
+import Mettapedia.GSLT.Core.AgeProtectedSchedule
+import Mettapedia.GSLT.Core.ScheduleProgramFactorization
+import Mettapedia.GSLT.Core.ExtensibleScheduleDiscipline
 import Mettapedia.GSLT.Core.UltrainfiniteTransport
 import Mettapedia.GSLT.Core.IndexedOperational
 import Mettapedia.GSLT.Core.IndexedOperationalCanary
-import Mettapedia.GSLT.Core.ProofRelevantPresentation
+import Mettapedia.GSLT.Core.SemanticImplementation
+import Mettapedia.GSLT.Core.ProofRelevantGSLT
+import Mettapedia.GSLT.Core.ProofRelevantTranslationCategory
+import Mettapedia.GSLT.Core.ProofRelevantJudgment
+import Mettapedia.GSLT.Core.JudgmentComposition
+import Mettapedia.GSLT.Logic.ObserverRefinement
+import Mettapedia.GSLT.Logic.HigherOrderBisimulation
+import Mettapedia.GSLT.Logic.HigherOrderHML
+import Mettapedia.GSLT.Logic.HigherOrderHMLControls
+import Mettapedia.GSLT.Logic.HennessyMilnerBehavioralCoverControls
+import Mettapedia.GSLT.Logic.HigherOrderContextClosure
+import Mettapedia.GSLT.Logic.HigherOrderContextClosureControls
+import Mettapedia.GSLT.Logic.SeparationAlgebra
 import Mettapedia.GSLT.Core.WeightedMuScheduler
 import Mettapedia.GSLT.Core.WeightedOccurrenceControl
 import Mettapedia.GSLT.Core.BranchCaptureAlgebra
+import Mettapedia.GSLT.Core.BindingStoreCapabilityAlgebra
+import Mettapedia.GSLT.Core.BindingCheckpointCoalescing
+import Mettapedia.GSLT.Core.BindingSupportReachabilityAlgebra
+import Mettapedia.GSLT.Core.DerivedCacheInvalidationAlgebra
+import Mettapedia.GSLT.Core.AllocationRoleAccounting
+import Mettapedia.GSLT.Core.RankedDependency
+import Mettapedia.GSLT.Core.AuthorizedRestoration
+import Mettapedia.GSLT.Core.SelectionExpansionAnalysis
 import Mettapedia.GSLT.Core.GradedSelectionIrreducibility
 import Mettapedia.GSLT.Dynamics.QueryRevision
+import Mettapedia.GSLT.Dynamics.ContextualStrategyQualification
 import Mettapedia.GSLT.Dynamics.InteractionEventValuation
+import Mettapedia.GSLT.Dynamics.EventValuationFunctor
+import Mettapedia.GSLT.Dynamics.PartialObservationProduct
+import Mettapedia.GSLT.Dynamics.IndependentEventValuationProduct
 import Mettapedia.GSLT.Dynamics.ProofRelevantNeed
 import Mettapedia.GSLT.Dynamics.ProofRelevantNeedProfile
 import Mettapedia.GSLT.Dynamics.ProofRelevantNeedDiagram
@@ -33,6 +89,8 @@ import Mettapedia.GSLT.Dynamics.IndexedQueryRevision
 import Mettapedia.GSLT.Dynamics.IndexedQueryRevisionCanary
 import Mettapedia.GSLT.Dynamics.IndexedQueryRevisionOSLF
 import Mettapedia.GSLT.Dynamics.ObservationDisciplineCrown
+import Mettapedia.GSLT.Dynamics.WitnessCollectionProduct
+import Mettapedia.GSLT.Dynamics.ObserverSemanticTransport
 import Mettapedia.GSLT.Dynamics.TwoLanguageEvidenceObservation
 import Mettapedia.GSLT.Dynamics.AnswerDistinctionConservation
 import Mettapedia.GSLT.Dynamics.WorldOfViews
@@ -40,15 +98,72 @@ import Mettapedia.GSLT.Dynamics.CapabilityGeneratedObservationDomain
 import Mettapedia.GSLT.Dynamics.CapabilityGeneratedObservationUniversal
 import Mettapedia.GSLT.Dynamics.IndexedExecutionObservation
 import Mettapedia.GSLT.Dynamics.CapabilityIndexedObservationArchitecture
+import Mettapedia.GSLT.Dynamics.ObserverRelativeControlTransport
 import Mettapedia.GSLT.Dynamics.ObservationPolicyFamilyUniversal
+import Mettapedia.GSLT.Dynamics.ScheduleObservationFactorization
+import Mettapedia.GSLT.Dynamics.ParallelFuelLease
+import Mettapedia.GSLT.Dynamics.ParallelFuelContractionRefund
+import Mettapedia.GSLT.Dynamics.RegionHolePlan
+import Mettapedia.GSLT.Dynamics.OrderedOccurrenceBodyAlgebra
+import Mettapedia.GSLT.Dynamics.RegionHoleRealizationTransformation
+import Mettapedia.GSLT.Dynamics.StableOccurrenceContraction
+import Mettapedia.GSLT.Dynamics.StableOccurrenceIdentityIndex
+import Mettapedia.GSLT.Dynamics.RevisionBoundProgramView
+import Mettapedia.GSLT.Dynamics.ReusableRevisionViewAuthority
+import Mettapedia.GSLT.Dynamics.RevisionViewRealizationProduct
+import Mettapedia.GSLT.Dynamics.EquationProjectionRevisionAuthority
+import Mettapedia.GSLT.Dynamics.PersistentExecutorLifecycle
+import Mettapedia.GSLT.Dynamics.StagedDefinitionObservation
+import Mettapedia.GSLT.Dynamics.PartialRegionPlan
+import Mettapedia.GSLT.Dynamics.AlgebraHomomorphicRegionFusion
+import Mettapedia.GSLT.Dynamics.EffectTraceInterleaving
+import Mettapedia.GSLT.Dynamics.ServiceEffectProtocol
+import Mettapedia.GSLT.Dynamics.ServiceResumption
 import Mettapedia.GSLT.GraphTheory.Basic
+import Mettapedia.GSLT.GraphTheory.Solvability
+import Mettapedia.GSLT.GraphTheory.SolvabilityControls
+import Mettapedia.GSLT.GraphTheory.Genericity
+import Mettapedia.GSLT.GraphTheory.SensibleTheories
+import Mettapedia.GSLT.GraphTheory.SensibleTheoriesControls
+import Mettapedia.GSLT.GraphTheory.Interpretation
+import Mettapedia.GSLT.GraphTheory.InterpretationControls
+import Mettapedia.GSLT.GraphTheory.InterpretationTransport
+import Mettapedia.GSLT.GraphTheory.InterpretationTransportControls
 import Mettapedia.GSLT.GraphTheory.BohmTree
+import Mettapedia.GSLT.GraphTheory.HeadSearchControls
+import Mettapedia.GSLT.GraphTheory.BohmObservations
+import Mettapedia.GSLT.GraphTheory.BohmObservationControls
+import Mettapedia.GSLT.GraphTheory.HeadSearchAdequacy
+import Mettapedia.GSLT.GraphTheory.BohmSearchApproximation
+import Mettapedia.GSLT.GraphTheory.BohmTreeSemantics
+import Mettapedia.GSLT.GraphTheory.BohmSearchControls
+import Mettapedia.GSLT.GraphTheory.BohmTreeGenericity
+import Mettapedia.GSLT.GraphTheory.BohmTreeGenericityControls
 import Mettapedia.GSLT.GraphTheory.WeakProduct
+import Mettapedia.GSLT.GraphTheory.PartialPair
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletionStep
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletionStepControls
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletionStages
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletionStagesControls
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletion
+import Mettapedia.GSLT.GraphTheory.PartialPairCompletionControls
+import Mettapedia.GSLT.GraphTheory.PartialPairFactorEmbedding
+import Mettapedia.GSLT.GraphTheory.PartialPairFactorEmbeddingControls
+import Mettapedia.GSLT.GraphTheory.IndexedPartialPair
+import Mettapedia.GSLT.GraphTheory.IndexedPartialPairControls
+import Mettapedia.GSLT.GraphTheory.FactorFlattening
+import Mettapedia.GSLT.GraphTheory.FactorFlatteningControls
+import Mettapedia.GSLT.GraphTheory.CompletionCodeReflection
+import Mettapedia.GSLT.GraphTheory.FactorInterpretation
+import Mettapedia.GSLT.GraphTheory.FactorInterpretationControls
+import Mettapedia.GSLT.GraphTheory.WeakProductControls
 import Mettapedia.GSLT.GraphTheory.Substitution
 import Mettapedia.GSLT.GraphTheory.ParallelReduction
 import Mettapedia.GSLT.Topos.Yoneda
 import Mettapedia.GSLT.Topos.SubobjectClassifier
 import Mettapedia.GSLT.Topos.PredicateFibration
+import Mettapedia.GSLT.Topos.PresheafPredicateProjection
+import Mettapedia.GSLT.Topos.PresheafPredicateProjectionControls
 import Mettapedia.GSLT.Parsing.CompilerCorrespondence
 import Mettapedia.GSLT.Parsing.GuardCorrespondence
 import Mettapedia.GSLT.Parsing.HornCertificate
@@ -90,6 +205,7 @@ import Mettapedia.GSLT.Parsing.HornGuardedSpecialization
 import Mettapedia.GSLT.Parsing.HornSemanticEnumeration
 import Mettapedia.GSLT.Parsing.HornRequestDiscovery
 import Mettapedia.GSLT.Parsing.HornSemanticPlan
+import Mettapedia.GSLT.Parsing.ParserPackSemanticGSLT
 import Mettapedia.GSLT.LanguageDef
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
 import Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
@@ -99,7 +215,103 @@ import Mettapedia.GSLT.LanguageDef.SemanticCertificateGSLTCategory
 import Mettapedia.GSLT.LanguageDef.NIKGSLT
 import Mettapedia.GSLT.LanguageDef.NIKIndexedOperational
 import Mettapedia.GSLT.LanguageDef.NIKMetalogic
-import Mettapedia.GSLT.LanguageDef.AuthoredGSLTHosting
+import Mettapedia.GSLT.LanguageDef.OperationalModel
+import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
+import Mettapedia.GSLT.LanguageDef.InstitutionConsequenceCanary
+import Mettapedia.GSLT.LanguageDef.NIK
+import Mettapedia.GSLT.LanguageDef.NIKServiceFamily
+import Mettapedia.GSLT.LanguageDef.NIKServiceInvocation
+import Mettapedia.GSLT.LanguageDef.NIKServiceResumption
+import Mettapedia.GSLT.LanguageDef.NIKPropositionBranching
+import Mettapedia.GSLT.LanguageDef.FiniteSetRepresentationService
+import Mettapedia.GSLT.LanguageDef.NIKLowerConsistencyQualification
+import Mettapedia.GSLT.LanguageDef.NIKConservativeProofEmbedding
+import Mettapedia.GSLT.LanguageDef.PettaOrderedLibraryResolution
+import Mettapedia.GSLT.LanguageDef.PettaLibraryImportPublication
+import Mettapedia.GSLT.LanguageDef.IsabellePureMetaCore
+import Mettapedia.GSLT.LanguageDef.IsabellePureMetaCoreAuthority
+import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
+import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentitySemanticBasis
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanProfileExtension
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanProfileDecision
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanTermProfileBridge
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanQuantifierElimination
+import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityNIKAuthority
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanEquationalEmbedding
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanMSOSemanticBridge
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanBootstrapGrounding
+import Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding
+import Mettapedia.GSLT.LanguageDef.GenerativeCantorBootstrapGrounding
+import Mettapedia.GSLT.LanguageDef.NIKSemanticGroundSelection
+import Mettapedia.GSLT.LanguageDef.NIKSemanticGroundDecidabilityFrontier
+import Mettapedia.GSLT.LanguageDef.NIKBaseChecker
+import Mettapedia.GSLT.LanguageDef.NIKUltrainfiniteGroundProfileSelection
+import Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
+import Mettapedia.GSLT.LanguageDef.NIKTheoryTranslationExt
+import Mettapedia.GSLT.LanguageDef.NIKDerivabilitySemanticQualification
+import Mettapedia.GSLT.LanguageDef.NIKInitialRuleClosureAuthority
+import Mettapedia.GSLT.LanguageDef.NIKFinitaryReplayInitiality
+import Mettapedia.GSLT.LanguageDef.NIKReplayPermutation
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTInterpretationCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
+import Mettapedia.GSLT.LanguageDef.NIKCertificateGSLTOperationalShield
+import Mettapedia.GSLT.LanguageDef.NIKCertificateGSLTPhysicalShield
+import Mettapedia.GSLT.LanguageDef.NIKCertificateGSLTSharedPhysicalShield
+import Mettapedia.GSLT.LanguageDef.M0GCWireFormat
+import Mettapedia.GSLT.LanguageDef.M0GCFlatBodyLoaderCorrespondence
+import Mettapedia.GSLT.LanguageDef.M0GCFlatHeaderLoaderCorrespondence
+import Mettapedia.GSLT.LanguageDef.M0GCCanonicalBodyBytes
+import Mettapedia.GSLT.LanguageDef.M0GCFlatCertificateLoaderCorrespondence
+import Mettapedia.GSLT.LanguageDef.M0GCFlatCertificateLoaderCompleteness
+import Mettapedia.GSLT.LanguageDef.M0GCBoundedByteMemory
+import Mettapedia.GSLT.LanguageDef.M0GCWordAddressedMemory
+import Mettapedia.GSLT.LanguageDef.M0GCWordLoaderControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCWordCheckerBoundaryMachine
+import Mettapedia.GSLT.LanguageDef.M0GCLogicalReplay
+import Mettapedia.GSLT.LanguageDef.M0GCLogicalReplayCanary
+import Mettapedia.GSLT.LanguageDef.M0GCExactWireRefinement
+import Mettapedia.GSLT.LanguageDef.M0GCTemplateAdequacy
+import Mettapedia.GSLT.LanguageDef.M0GCPhysicalTemplateAdequacy
+import Mettapedia.GSLT.LanguageDef.M0GCIdentifierMatcherAdequacy
+import Mettapedia.GSLT.LanguageDef.M0GCGeneratedProfileQualification
+import Mettapedia.GSLT.LanguageDef.M0GCNativeReplayAdequacy
+import Mettapedia.GSLT.LanguageDef.M0GCCoreLoopCorrespondence
+import Mettapedia.GSLT.LanguageDef.M0GCRecordReplayControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCBoundedReplayControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCCompleteReplayControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCWordCompleteCheckerControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCFixedResultStoreRefinement
+import Mettapedia.GSLT.LanguageDef.M0GCAddressedReplayControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCAddressedCompleteCheckerControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCBytePackedResultStoreRefinement
+import Mettapedia.GSLT.LanguageDef.M0GCDisjointCertificateResultMemory
+import Mettapedia.GSLT.LanguageDef.M0GCUnifiedMemoryReplayControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCUnifiedMemoryCompleteCheckerControlMachine
+import Mettapedia.GSLT.LanguageDef.M0GCCheckedByteMachineIR
+import Mettapedia.GSLT.LanguageDef.M0GCResultWriteByteMachineRealization
+import Mettapedia.GSLT.LanguageDef.M0GCHeaderByteMachineRealization
+import Mettapedia.GSLT.LanguageDef.M0GCBodyViewByteMachineRealization
+import Mettapedia.GSLT.LanguageDef.M0GCIndexedBodyAddressByteMachineRealization
+import Mettapedia.GSLT.LanguageDef.M0GCBodyRecordByteMachineRealization
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTDerivabilityQualification
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctorCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTJudgmentEmbedding
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthorityCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTUltrafilterSemanticAuthority
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTUltrafilterSemanticAuthorityCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneGunkSemanticAuthority
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneUltraBasisBridge
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneQualificationBoundary
+import Mettapedia.GSLT.LanguageDef.StructuralPatternBindingNaturality
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthority
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthorityCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingRouteFunctor
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingRouteFunctorCanary
+import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingRouteObservation
+import Mettapedia.GSLT.LanguageDef.GSLTHosting
 import Mettapedia.GSLT.LanguageDef.ArithmeticExternalCallPilot
 import Mettapedia.GSLT.LanguageDef.PeanoExactArithmeticAddBridge
 import Mettapedia.GSLT.LanguageDef.WaltersZantemaDA
@@ -111,6 +323,22 @@ import Mettapedia.GSLT.LanguageDef.WaltersZantemaDATriangle
 import Mettapedia.GSLT.LanguageDef.WaltersZantemaDANTT
 import Mettapedia.GSLT.LanguageDef.WaltersZantemaDAWire
 import Mettapedia.GSLT.LanguageDef.StructuralCoproduct
+import Mettapedia.GSLT.LanguageDef.StructuralCoproductCanary
+import Mettapedia.GSLT.LanguageDef.StructuralCoproductTyping
+import Mettapedia.GSLT.LanguageDef.StructuralRenamingSemantics
+import Mettapedia.GSLT.LanguageDef.StructuralCoproductOperational
+import Mettapedia.GSLT.LanguageDef.StructuralLanguageDefCategory
+import Mettapedia.GSLT.LanguageDef.DisjointExtensionGluing
+import Mettapedia.GSLT.LanguageDef.ArithmeticTargetCoproduct
+import Mettapedia.GSLT.LanguageDef.ArithmeticTargetCoproductNTT
+import Mettapedia.GSLT.LanguageDef.AuthoredRuleSorting
+import Mettapedia.GSLT.Examples.AuthoredRuleSorting
+import Mettapedia.GSLT.LanguageDef.CarrierWellSorted
+import Mettapedia.GSLT.LanguageDef.StructuredC
+import Mettapedia.GSLT.LanguageDef.StructuredCNTT
+import Mettapedia.GSLT.LanguageDef.ExternalCallToStructuredC
+import Mettapedia.GSLT.LanguageDef.ExternalCallToStructuredCTyping
+import Mettapedia.GSLT.LanguageDef.ExternalCallToStructuredCSemantics
 import Mettapedia.GSLT.LanguageDef.RadixDigitMachine
 import Mettapedia.GSLT.LanguageDef.RadixDigitLanguageDef
 import Mettapedia.GSLT.LanguageDef.RadixDigitRelationCatalog
@@ -124,19 +352,41 @@ import Mettapedia.GSLT.LanguageDef.CArray1ListConstructionHosting
 import Mettapedia.GSLT.LanguageDef.RFC8259ParserProfileNTT
 import Mettapedia.GSLT.LanguageDef.RFC8259ParserProfileWire
 import Mettapedia.GSLT.LanguageDef.RFC8259SyntaxNTT
+import Mettapedia.GSLT.LanguageDef.RFC8259ParserPackGSLT
 import Mettapedia.GSLT.LanguageDef.RFC8259SyntaxLanguageDefWire
 import Mettapedia.GSLT.LanguageDef.RFC8259ParserPackHeightBound
 import Mettapedia.GSLT.LanguageDef.RFC8259ValueSemantics
 import Mettapedia.GSLT.LanguageDef.JSONParserPackNTT
 import Mettapedia.GSLT.LanguageDef.JSONValueLanguageDefWire
+import Mettapedia.GSLT.LanguageDef.RegexCharacterInterpretation
+import Mettapedia.GSLT.LanguageDef.RegexAuthoredControls
+import Mettapedia.GSLT.LanguageDef.RegexObservationTable
 import Mettapedia.GSLT.LanguageDef.NIKRevisionAlignedComposition
 import Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
 import Mettapedia.GSLT.LanguageDef.NIKRepresentedRouteObservation
 import Mettapedia.GSLT.LanguageDef.OpenSystemExtensionBoundary
 import Mettapedia.GSLT.LanguageDef.DescentInterface
 import Mettapedia.GSLT.LanguageDef.GSLTIL
+import Mettapedia.GSLT.LanguageDef.IRPass
+import Mettapedia.GSLT.LanguageDef.BindingDecisionLanguage
+import Mettapedia.GSLT.LanguageDef.BindingDecisionExactness
+import Mettapedia.GSLT.LanguageDef.BindingDecisionAdequacy
+import Mettapedia.GSLT.LanguageDef.SortedABTRenaming
+import Mettapedia.GSLT.LanguageDef.SortedABTSubstitution
+import Mettapedia.GSLT.LanguageDef.SortedABTSubstitutionExamples
+import Mettapedia.GSLT.LanguageDef.MatchedIndexJudgment
+import Mettapedia.GSLT.LanguageDef.OrderedMatchMachineLanguage
+import Mettapedia.GSLT.LanguageDef.OrderedMatchMachineExactness
+import Mettapedia.GSLT.LanguageDef.OrderedMatchMachineAdequacy
+import Mettapedia.GSLT.LanguageDef.IRRunView
+import Mettapedia.GSLT.LanguageDef.StructuredCStraightLine
+import Mettapedia.GSLT.LanguageDef.IRRunViewEquationCanary
 import Mettapedia.GSLT.LanguageDef.GSLTILSyntax
+import Mettapedia.GSLT.LanguageDef.GSLTILPredicateEquipmentBridge
+import Mettapedia.GSLT.LanguageDef.GSLTILRouteValuationFunctor
+import Mettapedia.GSLT.LanguageDef.NIKDenotationSquareRefinement
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalStructure
+import Mettapedia.GSLT.LanguageDef.GSLTILObservationSelection
 import Mettapedia.GSLT.LanguageDef.GSLTILCapabilityGeneratedObservation
 import Mettapedia.GSLT.LanguageDef.GSLTILCanary
 import Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
@@ -155,6 +405,40 @@ import Mettapedia.GSLT.LanguageDef.TwoNTTCoherence
 import Mettapedia.GSLT.LanguageDef.ReflectiveStructuralCategory
 import Mettapedia.GSLT.LanguageDef.ReflectiveWellSorted
 import Mettapedia.GSLT.LanguageDef.ReflectiveWellSortedChecker
+import Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
+import Mettapedia.GSLT.LanguageDef.ConstructorTermExtension
+import Mettapedia.GSLT.LanguageDef.StatefulCalculusExtension
+import Mettapedia.GSLT.LanguageDef.IncrementalCalculusGenerator
+import Mettapedia.GSLT.LanguageDef.ConstructorPermutation
+import Mettapedia.GSLT.LanguageDef.ConstructionProvenance
+import Mettapedia.GSLT.LanguageDef.DialectGluing
+import Mettapedia.GSLT.LanguageDef.ObservedOperationalRealization
+import Mettapedia.GSLT.LanguageDef.AuthorityLedger
+import Mettapedia.GSLT.LanguageDef.MapLanguageDef
+import Mettapedia.GSLT.LanguageDef.StructuralSimulation
+import Mettapedia.GSLT.LanguageDef.ConstructorRoleTransport
+import Mettapedia.GSLT.LanguageDef.DialectGluingMorphisms
+import Mettapedia.GSLT.LanguageDef.HOLHenkinTheoryNode
+import Mettapedia.GSLT.LanguageDef.HOLTypeDerivedConsequence
+import Mettapedia.GSLT.LanguageDef.HOLFullDomainTheory
+import Mettapedia.GSLT.LanguageDef.BiformTheory
+import Mettapedia.GSLT.LanguageDef.TheoryGraph
+import Mettapedia.GSLT.LanguageDef.EquationPremiseStability
+import Mettapedia.GSLT.LanguageDef.TheoryGraphModels
+import Mettapedia.GSLT.LanguageDef.TheoryGraphModelsCanary
+import Mettapedia.GSLT.LanguageDef.BiformTheoryGraph
+import Mettapedia.GSLT.LanguageDef.BiformTheoryGraphCanary
+import Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraph
+import Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraphCanary
+import Mettapedia.GSLT.LanguageDef.BiformObserverControl
+import Mettapedia.GSLT.LanguageDef.BiformObserverControlCanary
+import Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
+import Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary
+import Mettapedia.GSLT.LanguageDef.BiformCertificateBoundaryCanary
+import Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
+import Mettapedia.GSLT.LanguageDef.BiformTheoryCanary
+import Mettapedia.GSLT.LanguageDef.BiformDependentContext
+import Mettapedia.GSLT.LanguageDef.BiformDependentIdentityCanary
 
 /-!
 # Graph-Structured Lambda Theories (GSLT)
@@ -168,12 +452,26 @@ This module formalizes the GSLT framework from Bucciarelli & Salibra's
 * `GraphTheory/` - Graph models, Böhm trees, weak products
 * `Topos/` - Presheaf topos construction (Yoneda, subobject classifier)
 
-## Main Results
+## Qualified constructions and open source results
 
-* Lambda theories form a category with CCCs
-* Graph models provide semantics for lambda calculus
-* Böhm theory B is the maximal sensible graph theory (Theorem 45)
-* Presheaf categories have subobject classifiers
+* Graph-model interpretation constructs a consistent lambda theory using
+  actual finite-support coding; model transport follows primitive coding laws.
+* Reachable head-normal-form observations have reduction invariance and
+  coherent finite-depth families. These results do not yet construct the
+  source's maximal sensible graph theory.
+* The canonical completion of an injective partial pair has total injective
+  coding. One generic factor flattening and the actual interpreter prove
+  theory inclusion into any factor satisfying the primitive coding laws.
+  Both disjoint-union factors discharge those laws, yielding the existing
+  graph-theory lower-bound theorem. Indexed family construction and source
+  stratification remain open.
+* The categorical theory interfaces package supplied products, exponentials,
+  and limits; they do not derive those structures from every authored theory.
+* Presheaf subobject infrastructure is supplied by `Topos/`.
+
+This umbrella still imports unfinished legacy graph-theory declarations.
+Import success is not a qualification of those declarations, and proofs that
+depend on their admitted fields are not established results.
 
 ## References
 

@@ -3,6 +3,7 @@ import Mettapedia.Languages.GF.HandCrafted.Abstract
 import Mettapedia.Languages.GF.OSLFBridge_handcrafted
 import Mettapedia.Languages.GF.Typing
 import Mettapedia.Languages.GF.LinguisticInvariance
+import Mettapedia.Languages.GF.EquationCanonicalSection
 import Mettapedia.PLN.WorldModel.PLNWorldModel
 import Mettapedia.PLN.Evidence.EvidenceQuantale
 import Mettapedia.OSLF.Formula
@@ -50,7 +51,10 @@ open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.TypeSynthesis
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.EvidenceSemantics
+open Mettapedia.GSLT.LanguageDef
+open Mettapedia.Languages.GF.EquationCanonicalSection
 
 open scoped ENNReal
 
@@ -79,6 +83,10 @@ structure GFSemantics where
   atomQuery : String → Pattern → Pattern
   /-- The OSLF language definition providing the reduction relation. -/
   lang : LanguageDef
+  /-- A computable representative of each equation class.  Evidence queries
+      pass through this section so that they are semantic observations while
+      retaining exact pointwise world-model revision. -/
+  equationSection : ComputableSetoidSection Pattern (langGSLT lang).equations
   /-- Injectivity: different atom names produce different queries. -/
   atomQuery_injective : ∀ a₁ a₂ p, a₁ ≠ a₂ → atomQuery a₁ p ≠ atomQuery a₂ p
 
@@ -88,37 +96,46 @@ variable {State : Type*} [EvidenceType State] [BinaryWorldModel State Pattern]
 
 /-- The reduction relation induced by this configuration's language. -/
 def reduces (cfg : GFSemantics) : Pattern → Pattern → Prop :=
-  langReduces cfg.lang
+  langSemanticReduces cfg.lang
 
-/-- BinaryEvidence-valued atom semantics from a world-model state. -/
-noncomputable def evidenceAtomSem (cfg : GFSemantics) (W : State) : EvidenceAtomSem :=
-  wmEvidenceAtomSem W cfg.atomQuery
+/-- Equation-respecting BinaryEvidence atoms from a world-model state. -/
+noncomputable def evidenceAtomSem (cfg : GFSemantics) (W : State) :
+    EquationEvidenceAtomSem cfg.lang :=
+  canonicalEvidenceAtomSem cfg.lang cfg.equationSection
+    (wmEvidenceAtomSem W cfg.atomQuery)
 
 /-- Full evidence-valued formula semantics (PRIMARY layer).
     Maps formulas to BinaryEvidence via the Frame structure (⊓ ∧, ⊔ ∨, ⇨ →, ⨆ ◇, ⨅ □). -/
 noncomputable def formulaSemE (cfg : GFSemantics) (W : State)
     (φ : OSLFFormula) (p : Pattern) : BinaryEvidence :=
-  semE cfg.reduces (cfg.evidenceAtomSem W) φ p
+  langSemE cfg.lang (cfg.evidenceAtomSem W) φ p
 
 /-- Threshold-Prop atom semantics (DERIVED from evidence layer). -/
 noncomputable def thresholdAtomSem (cfg : GFSemantics) (W : State)
     (τ : BinaryEvidence) : AtomSem :=
-  threshAtomSem (cfg.evidenceAtomSem W) τ
+  fun atom term => τ ≤ (cfg.evidenceAtomSem W atom).1 term
+
+/-- Threshold observations packaged with the equation-free invariance
+certificate carried by the current GF presentation. -/
+noncomputable def thresholdEquationAtomSem (cfg : GFSemantics) (W : State)
+    (τ : BinaryEvidence) : EquationAtomSem cfg.lang :=
+  Mettapedia.OSLF.Framework.EvidenceSemantics.thresholdEquationAtomSem
+    cfg.lang (cfg.evidenceAtomSem W) τ
 
 /-- Full Prop-valued formula semantics (DERIVED via threshold projection). -/
 noncomputable def formulaSem (cfg : GFSemantics) (W : State)
     (τ : BinaryEvidence) (φ : OSLFFormula) (p : Pattern) : Prop :=
-  sem cfg.reduces (cfg.thresholdAtomSem W τ) φ p
+  langFormulaSem cfg.lang (cfg.thresholdEquationAtomSem W τ) φ p
 
 /-- Checker soundness contract: if checkLangUsing returns .sat with a sound
     atom checker, then the Prop-level formula semantics holds.
     This is the master bridge from executable checker to denotational semantics. -/
 theorem checkerSoundness (cfg : GFSemantics)
-    {I_check : AtomCheck} {I_sem : AtomSem}
-    (h_atoms : ∀ a p, I_check a p = true → I_sem a p)
+    {I_check : AtomCheck} {I_sem : EquationAtomSem cfg.lang}
+    (h_atoms : ∀ a p, I_check a p = true → (I_sem a).1 p)
     {fuel : Nat} {p : Pattern} {φ : OSLFFormula}
     (h : checkLangUsing .empty cfg.lang I_check fuel p φ = .sat) :
-    sem cfg.reduces I_sem φ p :=
+    langFormulaSem cfg.lang I_sem φ p :=
   checkLangUsing_sat_sound h_atoms h
 
 /-- BinaryEvidence bound contract: for imp-free formulas, checker .sat implies
@@ -127,13 +144,17 @@ theorem evidenceBound (cfg : GFSemantics)
     {W : State} {τ : BinaryEvidence}
     {I_check : AtomCheck}
     (h_atoms : ∀ a p, I_check a p = true →
-      threshAtomSem (cfg.evidenceAtomSem W) τ a p)
+      (cfg.thresholdEquationAtomSem W τ a).1 p)
     {fuel : Nat} {p : Pattern} {φ : OSLFFormula}
-    (hImpFree : impFree φ)
+    (hImpFree : impFree φ) (hMuFree : OSLFFormula.modalOnly φ = true)
     (hSat : checkLangUsing .empty cfg.lang I_check fuel p φ = .sat) :
-    τ ≤ cfg.formulaSemE W φ p :=
-  threshold_reverse_impFree _ τ _ φ hImpFree p
-    (checkLangUsing_sat_sound h_atoms hSat)
+    τ ≤ cfg.formulaSemE W φ p := by
+  apply threshold_reverse_impFree_env
+    (fun atom term => (cfg.evidenceAtomSem W atom).1 term) τ _ _ _ φ hImpFree hMuFree p
+  have semanticSat := cfg.checkerSoundness h_atoms hSat
+  exact (langSemUsing_eq_sem_of_modalOnly .empty cfg.lang
+    (Mettapedia.OSLF.Framework.EvidenceSemantics.thresholdEquationAtomSem
+      cfg.lang (cfg.evidenceAtomSem W) τ) φ hMuFree) ▸ semanticSat
 
 end GFSemantics
 
@@ -208,7 +229,20 @@ The atom name is part of the query, so different atoms can have
 different evidence. -/
 noncomputable def gfAtomSemFromWM (W : State) (threshold : ℝ≥0∞) : AtomSem :=
   fun atomName p =>
-    threshold ≤ BinaryEvidence.toStrength (BinaryWorldModel.evidence W (queryOfAtom atomName p))
+    threshold ≤ BinaryEvidence.toStrength
+      (BinaryWorldModel.evidence W
+        (queryOfAtom atomName (normalizeUseN p)))
+
+/-- The threshold view is a predicate on GF equation classes because its
+world-model query uses the certified representative. -/
+noncomputable def gfEquationAtomSemFromWM
+    (W : State) (threshold : ℝ≥0∞) :
+    EquationAtomSem gfLegacySemanticLanguageDef :=
+  fun atom =>
+    ⟨gfAtomSemFromWM W threshold atom, by
+      intro left right equivalent
+      unfold gfAtomSemFromWM
+      rw [normalizeUseN_complete equivalent]⟩
 
 /-- Full OSLF formula semantics grounded in a world-model state.
 
@@ -217,7 +251,8 @@ as the reduction relation, matching `checkLangUsing_sat_sound`. -/
 noncomputable def gfWMFormulaSem
     (W : State) (threshold : ℝ≥0∞)
     (φ : OSLFFormula) (p : Pattern) : Prop :=
-  sem (langReduces gfLegacySemanticLanguageDef) (gfAtomSemFromWM W threshold) φ p
+  langFormulaSem gfLegacySemanticLanguageDef
+    (gfEquationAtomSemFromWM W threshold) φ p
 
 /-! ## 3. Checker Soundness → WM Semantics
 
@@ -237,8 +272,9 @@ theorem oslf_sat_implies_wm_semantics
       (gfAtomSemFromWM W threshold) a p)
     {fuel : Nat} {p : Pattern} {φ : OSLFFormula}
     (h : checkLangUsing .empty gfLegacySemanticLanguageDef I_check fuel p φ = .sat) :
-    gfWMFormulaSem W threshold φ p :=
-  checkLangUsing_sat_sound h_atoms h
+    gfWMFormulaSem W threshold φ p := by
+  exact checkLangUsing_sat_sound
+    (I_sem := gfEquationAtomSemFromWM W threshold) h_atoms h
 
 /-! ## 4. BinaryEvidence Revision Preserves Denotation
 
@@ -339,10 +375,12 @@ The PRIMARY semantics maps formulas to BinaryEvidence values via `semE` from
 `OSLFEvidenceSemantics.lean`, using the Frame structure of BinaryEvidence
 (⊓ for ∧, ⊔ for ∨, ⇨ for →, ⨆ for ◇, ⨅ for □). -/
 
-/-- BinaryEvidence-valued atom semantics from a world-model state.
-Each atom name and pattern produces an BinaryEvidence value via WM query. -/
-noncomputable def gfEvidenceAtomSemFromWM (W : State) : EvidenceAtomSem :=
-  wmEvidenceAtomSem W queryOfAtom
+/-- BinaryEvidence-valued atom semantics from a world-model state, descended
+through the exact GF equation quotient by its computable section. -/
+noncomputable def gfEvidenceAtomSemFromWM (W : State) :
+    EquationEvidenceAtomSem gfLegacySemanticLanguageDef :=
+  canonicalEvidenceAtomSem gfLegacySemanticLanguageDef gfEquationSection
+    (wmEvidenceAtomSem W queryOfAtom)
 
 /-- Full evidence-valued OSLF formula semantics for GF.
 
@@ -351,14 +389,15 @@ The threshold-Prop semantics `gfWMFormulaSem` is a corollary obtained by
 thresholding this. -/
 noncomputable def gfWMFormulaSemE
     (W : State) (φ : OSLFFormula) (p : Pattern) : BinaryEvidence :=
-  semE (langReduces gfLegacySemanticLanguageDef) (gfEvidenceAtomSemFromWM W) φ p
+  langSemE gfLegacySemanticLanguageDef (gfEvidenceAtomSemFromWM W) φ p
 
 /-- The threshold-Prop atom semantics is recovered by thresholding the
 evidence-valued atom semantics on `BinaryEvidence.toStrength`. -/
 theorem gfAtomSemFromWM_eq_threshold (W : State) (threshold : ℝ≥0∞)
     (a : String) (p : Pattern) :
     gfAtomSemFromWM W threshold a p ↔
-      threshold ≤ BinaryEvidence.toStrength (gfEvidenceAtomSemFromWM W a p) := by
+      threshold ≤ BinaryEvidence.toStrength
+        ((gfEvidenceAtomSemFromWM W a).1 p) := by
   rfl
 
 /-- BinaryEvidence revision lifts to GF evidence atoms:
@@ -366,19 +405,22 @@ combining world-model states then extracting = extracting then combining. -/
 theorem gfWMFormulaSemE_atom_revision (W₁ W₂ : State) (a : String) (p : Pattern) :
     gfWMFormulaSemE (W₁ + W₂) (.atom a) p =
       gfWMFormulaSemE W₁ (.atom a) p + gfWMFormulaSemE W₂ (.atom a) p := by
-  simp only [gfWMFormulaSemE, semE_atom, gfEvidenceAtomSemFromWM, wmEvidenceAtomSem]
-  exact BinaryWorldModel.evidence_add W₁ W₂ (queryOfAtom a p)
+  simp only [gfWMFormulaSemE, langSemE, langSemEUsing, semEEnv_atom,
+    gfEvidenceAtomSemFromWM, canonicalEvidenceAtomSem,
+    canonicalEvidenceAtomSemUsing, wmEvidenceAtomSem]
+  exact BinaryWorldModel.evidence_add W₁ W₂
+    (queryOfAtom a (normalizeUseN p))
 
 /-- Conjunction in evidence semantics projects to components. -/
 theorem gfWMFormulaSemE_and_le_left (W : State) (φ ψ : OSLFFormula) (p : Pattern) :
     gfWMFormulaSemE W (.and φ ψ) p ≤ gfWMFormulaSemE W φ p := by
-  exact semE_and_le_left _ _ _ _ _
+  exact semEEnv_and_le_left _ _ _ _ _ _ _
 
 /-- Diamond witnesses inject into evidence diamond. -/
 theorem gfWMFormulaSemE_dia_le (W : State) (φ : OSLFFormula) (p q : Pattern)
-    (h : langReduces gfLegacySemanticLanguageDef p q) :
+    (h : langSemanticReduces gfLegacySemanticLanguageDef p q) :
     gfWMFormulaSemE W φ q ≤ gfWMFormulaSemE W (.dia φ) p := by
-  exact semE_dia_le _ _ _ _ _ h
+  exact semEEnv_dia_le _ _ _ _ _ _ _ h
 
 /-- GF evidence denote is a direct WM query, while gfEvidenceAtomSemFromWM goes
 through the atom-tagged query encoding. They share the same WM extraction
@@ -400,11 +442,13 @@ operations coincide with the existing hand-written definitions. -/
 def gfRGLSemantics : GFSemantics where
   atomQuery := queryOfAtom
   lang := gfLegacySemanticLanguageDef
+  equationSection := gfEquationSection
   atomQuery_injective := queryOfAtom_injective_name
 
-/-- Agreement: gfRGLSemantics.reduces = langReduces gfLegacySemanticLanguageDef. -/
+/-- Agreement: the configured reduction is the modulo-equations OSLF
+one-step relation. -/
 @[simp] theorem gfRGLSemantics_reduces :
-    gfRGLSemantics.reduces = langReduces gfLegacySemanticLanguageDef := rfl
+    gfRGLSemantics.reduces = langSemanticReduces gfLegacySemanticLanguageDef := rfl
 
 /-- Agreement: record atom semantics = hand-written definition. -/
 theorem gfRGLSemantics_evidenceAtomSem (W : State) :
@@ -419,8 +463,9 @@ theorem gfRGLSemantics_formulaSemE (W : State) (φ : OSLFFormula) (p : Pattern) 
 theorem gfRGLSemantics_formulaSem (W : State) (τ : BinaryEvidence)
     (φ : OSLFFormula) (p : Pattern) :
     gfRGLSemantics.formulaSem W τ φ p =
-      sem (langReduces gfLegacySemanticLanguageDef)
-        (threshAtomSem (gfEvidenceAtomSemFromWM W) τ) φ p := rfl
+      langFormulaSem gfLegacySemanticLanguageDef
+        (Mettapedia.OSLF.Framework.EvidenceSemantics.thresholdEquationAtomSem
+          gfLegacySemanticLanguageDef (gfEvidenceAtomSemFromWM W) τ) φ p := rfl
 
 /-! ## 10. Constructor Compositionality
 
@@ -479,11 +524,19 @@ theorem langReduces_identityWrapper
     hrw (premisesNil := hprem)
   · simp [hleft,
       Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
       matchPattern, matchArgs, BEq.beq, List.length, mergeBindings,
-      List.filterMap, gfLegacySemanticLanguageDef]
-  · simp [hright,
+      List.filterMap]
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, hright,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule,
-      applyBindings, List.find?, BEq.beq, gfLegacySemanticLanguageDef]
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      applyBindings, List.find?, BEq.beq]
 
 private theorem mem_rewrites (rw : RewriteRule) (h : rw ∈ allIdentityRewrites) :
     rw ∈ gfLegacySemanticLanguageDef.rewrites := by
@@ -550,12 +603,19 @@ theorem langReduces_activePassive (np₁ np₂ v : Pattern) :
     (premisesNil := rfl)
   · simp [activePassiveRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
       matchPattern, matchArgs, BEq.beq, List.length, mergeBindings,
-      List.filterMap, List.find?, gfLegacySemanticLanguageDef]
-  · simp [activePassiveRewrite,
+      List.filterMap, List.find?]
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, activePassiveRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule,
-      applyBindings, List.find?, BEq.beq, List.map,
-      gfLegacySemanticLanguageDef]
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      applyBindings, List.find?, BEq.beq, List.map]
 
 /-- Active-passive evidence transparency: evidence of φ at the passive clause
     flows through from the active clause via ◇.
@@ -570,11 +630,12 @@ theorem gfWMFormulaSemE_activePassive_transparent
       (gfAbstractToPattern (.apply FunctionSig.PredVP [np₁,
         .apply FunctionSig.ComplSlash [.apply FunctionSig.SlashV2a [v], np₂]])) := by
   unfold gfWMFormulaSemE
-  apply semE_dia_le
+  apply semEEnv_dia_le
   simp [FunctionSig.PredVP, FunctionSig.PassV2, FunctionSig.ComplSlash,
         FunctionSig.SlashV2a, List.map]
-  exact langReduces_activePassive
-    (gfAbstractToPattern np₁) (gfAbstractToPattern np₂) (gfAbstractToPattern v)
+  exact langReduces_to_semantic gfLegacySemanticLanguageDef
+    (langReduces_activePassive
+      (gfAbstractToPattern np₁) (gfAbstractToPattern np₂) (gfAbstractToPattern v))
 
 /-- Generic wrapper evidence transparency: for any identity-wrapper constructor,
 evidence of φ at the inner tree is accessible through the wrapper via ◇.
@@ -588,9 +649,9 @@ theorem gfWMFormulaSemE_wrapper_transparent
     gfWMFormulaSemE W φ (gfAbstractToPattern inner) ≤
     gfWMFormulaSemE W (.dia φ) (gfAbstractToPattern (.apply f [inner])) := by
   unfold gfWMFormulaSemE
-  apply semE_dia_le
+  apply semEEnv_dia_le
   simp [List.map]
-  exact hReduce
+  exact langReduces_to_semantic gfLegacySemanticLanguageDef hReduce
 
 /-- UseN transparency. -/
 theorem gfWMFormulaSemE_UseN_transparent
@@ -673,15 +734,22 @@ No totality or finite-branching assumptions needed (reverse bridge direction).
 The forward bridge `semE → sem` for ∨/◇ requires totality + finite branching
 (see `threshold_or_total`, `threshold_dia_total`). -/
 theorem checker_sat_implies_evidence_bound
-    {I : EvidenceAtomSem} {τ : BinaryEvidence}
+    {I : EquationEvidenceAtomSem gfLegacySemanticLanguageDef}
+    {τ : BinaryEvidence}
     {I_check : AtomCheck}
-    (h_atoms : ∀ a p, I_check a p = true → threshAtomSem I τ a p)
+    (h_atoms : ∀ a p, I_check a p = true → τ ≤ (I a).1 p)
     {fuel : Nat} {p : Pattern} {φ : OSLFFormula}
-    (hImpFree : impFree φ)
+    (hImpFree : impFree φ) (hMuFree : OSLFFormula.modalOnly φ = true)
     (hSat : checkLangUsing .empty gfLegacySemanticLanguageDef I_check fuel p φ = .sat) :
-    τ ≤ semE (langReduces gfLegacySemanticLanguageDef) I φ p :=
-  threshold_reverse_impFree I τ _ φ hImpFree p
-    (checkLangUsing_sat_sound h_atoms hSat)
+    τ ≤ langSemE gfLegacySemanticLanguageDef I φ p := by
+  apply threshold_reverse_impFree_env
+    (fun atom term => (I atom).1 term) τ _ _ _ φ hImpFree hMuFree p
+  exact (langSemUsing_eq_sem_of_modalOnly .empty gfLegacySemanticLanguageDef
+    (Mettapedia.OSLF.Framework.EvidenceSemantics.thresholdEquationAtomSem
+      gfLegacySemanticLanguageDef I τ) φ hMuFree) ▸
+    checkLangUsing_sat_sound
+      (I_sem := Mettapedia.OSLF.Framework.EvidenceSemantics.thresholdEquationAtomSem
+        gfLegacySemanticLanguageDef I τ) h_atoms hSat
 
 /-- Concrete end-to-end: UseN(house) |= ◇(is_house) with evidence bound.
 
@@ -690,22 +758,24 @@ the checker `.sat` + reverse bridge gives `τ ≤ semE (◇ is_house) (UseN hous
 
 Full chain: GF tree → Pattern → checker `.sat` → `sem` → `τ ≤ semE`. -/
 theorem useN_house_evidence_bound
-    (I : EvidenceAtomSem) (τ : BinaryEvidence)
-    (hI : ∀ a, τ ≤ I a (.fvar "house")) :
-    τ ≤ semE (langReduces gfLegacySemanticLanguageDef) I
+    (I : EquationEvidenceAtomSem gfLegacySemanticLanguageDef)
+    (τ : BinaryEvidence)
+    (hI : ∀ a, τ ≤ (I a).1 (.fvar "house")) :
+    τ ≤ langSemE gfLegacySemanticLanguageDef I
       (.dia (.atom "is_house"))
       (gfAbstractToPattern (.apply FunctionSig.UseN [.leaf "house" (.base "N")])) := by
   -- Direct semantic proof via langReduces_UseN (no native_decide needed)
-  have hR : langReduces gfLegacySemanticLanguageDef
+  have hR : langSemanticReduces gfLegacySemanticLanguageDef
       (gfAbstractToPattern (.apply FunctionSig.UseN [.leaf "house" (.base "N")]))
       (.fvar "house") := by
     simp only [gfAbstractToPattern, List.map, FunctionSig.UseN]
-    exact langReduces_UseN _
-  calc τ ≤ I "is_house" (.fvar "house") := hI "is_house"
-    _ = semE (langReduces gfLegacySemanticLanguageDef) I (.atom "is_house") (.fvar "house") := rfl
-    _ ≤ semE (langReduces gfLegacySemanticLanguageDef) I (.dia (.atom "is_house"))
+    exact langReduces_to_semantic gfLegacySemanticLanguageDef (langReduces_UseN _)
+  calc τ ≤ (I "is_house").1 (.fvar "house") := hI "is_house"
+    _ = langSemE gfLegacySemanticLanguageDef I
+          (.atom "is_house") (.fvar "house") := rfl
+    _ ≤ langSemE gfLegacySemanticLanguageDef I (.dia (.atom "is_house"))
           (gfAbstractToPattern (.apply FunctionSig.UseN [.leaf "house" (.base "N")])) :=
-        semE_dia_le _ _ _ _ _ hR
+        semEEnv_dia_le _ _ _ _ _ _ _ hR
 
 /-! ## 12. Temporal Tense Bridge
 
@@ -743,12 +813,19 @@ theorem langReduces_pastTense (cl : Pattern) :
     (premisesNil := rfl)
   · simp [pastTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
       matchPattern, matchArgs, BEq.beq, List.length, mergeBindings,
-      List.filterMap, List.find?, gfLegacySemanticLanguageDef]
-  · simp [pastTenseRewrite,
+      List.filterMap, List.find?]
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, pastTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule,
-      applyBindings, List.find?, BEq.beq, List.map,
-      gfLegacySemanticLanguageDef]
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      applyBindings, List.find?, BEq.beq, List.map]
 
 /-- Present tense reduction: UseCl(TTAnt(TPres, ASimul), PPos, cl) ⇝ ⊛temporal(cl, 0). -/
 theorem langReduces_presentTense (cl : Pattern) :
@@ -765,12 +842,19 @@ theorem langReduces_presentTense (cl : Pattern) :
     (premisesNil := rfl)
   · simp [presentTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
       matchPattern, matchArgs, BEq.beq, List.length, mergeBindings,
-      List.filterMap, List.find?, gfLegacySemanticLanguageDef]
-  · simp [presentTenseRewrite,
+      List.filterMap, List.find?]
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, presentTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule,
-      applyBindings, List.find?, BEq.beq, List.map,
-      gfLegacySemanticLanguageDef]
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      applyBindings, List.find?, BEq.beq, List.map]
 
 /-- Future tense reduction: UseCl(TTAnt(TFut, ASimul), PPos, cl) ⇝ ⊛temporal(cl, 1). -/
 theorem langReduces_futureTense (cl : Pattern) :
@@ -787,12 +871,19 @@ theorem langReduces_futureTense (cl : Pattern) :
     (premisesNil := rfl)
   · simp [futureTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
       matchPattern, matchArgs, BEq.beq, List.length, mergeBindings,
-      List.filterMap, List.find?, gfLegacySemanticLanguageDef]
-  · simp [futureTenseRewrite,
+      List.filterMap, List.find?]
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, futureTenseRewrite,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule,
-      applyBindings, List.find?, BEq.beq, List.map,
-      gfLegacySemanticLanguageDef]
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      applyBindings, List.find?, BEq.beq, List.map]
 
 /-- **Positive result**: Past-tense evidence is ◇-accessible from the full
     GF sentence.  If φ holds at the past-temporal pattern, then ◇φ holds at
@@ -808,7 +899,9 @@ theorem gfWMFormulaSemE_pastTense_transparent
         Pattern.apply "PPos" [],
         cl]) := by
   unfold gfWMFormulaSemE
-  exact semE_dia_le _ _ _ _ _ (langReduces_pastTense cl)
+  exact semEEnv_dia_le _ _ _ _ _ _ _
+    (langReduces_to_semantic gfLegacySemanticLanguageDef
+      (langReduces_pastTense cl))
 
 /-- **Positive result**: Different tenses produce structurally different patterns.
     Past ≠ present (as OSLF patterns). -/
@@ -844,7 +937,11 @@ private theorem gfRGL_rule_does_not_match_temporal (r : RewriteRule)
   -- Each disjunct fixes r to a specific rewrite rule with a known LHS
   rcases hr with (h|h|h|h|h|h)|(h|h|h|h) <;> subst h <;>
     simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
-      gfLegacySemanticLanguageDef, matchPattern, useNElimRewrite, positAElimRewrite,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
+      Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      matchPattern, useNElimRewrite, positAElimRewrite,
       useCompElimRewrite, useVElimRewrite, useN2ElimRewrite, useA2ElimRewrite,
       activePassiveRewrite, presentTenseRewrite, pastTenseRewrite, futureTenseRewrite]
 
@@ -969,6 +1066,11 @@ def positiveFormula : OSLFFormula → Prop
   | .and φ ψ | .or φ ψ => positiveFormula φ ∧ positiveFormula ψ
   | .imp _ _ | .box _ => False
   | .dia φ => positiveFormula φ
+  | .var _ => False
+  | .mu _ => False
+  | .emptyColl _ => True
+  | .cut _ φ ψ => positiveFormula φ ∧ positiveFormula ψ
+  | .headed _ φ => positiveFormula φ
 
 theorem sem_mono_rel_positive
     {R1 R2 : Pattern → Pattern → Prop}
@@ -988,21 +1090,37 @@ theorem sem_mono_rel_positive
     obtain ⟨q, hRpq, hq⟩ := h
     exact ⟨q, hR p q hRpq, ih hpos hq⟩
   | box _ => exact absurd hpos (by simp [positiveFormula])
+  | var _ => exact absurd hpos (by simp [positiveFormula])
+  | mu _ _ => exact absurd hpos (by simp [positiveFormula])
+  | emptyColl _ => exact h
+  | cut _ φ ψ ihφ ihψ =>
+    obtain ⟨left, right, shape, hφ, hψ⟩ := h
+    exact ⟨left, right, shape, ihφ hpos.1 hφ, ihψ hpos.2 hψ⟩
+  | headed _ φ ih =>
+    obtain ⟨inner, shape, hφ⟩ := h
+    exact ⟨inner, shape, ih hpos hφ⟩
 
-/-- Modal-free fragment: no dia, no box.  `sem R I φ p` is independent of R. -/
+/-- Modal-free fragment: no dia, no box.  `sem R I φ p` is independent of R.
+The structural connectives belong to it: they read the shape of a term, which
+the reduction relation does not enter. -/
 def modalFree : OSLFFormula → Prop
   | .top | .bot | .atom _ => True
   | .and φ ψ | .or φ ψ | .imp φ ψ => modalFree φ ∧ modalFree ψ
   | .dia _ | .box _ => False
+  | .var _ => False
+  | .mu _ => False
+  | .emptyColl _ => True
+  | .cut _ φ ψ => modalFree φ ∧ modalFree ψ
+  | .headed _ φ => modalFree φ
 
 /-- Modal-free formulas have R-independent semantics. -/
 theorem sem_modalFree_irrel {R1 R2 : Pattern → Pattern → Prop}
     (I : AtomSem) {φ : OSLFFormula} (hmf : modalFree φ)
     {p : Pattern} : sem R1 I φ p ↔ sem R2 I φ p := by
   induction φ generalizing p with
-  | top => simp [sem]
-  | bot => simp [sem]
-  | atom _ => simp [sem]
+  | top => simp [sem, semEnv]
+  | bot => simp [sem, semEnv]
+  | atom _ => simp [sem, semEnv]
   | and φ ψ ihφ ihψ =>
     exact ⟨fun ⟨h1, h2⟩ => ⟨(ihφ hmf.1).mp h1, (ihψ hmf.2).mp h2⟩,
            fun ⟨h1, h2⟩ => ⟨(ihφ hmf.1).mpr h1, (ihψ hmf.2).mpr h2⟩⟩
@@ -1014,6 +1132,14 @@ theorem sem_modalFree_irrel {R1 R2 : Pattern → Pattern → Prop}
            fun h hφ => (ihψ hmf.2).mpr (h ((ihφ hmf.1).mp hφ))⟩
   | dia _ => exact absurd hmf (by simp [modalFree])
   | box _ => exact absurd hmf (by simp [modalFree])
+  | var _ => exact absurd hmf (by simp [modalFree])
+  | mu _ _ => exact absurd hmf (by simp [modalFree])
+  | emptyColl _ => exact Iff.rfl
+  | cut _ φ ψ ihφ ihψ =>
+    exact exists_congr fun _ => exists_congr fun _ =>
+      and_congr_right fun _ => and_congr (ihφ hmf.1) (ihψ hmf.2)
+  | headed _ φ ih =>
+    exact exists_congr fun _ => and_congr_right fun _ => ih hmf
 
 /-- Anti-monotonicity of `sem` in the reduction relation for `box`.
 
@@ -1106,14 +1232,24 @@ theorem definiteDescription_presup_failure
     BinaryEvidence version: the presupposition factor `E_∃(CN)` is identical
     regardless of whether the assertion is negated (via `φ → ⊥`). -/
 theorem negation_preserves_definite_presup
-    (W : State) (cn_pat : Pattern) (assertFormula : OSLFFormula) :
-    presupGatedSemE (langReduces gfLegacySemanticLanguageDef)
-      (gfEvidenceAtomSemFromWM W)
+    (W : State) (cn_pat : Pattern) (assertFormula : OSLFFormula)
+    (hModalOnly : OSLFFormula.modalOnly assertFormula = true) :
+    presupGatedSemE (langSemanticReduces gfLegacySemanticLanguageDef)
+      (fun atom term => (gfEvidenceAtomSemFromWM W atom).1 term)
       (.atom "exists") (.imp assertFormula .bot) cn_pat =
     gfWMFormulaSemE W (.atom "exists") cn_pat *
       (gfWMFormulaSemE W assertFormula cn_pat ⇨ ⊥) := by
-  unfold presupGatedSemE gfWMFormulaSemE
-  simp [semE_imp, semE_bot]
+  have key := congrFun (Mettapedia.OSLF.Framework.EvidenceSemantics.semE_eq_semEEnv_of_modalOnly
+      (fun source target =>
+        langSemanticReducesUsing RelationEnv.empty gfLegacySemanticLanguageDef source target)
+      (Mettapedia.OSLF.Framework.EvidenceSemantics.equationEvidenceFrameUsing
+        RelationEnv.empty gfLegacySemanticLanguageDef)
+      (fun atom term => (gfEvidenceAtomSemFromWM W atom).1 term)
+      Mettapedia.OSLF.Framework.EvidenceSemantics.EvidenceScopeEnv.empty
+      assertFormula hModalOnly) cn_pat
+  unfold presupGatedSemE gfWMFormulaSemE langSemE langSemEUsing
+    langSemanticReduces
+  simp only [semE_imp, semE_bot, semE_atom, semEEnv_imp, semEEnv_bot, semEEnv_atom, key]
 
 /-- **Conditional filtering**: In "If P then the CN is VP", the presupposition
     `∃ CN` is filtered through P.  The evidence version: the conditional
@@ -1128,8 +1264,8 @@ theorem conditional_filters_definite_presup
     gfWMFormulaSemE W antecedent cn_pat ⇨
     (gfWMFormulaSemE W (.atom "exists") cn_pat ⊓
      gfWMFormulaSemE W assertFormula cn_pat) := by
-  unfold gfWMFormulaSemE
-  simp [semE_imp, semE_and]
+  unfold gfWMFormulaSemE langSemE langSemEUsing
+  simp [semEEnv_imp, semEEnv_and]
 
 /-! ## Section 14: Scope Ambiguity via Two Quantifier Readings
 

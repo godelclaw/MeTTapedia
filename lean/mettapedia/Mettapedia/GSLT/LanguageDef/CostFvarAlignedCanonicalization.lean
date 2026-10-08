@@ -80,7 +80,7 @@ namespace FvarAligned
 mutual
   /-- Mapping one presentation on both endpoints preserves free-variable
   alignment; presentation maps leave free-variable spellings unchanged. -/
-  def mapPattern (symbols : PresentationSymbols)
+  def mapPattern (symbols : LanguageDefSymbolMap)
       {relation : String → String → Prop} :
       ∀ {left right}, FvarAligned relation left right →
         FvarAligned relation
@@ -101,7 +101,7 @@ mutual
           (FvarAlignedList.mapPattern symbols elements)
 
   /-- Listwise companion of `FvarAligned.mapPattern`. -/
-  def FvarAlignedList.mapPattern (symbols : PresentationSymbols)
+  def FvarAlignedList.mapPattern (symbols : LanguageDefSymbolMap)
       {relation : String → String → Prop} :
       ∀ {left right}, FvarAlignedList relation left right →
         FvarAlignedList relation (mapPatternList symbols left)
@@ -125,31 +125,31 @@ mutual
           (thinning.thickenAmbientBVars depth left)
           (thinning.thickenAmbientBVars depth right)
     | depth, _, _, .bvar index => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_bvar] using
           (FvarAligned.bvar (relation := relation)
             (thinning.embedIndexAt depth index))
     | depth, _, _, .fvar related => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_fvar] using
           (FvarAligned.fvar related)
     | depth, _, _, .apply constructor arguments => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_apply] using
           (FvarAligned.apply constructor
             (FvarAlignedList.thickenAmbientBVars thinning depth arguments))
     | depth, _, _, .lambda binder body => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_lambda] using
           (FvarAligned.lambda binder
             (body.thickenAmbientBVars thinning (depth + 1)))
     | depth, _, _, .multiLambda arity binders body => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_multiLambda] using
           (FvarAligned.multiLambda arity binders
             (body.thickenAmbientBVars thinning (depth + arity)))
     | depth, _, _, .subst body replacement => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_subst] using
           (FvarAligned.subst
             (body.thickenAmbientBVars thinning (depth + 1))
             (replacement.thickenAmbientBVars thinning depth))
     | depth, _, _, .collection collectionType rest elements => by
-        simpa only [CostStaticBinderThinning.thickenAmbientBVars] using
+        simpa only [CostStaticTypeThinning.thickenAmbientBVars_collection] using
           (FvarAligned.collection collectionType rest
             (FvarAlignedList.thickenAmbientBVars thinning depth elements))
 

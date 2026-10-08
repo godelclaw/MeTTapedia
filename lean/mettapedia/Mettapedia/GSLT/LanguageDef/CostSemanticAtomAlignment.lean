@@ -332,29 +332,34 @@ theorem symm_reifyWith
         cospan.reifyWith resolve leg pattern := by
   intro pattern
   induction pattern using Pattern.inductionOn with
-  | hbvar index => simp [reifyWith]
+  | hbvar index =>
+      exact (reifyWith.eq_1 cospan.symm resolve leg index).trans
+        (reifyWith.eq_1 cospan resolve leg index).symm
   | hfvar name =>
-      cases resolve name <;>
-        simp [reifyWith, CostStaticAtomKeyCospan.symm, commonAtomName]
+      exact (reifyWith.eq_2 cospan.symm resolve leg name).trans
+        (reifyWith.eq_2 cospan resolve leg name).symm
   | happly constructor arguments inductionHypothesis =>
-      simp only [reifyWith, Pattern.apply.injEq, true_and]
-      apply List.map_congr_left
-      intro argument membership
-      exact inductionHypothesis argument membership
+      exact (reifyWith.eq_3 cospan.symm resolve leg constructor arguments).trans
+        ((congrArg (Pattern.apply constructor)
+          (List.map_congr_left inductionHypothesis)).trans
+          (reifyWith.eq_3 cospan resolve leg constructor arguments).symm)
   | hlambda binder body inductionHypothesis =>
-      simp only [reifyWith, Pattern.lambda.injEq, true_and]
-      exact inductionHypothesis
+      exact (reifyWith.eq_4 cospan.symm resolve leg binder body).trans
+        ((congrArg (Pattern.lambda binder) inductionHypothesis).trans
+          (reifyWith.eq_4 cospan resolve leg binder body).symm)
   | hmultiLambda arity binders body inductionHypothesis =>
-      simp only [reifyWith, Pattern.multiLambda.injEq, true_and]
-      exact inductionHypothesis
+      exact (reifyWith.eq_5 cospan.symm resolve leg arity binders body).trans
+        ((congrArg (Pattern.multiLambda arity binders) inductionHypothesis).trans
+          (reifyWith.eq_5 cospan resolve leg arity binders body).symm)
   | hsubst body replacement bodyHypothesis replacementHypothesis =>
-      simp only [reifyWith, Pattern.subst.injEq]
-      exact ⟨bodyHypothesis, replacementHypothesis⟩
+      exact (reifyWith.eq_6 cospan.symm resolve leg body replacement).trans
+        ((congrArg₂ Pattern.subst bodyHypothesis replacementHypothesis).trans
+          (reifyWith.eq_6 cospan resolve leg body replacement).symm)
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [reifyWith, Pattern.collection.injEq, true_and, and_true]
-      apply List.map_congr_left
-      intro element membership
-      exact inductionHypothesis element membership
+      exact (reifyWith.eq_7 cospan.symm resolve leg collectionType elements rest).trans
+        ((congrArg (fun values => Pattern.collection collectionType values rest)
+          (List.map_congr_left inductionHypothesis)).trans
+          (reifyWith.eq_7 cospan resolve leg collectionType elements rest).symm)
 
 @[simp]
 theorem symm_commonSupport
@@ -869,7 +874,7 @@ theorem reifyWith_mapPattern
     (cospan : CostStaticAtomKeyCospan leftKey rightKey)
     (resolve : String -> Option (Fin endpointCount))
     (leg : Fin endpointCount -> Fin cospan.commonKeys.length)
-    (symbols : PresentationSymbols) (pattern : Pattern) :
+    (symbols : LanguageDefSymbolMap) (pattern : Pattern) :
     cospan.reifyWith resolve leg (mapPattern symbols pattern) =
       mapPattern symbols (cospan.reifyWith resolve leg pattern) := by
   induction pattern using Pattern.inductionOn with
@@ -916,28 +921,28 @@ theorem reifyWith_thickenAmbientBVars
         (cospan.reifyWith resolve leg pattern) := by
   induction pattern using Pattern.inductionOn generalizing depth with
   | hbvar index =>
-      simp [CostStaticBinderThinning.thickenAmbientBVars, reifyWith]
+      simp [CostStaticTypeThinning.thickenAmbientBVars_bvar, reifyWith]
   | hfvar name =>
       cases selected : resolve name <;>
-        simp [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+        simp [CostStaticTypeThinning.thickenAmbientBVars_fvar, reifyWith,
           selected]
   | happly constructor arguments inductionHypothesis =>
-      simp only [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+      simp only [CostStaticTypeThinning.thickenAmbientBVars_apply, reifyWith,
         List.map_map, Pattern.apply.injEq, true_and]
       apply List.map_congr_left
       intro argument membership
       exact inductionHypothesis argument membership depth
   | hlambda binder body inductionHypothesis =>
-      simp [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+      simp [CostStaticTypeThinning.thickenAmbientBVars_lambda, reifyWith,
         inductionHypothesis]
   | hmultiLambda arity binders body inductionHypothesis =>
-      simp [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+      simp [CostStaticTypeThinning.thickenAmbientBVars_multiLambda, reifyWith,
         inductionHypothesis]
   | hsubst body replacement bodyInduction replacementInduction =>
-      simp [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+      simp [CostStaticTypeThinning.thickenAmbientBVars_subst, reifyWith,
         bodyInduction, replacementInduction]
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [CostStaticBinderThinning.thickenAmbientBVars, reifyWith,
+      simp only [CostStaticTypeThinning.thickenAmbientBVars_collection, reifyWith,
         List.map_map, Pattern.collection.injEq, true_and]
       exact ⟨List.map_congr_left (fun element membership =>
         inductionHypothesis element membership depth), trivial⟩
@@ -3733,7 +3738,7 @@ namespace CostStaticAtomEvaluationBridge
 
 /-- Reverse an evaluation bridge by reversing its proof-relevant frame
 alignment and exchanging the two endpoint factorizations. -/
-def symm
+theorem symm
     {source : CIGSLT} {leftColor rightColor : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -4246,7 +4251,7 @@ structure CostStaticCanonicalAtomRestorationEvaluationBridge
 namespace CostStaticCanonicalAtomRestorationEvaluationBridge
 
 /-- Reverse a common-restoration evaluation bridge. -/
-def symm
+theorem symm
     {source : CIGSLT} {leftColor rightColor : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -4474,7 +4479,7 @@ structure CostStaticCanonicalAtomEvaluationBridge
 namespace CostStaticCanonicalAtomEvaluationBridge
 
 /-- Reverse a canonical semantic-atom evaluation bridge. -/
-def symm
+theorem symm
     {source : CIGSLT} {leftColor rightColor : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}

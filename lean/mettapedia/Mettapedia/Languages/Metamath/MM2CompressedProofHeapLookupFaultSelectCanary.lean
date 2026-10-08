@@ -1,0 +1,25 @@
+import Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupFaultProofProbeCanary
+
+set_option autoImplicit false
+set_option maxRecDepth 100000
+
+namespace Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupFaultSelectCanary
+
+open Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupCanary
+open Mettapedia.Languages.Metamath.MM2CompressedProofExecution
+open Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupHitProbeCanary
+open Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupFaultProofProbeCanary
+open Mettapedia.Languages.ProcessCalculi.MORK
+open Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveComputable
+open Mettapedia.Languages.ProcessCalculi.MORK.WQComputable
+
+theorem lookup_frontier_fault_selected :
+    cReflectiveSourceWorkQueueStep .leaveInert lookupFaultAfterProofProbe =
+      some lookupFaultAfterFault := by
+  exact lookup_step_of_selected lookupFaultAfterProofProbe compressedHeapLookupFaultDirective
+    (Eq.trans (congrArg selectNextScheduled lookup_fault_after_proof_supported_exact)
+      lookup_select_fault_probe)
+
+#print axioms lookup_frontier_fault_selected
+
+end Mettapedia.Languages.Metamath.MM2CompressedProofHeapLookupFaultSelectCanary

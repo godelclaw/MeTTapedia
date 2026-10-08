@@ -4,7 +4,11 @@ import Mettapedia.GSLT.LanguageDef.ValidatedInferenceExtension
 import Mettapedia.GSLT.LanguageDef.ExtensionComposition
 import Mettapedia.GSLT.LanguageDef.ExtensionGluing
 import Mettapedia.GSLT.LanguageDef.InferenceNewJudgmentConservativity
+import Mettapedia.GSLT.LanguageDef.InferenceRuleSupport
+import Mettapedia.GSLT.LanguageDef.RewriteValidationCertificateExtension
+import Mettapedia.GSLT.LanguageDef.SourcePreservingCalculusCoproduct
 import Mettapedia.GSLT.LanguageDef.ExtendedLanguageDef
+import Mettapedia.GSLT.LanguageDef.BinderAlphaSemantics
 import Mettapedia.GSLT.LanguageDef.TotalGSLT
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 import Mettapedia.GSLT.LanguageDef.GradedLanguageDef
@@ -12,6 +16,8 @@ import Mettapedia.GSLT.LanguageDef.CalculusAsLanguage
 import Mettapedia.GSLT.LanguageDef.CalculusExtension
 import Mettapedia.GSLT.LanguageDef.CertificateGSLT
 import Mettapedia.GSLT.LanguageDef.RuleMachineCompilation
+import Mettapedia.GSLT.LanguageDef.ContextualEffectTreeLanguage
+import Mettapedia.GSLT.LanguageDef.ContextualEffectTreeExactness
 import Mettapedia.GSLT.LanguageDef.CompiledPlanWireFormat
 import Mettapedia.GSLT.LanguageDef.CompiledPlanAdmission
 import Mettapedia.GSLT.LanguageDef.CompiledPlanLowering
@@ -19,6 +25,7 @@ import Mettapedia.GSLT.LanguageDef.CompiledPlanOptimizationCertificate
 import Mettapedia.GSLT.LanguageDef.InferenceCompiledPlanLowering
 import Mettapedia.GSLT.LanguageDef.FiniteVariableFrameCompilation
 import Mettapedia.GSLT.LanguageDef.FiniteRuleIndexCompilation
+import Mettapedia.GSLT.LanguageDef.AdaptiveFiniteMapRefinement
 import Mettapedia.GSLT.LanguageDef.ExactRuleSelectorCompilation
 import Mettapedia.GSLT.LanguageDef.ChronologicalArticleCompilation
 import Mettapedia.GSLT.LanguageDef.ExactFrameProofCompilation
@@ -34,6 +41,7 @@ import Mettapedia.GSLT.LanguageDef.FixedHeadBucketCompilation
 import Mettapedia.GSLT.LanguageDef.FlatVariableHeadCompilation
 import Mettapedia.GSLT.LanguageDef.GroundLinearHeadCompilation
 import Mettapedia.GSLT.LanguageDef.GroundDenseHeadCompilation
+import Mettapedia.GSLT.LanguageDef.CompiledMatchProgram
 import Mettapedia.GSLT.LanguageDef.ConstructorGuidedUnificationCompilation
 import Mettapedia.GSLT.LanguageDef.FiniteGroundFactIndexCompilation
 import Mettapedia.GSLT.LanguageDef.GroundSubtermCacheCompilation
@@ -41,6 +49,7 @@ import Mettapedia.GSLT.LanguageDef.WorklistRegionCompilation
 import Mettapedia.GSLT.LanguageDef.ReusableSlotBufferCompilation
 import Mettapedia.GSLT.LanguageDef.EpochStampedSlotCompilation
 import Mettapedia.GSLT.LanguageDef.AuthoritativeSlotTrailCompilation
+import Mettapedia.GSLT.LanguageDef.UnificationEliminationTraceCompilation
 import Mettapedia.GSLT.LanguageDef.ScopedAuthoritativeSlotCompilation
 import Mettapedia.GSLT.LanguageDef.AuthoritativeMAMActivationProtocol
 import Mettapedia.GSLT.LanguageDef.PreparedIndexedValueTableCompilation
@@ -56,11 +65,62 @@ import Mettapedia.GSLT.LanguageDef.TwoPhaseFrameMachinePhysicalRefinement
 import Mettapedia.GSLT.LanguageDef.IndexedCompressedProgramPlanCompilation
 import Mettapedia.GSLT.LanguageDef.CompiledPlanOptimizationPipeline
 import Mettapedia.GSLT.LanguageDef.CompiledPlanOpenActivationViewCompilation
+import Mettapedia.GSLT.LanguageDef.CompiledOpenMatcherPlan
+import Mettapedia.GSLT.LanguageDef.MatchDecisionContract
+import Mettapedia.GSLT.LanguageDef.KeyedEquationSelection
+import Mettapedia.GSLT.LanguageDef.ContextStackEvaluation
+import Mettapedia.GSLT.LanguageDef.MatchDecisionCodeTree
+import Mettapedia.GSLT.LanguageDef.MatchDecisionPrefixObservationCompilation
+import Mettapedia.GSLT.LanguageDef.CandidateSupersetVerificationAlgebra
+import Mettapedia.GSLT.LanguageDef.MatchDecisionVerificationReceipt
+import Mettapedia.GSLT.LanguageDef.MonotoneDecisionRefinement
+import Mettapedia.GSLT.LanguageDef.CompiledPlanDelayedBindingObservation
+import Mettapedia.GSLT.LanguageDef.CompiledAnswerEffectProgram
+import Mettapedia.GSLT.LanguageDef.CompiledAnswerEffectControl
+import Mettapedia.GSLT.LanguageDef.CompiledRecursiveAnswerProducer
+import Mettapedia.GSLT.LanguageDef.CompiledContinuationAnswerProducer
+import Mettapedia.GSLT.LanguageDef.DelayedObservationAnswerEffectCompilation
+import Mettapedia.GSLT.LanguageDef.FlatTermViewCompilation
+import Mettapedia.GSLT.LanguageDef.FlatTermExistenceCompilation
+import Mettapedia.GSLT.LanguageDef.FlatTermDeadBindingCountCompilation
+import Mettapedia.GSLT.LanguageDef.ConjunctiveCountFoldCompilation
+import Mettapedia.GSLT.LanguageDef.TermObservationCoalgebra
+import Mettapedia.GSLT.LanguageDef.DelayedSourceBindingCompilation
+import Mettapedia.GSLT.LanguageDef.SupportRestrictedSourceViewCompilation
+import Mettapedia.GSLT.LanguageDef.SupportRestrictedSourceFamilyCompilation
+import Mettapedia.GSLT.LanguageDef.StratifiedDelayedCapture
+import Mettapedia.GSLT.LanguageDef.DelayedBindingStoreRefinement
+import Mettapedia.GSLT.LanguageDef.AppendRollbackBuilderProductRefinement
 import Mettapedia.GSLT.LanguageDef.LogicExtension
 import Mettapedia.GSLT.LanguageDef.OracleExtension
 import Mettapedia.GSLT.LanguageDef.ReflectionExtension
 import Mettapedia.GSLT.LanguageDef.RuntimeProfileExtension
-import Mettapedia.GSLT.LanguageDef.PresentationSensitiveTransformation
+import Mettapedia.GSLT.LanguageDef.LanguageDefTransformation
+import Mettapedia.GSLT.LanguageDef.BindingSignature
+import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
+import Mettapedia.GSLT.LanguageDef.BindingSignatureControls
+import Mettapedia.GSLT.LanguageDef.BindingSignatureTransport
+import Mettapedia.GSLT.LanguageDef.BindingSignatureReification
+import Mettapedia.GSLT.LanguageDef.BindingSignatureReificationControls
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrence
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceReplacement
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceAdmission
+import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceControls
+import Mettapedia.GSLT.LanguageDef.OpenSortedEquationInstance
+import Mettapedia.GSLT.LanguageDef.MetaDependencyBoundary
+import Mettapedia.GSLT.LanguageDef.MetaDependencyBoundaryControls
+import Mettapedia.GSLT.LanguageDef.ScopedMatcherDependencyBoundary
+import Mettapedia.GSLT.LanguageDef.PartialRenamingControls
+import Mettapedia.GSLT.LanguageDef.PartialRenamingInstantiation
+import Mettapedia.GSLT.LanguageDef.PartialRenamingInstantiationControls
+import Mettapedia.GSLT.LanguageDef.VariableArgumentInstantiation
+import Mettapedia.GSLT.LanguageDef.VariableArgumentRecognitionControls
+import Mettapedia.OSLF.Syntax.BoundPrefixProjection
+import Mettapedia.OSLF.Syntax.ScopedMatching
+import Mettapedia.GSLT.LanguageDef.ScopedMatchingControls
+import Mettapedia.GSLT.LanguageDef.BoundPrefixProjectionControls
+import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlans
+import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlanControls
 
 /-!
 # Compositional language definitions
@@ -78,9 +138,9 @@ flat specialization with judgments and rules in the same record as the five
 object-language fields.  `ExtendedLanguageDef layer`, together with
 `extendedLanguageDef!`, handles any finite product of independently authored
 layers without adding a universal optional field for every future extension.
-The older nested `Presentation` remains a derived checker and transport type;
-validators, generated projections, and focused checker fixtures may use it,
-but it is not the primary authoring authority.
+There is no parallel nested checker object: `CalculusLanguageDef` is the
+canonical flat checker input, while the generic layer factorization and its
+total executable GSLT are derived internally by proved maps.
 
 The reusable hierarchy is law-based:
 
@@ -122,11 +182,11 @@ compares the reconstruction with the typed source meaning before emitting
 bytes.  Nullary and binary canaries are byte-identical across Lean, the
 stage-zero generator, and the generic C loader.
 
-`InferenceCompiledPlanLowering` connects that physical seam to admitted
-inference presentations.  It recognizes the local depth-zero, application-only
+`InferenceCompiledPlanLowering` connects that physical seam to validated
+calculus language definitions.  It recognizes the local depth-zero, application-only
 finite-Horn fragment, rejects binders and side conditions without assigning
 them a fallback meaning, and proves that every emitted packet reconstructs the
-recognized source presentation's typed meaning.
+recognized source definition's typed meaning.
 
 `FiniteVariableFrameCompilation` supplies a second composable realization.  A
 decidable finite-support check resolves authored variable keys to bounded slots,
@@ -159,6 +219,10 @@ and proves that residual argument-only comparison is exact.
 with the generated finite-variable inventory.  It resolves every variable to
 a bounded slot and proves direct recursive matching equal to the independent
 association-list matcher, including repeated-variable equality and rejection.
+`CompiledMatchProgram` flattens that matcher into a register program whose
+first occurrence of a variable binds and whose later occurrences compare, a
+choice made when the program is emitted, and proves the program's run equal
+to the dense matcher and hence to the association-list matcher.
 `FiniteGroundFactIndexCompilation` applies the same rigid-root theorem to
 catalog-authorized finite ground providers.  It preserves exact row order and
 multiplicity, while an open query falls back to the complete source bag.

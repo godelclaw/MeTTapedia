@@ -18,7 +18,7 @@ formalization), we use a **`Prop`-valued oracle abstraction** that:
 2. Allows concrete implementations (`metta-il-rust`, SWI PeTTa) to supply the oracle instance
    as a separate trust boundary.
 3. Theorems about `MeTTaEvalG oracle ...` are universally quantified over any oracle satisfying
-   the stated contracts — matching the "oracle" pattern in `Computability/OracleTM.lean`.
+   the stated contracts.
 
 ## Architecture
 
@@ -216,7 +216,7 @@ theorem meTTaEvalG_empty_oracle_iff {s : PeTTaSpace} {p ty : Pattern}
     (h : MeTTaEvalG emptyOracle s p ty bindings results) :
     MeTTaEval s p ty bindings results := by
   cases h with
-  | liftPure _ _ _ _ hpure => exact hpure
+  | liftPure _ _ _ _ htwoSort => exact htwoSort
   | groundedCall _ _ _ _ _ _ _ hexec _ _ => exact hexec.elim
   | groundedNoReduce _ _ _ _ _ _ hexec _ _ => exact hexec.elim
 

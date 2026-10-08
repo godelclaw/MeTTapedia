@@ -1,20 +1,22 @@
-import Mettapedia.GSLT.LanguageDef.PresentationSensitiveTransformation
+import Mettapedia.GSLT.LanguageDef.LanguageDefTransformation
 import Mettapedia.Languages.Metamath.InferenceSideConditionsSemantics
 import Mettapedia.Languages.Metamath.MM2DataEncoding
+import Mettapedia.Languages.Metamath.MM2NormalDataRows
 import Mettapedia.Languages.Metamath.MM2OrderedEventVerifier
 import Mettapedia.Languages.Metamath.MM2Target
 import Mettapedia.Languages.Metamath.SourceStateNativeTypes
 import Mettapedia.Languages.ProcessCalculi.MORK.AuthoredContextBridge
+import Mettapedia.Languages.ProcessCalculi.MORK.ComputablePatternFactorOrigin
 import Mettapedia.Languages.ProcessCalculi.MORK.InvertibleHead
 import Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveExecution
 import Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveGSLTNativeTypes
 
 /-!
-# Presentation-sensitive Metamath to MM2 transformation
+# Authored Metamath to MM2 transformation
 
 This module starts the executable compiler at its proper boundary.  Its source
-input is an admitted authored Metamath scope, including the generated inference
-presentation.  Its target input is the existing reflective MM2 GSLT together
+input is an admitted authored Metamath scope, including its generated inference
+language.  Its target input is the existing reflective MM2 GSLT together
 with the ordinary MM2 surface renderer.  Neither input is replaced by a file
 name, digest, or implementation callback.
 
@@ -28,7 +30,7 @@ the current slice with a complete Metamath verifier.
 
 namespace Mettapedia.Languages.Metamath.MM2Transformation
 
-open Mettapedia.GSLT.ProofRelevantPresentation
+open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.Metamath.InferenceProjection
 open Mettapedia.Languages.Metamath.InferenceSideConditionsSemantics
@@ -44,17 +46,17 @@ open Mettapedia.Languages.ProcessCalculi.MORK.ReflectiveComputable
 open Mettapedia.Languages.ProcessCalculi.MORK.WQComputable
 open Mettapedia.Languages.ProcessCalculi.MORK.MM2Surface
 
-/-! ## Supplied Metamath verifier presentation -/
+/-! ## Supplied Metamath verifier GSLT -/
 
-/-- A compiler input that presents the authored Metamath state calculus
+/-- A compiler input that exposes the authored Metamath state calculus
 through an operational GSLT and an exact proof-relevant translation.  The
-translation prevents an endpoint-correct presentation from erasing distinct
+translation prevents an endpoint-correct encoding from erasing distinct
 source transition occurrences.  The finite operation spine is inspectable
 compiler input; it must cover every authored state action and cannot contain
 duplicate operation occurrences. -/
 structure MetamathVerifierGSLT where
-  operational : PresentedGSLT
-  exact : ExactTranslation SourceStateGSLT.presented operational
+  operational : ProofRelevantGSLT
+  exact : ExactTranslation SourceStateGSLT.system operational
   operations : List SourceOperation
   operations_nodup : operations.Nodup
   action_operation_mem : ∀ action : StateAction,
@@ -76,11 +78,11 @@ theorem step_iff (sourceGSLT : MetamathVerifierGSLT)
   constructor
   · intro targetStep
     obtain ⟨targetEvidence⟩ :=
-      sourceGSLT.operational.steps.present targetStep
-    exact SourceStateGSLT.presented.steps.erase
+      sourceGSLT.operational.steps.witness targetStep
+    exact SourceStateGSLT.system.steps.erase
       ((sourceGSLT.exact.evidenceEquiv source target).symm targetEvidence)
   · intro sourceStep
-    obtain ⟨sourceEvidence⟩ := SourceStateGSLT.presented.steps.present sourceStep
+    obtain ⟨sourceEvidence⟩ := SourceStateGSLT.system.steps.witness sourceStep
     exact sourceGSLT.operational.steps.erase
       (sourceGSLT.exact.toTranslation.mapEvidence sourceEvidence)
 
@@ -88,12 +90,12 @@ theorem step_iff (sourceGSLT : MetamathVerifierGSLT)
 source endpoints; endpoint agreement alone is not an admissible substitute. -/
 def evidenceFibreEquiv (sourceGSLT : MetamathVerifierGSLT)
     (source target : SourceState) :
-    SourceStateGSLT.StepEvidence source target ≃
+    SourceStateGSLT.TransitionEvidence source target ≃
       sourceGSLT.operational.steps.Evidence
         (sourceGSLT.embedState source) (sourceGSLT.embedState target) :=
   sourceGSLT.exact.evidenceEquiv source target
 
-/-- Every admissible verifier presentation covers the normal-proof operation.
+/-- Every admissible verifier GSLT covers the normal-proof operation.
 This is forced by the authored action family, rather than assumed by the
 normal-slice transformer. -/
 theorem normal_operation_mem (sourceGSLT : MetamathVerifierGSLT)
@@ -106,7 +108,7 @@ theorem normal_operation_mem (sourceGSLT : MetamathVerifierGSLT)
       (.theoremNormal label formula proofLabels)
 
 /-- A purported verifier input whose operation spine omits normal proofs is
-rejected by the source-presentation contract. -/
+rejected by the source-language contract. -/
 theorem no_input_without_normal_operation
     (sourceGSLT : MetamathVerifierGSLT)
     (missing : SourceOperation.checkTheoremNormal ∉ sourceGSLT.operations) :
@@ -116,11 +118,11 @@ theorem no_input_without_normal_operation
 
 end MetamathVerifierGSLT
 
-/-- The repository's authored source-state presentation as a verifier
+/-- The repository's authored source-state GSLT as a verifier
 compiler input. -/
 def authoredMetamathVerifierGSLT : MetamathVerifierGSLT where
-  operational := SourceStateGSLT.presented
-  exact := ExactTranslation.id SourceStateGSLT.presented
+  operational := SourceStateGSLT.system
+  exact := ExactTranslation.id SourceStateGSLT.system
   operations := SourceStateGSLT.stateOperations
   operations_nodup := by decide
   action_operation_mem := SourceStateGSLT.action_operation_mem_stateOperations
@@ -152,25 +154,6 @@ theorem MetamathVerifierGSLT.native_type_iff_source_step
   simp [hypothesisLookupRows]
 
 /-! ## Source-derived assertion execution indexes -/
-
-/-- Runtime lookup for the caller's symmetric DV relation.  The authored
-source stores each pair canonically once; MM2 needs no string-order primitive
-because the compiler emits both licensed query orientations as data. -/
-def callerDVRow (scopeOwner : Atom) (left right : String) : Atom :=
-  .expression
-    [.symbol "mm-caller-dv", scopeOwner, stringAtom left, stringAtom right]
-
-def callerDVRowsForPair (scopeOwner : Atom)
-    (pair : String × String) : List Atom :=
-  [callerDVRow scopeOwner pair.1 pair.2,
-   callerDVRow scopeOwner pair.2 pair.1]
-
-def callerDVRowsOfPairs (scopeOwner : Atom)
-    (pairs : List (String × String)) : List Atom :=
-  (pairs.map (callerDVRowsForPair scopeOwner)).flatten
-
-def callerDVRows (scopeOwner : Atom) (state : SourceState) : List Atom :=
-  callerDVRowsOfPairs scopeOwner state.proofDistinctVariables
 
 /-- Directly supplied MM2 caller-DV rows denote exactly the symmetric
 relation generated by the supplied ordered source pair list.  Later verifier
@@ -257,13 +240,6 @@ def AssertionExecutionRowFrom (scopeOwner : Atom) (state : SourceState)
     AssertionExecutionRowFor scopeOwner assertionPosition
       state.assertions[assertionPosition] row
 
-/-- Execution indexes are derived from every actual assertion in the admitted
-source state.  They do not inspect a filename, digest, or external database. -/
-def assertionExecutionRows (scopeOwner : Atom)
-    (state : SourceState) : List Atom :=
-  (state.assertions.mapIdx fun position assertion =>
-    assertionExecutionRowsFor scopeOwner position assertion).flatten
-
 /-- A source-licensed caller-DV lookup row, stated independently of the
 concrete list construction. -/
 def CallerDVRowFrom (scopeOwner : Atom) (state : SourceState)
@@ -278,11 +254,6 @@ def NormalExecutionRowFrom (scopeOwner : Atom) (state : SourceState)
     (row : Atom) : Prop :=
   CallerDVRowFrom scopeOwner state row ∨
     AssertionExecutionRowFrom scopeOwner state row
-
-/-- All indexed data read by the generic normal-proof machine. -/
-def normalExecutionRows (scopeOwner : Atom)
-    (state : SourceState) : List Atom :=
-  callerDVRows scopeOwner state ++ assertionExecutionRows scopeOwner state
 
 theorem mem_assertionExecutionRowsFor_iff (scopeOwner : Atom)
     (assertionPosition : Nat) (assertion : SourceAssertion) (row : Atom) :
@@ -1939,7 +1910,13 @@ private def normalDVReloadInput : Atom :=
           .var "dv-reload-self-input", .var "dv-reload-self-output"],
       .expression
         [.symbol "mm-reload-dv", .var "dv-reload-proof",
-          .var "dv-reload-pc"]]
+          .var "dv-reload-pc"],
+      .expression
+        [.symbol "mm-internal-dv-rules",
+          .var "dv-rule-pair-begin", .var "dv-rule-left-const",
+          .var "dv-rule-left-variable", .var "dv-rule-right-const",
+          .var "dv-rule-right-variable", .var "dv-rule-right-nil",
+          .var "dv-rule-left-nil", .var "dv-rule-complete"]]
 
 private def normalDVReloadOutput : Atom :=
   .expression
@@ -1954,14 +1931,14 @@ private def normalDVReloadOutput : Atom :=
           .expression
             [.symbol "mm-reload-dv", .var "dv-reload-proof",
               .var "dv-reload-pc"]],
-      .expression [.symbol "+", normalDVPairBeginRule],
-      .expression [.symbol "+", normalDVLeftConstRule],
-      .expression [.symbol "+", normalDVLeftVariableRule],
-      .expression [.symbol "+", normalDVRightConstRule],
-      .expression [.symbol "+", normalDVRightVariableRule],
-      .expression [.symbol "+", normalDVRightNilRule],
-      .expression [.symbol "+", normalDVLeftNilRule],
-      .expression [.symbol "+", normalDVCompleteRule]]
+      .expression [.symbol "+", .var "dv-rule-pair-begin"],
+      .expression [.symbol "+", .var "dv-rule-left-const"],
+      .expression [.symbol "+", .var "dv-rule-left-variable"],
+      .expression [.symbol "+", .var "dv-rule-right-const"],
+      .expression [.symbol "+", .var "dv-rule-right-variable"],
+      .expression [.symbol "+", .var "dv-rule-right-nil"],
+      .expression [.symbol "+", .var "dv-rule-left-nil"],
+      .expression [.symbol "+", .var "dv-rule-complete"]]
 
 def normalDVReloadRule : Atom :=
   .expression
@@ -1973,6 +1950,17 @@ def normalDVMachineRules : List Atom :=
    normalDVLeftVariableRule, normalDVRightConstRule,
    normalDVRightVariableRule, normalDVRightNilRule,
    normalDVLeftNilRule, normalDVCompleteRule, normalDVReloadRule]
+
+/-- Verifier-owned DV-machine code captured opaquely by the reload rule.
+The carrier is inert data; only the exact generic verifier artifact supplies
+it to the executable matcher. -/
+def normalDVRuleBundle : Atom :=
+  .expression
+    [.symbol "mm-internal-dv-rules",
+      normalDVPairBeginRule, normalDVLeftConstRule,
+      normalDVLeftVariableRule, normalDVRightConstRule,
+      normalDVRightVariableRule, normalDVRightNilRule,
+      normalDVLeftNilRule, normalDVCompleteRule]
 
 private def normalBodyBuildConstInput : Atom :=
   .expression
@@ -2615,7 +2603,7 @@ def normalHypothesisStackAtom (proofOwner : Atom) (stackPosition : Nat)
     [.symbol "mm-stack-cell", proofOwner, natAtom stackPosition,
       formulaAtom hypothesis.formula, natAtom proofPosition]
 
-/-- The finite atom presentation of the canonical active-hypothesis phase.
+/-- The finite atom state of the canonical active-hypothesis phase.
 Keeping this list explicit lets the computable scheduler and finite-support
 semantics be related without choosing an enumeration of a `Finset`. -/
 def normalHypothesisPhaseAtoms (scopeOwner proofOwner : Atom)
@@ -3071,7 +3059,7 @@ def normalAssertionPopAtom (scopeOwner proofOwner : Atom)
   normalAssertionPopCursorAtom scopeOwner proofOwner proofPosition
     nextProofPosition assertion.label assertion.hypotheses.length stackTop
 
-/-- The finite atom presentation of the canonical assertion-entry phase. -/
+/-- The finite atom state of the canonical assertion-entry phase. -/
 def normalAssertionStartPhaseAtoms (scopeOwner proofOwner : Atom)
     (proofPosition nextProofPosition stackTop assertionPosition : Nat)
     (assertion : SourceAssertion) : List Atom :=
@@ -3312,7 +3300,7 @@ theorem normalAssertionStartPhase_inhabits_target_native_type
   · exact normalAssertionStartDirective_fires_pop scopeOwner proofOwner
       proofPosition nextProofPosition stackTop assertionPosition assertion
 
-/-- Finite atom presentation for one administrative backward cursor step. -/
+/-- Finite atom state for one administrative backward cursor step. -/
 def normalAssertionPopPhaseAtoms (scopeOwner proofOwner : Atom)
     (proofPosition nextProofPosition : Nat) (assertionLabel : String)
     (previousHypothesis hypothesisCursor previousStack stackCursor : Nat) :
@@ -3674,7 +3662,7 @@ def normalAssertionNextBindAtom (scopeOwner proofOwner : Atom)
       stringAtom assertionLabel, natAtom nextHypothesisPosition,
       natAtom hypothesisEnd, natAtom nextStackPosition, natAtom stackBase]
 
-/-- Finite atom presentation at the end of the administrative pop loop. -/
+/-- Finite atom state at the end of the administrative pop loop. -/
 def normalAssertionBeginPhaseAtoms (scopeOwner proofOwner : Atom)
     (proofPosition nextProofPosition stackBase assertionPosition : Nat)
     (assertion : SourceAssertion) : List Atom :=
@@ -3905,7 +3893,7 @@ theorem normalAssertionBeginPhase_inhabits_target_native_type
   · exact normalAssertionBeginDirective_fires_bind scopeOwner proofOwner
       proofPosition nextProofPosition stackBase assertionPosition assertion
 
-/-- Finite atom presentation for one floating hypothesis in an assertion
+/-- Finite atom state for one floating hypothesis in an assertion
 application.  It contains the exact source-indexed hypothesis row and the
 exact child stack occurrence consumed by the emitted generic rule. -/
 def normalAssertionFloatingPhaseAtoms (scopeOwner proofOwner : Atom)
@@ -4428,7 +4416,7 @@ def normalAssertionEssentialMatchAtom (scopeOwner proofOwner : Atom)
         nextHypothesisPosition hypothesisEnd nextStackPosition stackBase
         hypothesisPosition childOccurrence]
 
-/-- Finite atom presentation at one source essential hypothesis. -/
+/-- Finite atom state at one source essential hypothesis. -/
 def normalAssertionEssentialPhaseAtoms (scopeOwner proofOwner : Atom)
     (proofPosition nextProofPosition : Nat) (assertionLabel : String)
     (hypothesisPosition nextHypothesisPosition hypothesisEnd : Nat)
@@ -4848,7 +4836,7 @@ theorem normalAssertionEssentialPhase_inhabits_target_native_type
 def normalAssertionReloadAtom (proofOwner : Atom) : Atom :=
   .expression [.symbol "mm-reload-normal-dispatch", proofOwner]
 
-/-- Finite atom presentation reached after the body matcher has validated the
+/-- Finite atom state reached after the body matcher has validated the
 source and actual essential-hypothesis bodies. -/
 def normalAssertionEssentialCompletePhaseAtoms
     (scopeOwner proofOwner : Atom)
@@ -6587,7 +6575,7 @@ theorem normalAssertionFinishPhase_inhabits_target_native_type
 
 /-! ### DV-pair entry boundary -/
 
-private def normalDVPairBeginPatternAtoms : List Atom :=
+def normalDVPairBeginPatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-next-pair", .var "scope", .var "proof",
         .var "pc", .var "label", .var "hyp-position",
@@ -6975,7 +6963,7 @@ theorem normalDVPairBeginPhase_inhabits_target_native_type
 
 /-! ### DV left-body constant transition -/
 
-private def normalDVLeftConstPatternAtoms : List Atom :=
+def normalDVLeftConstPatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-left", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -7213,7 +7201,7 @@ theorem normalDVLeftConstPhase_inhabits_target_native_type
 
 /-! ### DV left-body variable transition -/
 
-private def normalDVLeftVariablePatternAtoms : List Atom :=
+def normalDVLeftVariablePatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-left", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -7452,7 +7440,7 @@ theorem normalDVLeftVariablePhase_inhabits_target_native_type
 
 /-! ### DV right-body variable and caller-obligation boundary -/
 
-private def normalDVRightVariablePatternAtoms : List Atom :=
+def normalDVRightVariablePatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-right", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -7771,7 +7759,7 @@ theorem normalDVRightVariable_missing_caller_rejects_obligation
 
 /-! ### DV right-body constant transition -/
 
-private def normalDVRightConstPatternAtoms : List Atom :=
+def normalDVRightConstPatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-right", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -8012,7 +8000,7 @@ theorem normalDVRightConstPhase_inhabits_target_native_type
 
 /-! ### DV right-body completion transition -/
 
-private def normalDVRightNilPatternAtoms : List Atom :=
+def normalDVRightNilPatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-right", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -8242,7 +8230,7 @@ theorem normalDVRightNilPhase_inhabits_target_native_type
 
 /-! ### DV pair-completion transition -/
 
-private def normalDVLeftNilPatternAtoms : List Atom :=
+def normalDVLeftNilPatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-scan-left", .var "scope", .var "proof",
         .var "pc", .var "label", .var "next-hyp-position",
@@ -8465,20 +8453,29 @@ private def normalDVReloadRequestTemplate : Atom :=
     [.symbol "mm-reload-dv", .var "dv-reload-proof",
       .var "dv-reload-pc"]
 
+private def normalDVReloadBundleTemplate : Atom :=
+  .expression
+    [.symbol "mm-internal-dv-rules",
+      .var "dv-rule-pair-begin", .var "dv-rule-left-const",
+      .var "dv-rule-left-variable", .var "dv-rule-right-const",
+      .var "dv-rule-right-variable", .var "dv-rule-right-nil",
+      .var "dv-rule-left-nil", .var "dv-rule-complete"]
+
 private def normalDVReloadPatternAtoms : List Atom :=
-  [normalDVReloadSelfTemplate, normalDVReloadRequestTemplate]
+  [normalDVReloadSelfTemplate, normalDVReloadRequestTemplate,
+   normalDVReloadBundleTemplate]
 
 private def normalDVReloadSinks : List Sink :=
   [.add normalDVReloadSelfTemplate,
    .remove normalDVReloadRequestTemplate,
-   .add normalDVPairBeginRule,
-   .add normalDVLeftConstRule,
-   .add normalDVLeftVariableRule,
-   .add normalDVRightConstRule,
-   .add normalDVRightVariableRule,
-   .add normalDVRightNilRule,
-   .add normalDVLeftNilRule,
-   .add normalDVCompleteRule]
+   .add (.var "dv-rule-pair-begin"),
+   .add (.var "dv-rule-left-const"),
+   .add (.var "dv-rule-left-variable"),
+   .add (.var "dv-rule-right-const"),
+   .add (.var "dv-rule-right-variable"),
+   .add (.var "dv-rule-right-nil"),
+   .add (.var "dv-rule-left-nil"),
+   .add (.var "dv-rule-complete")]
 
 def normalDVReloadDirective : SourceExecFact where
   atom := normalDVReloadRule
@@ -8498,7 +8495,8 @@ theorem extract_normalDVReloadRule_exact :
 def normalDVReloadPhaseSpace (proofOwner : Atom)
     (proofPosition : Nat) : Space :=
   [normalDVReloadRule,
-   normalDVReloadAtom proofOwner proofPosition].toFinset
+   normalDVReloadAtom proofOwner proofPosition,
+   normalDVRuleBundle].toFinset
 
 theorem normalDVReloadPhase_selects_directive
     (proofOwner : Atom) (proofPosition : Nat) :
@@ -8507,18 +8505,28 @@ theorem normalDVReloadPhase_selects_directive
           (normalDVReloadPhaseSpace proofOwner proofPosition)) =
       some normalDVReloadDirective := by
   let atoms :=
-    [normalDVReloadRule, normalDVReloadAtom proofOwner proofPosition]
+    [normalDVReloadRule, normalDVReloadAtom proofOwner proofPosition,
+     normalDVRuleBundle]
   change selectNextScheduled
       (supportedSourceExecFactsOfSpace atoms.toFinset) =
     some normalDVReloadDirective
   exact reflective_selects_of_computable_supported_singleton atoms
     normalDVReloadDirective
-    (by simp [atoms, normalDVReloadRule, normalDVReloadAtom])
+    (by simp [atoms, normalDVReloadRule, normalDVReloadAtom,
+      normalDVRuleBundle])
     (by rfl)
 
 private def normalDVReloadSubstitution (proofOwner : Atom)
     (proofPosition : Nat) : Subst :=
-  [("dv-reload-pc", natAtom proofPosition),
+  [("dv-rule-complete", normalDVCompleteRule),
+   ("dv-rule-left-nil", normalDVLeftNilRule),
+   ("dv-rule-right-nil", normalDVRightNilRule),
+   ("dv-rule-right-variable", normalDVRightVariableRule),
+   ("dv-rule-right-const", normalDVRightConstRule),
+   ("dv-rule-left-variable", normalDVLeftVariableRule),
+   ("dv-rule-left-const", normalDVLeftConstRule),
+   ("dv-rule-pair-begin", normalDVPairBeginRule),
+   ("dv-reload-pc", natAtom proofPosition),
    ("dv-reload-proof", proofOwner),
    ("dv-reload-self-output", normalDVReloadOutput),
    ("dv-reload-self-input", normalDVReloadInput)]
@@ -8538,12 +8546,20 @@ private theorem normalDVReloadMatchRow_mem
   let afterSelf : Subst :=
     [("dv-reload-self-output", normalDVReloadOutput),
      ("dv-reload-self-input", normalDVReloadInput)]
+  let afterRequest : Subst :=
+    [("dv-reload-pc", natAtom proofPosition),
+     ("dv-reload-proof", proofOwner),
+     ("dv-reload-self-output", normalDVReloadOutput),
+     ("dv-reload-self-input", normalDVReloadInput)]
   let substitution := normalDVReloadSubstitution proofOwner proofPosition
   have selfMem : normalDVReloadRule ∈ read := by
     simp [read, readCopyAtom, normalDVReloadPhaseSpace]
   have requestMem : request ∈ read := by
     simp [read, readCopyAtom, consumeAtom, request,
       normalDVReloadPhaseSpace, normalDVReloadRule, normalDVReloadAtom]
+  have bundleMem : normalDVRuleBundle ∈ read := by
+    simp [read, readCopyAtom, consumeAtom,
+      normalDVReloadPhaseSpace, normalDVReloadRule, normalDVRuleBundle]
   have matchSelf :
       matchAtom [] normalDVReloadSelfTemplate normalDVReloadRule =
         some afterSelf := by
@@ -8553,21 +8569,31 @@ private theorem normalDVReloadMatchRow_mem
       matchAtom, matchAtom.matchAtomList, Subst.lookup]
   have matchRequest :
       matchAtom afterSelf normalDVReloadRequestTemplate request =
-        some substitution := by
+        some afterRequest := by
     simp [normalDVReloadRequestTemplate, request, normalDVReloadAtom,
-      afterSelf, substitution, normalDVReloadSubstitution, matchAtom,
+      afterSelf, afterRequest, matchAtom,
+      matchAtom.matchAtomList, Subst.lookup]
+  have matchBundle :
+      matchAtom afterRequest normalDVReloadBundleTemplate
+          normalDVRuleBundle = some substitution := by
+    simp [normalDVReloadBundleTemplate, normalDVRuleBundle,
+      afterRequest, substitution, normalDVReloadSubstitution, matchAtom,
       matchAtom.matchAtomList, Subst.lookup]
   rw [List.mem_map]
-  refine ⟨(substitution, {normalDVReloadRule, request}), ?_, rfl⟩
+  refine ⟨(substitution,
+    {normalDVReloadRule, request, normalDVRuleBundle}), ?_, rfl⟩
   simp only [normalDVReloadDirective, matchInputSpec,
     normalDVReloadPatternAtoms, mkPattern, matchPattern,
     matchPattern.go, List.mem_flatMap]
   refine ⟨(afterSelf, normalDVReloadRule),
     matchOneInSpace_mem [] _ read normalDVReloadRule selfMem afterSelf
       matchSelf, ?_⟩
-  refine ⟨(substitution, request),
-    matchOneInSpace_mem afterSelf _ read request requestMem substitution
+  refine ⟨(afterRequest, request),
+    matchOneInSpace_mem afterSelf _ read request requestMem afterRequest
       matchRequest, ?_⟩
+  refine ⟨(substitution, normalDVRuleBundle),
+    matchOneInSpace_mem afterRequest _ read normalDVRuleBundle bundleMem
+      substitution matchBundle, ?_⟩
   simp [substitution, request]
 
 /-- Reload is itself an ordinary selected MM2 step.  Its exact target is
@@ -10503,7 +10529,7 @@ theorem normalAssertionStackAtom_occurrence_injective
     natAtom] at equal
   exact ⟨equal.1, stringAtom_injective equal.2⟩
 
-private def normalDVCompletePatternAtoms : List Atom :=
+def normalDVCompletePatternAtoms : List Atom :=
   [.expression
       [.symbol "mm-dv-next-pair", .var "scope", .var "proof",
         .var "pc", .var "label", .var "hyp-end", .var "hyp-end",
@@ -11358,7 +11384,8 @@ def normalProofMachineAdequateTrace_of_closedFrom
 code before reinstallation.  These rows are part of the generic verifier,
 never part of source event input. -/
 def normalVerifierInternalRows : List Atom :=
-  [normalBodyMatchRuleBundle, normalBodyBuildRuleBundle] ++
+  [normalBodyMatchRuleBundle, normalDVRuleBundle,
+    normalBodyBuildRuleBundle] ++
     normalDispatchRuleRows
 
 /-- Any inert atom whose head marks it as verifier-owned code must be one of
@@ -11570,13 +11597,16 @@ private theorem matchAtom_dispatch_reload_shell
                                   exact ⟨_, _, rfl, inputLookup,
                                     outputLookup⟩
 
-/-- Reinstalling the dispatch reloader itself also preserves code origin:
-its input and output are captured from an executable shell already present in
-the owned space (or from the explicitly prepended selected directive). -/
-theorem normalDispatchReload_captured_self_raw_authorized
+/-- Reinstalling the dispatch reloader preserves any ambient executable
+inventory that already contains both the live space and the selected shell. -/
+theorem normalDispatchReload_captured_self_raw_within
+    {allowed : List RawExecFact}
     {space : List Atom} {substitution : Subst} {captured : Atom}
     {raw : RawExecFact}
-    (state : NormalProofMachineOwnedState space)
+    (rawWithin : RawExecFactsWithin allowed space)
+    (selectedWithin : ∀ selectedRaw,
+      extractRawExecFact normalDispatchReloadDirective.atom =
+        some selectedRaw → selectedRaw ∈ allowed)
     (rowMember : substitution ∈
       (Conformance.Computable.cmatchInputSpec []
         (normalDispatchReloadDirective.atom ::
@@ -11586,7 +11616,7 @@ theorem normalDispatchReload_captured_self_raw_authorized
       instantiateTemplateAtom? substitution
           normalDispatchReloadSelfTemplate = some captured)
     (extracts : extractRawExecFact captured = some raw) :
-    raw ∈ normalProofMachineRawFacts := by
+    raw ∈ allowed := by
   have rowMember' : substitution ∈
       (Conformance.Computable.cmatchInputSpec []
         (normalDispatchReloadDirective.atom ::
@@ -11640,21 +11670,42 @@ theorem normalDispatchReload_captured_self_raw_authorized
   rw [capturedEq] at extracts
   rcases List.mem_cons.mp firstMember with selected | prior
   · rw [selected] at extracts
-    exact List.mem_filterMap.mpr
-      ⟨normalDispatchReloadDirective.atom,
-        by simp [normalProofMachineRules, normalDispatchReloadDirective],
-        extracts⟩
-  · apply state.1.2 raw
+    exact selectedWithin raw extracts
+  · apply rawWithin raw
     exact List.mem_filterMap.mpr
       ⟨firstAtom, List.mem_of_mem_erase prior, extracts⟩
+
+/-- Normal-only code origin is the exact-inventory instance of the ambient
+self-shell theorem. -/
+theorem normalDispatchReload_captured_self_raw_authorized
+    {space : List Atom} {substitution : Subst} {captured : Atom}
+    {raw : RawExecFact}
+    (state : NormalProofMachineOwnedState space)
+    (rowMember : substitution ∈
+      (Conformance.Computable.cmatchInputSpec []
+        (normalDispatchReloadDirective.atom ::
+          space.erase normalDispatchReloadDirective.atom)
+        normalDispatchReloadDirective.rule.input).map Prod.fst)
+    (instantiates :
+      instantiateTemplateAtom? substitution
+          normalDispatchReloadSelfTemplate = some captured)
+    (extracts : extractRawExecFact captured = some raw) :
+    raw ∈ normalProofMachineRawFacts := by
+  exact normalDispatchReload_captured_self_raw_within state.1.2
+    (fun selectedRaw selectedExtract =>
+      List.mem_filterMap.mpr
+        ⟨normalDispatchReloadDirective.atom,
+          by simp [normalProofMachineRules, normalDispatchReloadDirective],
+          selectedExtract⟩)
+    rowMember instantiates extracts
 
 /-- The dispatch reloader can emit only a rule recovered from the exact
 verifier-owned dispatch relation.  This is the symbolic dual of the hostile
 row counterexample above: ownership, not a suggestive row name, authorizes the
 captured executable payload. -/
-theorem normalDispatchReload_captured_rule_authorized
+theorem normalDispatchReload_captured_rule_authorized_of_internal
     {space : List Atom} {substitution : Subst} {captured : Atom}
-    (state : NormalProofMachineOwnedState space)
+    (internal : NormalVerifierInternalRowsIntact space)
     (rowMember : substitution ∈
       (Conformance.Computable.cmatchInputSpec []
         (normalDispatchReloadDirective.atom ::
@@ -11689,7 +11740,7 @@ theorem normalDispatchReload_captured_rule_authorized
     · rw [witnessEq] at equal
       simp [normalDispatchReloadDirective, normalDispatchReloadRule] at equal
     · exact List.mem_of_mem_erase erased
-  have authorizedRow := state.2 witness witnessInSpace
+  have authorizedRow := internal witness witnessInSpace
   have protectedShape : isVerifierOwnedInternalRowShape witness = true := by
     rw [witnessEq]
     rfl
@@ -11697,12 +11748,27 @@ theorem normalDispatchReload_captured_rule_authorized
   rw [witnessEq] at authorized
   have payloadMember : payload ∈ normalDispatchReloadableRules := by
     simpa [normalVerifierInternalRows, normalDispatchRuleRows,
-    normalDispatchRuleRow, normalBodyMatchRuleBundle,
+      normalDispatchRuleRow, normalBodyMatchRuleBundle, normalDVRuleBundle,
       normalBodyBuildRuleBundle] using authorized
   change payload ∈
     normalDispatchReloadableRules ++
       [normalDispatchReloadRule, normalAcceptRule]
   exact List.mem_append_left _ payloadMember
+
+theorem normalDispatchReload_captured_rule_authorized
+    {space : List Atom} {substitution : Subst} {captured : Atom}
+    (state : NormalProofMachineOwnedState space)
+    (rowMember : substitution ∈
+      (Conformance.Computable.cmatchInputSpec []
+        (normalDispatchReloadDirective.atom ::
+          space.erase normalDispatchReloadDirective.atom)
+        normalDispatchReloadDirective.rule.input).map Prod.fst)
+    (instantiates :
+      instantiateTemplateAtom? substitution (.var "reload-rule") =
+        some captured) :
+    captured ∈ normalProofMachineRules :=
+  normalDispatchReload_captured_rule_authorized_of_internal state.2
+    rowMember instantiates
 
 /-- Consequently, any captured dispatch payload which parses as executable
 belongs to the exact raw-executable inventory generated for the verifier. -/
@@ -11725,6 +11791,50 @@ theorem normalDispatchReload_captured_raw_authorized
       normalDispatchReload_captured_rule_authorized state rowMember
       instantiates,
       extracts⟩
+
+/-- Ambient-inventory dispatch closure: the persistent self shell is inherited
+from the selected/live space, while a variable payload is reconstructed from
+the exact verifier-owned dispatch relation. -/
+theorem normalDispatchReload_additions_raw_within
+    (allowed : List RawExecFact)
+    {space : List Atom}
+    (rawWithin : RawExecFactsWithin allowed space)
+    (internal : NormalVerifierInternalRowsIntact space)
+    (selectedWithin : ∀ selectedRaw,
+      extractRawExecFact normalDispatchReloadDirective.atom =
+        some selectedRaw → selectedRaw ∈ allowed)
+    (normalWithin : ∀ normalRaw ∈ normalProofMachineRawFacts,
+      normalRaw ∈ allowed) :
+    let rows := (Conformance.Computable.cmatchInputSpec []
+      (normalDispatchReloadDirective.atom ::
+        space.erase normalDispatchReloadDirective.atom)
+      normalDispatchReloadDirective.rule.input).map Prod.fst
+    ReflectiveAddedRawWithin allowed rows
+      normalDispatchReloadDirective.rule.tmpl := by
+  dsimp only
+  intro atom added raw extracts
+  rcases added with
+    ⟨sink, sinkMember, authored, sinkEq,
+      substitution, rowMember, instantiates⟩
+  subst sink
+  have authoredCases :
+      authored = normalDispatchReloadSelfTemplate ∨
+        authored = .var "reload-rule" := by
+    simpa [normalDispatchReloadDirective, normalDispatchReloadSinks,
+      mkTemplate] using sinkMember
+  cases authoredCases with
+  | inl selfSink =>
+    rw [selfSink] at instantiates
+    exact normalDispatchReload_captured_self_raw_within rawWithin
+      selectedWithin rowMember instantiates extracts
+  | inr ruleSink =>
+    rw [ruleSink] at instantiates
+    apply normalWithin raw
+    exact List.mem_filterMap.mpr
+      ⟨atom,
+        normalDispatchReload_captured_rule_authorized_of_internal internal
+          rowMember instantiates,
+        extracts⟩
 
 /-- Every executable atom introduced by the dispatch reloader is authorized:
 the self shell comes from an existing executable witness, and the variable
@@ -11987,7 +12097,7 @@ theorem verifierRulesForNormalSpine_no_internal_row_shape
       atom atomMember
 
 /-- A database- and proof-independent verifier artifact generated from the
-supplied Metamath operation presentation for the supplied MM2 target.  The
+supplied Metamath operation language for the supplied MM2 target.  The
 coverage split prevents the current normal slice from masquerading as the
 complete `mmverify.mm2` artifact. -/
 structure GenericVerifierSliceArtifact (target : MM2Target) where
@@ -12092,8 +12202,9 @@ def renderAdmittedNormalProgram? (source : MetamathVerifierGSLT)
     (input : AdmittedSourceEventInput owner) : Option String :=
   target.render (composeAdmittedNormalProgram source target input)
 
-/-- The authored operation spine really drives rule generation: its unique
-normal-proof operation contributes exactly the existing generic rule machine. -/
+/-- Fixed-profile bootstrap inventory.  The authored operation spine licenses
+the covered normal-proof operation, while the emitted rules are the existing
+generic normal-proof machine rather than a synthesis from `source.operational`. -/
 theorem authored_transformNormalVerifierSlice_rules
     (target : MM2Target) :
     (transformNormalVerifierSlice authoredMetamathVerifierGSLT target).rules =
@@ -12292,24 +12403,24 @@ def renderInvocation? (source : AdmittedSourceScope) (target : MM2Target)
   lowerProgram? target
     (invocationProgram source target scopeOwner proofOwner proof)
 
-/-! ## Presentation sensitivity and executable controls -/
+/-! ## Calculus-language sensitivity and executable controls -/
 
-/-- A changed authored checker-facing presentation changes the concrete
+/-- A changed authored checker-facing calculus language changes the concrete
 compiler artifact even when the scope identity and target are held fixed. -/
-theorem transformNormalScope_presentation_sensitive
+theorem transformNormalScope_language_sensitive
     (target : MM2Target) (scopeOwner : Atom)
     (left right : AdmittedSourceScope)
     (changed :
-      Mettapedia.GSLT.LanguageDef.InferencePresentationWire.RuntimePresentation.ofPresentation
-          left.presentation ≠
-        Mettapedia.GSLT.LanguageDef.InferencePresentationWire.RuntimePresentation.ofPresentation
-          right.presentation) :
+      Mettapedia.GSLT.LanguageDef.InferenceLanguageWire.RuntimeInferenceLanguage.ofDefinition
+          left.language ≠
+        Mettapedia.GSLT.LanguageDef.InferenceLanguageWire.RuntimeInferenceLanguage.ofDefinition
+          right.language) :
     transformNormalScope left target scopeOwner ≠
       transformNormalScope right target scopeOwner := by
   intro equal
   have sourceDataEqual := congrArg
-    (fun artifact => artifact.sourceData.presentation) equal
-  exact (transformScopeData_presentation_sensitive scopeOwner left right changed)
+    (fun artifact => artifact.sourceData.languageFact) equal
+  exact (transformScopeData_language_sensitive scopeOwner left right changed)
     sourceDataEqual
 
 theorem normalHypothesisStepRule_surface_safe :
@@ -12351,7 +12462,86 @@ theorem normal_step_rule_uses_reflective_capture :
             .var "self-input", .var "self-output"])) = false := by
   decide +kernel
 
-#print axioms transformNormalScope_presentation_sensitive
+/-! ## Loaded DV scheduler boundary -/
+
+/-- The eight phase rules installed by the verifier-owned DV reloader, in
+strict scheduler order. -/
+def normalDVLoadedPhaseRules : List Atom :=
+  [normalDVPairBeginRule, normalDVLeftConstRule,
+   normalDVLeftVariableRule, normalDVRightConstRule,
+   normalDVRightVariableRule, normalDVRightNilRule,
+   normalDVLeftNilRule, normalDVCompleteRule]
+
+def normalDVLoadedPhaseDirectives : List SourceExecFact :=
+  [normalDVPairBeginDirective, normalDVLeftConstDirective,
+   normalDVLeftVariableDirective, normalDVRightConstDirective,
+   normalDVRightVariableDirective, normalDVRightNilDirective,
+   normalDVLeftNilDirective, normalDVCompleteDirective]
+
+/-- A loaded terminal DV cursor.  The earlier phase rules are present and are
+therefore observable administrative probes before completion. -/
+def normalDVLoadedCompleteSpaceAt
+    (scopeOwner proofOwner proofAddress : Atom)
+    (assertionLabel : String) (pairEnd : Nat)
+    (sourceBody : List Metamath.Verify.Sym) (context : Atom) : List Atom :=
+  normalDVLoadedPhaseRules ++
+    [.expression
+      [.symbol "mm-dv-next-pair", scopeOwner, proofOwner, proofAddress,
+        stringAtom assertionLabel, natAtom pairEnd, natAtom pairEnd,
+        listAtom runtimeSymAtom sourceBody, context]]
+
+theorem normalDVLoadedComplete_supported_exact
+    (scopeOwner proofOwner proofAddress : Atom)
+    (assertionLabel : String) (pairEnd : Nat)
+    (sourceBody : List Metamath.Verify.Sym) (context : Atom) :
+    cSupportedSourceExecFacts
+        (normalDVLoadedCompleteSpaceAt scopeOwner proofOwner proofAddress
+          assertionLabel pairEnd sourceBody context) =
+      normalDVLoadedPhaseDirectives := by
+  rfl
+
+/-- At the terminal pair cursor the first loaded rule has no complete input:
+there is no pair row at the exclusive endpoint. -/
+theorem normalDVLoadedComplete_pairBegin_no_matches
+    (scopeOwner proofOwner proofAddress : Atom)
+    (assertionLabel : String) (pairEnd : Nat)
+    (sourceBody : List Metamath.Verify.Sym) (context : Atom) :
+    Conformance.Computable.cmatchInputSpec []
+        (normalDVPairBeginDirective.atom ::
+          (normalDVLoadedCompleteSpaceAt scopeOwner proofOwner proofAddress
+            assertionLabel pairEnd sourceBody context).erase
+              normalDVPairBeginDirective.atom)
+        normalDVPairBeginDirective.rule.input = [] := by
+  have readSpaceExact :
+      normalDVPairBeginDirective.atom ::
+          (normalDVLoadedCompleteSpaceAt scopeOwner proofOwner proofAddress
+            assertionLabel pairEnd sourceBody context).erase
+              normalDVPairBeginDirective.atom =
+        normalDVLoadedCompleteSpaceAt scopeOwner proofOwner proofAddress
+          assertionLabel pairEnd sourceBody context := by
+    rfl
+  rw [readSpaceExact]
+  change
+    Conformance.Computable.cmatchInputSpec []
+        (normalDVLoadedCompleteSpaceAt scopeOwner proofOwner proofAddress
+          assertionLabel pairEnd sourceBody context)
+        (.compat (mkPattern normalDVPairBeginPatternAtoms)) = []
+  apply Conformance.Computable.cmatchInputSpec_compat_eq_nil_of_factor_never_matches
+    (before := [normalDVPairBeginPatternAtoms[0]])
+    (factor := normalDVPairBeginPatternAtoms[1])
+    (after := normalDVPairBeginPatternAtoms.drop 2)
+  intro beforeFactor carrier carrierMember
+  simp only [normalDVLoadedCompleteSpaceAt, normalDVLoadedPhaseRules,
+    List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at carrierMember
+  rcases carrierMember with phaseMember | cursorEqual
+  · rcases phaseMember with h | h | h | h | h | h | h | h
+    all_goals subst carrier <;> rfl
+  · subst carrier
+    rfl
+
+#print axioms normalDVLoadedComplete_supported_exact
+#print axioms normalDVLoadedComplete_pairBegin_no_matches
+#print axioms transformNormalScope_language_sensitive
 #print axioms MM2Target.native_type_iff_step
 #print axioms MM2Target.no_invented_native_step
 #print axioms callerDVRow_mem_callerDVRows_iff
@@ -12524,8 +12714,11 @@ theorem normal_step_rule_uses_reflective_capture :
 #print axioms normalProofMachineAdequateTrace_of_closedFrom
 #print axioms forged_internal_reload_refutes_minimal_global_closure
 #print axioms normalVerifierInternalRows_intact
+#print axioms normalDispatchReload_captured_self_raw_within
+#print axioms normalDispatchReload_captured_rule_authorized_of_internal
 #print axioms normalDispatchReload_captured_rule_authorized
 #print axioms normalDispatchReload_captured_raw_authorized
+#print axioms normalDispatchReload_additions_raw_within
 #print axioms NormalProofMachineOwnedState.fire
 #print axioms NormalProofMachineOwnedState.step
 #print axioms NormalProofMachineOwnedState.of_reachable

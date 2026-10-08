@@ -223,7 +223,7 @@ private theorem rewrites_validate :
     at membership
   rcases membership with rfl | rfl | rfl | rfl | rfl | rfl | rfl
   all_goals
-    simp [LanguageDef.validateRewrite, language, transitions, terms,
+    simp [LanguageDef.validateRewrite, LanguageDef.validateTypeExpr_eq_nil_iff, language, transitions, terms,
       instructionTerms, ctor, typed, v, a, query, run, halted,
       commonContext, executeReceipt, fetchedPremises, nextTransition,
       valueTransition, faultTransition, languageFaultTransition,
@@ -233,7 +233,8 @@ private theorem rewrites_validate :
       LanguageDef.validateRulePatterns, LanguageDef.patternFvarNames,
       LanguageDef.patternBinderNames, LanguageDef.premisePatterns,
       LanguageDef.premiseFvarNames,
-      LanguageDef.premiseProducedFvarNames,
+      LanguageDef.premiseProducedFvarNames, LanguageDef.premiseStepTypeExprs,
+      LanguageDef.premiseLocallyScoped,
       LanguageDef.premiseForAllParams, Pattern.constructorRefs,
       Pattern.constructorRefsList, Pattern.freeFvarNames,
       Pattern.isWellScoped, Pattern.isWellScopedAt,

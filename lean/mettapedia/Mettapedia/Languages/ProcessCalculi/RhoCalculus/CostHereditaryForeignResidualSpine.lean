@@ -46,6 +46,7 @@ open RhoStaticNonBoundaryPlanStopCommonApex
 
 namespace RhoReachedPlanPairCommonApex
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Turn an alignment of reached-plan abstracts into the fixed parent-cospan
 apex while routing rigid free variables through occurrence evidence in both
 parent skeletons.  The callback is consulted only at genuine plan stops. -/
@@ -141,7 +142,7 @@ noncomputable def ofProvenancedAlignedAbstracts
         rightView.node.thinning.thickenAmbientBVars depth pattern := by
     simpa only [CostStaticRegionNode.thinning] using congrArg
       (fun targetBound =>
-        (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT color targetBound)
+        (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory color targetBound)
           |>.thickenAmbientBVars depth pattern)
       (leftView.targetBound_eq_targetBound rightView)
   have apex :=
@@ -187,7 +188,7 @@ noncomputable def ofProvenancedAlignedAbstracts
               rightMembership targetDeclaration rootDepth
             simpa [CostStaticAtomEnvironment.reify, Pattern.renameFVars,
               canonicalizeByDepths, mapPattern,
-              CostStaticBinderThinning.thickenAmbientBVars,
+              CostStaticTypeThinning.thickenAmbientBVars_fvar,
               CostStaticAtomKeyCospan.reifyLeft,
               CostStaticAtomKeyCospan.reifyRight, targetDeclaration,
               costStaticReflectivePresentationDecl_eq_map] using memberApex
@@ -340,6 +341,7 @@ arm of `StopWithFvars`.
 
 The residual therefore rests on a **single** callback. -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- **The foreign residual from one stop callback.**
 
 Same reduction as `rho_afterSameColorBoundarySideForeign_of_callbacks`, with

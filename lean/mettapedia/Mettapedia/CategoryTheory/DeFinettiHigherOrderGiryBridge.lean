@@ -216,15 +216,15 @@ noncomputable def higherOrderCylinderPrefixMeasure
     higherOrderSequenceMeasure (k := k) (m := m) θ
       (MarkovDeFinettiRecurrence.cylinder (k := k) xs)
   root_eq_one' := by
-    haveI :
+    have :
         IsProbabilityMeasure
           (higherOrderSequenceMeasure (k := k) (m := m) θ) := by
       unfold MarkovDeFinettiHigherOrder.higherOrderSequenceMeasure
-      haveI :
+      have :
           IsProbabilityMeasure
             (MarkovDeFinettiHigherOrder.contextSequenceMeasure (k := k) (m := m) θ) := by
         unfold MarkovDeFinettiHigherOrder.contextSequenceMeasure
-        haveI :
+        have :
             IsProbabilityMeasure
               (MarkovDeFinettiHigherOrder.encodedContextSequenceMeasure (k := k) (m := m) θ) :=
           MarkovDeFinettiSequenceKernel.markovSequenceMeasure_isProbability
@@ -386,7 +386,7 @@ theorem higherOrderLongWordWeightViaProbMarkov_eq_finiteDiracMixture
         MarkovDeFinettiHard.wordProb (g i)
           (higherOrderEncodedContextWord (k := k) (m := m) xs hxs)
           ∂(μ : Measure (Fin n)) := by
-            simpa [finiteHigherOrderEncodedMixingLaw, p, μ, g, hg] using hmap
+            exact hmap
     _ =
       ∑ i : Fin n,
         ((μ : Measure (Fin n)) {i}) *

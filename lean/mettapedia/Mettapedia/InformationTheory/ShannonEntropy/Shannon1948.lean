@@ -12,21 +12,24 @@ import Mathlib.Topology.Basic
 This file sets up Shannon's original axiom system from:
 
 * Claude E. Shannon, *A Mathematical Theory of Communication* (1948)
-  `literature/shannon_entropy.pdf`
 
 and proves that the standard Shannon entropy `∑ negMulLog(pᵢ)` satisfies these axioms.
 
-## Shannon's Original Axioms (5 total)
+## Shannon's Axioms (Four Clauses, with Optional Normalization)
 
 1. **Relabeling Invariance**: H is invariant under permutations (= Faddeev's symmetry)
 2. **Continuity**: H(p₁,...,pₙ) is continuous in the pᵢ (full continuity)
 3. **Monotonicity**: A(n) = H(1/n,...,1/n) is monotonically increasing in n
 4. **Grouping**: H satisfies the chain rule / grouping property (= Faddeev's recursivity)
-5. **Normalization**: A(2) = H(1/2, 1/2) = 1
+5. **Optional normalization**: A(2) = H(1/2, 1/2) = 1
+
+`Shannon1948Entropy` contains the first four clauses. It does not fix a scale;
+the uniqueness theorem therefore gives a constant multiple of Shannon entropy.
 
 ## Comparison to Faddeev (1956)
 
-Shannon's original system has **5** axioms; Faddeev's system has only **4**:
+Adding fair-coin normalization to the four-clause Shannon interface gives five
+clauses. Faddeev's four-clause interface already includes normalization:
 
 | Property | Shannon (1948) | Faddeev (1956) |
 |----------|----------------|----------------|
@@ -35,19 +38,20 @@ Shannon's original system has **5** axioms; Faddeev's system has only **4**:
 | Binary continuity | - | ASSUMES |
 | Monotonicity | **ASSUMES** | **DERIVES** |
 | Grouping/Recursivity | ASSUMES | ASSUMES |
-| Normalization | ASSUMES | ASSUMES |
-| **Total axioms** | **5** | **4** |
+| Normalization | OPTIONAL | ASSUMES |
+| Clauses in the structure | 4 | 4 |
 
 The key difference: Faddeev assumes only **binary** continuity and PROVES monotonicity
 and full continuity. Shannon assumes **full** continuity and monotonicity outright.
 
-See `Faddeev.lean` for the minimal system and `Interface.lean` for the unified view.
+See `Faddeev.lean` for the binary-continuity formulation and `Interface.lean`
+for the unified view. These counts do not establish absolute minimality.
 
 ## Main Results
 
-* `ShannonEntropy` - Structure encoding Shannon's 1948 axioms
-* `shannonEntropy_satisfies` - Shannon entropy satisfies the axioms
-* Uniqueness argument (Shannon's Appendix 2)
+* `Shannon1948Entropy` - Structure encoding the four unnormalized clauses
+* `shannon1948Model` - Normalized Shannon entropy satisfies these clauses
+* `shannon1948_uniqueness` - Every model is a constant multiple of Shannon entropy
 -/
 
 namespace Mettapedia.InformationTheory
@@ -228,7 +232,7 @@ theorem continuous_shannonEntropyFin {α : Type*} [Fintype α] :
     Continuous (fun p : Prob α => shannonEntropyFin α p) := by
   classical
   unfold shannonEntropyFin
-  apply continuous_finset_sum
+  apply continuous_finsetSum
   intro a _
   -- `p ↦ p.val a` is continuous, and `negMulLog` is continuous.
   exact continuous_negMulLog.comp (continuous_apply a |>.comp continuous_subtype_val)
@@ -308,7 +312,7 @@ theorem shannon1948_uniqueness (E : Shannon1948Entropy) :
     have hn0' : Fintype.card α = 0 := by
       have : n = 0 := Nat.eq_zero_of_not_pos hn0
       simpa [n] using this
-    haveI : IsEmpty α := (Fintype.card_eq_zero_iff.mp hn0')
+    have : IsEmpty α := (Fintype.card_eq_zero_iff.mp hn0')
     have hsum0 : (∑ a : α, p.1 a) = (0 : ℝ) := by
       simp
     have : (0 : ℝ) = 1 := by
@@ -874,7 +878,7 @@ theorem shannon1948_uniqueness (E : Shannon1948Entropy) :
           have hsum :
               Tendsto (fun N : ℕ => (∑ j : Fin n, (⌊p'.1 j * (N + 1 : ℝ)⌋₊ : ℝ) / (N + 1 : ℝ)))
                 atTop (𝓝 (∑ j : Fin n, p'.1 j)) := by
-            -- Rewrite the `Fintype` sum as a `Finset.univ` sum and apply `tendsto_finset_sum`.
+            -- Rewrite the `Fintype` sum as a `Finset.univ` sum and apply `tendsto_finsetSum`.
             have hsum' :
                 Tendsto
                     (fun N : ℕ =>
@@ -882,7 +886,7 @@ theorem shannon1948_uniqueness (E : Shannon1948Entropy) :
                         (⌊p'.1 j * (N + 1 : ℝ)⌋₊ : ℝ) / (N + 1 : ℝ))
                     atTop
                     (𝓝 (Finset.sum (Finset.univ : Finset (Fin n)) fun j => p'.1 j)) := by
-              refine tendsto_finset_sum _ ?_
+              refine tendsto_finsetSum _ ?_
               intro j _
               have hp0j : 0 ≤ p'.1 j := (ProbVec.nonneg (p := p') j)
               have hreal :=

@@ -1,4 +1,6 @@
 import Mettapedia.Languages.Metamath.MM2DataEncoding
+import Mettapedia.Languages.Metamath.MM2CompressedProofData
+import Mettapedia.Languages.Metamath.MM2NormalLabelInventory
 import Mettapedia.Languages.Metamath.MM2Target
 import Mettapedia.Languages.Metamath.SourceGSLTRawSourceComposition
 import Mettapedia.Languages.Metamath.SourceStateNativeTypes
@@ -23,7 +25,11 @@ set_option maxRecDepth 100000
 namespace Mettapedia.Languages.Metamath.MM2SourceEventTransformation
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.Metamath.InferenceEncoding
+open Mettapedia.Languages.Metamath.MM2CompressedProofData
+open Mettapedia.Languages.Metamath.MM2CompressedProofExecution
 open Mettapedia.Languages.Metamath.MM2DataEncoding
+open Mettapedia.Languages.Metamath.MM2NormalLabelInventory
 open Mettapedia.Languages.Metamath.MM2Transformation (MM2Target)
 open Mettapedia.Languages.Metamath.SourceGSLTIncludeDAG
 open Mettapedia.Languages.Metamath.SourceGSLTRawByteLexical
@@ -363,12 +369,28 @@ def sourcePreparedAssertionSupportRows (owner : Atom) (_position : Nat)
     sourceAssertion state obligation.label.name obligation.formula
   (assertionExecutionRowsFor owner state.assertions.length assertion).drop 1
 
+/-- Normal proofs retain the existing label stream.  Compressed proofs use
+the compact header/word artifact and its linear cursor infrastructure; this
+branch never decodes the body into proof actions. -/
+def sourcePreparedProofRows (owner : Atom) (position : Nat)
+    (state : SourceState) (obligation : TheoremObligation) : List Atom :=
+  let proofOwner := sourceProofOwnerAtom owner position
+  match obligation.proof with
+  | .normal steps =>
+      proofInputRows owner proofOwner
+        (.normal obligation.label.name obligation.formula
+          (steps.map (·.name))) ++
+        normalLabelInventoryRows proofOwner state
+  | .compressed _openParen header _closeParen words =>
+      (transformCompressedProofData owner proofOwner state
+        obligation.label.name obligation.formula (header.map (·.name))
+        (words.map (·.bytes))).rows
+
 def sourcePreparedTheoremRows (owner : Atom) (position nextPosition : Nat)
     (statement : RawStatement) (state : SourceState)
     (obligation : TheoremObligation) : List Atom :=
   sourcePreparedTheoremRow owner position nextPosition statement obligation ::
-    proofInputRows owner (sourceProofOwnerAtom owner position)
-      (theoremObligationProofInput obligation) ++
+    sourcePreparedProofRows owner position state obligation ++
     [sourcePreparedAssertionHeaderRow owner position state obligation] ++
     sourcePreparedAssertionSupportRows owner position state obligation
 
@@ -559,7 +581,7 @@ private theorem decodeSourceEventRowsFrom_encoded (owner : Atom)
         decodeSourceEventRowsFrom, decodeSourceEventRow_linkedRow]
       rw [show offset + (statement :: statements).length =
           (offset + 1) + statements.length by
-            simp [Nat.add_comm, Nat.add_left_comm]]
+            simp [Nat.add_comm]]
       simp [induction]
 
 /-- Canonically transformed source events survive exact untrusted-input
@@ -585,26 +607,58 @@ def isVerifierTerminalObservation : Atom → Bool
         tag == "mm-source-theorem-rejected"
   | _ => false
 
-/-- Recognize the inert row shapes whose payloads are executable verifier
-code.  They are not scheduler-visible `exec` shells, so the executable-space
-boundary must exclude them separately. -/
+/-- Kernel-reducible reserved-prefix test.  `String.startsWith` uses a
+non-reducing slice matcher, while this finite-list comparison can participate
+in the small proof-neutrality computations below. -/
+@[simp] def isVerifierOwnedInternalNamespace (tag : String) : Bool :=
+  tag.toList.take "mm-internal-".toList.length == "mm-internal-".toList
+
+/-- Recognize inert verifier-owned rows whose payloads may carry executable
+code.  The reserved `mm-internal-` namespace is excluded as a whole: every
+new verifier continuation must stay outside untrusted initial data without a
+fragile per-head allowlist update. -/
 def isVerifierOwnedInternalRowShape : Atom → Bool
   | .expression (.symbol tag :: _) =>
-      tag == "mm-internal-body-match-rules" ||
-        tag == "mm-internal-body-build-rules" ||
-        tag == "mm-internal-normal-dispatch-rule" ||
-        tag == "mm-internal-source-verifier-rule" ||
+      isVerifierOwnedInternalNamespace tag ||
         tag == "mm-normal-final-formula-candidate"
   | _ => false
 
+/-- Recognize the two normal-proof cursor families whose final field is later
+republished as a continuation.  They are dynamic verifier state, not source
+event input, even though their outer form is inert MM2 data. -/
+@[simp] def isNormalBodyCarrierShape : Atom → Bool
+  | .expression (.symbol tag :: _) =>
+      tag == "mm-body-match" || tag == "mm-body-prefix"
+  | _ => false
+
 /-- Initial verifier data is passive when it is neither a scheduler-visible
-`exec` shell, a terminal verdict, nor an inert carrier of verifier code.  This
-is an entry-boundary property, not an assertion that all later verifier-owned
-control and stack rows are public input. -/
+`exec` shell, a terminal verdict, an inert carrier of verifier code, nor a
+dynamic body cursor that can republish a continuation.  This is an
+entry-boundary property, not an assertion that later verifier-owned control
+and stack rows are public input. -/
 def isProofNeutralInitialAtom (atom : Atom) : Bool :=
   ((Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact atom).isNone &&
     !(isVerifierTerminalObservation atom)) &&
-    !(isVerifierOwnedInternalRowShape atom)
+    (!(isVerifierOwnedInternalRowShape atom) &&
+      !(isNormalBodyCarrierShape atom))
+
+/-- A verifier-owned inert carrier is never admissible as passive initial
+data, independently of the rest of its payload. -/
+theorem verifier_owned_internal_row_not_proofNeutral
+    (atom : Atom) (owned : isVerifierOwnedInternalRowShape atom = true) :
+    isProofNeutralInitialAtom atom = false := by
+  unfold isProofNeutralInitialAtom
+  rw [owned]
+  simp
+
+/-- A directly authored body cursor cannot enter through the passive source
+event channel, because its captured continuation becomes operational later. -/
+theorem normal_body_carrier_not_proofNeutral
+    (atom : Atom) (carrier : isNormalBodyCarrierShape atom = true) :
+    isProofNeutralInitialAtom atom = false := by
+  unfold isProofNeutralInitialAtom
+  rw [carrier]
+  simp
 
 /-- A directly authored inert dispatch row is rejected at the same boundary
 as an executable shell or pre-authored verdict. -/
@@ -614,6 +668,18 @@ as an executable shell or pre-authored verdict. -/
       (.expression
         [.symbol "mm-internal-normal-dispatch-rule", payload]) = false := by
   simp [isProofNeutralInitialAtom, isVerifierOwnedInternalRowShape]
+
+/-- The input boundary rejects every reserved verifier-internal row family,
+including future opaque continuation carriers. -/
+theorem verifier_owned_internal_prefix_not_proofNeutral
+    (tag : String) (payload : List Atom)
+    (internal : isVerifierOwnedInternalNamespace tag = true) :
+    isProofNeutralInitialAtom (.expression (.symbol tag :: payload)) = false := by
+  apply verifier_owned_internal_row_not_proofNeutral
+  change (isVerifierOwnedInternalNamespace tag ||
+    tag == "mm-normal-final-formula-candidate") = true
+  rw [internal]
+  rfl
 
 @[simp] theorem final_formula_candidate_not_proofNeutral
     (proof formula : Atom) :
@@ -713,32 +779,121 @@ theorem sourceEventArtifact_rows_have_no_terminal_observation
       isVerifierTerminalObservation, indexSuccessorRows] <;>
     aesop
 
+@[simp] theorem indexedRows_all_proofNeutral
+    {Source : Type} (family : String) (owner : Atom)
+    (encode : Source → Atom) (values : List Source) :
+    (indexedRows family owner encode values).all
+      isProofNeutralInitialAtom = true := by
+  simp [indexedRows, indexedRow, isProofNeutralInitialAtom,
+    Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+    isVerifierTerminalObservation, isVerifierOwnedInternalRowShape]
+  all_goals aesop
+
+@[simp] theorem linkedRows_all_proofNeutral
+    {Source : Type} (family : String) (owner : Atom)
+    (encode : Source → Atom) (values : List Source) :
+    (linkedRows family owner encode values).all
+      isProofNeutralInitialAtom = true := by
+  simp [linkedRows, linkedRow, isProofNeutralInitialAtom,
+    Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+    isVerifierTerminalObservation, isVerifierOwnedInternalRowShape]
+  all_goals aesop
+
+@[simp] theorem indexSuccessorRows_all_proofNeutral
+    (owner : Atom) (count : Nat) :
+    (indexSuccessorRows owner count).all isProofNeutralInitialAtom = true := by
+  simp [indexSuccessorRows, isProofNeutralInitialAtom,
+    Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+    isVerifierTerminalObservation, isVerifierOwnedInternalRowShape]
+
+@[simp] private theorem compressedIndexSuccessorRowsFrom_all_proofNeutral
+    (owner : Atom) (count : Nat) (current : CompressedIndexCode) :
+    (compressedIndexSuccessorRowsFrom owner count current).all
+      isProofNeutralInitialAtom = true := by
+  induction count generalizing current with
+  | zero => rfl
+  | succ count induction =>
+      simp [compressedIndexSuccessorRowsFrom,
+        compressedIndexSuccessorRow, isProofNeutralInitialAtom,
+        Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+        isVerifierTerminalObservation, isVerifierOwnedInternalRowShape,
+        induction]
+
+@[simp] theorem compressedIndexSuccessorRows_all_proofNeutral
+    (owner : Atom) (count : Nat) :
+    (compressedIndexSuccessorRows owner count).all
+      isProofNeutralInitialAtom = true := by
+  simp [compressedIndexSuccessorRows]
+
+@[simp] theorem compressedNormalStackSuccessorRows_all_proofNeutral
+    (proofOwner : Atom) (count : Nat) :
+    (compressedNormalStackSuccessorRows proofOwner count).all
+      isProofNeutralInitialAtom = true := by
+  simp [compressedNormalStackSuccessorRows, isProofNeutralInitialAtom,
+    Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+    isVerifierTerminalObservation, isVerifierOwnedInternalRowShape]
+
+@[simp] theorem compressedProofDataRows_all_proofNeutral
+    (scopeOwner proofOwner : Atom) (state : SourceState)
+    (theoremLabel : String) (formula : ConstantHeadedFormula)
+    (explicitLabels : List String) (bodyWords : List (List UInt8)) :
+    ((transformCompressedProofData scopeOwner proofOwner state theoremLabel
+      formula explicitLabels bodyWords).rows).all
+        isProofNeutralInitialAtom = true := by
+  simp [CompressedProofDataArtifact.rows, transformCompressedProofData,
+    compressedHeaderRows, compressedBodyRows,
+    isProofNeutralInitialAtom,
+    Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
+    isVerifierTerminalObservation, isVerifierOwnedInternalRowShape]
+
 @[simp] theorem sourcePreparedTheoremRows_all_proofNeutral
     (owner : Atom) (position nextPosition : Nat)
     (statement : RawStatement) (state : SourceState)
     (obligation : TheoremObligation) :
     (sourcePreparedTheoremRows owner position nextPosition statement state
         obligation).all isProofNeutralInitialAtom = true := by
+  have labelRowsSafe :
+      (normalLabelInventoryRows (sourceProofOwnerAtom owner position) state).all
+          isProofNeutralInitialAtom = true := by
+    apply List.all_eq_true.mpr
+    intro row member
+    simp only [normalLabelInventoryRows, List.mem_append,
+      List.mem_singleton] at member
+    rcases member with candidate | rfl
+    · rcases List.mem_map.mp candidate with ⟨occurrence, _, rfl⟩
+      simp [normalLabelCandidateRow, linkedRow, isProofNeutralInitialAtom,
+        isVerifierTerminalObservation, isVerifierOwnedInternalRowShape,
+        Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact]
+    · simp [normalLabelFrontierRow, isProofNeutralInitialAtom,
+        isVerifierTerminalObservation, isVerifierOwnedInternalRowShape,
+        Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact]
   rcases obligation with ⟨site, label, formula, proof⟩
-  simp [sourcePreparedTheoremRows, sourcePreparedTheoremRow,
+  cases proof <;>
+    simp [sourcePreparedTheoremRows, sourcePreparedProofRows,
+      sourcePreparedTheoremRow,
     sourcePreparedTheoremFact, sourcePreparedAssertionHeaderRow,
     sourcePreparedAssertionHeaderFact, sourcePreparedAssertionSupportRows,
-    theoremObligationProofInput, assertionExecutionRowsFor,
+    assertionExecutionRowsFor,
     assertionHypothesisRows, assertionHypothesisRow,
     assertionHypothesisSuccessorRows, assertionHypothesisSuccessorRow,
     assertionDVHeaderRow, assertionDVPairRows, assertionDVPairRow,
     assertionDVSuccessorRows, assertionResultRow,
+    labelRowsSafe,
     isProofNeutralInitialAtom,
     Mettapedia.Languages.ProcessCalculi.MORK.extractRawExecFact,
     isVerifierTerminalObservation]
   all_goals aesop
 
-private theorem sourceDerivedProofRowsFrom_all_proofNeutral
-    (owner : Atom) (position : Nat) (state : SourceState)
+private theorem sourceDerivedProofRowsFrom_all_of
+    (owner : Atom) (property : Atom → Bool)
+    (prepared : ∀ position nextPosition statement state obligation,
+      (sourcePreparedTheoremRows owner position nextPosition statement state
+        obligation).all property = true)
+    (position : Nat) (state : SourceState)
     (statements : List RawStatement) (rows : List Atom)
     (derived :
       sourceDerivedProofRowsFrom owner position state statements = .ok rows) :
-    rows.all isProofNeutralInitialAtom = true := by
+    rows.all property = true := by
   induction statements generalizing position state rows with
   | nil =>
       simp [sourceDerivedProofRowsFrom] at derived
@@ -765,19 +920,32 @@ private theorem sourceDerivedProofRowsFrom_all_proofNeutral
                   cases tail with
                   | nil =>
                       obtain rfl := FoldResult.ok.inj derived
-                      simp [restSafe]
+                      simp [prepared, restSafe]
                   | cons nextObligation tail =>
                       obtain rfl := FoldResult.ok.inj derived
                       exact restSafe
+
+/-- A row-local invariant on every prepared theorem packet lifts through the
+same ordered source fold to the complete recomputed proof-row artifact. -/
+theorem sourceDerivedProofRows_all_of
+    (owner : Atom) (property : Atom → Bool)
+    (prepared : ∀ position nextPosition statement state obligation,
+      (sourcePreparedTheoremRows owner position nextPosition statement state
+        obligation).all property = true)
+    (statements : List RawStatement) (rows : List Atom)
+    (derived : sourceDerivedProofRows owner statements = .ok rows) :
+    rows.all property = true :=
+  sourceDerivedProofRowsFrom_all_of owner property prepared 0 initialState
+    statements rows derived
 
 /-- Proof rows recomputed from an admitted source stream cannot smuggle an
 executable rule or a terminal observation into the initial space. -/
 theorem sourceDerivedProofRows_all_proofNeutral
     (owner : Atom) (statements : List RawStatement) (rows : List Atom)
     (derived : sourceDerivedProofRows owner statements = .ok rows) :
-    rows.all isProofNeutralInitialAtom = true :=
-  sourceDerivedProofRowsFrom_all_proofNeutral owner 0 initialState statements
-    rows derived
+    rows.all isProofNeutralInitialAtom = true := by
+  exact sourceDerivedProofRows_all_of owner isProofNeutralInitialAtom
+    (sourcePreparedTheoremRows_all_proofNeutral owner) statements rows derived
 
 /-- The canonical public event envelope contains only inert source rows. -/
 @[simp] theorem canonicalSourceEventRows_all_proofNeutral
@@ -1068,7 +1236,19 @@ theorem AdmittedSourceEventInput.initialRows_no_verifier_internal
   have safe := allRows row member
   simp only [isProofNeutralInitialAtom, Bool.and_eq_true,
     Option.isNone_iff_eq_none, Bool.not_eq_true'] at safe
-  exact safe.2
+  exact safe.2.1
+
+/-- Canonicalized source input cannot supply a normal-proof body cursor whose
+captured continuation could later be republished by the verifier. -/
+theorem AdmittedSourceEventInput.initialRows_no_normal_body_carrier
+    {owner : Atom} (input : AdmittedSourceEventInput owner)
+    (row : Atom) (member : row ∈ input.initialRows) :
+    isNormalBodyCarrierShape row = false := by
+  have allRows := List.all_eq_true.mp input.initialRows_all_proofNeutral
+  have safe := allRows row member
+  simp only [isProofNeutralInitialAtom, Bool.and_eq_true,
+    Option.isNone_iff_eq_none, Bool.not_eq_true'] at safe
+  exact safe.2.2
 
 /-- Total admission for transformed or directly authored source-event rows. -/
 def admitSourceEventInput (owner : Atom) (rows : List Atom) :
@@ -1299,11 +1479,13 @@ example (site labelSpan typeSpan bodySpan proofSpan separator terminator :
 #print axioms applyStatement_provable_eq_ok_iff
 #print axioms applyStatement_provable_success_transport
 #print axioms sourceDerivedProofRows_ok_of_foldStatements_ok
+#print axioms sourceDerivedProofRows_all_of
 #print axioms sourceDerivedProofRows_all_proofNeutral
 #print axioms canonicalSourceEventRows_all_proofNeutral
 #print axioms validateSourceEventInput_of_transformSegmentedSource_ok
 #print axioms AdmittedSourceEventInput.initialRows_no_exec_or_terminal
 #print axioms AdmittedSourceEventInput.initialRows_no_verifier_internal
+#print axioms AdmittedSourceEventInput.initialRows_no_normal_body_carrier
 #print axioms verifier_owned_dispatch_row_not_proofNeutral
 #print axioms admitSourceEventInput_of_transformSegmentedSource_ok
 #print axioms constant_event_inhabits_source_native_type

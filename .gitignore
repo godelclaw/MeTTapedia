@@ -7,12 +7,6 @@ __pycache__/
 *.pyc
 *.env
 
-# Grammatical Framework compilation intermediates (selected portable `.pgf` outputs remain trackable).
-*.gfo
-
-# Generated DocText runtime grammar; regenerate it from the tracked `.gf` sources.
-lean/mettapedia/Mettapedia/DocText/gf_runtime/DocTextClaims.pgf
-
 *.backup
 
 *.tar
@@ -90,16 +84,27 @@ lean/mettapedia/results/
 lean/mettapedia/data/
 !lean/mettapedia/scripts/
 lean/mettapedia/scripts/*
+!lean/mettapedia/scripts/generate_self_interp_checkpoints.lean
+!lean/mettapedia/scripts/generate_vibe_itp_rule_shapes.py
+!lean/mettapedia/scripts/check_prime_spec_boundary.py
+!lean/mettapedia/scripts/check_two_sort_boundaries.py
+!lean/mettapedia/scripts/check_faddeev_axioms.lean
+!lean/mettapedia/scripts/prime_study_status.lean
+!lean/mettapedia/scripts/prime_joint_experiments.lean
 !lean/mettapedia/scripts/oeis_program_discovery_fixture.py
 !lean/mettapedia/scripts/test_oeis_program_discovery_fixture.py
+!lean/mettapedia/scripts/test_lake_build_scoping.py
 !lean/mettapedia/scripts/test_metamath_mm2_raw_unit.sh
-!lean/mettapedia/scripts/check_import_closure.py
+!lean/mettapedia/scripts/test_metamath_mm2_compressed_unit.sh
+!lean/mettapedia/scripts/test_metamath_mm2_heap_walkers.sh
 !lean/mettapedia/scripts/conformance/
 lean/mettapedia/scripts/conformance/*
 !lean/mettapedia/scripts/conformance/check_pc_authenticated_affine_replay.py
 !lean/mettapedia/scripts/conformance/check_pc_authenticated_hidden_stage_replay.py
 !lean/mettapedia/scripts/conformance/check_pc_authenticated_full_residual_replay.py
 !lean/mettapedia/scripts/conformance/check_tgad_unified_carrier_source_conformance.py
+!lean/mettapedia/scripts/conformance/check_petta_mainline_call_guard_reference.py
+!lean/mettapedia/scripts/conformance/petta_mainline_call_guard_reference.metta
 lean/algorithms/lean-toolchain
 lean/mettapedia/Mettapedia/CategoricalLogic/lakefile.lean
 lean/mettapedia/Mettapedia/CategoricalLogic/lean-toolchain
@@ -150,25 +155,13 @@ megalodon/theory/metamath/mmmg/
 megalodon/theory/mizar/mmlmg/
 megalodon/_archive/
 
-# External Megalodon theory corpora — NOT vendored here (provenance/no clear license).
-# See megalodon/theory/EXTERNAL-CORPORA.md for sources and fetch instructions.
-# numbers/ = Chad E. Brown's FormalNumbers (rendered HTML); atp/ = Proofgold/mgwiki mgw_test AIM bounties.
-megalodon/theory/numbers/
-megalodon/theory/atp/
-# Large generated test fixtures
-megalodon/tests/dedukti_bridge/test_triangle.dk
-megalodon/tests/dedukti_bridge/test_triangle.mg
-
 # Block all markdown files (use git add -f for whitelisted files)
 *.md
 !README.md
-
-
 !megalodon/how-to-megalodon.md
 !megalodon/PNP_crux/RIGOROUS_ANALYSIS_REPORT.md
 !lean/mettapedia/EXTERNAL_REPOS.md
 !megalodon/theory/mizar/mml/README.md
-!megalodon/theory/EXTERNAL-CORPORA.md
 
 # LaTeX build artifacts
 *.aux
@@ -190,12 +183,4 @@ codex_scratch/
 */_scratch/
 **/_scratch/
 
-# Third-party vendored reference, local-only — NOT part of this repo.
-# Magnus Myreen's Milawa prover (from CakeML); only a copyright notice, no
-# bundled license, so it is never committed here. See README provenance.
-cakeml/milawa-ref/
-
-# Generated GF grammars (regenerable)
-lean/algorithms/gf_fragments/generated/
-# Lean backup files
-*.lean.bak
+!lean/mettapedia/scripts/check_import_closure.py

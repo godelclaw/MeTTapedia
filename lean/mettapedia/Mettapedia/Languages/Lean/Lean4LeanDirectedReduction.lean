@@ -1,5 +1,5 @@
 import Mettapedia.Languages.Lean.Lean4LeanEnvironmentGrowth
-import Mettapedia.GSLT.Core.ProofRelevantPresentation
+import Mettapedia.GSLT.Core.ProofRelevantGSLT
 import Mettapedia.GSLT.Core.GSLTConstructions
 import Mettapedia.OSLF.Framework.IndexedModalFunctor
 import Mettapedia.OSLF.Framework.OSLFCertificateGSLTAuthority
@@ -30,7 +30,7 @@ namespace Mettapedia.Languages.Lean.Lean4LeanDirectedReduction
 open Lean4Lean
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.ProofRelevantPresentation
+open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
 open Mettapedia.OSLF.Framework.IndexedModalFunctor
@@ -222,18 +222,18 @@ def coreRawHeadGSLT (environment : VEnv) (universeParameters : Nat) : GSLT where
   Iff.rfl
 
 /-- Exact raw event fibres present the evaluator-facing GSLT. -/
-def coreRawHeadStepPresentation (environment : VEnv) (universeParameters : Nat) :
-    StepPresentation (coreRawHeadGSLT environment universeParameters) where
+def coreRawHeadStepEvidence (environment : VEnv) (universeParameters : Nat) :
+    StepEvidence (coreRawHeadGSLT environment universeParameters) where
   Evidence := CoreRawHeadEvent environment universeParameters
   erases_iff := by
     intro source target
     rfl
 
 /-- The evaluator-facing core bundled with raw event occurrences. -/
-def coreRawHeadPresentedGSLT (environment : VEnv) (universeParameters : Nat) :
-    PresentedGSLT where
+def coreRawHeadProofRelevantGSLT (environment : VEnv) (universeParameters : Nat) :
+    ProofRelevantGSLT where
   theory := coreRawHeadGSLT environment universeParameters
-  steps := coreRawHeadStepPresentation environment universeParameters
+  steps := coreRawHeadStepEvidence environment universeParameters
 
 /-- The proposition-valued typed refinement obtained by forgetting exact
 typed-event identity.  Structural equations are syntactic equality; typed
@@ -264,9 +264,9 @@ def coreHeadGSLT (environment : VEnv) (universeParameters : Nat)
   Iff.rfl
 
 /-- The authored event fibres present exactly the extensional GSLT steps. -/
-def coreHeadStepPresentation (environment : VEnv) (universeParameters : Nat)
+def coreHeadStepEvidence (environment : VEnv) (universeParameters : Nat)
     (context : List VExpr) (expectedType : VExpr) :
-    StepPresentation
+    StepEvidence
       (coreHeadGSLT environment universeParameters context expectedType) where
   Evidence := CoreHeadEvent environment universeParameters context expectedType
   erases_iff := by
@@ -274,10 +274,10 @@ def coreHeadStepPresentation (environment : VEnv) (universeParameters : Nat)
     rfl
 
 /-- The directed core bundled with its proof-relevant event presentation. -/
-def coreHeadPresentedGSLT (environment : VEnv) (universeParameters : Nat)
-    (context : List VExpr) (expectedType : VExpr) : PresentedGSLT where
+def coreHeadProofRelevantGSLT (environment : VEnv) (universeParameters : Nat)
+    (context : List VExpr) (expectedType : VExpr) : ProofRelevantGSLT where
   theory := coreHeadGSLT environment universeParameters context expectedType
-  steps := coreHeadStepPresentation environment universeParameters context expectedType
+  steps := coreHeadStepEvidence environment universeParameters context expectedType
 
 /-- The typed operational refinement embeds into the evaluator-facing raw
 calculus by erasing only typing evidence. -/
@@ -304,7 +304,8 @@ abbrev exactCoreRawHeadTargetType
     CoreRawHeadNativeType environment universeParameters :=
   exactTargetNativeType (coreRawHeadGSLT environment universeParameters) target
 
-/-- Raw OSLF exact-target inhabitation is exactly one evaluator-facing event. -/
+/-- OSLF exact-target inhabitation for the raw-head evaluator GSLT is exactly
+one evaluator-facing event. -/
 theorem satisfies_exactCoreRawHeadTargetType_iff_event
     (environment : VEnv) (universeParameters : Nat)
     (source target : VExpr) :
@@ -312,7 +313,7 @@ theorem satisfies_exactCoreRawHeadTargetType_iff_event
         source
         (exactCoreRawHeadTargetType environment universeParameters target).pred <->
       Nonempty (CoreRawHeadEvent environment universeParameters source target) := by
-  rw [satisfies_exactTargetNativeType_iff_step]
+  erw [satisfies_exactTargetNativeType_iff_step]
   rfl
 
 /-- Exact raw-step decision is the first executable comparison contract.  A
@@ -327,7 +328,7 @@ theorem rawStepDecision_accepts_iff_exactCoreRawHeadTargetType
       (gsltOSLF (coreRawHeadGSLT environment universeParameters)).satisfies
         source
         (exactCoreRawHeadTargetType environment universeParameters target).pred := by
-  rw [decision.correct]
+  erw [decision.correct]
   exact (satisfies_exactCoreRawHeadTargetType_iff_event environment
     universeParameters source target).symm
 
@@ -351,7 +352,7 @@ theorem reductionNormalizer_result_inhabits_closure_ntt
       source
       (exactCoreRawHeadClosureTargetType environment universeParameters
         (normalizer.normalize source)).pred := by
-  rw [satisfies_exactTargetNativeType_iff_step]
+  erw [satisfies_exactTargetNativeType_iff_step]
   exact ⟨normalizer.normalize source, normalizer.reduces source, rfl⟩
 
 /-- The same realization contract exposes terminality separately from
@@ -402,7 +403,7 @@ theorem satisfies_exactCoreHeadTargetType_iff_event
           expectedType target).pred <->
       Nonempty (CoreHeadEvent environment universeParameters context
         expectedType source target) := by
-  rw [satisfies_exactTargetNativeType_iff_step]
+  erw [satisfies_exactTargetNativeType_iff_step]
   rfl
 
 /-- Any inhabitant of the typed exact-target type also inhabits the raw
@@ -437,7 +438,7 @@ theorem coreHeadNativeClaim_meaning_iff_event
       Nonempty (CoreHeadEvent environment universeParameters context
         expectedType source target) := by
   unfold coreHeadNativeClaim
-  rw [exactStepNativeClaim_meaning_iff_step]
+  erw [exactStepNativeClaim_meaning_iff_step]
   rfl
 
 /-- The load-bearing OSLF-to-Lean4Lean comparison: every inhabitant of the
@@ -487,7 +488,7 @@ theorem stepDecision_accepts_iff_exactCoreHeadTargetType
           source
           (exactCoreHeadTargetType environment universeParameters context
             expectedType target).pred := by
-  rw [decision.correct]
+  erw [decision.correct]
   exact (satisfies_exactCoreHeadTargetType_iff_event environment
     universeParameters context expectedType source target).symm
 
@@ -548,8 +549,8 @@ def coreRawHeadIndexedOSLF
         (coreRawHeadGSLT (growth.stage stage) universeParameters) :=
   rfl
 
-/-- Raw OSLF/NTT exact-target inhabitation transports across environment
-growth. -/
+/-- OSLF/NTT exact-target inhabitation for the raw-head evaluator GSLT
+transports across environment growth. -/
 theorem environment_growth_preserves_coreRawHead_type
     {environment extended : VEnv} (extension : environment <= extended)
     (universeParameters : Nat) (source target : VExpr)

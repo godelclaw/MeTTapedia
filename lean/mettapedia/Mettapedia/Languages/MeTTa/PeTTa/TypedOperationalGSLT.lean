@@ -1,7 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.CheckedSource
-import Mettapedia.Languages.MeTTa.PeTTa.OperationalGSLT
+import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.OperationalGSLT
 import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLTLayers
 import Mettapedia.OSLF.Framework.RelationalAnswerTypeSynthesis
+
+open Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite (RewriteResults)
 
 /-!
 # Checked typing profiles over PeTTa's operational GSLT
@@ -9,7 +11,7 @@ import Mettapedia.OSLF.Framework.RelationalAnswerTypeSynthesis
 PeTTa's operational core and its optional typing profiles are different
 semantic layers.  The operational core determines state change and ordered
 answer occurrences.  A typing profile contributes an admitted inference
-presentation and a translation from an emitted answer to a typing goal.
+definition and a translation from an emitted answer to a typing goal.
 
 This module composes the two without making either one a fallback for the
 other.  A typed answer contains both:
@@ -26,6 +28,7 @@ No generated runtime artifact occurs here.  The construction is a Lean
 specification and conformance boundary for a directly implemented runtime.
 -/
 
+open Mettapedia.Logic
 namespace Mettapedia.Languages.MeTTa.PeTTa.TypedOperationalGSLT
 
 open Mettapedia.GSLT
@@ -35,7 +38,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.InferenceExtension
 open Mettapedia.GSLT.LanguageDef.CalculusAsLanguage
 open Mettapedia.GSLT.LanguageDef.CalculusExtension
-open Mettapedia.Languages.MeTTa.PeTTa.OperationalGSLT
+open Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.OperationalGSLT
 open Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLT
 open Mettapedia.OSLF.Framework.RelationalAnswerTypeSynthesis
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -76,7 +79,7 @@ def checkedTypeObservation (profile : TypingProfile) (type : Pattern)
     (answer : Pattern) : Prop :=
   profile.covered final answer type = true ∧
     Nonempty
-      (Derivation profile.checked.presentation (profile.goal final answer type))
+      (Derivation profile.checked.definition (profile.goal final answer type))
 
 /-- A proof-carrying extension between optional typing profiles.  Coverage may
 grow, but every judgment covered and derivable in the base profile must remain
@@ -87,8 +90,8 @@ structure TypingProfile.Extension (base extension : TypingProfile) where
     base.covered final answer type = true →
       extension.covered final answer type = true
   derivation : ∀ final answer type,
-    Derivation base.checked.presentation (base.goal final answer type) →
-      Derivation extension.checked.presentation
+    Derivation base.checked.definition (base.goal final answer type) →
+      Derivation extension.checked.definition
         (extension.goal final answer type)
 
 namespace TypingProfile.Extension
@@ -147,11 +150,11 @@ theorem producesCheckedType_request_iff
     (profile : TypingProfile) (type : Pattern)
     (initial : EvalState) (request : Pattern) :
     producesCheckedType profile type (.request initial request) ↔
-      ∃ (final : EvalState) (answers : Answers),
+      ∃ (final : EvalState) (answers : RewriteResults),
         ∃ occurrence : Fin answers.length,
           CoreDecl initial request final answers ∧
             profile.covered final (answers.get occurrence) type = true ∧
-              Nonempty (Derivation profile.checked.presentation
+              Nonempty (Derivation profile.checked.definition
                 (profile.goal final (answers.get occurrence) type)) := by
   simpa [producesCheckedType, checkedTypeObservation, coreSource] using
     producesAnswerSatisfying_request_iff coreSource
@@ -163,11 +166,11 @@ becoming the semantic object. -/
 structure CheckedAnswer (profile : TypingProfile) (initial : EvalState)
     (request type : Pattern) where
   final : EvalState
-  answers : Answers
+  answers : RewriteResults
   occurrence : Fin answers.length
   evaluation : CoreDecl initial request final answers
   covered : profile.covered final (answers.get occurrence) type = true
-  derivation : Derivation profile.checked.presentation
+  derivation : Derivation profile.checked.definition
     (profile.goal final (answers.get occurrence) type)
 
 /-- The Type-valued answer object presents exactly the OSLF-derived
@@ -210,7 +213,7 @@ theorem producesCheckedType_iff_exists_checkedProof
     (profile : TypingProfile) (type : Pattern)
     (initial : EvalState) (request : Pattern) :
     producesCheckedType profile type (.request initial request) ↔
-      ∃ (final : EvalState) (answers : Answers),
+      ∃ (final : EvalState) (answers : RewriteResults),
         ∃ occurrence : Fin answers.length,
           CoreDecl initial request final answers ∧
             profile.covered final (answers.get occurrence) type = true ∧
@@ -248,7 +251,7 @@ def v2Source : GSLTSource where
   identity := v2Identity
   assumptions := { entries := [] }
   profiles := v2Profiles
-  presentation := TypeSystemGSLT.presentation
+  definition := TypeSystemGSLT.definition
 
 private theorem v2Identity_valid : v2Identity.isValid = true := by
   decide
@@ -260,26 +263,26 @@ private theorem v2Assumptions_valid :
 private theorem v2Profiles_valid : v2Profiles.isValid = true := by
   decide
 
-/-- The generic checker consumes the exact authored 21-rule presentation
+/-- The generic checker consumes the exact authored 21-rule definition
 inside the pinned v2 source package. -/
 def v2Checked : CheckedGSLT where
   source := v2Source
   identityValid := v2Identity_valid
   assumptionsValid := v2Assumptions_valid
   profilesValid := v2Profiles_valid
-  presentationValid := TypeSystemGSLT.presentation_valid
+  definitionValid := TypeSystemGSLT.definition_valid
 
 @[simp] theorem v2Checked_presentation :
-    v2Checked.presentation = TypeSystemGSLT.checked :=
+    v2Checked.definition = TypeSystemGSLT.checked :=
   rfl
 
-/-- The presentation stored in the optional v2 profile is not an independent
+/-- The definition stored in the optional v2 profile is not an independent
 flat checker specification: it is exactly the elaboration of the four authored
 calculus layers (union membership, consistency, value typing, and guards). -/
 theorem v2Source_presentation_elaborated_from_layers :
     elaborateDefinition? TypeSystemGSLT.language
         TypeSystemGSLTLayers.assembledSource =
-      some v2Source.presentation := by
+      some v2Source.definition := by
   simpa [v2Source] using TypeSystemGSLTLayers.assembledSource_definition
 
 /-- Consequently v2 derivability at the generic checker waist is exactly
@@ -287,7 +290,7 @@ multi-step execution in the proof-search GSLT generated from the composed
 calculus.  Search produces evidence; replay by `checkRaw` remains the authority
 boundary used by typed operational observations. -/
 theorem v2Checked_derivation_iff_layeredProofSearch (goals : GoalState) :
-    Nonempty (DerivationList v2Checked.presentation goals) ↔
+    Nonempty (DerivationList v2Checked.definition goals) ↔
       (proofSearchGSLT TypeSystemGSLT.checked).MultiStep goals [] := by
   simpa using
     (TypeSystemGSLTLayers.typeSystem_conservativeExtension goals).2.2
@@ -335,7 +338,7 @@ theorem v2_vNum_produces_tNum :
     producesCheckedType v2Typing tNum
       (.request EvalState.empty vNum) := by
   rw [producesCheckedType_iff_exists_checkedProof]
-  let occurrence : Fin ([vNum] : Answers).length := ⟨0, by simp⟩
+  let occurrence : Fin ([vNum] : RewriteResults).length := ⟨0, by simp⟩
   refine ⟨EvalState.empty, [vNum], occurrence, ?_, ?_, hasTypeNumProof, ?_⟩
   · simpa [vNum] using
       (CoreDecl.pure EvalState.empty vNum [vNum]
@@ -369,7 +372,7 @@ theorem v2_wrong_base_proof_rejected :
     v2Checked.checkRaw (valueHasType vTrue tNum) wrongBaseProof = false := by
   change checkRaw TypeSystemGSLT.checked
     (valueHasType vTrue tNum) wrongBaseProof = false
-  exact value_true_not_number
+  exact value_true_number_candidate_rejects
 
 /-- The operational run exists independently of whether the optional typing
 profile recognizes the emitted value. -/

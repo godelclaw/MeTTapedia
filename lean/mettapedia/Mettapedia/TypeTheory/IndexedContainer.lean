@@ -82,10 +82,11 @@ def list : IndexedContainer Unit where
 def listFinitary : Finitary list where
   positionFintype := fun {output} length => by
     cases output
+    change Nat at length
     change Fintype (Fin length)
     infer_instance
 
-/-- The container extension is exactly the usual shape/tuple presentation of
+/-- The container extension is exactly the usual shape/tuple encoding of
 lists. -/
 def listExtensionEquiv (Element : Type uElement) :
     List Element ≃ list.Extension Element () :=

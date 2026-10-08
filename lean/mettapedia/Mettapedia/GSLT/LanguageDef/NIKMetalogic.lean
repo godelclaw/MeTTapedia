@@ -5,13 +5,18 @@ import Mettapedia.GSLT.LanguageDef.NIKIndexedOperational
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTClone
 
 /-!
-# The metalogic carried by NIK authorities
+# Certificate-facing metalogic and native admission structure for NIK
 
-NIK's primitive judgment retains a certificate accepted by a selected
-authority.  It does not determine hypothetical consequence.  This module
-separates that replay waist from optional consequence and comprehension
-structure, and records the exact bridges that are available when the extra
-laws are supplied.
+The certificate-facing fragment studied here retains evidence accepted by a
+selected external authority.  That fragment does not define NIK: the
+canonical NIK service doctrine also admits direct decision kernels, intrinsic
+native proof kernels, and meaning-preserving native operations.  Those faces
+are assembled in `Mettapedia.GSLT.LanguageDef.NIK`; certificate replay is only
+one boundary capability.
+
+This module separates the certificate-facing waist from optional consequence
+and comprehension structure, and also supplies the certificate-free admission
+algebra and native proof structures used by the broader service doctrine.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.NIKMetalogic
@@ -134,6 +139,26 @@ structure Comorphism
           (Set.image (mapSentence signature) premises)
 
 namespace Comorphism
+
+/-- A signature-changing consequence route is determined by its signature
+functor and sentence translation.  Naturality and preservation are
+propositions and do not add a second notion of arrow identity. -/
+@[ext]
+theorem ext
+    {SourceSignature TargetSignature : Type uSignature}
+    [CategoryTheory.Category.{uHom} SourceSignature]
+    [CategoryTheory.Category.{uHom} TargetSignature]
+    {source : PiInstitution.{uSignature, uHom, uSentence} SourceSignature}
+    {target : PiInstitution.{uSignature, uHom, uSentence} TargetSignature}
+    {left right : Comorphism source target}
+    (signature : left.mapSignature = right.mapSignature)
+    (sentence : HEq left.mapSentence right.mapSentence) :
+    left = right := by
+  cases left
+  cases right
+  cases signature
+  cases sentence
+  rfl
 
 def identity
     {Signature : Type uSignature}
@@ -1588,7 +1613,6 @@ def ContextMap.comp {first second third : ContextBase}
     change later.map (earlier.map
         (first.comp earlierSubstitution laterSubstitution)) = _
     rw [earlier.map_comp, later.map_comp]
-    rfl
 
 /-- One guest's contextual judgment.  Claims and accepted proof objects
 reindex contravariantly along substitutions.  The projection law says that
@@ -1975,7 +1999,7 @@ distinct occurrences. -/
 theorem swap_moves_first_occurrence :
     fibre.reindexAccepted swap (0 : Fin 2) = (1 : Fin 2) := by
   change swap.toFun (0 : Fin 2) = (1 : Fin 2)
-  simp [swap]
+  exact Equiv.swap_apply_left _ _
 
 /-- Positive two-axis witness: tag enrichment and the nontrivial resource
 swap commute. -/
@@ -2902,6 +2926,7 @@ theorem emission_does_not_control_execution
       unitEmission.emit value (successor.run value) = () ∧
       resultEmission.emit value (successor.run value) = Nat.succ value := by
   simp [successor, unitEmission, resultEmission]
+  rfl
 
 end AdmissionCanary
 
@@ -3301,7 +3326,7 @@ def operationalSoundClone
       (fun impossible => Fin.elim0 impossible)
 
 /-- CertificateGSLT's actual open-derivation clone is semantically sound whenever
-the admitted presentation rules are sound.  This is the concrete native
+the admitted language rules are sound.  This is the concrete native
 proof-object flow theorem: semantic validity follows by induction over the
 typed derivation, not by replaying a separate trace language. -/
 def CertificateGSLTCloneCanary.soundClone
@@ -3309,7 +3334,7 @@ def CertificateGSLTCloneCanary.soundClone
     (Meaning : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (ruleSound : ∀ ruleInstance premises conclusion,
       Mettapedia.GSLT.LanguageDef.InferenceChecker.RuleApplication
-        object.presentation ruleInstance premises conclusion →
+        object.definition ruleInstance premises conclusion →
       (∀ premise ∈ premises, Meaning premise) → Meaning conclusion) :
     SoundClone (CertificateGSLT.derivationClone object) Meaning where
   closed_sound proof :=
@@ -3374,7 +3399,7 @@ theorem CertificateGSLTCloneCanary.native_derivation_flows
     (Meaning : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (ruleSound : ∀ ruleInstance premises conclusion,
       Mettapedia.GSLT.LanguageDef.InferenceChecker.RuleApplication
-        object.presentation ruleInstance premises conclusion →
+        object.definition ruleInstance premises conclusion →
       (∀ premise ∈ premises, Meaning premise) → Meaning conclusion)
     {claim : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern}
     (proof : (CertificateGSLT.derivationClone object).Hom [] claim) :
@@ -4079,8 +4104,7 @@ theorem evidenceRefinement_not_full_of_missing_evidence
   have baseEquality : evidenceArrow.val = route := by
     have underlyingEquality := congrArg
       (fun arrow => arrow.val) mappedArrow
-    simpa [evidenceRefinement, CategoryTheory.CategoryOfElements.map,
-      claimArrow] using underlyingEquality
+    exact underlyingEquality
   apply missingEvidence
   rw [← baseEquality]
   exact evidenceArrow.property
@@ -4170,6 +4194,7 @@ end RefinementCanary
 /-! ## Axiom audit -/
 
 #print axioms SeparationSentence.rawNIK_does_not_determine_consequence
+#print axioms PiInstitution.Comorphism.ext
 #print axioms PiInstitution.Comorphism.comp
 #print axioms PiInstitution.TheoryHom.comp
 #print axioms PiInstitution.ProofCalculus.tagged_projection_not_injective

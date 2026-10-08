@@ -92,6 +92,9 @@ theorem contextualRepresentatives
       | equation context instanceWitness =>
           exact ReflectiveEquationSemantics.canonicalize_fill_congr
             absorption.declaration.1 context absorption.representatives
+      | derived context lawWitness =>
+          exact ReflectiveEquationSemantics.canonicalize_fill_congr
+            absorption.declaration.1 context absorption.representatives
   | reflective context declaration representatives =>
       exact ReflectiveEquationSemantics.canonicalize_fill_congr
         absorption.declaration.1 context absorption.representatives
@@ -107,7 +110,7 @@ constructing a Type-valued generator-alignment certificate without choosing
 provenance from an erased existential. -/
 theorem rhoCostEquationInstanceOrigin_representatives
     {redex contractum : Pattern}
-    (witness : EquationSemantics.AuthoredEquationInstanceWitness
+    (witness : EquationSemantics.DeclaredEquationInstanceWitness
       defaultBasePremises rhoCIGSLT.costWholeLanguage redex contractum)
     (origin : RhoCostEquationInstanceOrigin witness) :
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalize
@@ -165,7 +168,7 @@ theorem rhoCostEquationInstanceOrigin_representatives
           applyBindings, costStaticReflectivePresentationDecl,
           costBaseReflectivePresentationDecl,
           costWrappedReflectivePresentationDecl, mapReflectivePresentation,
-          costBasePresentationSymbols, costBaseStaticReflectiveSymbols,
+          costBaseLanguageDefSymbolMap, costBaseStaticReflectiveSymbols,
           costWrappedStaticReflectiveSymbols, costBaseStaticSymbols,
           costWrappedStaticSymbols, costBaseConstructorName,
           costWrappedConstructorName, costBaseConstructorTag,
@@ -218,7 +221,7 @@ theorem rhoCostEquationInstanceOrigin_representatives
           applyBindings, costStaticReflectivePresentationDecl,
           costBaseReflectivePresentationDecl,
           costWrappedReflectivePresentationDecl, mapReflectivePresentation,
-          costBasePresentationSymbols, costBaseStaticReflectiveSymbols,
+          costBaseLanguageDefSymbolMap, costBaseStaticReflectiveSymbols,
           costWrappedStaticReflectiveSymbols, costBaseStaticSymbols,
           costWrappedStaticSymbols, costBaseConstructorName,
           costWrappedConstructorName, costBaseConstructorTag,
@@ -241,20 +244,32 @@ def rhoCostGeneratorAbsorptionOfOrigin
   match witness, origin with
   | .core (.equation context instanceWitness), equationOrigin =>
       let declaration := costStaticReflectivePresentationDecl rhoCIGSLT
-        equationOrigin.color
+        (RhoCostEquationInstanceOrigin.color equationOrigin)
           rhoReflectivePresentation.toReflectivePresentationDecl
       { declaration := ⟨declaration, by
           exact costStaticReflectivePresentationDecl_mem rhoCIGSLT
-            equationOrigin.color
+            (RhoCostEquationInstanceOrigin.color equationOrigin)
             rhoReflectivePresentation.toReflectivePresentationDecl (by
               change rhoReflectivePresentation.toReflectivePresentationDecl ∈
                 rhoReflectionProfile.presentations
               simp [rhoReflectionProfile])⟩
         origin :=
-          ⟨equationOrigin.color, rfl⟩
+          ⟨(RhoCostEquationInstanceOrigin.color equationOrigin), rfl⟩
         representatives :=
           rhoCostEquationInstanceOrigin_representatives instanceWitness
             equationOrigin }
+  | .core (.derived context lawWitness), _ =>
+      let color := rhoCostDerivedGeneratorColor lawWitness
+      let declaration := costStaticReflectivePresentationDecl rhoCIGSLT color
+        rhoReflectivePresentation.toReflectivePresentationDecl
+      { declaration := ⟨declaration, by
+          exact costStaticReflectivePresentationDecl_mem rhoCIGSLT color
+            rhoReflectivePresentation.toReflectivePresentationDecl (by
+              change rhoReflectivePresentation.toReflectivePresentationDecl ∈
+                rhoReflectionProfile.presentations
+              simp [rhoReflectionProfile])⟩
+        origin := ⟨color, rfl⟩
+        representatives := rho_costDerivedGenerator_canonicalize_eq lawWitness }
   | .reflective context declaration representatives, reflectiveOrigin =>
       { declaration := declaration
         origin := reflectiveOrigin
@@ -354,8 +369,10 @@ end RhoCostDeclarationRegionPosition
 
 /-- Every exact generated rho occurrence has a local generated-reflective
 absorption certificate.  Ordinary equation occurrences are converted through
-the already-proved Quote/Drop table agreement; reflective occurrences retain
-their authored representative equality directly. -/
+the already-proved Quote/Drop table agreement, presentation-derived
+occurrences are bag permutations absorbed by the base canonicalizer, and
+reflective occurrences retain their authored representative equality
+directly. -/
 theorem nonempty_rhoCostGeneratorAbsorption
     {left right : Pattern}
     (witness : ReflectiveEquationSemantics.ReflectiveAuthoredGeneratorWitness
@@ -369,6 +386,12 @@ theorem nonempty_rhoCostGeneratorAbsorption
           obtain ⟨fuel, bounded⟩ := instanceWitness.erase
           obtain ⟨declaration, membership, representatives⟩ :=
             rho_costEquationInstanceAt_canonicalize_eq bounded
+          obtain ⟨origin⟩ :=
+            nonempty_rhoCostReflectiveDeclarationOrigin_of_mem membership
+          exact ⟨⟨⟨declaration, membership⟩, origin, representatives⟩⟩
+      | derived context lawWitness =>
+          obtain ⟨declaration, membership, representatives⟩ :=
+            rho_costDerivedInstance_canonicalize_eq lawWitness.erase
           obtain ⟨origin⟩ :=
             nonempty_rhoCostReflectiveDeclarationOrigin_of_mem membership
           exact ⟨⟨⟨declaration, membership⟩, origin, representatives⟩⟩

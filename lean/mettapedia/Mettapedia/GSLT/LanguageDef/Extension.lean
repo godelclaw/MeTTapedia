@@ -190,6 +190,9 @@ end ExtensionLayer
 
 /-! ## A GSLT-authored extension language -/
 
+-- Source syntax and declaration fibres may inhabit different universes.
+-- Both levels must remain independent in the projections of this structure.
+set_option linter.checkUnivs false in
 /-- An extension layer whose own syntax and sugar are specified by a GSLT.
 
 `elaborate` is invariant under both authored equations and one-step rewrites.
@@ -470,16 +473,19 @@ def documentCompositional (Syntax : Type) : GSLT.Compositional where
   append := fun first second => .bundle [first, second]
   empty_append := by
     intro document
+    change DeclarationDocument Syntax at document
     change DeclarationDocumentEquiv (.bundle [.bundle [], document]) document
     simp [DeclarationDocumentEquiv, DeclarationDocument.values,
       DeclarationDocument.valuesList]
   append_empty := by
     intro document
+    change DeclarationDocument Syntax at document
     change DeclarationDocumentEquiv (.bundle [document, .bundle []]) document
     simp [DeclarationDocumentEquiv, DeclarationDocument.values,
       DeclarationDocument.valuesList]
   append_assoc := by
     intro first second third
+    change DeclarationDocument Syntax at first second third
     change DeclarationDocumentEquiv
       (.bundle [.bundle [first, second], third])
       (.bundle [first, .bundle [second, third]])
@@ -487,6 +493,7 @@ def documentCompositional (Syntax : Type) : GSLT.Compositional where
       DeclarationDocument.valuesList, List.append_assoc]
   append_equiv := by
     intro first first' second second' firstEquivalent secondEquivalent
+    change DeclarationDocument Syntax at first first' second second'
     change first.values = first'.values at firstEquivalent
     change second.values = second'.values at secondEquivalent
     change DeclarationDocumentEquiv (.bundle [first, second])
@@ -526,6 +533,7 @@ def compositionalElaboration {Syntax : Type} {Payload : Type uFiber}
       DeclarationDocument.values, DeclarationDocument.valuesList]
   elaborate_append := by
     intro first second
+    change DeclarationDocument Syntax at first second
     simp [documentCompositional, ExactDeclarationCodec.elaborate,
       DeclarationDocument.values, DeclarationDocument.valuesList,
       List.map_append]
@@ -558,7 +566,7 @@ def arrayRealization (Base : Type uBase)
   observeArtifact := fun _ artifact => artifact.toList
   adequate := by
     intro _ declarations
-    simp
+    exact List.toList_toArray
 
 /-- Dropping the final declaration is not adequate for the exact list
 observation.  The realization obligation therefore rules out a concrete
@@ -584,7 +592,9 @@ def booleanLayerNonTrivialFiber :
   left := booleanAttachedFalse
   right := booleanAttachedTrue
   sameShadow := rfl
-  differentValue := by decide
+  differentValue := by
+    change false ≠ true
+    decide
 
 theorem extension_payload_not_determined_by_base :
     ¬ Factors booleanLayer.erase (fun attached => attached.2) :=

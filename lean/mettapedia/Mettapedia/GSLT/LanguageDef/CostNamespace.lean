@@ -23,7 +23,17 @@ def costApparatusConstructorName (name : String) : String :=
   "$cost:apparatus-constructor:" ++ name
 
 def costSignatureSortName : String := costApparatusSortName "signature"
+def costKeySortName : String := costApparatusSortName "key"
 def costTokenStackSortName : String := costApparatusSortName "token-stack"
+
+def costKeyLeafConstructorName : String :=
+  costApparatusConstructorName "key-leaf"
+
+def costKeyBranchConstructorName : String :=
+  costApparatusConstructorName "key-branch"
+
+def costSignatureCommitConstructorName : String :=
+  costApparatusConstructorName "signature-commit"
 
 def costSignatureUnitConstructorName : String :=
   costApparatusConstructorName "signature-unit"
@@ -106,9 +116,10 @@ theorem costWrappedConstructorName_ne_apparatus (wrapped apparatus : String) :
 
 /-! ## Intrinsic generated names -/
 
-/-- The two fixed apparatus sorts adjoined by Cost. -/
+/-- Exact commitment keys, monoid signatures, and ordered token stacks. -/
 inductive CostApparatusSort where
   | signature
+  | key
   | tokenStack
 deriving DecidableEq, Repr
 
@@ -116,6 +127,9 @@ deriving DecidableEq, Repr
 inductive CostApparatusConstructor where
   | signatureUnit
   | signatureProduct
+  | keyLeaf
+  | keyBranch
+  | signatureCommit
   | signed
   | tokenStackEmpty
   | tokenStackCons
@@ -144,6 +158,7 @@ namespace CostApparatusSort
 
 def suffix : CostApparatusSort → String
   | .signature => "signature"
+  | .key => "key"
   | .tokenStack => "token-stack"
 
 def render (kind : CostApparatusSort) : String :=
@@ -161,6 +176,8 @@ theorem render_injective : Function.Injective render := by
 @[simp] theorem render_signature : render .signature = costSignatureSortName :=
   rfl
 
+@[simp] theorem render_key : render .key = costKeySortName := rfl
+
 @[simp] theorem render_tokenStack :
     render .tokenStack = costTokenStackSortName := rfl
 
@@ -171,6 +188,9 @@ namespace CostApparatusConstructor
 def suffix : CostApparatusConstructor → String
   | .signatureUnit => "signature-unit"
   | .signatureProduct => "signature-product"
+  | .keyLeaf => "key-leaf"
+  | .keyBranch => "key-branch"
+  | .signatureCommit => "signature-commit"
   | .signed => "signed"
   | .tokenStackEmpty => "token-stack-empty"
   | .tokenStackCons => "token-stack-cons"
@@ -194,6 +214,13 @@ theorem render_injective : Function.Injective render := by
 
 @[simp] theorem render_signatureProduct :
     render .signatureProduct = costSignatureProductConstructorName := rfl
+
+@[simp] theorem render_keyLeaf : render .keyLeaf = costKeyLeafConstructorName := rfl
+
+@[simp] theorem render_keyBranch : render .keyBranch = costKeyBranchConstructorName := rfl
+
+@[simp] theorem render_signatureCommit :
+    render .signatureCommit = costSignatureCommitConstructorName := rfl
 
 @[simp] theorem render_signed : render .signed = costSignedConstructorName :=
   rfl
@@ -381,13 +408,13 @@ namespace CIGSLT
 
 /-- Intrinsic generated sort names for one exact continued presentation. -/
 abbrev GeneratedCostSort (source : CIGSLT) :=
-  CostSort (StructuralMorphism.AuthoredSort
+  CostSort (StructuralMorphism.DeclaredSort
     source.theory.presentation.presentation)
 
 /-- Intrinsic generated constructor names before restricting the wrapped
 summand to the declaration-derived hereditary closure. -/
 abbrev GeneratedCostConstructor (source : CIGSLT) :=
-  CostConstructor (StructuralMorphism.AuthoredConstructor
+  CostConstructor (StructuralMorphism.DeclaredConstructor
     source.theory.presentation.presentation)
 
 /-- Faithful wire rendering of one exact generated Cost sort namespace. -/
@@ -404,7 +431,7 @@ def renderGeneratedCostConstructor (source : CIGSLT) :
 theorem renderGeneratedCostSort_injective (source : CIGSLT) :
     Function.Injective source.renderGeneratedCostSort :=
   CostSort.render_injective _
-    (StructuralMorphism.authoredSortName_injective
+    (StructuralMorphism.declaredSortName_injective
       source.theory.presentation.presentation)
 
 theorem renderGeneratedCostConstructor_injective (source : CIGSLT) :
@@ -412,35 +439,6 @@ theorem renderGeneratedCostConstructor_injective (source : CIGSLT) :
   CostConstructor.render_injective _
     (ContinuationRetypingPlan.authoredConstructorLabel_injective
       source.theory.presentation.presentation)
-
-/-- Predicate selecting exactly the intrinsic constructors that are present
-in the declaration-derived Cost signature.  Every source declaration has a
-base copy; only the hereditary non-principal fragment has a wrapped copy;
-and every fixed apparatus constructor is present. -/
-def IsDeclaredCostConstructor (source : CIGSLT) :
-    source.GeneratedCostConstructor → Prop
-  | .base _ => True
-  | .wrapped constructor =>
-      constructor ∈ source.continuationRetyping.wrappedConstructors
-  | .apparatus _ => True
-
-/-- An exact intrinsic constructor of the generated Cost signature.  The
-subtype removes the spurious wrapped copies of the two interaction
-principals from the unrestricted generated namespace. -/
-abbrev DeclaredCostConstructor (source : CIGSLT) :=
-  { constructor : source.GeneratedCostConstructor //
-      source.IsDeclaredCostConstructor constructor }
-
-/-- Faithful wire rendering of exact declared Cost constructors. -/
-def renderDeclaredCostConstructor (source : CIGSLT) :
-    source.DeclaredCostConstructor → String :=
-  fun constructor => source.renderGeneratedCostConstructor constructor.1
-
-theorem renderDeclaredCostConstructor_injective (source : CIGSLT) :
-    Function.Injective source.renderDeclaredCostConstructor := by
-  intro left right equality
-  apply Subtype.ext
-  exact source.renderGeneratedCostConstructor_injective equality
 
 /-- Semantic role of one exact generated constructor.  Interaction
 principals are kept distinct from static base constructors even though both
@@ -453,20 +451,95 @@ inductive GeneratedCostConstructorRole where
   | apparatus (kind : CostApparatusConstructor)
 deriving DecidableEq, Repr
 
+end CIGSLT
+
+namespace ContinuationDecorationProfile
+
+variable {theory : IGSLT} {cut : InteractionCutPresentation theory}
+
+/-- Select the actually present wrapped summand of the existing intrinsic
+Cost namespace. Base and apparatus declarations are retained in full. -/
+def IsDeclaredCostConstructor (profile : ContinuationDecorationProfile cut) :
+    CostConstructor (DeclaredConstructor theory.presentation.presentation) → Prop
+  | .base _ => True
+  | .wrapped constructor => constructor ∈ profile.constructorClosure
+  | .apparatus _ => True
+
+abbrev DeclaredCostConstructor (profile : ContinuationDecorationProfile cut) :=
+  { constructor : CostConstructor (DeclaredConstructor theory.presentation.presentation) //
+      profile.IsDeclaredCostConstructor constructor }
+
+def renderDeclaredCostConstructor (profile : ContinuationDecorationProfile cut) :
+    profile.DeclaredCostConstructor → String :=
+  fun constructor => CostConstructor.render (fun authored => authored.1.label) constructor.1
+
+theorem renderDeclaredCostConstructor_injective (profile : ContinuationDecorationProfile cut) :
+    Function.Injective profile.renderDeclaredCostConstructor := by
+  intro left right same
+  apply Subtype.ext
+  exact CostConstructor.render_injective _
+    (ContinuationRetypingPlan.authoredConstructorLabel_injective theory.presentation.presentation) same
+
+/-- Role classification is by the exact authored principal declarations,
+using the existing role type rather than a second role hierarchy. -/
+def declaredCostConstructorRole (profile : ContinuationDecorationProfile cut)
+    (constructor : profile.DeclaredCostConstructor) : CIGSLT.GeneratedCostConstructorRole :=
+  match constructor.1 with
+  | .base authored =>
+      if authored = cut.program.constructor ∨ authored = cut.environment.constructor then
+        .interactionPrincipal
+      else .static .base
+  | .wrapped _ => .static .wrapped
+  | .apparatus kind => .apparatus kind
+
+end ContinuationDecorationProfile
+
+namespace CIGSLT
+
+open ContinuationDecorationProfile (ofRetypingPlan)
+
+/-- Predicate selecting exactly the intrinsic constructors that are present
+in the declaration-derived Cost signature.  Every source declaration has a
+base copy; only the hereditary non-principal fragment has a wrapped copy;
+and every fixed apparatus constructor is present. -/
+abbrev IsDeclaredCostConstructor (source : CIGSLT) :
+    source.GeneratedCostConstructor → Prop :=
+  (ofRetypingPlan source.continuationRetyping).IsDeclaredCostConstructor
+
+/-- An exact intrinsic constructor of the generated Cost signature.  The
+subtype removes the spurious wrapped copies of the two interaction
+principals from the unrestricted generated namespace. -/
+abbrev DeclaredCostConstructor (source : CIGSLT) :=
+  (ofRetypingPlan source.continuationRetyping).DeclaredCostConstructor
+
+/-- Faithful wire rendering of exact declared Cost constructors. -/
+def renderDeclaredCostConstructor (source : CIGSLT) :
+    source.DeclaredCostConstructor → String :=
+  (ofRetypingPlan source.continuationRetyping).renderDeclaredCostConstructor
+
+theorem renderDeclaredCostConstructor_injective (source : CIGSLT) :
+    Function.Injective source.renderDeclaredCostConstructor :=
+  (ofRetypingPlan source.continuationRetyping).renderDeclaredCostConstructor_injective
+
 /-- Classify a generated constructor by exact declaration identity.  No
 string-prefix test participates in this mathematical classification. -/
 def declaredCostConstructorRole (source : CIGSLT)
     (constructor : source.DeclaredCostConstructor) :
     GeneratedCostConstructorRole :=
-  match constructor.1 with
-  | .base sourceConstructor =>
-      if sourceConstructor = source.cut.program.constructor ∨
-          sourceConstructor = source.cut.environment.constructor then
+  (ofRetypingPlan source.continuationRetyping).declaredCostConstructorRole constructor
+
+/-- The role of a base copy: an interaction principal or a static base
+constructor. -/
+theorem declaredCostConstructorRole_base (source : CIGSLT)
+    (constructor : DeclaredConstructor
+      source.theory.presentation.presentation) :
+    source.declaredCostConstructorRole ⟨.base constructor, True.intro⟩ =
+      if constructor = source.cut.program.constructor ∨
+          constructor = source.cut.environment.constructor then
         .interactionPrincipal
       else
-        .static .base
-  | .wrapped _ => .static .wrapped
-  | .apparatus kind => .apparatus kind
+        .static .base :=
+  rfl
 
 /-- Declared constructors with different semantic roles have different wire
 renderings.  The role hypothesis is essential in the base namespace, where
@@ -483,7 +556,7 @@ theorem renderDeclaredCostConstructor_ne_of_role_ne (source : CIGSLT)
 
 @[simp]
 theorem declaredCostConstructorRole_wrapped (source : CIGSLT)
-    (constructor : AuthoredConstructor
+    (constructor : DeclaredConstructor
       source.theory.presentation.presentation)
     (membership : constructor ∈
       source.continuationRetyping.wrappedConstructors) :
@@ -499,45 +572,22 @@ theorem declaredCostConstructorRole_apparatus (source : CIGSLT)
   rfl
 
 theorem declaredCostConstructorRole_base_of_nonprincipal (source : CIGSLT)
-    (constructor : AuthoredConstructor
+    (constructor : DeclaredConstructor
       source.theory.presentation.presentation)
     (notProgram : constructor ≠ source.cut.program.constructor)
     (notEnvironment : constructor ≠ source.cut.environment.constructor) :
     source.declaredCostConstructorRole
         ⟨.base constructor, True.intro⟩ = .static .base := by
-  simp [declaredCostConstructorRole, notProgram, notEnvironment]
+  simp [declaredCostConstructorRole_base, notProgram, notEnvironment]
 
 theorem declaredCostConstructorRole_base_of_principal (source : CIGSLT)
-    (constructor : AuthoredConstructor
+    (constructor : DeclaredConstructor
       source.theory.presentation.presentation)
     (principal : constructor = source.cut.program.constructor ∨
       constructor = source.cut.environment.constructor) :
     source.declaredCostConstructorRole
         ⟨.base constructor, True.intro⟩ = .interactionPrincipal := by
-  simp [declaredCostConstructorRole, principal]
-
-/-- Every base constructor classified as static belongs to the exact
-hereditary non-principal fragment. -/
-theorem mem_wrappedConstructors_of_base_static (source : CIGSLT)
-    (constructor : AuthoredConstructor
-      source.theory.presentation.presentation)
-    (role : source.declaredCostConstructorRole
-        ⟨.base constructor, True.intro⟩ = .static .base) :
-    constructor ∈ source.continuationRetyping.wrappedConstructors := by
-  rw [source.continuationRetyping.mem_wrappedConstructors_iff]
-  constructor
-  · intro equality
-    have principal : constructor = source.cut.program.constructor ∨
-        constructor = source.cut.environment.constructor := Or.inl equality
-    rw [source.declaredCostConstructorRole_base_of_principal constructor
-      principal] at role
-    cases role
-  · intro equality
-    have principal : constructor = source.cut.program.constructor ∨
-        constructor = source.cut.environment.constructor := Or.inr equality
-    rw [source.declaredCostConstructorRole_base_of_principal constructor
-      principal] at role
-    cases role
+  simp [declaredCostConstructorRole_base, principal]
 
 end CIGSLT
 

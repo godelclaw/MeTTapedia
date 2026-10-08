@@ -44,11 +44,11 @@ theorem rho_collectionRule_cases {rule : GrammarRule}
         rule.category = costWrappedSortName ∧
         elementType = .base costWrappedSortName) := by
   have memberships := membership
-  rw [CIGSLT.costWholeLanguage_terms] at memberships
+  rw [WrappableIGSLT.costWholeLanguage_terms] at memberships
   have split : rule ∈ rhoCIGSLT.continuationRetyping.generatedLanguage.terms ∨
       rule ∈ costCoreConstructors
         rhoCIGSLT.theory.presentation.interactingSort.1.name := by
-    simpa [CIGSLT.costCoreLanguage, List.mem_append] using memberships
+    simpa [WrappableIGSLT.costCoreLanguage_terms, List.mem_append] using memberships
   rcases split with generated | apparatus
   · rw [show rhoCIGSLT.continuationRetyping.generatedLanguage.terms =
         rhoCalc.terms.map (costBaseConstructor rhoInteractionCut) ++
@@ -66,7 +66,7 @@ theorem rho_collectionRule_cases {rule : GrammarRule}
       simp only [List.mem_cons, List.not_mem_nil, or_false]
         at sourceMembership
       rcases sourceMembership with rfl | rfl | rfl | rfl | rfl | rfl
-      · simp [costBaseConstructor, rhoCalc] at shape
+      · simp [costBaseConstructor_def, rhoCalc] at shape
       · rw [rho_costBaseDropConstructor_params] at shape
         simp at shape
       · rw [rho_costBaseQuoteConstructor_params] at shape
@@ -96,12 +96,14 @@ theorem rho_collectionRule_cases {rule : GrammarRule}
           costWrappedTypeExpr, rhoCalc, rhoIGSLT,
           rhoInteractivePresentation, TypeDecl.plain, TypeExpr.name,
           TypeExpr.proc, TypeExpr.baseType] at shape
+        split_ifs at shape <;> cases shape.2
       · rw [rho_costWrappedParallelConstructor_params] at shape
         simp only [List.cons.injEq, TermParam.simple.injEq,
           TypeExpr.collection.injEq, and_true] at shape
         refine Or.inr ⟨shape.2.1.symm, ?_, shape.2.2.symm⟩
         simp [costWrappedConstructor, rhoCalc, rhoIGSLT,
           rhoInteractivePresentation, TypeDecl.plain]
+        rfl
       · simp [costWrappedConstructor, mapParameterType,
           costWrappedTypeExpr, rhoCalc, rhoIGSLT,
           rhoInteractivePresentation, TypeDecl.plain, TypeExpr.name,
@@ -112,14 +114,18 @@ theorem rho_collectionRule_cases {rule : GrammarRule}
           TypeExpr.proc, TypeExpr.funType, TypeExpr.baseType] at shape
   · change rule ∈ [costSignatureUnitConstructor,
       costSignatureProductConstructor,
+      costKeyLeafConstructor, costKeyBranchConstructor, costSignatureCommitConstructor,
       costSignedConstructor
         rhoCIGSLT.theory.presentation.interactingSort.1.name,
       costTokenStackEmptyConstructor, costTokenStackConsConstructor,
       costFundingConstructor, costContactConstructor] at apparatus
     simp only [List.mem_cons, List.not_mem_nil, or_false] at apparatus
-    rcases apparatus with rfl | rfl | rfl | rfl | rfl | rfl | rfl
+    rcases apparatus with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
     · simp [costSignatureUnitConstructor] at shape
     · simp [costSignatureProductConstructor] at shape
+    · simp [costKeyLeafConstructor] at shape
+    · simp [costKeyBranchConstructor] at shape
+    · simp [costSignatureCommitConstructor] at shape
     · simp [costSignedConstructor] at shape
     · simp [costTokenStackEmptyConstructor] at shape
     · simp [costTokenStackConsConstructor] at shape

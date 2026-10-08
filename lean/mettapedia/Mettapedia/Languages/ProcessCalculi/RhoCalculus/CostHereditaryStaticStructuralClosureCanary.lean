@@ -71,6 +71,7 @@ theorem rhoBreadthBaseRedexA_commonReification_preservesOccurrence :
   · rfl
   · decide
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The breadth Quote/Drop node's reified frame selects one source-variable
 atom for any complete value assignment. -/
 noncomputable def rhoBreadthBaseRedexA_canonicalAtomWitness
@@ -203,7 +204,7 @@ private theorem rhoForeignRule_mem (index : Nat) (inBounds : index < 6) :
   List.getElem_mem _
 
 private def rhoForeignDropConstructor :
-    AuthoredConstructor rhoIGSLT.presentation.presentation :=
+    DeclaredConstructor rhoIGSLT.presentation.presentation :=
   ⟨rhoCalc.terms[1], rhoForeignRule_mem 1 (by omega)⟩
 
 private theorem rhoForeignDrop_selected :
@@ -214,7 +215,7 @@ private theorem rhoForeignDrop_selected :
   constructor <;> decide
 
 private def rhoForeignQuoteConstructor :
-    AuthoredConstructor rhoIGSLT.presentation.presentation :=
+    DeclaredConstructor rhoIGSLT.presentation.presentation :=
   ⟨rhoCalc.terms[2], rhoForeignRule_mem 2 (by omega)⟩
 
 private theorem rhoForeignQuote_selected :
@@ -252,18 +253,22 @@ private def rhoForeignWrappedQuotePreimage :
   costStaticConstructorPreimage rhoCIGSLT .wrapped
     rhoForeignWrappedQuoteDeclared rhoForeignWrappedQuoteRole
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoForeignWrappedDrop_notBare :
     ¬ UsesBareCollection
       rhoForeignWrappedDropPreimage.sourceConstructor.1 := by
   simp [rhoForeignWrappedDropPreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoForeignWrappedDropDeclared, rhoForeignDropConstructor,
     UsesBareCollection, rhoCalc, TypeExpr.name, TypeExpr.proc,
     TypeExpr.baseType]
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoForeignWrappedQuote_notBare :
     ¬ UsesBareCollection
       rhoForeignWrappedQuotePreimage.sourceConstructor.1 := by
   simp [rhoForeignWrappedQuotePreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoForeignWrappedQuoteDeclared, rhoForeignQuoteConstructor,
     UsesBareCollection, rhoCalc, TypeExpr.name, TypeExpr.proc,
     TypeExpr.baseType]
@@ -276,8 +281,8 @@ private theorem rhoForeignBaseQuoteOutsideWrapped :
 
 private noncomputable def rhoForeignBoundaryPlan (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] outer rhoBreadthRedexA (.base "Name") :=
   .boundaryApplication rhoBreadthBaseQuoteDeclared rfl
     rhoForeignBaseQuoteOutsideWrapped rhoBreadthBoundaryWitnessA
@@ -285,8 +290,8 @@ private noncomputable def rhoForeignBoundaryPlan (outer : OneHoleContext) :
 
 private noncomputable def rhoForeignWrappedDropPlan (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] outer rhoBreadthLeftProcess (.base "Proc") := by
   apply CostStaticRegionPlan.application rhoForeignWrappedDropDeclared rfl
     rhoForeignWrappedDropRole rhoForeignWrappedDropPreimage
@@ -302,8 +307,8 @@ def rhoForeignBoundaryQuotePattern : Pattern :=
 
 private noncomputable def rhoForeignBoundaryQuotePlan :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] .hole rhoForeignBoundaryQuotePattern (.base "Name") := by
   apply CostStaticRegionPlan.application rhoForeignWrappedQuoteDeclared rfl
     rhoForeignWrappedQuoteRole rhoForeignWrappedQuotePreimage
@@ -327,10 +332,11 @@ private theorem rhoForeignBoundaryQuote_typed :
   · rw [rho_costWrappedQuoteConstructor_params]
     exact .cons (by trivial) rfl rhoBreadthLeftProcessNode.term.2.1 .nil
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoForeignWrappedNameType :
     (.base (costBaseSortName "Name") : TypeExpr) =
       .base (CostStaticColor.wrapped.mapLangSort rhoCIGSLT rhoName).1 := by
-  simp [CostStaticColor.symbols,
+  simp [CostStaticColor.symbols, CostStaticColor.symbolsOf,
     costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
     rhoInteractivePresentation, rhoCalc, TypeDecl.plain, rhoName,
     show "Name" ≠ "Proc" by decide]
@@ -396,6 +402,7 @@ noncomputable def rhoForeignBoundaryQuoteTree :
       rhoForeignBoundaryQuotePattern (.base (costBaseSortName "Name")) :=
   .static rhoForeignBoundaryQuoteNode rhoForeignBoundaryQuoteChildren
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The foreign-boundary shell closes through the generic one-environment
 boundary exposure, not through a fixture equality of final normal forms. -/
 noncomputable def rhoForeignBoundaryQuoteBridge :
@@ -526,7 +533,7 @@ private theorem rhoSingletonBoundaryParallelChoice_mem :
     exact ⟨"ps", .hashBag, .base "Proc", rfl⟩
   · apply WellSorted.checkElementsHaveType_complete_of_objects
     · exact .cons (by
-        simpa [CostStaticColor.symbols, costBaseTypeExpr] using
+        simpa [CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseTypeExpr] using
           rhoBreadthLeft_typed) (.nil [] _)
     · simpa only [rhoBreadthLeft, WellSorted.isObjectPatternList,
         Bool.and_eq_true, List.isEmpty_iff, decide_true, Bool.and_true] using
@@ -540,7 +547,7 @@ private theorem rhoSingletonBoundaryCertificate_exists :
           rhoBreadthLeftPattern =
         some certificate := by
   apply exists_certifyCostRegionBoundary?_eq_some
-  · exact ⟨.base "Proc", decodeCostStaticTypeExpr_mapTypeExpr _ _ _⟩
+  · exact ⟨.base "Proc", CostStaticTypeImage.decode_mapTypeExpr _ _ _⟩
   · exact rhoBreadthLeft.2
 
 noncomputable def rhoSingletonBoundaryCertificate :
@@ -561,8 +568,8 @@ theorem rhoSingletonBoundaryCertificate_spec :
 private noncomputable def rhoSingletonBoundaryElementPlan
     (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] outer rhoBreadthLeftPattern (.base "Proc") :=
   .boundaryApplication rhoBreadthOutputDeclared rfl
     (by rw [rhoBreadthOutputRole]; decide)
@@ -570,8 +577,8 @@ private noncomputable def rhoSingletonBoundaryElementPlan
 
 private noncomputable def rhoSingletonBoundaryPlan :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] .hole rhoStaticNeutralSingletonPattern (.base "Proc") := by
   apply CostStaticRegionPlan.collection rhoSingletonBoundaryParallelChoice
     rhoSingletonBoundaryParallelChoice_mem
@@ -592,7 +599,7 @@ noncomputable def rhoSingletonBoundaryChild :
       rhoSingletonBoundaryCertificate.typed.boundary.targetType :=
   CostRegionTree.reindexType
     (by
-      simpa [CostStaticColor.symbols, costBaseTypeExpr] using
+      simpa [CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseTypeExpr] using
         rhoSingletonBoundaryCertificate.targetType_eq.symm)
     (CostRegionTree.reindexPattern
       rhoSingletonBoundaryCertificate.content_eq.symm

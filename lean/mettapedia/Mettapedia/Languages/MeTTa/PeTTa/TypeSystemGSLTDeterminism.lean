@@ -7,10 +7,10 @@ import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 Companion to `TypeSystemGSLT.lean`: the determinism/effect half of PeTTa's
 `typecheck-v2` branch (reference revision `e038e4d`, repository
 `trueagi-io/PeTTa`) as one `CalculusLanguageDef` — mode atoms, the analysis-verdict
-lattice, effect join, overload aggregation, clause-head overlap,
+lattice, effect join, overload aggregation, equation-head overlap,
 closed-domain exhaustiveness, and the syntax-directed body walker.  The
 generic V2 checker contains no branch for this fixture; every acceptance
-and rejection below is decided by the presentation data alone.
+and rejection below is decided by the definition data alone.
 
 Provenance discipline: each rule's doc-comment cites the reference clause it
 was extracted from (paths relative to the reference repository at the pinned
@@ -44,7 +44,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.InferenceExtension
 open Mettapedia.GSLT.LanguageDef
 
-/-- Single carrier sort: modes, verdicts, clause heads, and bodies live in
+/-- Single carrier sort: modes, verdicts, equation heads, and bodies live in
 one abstract term algebra, exactly as the reference manipulates them as
 untyped Prolog terms. -/
 private def termType : TypeDecl := TypeDecl.plain "DtTerm"
@@ -76,7 +76,7 @@ private def verMayFail : Pattern := .apply "VerMayFail" []
 private def verNondet : Pattern := .apply "VerNondet" []
 private def verUnknown : Pattern := .apply "VerUnknown" []
 
-/-! ## Clause-head skeletons (overlap and exhaustiveness carriers) -/
+/-! ## Equation-head skeletons (overlap and exhaustiveness carriers) -/
 
 /-- A variable argument position. -/
 private def hVarHead : Pattern := .apply "HVarHead" []
@@ -120,8 +120,8 @@ private def modeVerdict (m v : Pattern) : Pattern :=
   .apply "ModeVerdict" [m, v]
 private def bodyVerdict (b v : Pattern) : Pattern :=
   .apply "BodyVerdict" [b, v]
-private def clauseSetMode (v m : Pattern) : Pattern :=
-  .apply "ClauseSetMode" [v, m]
+private def equationSetMode (v m : Pattern) : Pattern :=
+  .apply "EquationSetMode" [v, m]
 private def arrowAdmits (d v : Pattern) : Pattern :=
   .apply "ArrowAdmits" [d, v]
 private def overlapHeads (a b : Pattern) : Pattern :=
@@ -405,30 +405,30 @@ private def bodyCall : RuleSchema :=
     premises := [modeVerdict (.fvar "m") (.fvar "v")]
     conclusion := bodyVerdict (bCall (.fvar "m")) (.fvar "v") }
 
-/-! ## Clause-set certification (`det_proofs.pl:990-1010`): worst body
+/-! ## Equation-set certification (`det_proofs.pl:990-1010`): worst body
 verdict; `may_fail` certifies semidet; `ok` certifies det.  `unknown`
 certifies nothing — no rule, matching the reference's refusal to assume
 det for what it cannot analyze. -/
 
-private def clauseSetOkDet : RuleSchema :=
-  { id := ruleId "clause-set-ok-det"
+private def equationSetOkDet : RuleSchema :=
+  { id := ruleId "equation-set-ok-det"
     metavariables := []
     premises := []
-    conclusion := clauseSetMode verOk mDet }
+    conclusion := equationSetMode verOk mDet }
 
-private def clauseSetMayFailSemidet : RuleSchema :=
-  { id := ruleId "clause-set-may-fail-semidet"
+private def equationSetMayFailSemidet : RuleSchema :=
+  { id := ruleId "equation-set-may-fail-semidet"
     metavariables := []
     premises := []
-    conclusion := clauseSetMode verMayFail mSemidet }
+    conclusion := equationSetMode verMayFail mSemidet }
 
-private def clauseSetNondet : RuleSchema :=
-  { id := ruleId "clause-set-nondet"
+private def equationSetNondet : RuleSchema :=
+  { id := ruleId "equation-set-nondet"
     metavariables := []
     premises := []
-    conclusion := clauseSetMode verNondet mNondet }
+    conclusion := equationSetMode verNondet mNondet }
 
-/-- The acceptance capstone: a declared arrow admits a clause-set verdict
+/-- The acceptance capstone: a declared arrow admits an equation-set verdict
 iff the certified mode is at or below the declaration in the commitment
 order (`det_validate.pl:220-260`: bodies worse than the arrow allows are
 rejected). -/
@@ -436,11 +436,11 @@ private def arrowAdmitsRule : RuleSchema :=
   { id := ruleId "arrow-admits"
     metavariables := [("d", 0), ("v", 0), ("m", 0)]
     premises :=
-      [ clauseSetMode (.fvar "v") (.fvar "m"),
+      [ equationSetMode (.fvar "v") (.fvar "m"),
         modeLe (.fvar "m") (.fvar "d") ]
     conclusion := arrowAdmits (.fvar "d") (.fvar "v") }
 
-/-! ## Clause-head overlap (`det_validate.pl:245`, enforced at 220):
+/-! ## Equation-head overlap (`det_validate.pl:245`, enforced at 220):
 unifiable-on-copies — a syntactic-unifiability test, not a normal-form
 disjointness approximation.  Violation under commitment is
 `overlapping_deterministic_clauses`. -/
@@ -543,7 +543,7 @@ private abbrev definition : CalculusLanguageDef :=
         { head := "VerdictJoin", arity := 3 },
         { head := "ModeVerdict", arity := 2 },
         { head := "BodyVerdict", arity := 2 },
-        { head := "ClauseSetMode", arity := 2 },
+        { head := "EquationSetMode", arity := 2 },
         { head := "ArrowAdmits", arity := 2 },
         { head := "OverlapHeads", arity := 2 },
         { head := "Covers", arity := 2 },
@@ -564,7 +564,7 @@ private abbrev definition : CalculusLanguageDef :=
         bodyCollapse, bodySuperpose, bodyEval,
         bodyOnceOk, bodyOnceMayFail, bodyOnceNondet, bodyOnceUnknown,
         bodySeq, bodyCall,
-        clauseSetOkDet, clauseSetMayFailSemidet, clauseSetNondet,
+        equationSetOkDet, equationSetMayFailSemidet, equationSetNondet,
         arrowAdmitsRule,
         overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
         coversHereVar, coversHereMatch, coversThere,
@@ -572,8 +572,6 @@ private abbrev definition : CalculusLanguageDef :=
 
 private def language : LanguageDef := definition.toLanguageDef
 private def calculus : ProofCalculus := definition.toCalculus
-private def presentation : Presentation := definition.toNested
-
 /-! ## Receipts -/
 
 theorem language_validate : language.validate = [] := by
@@ -582,20 +580,20 @@ theorem language_validate : language.validate = [] := by
       LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
       TypeExpr.baseNames]
 
-theorem presentation_valid : presentation.isValidV2 = true := by
-  have hvalidate : presentation.language.validate = [] := by
-    simpa [presentation, language] using language_validate
-  unfold Presentation.isValidV2 Presentation.isValidV1
+theorem definition_valid : definition.isValid = true := by
+  have hvalidate : definition.toLanguageDef.validate = [] := by
+    simpa [definition, language] using language_validate
+  unfold CalculusLanguageDef.isValid CalculusLanguageDef.hasValidLocalRules
   rw [hvalidate]
-  simp [presentation,
-    Presentation.ruleIds, Presentation.judgmentSignatureValid,
-    Presentation.judgmentHeads, Presentation.conversionDeclarationValid,
-    Presentation.lookupJudgment?, RuleSchema.isValidIn,
-    RuleSchema.isValidV1,
+  simp [definition,
+    CalculusLanguageDef.ruleIds, CalculusLanguageDef.judgmentSignatureValid,
+    CalculusLanguageDef.judgmentHeads, CalculusLanguageDef.conversionDeclarationValid,
+    CalculusLanguageDef.lookupJudgment?, RuleSchema.isValidIn,
+    RuleSchema.isLocallyValid,
     RuleSchema.metavariableNames, RuleSchema.occurrences, RuleSchema.patterns,
     patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
     patternHasNoCollectionRest, patternsHaveNoCollectionRest,
-    Presentation.judgmentSchemaValid, fixedConstructorsValid,
+    CalculusLanguageDef.judgmentSchemaValid, fixedConstructorsValid,
     fixedConstructorListsValid, languageHasConstructorArity,
     Pattern.isWellScoped, Pattern.isWellScopedAt, Pattern.isWellScopedListAt,
     Pattern.hasCanonicalBinderMetadata,
@@ -612,13 +610,13 @@ theorem presentation_valid : presentation.isValidV2 = true := by
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
     modeLe, committed, effectJoin, modeInstance, overloadAgg,
     conflictingDecls, verdictLe, verdictJoin, modeVerdict, bodyVerdict,
-    clauseSetMode, arrowAdmits, overlapHeads, covers, exhaustiveBool,
+    equationSetMode, arrowAdmits, overlapHeads, covers, exhaustiveBool,
     mPlain, mDet, mSemidet, mNondet, mUnspecified, mEffectVar, verOk,
     verMayFail, verNondet, verUnknown, hVarHead, hTrue, hFalse, hPair,
     bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall, dCons, ruleId]
@@ -626,13 +624,13 @@ theorem presentation_valid : presentation.isValidV2 = true := by
 
 /-- The determinism/effect language and its fifty rules as one GSLT. -/
 def totalTheory : Mettapedia.GSLT.GSLT :=
-  definition.toGSLTOfNoEquations presentation_valid rfl
+  definition.toGSLTOfEquationFree definition_valid rfl
 
 theorem totalTheory_Term : totalTheory.Term = (Pattern ⊕ List Pattern) := by
-  unfold totalTheory CalculusLanguageDef.toGSLTOfNoEquations
+  unfold totalTheory CalculusLanguageDef.toGSLTOfEquationFree
   rfl
 
-def checked : ValidatedPresentation := ⟨presentation, presentation_valid⟩
+def checked : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
 
 /-- Inventory pin: 22 constructors. -/
 theorem language_constructor_count : language.terms.length = 22 := by decide
@@ -649,7 +647,7 @@ private def detNondetLeProof : RawProof :=
 theorem mode_le_det_nondet :
     checkRaw checked (modeLe mDet mNondet)
       detNondetLeProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     detNondetLeProof, modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet,
     modeLeDetNondet, committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -661,16 +659,16 @@ theorem mode_le_det_nondet :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -689,7 +687,7 @@ private def joinDetSemidetProof : RawProof :=
 theorem effect_join_det_semidet :
     checkRaw checked (effectJoin mDet mSemidet mSemidet)
       joinDetSemidetProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     joinDetSemidetProof, detSemidetLeProof, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -701,16 +699,16 @@ theorem effect_join_det_semidet :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -726,7 +724,7 @@ private def joinUnspecProof : RawProof :=
 theorem effect_join_unspecified_absorbs :
     checkRaw checked (effectJoin mUnspecified mDet mUnspecified)
       joinUnspecProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     joinUnspecProof, modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet,
     modeLeDetNondet, committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -738,16 +736,16 @@ theorem effect_join_unspecified_absorbs :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -763,7 +761,7 @@ private def effectVarProof : RawProof :=
 theorem effect_var_instantiates_to_det :
     checkRaw checked (modeInstance mEffectVar mDet)
       effectVarProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     effectVarProof, modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet,
     modeLeDetNondet, committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -775,16 +773,16 @@ theorem effect_var_instantiates_to_det :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -801,7 +799,7 @@ private def overloadWeakenProof : RawProof :=
 theorem overload_det_semidet_weakens :
     checkRaw checked (overloadAgg mDet mSemidet mSemidet)
       overloadWeakenProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     overloadWeakenProof, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -813,16 +811,16 @@ theorem overload_det_semidet_weakens :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -842,7 +840,7 @@ private def conflictProof : RawProof :=
 theorem conflicting_declarations_det_nondet :
     checkRaw checked (conflictingDecls mDet mNondet)
       conflictProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     conflictProof, committedDetProof, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -854,16 +852,16 @@ theorem conflicting_declarations_det_nondet :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -897,7 +895,7 @@ private def seqBodyProof : RawProof :=
 theorem body_composition_superpose_nondet :
     checkRaw checked (bodyVerdict (bSeq bCollapse bSuperpose) verNondet)
       seqBodyProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     seqBodyProof, collapseOkProof, superposeNondetProof,
     okNondetJoinProof, okNondetLeProof, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
@@ -910,16 +908,16 @@ theorem body_composition_superpose_nondet :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -937,7 +935,7 @@ private def onceCapProof : RawProof :=
 theorem once_caps_nondet_to_may_fail :
     checkRaw checked (bodyVerdict (bOnce bSuperpose) verMayFail)
       onceCapProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     onceCapProof, superposeNondetProof, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -949,16 +947,16 @@ theorem once_caps_nondet_to_may_fail :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -966,8 +964,8 @@ theorem once_caps_nondet_to_may_fail :
     Pattern.hasCanonicalBinderMetadata,
     Pattern.hasCanonicalBinderMetadataList]
 
-private def clauseSetDetProof : RawProof :=
-  .node { ruleId := ruleId "clause-set-ok-det", arguments := [] } []
+private def equationSetDetProof : RawProof :=
+  .node { ruleId := ruleId "equation-set-ok-det", arguments := [] } []
 
 private def detReflLeProof : RawProof :=
   .node { ruleId := ruleId "mode-le-refl", arguments := [mDet] } []
@@ -976,15 +974,15 @@ private def detAdmitsProof : RawProof :=
   .node
     { ruleId := ruleId "arrow-admits"
       arguments := [mDet, verOk, mDet] }
-    [clauseSetDetProof, detReflLeProof]
+    [equationSetDetProof, detReflLeProof]
 
-/-- An `ok` clause set certifies det and satisfies a `-[det]->`
+/-- An `ok` equation set certifies det and satisfies a `-[det]->`
 declaration (`det_proofs.pl:990-1010`). -/
 theorem det_body_admits_det_arrow :
     checkRaw checked (arrowAdmits mDet verOk)
       detAdmitsProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
-    detAdmitsProof, clauseSetDetProof, detReflLeProof, modeLeRefl,
+  simp [checkRaw, checkRawChildren, checked, definition,
+    detAdmitsProof, equationSetDetProof, detReflLeProof, modeLeRefl,
     modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet, committedDet,
     committedSemidet, effectJoinUnspecLeft, effectJoinUnspecRight,
     effectJoinLeft, effectJoinRight, modeInstanceVar, modeInstanceRefl,
@@ -995,16 +993,16 @@ theorem det_body_admits_det_arrow :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1012,8 +1010,8 @@ theorem det_body_admits_det_arrow :
     Pattern.hasCanonicalBinderMetadata,
     Pattern.hasCanonicalBinderMetadataList]
 
-private def clauseSetNondetProof : RawProof :=
-  .node { ruleId := ruleId "clause-set-nondet", arguments := [] } []
+private def equationSetNondetProof : RawProof :=
+  .node { ruleId := ruleId "equation-set-nondet", arguments := [] } []
 
 private def nondetReflLeProof : RawProof :=
   .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
@@ -1022,15 +1020,15 @@ private def nondetAdmitsProof : RawProof :=
   .node
     { ruleId := ruleId "arrow-admits"
       arguments := [mNondet, verNondet, mNondet] }
-    [clauseSetNondetProof, nondetReflLeProof]
+    [equationSetNondetProof, nondetReflLeProof]
 
-/-- A nondeterministic clause set is admissible under a `-[nondet]->`
+/-- A nondeterministic equation set is admissible under a `-[nondet]->`
 declaration: weakening is downgraded, never rejected. -/
 theorem nondet_arrow_admits_nondet_body :
     checkRaw checked (arrowAdmits mNondet verNondet)
       nondetAdmitsProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
-    nondetAdmitsProof, clauseSetNondetProof, nondetReflLeProof,
+  simp [checkRaw, checkRawChildren, checked, definition,
+    nondetAdmitsProof, equationSetNondetProof, nondetReflLeProof,
     modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
     committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -1042,16 +1040,16 @@ theorem nondet_arrow_admits_nondet_body :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1067,7 +1065,7 @@ unifiable-on-copies (`det_validate.pl:245`). -/
 theorem variable_head_overlaps :
     checkRaw checked (overlapHeads hVarHead hTrue)
       varOverlapProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     varOverlapProof, modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet,
     modeLeDetNondet, committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -1079,16 +1077,16 @@ theorem variable_head_overlaps :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1124,7 +1122,7 @@ private def exhaustiveProof : RawProof :=
 theorem exhaustive_bool_with_both_keys :
     checkRaw checked (exhaustiveBool boolHeads)
       exhaustiveProof = true := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     exhaustiveProof, boolHeads, coversTrueProof, coversFalseInnerProof,
     coversFalseProof, modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet,
     modeLeDetNondet, committedDet, committedSemidet, effectJoinUnspecLeft,
@@ -1137,16 +1135,16 @@ theorem exhaustive_bool_with_both_keys :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall, dNil,
@@ -1162,18 +1160,21 @@ private def nondetIntoDetCandidate : RawProof :=
   .node
     { ruleId := ruleId "arrow-admits"
       arguments := [mDet, verNondet, mNondet] }
-    [clauseSetNondetProof, nondetReflLeProof]
+    [equationSetNondetProof, nondetReflLeProof]
 
-/-- A nondeterministic clause set does NOT satisfy a `-[det]->`
-declaration: the required premise `ModeLe MNondet MDet` has no rule
-(rejection class `overlapping_deterministic_clauses` /
-`det_nonexhaustive` family, `det_validate.pl:220-260`).  The candidate
-supplies a refl derivation, which concludes the wrong inequality. -/
+/-- The canonical candidate for admitting a nondeterministic equation set
+into a `-[det]->` declaration is rejected: it supplies a refl derivation,
+which concludes the wrong inequality, and no rule of this presentation
+concludes `ModeLe MNondet MDet` (rejection class
+`overlapping_deterministic_clauses` / `det_nonexhaustive` family,
+`det_validate.pl:220-260`).  This is a statement about that candidate.
+That no derivation whatever exists is the stage-2 obligation recorded in
+the section header above, and is not claimed here. -/
 theorem det_arrow_rejects_nondet_body :
     checkRaw checked (arrowAdmits mDet verNondet)
       nondetIntoDetCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
-    nondetIntoDetCandidate, clauseSetNondetProof, nondetReflLeProof,
+  simp [checkRaw, checkRawChildren, checked, definition,
+    nondetIntoDetCandidate, equationSetNondetProof, nondetReflLeProof,
     modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
     committedDet, committedSemidet, effectJoinUnspecLeft,
     effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
@@ -1185,16 +1186,16 @@ theorem det_arrow_rejects_nondet_body :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1206,13 +1207,14 @@ private def overloadConflictCandidate : RawProof :=
   .node
     { ruleId := ruleId "overload-agg-refl", arguments := [mNondet] } []
 
-/-- `{det, nondet}` never aggregates (the reference throws
-`conflicting_determinism_declarations` instead — the positive
-`conflicting_declarations_det_nondet` above is its twin). -/
+/-- The refl candidate for aggregating `{det, nondet}` is rejected: refl
+concludes the wrong aggregate.  The reference throws
+`conflicting_determinism_declarations` at this pair, and the positive
+`conflicting_declarations_det_nondet` above is its twin. -/
 theorem overload_refl_rejects_det_nondet :
     checkRaw checked (overloadAgg mDet mNondet mNondet)
       overloadConflictCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     overloadConflictCandidate, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -1224,16 +1226,16 @@ theorem overload_refl_rejects_det_nondet :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1244,12 +1246,13 @@ theorem overload_refl_rejects_det_nondet :
 private def overlapReflCandidate : RawProof :=
   .node { ruleId := ruleId "overlap-equal", arguments := [hTrue] } []
 
-/-- Distinct literal keys are not unifiable: the equality candidate
-instantiates to the wrong pair (`det_validate.pl:245`). -/
-theorem distinct_literal_heads_do_not_overlap :
+/-- The equality candidate for overlapping two distinct literal keys is
+rejected: it instantiates to the wrong pair.  The reference's test is
+syntactic unifiability of the heads (`det_validate.pl:245`). -/
+theorem distinct_literal_heads_equal_candidate_rejects :
     checkRaw checked (overlapHeads hTrue hFalse)
       overlapReflCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     overlapReflCandidate, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -1261,16 +1264,16 @@ theorem distinct_literal_heads_do_not_overlap :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1286,7 +1289,7 @@ it cannot be instantiated at `HTrue`. -/
 theorem distinct_literal_heads_var_candidate_rejects :
     checkRaw checked (overlapHeads hTrue hFalse)
       overlapVarCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     overlapVarCandidate, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -1298,16 +1301,16 @@ theorem distinct_literal_heads_var_candidate_rejects :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
@@ -1320,14 +1323,15 @@ private def missingKeyCandidate : RawProof :=
     { ruleId := ruleId "covers-here-match"
       arguments := [hFalse, dNil] } []
 
-/-- A clause list matching only `HTrue` does not cover the `HFalse` key:
-the closed Bool domain makes this the provable-incompleteness error
-`det_nonexhaustive` (`det_analysis.pl:618-676`; asymmetric by design —
-the error is exactly a failed coverage derivation on a closed domain). -/
-theorem missing_false_key_not_covered :
+/-- The match candidate for covering the `HFalse` key from an equation list
+matching only `HTrue` is rejected: it matches the wrong key.  On the
+closed Bool domain a failed coverage derivation is exactly the reference's
+`det_nonexhaustive` error (`det_analysis.pl:618-676`), and the judgment is
+asymmetric by design. -/
+theorem missing_false_key_match_candidate_rejects :
     checkRaw checked (covers (dCons hTrue dNil) hFalse)
       missingKeyCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     missingKeyCandidate, modeLeRefl, modeLeDetSemidet,
     modeLeSemidetNondet, modeLeDetNondet, committedDet, committedSemidet,
     effectJoinUnspecLeft, effectJoinUnspecRight, effectJoinLeft,
@@ -1339,16 +1343,16 @@ theorem missing_false_key_not_covered :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall, dNil,
@@ -1361,12 +1365,13 @@ private def onceLaunderCandidate : RawProof :=
     { ruleId := ruleId "body-once-ok", arguments := [bSuperpose] }
     [superposeNondetProof]
 
-/-- `once` never restores `ok` from a nondeterministic body — the cap is
-`may_fail`, not `ok` (`det_proofs.pl:1094-1100`). -/
-theorem once_does_not_launder_nondet_to_ok :
+/-- The `ok` candidate for `once` over a nondeterministic body is
+rejected: the rule caps such a body at `may_fail`, not `ok`
+(`det_proofs.pl:1094-1100`). -/
+theorem once_ok_candidate_rejects_nondet_body :
     checkRaw checked (bodyVerdict (bOnce bSuperpose) verOk)
       onceLaunderCandidate = false := by
-  simp [checkRaw, checkRawChildren, checked, presentation,
+  simp [checkRaw, checkRawChildren, checked, definition,
     onceLaunderCandidate, superposeNondetProof, modeLeRefl,
     modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet, committedDet,
     committedSemidet, effectJoinUnspecLeft, effectJoinUnspecRight,
@@ -1378,16 +1383,830 @@ theorem once_does_not_launder_nondet_to_ok :
     verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
     modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
     bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
-    bodyOnceUnknown, bodySeq, bodyCall, clauseSetOkDet,
-    clauseSetMayFailSemidet, clauseSetNondet, arrowAdmitsRule,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
     overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
     coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
-    instantiateRule?, Presentation.lookupRule?, argumentsValidAt,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
     argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
     instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
     lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
     overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
-    bodyVerdict, clauseSetMode, arrowAdmits, overlapHeads, covers,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+/-! ## Multiplicity reading of the declared modes
+
+The determinism analysis commits to exactly three arrow grades, and each
+is a solution-count discipline: `det` promises exactly one solution,
+`semidet` at most one, `nondet` any number.  `unspecified` is not a fourth
+discipline but the absence of one, and it absorbs.  The section below
+reads those four back as an algebra, checks the algebra against the
+presentation's own judgments cell by cell, and records the two places
+where the presentation's orders are narrower than the algebra.
+
+Terminology guard: `declared` below means *some* arrow was declared, i.e.
+one of the three concrete grades.  It is wider than the `Committed`
+judgment above, which holds of `det` and `semidet` only — those are the
+grades that keep the clause-entry cut. -/
+
+/-- The multiplicity grades of the determinism analysis: the three a
+declaration can commit to, plus the absorbing grade of a callee with no
+declaration and no builtin row. -/
+inductive Multiplicity where
+  /-- `-[det]->`: exactly one solution. -/
+  | exactlyOnce : Multiplicity
+  /-- `-[semidet]->`: at most one solution. -/
+  | atMostOnce : Multiplicity
+  /-- `-[nondet]->`: unrestricted solution count. -/
+  | unrestricted : Multiplicity
+  /-- `unspecified`: no discipline at all, and absorbing
+  (`det_proofs.pl:23-45`). -/
+  | undeclared : Multiplicity
+deriving DecidableEq
+
+/-- The three grades a declaration can commit to. -/
+def Multiplicity.declared : Multiplicity → Bool
+  | .exactlyOnce => true
+  | .atMostOnce => true
+  | .unrestricted => true
+  | .undeclared => false
+
+/-- Solution-count join: the weaker discipline wins, and the absence of a
+discipline wins outright (`det_analysis.pl:158-164`). -/
+def Multiplicity.join : Multiplicity → Multiplicity → Multiplicity
+  | .exactlyOnce, .exactlyOnce => .exactlyOnce
+  | .exactlyOnce, .atMostOnce => .atMostOnce
+  | .exactlyOnce, .unrestricted => .unrestricted
+  | .exactlyOnce, .undeclared => .undeclared
+  | .atMostOnce, .exactlyOnce => .atMostOnce
+  | .atMostOnce, .atMostOnce => .atMostOnce
+  | .atMostOnce, .unrestricted => .unrestricted
+  | .atMostOnce, .undeclared => .undeclared
+  | .unrestricted, .exactlyOnce => .unrestricted
+  | .unrestricted, .atMostOnce => .unrestricted
+  | .unrestricted, .unrestricted => .unrestricted
+  | .unrestricted, .undeclared => .undeclared
+  | .undeclared, .exactlyOnce => .undeclared
+  | .undeclared, .atMostOnce => .undeclared
+  | .undeclared, .unrestricted => .undeclared
+  | .undeclared, .undeclared => .undeclared
+
+/-- The commitment order `ModeLe` read back on the grades: the chain
+`det < semidet < nondet`, plus reflexivity.  `undeclared` is related to
+nothing but itself — the presentation has no `ModeLe` rule linking
+`MUnspecified` to a concrete mode.  `mode_le_witness_table` below checks
+this table against the presentation. -/
+def Multiplicity.le : Multiplicity → Multiplicity → Bool
+  | .exactlyOnce, .exactlyOnce => true
+  | .exactlyOnce, .atMostOnce => true
+  | .exactlyOnce, .unrestricted => true
+  | .exactlyOnce, .undeclared => false
+  | .atMostOnce, .exactlyOnce => false
+  | .atMostOnce, .atMostOnce => true
+  | .atMostOnce, .unrestricted => true
+  | .atMostOnce, .undeclared => false
+  | .unrestricted, .exactlyOnce => false
+  | .unrestricted, .atMostOnce => false
+  | .unrestricted, .unrestricted => true
+  | .unrestricted, .undeclared => false
+  | .undeclared, .exactlyOnce => false
+  | .undeclared, .atMostOnce => false
+  | .undeclared, .unrestricted => false
+  | .undeclared, .undeclared => true
+
+/-- The verdict order `VerdictLe` read back along
+`ok/may_fail/nondeterministic/unknown`.  It is *not* the image of
+`Multiplicity.le`: `ok` and `may_fail` sit below `unknown`, while
+`nondeterministic` and `unknown` are the two final rank-2 verdicts and are
+mutually incomparable (`det_analysis.pl:294-321`).
+`verdict_le_witness_table` below checks this table. -/
+def Multiplicity.verdictLe : Multiplicity → Multiplicity → Bool
+  | .exactlyOnce, .exactlyOnce => true
+  | .exactlyOnce, .atMostOnce => true
+  | .exactlyOnce, .unrestricted => true
+  | .exactlyOnce, .undeclared => true
+  | .atMostOnce, .exactlyOnce => false
+  | .atMostOnce, .atMostOnce => true
+  | .atMostOnce, .unrestricted => true
+  | .atMostOnce, .undeclared => true
+  | .unrestricted, .exactlyOnce => false
+  | .unrestricted, .atMostOnce => false
+  | .unrestricted, .unrestricted => true
+  | .unrestricted, .undeclared => false
+  | .undeclared, .exactlyOnce => false
+  | .undeclared, .atMostOnce => false
+  | .undeclared, .unrestricted => false
+  | .undeclared, .undeclared => true
+
+/-! ### The join laws
+
+`decide` cannot be invoked on the bare `∀` statements: there is no
+`Fintype Multiplicity` instance in scope (the deriving handler lives in a
+module this file does not import, and imports are out of scope here), so
+each law enumerates the carrier with `cases` and decides every cell. -/
+
+/-- The join is commutative. -/
+theorem multiplicity_join_comm (a b : Multiplicity) :
+    a.join b = b.join a := by
+  cases a <;> cases b <;> decide
+
+/-- The join is associative. -/
+theorem multiplicity_join_assoc (a b c : Multiplicity) :
+    (a.join b).join c = a.join (b.join c) := by
+  cases a <;> cases b <;> cases c <;> decide
+
+/-- The join is idempotent. -/
+theorem multiplicity_join_idem (a : Multiplicity) : a.join a = a := by
+  cases a <;> decide
+
+/-- `det` is the unit — not only on the three declared grades but on the
+whole carrier, since joining with `exactlyOnce` never changes a grade. -/
+theorem multiplicity_exactlyOnce_is_unit (a : Multiplicity) :
+    Multiplicity.exactlyOnce.join a = a ∧ a.join .exactlyOnce = a := by
+  cases a <;> exact ⟨by decide, by decide⟩
+
+/-- `unspecified` absorbs on both sides. -/
+theorem multiplicity_undeclared_absorbs (a : Multiplicity) :
+    Multiplicity.undeclared.join a = .undeclared ∧
+      a.join .undeclared = .undeclared := by
+  cases a <;> exact ⟨by decide, by decide⟩
+
+/-- The three declared grades are closed under the join, so an arrow's
+aggregated grade is again a grade a declaration can carry. -/
+theorem multiplicity_join_preserves_declared (a b : Multiplicity)
+    (ha : a.declared = true) (hb : b.declared = true) :
+    (a.join b).declared = true := by
+  cases a <;> cases b <;> revert ha hb <;> decide
+
+/-- On the three declared grades the join is the least upper bound of the
+commitment order: it is an upper bound, and it is below every common upper
+bound. -/
+theorem multiplicity_join_is_least_upper_bound_on_declared_grades
+    (a b c : Multiplicity) (ha : a.declared = true) (hb : b.declared = true)
+    (hc : c.declared = true) :
+    a.le (a.join b) = true ∧ b.le (a.join b) = true ∧
+      (a.le c = true → b.le c = true → (a.join b).le c = true) := by
+  cases a <;> cases b <;> cases c <;> revert ha hb hc <;> decide
+
+/-- Honest delta, algebra side: the join is *not* the least upper bound of
+`ModeLe` on the full carrier.  `unspecified` absorbs, yet the commitment
+order places it above nothing — so the join is the least upper bound of
+the commitment chain *extended* by `unspecified` as a top element, an
+order strictly larger than `ModeLe`. -/
+theorem multiplicity_undeclared_absorbs_without_being_modeLe_above :
+    Multiplicity.unrestricted.join .undeclared = .undeclared ∧
+      Multiplicity.unrestricted.le .undeclared = false ∧
+      Multiplicity.undeclared.le .unrestricted = false := by
+  exact ⟨by decide, by decide, by decide⟩
+
+/-- Honest delta, order side: the commitment order and the verdict order
+agree on the three declared grades and part company at the absorbing one.
+`ok ≤ unknown` is a `VerdictLe` rule, while no `ModeLe` rule puts `det`
+below `unspecified`. -/
+theorem mode_order_and_verdict_order_agree_on_declared_grades :
+    (∀ a b : Multiplicity, a.declared = true → b.declared = true →
+        a.le b = a.verdictLe b) ∧
+      Multiplicity.exactlyOnce.le .undeclared = false ∧
+      Multiplicity.exactlyOnce.verdictLe .undeclared = true := by
+  refine ⟨?_, by decide, by decide⟩
+  intro a b ha hb
+  cases a <;> cases b <;> revert ha hb <;> decide
+
+/-! ### Agreement with the presentation: witnesses for every cell
+
+Each grade is carried to its mode atom and to its verdict atom, and each
+ordered pair of grades to the `RawProof` the presentation would build for
+it.  The witness families are total: on a cell the presentation does not
+reach they produce a candidate that fails to check, so a single table
+theorem states the positive and the negative cells at once.
+
+`decide` is unavailable for these tables.  `checkRaw` is compiled by
+well-founded recursion, so it does not kernel-reduce; `decide` on a closed
+`checkRaw … = true` reports that the `Decidable` instance got stuck.  The
+tables therefore enumerate the carrier with `cases` — which is exhaustive
+over the inductive rather than over a list literal — and reduce each cell
+with the file's `simp` idiom. -/
+
+private def modePattern : Multiplicity → Pattern
+  | .exactlyOnce => mDet
+  | .atMostOnce => mSemidet
+  | .unrestricted => mNondet
+  | .undeclared => mUnspecified
+
+private def verdictPattern : Multiplicity → Pattern
+  | .exactlyOnce => verOk
+  | .atMostOnce => verMayFail
+  | .unrestricted => verNondet
+  | .undeclared => verUnknown
+
+private def modeLeWitness : Multiplicity → Multiplicity → RawProof
+  | .exactlyOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mDet] } []
+  | .exactlyOnce, .atMostOnce =>
+      .node { ruleId := ruleId "mode-le-det-semidet", arguments := [] } []
+  | .exactlyOnce, .unrestricted =>
+      .node { ruleId := ruleId "mode-le-det-nondet", arguments := [] } []
+  | .exactlyOnce, .undeclared =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mDet] } []
+  | .atMostOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mSemidet] } []
+  | .atMostOnce, .atMostOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mSemidet] } []
+  | .atMostOnce, .unrestricted =>
+      .node { ruleId := ruleId "mode-le-semidet-nondet", arguments := [] } []
+  | .atMostOnce, .undeclared =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mSemidet] } []
+  | .unrestricted, .exactlyOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
+  | .unrestricted, .atMostOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
+  | .unrestricted, .unrestricted =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
+  | .unrestricted, .undeclared =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
+  | .undeclared, .exactlyOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mUnspecified] } []
+  | .undeclared, .atMostOnce =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mUnspecified] } []
+  | .undeclared, .unrestricted =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mUnspecified] } []
+  | .undeclared, .undeclared =>
+      .node { ruleId := ruleId "mode-le-refl", arguments := [mUnspecified] } []
+
+/-- The commitment order, cell by cell: the canonical witness for
+`ModeLe` checks exactly on the pairs `Multiplicity.le` records
+(`flags_arrows.pl:72-92`).  The `false` cells say that this witness is
+rejected, not that no derivation exists — exhaustive impossibility is the
+stage-2 soundness obligation, as the negative section above notes. -/
+theorem mode_le_witness_table (a b : Multiplicity) :
+    checkRaw checked (modeLe (modePattern a) (modePattern b))
+      (modeLeWitness a b) = a.le b := by
+  cases a <;> cases b <;>
+  simp [Multiplicity.le, modePattern, modeLeWitness,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+private def modeJoinWitness : Multiplicity → Multiplicity → RawProof
+  | .exactlyOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "effect-join-left", arguments := [mDet, mDet] }
+        [modeLeWitness .exactlyOnce .exactlyOnce]
+  | .exactlyOnce, .atMostOnce =>
+      .node { ruleId := ruleId "effect-join-left"
+              arguments := [mDet, mSemidet] }
+        [modeLeWitness .exactlyOnce .atMostOnce]
+  | .exactlyOnce, .unrestricted =>
+      .node { ruleId := ruleId "effect-join-left"
+              arguments := [mDet, mNondet] }
+        [modeLeWitness .exactlyOnce .unrestricted]
+  | .exactlyOnce, .undeclared =>
+      .node { ruleId := ruleId "effect-join-unspec-right"
+              arguments := [mDet] } []
+  | .atMostOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "effect-join-right"
+              arguments := [mSemidet, mDet] }
+        [modeLeWitness .exactlyOnce .atMostOnce]
+  | .atMostOnce, .atMostOnce =>
+      .node { ruleId := ruleId "effect-join-left"
+              arguments := [mSemidet, mSemidet] }
+        [modeLeWitness .atMostOnce .atMostOnce]
+  | .atMostOnce, .unrestricted =>
+      .node { ruleId := ruleId "effect-join-left"
+              arguments := [mSemidet, mNondet] }
+        [modeLeWitness .atMostOnce .unrestricted]
+  | .atMostOnce, .undeclared =>
+      .node { ruleId := ruleId "effect-join-unspec-right"
+              arguments := [mSemidet] } []
+  | .unrestricted, .exactlyOnce =>
+      .node { ruleId := ruleId "effect-join-right"
+              arguments := [mNondet, mDet] }
+        [modeLeWitness .exactlyOnce .unrestricted]
+  | .unrestricted, .atMostOnce =>
+      .node { ruleId := ruleId "effect-join-right"
+              arguments := [mNondet, mSemidet] }
+        [modeLeWitness .atMostOnce .unrestricted]
+  | .unrestricted, .unrestricted =>
+      .node { ruleId := ruleId "effect-join-left"
+              arguments := [mNondet, mNondet] }
+        [modeLeWitness .unrestricted .unrestricted]
+  | .unrestricted, .undeclared =>
+      .node { ruleId := ruleId "effect-join-unspec-right"
+              arguments := [mNondet] } []
+  | .undeclared, .exactlyOnce =>
+      .node { ruleId := ruleId "effect-join-unspec-left"
+              arguments := [mDet] } []
+  | .undeclared, .atMostOnce =>
+      .node { ruleId := ruleId "effect-join-unspec-left"
+              arguments := [mSemidet] } []
+  | .undeclared, .unrestricted =>
+      .node { ruleId := ruleId "effect-join-unspec-left"
+              arguments := [mNondet] } []
+  | .undeclared, .undeclared =>
+      .node { ruleId := ruleId "effect-join-unspec-left"
+              arguments := [mUnspecified] } []
+
+/-- Deliverable of the multiplicity reading: on the whole four-grade
+carrier the presentation's `EffectJoin` judgment realizes
+`Multiplicity.join`.  Every one of the sixteen cells has a checked
+derivation, so the algebra above is the effect join of the presentation,
+not a parallel invention (`det_analysis.pl:158-164`,
+`det_proofs.pl:66-72`). -/
+theorem effect_join_realizes_multiplicity_join (a b : Multiplicity) :
+    checkRaw checked
+      (effectJoin (modePattern a) (modePattern b) (modePattern (a.join b)))
+      (modeJoinWitness a b) = true := by
+  cases a <;> cases b <;>
+  simp [Multiplicity.join, modePattern, modeLeWitness, modeJoinWitness,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+private def verdictLeWitness : Multiplicity → Multiplicity → RawProof
+  | .exactlyOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verOk] } []
+  | .exactlyOnce, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-le-ok-may-fail", arguments := [] } []
+  | .exactlyOnce, .unrestricted =>
+      .node { ruleId := ruleId "verdict-le-ok-nondet", arguments := [] } []
+  | .exactlyOnce, .undeclared =>
+      .node { ruleId := ruleId "verdict-le-ok-unknown", arguments := [] } []
+  | .atMostOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verMayFail] } []
+  | .atMostOnce, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verMayFail] } []
+  | .atMostOnce, .unrestricted =>
+      .node { ruleId := ruleId "verdict-le-may-fail-nondet"
+              arguments := [] } []
+  | .atMostOnce, .undeclared =>
+      .node { ruleId := ruleId "verdict-le-may-fail-unknown"
+              arguments := [] } []
+  | .unrestricted, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verNondet] } []
+  | .unrestricted, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verNondet] } []
+  | .unrestricted, .unrestricted =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verNondet] } []
+  | .unrestricted, .undeclared =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verNondet] } []
+  | .undeclared, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verUnknown] } []
+  | .undeclared, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verUnknown] } []
+  | .undeclared, .unrestricted =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verUnknown] } []
+  | .undeclared, .undeclared =>
+      .node { ruleId := ruleId "verdict-le-refl", arguments := [verUnknown] } []
+
+/-- The verdict order, cell by cell: the canonical witness for `VerdictLe`
+checks exactly on the pairs `Multiplicity.verdictLe` records.  Comparing
+this table with `mode_le_witness_table` is the point: the verdict lattice
+has `ok ≤ unknown` and `may_fail ≤ unknown`, the commitment order has no
+counterpart, and `nondeterministic` versus `unknown` is open in both
+directions (`det_analysis.pl:294-321`).  The `false` cells are witness
+rejections, not non-derivability claims. -/
+theorem verdict_le_witness_table (a b : Multiplicity) :
+    checkRaw checked (verdictLe (verdictPattern a) (verdictPattern b))
+      (verdictLeWitness a b) = a.verdictLe b := by
+  cases a <;> cases b <;>
+  simp [Multiplicity.verdictLe, verdictPattern, verdictLeWitness,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+/-- The cells on which the verdict lattice realizes the multiplicity join.
+Both cells joining `nondeterministic` with `unknown` are excluded: those
+are the two final rank-2 verdicts, incomparable by design, so the
+presentation's `VerdictJoin` has no rule that reaches their join. -/
+private def verdictJoinRealized : Multiplicity → Multiplicity → Bool
+  | .exactlyOnce, .exactlyOnce => true
+  | .exactlyOnce, .atMostOnce => true
+  | .exactlyOnce, .unrestricted => true
+  | .exactlyOnce, .undeclared => true
+  | .atMostOnce, .exactlyOnce => true
+  | .atMostOnce, .atMostOnce => true
+  | .atMostOnce, .unrestricted => true
+  | .atMostOnce, .undeclared => true
+  | .unrestricted, .exactlyOnce => true
+  | .unrestricted, .atMostOnce => true
+  | .unrestricted, .unrestricted => true
+  | .unrestricted, .undeclared => false
+  | .undeclared, .exactlyOnce => true
+  | .undeclared, .atMostOnce => true
+  | .undeclared, .unrestricted => false
+  | .undeclared, .undeclared => true
+
+private def verdictJoinWitness : Multiplicity → Multiplicity → RawProof
+  | .exactlyOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verOk, verOk] }
+        [verdictLeWitness .exactlyOnce .exactlyOnce]
+  | .exactlyOnce, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verOk, verMayFail] }
+        [verdictLeWitness .exactlyOnce .atMostOnce]
+  | .exactlyOnce, .unrestricted =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verOk, verNondet] }
+        [verdictLeWitness .exactlyOnce .unrestricted]
+  | .exactlyOnce, .undeclared =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verOk, verUnknown] }
+        [verdictLeWitness .exactlyOnce .undeclared]
+  | .atMostOnce, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-join-right"
+              arguments := [verMayFail, verOk] }
+        [verdictLeWitness .exactlyOnce .atMostOnce]
+  | .atMostOnce, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verMayFail, verMayFail] }
+        [verdictLeWitness .atMostOnce .atMostOnce]
+  | .atMostOnce, .unrestricted =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verMayFail, verNondet] }
+        [verdictLeWitness .atMostOnce .unrestricted]
+  | .atMostOnce, .undeclared =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verMayFail, verUnknown] }
+        [verdictLeWitness .atMostOnce .undeclared]
+  | .unrestricted, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-join-right"
+              arguments := [verNondet, verOk] }
+        [verdictLeWitness .exactlyOnce .unrestricted]
+  | .unrestricted, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-join-right"
+              arguments := [verNondet, verMayFail] }
+        [verdictLeWitness .atMostOnce .unrestricted]
+  | .unrestricted, .unrestricted =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verNondet, verNondet] }
+        [verdictLeWitness .unrestricted .unrestricted]
+  | .unrestricted, .undeclared =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verNondet, verUnknown] }
+        [verdictLeWitness .unrestricted .undeclared]
+  | .undeclared, .exactlyOnce =>
+      .node { ruleId := ruleId "verdict-join-right"
+              arguments := [verUnknown, verOk] }
+        [verdictLeWitness .exactlyOnce .undeclared]
+  | .undeclared, .atMostOnce =>
+      .node { ruleId := ruleId "verdict-join-right"
+              arguments := [verUnknown, verMayFail] }
+        [verdictLeWitness .atMostOnce .undeclared]
+  | .undeclared, .unrestricted =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verUnknown, verNondet] }
+        [verdictLeWitness .undeclared .unrestricted]
+  | .undeclared, .undeclared =>
+      .node { ruleId := ruleId "verdict-join-left"
+              arguments := [verUnknown, verUnknown] }
+        [verdictLeWitness .undeclared .undeclared]
+
+/-- The law that FAILS, stated as a table rather than hidden.  The
+presentation's `VerdictJoin` realizes `Multiplicity.join` on fourteen of
+the sixteen cells and on neither cell that mixes `nondeterministic` with
+`unknown`: the verdict order is the chain `ok < may_fail` with *two*
+incomparable tops, so it is not a join semilattice and the four-verdict
+carrier is not a multiplicity structure.  The three verdicts that
+`EquationSetMode` certifies — `ok`, `may_fail`, `nondeterministic` — are a
+chain, and that is the sublattice arrow admission actually uses. -/
+theorem verdict_join_realizes_multiplicity_join_off_the_two_tops
+    (a b : Multiplicity) :
+    checkRaw checked
+      (verdictJoin (verdictPattern a) (verdictPattern b)
+        (verdictPattern (a.join b)))
+      (verdictJoinWitness a b) = verdictJoinRealized a b := by
+  cases a <;> cases b <;>
+  simp [Multiplicity.join, verdictPattern, verdictLeWitness,
+    verdictJoinWitness, verdictJoinRealized,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+/-! ### Arrow admission and the cut shape -/
+
+private def equationSetWitness : Multiplicity → RawProof
+  | .exactlyOnce =>
+      .node { ruleId := ruleId "equation-set-ok-det", arguments := [] } []
+  | .atMostOnce =>
+      .node { ruleId := ruleId "equation-set-may-fail-semidet"
+              arguments := [] } []
+  | .unrestricted =>
+      .node { ruleId := ruleId "equation-set-nondet", arguments := [] } []
+  | .undeclared =>
+      .node { ruleId := ruleId "equation-set-ok-det", arguments := [] } []
+
+/-- The canonical `ArrowAdmits` witness: certify the equation set at the
+grade its verdict carries, then weaken to the declaration. -/
+private def arrowAdmitsWitness (d v : Multiplicity) : RawProof :=
+  .node
+    { ruleId := ruleId "arrow-admits"
+      arguments := [modePattern d, verdictPattern v, modePattern v] }
+    [equationSetWitness v, modeLeWitness v d]
+
+/-- Admission, cell by cell: the canonical witness checks exactly when the
+body's verdict is one `EquationSetMode` certifies at all and its grade sits
+at or below the declaration.  `unknown` occupies the `undeclared` row and
+certifies nothing, matching the reference's refusal to assume `det` for
+what it cannot analyze (`det_validate.pl:220-260`,
+`det_proofs.pl:990-1010`).  Six of the sixteen cells are positive, so the
+composition theorem below is not vacuous.  The ten negative cells say the
+canonical witness is rejected, not that no derivation exists. -/
+theorem arrow_admits_witness_table (d v : Multiplicity) :
+    checkRaw checked (arrowAdmits (modePattern d) (verdictPattern v))
+      (arrowAdmitsWitness d v) = (v.declared && v.le d) := by
+  cases d <;> cases v <;>
+  simp [Multiplicity.declared, Multiplicity.le, modePattern, verdictPattern,
+    modeLeWitness, equationSetWitness, arrowAdmitsWitness,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+/-- Admission survives composition — the cut shape.  If a declared mode
+admits a body verdict on the left and another on the right, then their
+verdict join is itself derivable and the same declaration admits it.  Both
+conclusions are checked derivations in the presentation's own judgments,
+obtained from the two tables above; the finite residue is the commitment
+order's closure under the join. -/
+theorem arrow_admits_composes_with_verdict_join (d v₁ v₂ : Multiplicity)
+    (h₁ : checkRaw checked (arrowAdmits (modePattern d) (verdictPattern v₁))
+      (arrowAdmitsWitness d v₁) = true)
+    (h₂ : checkRaw checked (arrowAdmits (modePattern d) (verdictPattern v₂))
+      (arrowAdmitsWitness d v₂) = true) :
+    checkRaw checked
+        (verdictJoin (verdictPattern v₁) (verdictPattern v₂)
+          (verdictPattern (v₁.join v₂)))
+        (verdictJoinWitness v₁ v₂) = true ∧
+      checkRaw checked
+        (arrowAdmits (modePattern d) (verdictPattern (v₁.join v₂)))
+        (arrowAdmitsWitness d (v₁.join v₂)) = true := by
+  rw [arrow_admits_witness_table] at h₁ h₂
+  rw [verdict_join_realizes_multiplicity_join_off_the_two_tops,
+    arrow_admits_witness_table]
+  cases d <;> cases v₁ <;> cases v₂ <;> revert h₁ h₂ <;> decide
+
+/-- A measured instance of the cut: a `-[semidet]->` declaration admits an
+`ok` equation set and a `may_fail` equation set, hence the `may_fail` join. -/
+theorem semidet_arrow_admits_join_of_ok_and_may_fail :
+    checkRaw checked (verdictJoin verOk verMayFail verMayFail)
+        (verdictJoinWitness .exactlyOnce .atMostOnce) = true ∧
+      checkRaw checked (arrowAdmits mSemidet verMayFail)
+        (arrowAdmitsWitness .atMostOnce .atMostOnce) = true :=
+  arrow_admits_composes_with_verdict_join .atMostOnce .exactlyOnce .atMostOnce
+    (by rw [arrow_admits_witness_table]; decide)
+    (by rw [arrow_admits_witness_table]; decide)
+
+/-- Negative control, the determinism conflict: declared `det`, body
+verdict `nondeterministic`.  The canonical witness is rejected.  This is a
+statement about that witness, not about every candidate derivation: the
+witness family produces exactly the file's own `nondetIntoDetCandidate`
+here (see below), so this is the same measured rejection as
+`det_arrow_rejects_nondet_body`, read off the admission table. -/
+theorem det_arrow_admission_witness_fails_on_nondet_body :
+    checkRaw checked (arrowAdmits mDet verNondet)
+      (arrowAdmitsWitness .exactlyOnce .unrestricted) = false :=
+  arrow_admits_witness_table .exactlyOnce .unrestricted
+
+/-- The witness families are the file's authored witnesses, generalized:
+at the relevant grades they are definitionally the hand-written proofs
+above, positive and negative alike. -/
+theorem witness_families_reproduce_the_authored_witnesses :
+    modeJoinWitness .exactlyOnce .atMostOnce = joinDetSemidetProof ∧
+      modeJoinWitness .undeclared .exactlyOnce = joinUnspecProof ∧
+      arrowAdmitsWitness .exactlyOnce .exactlyOnce = detAdmitsProof ∧
+      arrowAdmitsWitness .unrestricted .unrestricted = nondetAdmitsProof ∧
+      arrowAdmitsWitness .exactlyOnce .unrestricted = nondetIntoDetCandidate :=
+  ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+/-! ### Scope of the carrier
+
+`MPlain` and `MEffectVar` are not grades.  Neither appears in any
+`EffectJoin` rule's fixed positions, and `ModeLe` relates them to nothing
+but themselves, so the join reaches them reflexively and no further:
+`EffectJoin MPlain MPlain MPlain` derives by `effect-join-left` over
+`mode-le-refl`, while nothing joins `MPlain` with a grade.  The join is a
+partial operation on the six mode atoms, total on the four grades above.
+The candidates below are measured rejections of the shape the rules would
+have to take there. -/
+
+private def plainJoinCandidate : RawProof :=
+  .node { ruleId := ruleId "effect-join-left", arguments := [mPlain, mDet] }
+    [.node { ruleId := ruleId "mode-le-refl", arguments := [mPlain] } []]
+
+private def effectVarJoinCandidate : RawProof :=
+  .node { ruleId := ruleId "effect-join-left"
+          arguments := [mEffectVar, mDet] }
+    [.node { ruleId := ruleId "mode-le-refl", arguments := [mEffectVar] } []]
+
+private def nondetUnspecifiedLeCandidate : RawProof :=
+  .node { ruleId := ruleId "mode-le-refl", arguments := [mNondet] } []
+
+private def nondetUnknownJoinCandidate : RawProof :=
+  .node { ruleId := ruleId "verdict-join-right"
+          arguments := [verNondet, verUnknown] }
+    [.node { ruleId := ruleId "verdict-le-refl", arguments := [verUnknown] } []]
+
+/-- The uncommitted arrow and the effect variable are outside the join
+carrier: the join rules demand a `ModeLe` premise they cannot supply. -/
+theorem plain_and_effect_var_are_outside_the_join_carrier :
+    checkRaw checked (effectJoin mPlain mDet mDet) plainJoinCandidate = false ∧
+      checkRaw checked (effectJoin mEffectVar mDet mDet)
+        effectVarJoinCandidate = false := by
+  refine ⟨?_, ?_⟩ <;>
+  simp [plainJoinCandidate, effectVarJoinCandidate,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
+    exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
+    mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
+    hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,
+    dCons, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata,
+    Pattern.hasCanonicalBinderMetadataList]
+
+/-- Two measured rejections behind the two order gaps: the commitment
+order does not climb to `unspecified`, and the verdict order does not
+relate the two rank-2 verdicts in either direction — the second
+`VerdictJoin` root rule fails at that cell just as the first one does in
+`verdict_join_realizes_multiplicity_join_off_the_two_tops`. -/
+theorem order_gaps_at_unspecified_and_at_the_two_tops :
+    checkRaw checked (modeLe mNondet mUnspecified)
+        nondetUnspecifiedLeCandidate = false ∧
+      checkRaw checked (verdictJoin verNondet verUnknown verUnknown)
+        nondetUnknownJoinCandidate = false := by
+  refine ⟨?_, ?_⟩ <;>
+  simp [nondetUnspecifiedLeCandidate, nondetUnknownJoinCandidate,
+    checkRaw, checkRawChildren, checked, definition,
+    modeLeRefl, modeLeDetSemidet, modeLeSemidetNondet, modeLeDetNondet,
+    committedDet, committedSemidet, effectJoinUnspecLeft,
+    effectJoinUnspecRight, effectJoinLeft, effectJoinRight,
+    modeInstanceVar, modeInstanceRefl, overloadAggRefl,
+    overloadAggDetSemidet, overloadAggSemidetDet,
+    conflictCommittedNondetRight, conflictCommittedNondetLeft,
+    verdictLeRefl, verdictLeOkMayFail, verdictLeMayFailNondet,
+    verdictLeOkNondet, verdictLeMayFailUnknown, verdictLeOkUnknown,
+    verdictJoinLeft, verdictJoinRight, modeVerdictDet, modeVerdictSemidet,
+    modeVerdictNondet, modeVerdictPlain, bodyCollapse, bodySuperpose,
+    bodyEval, bodyOnceOk, bodyOnceMayFail, bodyOnceNondet,
+    bodyOnceUnknown, bodySeq, bodyCall, equationSetOkDet,
+    equationSetMayFailSemidet, equationSetNondet, arrowAdmitsRule,
+    overlapVarLeft, overlapVarRight, overlapEqual, overlapPair,
+    coversHereVar, coversHereMatch, coversThere, exhaustiveBoolRule,
+    instantiateRule?, CalculusLanguageDef.lookupRule?, argumentsValidAt,
+    argumentValidAt, RuleSchema.sideConditionsHold, instantiateSchema?,
+    instantiateSchemaAt?, instantiateSchemas?, instantiateSchemasAt?,
+    lookupArgumentAt?, modeLe, committed, effectJoin, modeInstance,
+    overloadAgg, conflictingDecls, verdictLe, verdictJoin, modeVerdict,
+    bodyVerdict, equationSetMode, arrowAdmits, overlapHeads, covers,
     exhaustiveBool, mPlain, mDet, mSemidet, mNondet, mUnspecified,
     mEffectVar, verOk, verMayFail, verNondet, verUnknown, hVarHead, hTrue,
     hFalse, hPair, bCollapse, bSuperpose, bEval, bOnce, bSeq, bCall,

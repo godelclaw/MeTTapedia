@@ -27,21 +27,21 @@ def lambdaValidatedLanguageDef : ValidatedLanguageDef :=
   ⟨lambdaCalc, lambdaCalc_validate_eq_nil⟩
 
 /-- The sole lambda sort selected from the authored presentation. -/
-def lambdaTermSort : AuthoredSort lambdaValidatedLanguageDef :=
+def lambdaTermSort : DeclaredSort lambdaValidatedLanguageDef :=
   ⟨lambdaCalc.types[0], List.getElem_mem (by simp [lambdaCalc])⟩
 
 /-- Authored binary application. -/
 def lambdaApplicationConstructor :
-    AuthoredConstructor lambdaValidatedLanguageDef :=
+    DeclaredConstructor lambdaValidatedLanguageDef :=
   ⟨lambdaCalc.terms[0], List.getElem_mem (by simp [lambdaCalc])⟩
 
 /-- Authored abstraction. -/
 def lambdaAbstractionConstructor :
-    AuthoredConstructor lambdaValidatedLanguageDef :=
+    DeclaredConstructor lambdaValidatedLanguageDef :=
   ⟨lambdaCalc.terms[1], List.getElem_mem (by simp [lambdaCalc])⟩
 
 /-- The authored beta rule. -/
-def lambdaBetaRewrite : AuthoredRewrite lambdaValidatedLanguageDef :=
+def lambdaBetaRewrite : DeclaredRewrite lambdaValidatedLanguageDef :=
   ⟨lambdaCalc.rewrites[0], List.getElem_mem (by simp [lambdaCalc])⟩
 
 /-- Application is the exact binary contact of the lambda presentation. -/
@@ -66,7 +66,8 @@ def lambdaExecutionProfile :
 
 /-- The lambda presentation as an iGSLT. -/
 def lambdaIGSLT : IGSLT :=
-  ⟨lambdaInteractivePresentation, lambdaExecutionProfile⟩
+  ⟨lambdaInteractivePresentation, lambdaExecutionProfile,
+    isBaseRewrite_of_premises_eq_nil rfl⟩
 
 /-- The abstraction side of beta is introduced by `Lam`; its body is the
 selected program continuation. -/
@@ -119,7 +120,10 @@ def lambdaInteractionCut : InteractionCutPresentation lambdaIGSLT where
       intro equality
       have labels := congrArg (fun constructor => constructor.1.label) equality
       simp [lambdaProgramOperand, lambdaAbstractionConstructor,
-        lambdaCoreContact, lambdaApplicationConstructor, lambdaCalc] at labels)
+        lambdaCoreContact, lambdaApplicationConstructor, lambdaCalc,
+        List.getElem_cons] at labels
+      change "Lam" = "App" at labels
+      exact (by decide : ("Lam" : String) ≠ "App") labels)
   environmentPlacement := .direct rfl rfl rfl rfl
   sourceShape :=
     { core := lambdaCalc.rewrites[0].left
@@ -222,9 +226,9 @@ theorem lambdaContextualSection_toCanonical :
 
 /-- Substitution is covered directly, so beta needs no residual constructor
 in the hereditary continuation closure. -/
-def lambdaContinuationRetyping :
-    ContinuationRetypingPlan lambdaInteractionCut where
-  residualCovered := trivial
+theorem lambdaContinuationRetyping :
+    ContinuationRetypingPlan lambdaInteractionCut :=
+  ⟨trivial⟩
 
 /-- Lambda's identity open canonicalizer preserves the exact non-principal
 constructor fragment selected by its interaction cut. -/
@@ -266,33 +270,35 @@ theorem lambda_costBaseApplication_params :
     (costBaseConstructor lambdaInteractionCut lambdaCalc.terms[0]).params =
       [.simple "f" (.base (costBaseSortName "Term")),
         .simple "a" (.base costWrappedSortName)] := by
-  simp [costBaseConstructor, costBaseParameter, isSelectedContinuation,
+  simp [costBaseConstructor_def, costBaseParameter_def, isSelectedContinuation,
     lambdaCalc, lambdaIGSLT, lambdaInteractivePresentation, lambdaTermSort,
     lambdaValidatedLanguageDef, lambdaInteractionCut, lambdaProgramOperand,
     lambdaEnvironmentOperand, lambdaApplicationConstructor,
     lambdaAbstractionConstructor, mapParameterType, costBaseTypeExpr,
-    costWrappedTypeExpr, TypeDecl.plain]
+    costWrappedTypeExpr, TypeDecl.plain, List.getElem_cons]
+  decide +kernel
 
 @[simp]
 theorem lambda_costBaseAbstraction_params :
     (costBaseConstructor lambdaInteractionCut lambdaCalc.terms[1]).params =
       [.abstraction "body"
         (.arrow (.base costWrappedSortName) (.base costWrappedSortName))] := by
-  simp [costBaseConstructor, costBaseParameter, isSelectedContinuation,
+  simp [costBaseConstructor_def, costBaseParameter_def, isSelectedContinuation,
     lambdaCalc, lambdaIGSLT, lambdaInteractivePresentation, lambdaTermSort,
     lambdaValidatedLanguageDef, lambdaInteractionCut, lambdaProgramOperand,
     lambdaEnvironmentOperand, lambdaApplicationConstructor,
     lambdaAbstractionConstructor, mapParameterType,
-    costWrappedTypeExpr, TypeDecl.plain]
+    costWrappedTypeExpr, TypeDecl.plain, List.getElem_cons]
+  decide +kernel
 
 /-- The translated beta source is sorted after the direct argument and
 abstraction body are moved into the wrapped fiber. -/
 theorem lambdaContinuationRetyping_redexRetypable :
     lambdaContinuationRetyping.RedexRetypable := by
-  unfold ContinuationRetypingPlan.RedexRetypable
+  rw [ContinuationRetypingPlan.redexRetypable_def]
   simp [lambdaIGSLT, lambdaInteractivePresentation, lambdaBetaRewrite,
-    lambdaTermSort, lambdaValidatedLanguageDef, lambdaCalc, mapPattern,
-    costBasePresentationSymbols, TypeDecl.plain]
+    lambdaTermSort, lambdaValidatedLanguageDef, lambdaCalc,
+    costBaseLanguageDefSymbolMap, TypeDecl.plain]
   apply HasType.constructor
       (rule := costBaseConstructor lambdaInteractionCut lambdaCalc.terms[0])
   · have membership : lambdaCalc.terms[0] ∈
@@ -332,7 +338,7 @@ theorem lambdaContinuationRetyping_redexRetypable :
 continuation signature. -/
 theorem lambdaContinuationRetyping_wrappable :
     lambdaContinuationRetyping.Wrappable := by
-  unfold ContinuationRetypingPlan.Wrappable
+  rw [ContinuationRetypingPlan.wrappable_def]
   change HasType lambdaContinuationRetyping.generatedLanguage
     lambdaContinuationRetyping.generatedFreeContext []
     (.subst (.fvar "body") (.fvar "arg"))

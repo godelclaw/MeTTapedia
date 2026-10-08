@@ -1,7 +1,7 @@
 /-
 # Fuel convergence, applied to LeaTTa's `interpretFuel`
 
-`Mettapedia.Languages.MeTTa.HE.FuelConvergence` supplies the abstract notion
+`Mettapedia.Logic.Function.EventualStability` supplies the abstract notion
 that replaces the FALSE "more fuel yields a superset" monotonicity: a
 fuel-indexed family is well behaved when it is eventually constant
 (`StableFrom` / `Converges`).  This module instantiates that abstraction at
@@ -59,13 +59,13 @@ hypothesis here instead of being smuggled in as a lemma.
 `converges_interpretFuel_pending` discharges it for a concrete unfinished
 item, so the step lemma is demonstrably usable and not merely well typed.
 -/
-import Mettapedia.Languages.MeTTa.HE.FuelConvergence
+import Mettapedia.Logic.Function.EventualStability
 import MettaHyperonFull.Minimal.Interpreter
 import MettaHyperonFull.Proofs.Substitution
 
 namespace Mettapedia.Languages.MeTTa.HE.FuelConvergenceInterpreter
 
-open Mettapedia.Languages.MeTTa.HE.FuelConvergence
+open Mettapedia.Logic.Function.EventualStability
 open Metta (Atom Bindings)
 open Metta.Minimal
 
@@ -303,7 +303,8 @@ theorem interpretFuel_pending_one :
   rw [interpretFuel_succ_of witnessEnv 0 St.init St.init pendingItem []
         [pendingFinished] [] (interpretStack1_pendingItem 0),
       interpretFuel_allFinal witnessEnv _ (by simp [pendingFinished_isFinal]) 0 St.init _]
-  simp [pendingFinished, isFinal, finalPair, emptyA, Metta.instantiate_nil]
+  simp [pendingFinished, isFinal, finalPair, emptyA, Metta.instantiate_nil,
+    List.filter_cons]
   rfl
 
 /-- Fuel is observable on an unfinished queue: budgets `0` and `1` disagree. -/

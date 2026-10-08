@@ -19,6 +19,7 @@ compressed proofs share one chronology-preserving authority.
 
 namespace Mettapedia.Languages.Metamath.DatabaseNIKAuthority
 
+open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.CheckedSource
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
@@ -32,7 +33,7 @@ open Mettapedia.Languages.Metamath.InferenceSourceAdmission
 
 def verifiedB (sourceBytes : ByteArray) : Bool :=
   let database := Metamath.Verify.checkBytes sourceBytes
-    Metamath.Verify.ModeConfig.soundDefault
+    Metamath.Verify.ModeConfig.sound
   database.error?.isNone && database.incompleteProofs.isEmpty
 
 /-- Exact executable scope: accepted syntax and proof checking, with no `?`
@@ -44,7 +45,7 @@ theorem verified_iff (sourceBytes : ByteArray) :
     Verified sourceBytes <->
       let database :=
         Metamath.Verify.checkBytes sourceBytes
-          Metamath.Verify.ModeConfig.soundDefault
+          Metamath.Verify.ModeConfig.sound
       database.error? = none /\ database.incompleteProofs.isEmpty = true := by
   simp [Verified, verifiedB, Bool.and_eq_true, Option.isNone_iff_eq_none]
 
@@ -55,10 +56,10 @@ newly inserted theorem. -/
 def StoredAssertionsHaveOrigins (sourceBytes : ByteArray) : Prop :=
   let database :=
     Metamath.Verify.checkBytes sourceBytes
-      Metamath.Verify.ModeConfig.soundDefault
+      Metamath.Verify.ModeConfig.sound
   forall name formula frame label,
     database.find? name = some (.assert formula frame label) ->
-      Metamath.PrefixWitnessCheckBytes.StrongNewAssertCertificate
+      Metamath.PrefixProvability.Checker.StrongNewAssertCertificate
         name formula frame label
 
 theorem verified_implies_storedAssertionsHaveOrigins
@@ -67,14 +68,14 @@ theorem verified_implies_storedAssertionsHaveOrigins
   intro verified
   have success :
       (Metamath.Verify.checkBytes sourceBytes
-        Metamath.Verify.ModeConfig.soundDefault).error? =
+        Metamath.Verify.ModeConfig.sound).error? =
         none :=
     (verified_iff sourceBytes).mp verified |>.1
   intro name formula frame label found
   exact
-    Metamath.PrefixWitnessCheckBytes.checkBytes_new_assert_strong_classified
-      sourceBytes Metamath.Verify.ModeConfig.soundDefault
-      Metamath.Verify.ModeConfig.soundDefault_prefixCertified
+    Metamath.PrefixProvability.Checker.checkBytes_new_assert_strong_classified
+      sourceBytes Metamath.Verify.ModeConfig.sound
+      Metamath.Verify.ModeConfig.isSound_sound
       name formula frame label success found
 
 def checker : Checker ByteArray Unit where
@@ -95,7 +96,7 @@ theorem checker_authority : checker.Authority Verified where
 
 /-! ## Compiled inference-knowledge projection -/
 
-/-- Stable identity of the Metamath-to-inference-presentation projection.
+/-- Stable identity of the Metamath-to-calculus-language projection.
 The source digest is supplied by `SourceMetadata.identityFor`; callers do not
 supply rules or declarations. -/
 def knowledgeMetadata : SourceMetadata :=
@@ -111,25 +112,25 @@ def knowledgeMetadata : SourceMetadata :=
 /-- The exact checked-source package expected from one successful V1
 normalization. -/
 def generatedKnowledgeSourceV1 (sourceBytes : ByteArray)
-    (presentation : ValidatedPresentation) : GSLTSource :=
+    (definition : ValidatedCalculusLanguageDef) : GSLTSource :=
   { identity := knowledgeMetadata.identityFor sourceBytes
     assumptions := knowledgeMetadata.assumptions
     profiles := knowledgeMetadata.profiles
-    presentation := presentation.1 }
+    definition := definition.1 }
 
 /-- Proof-carrying output of the current normalized inference profile.  Its
-source bytes remain in the type, and both the generated presentation and the
-entire checked package are tied back to those exact bytes. -/
+source bytes remain in the type, and both the generated calculus definition
+and the entire checked package are tied back to those exact bytes. -/
 structure CompiledKnowledgeArtifactV1 (sourceBytes : ByteArray) where
   verified : Verified sourceBytes
-  presentation : ValidatedPresentation
-  presentationGenerated :
+  definition : ValidatedCalculusLanguageDef
+  definitionGenerated :
     projectForMode none
       (Metamath.Verify.checkBytes sourceBytes
-        Metamath.Verify.ModeConfig.soundDefault) = some presentation
+        Metamath.Verify.ModeConfig.sound) = some definition
   checked : CheckedGSLT
   checkedSourceEq :
-    checked.source = generatedKnowledgeSourceV1 sourceBytes presentation
+    checked.source = generatedKnowledgeSourceV1 sourceBytes definition
 
 /-- Recheck the exact source bytes and, when the current normalized inference
 profile is admissible, return a proof-carrying compiled artifact.  Partiality
@@ -141,18 +142,18 @@ def compileKnowledgeArtifactV1? (sourceBytes : ByteArray) :
   if hVerified : verifiedB sourceBytes then
     let database :=
       Metamath.Verify.checkBytes sourceBytes
-        Metamath.Verify.ModeConfig.soundDefault
-    match hPresentation : projectForMode none database with
+        Metamath.Verify.ModeConfig.sound
+    match hDefinition : projectForMode none database with
     | none => none
-    | some presentation =>
-        let source := generatedKnowledgeSourceV1 sourceBytes presentation
+    | some definition =>
+        let source := generatedKnowledgeSourceV1 sourceBytes definition
         match hValidate : source.validate with
         | .error _ => none
         | .ok checked =>
             some
               { verified := hVerified
-                presentation
-                presentationGenerated := hPresentation
+                definition
+                definitionGenerated := hDefinition
                 checked
                 checkedSourceEq := GSLTSource.validate_source_eq hValidate }
   else
@@ -163,23 +164,23 @@ def compileKnowledgeV1? (sourceBytes : ByteArray) : Option CheckedGSLT :=
   (compileKnowledgeArtifactV1? sourceBytes).map
     CompiledKnowledgeArtifactV1.checked
 
-/-- The named compilation observation: the exact normalized presentation
+/-- The named compilation observation: the exact normalized calculus definition
 generated from the verified runtime database. -/
 def knowledgeCompilationObservationV1 (sourceBytes : ByteArray) :
-    Option Presentation :=
+    Option CalculusLanguageDef :=
   (projectForMode none
     (Metamath.Verify.checkBytes sourceBytes
-      Metamath.Verify.ModeConfig.soundDefault)).map
-        (fun presentation => presentation.1)
+      Metamath.Verify.ModeConfig.sound)).map
+        (fun definition => definition.1)
 
 theorem CompiledKnowledgeArtifactV1.preservesCompilationObservation
     {sourceBytes : ByteArray}
     (artifact : CompiledKnowledgeArtifactV1 sourceBytes) :
-    some artifact.checked.source.presentation =
+    some artifact.checked.source.definition =
       knowledgeCompilationObservationV1 sourceBytes := by
   rw [artifact.checkedSourceEq]
   simp [generatedKnowledgeSourceV1, knowledgeCompilationObservationV1,
-    artifact.presentationGenerated]
+    artifact.definitionGenerated]
 
 private def compiledKnowledgeArtifactV1OfAccepted
     (sourceBytes : ByteArray)
@@ -197,7 +198,7 @@ def compiledKnowledgeV1PartialRealization :
     PartialRealization (Base := ByteArray)
       (fun _ => Unit)
       (fun sourceBytes => CompiledKnowledgeArtifactV1 sourceBytes)
-      (fun _ => Option Presentation) where
+      (fun _ => Option CalculusLanguageDef) where
   accepts := fun sourceBytes _ =>
     (compileKnowledgeArtifactV1? sourceBytes).isSome
   compile := fun sourceBytes _ accepted =>
@@ -205,14 +206,14 @@ def compiledKnowledgeV1PartialRealization :
   observeSource := fun sourceBytes _ =>
     knowledgeCompilationObservationV1 sourceBytes
   observeArtifact := fun _ artifact =>
-    some artifact.checked.source.presentation
+    some artifact.checked.source.definition
   adequate := by
     intro sourceBytes source accepted
     exact
       (compiledKnowledgeArtifactV1OfAccepted sourceBytes accepted).preservesCompilationObservation
 
 /-- Exact scope of the compiled-knowledge profile: the database is fully
-verified and the same bytes generate one admitted inference presentation.
+verified and the same bytes generate one admitted inference definition.
 This is a realization claim, not a second Metamath semantics. -/
 def CompiledKnowledgeV1 (sourceBytes : ByteArray) : Prop :=
   Verified sourceBytes /\

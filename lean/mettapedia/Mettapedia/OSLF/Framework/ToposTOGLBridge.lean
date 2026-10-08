@@ -1,7 +1,7 @@
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.ToposReduction
 import Mettapedia.OSLF.Framework.BeckChevalleyOSLF
-import Mettapedia.OSLF.NativeType.Construction
+import Mettapedia.OSLF.PresheafNativeType.PresheafSemantics
 
 /-!
 # Topos/Internal-Language and TOGL Graph Bridge Endpoints
@@ -20,6 +20,8 @@ open CategoryTheory
 open Opposite
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Engine
+open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+open Mettapedia.OSLF.Framework.TypeSynthesis
 
 universe u v
 
@@ -33,14 +35,16 @@ theorem topos_internal_language_bridge_package
     (seed : Pattern) (φ ψ : Pattern → Prop)
     (hφ : Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality lang s seed φ)
     (hψ : Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality lang s seed ψ)
+    (hφInvariant : EquationInvariant (langGSLT lang) φ)
     {X : Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)}
     (h : (Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang s).obj X)
-    (χ : Pattern → Prop) (p : Pattern) :
+    (χ : EquationPredicate (langGSLT lang)) (p : Pattern) :
     (h ∈ (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
         lang s seed φ hφ).obj X
       ↔
       (Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
-        (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed) φ)
+        (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
+        (invariantPredicate (langGSLT lang) φ hφInvariant))
     ∧
     (∃ hAnd hOr,
       (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_characteristicEquiv
@@ -86,7 +90,7 @@ theorem topos_internal_language_bridge_package
             (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
             Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).source.app X e).down = p
           ∧
-        χ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
+        χ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
           Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).target.app X e).down))
     ∧
@@ -100,14 +104,15 @@ theorem topos_internal_language_bridge_package
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
             (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
             Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).target.app X e).down = p →
-        χ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
+        χ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
           Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).source.app X e).down)) := by
   refine ⟨?_, ?_, ?_, ?_⟩
-  · simpa using
-      Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_mem_iff_satisfies
-        (lang := lang) (procSort := procSort)
-        (s := s) (seed := seed) (φ := φ) (hNat := hφ) (h := h)
+  · change h ∈ (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
+        lang s seed φ hφ).obj X ↔
+      φ (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
+    exact Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred_mem_iff
+      lang s seed φ hφ h
   · exact Mettapedia.OSLF.Framework.CategoryBridge.languageSort_conj_disj_topos_package
       lang s seed φ ψ hφ hψ
   · simpa using
@@ -135,27 +140,29 @@ explicitly (via the scoped full-route package), together with the canonical
 fiber/graph bridge facts. -/
 theorem topos_internal_language_full_route_family
     (lang : LanguageDef) (procSort : String := "Proc")
-    (A : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang)
-    {B C : Mettapedia.OSLF.NativeType.ScopedConstructorPred lang}
-    (f : Mettapedia.OSLF.NativeType.ScopedConstructorPredHom lang A B)
-    (g : Mettapedia.OSLF.NativeType.ScopedConstructorPredHom lang B C)
+    (A : Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPred lang)
+    (hAInvariant : EquationInvariant (langGSLT lang) A.pred)
+    {B C : Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPred lang}
+    (f : Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom lang A B)
+    (g : Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom lang B C)
     (ψ : Pattern → Prop)
     (hψ : Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality
       lang A.sort A.seed ψ)
     {X : Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)}
     (h : (Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang A.sort).obj X)
-    (χ : Pattern → Prop) (p : Pattern) :
-    Mettapedia.OSLF.NativeType.FullRouteRestrictionEquivalence lang A
+    (χ : EquationPredicate (langGSLT lang)) (p : Pattern) :
+    Mettapedia.OSLF.PresheafNativeType.FullRouteRestrictionEquivalence lang A
     ∧
-    (Mettapedia.OSLF.NativeType.ScopedConstructorPredHom.comp f g).toFullGrothHom =
-      Mettapedia.OSLF.NativeType.FullPresheafGrothendieckHom.comp
+    (Mettapedia.OSLF.PresheafNativeType.ScopedConstructorPredHom.comp f g).toFullGrothHom =
+      Mettapedia.OSLF.PresheafNativeType.FullPresheafGrothendieckHom.comp
         f.toFullGrothHom g.toFullGrothHom
     ∧
     (h ∈ (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_ofPatternPred
       lang A.sort A.seed A.pred A.naturality).obj X
       ↔
       (Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
-        (S := A.sort.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h A.seed) A.pred)
+        (S := A.sort.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h A.seed)
+        (invariantPredicate (langGSLT lang) A.pred hAInvariant))
     ∧
     (∃ hAnd hOr,
       (Mettapedia.OSLF.Framework.CategoryBridge.languageSortFiber_characteristicEquiv
@@ -201,7 +208,7 @@ theorem topos_internal_language_full_route_family
             (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
             Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).source.app X e).down = p
           ∧
-        χ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
+        χ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
           Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).target.app X e).down))
     ∧
@@ -215,16 +222,17 @@ theorem topos_internal_language_full_route_family
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
             (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
             Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).target.app X e).down = p →
-        χ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
+        χ.1 (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)
           Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty lang).source.app X e).down)) := by
-  rcases Mettapedia.OSLF.NativeType.full_route_restriction_equivalence_package
+  rcases Mettapedia.OSLF.PresheafNativeType.full_route_restriction_equivalence_package
       (A := A) f g with ⟨hRestr, hComp⟩
   rcases topos_internal_language_bridge_package
       (lang := lang) (procSort := procSort)
       (s := A.sort) (seed := A.seed)
       (φ := A.pred) (ψ := ψ)
       (hφ := A.naturality) (hψ := hψ)
+      (hφInvariant := hAInvariant)
       (X := X) h χ p with
     ⟨hMem, hConjDisj, hDia, hBox⟩
   exact ⟨hRestr, hComp, hMem, hConjDisj, hDia, hBox⟩
@@ -237,8 +245,8 @@ theorem togl_graph_modal_bridge_package
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (χ : Pattern → Prop) (p : Pattern) :
-    ((∃ q, Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q ∧ χ q)
+    (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
+    ((∃ q, Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q ∧ χ q)
       ↔
       ∃ e :
         (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
@@ -249,7 +257,7 @@ theorem togl_graph_modal_bridge_package
         χ (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := C) relEnv lang).target.app X e).down))
     ∧
-    ((∀ q, Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang q p → χ q)
+    ((∀ q, Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang q p → χ q)
       ↔
       ∀ e :
         (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
@@ -282,7 +290,7 @@ theorem togl_internal_graph_correspondence_layer
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (χ : Pattern → Prop) (p : Pattern) :
+    (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
     ((∃ q,
         (((ULift.up (p, q)) :
             (Mettapedia.OSLF.Framework.ToposReduction.pairConstPresheaf (C := C)).obj X) ∈
@@ -322,7 +330,7 @@ theorem togl_internal_graph_correspondence_layer
             (Mettapedia.OSLF.Framework.ToposReduction.reductionSubfunctorUsing
               (C := C) relEnv lang).obj X) ∧ χ q)
         ↔
-      (∃ q, Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q ∧ χ q) := by
+      (∃ q, Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q ∧ χ q) := by
     exact
       (Mettapedia.OSLF.Framework.ToposReduction.langDiamondUsing_iff_exists_internalStep
         (C := C) (relEnv := relEnv) (lang := lang) (X := X) (φ := χ) (p := p)).symm.trans
@@ -335,7 +343,7 @@ theorem togl_internal_graph_correspondence_layer
               (C := C) relEnv lang).obj X) →
           χ q)
         ↔
-      (∀ q, Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang q p → χ q) := by
+      (∀ q, Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang q p → χ q) := by
     exact
       (Mettapedia.OSLF.Framework.ToposReduction.langBoxUsing_iff_forall_internalStep
         (C := C) (relEnv := relEnv) (lang := lang) (X := X) (φ := χ) (p := p)).symm.trans
@@ -352,7 +360,7 @@ theorem togl_graph_algebra_reductionGraphObj_family
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (χ : Pattern → Prop) (p q : Pattern) :
+    (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p q : Pattern) :
     ((∃ e :
         (Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := C) relEnv lang).Edge.obj X,
@@ -362,7 +370,7 @@ theorem togl_graph_algebra_reductionGraphObj_family
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
             (C := C) relEnv lang).target.app X e).down = q)
       ↔
-      Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q)
+      Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q)
     ∧
     (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ p
       ↔
@@ -435,22 +443,22 @@ theorem togl_graph_composition_reductionGraphObj_family
     graphChain2 (lang := lang) (relEnv := relEnv) (C := C) (X := X) p r
       ↔
     ∃ q,
-      Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q
+      Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q
       ∧
-      Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang q r := by
+      Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang q r := by
   constructor
   · rintro ⟨e₁, e₂, hs₁, hlink, ht₂⟩
     let q : Pattern :=
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
         (C := C) relEnv lang).target.app X e₁).down
     have hpq :
-        Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q := by
+        Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q := by
       exact
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := C) relEnv lang).edge_endpoints_iff
             (X := X) (p := p) (q := q)).1 ⟨e₁, hs₁, rfl⟩
     have hqr :
-        Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang q r := by
+        Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang q r := by
       exact
         ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphObjUsing
           (C := C) relEnv lang).edge_endpoints_iff
@@ -474,17 +482,17 @@ theorem togl_graph_composition_diamond_family
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (χ : Pattern → Prop) (p : Pattern) :
+    (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
     Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
       relEnv lang
-      (fun q => Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ q) p
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ) p
       ↔
     ∃ r, graphChain2 (lang := lang) (relEnv := relEnv) (C := C) (X := X) p r ∧ χ r := by
   constructor
   · intro h
     rcases (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing_spec
       relEnv lang
-      (fun q => Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ q)
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ)
       p).1 h with ⟨q, hpq, hDiaQ⟩
     rcases (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing_spec
       relEnv lang χ q).1 hDiaQ with ⟨r, hqr, hχ⟩
@@ -504,19 +512,19 @@ theorem togl_graph_composition_diamond_family
         relEnv lang χ q).2 ⟨r, hqr, hχ⟩
     exact (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing_spec
       relEnv lang
-      (fun q => Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ q)
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang χ)
       p).2 ⟨q, hpq, hDiaQ⟩
 
 /-! ## Full Internal Logic Package (NTT Proposition 19)
 
 The fiber over each presheaf sort has complete Heyting algebra structure via
-the `Frame` instance on `NatTypeFiber`. This section packages the full internal
+the `Frame` instance on `NativeTypeFiber`. This section packages the full internal
 logic (⊤/⊥/∧/∨/→/¬) together with the topos bridge and Π/Σ type formation
 rules from NativeType, closing the paper-parity gap for M3.
 -/
 
 /-- Full internal logic package for the topos bridge:
-bundles fiber ⊤/⊥/∧/∨ membership, the NatTypeFiber Frame structure
+bundles fiber ⊤/⊥/∧/∨ membership, the NativeTypeFiber Frame structure
 (providing → and ¬), and generic Π/Σ type-formation bounds via NativeType
 operations (at the abstract fiber level, under a `types.Nonempty` guard),
 together with the existing graph-object characterizations.
@@ -537,12 +545,12 @@ theorem topos_full_internal_logic_bridge_package
     -- ⊤ (top predicate always satisfies)
     ((Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
         (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
-        (fun _ => True))
+        (⊤ : EquationPredicate (langGSLT lang)))
     ∧
     -- ⊥ (bot predicate never satisfies)
     (¬ (Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
         (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
-        (fun _ => False))
+        (⊥ : EquationPredicate (langGSLT lang)))
     ∧
     -- ∧/∨ internalization (from existing conj/disj package)
     (∃ hAnd hOr,
@@ -562,16 +570,16 @@ theorem topos_full_internal_logic_bridge_package
             (φ (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang k seed)
               ∨ ψ (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang k seed))))
     ∧
-    -- Frame structure on NatTypeFiber: →/¬ are available from Heyting algebra
+    -- Frame structure on NativeTypeFiber: →/¬ are available from Heyting algebra
     (∀ (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
-        (S : L.Obj) (a b : Mettapedia.OSLF.NativeType.NatTypeFiber L S),
+        (S : L.Obj) (a b : Mettapedia.OSLF.PresheafNativeType.NativeTypeFiber L S),
         a ⊓ (a ⇨ b) ≤ b)
     ∧
     -- Π/Σ type formation rules are available from NativeType Frame fibers
     (∀ (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
         (S : L.Obj) (types : Set (L.fibration.Sub S)) (_ : types.Nonempty),
-        Mettapedia.OSLF.NativeType.piType L S types ≤ sSup types
-        ∧ sInf types ≤ Mettapedia.OSLF.NativeType.sigmaType L S types) := by
+        Mettapedia.OSLF.PresheafNativeType.piType L S types ≤ sSup types
+        ∧ sInf types ≤ Mettapedia.OSLF.PresheafNativeType.sigmaType L S types) := by
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · -- ⊤: top predicate trivially satisfies (satisfies = function application)
     trivial
@@ -607,11 +615,11 @@ theorem topos_full_internal_logic_piSigma_rule_package
     (h : (Mettapedia.OSLF.Framework.CategoryBridge.languageSortRepresentableObj lang s).obj X) :
     ((Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
         (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
-        (fun _ => True))
+        (⊤ : EquationPredicate (langGSLT lang)))
     ∧
     (¬ (Mettapedia.OSLF.Framework.TypeSynthesis.langOSLF lang procSort).satisfies
         (S := s.val) (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang h seed)
-        (fun _ => False))
+        (⊥ : EquationPredicate (langGSLT lang)))
     ∧
     (∃ hAnd hOr,
       (∀ {Y : Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)}
@@ -631,24 +639,24 @@ theorem topos_full_internal_logic_piSigma_rule_package
               ∨ ψ (Mettapedia.OSLF.Framework.ConstructorCategory.pathSem lang k seed))))
     ∧
     (∀ (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
-        (S : L.Obj) (a b : Mettapedia.OSLF.NativeType.NatTypeFiber L S),
+        (S : L.Obj) (a b : Mettapedia.OSLF.PresheafNativeType.NativeTypeFiber L S),
         a ⊓ (a ⇨ b) ≤ b)
     ∧
     (∀ (L : Mettapedia.CategoryTheory.LambdaTheories.LambdaTheory)
         (S : L.Obj) (types : Set (L.fibration.Sub S)),
         (∀ {τ : L.fibration.Sub S}, τ ∈ types →
-          Mettapedia.OSLF.NativeType.piType L S types ≤ τ)
+          Mettapedia.OSLF.PresheafNativeType.piType L S types ≤ τ)
         ∧
         (∀ {χ : L.fibration.Sub S},
           (∀ τ ∈ types, χ ≤ τ) →
-            χ ≤ Mettapedia.OSLF.NativeType.piType L S types)
+            χ ≤ Mettapedia.OSLF.PresheafNativeType.piType L S types)
         ∧
         (∀ {τ : L.fibration.Sub S}, τ ∈ types →
-          τ ≤ Mettapedia.OSLF.NativeType.sigmaType L S types)
+          τ ≤ Mettapedia.OSLF.PresheafNativeType.sigmaType L S types)
         ∧
         (∀ {χ : L.fibration.Sub S},
           (∀ τ ∈ types, τ ≤ χ) →
-            Mettapedia.OSLF.NativeType.sigmaType L S types ≤ χ)) := by
+            Mettapedia.OSLF.PresheafNativeType.sigmaType L S types ≤ χ)) := by
   refine ⟨?_, ?_, ?_, ?_, ?_⟩
   · trivial
   · exact not_false
@@ -660,13 +668,13 @@ theorem topos_full_internal_logic_piSigma_rule_package
   · intro L S types
     refine ⟨?_, ?_, ?_, ?_⟩
     · intro τ hτ
-      exact Mettapedia.OSLF.NativeType.pi_beta (L := L) S types hτ
+      exact Mettapedia.OSLF.PresheafNativeType.pi_beta (L := L) S types hτ
     · intro χ hχ
-      exact Mettapedia.OSLF.NativeType.pi_eta (L := L) S types hχ
+      exact Mettapedia.OSLF.PresheafNativeType.pi_eta (L := L) S types hχ
     · intro τ hτ
-      exact Mettapedia.OSLF.NativeType.sigma_beta (L := L) S types hτ
+      exact Mettapedia.OSLF.PresheafNativeType.sigma_beta (L := L) S types hτ
     · intro χ hχ
-      exact Mettapedia.OSLF.NativeType.sigma_eta (L := L) S types hχ
+      exact Mettapedia.OSLF.PresheafNativeType.sigma_eta (L := L) S types hχ
 
 /-- OSLF-facing Topos endpoint exposing the canonical representable Π/Σ
 transport pack routed through Prop-12 predicate-fibration rules. -/
@@ -676,7 +684,7 @@ theorem topos_representable_patternPred_piSigma_transport_pack_via_rulePack
     (hNat : Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality
       lang s seed φ)
     (hPiSigmaPack :
-      Mettapedia.OSLF.NativeType.PiSigmaPredicateRulePack.{0, 0, 0}
+      Mettapedia.OSLF.PresheafNativeType.PiSigmaPredicateRulePack.{0, 0, 0}
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
     {D : CategoryTheory.Functor
       (Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)) Type}
@@ -702,10 +710,11 @@ theorem topos_representable_patternPred_piSigma_transport_pack_via_prop12
       (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat) (f := f) := by
   exact topos_representable_patternPred_piSigma_transport_pack_via_rulePack
     (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
-    (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+    (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
       (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
     (f := f)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- OSLF-facing Topos endpoint consuming the canonical representable Π/Σ
 transport pack and returning the paired Σ/Π transport equivalences. -/
 theorem topos_representable_patternPred_piSigma_transport_via_rulePack
@@ -714,7 +723,7 @@ theorem topos_representable_patternPred_piSigma_transport_via_rulePack
     (hNat : Mettapedia.OSLF.Framework.CategoryBridge.languageSortPredNaturality
       lang s seed φ)
     (hPiSigmaPack :
-      Mettapedia.OSLF.NativeType.PiSigmaPredicateRulePack.{0, 0, 0}
+      Mettapedia.OSLF.PresheafNativeType.PiSigmaPredicateRulePack.{0, 0, 0}
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
     {D : CategoryTheory.Functor
       (Opposite (Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang)) Type}
@@ -751,6 +760,7 @@ theorem topos_representable_patternPred_piSigma_transport_via_rulePack
       (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
       (hPiSigmaPack := hPiSigmaPack) (f := f) (χ := χ) (ψ := ψ)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- OSLF-facing Topos endpoint consuming the canonical representable Π/Σ
 transport pack and returning the paired Σ/Π transport equivalences. -/
 theorem topos_representable_patternPred_piSigma_transport_via_prop12_pack
@@ -790,7 +800,7 @@ theorem topos_representable_patternPred_piSigma_transport_via_prop12_pack
             lang s seed φ hNat))) := by
   exact topos_representable_patternPred_piSigma_transport_via_rulePack
     (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
-    (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+    (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
       (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
     (f := f) (χ := χ) (ψ := ψ)
 
@@ -808,7 +818,7 @@ theorem topos_transport_pack_via_prop12_eq_via_rulePack
       lang s seed φ hNat f =
     topos_representable_patternPred_piSigma_transport_pack_via_rulePack
       lang s seed φ hNat
-      (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+      (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
       f := rfl
 
@@ -827,7 +837,7 @@ theorem topos_transport_via_prop12_pack_eq_via_rulePack
       lang s seed φ hNat f χ ψ =
     topos_representable_patternPred_piSigma_transport_via_rulePack
       lang s seed φ hNat
-      (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack
+      (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack
         (C := Mettapedia.OSLF.Framework.ConstructorCategory.ConstructorObj lang))
       f χ ψ := rfl
 
@@ -873,7 +883,7 @@ def relCompN
     (fun p r => p = r)
     (fun _ ih p r =>
       ∃ q,
-        Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q
+        Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q
         ∧ ih q r)
     n p r
 
@@ -926,14 +936,14 @@ theorem graphChain2_eq_graphChainN_2
 def diamondIterN
     (lang : LanguageDef)
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
-    (n : Nat) (χ : Pattern → Prop) (p : Pattern) : Prop :=
+    (n : Nat) (χ : EquationPredicate (langGSLTUsing relEnv lang)) :
+      EquationPredicate (langGSLTUsing relEnv lang) :=
   Nat.rec
-    (motive := fun _ => (Pattern → Prop) → Pattern → Prop)
-    (fun χ p => χ p)
-    (fun _ ih χ p =>
-      Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing
-        relEnv lang (ih χ) p)
-    n χ p
+    (motive := fun _ => EquationPredicate (langGSLTUsing relEnv lang))
+    χ
+    (fun _ ih =>
+      Mettapedia.OSLF.Framework.TypeSynthesis.langDiamondUsing relEnv lang ih)
+    n
 
 
 /-- N-fold diamond iteration corresponds to n-step graph chains. -/
@@ -942,10 +952,10 @@ theorem diamondIterN_iff_graphChainN
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (n : Nat) (χ : Pattern → Prop) (p : Pattern) :
-    diamondIterN lang relEnv n χ p
+    (n : Nat) (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
+    (diamondIterN lang relEnv n χ).1 p
       ↔
-    ∃ r, graphChainN (lang := lang) (relEnv := relEnv) (C := C) (X := X) n p r ∧ χ r := by
+    ∃ r, graphChainN (lang := lang) (relEnv := relEnv) (C := C) (X := X) n p r ∧ χ.1 r := by
   induction n generalizing p with
   | zero =>
     simp only [diamondIterN, graphChainN]
@@ -983,22 +993,22 @@ theorem togl_complete_graph_bridge_package
     (relEnv : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
     (C : Type u) [CategoryTheory.Category.{v} C]
     {X : Opposite C}
-    (χ : Pattern → Prop) (p : Pattern) :
+    (χ : EquationPredicate (langGSLTUsing relEnv lang)) (p : Pattern) :
     -- 2-step: graphChain2 ↔ relational (existing)
     (∀ r, graphChain2 (lang := lang) (relEnv := relEnv) (C := C) (X := X) p r
       ↔
       ∃ q,
-        Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang p q
+        Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang p q
         ∧
-        Mettapedia.OSLF.Framework.TypeSynthesis.langReducesUsing relEnv lang q r)
+        Mettapedia.OSLF.Framework.TypeSynthesis.langSemanticReducesUsing relEnv lang q r)
     ∧
     -- n-step: graphChainN ↔ relCompN (new)
     (∀ n r, graphChainN (lang := lang) (relEnv := relEnv) (C := C) (X := X) n p r
       ↔ relCompN lang relEnv n p r)
     ∧
     -- Modal iteration: ◇ⁿ ↔ graphChainN (new)
-    (∀ n, diamondIterN lang relEnv n χ p
-      ↔ ∃ r, graphChainN (lang := lang) (relEnv := relEnv) (C := C) (X := X) n p r ∧ χ r) := by
+    (∀ n, (diamondIterN lang relEnv n χ).1 p
+      ↔ ∃ r, graphChainN (lang := lang) (relEnv := relEnv) (C := C) (X := X) n p r ∧ χ.1 r) := by
   refine ⟨?_, ?_, ?_⟩
   · intro r
     exact togl_graph_composition_reductionGraphObj_family

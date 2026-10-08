@@ -185,6 +185,7 @@ theorem leftSlot_selected :
     leftEnv.slotOfName? leftBoundaryVarName = some leftSlot :=
   (Option.some_get leftSlot_exists).symm
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left reified source frame is the Quote/Drop spine over the selected
 semantic atom.  This is the frame-shape premise of the atom-collapse
 theorem; it is proved structurally, not by kernel evaluation. -/
@@ -228,6 +229,7 @@ theorem rightSkeleton_shape :
       .apply "NQuote" [.apply "PZero" []] := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The partner reified frame: no atoms, so reification is literal. -/
 theorem rightReifiedFrame :
     (rightViewPair.2.node.reifiedSourceFrame rightEnv).1 =
@@ -247,7 +249,7 @@ theorem rightFrame_is_application : rightFrame = rightPattern := by
   unfold rightFrame
   rw [CostStaticRegionNode.canonicalizeReifiedTargetFrame_eq_map_sourceCanonicalize
     rightViewPair.2.node rightEnv]
-  rw [CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+  rw [CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
     _ closed]
   have targetDepth : rightViewPair.2.node.targetBound.length = 0 := by
     simp [closed]
@@ -255,8 +257,7 @@ theorem rightFrame_is_application : rightFrame = rightPattern := by
   simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeListByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply,
-    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map,
-    CostStaticColor.symbols_constructor, CostStaticColor.constructorTag,
+    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map, CostStaticColor.constructorTag,
     costWrappedConstructorName, rightPattern]
   rw [rightViewPair_color]
 
@@ -267,6 +268,7 @@ theorem rightFrame_head_decoded :
   rw [rightViewPair_color]
   exact decodeCostStaticConstructor_symbols rhoCIGSLT .wrapped "NQuote"
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The partner tree hereditary-normalizes to its own pattern: no atoms, no
 collapse, the frame is the pattern. -/
 theorem rightTree_normalize :
@@ -469,6 +471,7 @@ theorem pairCospan_commonSupport :
     (leftEnv.atomValue leftSlot).key from pairCospan.leftCommutes leftSlot]
   exact leftAtomKey_targetSupport
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reifying the collapsing side's atom frame through the common quotient
 selects the unique common slot's atom name. -/
 theorem pairReify_left :
@@ -654,6 +657,7 @@ theorem mRightSlot_selected :
     mRightEnv.slotOfName? mRightBoundaryVarName = some mRightSlot :=
   (Option.some_get mRightSlot_exists).symm
 
+set_option backward.isDefEq.respectTransparency false in
 theorem mRightReifiedFrame :
     (mRightViewPair.2.node.reifiedSourceFrame mRightEnv).1 =
       .apply rhoReflectivePresentation.quoteConstructor
@@ -694,6 +698,7 @@ theorem mLeftSkeleton_shape :
       .apply "NQuote" [.apply "PZero" []] := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The mirrored partner's reified frame: no atoms, so reification is
 literal. -/
 theorem mLeftReifiedFrame :
@@ -726,7 +731,7 @@ theorem mLeftFrame_is_application : mLeftFrame = partnerBase := by
   unfold mLeftFrame
   rw [CostStaticRegionNode.canonicalizeReifiedTargetFrame_eq_map_sourceCanonicalize
     mLeftViewPair.2.node mLeftEnv]
-  rw [CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+  rw [CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
     _ closed]
   have targetDepth : mLeftViewPair.2.node.targetBound.length = 0 := by
     simp [closed]
@@ -734,11 +739,11 @@ theorem mLeftFrame_is_application : mLeftFrame = partnerBase := by
   simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeListByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply,
-    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map,
-    CostStaticColor.symbols_constructor, CostStaticColor.constructorTag,
+    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map, CostStaticColor.constructorTag,
     costBaseConstructorName, partnerBase]
   rw [mLeftViewPair_color]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The mirrored partner tree hereditary-normalizes to its own pattern. -/
 theorem mLeftTree_normalize :
     (mLeftTree.normalize (normalizeStatic := rhoHereditaryStaticNormalizer)).pattern =
@@ -954,6 +959,7 @@ theorem mPairReify_left :
         partnerBase = partnerBase := by
   simp [partnerBase, Pattern.renameFVars]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Reifying the mirrored collapsing atom frame selects the common slot. -/
 theorem mPairReify_right :
     mPairCospan.reifyWith mRightEnv.lookupAtom? mPairCospan.rightSlot

@@ -2,6 +2,7 @@ import Mettapedia.OSLF.MeTTaIL.Syntax
 import Mettapedia.OSLF.MeTTaIL.Semantics
 import Mettapedia.OSLF.MeTTaIL.Substitution
 import Mettapedia.OSLF.MeTTaIL.Match
+import Mettapedia.OSLF.MeTTaIL.ScopedSyntax
 import Mettapedia.OSLF.MeTTaIL.Engine
 import Mettapedia.OSLF.MeTTaIL.ContextualStep
 import Mettapedia.OSLF.MeTTaIL.MatchSpec
@@ -9,10 +10,23 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Types
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Engine
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.ContextualCommunication
 import Mettapedia.OSLF.Framework.RewriteSystem
+import Mettapedia.OSLF.Framework.RedexPosition
+import Mettapedia.OSLF.Framework.GeneratedHypercube
+import Mettapedia.OSLF.Framework.GeneratedHypercubeInstances
+import Mettapedia.OSLF.Framework.GeneratedModality
+import Mettapedia.OSLF.Framework.GeneratedModalFamily
+import Mettapedia.OSLF.Framework.GeneratedModalityRho
+import Mettapedia.OSLF.Framework.RelyPossiblyScheme
 import Mettapedia.OSLF.Framework.RhoInstance
 import Mettapedia.OSLF.Framework.DerivedModalities
-import Mettapedia.OSLF.Framework.InterpretedTypeSynthesis
+import Mettapedia.OSLF.Framework.InitialModalSchema
+import Mettapedia.OSLF.Framework.PureInternalization
+import Mettapedia.OSLF.Framework.ArithmeticEquationCalculus
+import Mettapedia.UniversalAlgebra.OSLF.ModalSemantics
+import Mettapedia.UniversalAlgebra.NIK.Authority
+import Mettapedia.OSLF.Framework.InitialityConsistencySeparation
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.LanguageMorphism
 import Mettapedia.OSLF.Framework.LanguageEqCategory
@@ -28,10 +42,11 @@ import Mettapedia.OSLF.Framework.MATTProvableNow
 import Mettapedia.OSLF.Framework.MATTClaimMap
 import Mettapedia.OSLF.Framework.FULLStatus
 import Mettapedia.OSLF.Framework.TypeSynthesis
-import Mettapedia.OSLF.Framework.RecursiveNativeType
+import Mettapedia.OSLF.Framework.SelectedNativeTypeCalculusCompilerTransport
+import Mettapedia.OSLF.Framework.DisplayedRewriteOccurrenceTyping
+import Mettapedia.OSLF.StructuralModal.Recursive
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefDSL
 import Mettapedia.OSLF.Framework.GeneratedTyping
-import Mettapedia.OSLF.Framework.SynthesisBridge
 import Mettapedia.OSLF.Framework.ToposReduction
 import Mettapedia.OSLF.Framework.LanguagePresheafSharing
 import Mettapedia.OSLF.Framework.LambdaInstance
@@ -54,6 +69,65 @@ import Mettapedia.OSLF.Framework.OSLFNTTTheoryClosure
 import Mettapedia.OSLF.Framework.ModalSubobjectBridge
 import Mettapedia.OSLF.Framework.OSLFNTTWMCanonicalClosure
 import Mettapedia.OSLF.Formula
+import Mettapedia.GSLT.LanguageDef.BinderAlphaSemantics
+import Mettapedia.GSLT.LanguageDef.DerivedEquationCanaries
+import Mettapedia.OSLF.StructuralModal.EquationInvariance
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SpatialReadingCanary
+import Mettapedia.GSLT.Logic.HennessyMilnerDirections
+import Mettapedia.GSLT.Logic.AdmissibleContextCongruence
+import Mettapedia.OSLF.StructuralModal.SeparatingConjunction
+import Mettapedia.OSLF.Framework.ObserverExtension
+import Mettapedia.OSLF.Framework.ObserverBisimilarity
+import Mettapedia.OSLF.Framework.ObserverReconstruction
+import Mettapedia.OSLF.Framework.FormulaFixpoint
+import Mettapedia.OSLF.Framework.TubeShape
+import Mettapedia.OSLF.Framework.GeneratedScope
+import Mettapedia.OSLF.Framework.GeneratedScopeRho
+import Mettapedia.OSLF.Framework.SourceGenerator
+import Mettapedia.OSLF.StructuralModal.AdmissibleEquations
+import Mettapedia.OSLF.Framework.ScopeComparison
+import Mettapedia.OSLF.Framework.SortedEquationFrame
+import Mettapedia.OSLF.Framework.GeneratorLength
+import Mettapedia.GSLT.Dynamics.EvidenceWeighting
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformPresentation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformSlotLaws
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformValidation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformModalFamily
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformLabels
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformSubstitutability
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformEquations
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformEquationDiscipline
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PlatformSourceScope
+import Mettapedia.OSLF.Framework.RelyPossiblyTypeFormer
+import Mettapedia.OSLF.Framework.GeneratedScopeSignature
+import Mettapedia.GSLT.Logic.LeastEnablerBox
+import Mettapedia.GSLT.Logic.IPOBox
+import Mettapedia.GSLT.Logic.RelativePushout
+import Mettapedia.GSLT.Logic.RedexRelativeCongruence
+import Mettapedia.GSLT.Logic.BagRelativePushout
+import Mettapedia.GSLT.Logic.RedexRelativeEnabling
+import Mettapedia.GSLT.Logic.ParallelLeastEnablerFails
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.AdmissibleContexts
+import Mettapedia.GSLT.Logic.HennessyMilnerTransport
+import Mettapedia.OSLF.Framework.FormulaAdequacy
+import Mettapedia.OSLF.Framework.EnumeratedAdequacy
+import Mettapedia.OSLF.Framework.IndexedOperationalAdequacy
+import Mettapedia.OSLF.StructuralModal.BehaviouralAdequacy
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SubstitutionInterpretationCanary
+import Mettapedia.GSLT.Logic.HennessyMilnerAdequacy
+import Mettapedia.GSLT.Logic.HigherOrderHML
+import Mettapedia.GSLT.Logic.HigherOrderHMLControls
+import Mettapedia.GSLT.Logic.MinimalEnablingContext
+import Mettapedia.OSLF.Framework.HennessyMilnerNativeTypes
+import Mettapedia.OSLF.Framework.HigherOrderNativeTypeControls
+import Mettapedia.OSLF.Framework.ConcreteHennessyMilnerBridge
+import Mettapedia.OSLF.Framework.MinimalContextNativeTypes
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.HennessyMilnerInstance
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SubstitutionCanonicalCommutation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CanonicalStepperCompleteness
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.HennessyMilnerRho
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.ParallelContextAdequacy
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.BackwardBranchingBoundary
 import Mettapedia.OSLF.Decidability
 import Mettapedia.OSLF.QuantifiedFormula
 import Mettapedia.OSLF.QuantifiedFormula2
@@ -62,6 +136,478 @@ import Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
 import Mettapedia.OSLF.Framework.DistinctionGraph.WorldModel
 import Mettapedia.OSLF.Framework.DistinctionGraph.Entropy
 import Mettapedia.OSLF.Bridges.Foundation.Kripke
+import Mettapedia.OSLF.Syntax.BindingSignature
+import Mettapedia.OSLF.Syntax.PartialRenaming
+import Mettapedia.OSLF.Syntax.ScopedMatching
+import Mettapedia.OSLF.Syntax.RedexPositionIsExtraInput
+import Mettapedia.OSLF.Syntax.RhoCommunicationSchema
+import Mettapedia.OSLF.Syntax.SemanticSchemaNaturality
+import Mettapedia.OSLF.Syntax.RhoSchemaSemanticNaturality
+import Mettapedia.OSLF.Syntax.SemanticContextualMetavariables
+import Mettapedia.OSLF.Syntax.AuthoredPositionedRulePolynomial
+import Mettapedia.OSLF.Syntax.AuthoredPositionedRootComparison
+import Mettapedia.OSLF.Syntax.RhoPositionedOperationalModel
+import Mettapedia.OSLF.Syntax.SemanticScopedPremiseInterpretation
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalPolynomial
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalFreeGenerators
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalFiniteContextSemantics
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalRelativeLexClassification
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalFiniteContextChange
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalTotalContext
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalClassifierContext
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalClassifierSetSemantics
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalClassifierSetControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalActedFiniteContext
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalActedBaseChange
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedFree
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedFiniteContext
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedBaseChange
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedEquivalence
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedBindingRestriction
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTypeComparisonNaturality
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedFoldComparison
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTargetCoherence
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTargetProgramTransport
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTargetOperations
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTargetClassificationFold
+import Mettapedia.OSLF.Syntax.CategoricalBindingClosedTargetChange
+import Mettapedia.OSLF.Syntax.CategoricalBindingSquareTargetControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTypeComparisonControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedTargetControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramProducts
+import Mettapedia.OSLF.Syntax.ContextualEquationInstances
+import Mettapedia.OSLF.Syntax.ContextualEquationCongruence
+import Mettapedia.OSLF.Syntax.CategoricalContextualEquationSoundness
+import Mettapedia.OSLF.Syntax.CategoricalContextualSatisfactionEquivalence
+import Mettapedia.OSLF.Syntax.CategoricalVaryingEquationSatisfactionCounterexample
+import Mettapedia.OSLF.Syntax.MonoidContextualEquationControl
+import Mettapedia.OSLF.Syntax.SecondOrderVariableAbstractionEquations
+import Mettapedia.OSLF.Syntax.SecondOrderVariableAbstractionEvaluation
+import Mettapedia.OSLF.Syntax.SecondOrderVariableAbstractionYonedaControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafExtensionFold
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramSelectedExponentials
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramParameterApplication
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedYonedaVariableMeaning
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramMeaningApplication
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramMeaningRepresentatives
+import Mettapedia.OSLF.Syntax.CategoricalBindingGenericApplication
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramData
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramArgumentProjection
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramConstructorMetavariable
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramBinderCurrying
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedProgramDataProjections
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedYonedaStructured
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafProgramModel
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafEvents
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafContextHom
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafSubstitution
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafNaturalEvidence
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafEventPowers
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafEventFunctions
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafActions
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafReduction
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafSharedComparison
+import Mettapedia.OSLF.Syntax.IntrinsicScopedOperationalPresheafExtensionControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedJsonClassifiedInstance
+import Mettapedia.OSLF.Syntax.IntrinsicScopedMonoidClassifiedInstance
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLambdaClassifiedMultiplicity
+import Mettapedia.OSLF.Syntax.IntrinsicScopedRhoExecutorClassifiedInstance
+import Mettapedia.OSLF.Syntax.IntrinsicScopedClassifiedTelescopeCoverageControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedClassifiedSubstitutionGapControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafLambdaControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafMultiplicityControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafCoproductControl
+import Mettapedia.OSLF.Syntax.PresheafStructuredExtensionTargetChange
+import Mettapedia.OSLF.Syntax.PresheafStructuredExtensionCoproduct
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafEvents
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalActedPresheafEventsExtension
+import Mettapedia.OSLF.Syntax.PresheafEventImageComparisonControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedTelescopeCoverageControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitutionGapControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitution
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitutionModels
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalPresheaf
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalClosedInterpretation
+import Mettapedia.OSLF.Syntax.Chapter7ClosedBindingControl
+import Mettapedia.OSLF.Syntax.BindingOperationPresheaf
+import Mettapedia.OSLF.Syntax.BindingFunctionArgumentComparison
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelPresheaf
+import Mettapedia.OSLF.Syntax.IntrinsicScopedLocalModelPresheafControls
+import Mettapedia.OSLF.Syntax.IntrinsicScopedSharedLocalComparisonControls
+import Mettapedia.OSLF.Syntax.ModelPresheafExtraEventControl
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelHistory
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelModal
+import Mettapedia.OSLF.Syntax.Chapter7LambdaModelHistoryModal
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelObservation
+import Mettapedia.OSLF.Syntax.ScopedOperationalEvidenceExponential
+import Mettapedia.OSLF.Syntax.CategoricalScopedEventPremise
+import Mettapedia.OSLF.Syntax.ScopedOperationalPremiseModel
+import Mettapedia.OSLF.Syntax.IntrinsicRulePremiseRequest
+import Mettapedia.OSLF.Syntax.IntrinsicRuleActionComparison
+import Mettapedia.OSLF.Syntax.ScopedPremiseEvidenceComparison
+import Mettapedia.OSLF.Syntax.Chapter7LambdaScopedEvidence
+import Mettapedia.OSLF.Syntax.SecondOrderContextCategory
+import Mettapedia.OSLF.Syntax.SecondOrderEquationUniversal
+import Mettapedia.OSLF.Syntax.Chapter7MonoidSecondOrderEquations
+import Mettapedia.OSLF.Syntax.SecondOrderBindingAlgebraMap
+import Mettapedia.OSLF.Syntax.SecondOrderAuthoredEquationPresentation
+import Mettapedia.OSLF.Syntax.SecondOrderEquationRepresentability
+import Mettapedia.OSLF.Syntax.SecondOrderEquationProducts
+import Mettapedia.OSLF.Syntax.SecondOrderEquationLexCompletion
+import Mettapedia.OSLF.Syntax.SecondOrderEquationModelFiber
+import Mettapedia.OSLF.Syntax.SecondOrderOperationalEventObject
+import Mettapedia.OSLF.Syntax.SecondOrderOperationalHistory
+import Mettapedia.OSLF.Syntax.SecondOrderOperationalClosedComparison
+import Mettapedia.OSLF.Syntax.SecondOrderOperationalDiagramInterpretation
+import Mettapedia.OSLF.Syntax.Chapter7SecondOrderOperationalInstances
+import Mettapedia.OSLF.Syntax.Chapter7PatternSecondOrderEquations
+import Mettapedia.OSLF.Syntax.RhoPayloadPresentation
+import Mettapedia.OSLF.Syntax.RhoPayloadTranslation
+import Mettapedia.OSLF.Syntax.RhoPayloadExecutorComparison
+import Mettapedia.OSLF.Syntax.RhoWholeNameAdmission
+import Mettapedia.OSLF.Syntax.RhoCanonicalWholeNameAdmission
+import Mettapedia.OSLF.Syntax.RhoPayloadConstruction
+import Mettapedia.OSLF.Syntax.RhoPayloadResources
+import Mettapedia.OSLF.Syntax.RhoExecutorResources
+import Mettapedia.OSLF.Syntax.CategoricalBindingGroupoid
+import Mettapedia.OSLF.Syntax.CategoricalBindingInterpretationMaps
+import Mettapedia.OSLF.Syntax.CategoricalBindingEquivalence
+import Mettapedia.OSLF.Syntax.CategoricalBindingEquationEquivalence
+import Mettapedia.OSLF.Syntax.CategoricalBindingQuotientEquivalence
+import Mettapedia.OSLF.Syntax.CategoricalBindingOperationalReindex
+import Mettapedia.OSLF.Syntax.CategoricalBindingEventEquivalence
+import Mettapedia.OSLF.Syntax.CategoricalBindingEventImage
+import Mettapedia.OSLF.Syntax.CategoricalScopedRuleActionMaps
+import Mettapedia.OSLF.Syntax.CategoricalScopedEventBaseChange
+import Mettapedia.OSLF.Syntax.CategoricalScopedEventContravariantTransport
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredRuleInterpretation
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredProgramCarrierMaps
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredScopedInterpretationMaps
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredOperationalModels
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredExtraEvents
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredReductionObservations
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredEventPaths
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredEventModal
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredProgramRestriction
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredEventCocones
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredRulePolynomial
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredRuleFamilyAlgebra
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredRuleFamilyPolynomial
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredFreeAlgebraBoundary
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredNullaryFree
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredNullaryInstances
+import Mettapedia.OSLF.Syntax.CategoricalAuthoredNullaryAdjunction
+import Mettapedia.OSLF.Syntax.IntrinsicCategoricalRuleMapComparison
+import Mettapedia.OSLF.Syntax.IntrinsicLambdaScopedConditionalExample
+import Mettapedia.OSLF.Syntax.IntrinsicLambdaFourRulePresentation
+import Mettapedia.OSLF.Syntax.RhoDropProfile
+import Mettapedia.OSLF.Syntax.RhoOperationalClosure
+import Mettapedia.OSLF.Syntax.RhoAuthoredDropProfile
+import Mettapedia.OSLF.Syntax.RhoEventMultiplicity
+import Mettapedia.OSLF.Syntax.RewriteEventHistory
+import Mettapedia.OSLF.Syntax.RewriteClassEventHistory
+import Mettapedia.OSLF.Syntax.RewriteEventGraphObject
+import Mettapedia.OSLF.Syntax.ContextualRootEvents
+import Mettapedia.OSLF.Syntax.ContextualLocatedEvents
+import Mettapedia.OSLF.Syntax.ContextualEquationClassEvents
+import Mettapedia.OSLF.Syntax.ContextualEventHistoryComparison
+import Mettapedia.OSLF.Syntax.ContextualReductionSubobject
+import Mettapedia.OSLF.Syntax.FreeBindingTermsRho
+import Mettapedia.OSLF.Syntax.BindingSubstitutionAlgebraRho
+import Mettapedia.OSLF.Syntax.FreeBindingClone
+import Mettapedia.OSLF.Syntax.RhoSemanticMetavariables
+import Mettapedia.OSLF.Syntax.RhoEquationModelControls
+import Mettapedia.OSLF.Syntax.RhoFreeBindingEquationModel
+import Mettapedia.OSLF.Syntax.RhoDropBoundary
+import Mettapedia.OSLF.Syntax.RhoIntrinsicEncoding
+import Mettapedia.OSLF.Syntax.RhoSubstitutionEncoding
+import Mettapedia.OSLF.Syntax.RhoEquationEncoding
+import Mettapedia.OSLF.Syntax.BindingEquationExtension
+import Mettapedia.OSLF.Syntax.RhoSourceEquationModel
+import Mettapedia.OSLF.Syntax.RuleListEventEmbedding
+import Mettapedia.OSLF.Syntax.RhoSourceEventComparison
+import Mettapedia.OSLF.Syntax.EquationExtensionEventGraph
+import Mettapedia.OSLF.Syntax.RhoEquationEventComparison
+import Mettapedia.OSLF.Syntax.RhoContextScopeComparison
+import Mettapedia.OSLF.Syntax.JsonTermRung
+import Mettapedia.OSLF.Syntax.JsonAuthoredComparison
+import Mettapedia.OSLF.Syntax.JsonCollectionRepresentationBoundary
+import Mettapedia.OSLF.Syntax.JsonTaggedDataEncoding
+import Mettapedia.OSLF.Syntax.MonoidEquationRung
+import Mettapedia.OSLF.Syntax.MonoidAuthoredComparison
+import Mettapedia.OSLF.Syntax.Chapter7AlgebraicOperationalInstances
+import Mettapedia.OSLF.Syntax.MonoidFiniteModelBoundary
+import Mettapedia.OSLF.Syntax.LambdaContextualRung
+import Mettapedia.OSLF.Syntax.LambdaAuthoredBoundary
+import Mettapedia.OSLF.Syntax.BinderLocalPremise
+import Mettapedia.OSLF.Syntax.LambdaIntrinsicPresentation
+import Mettapedia.OSLF.Syntax.Chapter7ReductionSubobjectInstances
+import Mettapedia.OSLF.Syntax.LambdaReductionSubobject
+import Mettapedia.OSLF.Syntax.LambdaCategoricalModel
+import Mettapedia.OSLF.Syntax.LambdaDerivationGraph
+import Mettapedia.OSLF.Syntax.LambdaFreePresheafEvents
+import Mettapedia.OSLF.Syntax.ContextualTermAbstraction
+import Mettapedia.OSLF.Syntax.BoundTermExponential
+import Mettapedia.OSLF.Syntax.LambdaExponentialComparison
+import Mettapedia.OSLF.Syntax.LambdaChosenExponential
+import Mettapedia.OSLF.Syntax.BindingCloneContextComparison
+import Mettapedia.OSLF.Syntax.BindingEquationContextExtension
+import Mettapedia.OSLF.Syntax.BindingEquationOperationRepresentable
+import Mettapedia.OSLF.Syntax.RhoEquationContextRepresentability
+import Mettapedia.OSLF.Syntax.LawvereFiniteLimitBoundary
+import Mettapedia.OSLF.Syntax.FiniteLimitShapes
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedYoneda
+import Mettapedia.OSLF.Syntax.FormalFiniteLimitObjects
+import Mettapedia.OSLF.Syntax.FormalFiniteLimitAuthoredBoundary
+import Mettapedia.OSLF.Syntax.CartesianContextModels
+import Mettapedia.OSLF.Syntax.CartesianContextProducts
+import Mettapedia.OSLF.Syntax.CartesianModelOrthogonality
+import Mettapedia.OSLF.Syntax.CartesianModelReflection
+import Mettapedia.OSLF.Syntax.CartesianModelLocalPresentability
+import Mettapedia.OSLF.Syntax.CartesianModelFinitePresentations
+import Mettapedia.OSLF.Syntax.CartesianModelFiniteGeneration
+import Mettapedia.OSLF.Syntax.CartesianModelSetSemantics
+import Mettapedia.OSLF.Syntax.CartesianModelLexRestriction
+import Mettapedia.OSLF.Syntax.CartesianModelLexTarget
+import Mettapedia.OSLF.Syntax.CartesianModelLexUniqueness
+import Mettapedia.OSLF.Syntax.CartesianModelLexGenerationDual
+import Mettapedia.OSLF.Syntax.CartesianModelLexInternalGeneration
+import Mettapedia.OSLF.Syntax.CartesianModelLexPropertyTransport
+import Mettapedia.OSLF.Syntax.CartesianModelLexRepresentability
+import Mettapedia.OSLF.Syntax.CartesianModelLexPresheafExtension
+import Mettapedia.OSLF.Syntax.CartesianModelLexYonedaExtension
+import Mettapedia.OSLF.Syntax.CartesianModelLexTargetDescent
+import Mettapedia.OSLF.Syntax.CartesianModelLexPresheafFullness
+import Mettapedia.OSLF.Syntax.CartesianModelLexTargetFullness
+import Mettapedia.OSLF.Syntax.CartesianModelLexTargetEquivalence
+import Mettapedia.OSLF.Syntax.CartesianModelLexEventInterpretations
+import Mettapedia.OSLF.Syntax.CartesianModelFormalComparison
+import Mettapedia.OSLF.Syntax.CartesianModelSiftedColimits
+import Mettapedia.OSLF.Syntax.RhoCartesianContextModels
+import Mettapedia.OSLF.Syntax.RhoCartesianModelOrthogonality
+import Mettapedia.OSLF.Syntax.RhoCartesianModelReflection
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLocalPresentability
+import Mettapedia.OSLF.Syntax.RhoCartesianModelFiniteGeneration
+import Mettapedia.OSLF.Syntax.RhoCartesianModelSetSemantics
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexRestriction
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexTarget
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexGenerationDual
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexInternalGeneration
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexPresheafExtension
+import Mettapedia.OSLF.Syntax.RhoCartesianModelLexTargetEquivalence
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedPresheaves
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedContextEmbedding
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedExactInclusion
+import Mettapedia.OSLF.Syntax.FiniteLimitUniversalBoundary
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedAuthoredContexts
+import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedWithObjects
+import Mettapedia.OSLF.Syntax.RhoEventQuotientDescentBoundary
+import Mettapedia.OSLF.Syntax.RhoOperationalFiniteLimitCategory
+import Mettapedia.OSLF.Syntax.Chapter6Communication
+import Mettapedia.OSLF.Syntax.FreePresheafEventExtension
+import Mettapedia.OSLF.Syntax.FreePresheafEventGeneratorMaps
+import Mettapedia.OSLF.Syntax.StableRewriteRelationBoundary
+import Mettapedia.OSLF.Syntax.RepresentedReductionTheory
+import Mettapedia.OSLF.Syntax.LanguageReductionRepresentation
+import Mettapedia.OSLF.Syntax.RhoFreePresheafEvents
+import Mettapedia.OSLF.Syntax.FreePresheafEventImage
+import Mettapedia.OSLF.Syntax.RhoSourceEquationLexClassification
+import Mettapedia.OSLF.Syntax.LambdaLexExponentialComparison
+import Mettapedia.OSLF.Syntax.ContextualExponentialStructure
+import Mettapedia.OSLF.Syntax.LambdaBetaEtaContextQuotient
+import Mettapedia.OSLF.Syntax.LambdaRuleDerivationPolynomial
+import Mettapedia.OSLF.Syntax.LambdaRuleTreeSubstitution
+import Mettapedia.OSLF.Syntax.LambdaRuleTreeSubstitutionComparison
+import Mettapedia.OSLF.Syntax.LambdaRuleLocalPremiseComparison
+import Mettapedia.OSLF.Syntax.FiniteRulePremiseLists
+import Mettapedia.OSLF.Syntax.CanonicalConditionalRuleFrames
+import Mettapedia.OSLF.Syntax.CanonicalConditionalOperationalClassification
+import Mettapedia.OSLF.Syntax.RhoCanonicalConditionalRuleFrames
+import Mettapedia.OSLF.Syntax.CanonicalRelationQueryEvents
+import Mettapedia.OSLF.Syntax.CanonicalRelationQueryTranslations
+import Mettapedia.OSLF.Syntax.RhoCanonicalRelationQueryEvents
+import Mettapedia.OSLF.Syntax.LambdaFiniteRulePremiseComparison
+import Mettapedia.OSLF.Syntax.RuleAlgebraInterpretationCoherence
+import Mettapedia.OSLF.Syntax.LambdaSemanticRulePolynomial
+import Mettapedia.OSLF.Syntax.IndexedRulePolynomialMorphisms
+import Mettapedia.OSLF.Syntax.IndexedRuleFreeTransport
+import Mettapedia.OSLF.Syntax.IndexedRulePresentationCategory
+import Mettapedia.OSLF.Syntax.IndexedRuleTreeFunctor
+import Mettapedia.OSLF.Syntax.IndexedRuleAlgebraMorphisms
+import Mettapedia.OSLF.Syntax.IndexedRuleAlgebraCategory
+import Mettapedia.OSLF.Syntax.IndexedRuleAlgebraPullback
+import Mettapedia.OSLF.Syntax.IndexedOperationalPresentationCategory
+import Mettapedia.OSLF.Syntax.IndexedOperationalModelsOver
+import Mettapedia.OSLF.Syntax.LambdaRulePolynomialMorphism
+import Mettapedia.OSLF.Syntax.LambdaOperationalPresentationComparison
+import Mettapedia.OSLF.Syntax.LambdaBindingEquationOperationalInterpretation
+import Mettapedia.OSLF.Syntax.LambdaEquationRuleModels
+import Mettapedia.OSLF.Syntax.LambdaAuthoredRulePolynomialComparison
+import Mettapedia.OSLF.Syntax.EventGraphNullaryPolynomial
+import Mettapedia.OSLF.Syntax.RhoEventPolynomialComparison
+import Mettapedia.OSLF.Syntax.EventGraphNullaryPresentationFunctor
+import Mettapedia.OSLF.Syntax.RhoRuleListPolynomialFunctor
+import Mettapedia.OSLF.Syntax.RhoSemanticRulePolynomial
+import Mettapedia.OSLF.Syntax.RhoRulePolynomialMorphism
+import Mettapedia.OSLF.Syntax.RhoEquationRuleModels
+import Mettapedia.OSLF.Syntax.RhoClosedDropComparison
+import Mettapedia.OSLF.Syntax.RhoAuthoredCommRuleCover
+import Mettapedia.OSLF.Syntax.RhoQuoteSafeCommComparison
+import Mettapedia.OSLF.Syntax.RhoParCongResidualSimulation
+import Mettapedia.OSLF.Syntax.PresheafEventGraphTransport
+import Mettapedia.OSLF.Syntax.EventGraphPolynomialTransport
+import Mettapedia.OSLF.Syntax.RhoSourceLexEventInterpretations
+import Mettapedia.OSLF.Syntax.RhoOperationalProfileInclusion
+import Mettapedia.OSLF.Syntax.GenericEventFreeAdjunction
+import Mettapedia.OSLF.Syntax.EventGraphSlice
+import Mettapedia.OSLF.Syntax.LambdaGeneratedEventGraph
+import Mettapedia.OSLF.Syntax.EventGraphImageMorphism
+import Mettapedia.OSLF.Syntax.LambdaEventImageMultiplicity
+import Mettapedia.OSLF.Syntax.OperationalImageReflection
+import Mettapedia.OSLF.Syntax.CategoricalEventObservations
+import Mettapedia.OSLF.Syntax.VaryingEventObservations
+import Mettapedia.OSLF.Syntax.VaryingEventObservationTargetChange
+import Mettapedia.OSLF.Syntax.IndexedOperationalModelReindex
+import Mettapedia.OSLF.Syntax.IndexedOperationalPresentationTransport
+import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitutionComparison
+import Mettapedia.OSLF.Syntax.CartesianModelLexOperationalInterpretations
+import Mettapedia.OSLF.Syntax.CartesianModelLexObservedInterpretations
+import Mettapedia.OSLF.Syntax.RhoSourceLexObservedInterpretations
+import Mettapedia.OSLF.Syntax.PresentationEventModalComparison
+import Mettapedia.OSLF.Syntax.EventGraphModalTransport
+import Mettapedia.OSLF.Syntax.RewriteEventHistoryForward
+import Mettapedia.OSLF.Syntax.RhoRepresentedReduction
+import Mettapedia.OSLF.Syntax.RhoCommunicationEncoding
+import Mettapedia.OSLF.Syntax.RhoCombinedInterpretedStep
+import Mettapedia.OSLF.Syntax.RhoScopedCombinedComparison
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.SubstitutionCaptureCanary
+import Mettapedia.OSLF.Syntax.ProcAsBindingSignature
+import Mettapedia.OSLF.Syntax.SignatureMorphism
+import Mettapedia.OSLF.Syntax.SignatureMorphismMetas
+import Mettapedia.OSLF.Syntax.TheoryMorphism
+import Mettapedia.OSLF.Syntax.PositionEnumeration
+import Mettapedia.OSLF.Syntax.EquationalQuotient
+import Mettapedia.OSLF.Syntax.EquationTransport
+import Mettapedia.OSLF.Syntax.PatternAsBindingSignature
+import Mettapedia.OSLF.Syntax.StepRelationCaptureWitness
+import Mettapedia.OSLF.Syntax.PatternRepairWitness
+import Mettapedia.OSLF.Syntax.PatternSubstEquation
+import Mettapedia.OSLF.Syntax.SubstitutionRegressionGuard
+import Mettapedia.OSLF.Syntax.CollectionRestWitness
+import Mettapedia.OSLF.Syntax.CollectionRestCaptureWitness
+import Mettapedia.OSLF.Syntax.RuleVariableSurvivalWitness
+import Mettapedia.OSLF.MeTTaIL.RuleBindingRegression
+import Mettapedia.OSLF.MeTTaIL.CollectionMatchingRegression
+import Mettapedia.OSLF.Syntax.ObservationClosure
+import Mettapedia.OSLF.Syntax.ObservationClosureWitness
+import Mettapedia.OSLF.Syntax.NormalFormStrength
+import Mettapedia.OSLF.Syntax.ScopedShift
+import Mettapedia.OSLF.Syntax.ContextualSplitting
+import Mettapedia.OSLF.Syntax.FireSparseness
+import Mettapedia.OSLF.Syntax.SyntacticCategory
+import Mettapedia.OSLF.Syntax.SyntacticTermPresheaf
+import Mettapedia.OSLF.Syntax.Presentation
+import Mettapedia.OSLF.Framework.GeneratedLayerAdjunction
+import Mettapedia.OSLF.Framework.LogicalMetric
+import Mettapedia.OSLF.Framework.ScopeStratum
+import Mettapedia.OSLF.Framework.ObserverIdempotence
+import Mettapedia.OSLF.Framework.TypeFormerExtension
+import Mettapedia.OSLF.SourceLedger
+import Mettapedia.OSLF.Syntax.UniqueDecompositionFails
+import Mettapedia.OSLF.Syntax.UniqueDecompositionRepaired
+import Mettapedia.OSLF.Syntax.UnfoldingBreaksDecomposition
+import Mettapedia.OSLF.Syntax.GSLTBridge
+import Mettapedia.OSLF.Syntax.ModalityAndObservation
+import Mettapedia.OSLF.Syntax.ContextCategory
+import Mettapedia.OSLF.Syntax.LinearContexts
+import Mettapedia.OSLF.Syntax.TermClone
+import Mettapedia.OSLF.Syntax.LawvereContextBoundary
+import Mettapedia.OSLF.MeTTaIL.DepthAlignmentAudit
+import Mettapedia.GSLT.Logic.ImageFinitenessNecessary
+import Mettapedia.OSLF.Syntax.TransitionsAreEvents
+import Mettapedia.OSLF.MeTTaIL.ScopedStepPremise
+import Mettapedia.OSLF.MeTTaIL.ScopedRuleExecution
+import Mettapedia.GSLT.LanguageDef.TypedScopedStepPremise
+import Mettapedia.GSLT.LanguageDef.CanonicalScopedPremise
+import Mettapedia.OSLF.Syntax.ScopedPremiseElaborationExecution
+import Mettapedia.OSLF.Syntax.CanonicalScopedRuleExecution
+import Mettapedia.OSLF.Syntax.CanonicalContextOracle
+import Mettapedia.OSLF.Syntax.CanonicalContextFreeModel
+import Mettapedia.OSLF.Syntax.SortIndexedScopedOperationalPresentation
+import Mettapedia.OSLF.Syntax.SortIndexedScopedTreeLifting
+import Mettapedia.OSLF.Syntax.SortIndexedScopedFreeModel
+import Mettapedia.OSLF.Syntax.ResultSortedScopedFreeModel
+import Mettapedia.OSLF.Syntax.AdmittedJudgmentRulePresentation
+import Mettapedia.OSLF.Syntax.SortIndexedScopedTypingAdmission
+import Mettapedia.OSLF.Syntax.CanonicalScopedOperationalClassification
+import Mettapedia.GSLT.Examples.ScopedPremiseAuthoring
+import Mettapedia.OSLF.Syntax.LambdaScopedAuthoringComparison
+import Mettapedia.OSLF.Syntax.BindingPatternRendering
+import Mettapedia.OSLF.Syntax.LambdaPatternRendering
+import Mettapedia.OSLF.Syntax.LambdaAuthoredBetaExecutionComparison
+import Mettapedia.OSLF.Syntax.LambdaAuthoredLamCongExecutionComparison
+import Mettapedia.OSLF.Syntax.LambdaAuthoredFullRuleProfile
+import Mettapedia.OSLF.Syntax.LambdaAuthoredAppCongExecutionComparison
+import Mettapedia.OSLF.Syntax.LambdaAuthoredCanonicalFreeComparison
+import Mettapedia.OSLF.Syntax.LambdaAuthoredTypingComparison
+import Mettapedia.OSLF.Syntax.CanonicalCompiledRuleShapeAdmission
+import Mettapedia.OSLF.Syntax.LambdaAuthoredResultSortedShapes
+import Mettapedia.OSLF.Syntax.CanonicalCompiledOneFuelAdmission
+import Mettapedia.OSLF.Syntax.LambdaAuthoredOneFuelResultSorted
+import Mettapedia.OSLF.MeTTaIL.ScopedPremiseExecution
+import Mettapedia.GSLT.Examples.ScopedLamCongExecution
+import Mettapedia.GSLT.Examples.CanonicalScopedRuleExecution
+import Mettapedia.GSLT.Examples.CanonicalContextOracle
+import Mettapedia.GSLT.Examples.SortIndexedScopedLamCong
+import Mettapedia.GSLT.Examples.ResultSortedScopedLamCongTree
+import Mettapedia.GSLT.Examples.CanonicalScopedFreeModel
+import Mettapedia.GSLT.Examples.TypedScopedLamCongOccurrence
+import Mettapedia.GSLT.LanguageDef.TypedRootPremiseAssignment
+import Mettapedia.GSLT.Examples.TypedRootPremiseAssignment
+import Mettapedia.GSLT.LanguageDef.TypedFullSpineRecovery
+import Mettapedia.GSLT.LanguageDef.TypedPermutedSpineRecovery
+import Mettapedia.GSLT.LanguageDef.RestAwareSupportSubstitution
+import Mettapedia.GSLT.LanguageDef.TypedPartialSpineRecovery
+import Mettapedia.GSLT.LanguageDef.TypedPartialSpineStepResults
+import Mettapedia.GSLT.LanguageDef.TypedOrderedPremiseExecution
+import Mettapedia.GSLT.LanguageDef.TypedOrderedRootPremiseActions
+import Mettapedia.GSLT.Examples.TypedMixedPremiseHistory
+import Mettapedia.OSLF.Syntax.ResultSortedMixedPremises
+import Mettapedia.OSLF.Syntax.SelectedResultSortedMixedPremises
+import Mettapedia.GSLT.Examples.MixedPremiseSortedClassifier
+import Mettapedia.GSLT.Examples.MixedPremiseExactChild
+import Mettapedia.GSLT.Examples.MixedPremiseSortedTree
+import Mettapedia.OSLF.Syntax.CartesianTreeLiftCriterion
+import Mettapedia.OSLF.Syntax.ResultSortedScopedTreeLiftCriterion
+import Mettapedia.GSLT.Examples.MixedPremiseTreeLiftCriterion
+import Mettapedia.GSLT.Examples.ScopedExecutionSortingBoundary
+import Mettapedia.GSLT.Examples.TypedRootProjectionWitness
+import Mettapedia.GSLT.Examples.MixedPremiseAllNodesAdmission
+import Mettapedia.GSLT.Examples.TypedPartialSpineCapture
+import Mettapedia.GSLT.Examples.TypedPartialSpinePremise
+import Mettapedia.GSLT.LanguageDef.TypedFullSpineStepResults
+import Mettapedia.GSLT.Examples.TypedFullSpineLamCong
+import Mettapedia.OSLF.Syntax.CanonicalScopedClassificationBoundary
+import Mettapedia.GSLT.Examples.ScopedLamCongConstructorFrame
+import Mettapedia.GSLT.Examples.ScopedRuleConstructorFrame
+import Mettapedia.GSLT.Examples.ScopedLamCongStepShape
+import Mettapedia.GSLT.Examples.ScopedLamCongPremiseSkeleton
+import Mettapedia.GSLT.Examples.ScopedLamCongFreeModel
+import Mettapedia.OSLF.MeTTaIL.OraclePremiseTransport
+import Mettapedia.GSLT.Examples.ScopedLamCongOracleTransport
+import Mettapedia.GSLT.Examples.OrderedPremiseOracleTransport
+import Mettapedia.GSLT.Topos.PresheafPredicateHigherOrderControls
+import Mettapedia.TypeTheory.PresheafCodomainFoundationControls
+import Mettapedia.TypeTheory.PresheafEventSubstitution
+import Mettapedia.OSLF.Syntax.DeterministicGSOSEdgeControls
+import Mettapedia.OSLF.Syntax.DeterministicGSOSImageFiniteBoundary
+import Mettapedia.OSLF.Syntax.DeterministicGSOSPresentationControls
+import Mettapedia.OSLF.Syntax.BehavioralCorrespondence
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.ReductionObservationBoundary
+import Mettapedia.OSLF.Framework.FindingMindScopeClassification
+import Mettapedia.OSLF.Framework.FindingMindGeneratedRhoCertificates
 -- SpecIndex.lean imports Main (not vice versa) — no cycle
 
 /-!
@@ -77,14 +623,12 @@ OSLF/
 ├── Main.lean                -- This file (re-exports)
 ├── Framework/
 │   ├── RewriteSystem.lean         -- Abstract OSLF: RewriteSystem -> OSLFTypeSystem
-│   ├── RhoInstance.lean           -- ρ-calculus instance (proven Galois connection)
+│   ├── RhoInstance.lean           -- ρ specialization of the canonical GSLT→OSLF construction
 │   ├── DerivedModalities.lean     -- Derived ◇/□ from adjoint triple (0 sorries)
-│   ├── InterpretedTypeSynthesis.lean -- Explicit interpretation -> OSLF synthesis
 │   ├── CategoryBridge.lean        -- Categorical lift: GaloisConnection → Adjunction
 │   ├── FULLStatus.lean            -- FULL-OSLF done/missing tracker
 │   ├── TypeSynthesis.lean         -- LanguageDef → OSLFTypeSystem (auto Galois)
 │   ├── GeneratedTyping.lean       -- Generated typing rules from grammar
-│   ├── SynthesisBridge.lean       -- Bridge: generated ↔ hand-written types
 │   ├── LambdaInstance.lean        -- Lambda calculus OSLF instance (2nd example)
 │   ├── PetriNetInstance.lean      -- Petri net OSLF instance (3rd, binder-free)
 │   ├── TinyMLInstance.lean        -- CBV λ-calculus + booleans/pairs/thunks (4th, multi-sort)
@@ -105,7 +649,7 @@ OSLF/
 │   └── MatchSpec.lean       -- Relational matching spec (proven ↔ executable)
 ├── Languages/ProcessCalculi/RhoCalculus/
 │   ├── Types.lean           -- Namespaces, codespaces, bisimulation
-│   ├── Reduction.lean       -- COMM/DROP/PAR, modal operators, Galois connection
+│   ├── Reduction.lean       -- COMM with structural and parallel closure; raw modalities
 │   ├── Soundness.lean       -- Substitutability, progress, type preservation
 │   ├── StructuralCongruence.lean
 │   ├── CommRule.lean
@@ -127,13 +671,15 @@ The formalization has two layers:
 - `NativeTypeOf`: native type = (sort, predicate) pair
 
 ### Concrete Layer (RhoCalculus/)
-- `Reduces`: COMM, DROP, PAR, EQUIV rules (Type-valued)
-- `possiblyProp` / `relyProp`: modal operators on `Pattern -> Prop`
-- `galois_connection`: proven diamond -| box
-- `HasType`: Typing judgment with substitutability and progress
+- `rhoReflectiveGSLT`: the closed, well-sorted, reflection-aware semantic
+  object derived from `rhoCalc`
+- `Reduces`: the paper-faithful Type-valued receipt relation retained below
+  the propositionally truncated GSLT step
+- `rhoOSLF`: the canonical GSLT→OSLF construction specialized to rho
+- `HasType`: typing judgment with substitutability and progress
 
-The concrete layer and abstract framework (`rhoOSLF`) instantiate the general
-OSLF construction for ρ-calculus, lifting the proven Galois connection.
+The rho specialization uses the same equation-invariant predicate frame and
+modulo-equations reduction construction as every other GSLT.
 
 ## References
 
@@ -256,9 +802,6 @@ export Mettapedia.Languages.ProcessCalculi.RhoCalculus.Soundness (
 
 export Mettapedia.Languages.ProcessCalculi.RhoCalculus.Reduction (
   Reduces
-  possiblyProp
-  relyProp
-  galois_connection
   ioCount
   ioCount_SC
   redWeight
@@ -285,10 +828,48 @@ export Mettapedia.OSLF.Framework (
 )
 
 export Mettapedia.OSLF.Framework.RhoInstance (
-  RhoSort
+  rhoGSLT
   rhoRewriteSystem
   rhoOSLF
+  rhoGeneratedNTT
   rho_mathlib_galois
+  rhoOSLF_sees_communication
+  rhoGeneratedNTT_sees_communication
+  rhoOSLF_keeps_freeDrop_inert
+  rhoOSLF_cannot_distinguish_presentations
+)
+
+export Mettapedia.Languages.ProcessCalculi.RhoCalculus.HennessyMilnerRho (
+  presentedRhoQuotientEndpointRuntime
+  presentedRhoCanonicalEquationNormalizer
+  presentedRhoSuccessorClassEnumeration
+  presentedRhoSuccessorClasses_exact
+  presentedRhoNormalizedSuccessorClasses_exact
+)
+
+export Mettapedia.GSLT.LanguageDef.ReflectiveSemanticCategory (
+  InterpretedPresentation
+)
+
+export Mettapedia.GSLT.LanguageDef.ReflectiveSemanticCategory.InterpretedPresentation (
+  structural
+  toGSLTUsing
+  toRewriteSystemUsing
+  toOSLFUsing
+  NativeTypeUsing
+  toOSLFUsing_eq_gsltOSLF
+)
+
+export Mettapedia.OSLF.Framework.GSLTTypeSynthesis (
+  EquationInvariant
+  EquationPredicate
+  gsltRewriteSystem
+  gsltSpan
+  semanticDiamond
+  semanticBox
+  semanticGalois
+  gsltOSLF
+  GSLTNativeType
 )
 
 export Mettapedia.OSLF.Framework.DerivedModalities (
@@ -296,56 +877,6 @@ export Mettapedia.OSLF.Framework.DerivedModalities (
   derivedDiamond
   derivedBox
   derived_galois
-  rhoSpan
-  derived_diamond_eq_possiblyProp
-  derived_box_eq_relyProp
-  rho_galois_from_span
-)
-
-export Mettapedia.OSLF.Framework.InterpretedTypeSynthesis (
-  interpretedReduces
-  interpretedRewriteSystem
-  interpretedSpan
-  interpretedDiamond
-  interpretedBox
-  interpretedGalois
-  interpretedDiamond_spec
-  interpretedBox_spec
-  interpretedOSLF
-  rewriteAt_syntactic
-  interpretedReduces_syntactic_iff
-)
-
-export Mettapedia.OSLF.Framework.TypeSynthesis (
-  langReducesExecUsing
-  langReducesUsing
-  langReduces
-  langReducesUsing_iff_execUsing
-  langReducesUsing_to_exec
-  exec_to_langReducesUsing
-  langRewriteSystemUsing
-  langRewriteSystem
-  langSpanUsing
-  langSpan
-  langDiamondUsing
-  langDiamond
-  langBoxUsing
-  langBox
-  langGaloisUsing
-  langGalois
-  langDiamondUsing_spec
-  langOSLF
-  langBoxUsing_spec
-  langDiamond_spec
-  langBox_spec
-  langNativeType
-  rhoCalc_emptyBag_rewrite_nil
-  rhoCalc_emptyBag_langReduces_irreducible
-  rhoCalc_soundBridge_restricted
-  rhoCalc_SC_emptyBag_reduceStep_irreducible
-  rhoCalc_SC_emptyBag_langReduces_false_of_reduceStep
-  rhoCalc_SC_emptyBag_langReduces_irreducible_of_soundBridge
-  rhoCalc_SC_emptyBag_no_diamondTop_of_soundBridge
 )
 
 export Mettapedia.OSLF.Framework.ToposReduction (
@@ -374,7 +905,7 @@ export Mettapedia.OSLF.Framework.ToposReduction (
   langDiamond_iff_exists_internalStep
   langBox_iff_forall_internalStep
   exec_mem_reductionSubfunctorUsing
-  reductionSubfunctorUsing_mem_exec
+  reductionSubfunctorUsing_mem_decomposes
 )
 
 export Mettapedia.OSLF.Framework.GeneratedTyping (
@@ -382,26 +913,6 @@ export Mettapedia.OSLF.Framework.GeneratedTyping (
   GenTypingContext
   GenHasType
   topPred
-)
-
-export Mettapedia.OSLF.Framework.SynthesisBridge (
-  rhoInterpretedSpan
-  rhoInterpretedDiamond
-  rhoInterpretedBox
-  rhoInterpretedGalois
-  rhoInterpretedDiamond_spec
-  rhoInterpretedBox_spec
-  rhoInterpretedDiamond_implies_possibly
-  syntacticInterpretedDiamond_eq_langDiamondUsing
-  syntacticInterpretedBox_eq_langBoxUsing
-  langDiamond_implies_possibly_at
-  possibly_implies_langDiamond_at
-  specialized_possibly
-  specialized_rely_check
-  specialized_can_reduce
-  specialized_soundBridge_at
-  nativeToGen
-  ctxToGen
 )
 
 export Mettapedia.OSLF.Framework.CategoryBridge (
@@ -415,7 +926,6 @@ export Mettapedia.OSLF.Framework.CategoryBridge (
   defaultSortCategoryInterface
   lambdaTheorySortInterface
   typeSortsRewriteSystem
-  typeSortsOSLF
   typeSortsLambdaTheory
   typeSortsLambdaInterface
   SortCategory
@@ -428,9 +938,6 @@ export Mettapedia.OSLF.Framework.CategoryBridge (
   oslf_fibrationUsing
   oslf_fibration
   typeSortsPredFibrationViaLambdaInterface
-  typeSortsOSLFFibrationViaLambdaInterface
-  typeSortsOSLFFiberFamily
-  typeSortsOSLFFibrationUsing_presheafAgreement
   langOSLFFiberFamily
   langOSLFFibrationUsing_presheafAgreement
   rhoLangOSLFFiberFamily
@@ -540,8 +1047,10 @@ export Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor (
   EffectiveStructure.StepDecision
   EffectiveStructure.EquationDecision
   EffectiveStructure.SuccessorEnumeration
+  EffectiveStructure.SuccessorClassEnumeration
   EffectiveStructure.PredecessorEnumeration
   EffectiveStructure.CanonicalEquationNormalizer
+  EffectiveStructure.QuotientEndpointRuntime
   EffectiveStructure.ReductionNormalizer
   EffectiveStructure.ContextualClosure
   EffectiveStructure.SubstitutionClosure
@@ -576,10 +1085,10 @@ export Mettapedia.OSLF.Framework.Mode2PureBoundary (
   no_behavioral_to_pure
   pure_endo_unique
   pure_boundary_characterization
-  mettaPureRuntimeObj
-  mettaPureBehavioralObj
-  mettaPureRuntimeToBehavioral
-  mettaPure_runtime_behavioral_diamond_transport
+  twoSortDependentRuntimeObj
+  twoSortDependentBehavioralObj
+  twoSortDependentRuntimeToBehavioral
+  twoSortDependent_runtime_behavioral_diamond_transport
 )
 
 export Mettapedia.OSLF.Framework.Mode2SkeletonLaws (
@@ -613,7 +1122,7 @@ export Mettapedia.OSLF.Framework.MATTProvableNow (
   runtime_mode_diamond_transport
   runtime_mode_diamond_transport_comp
   pure_mode_isolation
-  mettaPure_runtime_behavioral_transport
+  twoSortDependent_runtime_behavioral_transport
   matt_provable_now_bundle
   matt_provable_now_bundle_ext
   matt_provable_now_bundle_transport
@@ -647,8 +1156,16 @@ export Mettapedia.OSLF.Framework.LambdaInstance (
 
 export Mettapedia.OSLF.Framework.PetriNetInstance (
   petriNet
+  petriNet_validate
+  validatedPetriNet
   petriOSLF
   petriGalois
+  petriDCNativeType
+  petriGeneratedNTT
+  petriNet_BA_semanticStep_DC
+  petriNet_BA_not_rawStep_DC
+  petriNet_BA_satisfies_DC_nativeType
+  petriGeneratedNTT_accepts_BA_to_DC
 )
 
 export Mettapedia.OSLF.Framework.TinyMLInstance (
@@ -839,14 +1356,8 @@ export Mettapedia.OSLF.Framework.PLNSelectorGSLT (
 
 export Mettapedia.OSLF.Framework.PLNSelectorLanguageDef (
   plnSelectorLanguageDef
-  plnSelectorLangReduces
   NormalizeFiniteNonzero
   EncodeInjective
-  reduces_to_langReduces_exists
-  langReduces_to_reduces_exists_of_normalizeFinite
-  langReduces_exists_iff_reduces_exists_of_normalizeFinite
-  langReduces_encode_to_encode_reduces_of_encodeInjective
-  langReduces_encode_to_encode_reduces_of_atomFree
   plnSelector_checkLangUsing_sat_sound
   plnSelector_checkLangUsing_sat_sound_graph
 )
@@ -903,7 +1414,6 @@ export Mettapedia.OSLF.Formula (
   formula_galoisUsing
   formula_galois
   rhoCalc_SC_empty_sem_diaTop_unsat_reduceStep
-  rhoCalc_SC_empty_sem_diaTop_unsat_langReduces_of_reduceStep
   CheckResult
   check
   checkLangUsing
@@ -913,10 +1423,7 @@ export Mettapedia.OSLF.Formula (
   checkLangUsing_sat_sound_sort_fiber
   checkLangUsing_sat_sound_sort_fiber_mem_iff
   checkLangUsing_sat_sound_proc_fiber
-  checkLangUsing_sat_sound_proc_fiber_using
-  checkLangUsing_sat_sound_proc_fiber_using_mem_iff
   checkLang_sat_sound_proc_fiber
-  checkLang_sat_sound_proc_fiber_using
   checkLangUsing_sat_sound_graph
   checkLangUsing_sat_sound_graph_box
   checkLang_sat_sound

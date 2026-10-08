@@ -65,20 +65,6 @@ direct `Finset` operations. We show they are equivalent to the
 corresponding pattern-match + sink-application when the exec fact
 is in the space. -/
 
-/-- `applySubst` with empty substitution is the identity. -/
-theorem applySubst_nil : ∀ (a : Atom), applySubst [] a = a
-  | .var v => by simp [applySubst, Subst.lookup, List.find?]
-  | .symbol _ => rfl
-  | .grounded _ => rfl
-  | .expression es => by
-      simp only [applySubst]; congr 1
-      exact applySubstList_nil es
-where
-  applySubstList_nil : ∀ (es : List Atom), applySubst.applySubstList [] es = es
-    | [] => rfl
-    | a :: as => by
-        simp [applySubst.applySubstList, applySubst_nil a, applySubstList_nil as]
-
 /-- `isGroundAtom` is preserved by empty substitution. -/
 theorem isGroundAtom_applySubst_nil (a : Atom) :
     isGroundAtom (applySubst [] a) = isGroundAtom a := by
@@ -242,7 +228,6 @@ private theorem toBaseStep?_sinks_eq (ef : ExecFact) (step : BaseStep)
   · rename_i q r _ _ _ _
     have heq := Option.some.inj h
     cases step
-    simp at heq
     obtain ⟨rfl, rfl, _⟩ := heq
     simpa using r
   all_goals (try cases h)

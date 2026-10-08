@@ -29,7 +29,7 @@ may realize this structure, but they are not its definition.
 
 namespace Mettapedia.GSLT.LanguageDef.NIKAdmissionDoctrineCrown
 
-open CategoryTheory
+open _root_.CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LooseRelationEquipment
@@ -272,7 +272,8 @@ theorem keepProof_ne_flipProof : keepProof ≠ flipProof := by
   have mapped := congrArg
     (fun refinement : IndexedRefinement proofObject proofObject =>
       refinement.mapExecution (first := ()) (last := ()) true) equal
-  simp [keepProof, flipProof] at mapped
+  change true = false at mapped
+  cases mapped
 
 /-- Endpoint-only semantic admission forgets the execution-witness action. -/
 theorem endpoint_shadows_equal :
@@ -313,7 +314,7 @@ def admitted : IndexedObservedAdmittedAt dependencies false
     observedProofObject observedProofObject where
   refinement := keepObserved
 
-def active : admitted.Active false :=
+theorem active : admitted.Active false :=
   admitted.activate (dependencies.sameDependencies_refl false)
 
 theorem active_retains_execution_witness :

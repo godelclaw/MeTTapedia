@@ -7,13 +7,13 @@ The Cost construction uses reserved, injective tags to distinguish source
 sorts and constructors from its added apparatus.  This module first defines
 the total symbol action induced by a structural map.  Tagged source symbols
 are translated inside their tag; apparatus symbols and unrelated strings are
-fixed.  The action is total because `PresentationSymbols` is total, while its
+fixed.  The action is total because `LanguageDefSymbolMap` is total, while its
 identity and composition laws hold on every string, not only on declarations.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open StructuralMorphism
 
@@ -426,8 +426,8 @@ theorem mapCostReflectiveRuleName_comp (first second : String → String)
 /-- Extend a presentation symbol map to the declaration-derived Cost
 signature.  Source-derived symbols move inside their reserved tags; all
 new apparatus symbols are fixed. -/
-def costPresentationSymbols (symbols : PresentationSymbols) :
-    PresentationSymbols where
+def costLanguageDefSymbolMap (symbols : LanguageDefSymbolMap) :
+    LanguageDefSymbolMap where
   sort := mapTaggedName costBaseSortTag symbols.sort
   constructor := mapCostConstructorName symbols.constructor
   relation := id
@@ -439,24 +439,24 @@ signature action. -/
 def costReflectiveSymbols
     (symbols : ReflectionExtension.ReflectiveSymbols) :
     ReflectionExtension.ReflectiveSymbols where
-  toPresentationSymbols :=
-    costPresentationSymbols symbols.toPresentationSymbols
+  toLanguageDefSymbolMap :=
+    costLanguageDefSymbolMap symbols.toLanguageDefSymbolMap
   reflection :=
     { presentation :=
         mapCostReflectiveName symbols.reflection.presentation
       rule := mapCostReflectiveRuleName symbols.reflection.rule }
 
 @[simp]
-theorem costPresentationSymbols_sort_base
-    (symbols : PresentationSymbols) (sort : String) :
-    (costPresentationSymbols symbols).sort (costBaseSortName sort) =
+theorem costLanguageDefSymbolMap_sort_base
+    (symbols : LanguageDefSymbolMap) (sort : String) :
+    (costLanguageDefSymbolMap symbols).sort (costBaseSortName sort) =
       costBaseSortName (symbols.sort sort) := by
-  simp [costPresentationSymbols, costBaseSortName, costBaseSortTag]
+  simp [costLanguageDefSymbolMap, costBaseSortName, costBaseSortTag]
 
 @[simp]
-theorem costPresentationSymbols_constructor_base
-    (symbols : PresentationSymbols) (constructor : String) :
-    (costPresentationSymbols symbols).constructor
+theorem costLanguageDefSymbolMap_constructor_base
+    (symbols : LanguageDefSymbolMap) (constructor : String) :
+    (costLanguageDefSymbolMap symbols).constructor
         (costBaseConstructorName constructor) =
       costBaseConstructorName (symbols.constructor constructor) := by
   change mapCostConstructorName symbols.constructor
@@ -465,9 +465,9 @@ theorem costPresentationSymbols_constructor_base
   exact mapCostConstructorName_base symbols.constructor constructor
 
 @[simp]
-theorem costPresentationSymbols_constructor_wrapped
-    (symbols : PresentationSymbols) (constructor : String) :
-    (costPresentationSymbols symbols).constructor
+theorem costLanguageDefSymbolMap_constructor_wrapped
+    (symbols : LanguageDefSymbolMap) (constructor : String) :
+    (costLanguageDefSymbolMap symbols).constructor
         (costWrappedConstructorName constructor) =
       costWrappedConstructorName (symbols.constructor constructor) := by
   change mapCostConstructorName symbols.constructor
@@ -476,17 +476,17 @@ theorem costPresentationSymbols_constructor_wrapped
   exact mapCostConstructorName_wrapped symbols.constructor constructor
 
 @[simp]
-theorem costPresentationSymbols_equation_base
-    (symbols : PresentationSymbols) (equation : String) :
-    (costPresentationSymbols symbols).equation
+theorem costLanguageDefSymbolMap_equation_base
+    (symbols : LanguageDefSymbolMap) (equation : String) :
+    (costLanguageDefSymbolMap symbols).equation
         (costBaseEquationName equation) =
       costBaseEquationName (symbols.equation equation) := by
   exact mapCostEquationName_base symbols.equation equation
 
 @[simp]
-theorem costPresentationSymbols_equation_wrapped
-    (symbols : PresentationSymbols) (equation : String) :
-    (costPresentationSymbols symbols).equation
+theorem costLanguageDefSymbolMap_equation_wrapped
+    (symbols : LanguageDefSymbolMap) (equation : String) :
+    (costLanguageDefSymbolMap symbols).equation
         (costWrappedEquationName equation) =
       costWrappedEquationName (symbols.equation equation) := by
   exact mapCostEquationName_wrapped symbols.equation equation
@@ -521,23 +521,23 @@ theorem costReflectiveSymbols_rule_base
   exact mapCostReflectiveRuleName_base symbols.reflection.rule declaration
 
 @[simp]
-theorem costPresentationSymbols_rewrite_fixed
-    (symbols : PresentationSymbols) (rewrite : String) :
-    (costPresentationSymbols symbols).rewrite rewrite = rewrite := rfl
+theorem costLanguageDefSymbolMap_rewrite_fixed
+    (symbols : LanguageDefSymbolMap) (rewrite : String) :
+    (costLanguageDefSymbolMap symbols).rewrite rewrite = rewrite := rfl
 
 @[simp]
-theorem costPresentationSymbols_sort_wrapped
-    (symbols : PresentationSymbols) :
-    (costPresentationSymbols symbols).sort costWrappedSortName =
+theorem costLanguageDefSymbolMap_sort_wrapped
+    (symbols : LanguageDefSymbolMap) :
+    (costLanguageDefSymbolMap symbols).sort costWrappedSortName =
       costWrappedSortName := by
-  simp [costPresentationSymbols, mapTaggedName, costBaseSortTag,
+  simp [costLanguageDefSymbolMap, mapTaggedName, costBaseSortTag,
     costWrappedSortName, dropListPrefix?]
 
 /-- The generated wrapped carrier is a reflected fibre of every Cost symbol
 map.  A base-tagged source name cannot enter the disjoint wrapped namespace. -/
-theorem costPresentationSymbols_sort_eq_wrapped_iff
-    (symbols : PresentationSymbols) (name : String) :
-    (costPresentationSymbols symbols).sort name = costWrappedSortName ↔
+theorem costLanguageDefSymbolMap_sort_eq_wrapped_iff
+    (symbols : LanguageDefSymbolMap) (name : String) :
+    (costLanguageDefSymbolMap symbols).sort name = costWrappedSortName ↔
       name = costWrappedSortName := by
   change mapTaggedName costBaseSortTag symbols.sort name =
       costWrappedSortName ↔ name = costWrappedSortName
@@ -555,38 +555,63 @@ theorem costPresentationSymbols_sort_eq_wrapped_iff
   next => rfl
 
 @[simp]
-theorem costPresentationSymbols_sort_apparatus
-    (symbols : PresentationSymbols) (sort : String) :
-    (costPresentationSymbols symbols).sort (costApparatusSortName sort) =
+theorem costLanguageDefSymbolMap_sort_apparatus
+    (symbols : LanguageDefSymbolMap) (sort : String) :
+    (costLanguageDefSymbolMap symbols).sort (costApparatusSortName sort) =
       costApparatusSortName sort := by
-  simp [costPresentationSymbols, mapTaggedName, costBaseSortTag,
-    costApparatusSortName, dropListPrefix?]
+  change mapTaggedName costBaseSortTag symbols.sort
+    (costApparatusSortName sort) = costApparatusSortName sort
+  unfold mapTaggedName
+  split
+  next suffix found =>
+    apply False.elim
+    apply costBaseSortName_ne_apparatus (String.ofList suffix) sort
+    apply String.toList_injective
+    simpa only [costBaseSortName, String.toList_append, String.toList_ofList] using
+      append_eq_of_dropListPrefix?_eq_some found
+  next => rfl
 
 @[simp]
-theorem costPresentationSymbols_constructor_apparatus
-    (symbols : PresentationSymbols) (constructor : String) :
-    (costPresentationSymbols symbols).constructor
+theorem costLanguageDefSymbolMap_constructor_apparatus
+    (symbols : LanguageDefSymbolMap) (constructor : String) :
+    (costLanguageDefSymbolMap symbols).constructor
         (costApparatusConstructorName constructor) =
       costApparatusConstructorName constructor := by
-  simp [costPresentationSymbols, mapCostConstructorName,
-    costBaseConstructorTag, costWrappedConstructorTag,
-    costApparatusConstructorName, dropListPrefix?]
+  change mapCostConstructorName symbols.constructor
+    (costApparatusConstructorName constructor) = costApparatusConstructorName constructor
+  unfold mapCostConstructorName
+  split
+  next suffix found =>
+    apply False.elim
+    apply costBaseConstructorName_ne_apparatus (String.ofList suffix) constructor
+    apply String.toList_injective
+    simpa only [costBaseConstructorName, String.toList_append, String.toList_ofList] using
+      append_eq_of_dropListPrefix?_eq_some found
+  next =>
+    split
+    next suffix found =>
+      apply False.elim
+      apply costWrappedConstructorName_ne_apparatus (String.ofList suffix) constructor
+      apply String.toList_injective
+      simpa only [costWrappedConstructorName, String.toList_append, String.toList_ofList] using
+        append_eq_of_dropListPrefix?_eq_some found
+    next => rfl
 
 @[simp]
-theorem costPresentationSymbols_id :
-    costPresentationSymbols PresentationSymbols.id =
-      PresentationSymbols.id := by
+theorem costLanguageDefSymbolMap_id :
+    costLanguageDefSymbolMap LanguageDefSymbolMap.id =
+      LanguageDefSymbolMap.id := by
   ext name <;>
-    simp [costPresentationSymbols, PresentationSymbols.id,
+    simp [costLanguageDefSymbolMap, LanguageDefSymbolMap.id,
       mapCostConstructorName_id, mapCostEquationName_id]
 
-theorem costPresentationSymbols_comp
-    (first second : PresentationSymbols) :
-    costPresentationSymbols (first.comp second) =
-      (costPresentationSymbols first).comp
-        (costPresentationSymbols second) := by
+theorem costLanguageDefSymbolMap_comp
+    (first second : LanguageDefSymbolMap) :
+    costLanguageDefSymbolMap (first.comp second) =
+      (costLanguageDefSymbolMap first).comp
+        (costLanguageDefSymbolMap second) := by
   ext name <;>
-    simp [costPresentationSymbols, PresentationSymbols.comp,
+    simp [costLanguageDefSymbolMap, LanguageDefSymbolMap.comp,
       mapTaggedName_comp, mapCostConstructorName_comp,
       mapCostEquationName_comp]
 
@@ -597,11 +622,11 @@ theorem costReflectiveSymbols_id :
     costReflectiveSymbols ReflectionExtension.ReflectiveSymbols.id =
       ReflectionExtension.ReflectiveSymbols.id := by
   apply ReflectionExtension.ReflectiveSymbols.ext
-  · exact congrArg PresentationSymbols.sort costPresentationSymbols_id
-  · exact congrArg PresentationSymbols.constructor costPresentationSymbols_id
-  · exact congrArg PresentationSymbols.relation costPresentationSymbols_id
-  · exact congrArg PresentationSymbols.equation costPresentationSymbols_id
-  · exact congrArg PresentationSymbols.rewrite costPresentationSymbols_id
+  · exact congrArg LanguageDefSymbolMap.sort costLanguageDefSymbolMap_id
+  · exact congrArg LanguageDefSymbolMap.constructor costLanguageDefSymbolMap_id
+  · exact congrArg LanguageDefSymbolMap.relation costLanguageDefSymbolMap_id
+  · exact congrArg LanguageDefSymbolMap.equation costLanguageDefSymbolMap_id
+  · exact congrArg LanguageDefSymbolMap.rewrite costLanguageDefSymbolMap_id
   · apply ReflectionExtension.ReflectionSymbols.ext <;> funext name
     · exact mapCostReflectiveName_id name
     · exact mapCostReflectiveRuleName_id name
@@ -611,14 +636,14 @@ theorem costReflectiveSymbols_comp
     (first second : ReflectionExtension.ReflectiveSymbols) :
     costReflectiveSymbols (first.comp second) =
       (costReflectiveSymbols first).comp (costReflectiveSymbols second) := by
-  have coreEquality := costPresentationSymbols_comp
-    first.toPresentationSymbols second.toPresentationSymbols
+  have coreEquality := costLanguageDefSymbolMap_comp
+    first.toLanguageDefSymbolMap second.toLanguageDefSymbolMap
   apply ReflectionExtension.ReflectiveSymbols.ext
-  · exact congrArg PresentationSymbols.sort coreEquality
-  · exact congrArg PresentationSymbols.constructor coreEquality
-  · exact congrArg PresentationSymbols.relation coreEquality
-  · exact congrArg PresentationSymbols.equation coreEquality
-  · exact congrArg PresentationSymbols.rewrite coreEquality
+  · exact congrArg LanguageDefSymbolMap.sort coreEquality
+  · exact congrArg LanguageDefSymbolMap.constructor coreEquality
+  · exact congrArg LanguageDefSymbolMap.relation coreEquality
+  · exact congrArg LanguageDefSymbolMap.equation coreEquality
+  · exact congrArg LanguageDefSymbolMap.rewrite coreEquality
   · apply ReflectionExtension.ReflectionSymbols.ext <;> funext name
     · exact mapCostReflectiveName_comp first.reflection.presentation
         second.reflection.presentation name
@@ -628,9 +653,9 @@ theorem costReflectiveSymbols_comp
 /-! ## Type-profile naturality -/
 
 @[simp]
-theorem mapTypeExpr_costBaseTypeExpr (symbols : PresentationSymbols)
+theorem mapTypeExpr_costBaseTypeExpr (symbols : LanguageDefSymbolMap)
     (type : TypeExpr) :
-    mapTypeExpr (costPresentationSymbols symbols) (costBaseTypeExpr type) =
+    mapTypeExpr (costLanguageDefSymbolMap symbols) (costBaseTypeExpr type) =
       costBaseTypeExpr (mapTypeExpr symbols type) := by
   induction type <;>
     simp_all [costBaseTypeExpr, mapTypeExpr]
@@ -638,7 +663,7 @@ theorem mapTypeExpr_costBaseTypeExpr (symbols : PresentationSymbols)
 /-- Wrapped retyping commutes with exactly those maps that reflect the
 distinguished interacting-sort fiber. -/
 theorem mapTypeExpr_costWrappedTypeExpr
-    (symbols : PresentationSymbols)
+    (symbols : LanguageDefSymbolMap)
     (sourceInteracting targetInteracting : String)
     (mapsInteracting :
       symbols.sort sourceInteracting = targetInteracting)
@@ -646,7 +671,7 @@ theorem mapTypeExpr_costWrappedTypeExpr
       symbols.sort sourceSort = targetInteracting →
         sourceSort = sourceInteracting)
     (type : TypeExpr) :
-    mapTypeExpr (costPresentationSymbols symbols)
+    mapTypeExpr (costLanguageDefSymbolMap symbols)
         (costWrappedTypeExpr sourceInteracting type) =
       costWrappedTypeExpr targetInteracting
         (mapTypeExpr symbols type) := by
@@ -673,20 +698,20 @@ theorem mapTypeExpr_costWrappedTypeExpr
 copy.  Only constructor names occur in raw patterns; sort naturality is
 handled separately by `mapTypeExpr_costBaseTypeExpr`. -/
 theorem mapPattern_costBaseStatic_natural
-    (symbols : PresentationSymbols) (pattern : Pattern) :
-    mapPattern (costPresentationSymbols symbols)
+    (symbols : LanguageDefSymbolMap) (pattern : Pattern) :
+    mapPattern (costLanguageDefSymbolMap symbols)
         (mapPattern costBaseStaticSymbols pattern) =
       mapPattern costBaseStaticSymbols (mapPattern symbols pattern) := by
   induction pattern using Pattern.inductionOn <;>
     simp_all [mapPattern, costBaseStaticSymbols,
-      costBasePresentationSymbols, List.map_inj_left]
+      costBaseLanguageDefSymbolMap, List.map_inj_left]
 
 @[simp]
 theorem mapPattern_costBasePresentation_natural
-    (symbols : PresentationSymbols) (pattern : Pattern) :
-    mapPattern (costPresentationSymbols symbols)
-        (mapPattern costBasePresentationSymbols pattern) =
-      mapPattern costBasePresentationSymbols (mapPattern symbols pattern) := by
+    (symbols : LanguageDefSymbolMap) (pattern : Pattern) :
+    mapPattern (costLanguageDefSymbolMap symbols)
+        (mapPattern costBaseLanguageDefSymbolMap pattern) =
+      mapPattern costBaseLanguageDefSymbolMap (mapPattern symbols pattern) := by
   simpa only [mapPattern_costBaseStaticSymbols] using
     mapPattern_costBaseStatic_natural symbols pattern
 
@@ -699,10 +724,10 @@ copy.  This is the contextual counterpart of
 `mapPattern_costBasePresentation_natural`. -/
 @[simp]
 theorem mapOneHoleContext_costBasePresentation_natural
-    (symbols : PresentationSymbols) (context : OneHoleContext) :
-    mapOneHoleContext (costPresentationSymbols symbols)
-        (mapOneHoleContext costBasePresentationSymbols context) =
-      mapOneHoleContext costBasePresentationSymbols
+    (symbols : LanguageDefSymbolMap) (context : OneHoleContext) :
+    mapOneHoleContext (costLanguageDefSymbolMap symbols)
+        (mapOneHoleContext costBaseLanguageDefSymbolMap context) =
+      mapOneHoleContext costBaseLanguageDefSymbolMap
         (mapOneHoleContext symbols context) := by
   induction context <;>
     simp_all [mapOneHoleContext, List.map_map,
@@ -714,9 +739,9 @@ end CIGSLT
 wrapped constructor copy. -/
 @[simp]
 theorem mapPattern_costWrappedStatic_natural
-    (symbols : PresentationSymbols) (sourceTheory targetTheory : IGSLT)
+    (symbols : LanguageDefSymbolMap) (sourceTheory targetTheory : IGSLT)
     (pattern : Pattern) :
-    mapPattern (costPresentationSymbols symbols)
+    mapPattern (costLanguageDefSymbolMap symbols)
         (mapPattern (costWrappedStaticSymbols sourceTheory) pattern) =
       mapPattern (costWrappedStaticSymbols targetTheory)
         (mapPattern symbols pattern) := by
@@ -725,9 +750,9 @@ theorem mapPattern_costWrappedStatic_natural
 
 /-- Type-context translation commutes with base-fiber formation. -/
 theorem mapTypeContext_costBaseStatic_natural
-    (symbols : PresentationSymbols)
+    (symbols : LanguageDefSymbolMap)
     (context : List (String × TypeExpr)) :
-    mapTypeContext (costPresentationSymbols symbols)
+    mapTypeContext (costLanguageDefSymbolMap symbols)
         (mapTypeContext costBaseStaticSymbols context) =
       mapTypeContext costBaseStaticSymbols
         (mapTypeContext symbols context) := by
@@ -741,7 +766,7 @@ theorem mapTypeContext_costBaseStatic_natural
 /-- Type-context translation commutes with hereditary wrapped formation
 when the theory map preserves and reflects the interacting-sort fiber. -/
 theorem mapTypeContext_costWrappedStatic_natural
-    (symbols : PresentationSymbols) (sourceTheory targetTheory : IGSLT)
+    (symbols : LanguageDefSymbolMap) (sourceTheory targetTheory : IGSLT)
     (mapsInteracting :
       symbols.sort sourceTheory.presentation.interactingSort.1.name =
         targetTheory.presentation.interactingSort.1.name)
@@ -750,7 +775,7 @@ theorem mapTypeContext_costWrappedStatic_natural
           targetTheory.presentation.interactingSort.1.name →
         sourceSort = sourceTheory.presentation.interactingSort.1.name)
     (context : List (String × TypeExpr)) :
-    mapTypeContext (costPresentationSymbols symbols)
+    mapTypeContext (costLanguageDefSymbolMap symbols)
         (mapTypeContext (costWrappedStaticSymbols sourceTheory) context) =
       mapTypeContext (costWrappedStaticSymbols targetTheory)
         (mapTypeContext symbols context) := by
@@ -764,13 +789,54 @@ theorem mapTypeContext_costWrappedStatic_natural
       targetTheory.presentation.interactingSort.1.name mapsInteracting
       reflectsInteracting]
 
+/-- The cost base-fiber square also preserves every dependency sort and
+explicit occurrence substitution, not only equation endpoints. -/
+theorem mapRuleBindingSpec_costBase_natural
+    (symbols : LanguageDefSymbolMap) (spec : RuleBindingSpec) :
+    mapRuleBindingSpec (costLanguageDefSymbolMap symbols)
+        (mapRuleBindingSpec costBaseStaticSymbols spec) =
+      mapRuleBindingSpec costBaseStaticSymbols
+        (mapRuleBindingSpec symbols spec) := by
+  apply mapRuleBindingSpec_square
+  · intro type
+    simpa only [mapTypeExpr_costBaseStaticSymbols] using
+      mapTypeExpr_costBaseTypeExpr symbols type
+  · intro pattern
+    exact mapPattern_costBaseStatic_natural symbols pattern
+
+/-- The hereditary wrapped square has the same action on binding data under
+the established interacting-sort preservation and reflection hypotheses. -/
+theorem mapRuleBindingSpec_costWrapped_natural
+    (symbols : LanguageDefSymbolMap) (sourceTheory targetTheory : IGSLT)
+    (mapsInteracting :
+      symbols.sort sourceTheory.presentation.interactingSort.1.name =
+        targetTheory.presentation.interactingSort.1.name)
+    (reflectsInteracting : ∀ sourceSort,
+      symbols.sort sourceSort =
+          targetTheory.presentation.interactingSort.1.name →
+        sourceSort = sourceTheory.presentation.interactingSort.1.name)
+    (spec : RuleBindingSpec) :
+    mapRuleBindingSpec (costLanguageDefSymbolMap symbols)
+        (mapRuleBindingSpec (costWrappedStaticSymbols sourceTheory) spec) =
+      mapRuleBindingSpec (costWrappedStaticSymbols targetTheory)
+        (mapRuleBindingSpec symbols spec) := by
+  apply mapRuleBindingSpec_square
+  · intro type
+    simpa only [mapTypeExpr_costWrappedStaticSymbols] using
+      mapTypeExpr_costWrappedTypeExpr symbols
+        sourceTheory.presentation.interactingSort.1.name
+        targetTheory.presentation.interactingSort.1.name
+        mapsInteracting reflectsInteracting type
+  · intro pattern
+    exact mapPattern_costWrappedStatic_natural symbols sourceTheory targetTheory pattern
+
 /-- Premise-free base equation transport is natural in presentation maps. -/
 theorem mapEquation_costBase_natural
-    (symbols : PresentationSymbols) (equation : Equation)
+    (symbols : LanguageDefSymbolMap) (equation : Equation)
     (premisesEmpty : equation.premises = []) :
-    mapEquation (costPresentationSymbols symbols) (costBaseEquation equation) =
+    mapEquation (costLanguageDefSymbolMap symbols) (costBaseEquation equation) =
       costBaseEquation (mapEquation symbols equation) := by
-  rcases equation with ⟨name, context, premises, left, right⟩
+  rcases equation with ⟨name, context, premises, left, right, bindings⟩
   simp only at premisesEmpty
   subst premises
   simp only [costBaseEquation, mapEquation, List.map_nil]
@@ -780,15 +846,20 @@ theorem mapEquation_costBase_natural
       costBaseStaticSymbols.equation (symbols.equation name) =
         costBaseEquationName (symbols.equation name) := rfl
   rw [sourceEquationName, targetEquationName,
-    costPresentationSymbols_equation_base,
+    costLanguageDefSymbolMap_equation_base,
     mapTypeContext_costBaseStatic_natural,
     mapPattern_costBaseStatic_natural,
     mapPattern_costBaseStatic_natural]
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_costBase_natural]
 
 /-- Premise-free hereditary wrapped equation transport is natural when the
 underlying map preserves and reflects the interacting-sort fiber. -/
 theorem mapEquation_costWrapped_natural
-    (symbols : PresentationSymbols) (sourceTheory targetTheory : IGSLT)
+    (symbols : LanguageDefSymbolMap) (sourceTheory targetTheory : IGSLT)
     (mapsInteracting :
       symbols.sort sourceTheory.presentation.interactingSort.1.name =
         targetTheory.presentation.interactingSort.1.name)
@@ -797,10 +868,10 @@ theorem mapEquation_costWrapped_natural
           targetTheory.presentation.interactingSort.1.name →
         sourceSort = sourceTheory.presentation.interactingSort.1.name)
     (equation : Equation) (premisesEmpty : equation.premises = []) :
-    mapEquation (costPresentationSymbols symbols)
+    mapEquation (costLanguageDefSymbolMap symbols)
         (costWrappedEquation sourceTheory equation) =
       costWrappedEquation targetTheory (mapEquation symbols equation) := by
-  rcases equation with ⟨name, context, premises, left, right⟩
+  rcases equation with ⟨name, context, premises, left, right, bindings⟩
   simp only at premisesEmpty
   subst premises
   simp only [costWrappedEquation, mapEquation, List.map_nil]
@@ -812,23 +883,29 @@ theorem mapEquation_costWrapped_natural
           (symbols.equation name) =
         costWrappedEquationName (symbols.equation name) := rfl
   rw [sourceEquationName, targetEquationName,
-    costPresentationSymbols_equation_wrapped,
+    costLanguageDefSymbolMap_equation_wrapped,
     mapTypeContext_costWrappedStatic_natural symbols sourceTheory targetTheory
       mapsInteracting reflectsInteracting,
     mapPattern_costWrappedStatic_natural symbols sourceTheory targetTheory left,
     mapPattern_costWrappedStatic_natural symbols sourceTheory targetTheory right]
+  cases bindings with
+  | none => rfl
+  | some spec =>
+      simp only [Option.map_some]
+      rw [mapRuleBindingSpec_costWrapped_natural symbols sourceTheory targetTheory
+        mapsInteracting reflectsInteracting]
 
 @[simp]
-theorem mapTermParam_costBase (symbols : PresentationSymbols)
+theorem mapTermParam_costBase (symbols : LanguageDefSymbolMap)
     (parameter : TermParam) :
-    mapTermParam (costPresentationSymbols symbols)
+    mapTermParam (costLanguageDefSymbolMap symbols)
         (mapParameterType costBaseTypeExpr parameter) =
       mapParameterType costBaseTypeExpr (mapTermParam symbols parameter) := by
   cases parameter <;>
     simp [mapTermParam, mapParameterType, mapTypeExpr_costBaseTypeExpr]
 
 theorem mapTermParam_costWrapped
-    (symbols : PresentationSymbols)
+    (symbols : LanguageDefSymbolMap)
     (sourceInteracting targetInteracting : String)
     (mapsInteracting :
       symbols.sort sourceInteracting = targetInteracting)
@@ -836,7 +913,7 @@ theorem mapTermParam_costWrapped
       symbols.sort sourceSort = targetInteracting →
         sourceSort = sourceInteracting)
     (parameter : TermParam) :
-    mapTermParam (costPresentationSymbols symbols)
+    mapTermParam (costLanguageDefSymbolMap symbols)
         (mapParameterType (costWrappedTypeExpr sourceInteracting) parameter) =
       mapParameterType (costWrappedTypeExpr targetInteracting)
         (mapTermParam symbols parameter) := by
@@ -847,9 +924,9 @@ theorem mapTermParam_costWrapped
 
 /-! ## Preservation and reflection of the selected continuation fibers -/
 
-namespace CIGSLT.Morphism
+namespace WrappableIGSLT.Morphism
 
-theorem mapsInteractingSortName {source target : CIGSLT}
+theorem mapsInteractingSortName {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     morphism.underlying.structural.structural.symbols.sort
         source.theory.presentation.interactingSort.1.name =
@@ -861,7 +938,7 @@ theorem mapsInteractingSortName {source target : CIGSLT}
 
 /-- The selected authored interaction rewrite is transported exactly, not
 merely mapped to some target declaration. -/
-theorem mapsInteractionRewriteValue {source target : CIGSLT}
+theorem mapsInteractionRewriteValue {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapRewriteRule morphism.underlying.structural.structural.symbols
         source.theory.presentation.interactionRewrite.1 =
@@ -869,21 +946,21 @@ theorem mapsInteractionRewriteValue {source target : CIGSLT}
   exact congrArg Subtype.val
     morphism.underlying.structural.mapsInteractionRewrite
 
-theorem mapsInteractionRewriteTypeContext {source target : CIGSLT}
+theorem mapsInteractionRewriteTypeContext {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapTypeContext morphism.underlying.structural.structural.symbols
         source.theory.presentation.interactionRewrite.1.typeContext =
       target.theory.presentation.interactionRewrite.1.typeContext := by
   exact congrArg RewriteRule.typeContext morphism.mapsInteractionRewriteValue
 
-theorem mapsInteractionRewriteLeft {source target : CIGSLT}
+theorem mapsInteractionRewriteLeft {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.underlying.structural.structural.symbols
         source.theory.presentation.interactionRewrite.1.left =
       target.theory.presentation.interactionRewrite.1.left := by
   exact congrArg RewriteRule.left morphism.mapsInteractionRewriteValue
 
-theorem mapsInteractionRewriteRight {source target : CIGSLT}
+theorem mapsInteractionRewriteRight {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.underlying.structural.structural.symbols
         source.theory.presentation.interactionRewrite.1.right =
@@ -892,7 +969,7 @@ theorem mapsInteractionRewriteRight {source target : CIGSLT}
 
 /-- Structural term maps preserve the schema-variable name selected by the
 program continuation. -/
-theorem mapsProgramContinuationVariableName {source target : CIGSLT}
+theorem mapsProgramContinuationVariableName {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.cut.program.continuationVariable.name =
       target.cut.program.continuationVariable.name := by
@@ -906,7 +983,7 @@ theorem mapsProgramContinuationVariableName {source target : CIGSLT}
 
 /-- Structural term maps preserve the schema-variable name selected by the
 environment continuation. -/
-theorem mapsEnvironmentContinuationVariableName {source target : CIGSLT}
+theorem mapsEnvironmentContinuationVariableName {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.cut.environment.continuationVariable.name =
       target.cut.environment.continuationVariable.name := by
@@ -918,7 +995,7 @@ theorem mapsEnvironmentContinuationVariableName {source target : CIGSLT}
     target.cut.environment.continuationVariable] at sourceName
   exact Option.some.inj sourceName.symm
 
-theorem mapsProgramConstructorRule {source target : CIGSLT}
+theorem mapsProgramConstructorRule {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapGrammarRule morphism.underlying.structural.structural.symbols
         source.cut.program.constructor.1 =
@@ -928,7 +1005,7 @@ theorem mapsProgramConstructorRule {source target : CIGSLT}
     morphism.mapsProgramConstructor
   exact equality
 
-theorem mapsEnvironmentConstructorRule {source target : CIGSLT}
+theorem mapsEnvironmentConstructorRule {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapGrammarRule morphism.underlying.structural.structural.symbols
         source.cut.environment.constructor.1 =
@@ -938,7 +1015,7 @@ theorem mapsEnvironmentConstructorRule {source target : CIGSLT}
     morphism.mapsEnvironmentConstructor
   exact equality
 
-theorem mapConstructor_eq_program_iff {source target : CIGSLT}
+theorem mapConstructor_eq_program_iff {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule) :
     mapGrammarRule morphism.underlying.structural.structural.symbols
           constructor = target.cut.program.constructor.1 ↔
@@ -949,7 +1026,7 @@ theorem mapConstructor_eq_program_iff {source target : CIGSLT}
     subst constructor
     exact morphism.mapsProgramConstructorRule
 
-theorem mapConstructor_eq_environment_iff {source target : CIGSLT}
+theorem mapConstructor_eq_environment_iff {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule) :
     mapGrammarRule morphism.underlying.structural.structural.symbols
           constructor = target.cut.environment.constructor.1 ↔
@@ -965,10 +1042,10 @@ authored source constructor.  The label formulation is what the induced
 contractum translation consumes; uniqueness of authored labels makes it
 equivalent to the constructor-level morphism laws. -/
 theorem mapConstructorLabel_mem_wrappedLabels_iff
-    {source target : CIGSLT}
+    {source target : WrappableIGSLT}
     (morphism : source.Morphism target)
     (constructor :
-      AuthoredConstructor source.theory.presentation.presentation) :
+      DeclaredConstructor source.theory.presentation.presentation) :
     morphism.underlying.structural.structural.symbols.constructor
           constructor.1.label ∈
         target.continuationRetyping.wrappedLabels ↔
@@ -986,14 +1063,14 @@ theorem mapConstructorLabel_mem_wrappedLabels_iff
   · exact morphism.reflectsWrappedConstructors constructor
   · exact morphism.mapsWrappedConstructors constructor
 
-/-- Continuation-retyped contracta are natural in continued theory maps.
+/-- Continuation-retyped contracta are natural in maps of wrappable theories.
 The total wrapped-label fiber law is precisely what aligns the constructor
 choice at every raw schema node; all remaining pattern structure is mapped
 pointwise. -/
-theorem mapContractum_natural {source target : CIGSLT}
+theorem mapContractum_natural {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (pattern : Pattern) :
     mapPattern
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)
         (source.continuationRetyping.mapContractum pattern) =
       target.continuationRetyping.mapContractum
@@ -1001,9 +1078,9 @@ theorem mapContractum_natural {source target : CIGSLT}
           pattern) := by
   induction pattern using Pattern.inductionOn with
   | hbvar index =>
-      simp [ContinuationRetypingPlan.mapContractum, mapPattern]
+      simp [ContinuationRetypingPlan.mapContractum_bvar, mapPattern]
   | hfvar name =>
-      simp [ContinuationRetypingPlan.mapContractum, mapPattern]
+      simp [ContinuationRetypingPlan.mapContractum_fvar, mapPattern]
   | happly constructor arguments inductionHypothesis =>
       by_cases wrapped :
           constructor ∈ source.continuationRetyping.wrappedLabels
@@ -1012,8 +1089,7 @@ theorem mapContractum_natural {source target : CIGSLT}
                 constructor ∈
               target.continuationRetyping.wrappedLabels :=
           (morphism.mapsWrappedLabelMembership constructor).2 wrapped
-        simp [ContinuationRetypingPlan.mapContractum,
-          ContinuationRetypingPlan.mapContractumList_eq_map,
+        simp [ContinuationRetypingPlan.mapContractum_apply,
           mapPattern, List.map_map, wrapped, targetWrapped]
         exact inductionHypothesis
       · have targetNotWrapped :
@@ -1024,29 +1100,27 @@ theorem mapContractum_natural {source target : CIGSLT}
           exact wrapped
             ((morphism.mapsWrappedLabelMembership constructor).1
               targetWrapped)
-        simp [ContinuationRetypingPlan.mapContractum,
-          ContinuationRetypingPlan.mapContractumList_eq_map,
+        simp [ContinuationRetypingPlan.mapContractum_apply,
           mapPattern, List.map_map, wrapped, targetNotWrapped]
         exact inductionHypothesis
   | hlambda binder body inductionHypothesis =>
-      simp [ContinuationRetypingPlan.mapContractum, mapPattern,
+      simp [ContinuationRetypingPlan.mapContractum_lambda, mapPattern,
         inductionHypothesis]
   | hmultiLambda arity binders body inductionHypothesis =>
-      simp [ContinuationRetypingPlan.mapContractum, mapPattern,
+      simp [ContinuationRetypingPlan.mapContractum_multiLambda, mapPattern,
         inductionHypothesis]
   | hsubst body replacement bodyHypothesis replacementHypothesis =>
-      simp [ContinuationRetypingPlan.mapContractum, mapPattern,
+      simp [ContinuationRetypingPlan.mapContractum_subst, mapPattern,
         bodyHypothesis, replacementHypothesis]
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp [ContinuationRetypingPlan.mapContractum,
-        ContinuationRetypingPlan.mapContractumList_eq_map,
+      simp [ContinuationRetypingPlan.mapContractum_collection,
         mapPattern, List.map_map]
       exact inductionHypothesis
 
-/-- Selected continuation positions are invariant under a continued theory
-map.  The reflection fields are exactly what rules out newly selected fibers
-created by a collapsing symbol translation. -/
-theorem isSelectedContinuation_map {source target : CIGSLT}
+/-- Selected continuation positions are invariant under a map of wrappable
+theories.  The reflection fields are exactly what rules out newly selected
+fibers created by a collapsing symbol translation. -/
+theorem isSelectedContinuation_map {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule)
     (index : Nat) :
     isSelectedContinuation target.cut
@@ -1062,11 +1136,11 @@ theorem isSelectedContinuation_map {source target : CIGSLT}
     ← morphism.mapsProgramContinuationIndex,
     ← morphism.mapsEnvironmentContinuationIndex]
 
-theorem mapTermParam_costBaseParameter {source target : CIGSLT}
+theorem mapTermParam_costBaseParameter {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule)
     (entry : TermParam × Nat) :
     mapTermParam
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)
         (costBaseParameter source.cut constructor entry) =
       costBaseParameter target.cut
@@ -1074,7 +1148,7 @@ theorem mapTermParam_costBaseParameter {source target : CIGSLT}
           morphism.underlying.structural.structural.symbols constructor)
         (mapTermParam morphism.underlying.structural.structural.symbols
           entry.1, entry.2) := by
-  unfold costBaseParameter
+  simp only [costBaseParameter_def]
   rw [morphism.isSelectedContinuation_map constructor entry.2]
   split
   · exact mapTermParam_costWrapped
@@ -1085,11 +1159,11 @@ theorem mapTermParam_costBaseParameter {source target : CIGSLT}
   · exact mapTermParam_costBase
       morphism.underlying.structural.structural.symbols entry.1
 
-theorem map_costBaseParameter_list {source target : CIGSLT}
+theorem map_costBaseParameter_list {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule) :
     (constructor.params.zipIdx.map
         (costBaseParameter source.cut constructor)).map
-        (mapTermParam (costPresentationSymbols
+        (mapTermParam (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)) =
       (mapGrammarRule morphism.underlying.structural.structural.symbols
           constructor).params.zipIdx.map
@@ -1105,11 +1179,11 @@ theorem map_costBaseParameter_list {source target : CIGSLT}
   exact morphism.mapTermParam_costBaseParameter constructor
     (parameter, index)
 
-/-- Base constructor retyping is natural in continued theory maps. -/
-theorem mapGrammarRule_costBaseConstructor {source target : CIGSLT}
+/-- Base constructor retyping is natural in maps of wrappable theories. -/
+theorem mapGrammarRule_costBaseConstructor {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule) :
     mapGrammarRule
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)
         (costBaseConstructor source.cut constructor) =
       costBaseConstructor target.cut
@@ -1117,15 +1191,15 @@ theorem mapGrammarRule_costBaseConstructor {source target : CIGSLT}
           morphism.underlying.structural.structural.symbols constructor) := by
   have parameters := morphism.map_costBaseParameter_list constructor
   cases constructor
-  simp only [costBaseConstructor, mapGrammarRule] at parameters ⊢
-  congr <;> simp
+  simp only [costBaseConstructor_def, mapGrammarRule] at parameters ⊢
+  congr 1 <;> simp_all [mapCollectionAlgebra, Option.map_map, Function.comp_def]
 
-theorem map_costWrappedParameter_list {source target : CIGSLT}
+theorem map_costWrappedParameter_list {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (parameters : List TermParam) :
     (parameters.map (mapParameterType
         (costWrappedTypeExpr
           source.theory.presentation.interactingSort.1.name))).map
-        (mapTermParam (costPresentationSymbols
+        (mapTermParam (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)) =
       (parameters.map
           (mapTermParam
@@ -1142,9 +1216,9 @@ theorem map_costWrappedParameter_list {source target : CIGSLT}
     morphism.mapsInteractingSortName morphism.reflectsInteractingSort
     parameter
 
-theorem map_costWrappedCategory {source target : CIGSLT}
+theorem map_costWrappedCategory {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (category : String) :
-    (costPresentationSymbols
+    (costLanguageDefSymbolMap
       morphism.underlying.structural.structural.symbols).sort
         (if category = source.theory.presentation.interactingSort.1.name then
           costWrappedSortName else costBaseSortName category) =
@@ -1166,11 +1240,11 @@ theorem map_costWrappedCategory {source target : CIGSLT}
         (morphism.reflectsInteractingSort category targetEquality)
     simp [sourceEquality, targetInequality]
 
-/-- Wrapped residual constructors are natural in continued theory maps. -/
-theorem mapGrammarRule_costWrappedConstructor {source target : CIGSLT}
+/-- Wrapped residual constructors are natural in maps of wrappable theories. -/
+theorem mapGrammarRule_costWrappedConstructor {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (constructor : GrammarRule) :
     mapGrammarRule
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)
         (costWrappedConstructor (theory := source.theory) constructor) =
       costWrappedConstructor (theory := target.theory)
@@ -1180,31 +1254,30 @@ theorem mapGrammarRule_costWrappedConstructor {source target : CIGSLT}
   have categoryEquality := morphism.map_costWrappedCategory constructor.category
   cases constructor
   simp only [costWrappedConstructor, mapGrammarRule] at parameters categoryEquality ⊢
-  congr 1
-  simp
+  congr 1 <;> simp [mapCollectionAlgebra, Option.map_map, Function.comp_def]
 
 /-! ## Structural action on the generated continuation signature -/
 
 @[simp]
 theorem mapTypeDecl_costBase
-    (symbols : PresentationSymbols) (declaration : TypeDecl) :
-    mapTypeDecl (costPresentationSymbols symbols)
+    (symbols : LanguageDefSymbolMap) (declaration : TypeDecl) :
+    mapTypeDecl (costLanguageDefSymbolMap symbols)
         { declaration with name := costBaseSortName declaration.name } =
       { mapTypeDecl symbols declaration with
         name := costBaseSortName (symbols.sort declaration.name) } := by
   cases declaration
-  simp [mapTypeDecl, costPresentationSymbols, costBaseSortName,
+  simp [mapTypeDecl, costLanguageDefSymbolMap, costBaseSortName,
     costBaseSortTag]
 
-/-- Continued maps induce structural maps between the exact generated
+/-- Maps of wrappable theories induce structural maps between the exact generated
 continuation signatures.  This is the declaration-level action underlying
 the Cost signature; it adds no equations or reductions. -/
-def continuationRetypingStructural {source target : CIGSLT}
+def continuationRetypingStructural {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     StructuralMorphism
       source.continuationRetyping.generatedPresentation
       target.continuationRetyping.generatedPresentation where
-  symbols := costPresentationSymbols
+  symbols := costLanguageDefSymbolMap
     morphism.underlying.structural.structural.symbols
   mapsTypes declaration membership := by
     change List.Mem declaration
@@ -1212,7 +1285,7 @@ def continuationRetypingStructural {source target : CIGSLT}
           { entry with name := costBaseSortName entry.name }) ++
         [TypeDecl.plain costWrappedSortName]) at membership
     change List.Mem (mapTypeDecl
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols) declaration)
       ((target.theory.presentation.presentation.language.types.map fun entry =>
           { entry with name := costBaseSortName entry.name }) ++
@@ -1244,7 +1317,7 @@ def continuationRetypingStructural {source target : CIGSLT}
           (fun entry => costWrappedConstructor (theory := source.theory) entry.1))
       at membership
     change List.Mem (mapGrammarRule
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols) constructor)
       (target.theory.presentation.presentation.language.terms.map
           (costBaseConstructor target.cut) ++
@@ -1283,44 +1356,46 @@ def continuationRetypingStructural {source target : CIGSLT}
 /-! ## Conservative extension by the fixed Cost apparatus -/
 
 theorem map_costCoreTypes
-    (symbols : PresentationSymbols) :
+    (symbols : LanguageDefSymbolMap) :
     costCoreTypes.map
-        (mapTypeDecl (costPresentationSymbols symbols)) =
+        (mapTypeDecl (costLanguageDefSymbolMap symbols)) =
       costCoreTypes := by
   simp [costCoreTypes, costCoreSortSuffixes, mapTypeDecl, TypeDecl.plain]
 
-theorem map_costCoreConstructors {source target : CIGSLT}
+theorem map_costCoreConstructors {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     (costCoreConstructors
         source.theory.presentation.interactingSort.1.name).map
-        (mapGrammarRule (costPresentationSymbols
+        (mapGrammarRule (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols)) =
       costCoreConstructors
         target.theory.presentation.interactingSort.1.name := by
   simp [costCoreConstructors, costSignatureUnitConstructor,
-    costSignatureProductConstructor, costSignedConstructor,
+    costSignatureProductConstructor, costKeyLeafConstructor, costKeyBranchConstructor,
+    costSignatureCommitConstructor, costSignedConstructor,
     costTokenStackEmptyConstructor, costTokenStackConsConstructor,
     costFundingConstructor, costContactConstructor,
-    costSignatureSortName, costTokenStackSortName,
+    costSignatureSortName, costKeySortName, costTokenStackSortName,
     costSignatureUnitConstructorName, costSignatureProductConstructorName,
+    costKeyLeafConstructorName, costKeyBranchConstructorName, costSignatureCommitConstructorName,
     costSignedConstructorName, costTokenStackEmptyConstructorName,
     costTokenStackConsConstructorName, costFundingConstructorName,
     costContactConstructorName, mapGrammarRule, mapTermParam, mapTypeExpr,
     morphism.mapsInteractingSortName]
 
 /-- The structural Cost-core action maps generated declarations through the
-continued theory map and fixes the generic Cost apparatus. -/
-def costCoreStructural {source target : CIGSLT}
+map of wrappable theories and fixes the generic Cost apparatus. -/
+def costCoreStructural {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     StructuralMorphism source.costCorePresentation target.costCorePresentation where
-  symbols := costPresentationSymbols
+  symbols := costLanguageDefSymbolMap
     morphism.underlying.structural.structural.symbols
   mapsTypes declaration membership := by
     change List.Mem declaration
       (source.continuationRetyping.generatedLanguage.types ++ costCoreTypes)
       at membership
     change List.Mem (mapTypeDecl
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols) declaration)
       (target.continuationRetyping.generatedLanguage.types ++ costCoreTypes)
     rcases List.mem_append.mp membership with
@@ -1330,9 +1405,9 @@ def costCoreStructural {source target : CIGSLT}
           declaration generatedMembership)
     · apply List.mem_append_right
       have mappedMembership : List.Mem
-          (mapTypeDecl (costPresentationSymbols
+          (mapTypeDecl (costLanguageDefSymbolMap
             morphism.underlying.structural.structural.symbols) declaration)
-          (costCoreTypes.map (mapTypeDecl (costPresentationSymbols
+          (costCoreTypes.map (mapTypeDecl (costLanguageDefSymbolMap
             morphism.underlying.structural.structural.symbols))) :=
         List.mem_map_of_mem apparatusMembership
       rw [map_costCoreTypes] at mappedMembership
@@ -1343,7 +1418,7 @@ def costCoreStructural {source target : CIGSLT}
         costCoreConstructors
           source.theory.presentation.interactingSort.1.name) at membership
     change List.Mem (mapGrammarRule
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols) constructor)
       (target.continuationRetyping.generatedLanguage.terms ++
         costCoreConstructors
@@ -1355,11 +1430,11 @@ def costCoreStructural {source target : CIGSLT}
           constructor generatedMembership)
     · apply List.mem_append_right
       have mappedMembership : List.Mem
-          (mapGrammarRule (costPresentationSymbols
+          (mapGrammarRule (costLanguageDefSymbolMap
             morphism.underlying.structural.structural.symbols) constructor)
           ((costCoreConstructors
             source.theory.presentation.interactingSort.1.name).map
-              (mapGrammarRule (costPresentationSymbols
+              (mapGrammarRule (costLanguageDefSymbolMap
                 morphism.underlying.structural.structural.symbols))) :=
         List.mem_map_of_mem apparatusMembership
       rw [morphism.map_costCoreConstructors] at mappedMembership
@@ -1371,25 +1446,35 @@ def costCoreStructural {source target : CIGSLT}
     change List.Mem rewrite [] at membership
     exact (List.not_mem_nil membership).elim
 
-end CIGSLT.Morphism
+end WrappableIGSLT.Morphism
 
 /-! ## Mathlib functor -/
+
+namespace WrappableIGSLT
+
+/-- The declaration-derived Cost core is functorial from wrappable theories
+to exact validated language definitions. No section is read. -/
+def costCoreFunctor : CategoryTheory.Functor WrappableIGSLT ValidatedLanguageDef where
+  obj source := source.costCorePresentation
+  map morphism := morphism.costCoreStructural
+  map_id source := by
+    apply StructuralMorphism.ext
+    exact costLanguageDefSymbolMap_id
+  map_comp first second := by
+    apply StructuralMorphism.ext
+    exact costLanguageDefSymbolMap_comp
+      first.underlying.structural.structural.symbols
+      second.underlying.structural.structural.symbols
+
+end WrappableIGSLT
 
 namespace CIGSLT
 
 /-- The declaration-derived Cost core is functorial from continued
-interactive theories to exact validated language definitions. -/
-def costCoreFunctor : CategoryTheory.Functor CIGSLT ValidatedLanguageDef where
-  obj source := source.costCorePresentation
-  map morphism := CIGSLT.Morphism.costCoreStructural morphism
-  map_id source := by
-    apply StructuralMorphism.ext
-    exact costPresentationSymbols_id
-  map_comp first second := by
-    apply StructuralMorphism.ext
-    exact costPresentationSymbols_comp
-      first.underlying.structural.structural.symbols
-      second.underlying.structural.structural.symbols
+interactive theories to exact validated language definitions: forget the
+section, then apply the functor on wrappable theories. -/
+def costCoreFunctor : CategoryTheory.Functor CIGSLT ValidatedLanguageDef :=
+  toWrappable.comp WrappableIGSLT.costCoreFunctor
 
 end CIGSLT
 

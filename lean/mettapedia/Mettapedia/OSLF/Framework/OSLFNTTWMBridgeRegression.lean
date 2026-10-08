@@ -11,7 +11,7 @@ Regression fixtures consuming the formula-level bridge endpoints.
 
 namespace Mettapedia.OSLF.Framework.OSLFNTTWMBridgeRegression
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.OSLF.Framework.OSLFNTTWMBridge
 open Mettapedia.OSLF.Framework.OSLFNTTTheoryClosure
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -28,9 +28,6 @@ open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine
 
 universe u v x
-
-abbrev WMHyper (State : Type x) [EvidenceType State] :=
-  Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, x} State
 
 variable {State : Type x} [EvidenceType State] [BinaryWorldModel State Pattern]
 
@@ -51,6 +48,7 @@ theorem formula_graph_triangle_fixture
     (relEnv := relEnv) (W := W) (queryOfAtom := queryOfAtom)
     (φf := φf) (Xobj := Xobj) (X := Xgr) (p := p)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical regression fixture:
 consume representable BC-square transport together with the Π-facing transport
 endpoint that is routed explicitly via `prop12_piSigmaPredicateRulePack`. -/
@@ -93,6 +91,7 @@ theorem representable_bc_with_prop12_pi_fixture
         (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat)
         (f := f) (χ := χ) (ψ := (⊤ : CategoryTheory.Subfunctor D))).2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical regression fixture:
 consume BC-square transport together with the unified Π/Σ transport endpoint
 that is routed explicitly via the Prop-12 ΠΣ pack. -/
@@ -143,6 +142,7 @@ theorem representable_bc_with_prop12_piSigma_fixture
   · exact (pack.piSigma_transport χ ψ).1
   · exact (pack.piSigma_transport χ ψ).2
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical regression fixture: consume the packaged representable Π/Σ
 transport API directly (Σ-BC + Σ/Π transport). -/
 theorem representable_transport_pack_fixture
@@ -507,27 +507,14 @@ theorem semE_fragment_evidence_rule_policy_stepStar_fixture
   have hSide : r.side (semEState relEnv Iatom φ) := rfl
   exact r.sound hSide
 
-/-- Canonical closure regression fixture: consume the formula-level path-order
-star wrapper directly and project the endpoint + evidence obligations. -/
-theorem formula_pathOrder_star_endpoint_projection_fixture
-    (lang : LanguageDef) (s : LangSort lang)
-    (seed qComm : Pattern) (φpred : Pattern → Prop)
+set_option backward.isDefEq.respectTransparency false in
+/-- Project the categorical endpoint and policy-controlled evidence from the
+formula-level star wrapper. This nonmodal conclusion needs no separate
+path-order or equation-invariance assumption. -/
+theorem formula_star_endpoint_projection_fixture
     (relEnv : RelationEnv)
     (I : EvidenceAtomSem)
-    (hPathOrder :
-      ∀ {a b : LangSort lang}
-        (g : SortPath lang a b) (h : SortPath lang b s),
-          pathSem lang g (pathSem lang h seed) = pathSem lang (g.comp h) seed)
     (hSemEPolicy : ControlledStepPolicy relEnv I)
-    {Pm Bm Dm : CategoryTheory.Functor (Opposite (ConstructorObj lang)) (Type _)}
-    (pi1m : Pm ⟶ (languageSortRepresentableObj lang s))
-    (pi2m : Pm ⟶ Bm)
-    (fm : (languageSortRepresentableObj lang s) ⟶ Dm)
-    (gm : Bm ⟶ Dm)
-    (hpbm : CategoryTheory.IsPullback pi1m pi2m fm gm)
-    (hfm : CategoryTheory.Mono fm) (hpi2m : CategoryTheory.Mono pi2m)
-    {Xmodal : Opposite (ConstructorObj lang)}
-    (pmodal : Pattern)
     (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}
     (pi1 : P ⟶ Aobj) (pi2 : P ⟶ Bobj) (fcat : Aobj ⟶ D) (gcat : Bobj ⟶ D)
@@ -548,24 +535,18 @@ theorem formula_pathOrder_star_endpoint_projection_fixture
     WMEvidenceObligation SemEState SemEQuery
       (semEState relEnv I φf) p q := by
   have hPack :=
-    oslf_formula_ntt_wm_star_sound_of_pathOrder
-      (lang := lang) (s := s)
-      (seed := seed) (qComm := qComm) (φpred := φpred)
+    semE_fragment_formulaCategoricalEndpoint_stepStar_of_policy
       (relEnv := relEnv)
       (I := I)
-      (hPathOrder := hPathOrder)
-      (hSemEPolicy := hSemEPolicy)
-      (pi1m := pi1m) (pi2m := pi2m) (fm := fm) (gm := gm)
-      (hpbm := hpbm) (hfm := hfm) (hpi2m := hpi2m)
-      (Xmodal := Xmodal) (pmodal := pmodal)
+      (policy := hSemEPolicy)
       (H := H)
       (pi1 := pi1) (pi2 := pi2) (fcat := fcat) (gcat := gcat)
       (hpb := hpb) (hmfcat := hmfcat) (hmpi2 := hmpi2)
       (queryOfAtom := queryOfAtom)
-      (φf := φf) (hφ := hφ)
-      (Xobj := Xobj) (Xgr := Xgr)
+      (φ := φf) (hφ := hφ)
+      (Xobj := Xobj) (X := Xgr)
       (p := p) (q := q) (hstar := hstar) (φcat := φcat)
-  exact ⟨hPack.2.2.2.1, hPack.2.2.2.2⟩
+  exact ⟨(hPack.1 p).2, hPack.2⟩
 
 /-- Canonical-closure regression fixture: consume `CanonicalClosureContext`
 directly at the fixpoint endpoint. -/
@@ -644,6 +625,7 @@ theorem canonical_context_fixpoint_endpoint_fixture
       (p := p) (q := q) (hstar := hstar) (φcat := φcat)
       (hStrengthFromEvidence := hStrengthFromEvidence))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical-closure regression fixture:
 consume the explicit rule-pack transport interface and the fixpoint closure
 endpoint from one shared `CanonicalClosureContext`. -/
@@ -782,10 +764,11 @@ theorem canonical_context_rulePack_fixpoint_endpoint_fixture
     canonicalConsequenceRuleOn_compact] using
     canonical_rulePack_transport_piSigma_and_fixpoint_of_transportGoal
       (ctx := ctx) (modal := modal) (cat := cat) (fa := fa)
-      (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
+      (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj ctx.lang))
       (transportGoal := transportGoal)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical-closure regression fixture:
 transport-goal bundled variant consuming the explicit Prop-12 Π/Σ transport-pack
 compatibility endpoint together with WM fixpoint closure. -/
@@ -795,7 +778,7 @@ theorem canonical_context_transportGoal_rulePack_fixpoint_endpoint_fixture_via_r
     (cat : CanonicalHyperSquare ctx)
     (fa : CanonicalFormulaArgs ctx)
     (hPiSigmaPack :
-      Mettapedia.OSLF.NativeType.PiSigmaPredicateRulePack.{0, 0, 0}
+      Mettapedia.OSLF.PresheafNativeType.PiSigmaPredicateRulePack.{0, 0, 0}
         (C := ConstructorObj ctx.lang))
     (transportGoal : CanonicalTransportGoalArgs ctx modal cat fa) :
     ((((Mettapedia.GSLT.Topos.presheafChangeOfBase
@@ -835,6 +818,7 @@ theorem canonical_context_transportGoal_rulePack_fixpoint_endpoint_fixture_via_r
     (hPiSigmaPack := hPiSigmaPack)
     (transportGoal := transportGoal)
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Canonical-closure regression fixture:
 transport-goal bundled Prop-12 compatibility route over the rule-pack-first
 transport-goal endpoint. -/
@@ -878,7 +862,7 @@ theorem canonical_context_transportGoal_rulePack_fixpoint_endpoint_fixture
         ∧ transportGoal.goal.q ∈ Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure.leastRuleClosure R W0 ({transportGoal.goal.p} : Set SemEQuery)) := by
   simpa using canonical_context_transportGoal_rulePack_fixpoint_endpoint_fixture_via_rulePack
     (ctx := ctx) (modal := modal) (cat := cat) (fa := fa)
-    (hPiSigmaPack := Mettapedia.OSLF.NativeType.prop12_piSigmaPredicateRulePack
+    (hPiSigmaPack := Mettapedia.OSLF.PresheafNativeType.prop12_piSigmaPredicateRulePack
       (C := ConstructorObj ctx.lang))
     (transportGoal := transportGoal)
 

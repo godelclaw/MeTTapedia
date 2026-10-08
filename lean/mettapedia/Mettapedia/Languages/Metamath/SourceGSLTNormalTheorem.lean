@@ -1,6 +1,8 @@
 import Mettapedia.Languages.Metamath.SourceGSLTState
 import Mettapedia.Languages.Metamath.SourceInferenceDeclarativeAdequacy
 
+open Mettapedia.GSLT.LanguageDef
+
 /-!
 # Normal theorem occurrences in the source-owned Metamath GSLT
 
@@ -36,9 +38,9 @@ structure NormalTheoremStep
     (formula : ConstantHeadedFormula)
     (proofLabels : List String) : Type where
   sourceValid : sourceStateValid before = true
-  target : ValidatedPresentation
+  target : ValidatedCalculusLanguageDef
   presentation_eq :
-    presentationOfSourcePrefix? before.toSourcePrefix = some target.1
+    calculusLanguageDefOfSourcePrefix? before.toSourcePrefix = some target.1
   tree :
     SourceGeneratedProvesTree before.toSourcePrefix target formula
   labels_eq : tree.labels = proofLabels
@@ -91,7 +93,7 @@ theorem NormalTheoremStep.toSupportedDeclarative
     {before after : SourceState} {label : String}
     {formula : ConstantHeadedFormula} {proofLabels : List String}
     (step : NormalTheoremStep before after label formula proofLabels) :
-    SupportedProvable
+    FrameDerivable
       (sourceOperationalDatabase before.toSourcePrefix)
       (sourceOperationalCallerFrame before.toSourcePrefix)
       (exprToFormula
@@ -117,7 +119,7 @@ theorem NormalTheoremStep.toSemanticProvable
     {before after : SourceState} {label : String}
     {formula : ConstantHeadedFormula} {proofLabels : List String}
     (step : NormalTheoremStep before after label formula proofLabels) :
-    Metamath.Spec.Semantic.Provable
+    Metamath.Spec.Declarative.Provable
       (dbToAxioms
         (sourceOperationalDatabase before.toSourcePrefix))
       (frameToContext
@@ -126,7 +128,7 @@ theorem NormalTheoremStep.toSemanticProvable
         (varMapOfFrame
           (sourceOperationalCallerFrame before.toSourcePrefix))
         (operationalExpr formula)) := by
-  exact step.toSupportedDeclarative.toSemantic
+  exact step.toSupportedDeclarative.toDeclarative
 
 /-- Negative boundary: local declaration payloads cannot witness a normal
 theorem transition. -/

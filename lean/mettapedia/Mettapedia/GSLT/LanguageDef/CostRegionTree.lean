@@ -1,6 +1,10 @@
 import Mathlib.CategoryTheory.ObjectProperty.FullSubcategory
 import Mettapedia.GSLT.LanguageDef.CostCanonicalSection
+import Mettapedia.GSLT.LanguageDef.Cost.StaticTypeThinning
 import Mettapedia.GSLT.LanguageDef.ReflectiveWellSortedChecker
+import Mettapedia.GSLT.LanguageDef.Cost.FiniteStaticAction
+import Mettapedia.GSLT.LanguageDef.Cost.FiniteStaticSourceTerm
+import Mettapedia.GSLT.LanguageDef.Cost.FiniteStaticPreimage
 
 /-!
 # Typed alternating regions for Cost canonicalization
@@ -74,7 +78,7 @@ theorem decodeDeclaredCostStaticConstructor_symbols_of_wrapped
     (wrapped : rule.label ∈ source.continuationRetyping.wrappedLabels) :
     decodeDeclaredCostStaticConstructor source color
         ((color.symbols source).constructor rule.label) = some rule.label := by
-  let authored : AuthoredConstructor
+  let authored : DeclaredConstructor
       source.theory.presentation.presentation := ⟨rule, membership⟩
   have wrappedConstructor : authored ∈
       source.continuationRetyping.wrappedConstructors :=
@@ -207,7 +211,7 @@ theorem WellSorted.ElementsHaveType.extendOuter
 /-- Mapping a declaration's type and constructor names cannot change whether
 an already-concrete argument uses the required binder representation. -/
 theorem WellSorted.matchesParameterRepresentation_mapTermParam_iff
-    (symbols : PresentationSymbols) (parameter : TermParam)
+    (symbols : LanguageDefSymbolMap) (parameter : TermParam)
     (argument : Pattern) :
     WellSorted.MatchesParameterRepresentation
         (mapTermParam symbols parameter) argument ↔
@@ -722,7 +726,7 @@ theorem WellSorted.HasType.ReflectiveSupportSafeAt.transportPattern
   exact safe.reindex
 
 /-- Transport a typing derivation along equality of its raw pattern index. -/
-def WellSorted.HasType.transportPattern
+theorem WellSorted.HasType.transportPattern
     {language : LanguageDef} {free : WellSorted.FreeTypeContext}
     {bound : List TypeExpr} {sourcePattern targetPattern : Pattern}
     {type : TypeExpr}
@@ -733,7 +737,7 @@ def WellSorted.HasType.transportPattern
 
 /-- Transport an argument-spine typing derivation along equality of its
 ordered raw argument list. -/
-def WellSorted.ArgumentsHaveTypes.transportArguments
+theorem WellSorted.ArgumentsHaveTypes.transportArguments
     {language : LanguageDef} {free : WellSorted.FreeTypeContext}
     {bound : List TypeExpr} {sourceArguments targetArguments : List Pattern}
     {parameters : List TermParam}
@@ -746,7 +750,7 @@ def WellSorted.ArgumentsHaveTypes.transportArguments
 
 /-- Transport a homogeneous collection-spine derivation along equality of
 its ordered element list. -/
-def WellSorted.ElementsHaveType.transportElements
+theorem WellSorted.ElementsHaveType.transportElements
     {language : LanguageDef} {free : WellSorted.FreeTypeContext}
     {bound : List TypeExpr} {sourceElements targetElements : List Pattern}
     {elementType : TypeExpr}
@@ -808,188 +812,60 @@ def TypedCostRegionBoundary.openPattern {source : CIGSLT}
 /-- Decode a complete binder-support fiber.  Failure of any component rejects
 the boundary; there is no default source type for a generated Cost type that
 does not lie in the selected static image. -/
-def decodeCostStaticTypeExprList (source : CIGSLT)
+def CostStaticTypeImage.decodeList (theory : IGSLT)
     (color : CostStaticColor) : List TypeExpr → Option (List TypeExpr)
   | [] => some []
   | type :: types => do
-      let sourceType ← decodeCostStaticTypeExpr source color type
-      let sourceTypes ← decodeCostStaticTypeExprList source color types
+      let sourceType ← CostStaticTypeImage.decode theory color type
+      let sourceTypes ← CostStaticTypeImage.decodeList theory color types
       pure (sourceType :: sourceTypes)
 
 /-- Decoding a uniformly mapped support is exact. -/
 @[simp]
-theorem decodeCostStaticTypeExprList_map (source : CIGSLT)
+theorem CostStaticTypeImage.decodeList_map (theory : IGSLT)
     (color : CostStaticColor) (types : List TypeExpr) :
-    decodeCostStaticTypeExprList source color
-        (types.map (mapTypeExpr (color.symbols source))) = some types := by
+    CostStaticTypeImage.decodeList theory color
+        (types.map (mapTypeExpr (color.symbolsOf theory))) = some types := by
   induction types with
   | nil => rfl
   | cons type types inductionHypothesis =>
-      simp [decodeCostStaticTypeExprList, inductionHypothesis]
+      simp [CostStaticTypeImage.decodeList, inductionHypothesis]
 
 /-- Successful support decoding witnesses membership in the exact selected
 static fiber. -/
-theorem map_decodeCostStaticTypeExprList (source : CIGSLT)
+theorem CostStaticTypeImage.map_decodeList (theory : IGSLT)
     (color : CostStaticColor) {target sourceTypes : List TypeExpr}
-    (decoded : decodeCostStaticTypeExprList source color target =
+    (decoded : CostStaticTypeImage.decodeList theory color target =
       some sourceTypes) :
-    sourceTypes.map (mapTypeExpr (color.symbols source)) = target := by
+    sourceTypes.map (mapTypeExpr (color.symbolsOf theory)) = target := by
   induction target generalizing sourceTypes with
   | nil =>
-      simp [decodeCostStaticTypeExprList] at decoded
+      simp [CostStaticTypeImage.decodeList] at decoded
       subst sourceTypes
       rfl
   | cons target targets inductionHypothesis =>
-      simp only [decodeCostStaticTypeExprList] at decoded
-      cases typeDecoded : decodeCostStaticTypeExpr source color target with
+      simp only [CostStaticTypeImage.decodeList] at decoded
+      cases typeDecoded : CostStaticTypeImage.decode theory color target with
       | none => simp [typeDecoded] at decoded
       | some sourceType =>
-          cases typesDecoded : decodeCostStaticTypeExprList source color targets with
+          cases typesDecoded : CostStaticTypeImage.decodeList theory color targets with
           | none => simp [typeDecoded, typesDecoded] at decoded
           | some sourceTail =>
               simp [typeDecoded, typesDecoded] at decoded
               subst sourceTypes
-              simp [mapTypeExpr_decodeCostStaticTypeExpr source color typeDecoded,
+              simp [CostStaticTypeImage.mapTypeExpr_decode theory color typeDecoded,
                 inductionHypothesis typesDecoded]
 
 /-! ### Binder-context thinning for maximal static regions -/
 
 /-- An order-preserving decomposition of a target binder context into the
 entries belonging to one static Cost type image and the entries foreign to
-that image.  The source list contains exactly the decoded image entries;
-foreign entries remain in the target list as explicit skipped positions. -/
-inductive CostStaticBinderThinning (source : CIGSLT)
-    (color : CostStaticColor) : List TypeExpr → List TypeExpr → Type where
-  | nil : CostStaticBinderThinning source color [] []
-  | mapped {sourceBound targetBound : List TypeExpr}
-      (sourceType : TypeExpr)
-      (tail : CostStaticBinderThinning source color sourceBound targetBound) :
-      CostStaticBinderThinning source color (sourceType :: sourceBound)
-        (mapTypeExpr (color.symbols source) sourceType :: targetBound)
-  | foreign {sourceBound targetBound : List TypeExpr}
-      (targetType : TypeExpr)
-      (rejected : decodeCostStaticTypeExpr source color targetType = none)
-      (tail : CostStaticBinderThinning source color sourceBound targetBound) :
-      CostStaticBinderThinning source color sourceBound
-        (targetType :: targetBound)
+that image, for a continued theory: the thinning of its underlying theory. -/
+abbrev CostStaticBinderThinning (source : CIGSLT) (color : CostStaticColor) :
+    List TypeExpr → List TypeExpr → Type :=
+  CostStaticTypeThinning source.theory color
 
-namespace CostStaticBinderThinning
-
-/-- The source binder context obtained by filtering a target context through
-one exact static Cost image.  Foreign entries are omitted but remain recorded
-in `ofTargetThinning`; this computation alone is never used as evidence. -/
-def sourceContextOfTarget (source : CIGSLT) (color : CostStaticColor)
-    (targetBound : List TypeExpr) : List TypeExpr :=
-  match targetBound with
-  | [] => []
-  | targetType :: targetBound =>
-      match decodeCostStaticTypeExpr source color targetType with
-      | none => sourceContextOfTarget source color targetBound
-      | some sourceType =>
-          sourceType :: sourceContextOfTarget source color targetBound
-termination_by targetBound.length
-
-/-- Proof-relevant companion to `sourceContextOfTarget`.  It records every
-retained and skipped target position in the same left-to-right traversal. -/
-def ofTargetThinning (source : CIGSLT) (color : CostStaticColor)
-    (targetBound : List TypeExpr) :
-    CostStaticBinderThinning source color
-      (sourceContextOfTarget source color targetBound) targetBound := by
-  match targetBound with
-  | [] => simpa [sourceContextOfTarget] using
-      (CostStaticBinderThinning.nil (source := source) (color := color))
-  | targetType :: targetBound =>
-      cases decoded : decodeCostStaticTypeExpr source color targetType with
-      | none =>
-          simpa [sourceContextOfTarget, decoded] using
-            CostStaticBinderThinning.foreign targetType decoded
-              (ofTargetThinning source color targetBound)
-      | some sourceType =>
-          have mapped :
-              mapTypeExpr (color.symbols source) sourceType = targetType :=
-            mapTypeExpr_decodeCostStaticTypeExpr source color decoded
-          subst targetType
-          simpa [sourceContextOfTarget] using
-            CostStaticBinderThinning.mapped sourceType
-              (ofTargetThinning source color targetBound)
-termination_by targetBound.length
-
-/-- Extend a static binder thinning by an ordered block of freshly introduced
-source binders and their exact target images.  This is the intrinsic context
-action used by multi-binder region plans. -/
-def prependMapped {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr} :
-    (arity : Nat) → (sourceType : TypeExpr) →
-    (tail : CostStaticBinderThinning source color sourceBound targetBound) →
-    CostStaticBinderThinning source color
-      (List.replicate arity sourceType ++ sourceBound)
-      (List.replicate arity (mapTypeExpr (color.symbols source) sourceType) ++
-        targetBound)
-  | 0, _sourceType, tail => tail
-  | Nat.succ arity, sourceType, tail =>
-      CostStaticBinderThinning.mapped sourceType
-        (prependMapped arity sourceType tail)
-
-/-- Filtering a context already wholly in the selected static image recovers
-the authored source context exactly. -/
-@[simp]
-theorem sourceContextOfTarget_map (source : CIGSLT)
-    (color : CostStaticColor) (sourceBound : List TypeExpr) :
-    sourceContextOfTarget source color
-      (sourceBound.map (mapTypeExpr (color.symbols source))) = sourceBound := by
-  induction sourceBound with
-  | nil => simp [sourceContextOfTarget]
-  | cons sourceType sourceBound inductionHypothesis =>
-      simp [sourceContextOfTarget, inductionHypothesis]
-
-/-- The proof-relevant thinning computes exactly the same selected-colour
-source context as the executable target-context filter. -/
-@[simp]
-theorem sourceContextOfTarget_eq_of_thinning
-    {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
-    sourceContextOfTarget source color targetBound = sourceBound := by
-  induction thinning with
-  | nil => simp [sourceContextOfTarget]
-  | mapped sourceType tail inductionHypothesis =>
-      simp [sourceContextOfTarget, inductionHypothesis]
-  | foreign targetType rejected tail inductionHypothesis =>
-      simp [sourceContextOfTarget, rejected, inductionHypothesis]
-
-/-- The proof-relevant thinning of a fixed target context into one static
-colour is unique.  Decoding decides whether each target binder is retained or
-foreign; the constructors retain the resulting evidence rather than adding a
-second choice. -/
-theorem all_eq {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (left right : CostStaticBinderThinning source color sourceBound
-      targetBound) :
-    left = right := by
-  induction left with
-  | nil =>
-      cases right
-      rfl
-  | mapped sourceType tail inductionHypothesis =>
-      cases right with
-      | mapped sourceType' tail' =>
-          congr
-          exact inductionHypothesis tail'
-      | foreign targetType rejected tail' =>
-          simp [decodeCostStaticTypeExpr_mapTypeExpr] at rejected
-  | foreign targetType rejected tail inductionHypothesis =>
-      cases right with
-      | mapped sourceType tail' =>
-          simp [decodeCostStaticTypeExpr_mapTypeExpr] at rejected
-      | foreign targetType' rejected' tail' =>
-          congr
-          exact inductionHypothesis tail'
-
-instance {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr} :
-    Subsingleton (CostStaticBinderThinning source color sourceBound
-      targetBound) :=
-  ⟨all_eq⟩
+namespace CostStaticTypeThinning
 
 /-- A source context together with its exact proof-relevant thinning into one
 fixed target context.  Packaging the dependent pair lets callers transport
@@ -1042,7 +918,7 @@ def mappedContext (source : CIGSLT) (color : CostStaticColor)
     (sourceBound : List TypeExpr) :
     CostStaticBinderThinning source color sourceBound
       (sourceBound.map (mapTypeExpr (color.symbols source))) := by
-  simpa using ofTargetThinning source color
+  simpa using ofTargetThinning source.theory color
     (sourceBound.map (mapTypeExpr (color.symbols source)))
 
 /-- Filtering an exact mapped prefix commutes with appending an arbitrary
@@ -1050,9 +926,9 @@ target suffix. -/
 @[simp]
 theorem sourceContextOfTarget_map_append (source : CIGSLT)
     (color : CostStaticColor) (sourcePrefix targetBound : List TypeExpr) :
-    sourceContextOfTarget source color
+    sourceContextOfTarget source.theory color
         (sourcePrefix.map (mapTypeExpr (color.symbols source)) ++ targetBound) =
-      sourcePrefix ++ sourceContextOfTarget source color targetBound := by
+      sourcePrefix ++ sourceContextOfTarget source.theory color targetBound := by
   induction sourcePrefix with
   | nil => rfl
   | cons sourceType sourcePrefix inductionHypothesis =>
@@ -1064,45 +940,17 @@ availability checks. -/
 @[simp]
 theorem sourceContextOfTarget_append (source : CIGSLT)
     (color : CostStaticColor) (left right : List TypeExpr) :
-    sourceContextOfTarget source color (left ++ right) =
-      sourceContextOfTarget source color left ++
-        sourceContextOfTarget source color right := by
+    sourceContextOfTarget source.theory color (left ++ right) =
+      sourceContextOfTarget source.theory color left ++
+        sourceContextOfTarget source.theory color right := by
   induction left with
   | nil => simp [sourceContextOfTarget]
   | cons targetType left inductionHypothesis =>
-      cases decoded : decodeCostStaticTypeExpr source color targetType with
+      cases decoded : CostStaticTypeImage.decode source.theory color targetType with
       | none =>
           simp [sourceContextOfTarget, decoded, inductionHypothesis]
       | some sourceType =>
           simp [sourceContextOfTarget, decoded, inductionHypothesis]
-
-/-- Embed a decoded source-context index into its original target position.
-The function is total on naturals, while the lookup theorems below give its
-meaning precisely on in-range source indices. -/
-def toTargetIndex {source : CIGSLT} {color : CostStaticColor} :
-    {sourceBound targetBound : List TypeExpr} →
-      CostStaticBinderThinning source color sourceBound targetBound → Nat → Nat
-  | [], [], .nil, index => index
-  | _ :: _, _ :: _, .mapped _ _, 0 => 0
-  | _ :: _, _ :: _, .mapped _ tail, index + 1 =>
-      tail.toTargetIndex index + 1
-  | _, _ :: _, .foreign _ _ tail, index =>
-      tail.toTargetIndex index + 1
-
-/-- Partially contract a target-context index to the decoded source context.
-Foreign binder positions return `none`; no neighboring image entry is used as
-a fallback. -/
-def toSourceIndex? {source : CIGSLT} {color : CostStaticColor} :
-    {sourceBound targetBound : List TypeExpr} →
-      CostStaticBinderThinning source color sourceBound targetBound →
-      Nat → Option Nat
-  | [], [], .nil, _ => none
-  | _ :: _, _ :: _, .mapped _ _, 0 => some 0
-  | _ :: _, _ :: _, .mapped _ tail, index + 1 =>
-      (tail.toSourceIndex? index).map Nat.succ
-  | _, _ :: _, .foreign _ _ _, 0 => none
-  | _, _ :: _, .foreign _ _ tail, index + 1 =>
-      tail.toSourceIndex? index
 
 /-- Erased computation of the source index selected by one target binder
 position.  Unlike `CostStaticBinderThinning`, this function depends only on
@@ -1112,11 +960,11 @@ def targetToSourceIndex? (source : CIGSLT) (color : CostStaticColor) :
     List TypeExpr → Nat → Option Nat
   | [], _ => none
   | targetType :: _targetBound, 0 =>
-      match decodeCostStaticTypeExpr source color targetType with
+      match CostStaticTypeImage.decode source.theory color targetType with
       | none => none
       | some _ => some 0
   | targetType :: targetBound, index + 1 =>
-      match decodeCostStaticTypeExpr source color targetType with
+      match CostStaticTypeImage.decode source.theory color targetType with
       | none => targetToSourceIndex? source color targetBound index
       | some _ =>
           (targetToSourceIndex? source color targetBound index).map Nat.succ
@@ -1133,91 +981,11 @@ theorem toSourceIndex?_eq_targetToSourceIndex?
   | nil => cases index <;> rfl
   | mapped sourceType tail inductionHypothesis =>
       cases index <;>
-        simp [toSourceIndex?, targetToSourceIndex?, inductionHypothesis,
-          decodeCostStaticTypeExpr_mapTypeExpr]
+        simp [toSourceIndex?, targetToSourceIndex?, inductionHypothesis]
   | foreign targetType rejected tail inductionHypothesis =>
       cases index <;>
         simp [toSourceIndex?, targetToSourceIndex?, inductionHypothesis,
           rejected]
-
-/-- Every in-range decoded source entry embeds at an equal mapped target
-type. -/
-theorem lookup_toTargetIndex {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    {index : Nat} {sourceType : TypeExpr}
-    (lookup : sourceBound[index]? = some sourceType) :
-    targetBound[thinning.toTargetIndex index]? =
-      some (mapTypeExpr (color.symbols source) sourceType) := by
-  induction thinning generalizing index sourceType with
-  | nil => simp at lookup
-  | mapped head tail inductionHypothesis =>
-      cases index with
-      | zero =>
-          simp at lookup
-          subst sourceType
-          rfl
-      | succ index =>
-          simp only [List.getElem?_cons_succ] at lookup
-          simpa [toTargetIndex] using inductionHypothesis lookup
-  | foreign targetType rejected tail inductionHypothesis =>
-      simpa [toTargetIndex] using inductionHypothesis lookup
-
-/-- Contracting an embedded in-range source index recovers that exact source
-index. -/
-theorem toSourceIndex?_toTargetIndex {source : CIGSLT}
-    {color : CostStaticColor} {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    {index : Nat} {sourceType : TypeExpr}
-    (lookup : sourceBound[index]? = some sourceType) :
-    thinning.toSourceIndex? (thinning.toTargetIndex index) = some index := by
-  induction thinning generalizing index sourceType with
-  | nil => simp at lookup
-  | mapped head tail inductionHypothesis =>
-      cases index with
-      | zero => simp [toTargetIndex, toSourceIndex?]
-      | succ index =>
-          simp only [List.getElem?_cons_succ] at lookup
-          simp [toTargetIndex, toSourceIndex?, inductionHypothesis lookup]
-  | foreign targetType rejected tail inductionHypothesis =>
-      simp [toTargetIndex, toSourceIndex?, inductionHypothesis lookup]
-
-/-- Every target index accepted by contraction is the exact image of the
-reported source index. -/
-theorem toTargetIndex_of_toSourceIndex?_eq_some {source : CIGSLT}
-    {color : CostStaticColor} {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    {targetIndex sourceIndex : Nat}
-    (contracted : thinning.toSourceIndex? targetIndex = some sourceIndex) :
-    thinning.toTargetIndex sourceIndex = targetIndex := by
-  induction thinning generalizing targetIndex sourceIndex with
-  | nil => simp [toSourceIndex?] at contracted
-  | mapped head tail inductionHypothesis =>
-      cases targetIndex with
-      | zero =>
-          simp [toSourceIndex?] at contracted
-          subst sourceIndex
-          rfl
-      | succ targetIndex =>
-          simp only [toSourceIndex?] at contracted
-          cases sourceIndex with
-          | zero => simp at contracted
-          | succ sourceIndex =>
-              simp only [Option.map_eq_some_iff] at contracted
-              obtain ⟨contractedIndex, contracted, equality⟩ := contracted
-              have contractedIndex_eq : contractedIndex = sourceIndex := by
-                omega
-              subst contractedIndex
-              simp [toTargetIndex, inductionHypothesis contracted]
-  | foreign targetType rejected tail inductionHypothesis =>
-      cases targetIndex with
-      | zero => simp [toSourceIndex?] at contracted
-      | succ targetIndex =>
-          have contractedTail :
-              tail.toSourceIndex? targetIndex = some sourceIndex := by
-            simpa [toSourceIndex?] using contracted
-          simp [toTargetIndex,
-            inductionHypothesis contractedTail]
 
 /-- A target binder whose type lies in the selected static image is retained
 by the proof-relevant context filter.  The result exposes both the contracted
@@ -1275,15 +1043,15 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
       some (mapTypeExpr (color.symbols source) sourceType))
     (inside : targetIndex < available.length) :
     ∃ sourceIndex,
-      (ofTargetThinning source color (available ++ sealed)).toSourceIndex?
+      (ofTargetThinning source.theory color (available ++ sealed)).toSourceIndex?
           targetIndex = some sourceIndex ∧
-        (sourceContextOfTarget source color (available ++ sealed))[sourceIndex]? =
+        (sourceContextOfTarget source.theory color (available ++ sealed))[sourceIndex]? =
           some sourceType ∧
-        sourceIndex < (sourceContextOfTarget source color available).length := by
+        sourceIndex < (sourceContextOfTarget source.theory color available).length := by
   induction available generalizing targetIndex sourceType with
   | nil => simp at inside
   | cons targetType available inductionHypothesis =>
-      cases decoded : decodeCostStaticTypeExpr source color targetType with
+      cases decoded : CostStaticTypeImage.decode source.theory color targetType with
       | none =>
           cases targetIndex with
           | zero =>
@@ -1298,7 +1066,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
                 inductionHypothesis lookup inside
               refine ⟨sourceIndex, ?_, ?_, ?_⟩
               · change
-                  (ofTargetThinning source color
+                  (ofTargetThinning source.theory color
                     (targetType :: (available ++ sealed))).toSourceIndex?
                       (targetIndex + 1) = some sourceIndex
                 calc
@@ -1309,7 +1077,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
                   _ = targetToSourceIndex? source color
                         (available ++ sealed) targetIndex := by
                     simp [targetToSourceIndex?, decoded]
-                  _ = (ofTargetThinning source color
+                  _ = (ofTargetThinning source.theory color
                         (available ++ sealed)).toSourceIndex? targetIndex :=
                     (toSourceIndex?_eq_targetToSourceIndex? _ _).symm
                   _ = some sourceIndex := contracted
@@ -1318,7 +1086,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
       | some decodedType =>
           have targetTypeMap :
               mapTypeExpr (color.symbols source) decodedType = targetType :=
-            mapTypeExpr_decodeCostStaticTypeExpr source color decoded
+            CostStaticTypeImage.mapTypeExpr_decode source.theory color decoded
           subst targetType
           cases targetIndex with
           | zero =>
@@ -1329,7 +1097,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
               subst sourceType
               refine ⟨0, ?_, ?_, ?_⟩
               · change
-                  (ofTargetThinning source color
+                  (ofTargetThinning source.theory color
                     (mapTypeExpr (color.symbols source) decodedType ::
                       (available ++ sealed))).toSourceIndex? 0 = some 0
                 calc
@@ -1348,7 +1116,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
                 inductionHypothesis lookup inside
               refine ⟨sourceIndex + 1, ?_, ?_, ?_⟩
               · change
-                  (ofTargetThinning source color
+                  (ofTargetThinning source.theory color
                     (mapTypeExpr (color.symbols source) decodedType ::
                       (available ++ sealed))).toSourceIndex?
                         (targetIndex + 1) = some (sourceIndex + 1)
@@ -1360,7 +1128,7 @@ theorem exists_toSourceIndex?_of_lookup_map_of_lt_prefix
                   _ = (targetToSourceIndex? source color
                         (available ++ sealed) targetIndex).map Nat.succ := by
                     simp [targetToSourceIndex?]
-                  _ = ((ofTargetThinning source color
+                  _ = ((ofTargetThinning source.theory color
                         (available ++ sealed)).toSourceIndex?
                           targetIndex).map Nat.succ := by
                     rw [toSourceIndex?_eq_targetToSourceIndex?]
@@ -1391,42 +1159,6 @@ def embedIndexAt {source : CIGSLT} {color : CostStaticColor}
     index
   else
     depth + thinning.toTargetIndex (index - depth)
-
-/-- A proof-relevant static thinning preserves the order of every source
-binder position.  Foreign target binders only insert positions; they cannot
-reorder or collapse the retained source context. -/
-theorem toTargetIndex_strictMono {source : CIGSLT}
-    {color : CostStaticColor} {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
-    StrictMono thinning.toTargetIndex := by
-  intro left right less
-  induction thinning generalizing left right with
-  | nil => exact less
-  | mapped sourceType tail inductionHypothesis =>
-      cases left with
-      | zero =>
-          cases right with
-          | zero => omega
-          | succ right => simp [toTargetIndex]
-      | succ left =>
-          cases right with
-          | zero => omega
-          | succ right =>
-              simp only [toTargetIndex]
-              simpa [Nat.add_comm] using Nat.add_lt_add_left
-                (inductionHypothesis (by omega)) 1
-  | foreign targetType rejected tail inductionHypothesis =>
-      simp only [toTargetIndex]
-      simpa [Nat.add_comm] using
-        Nat.add_lt_add_left (inductionHypothesis less) 1
-
-/-- A static thinning therefore never identifies two source binder
-positions. -/
-theorem toTargetIndex_injective {source : CIGSLT}
-    {color : CostStaticColor} {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
-    Function.Injective thinning.toTargetIndex :=
-  thinning.toTargetIndex_strictMono.injective
 
 /-- Ambient embedding is injective at every local binder depth.  In
 particular, locally introduced indices remain distinct from every reinserted
@@ -1504,7 +1236,7 @@ theorem embedIndexAt_of_contractIndexAt?_eq_some {source : CIGSLT}
       sourceIndexEquality⟩ := contracted
     subst sourceIndex
     have depthLe : depth ≤ targetIndex := Nat.le_of_not_gt outside
-    have embedded := thinning.toTargetIndex_of_toSourceIndex?_eq_some
+    have embedded := thinning.toTargetIndex_toSourceIndex?
       contractedIndexEquality
     simp only [embedIndexAt]
     have notInside : ¬ depth + contractedIndex < depth := by omega
@@ -1540,27 +1272,104 @@ def thinAmbientBVars? {source : CIGSLT} {color : CostStaticColor}
 termination_by pattern => sizeOf pattern
 
 /-- Restore contracted ambient binder indices to their original target
-positions. -/
+positions: the ambient renaming along the thinning's index embedding. -/
 def thickenAmbientBVars {source : CIGSLT} {color : CostStaticColor}
     {sourceBound targetBound : List TypeExpr}
     (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    (depth : Nat) : Pattern → Pattern
-  | .bvar index => .bvar (thinning.embedIndexAt depth index)
-  | .fvar name => .fvar name
-  | .apply constructor arguments =>
-      .apply constructor (arguments.map (thickenAmbientBVars thinning depth))
-  | .lambda binder body =>
-      .lambda binder (thickenAmbientBVars thinning (depth + 1) body)
-  | .multiLambda arity binders body =>
+    (depth : Nat) : Pattern → Pattern :=
+  ContextSubstitution.renameAmbientBVarsAt thinning.toTargetIndex depth
+
+/-- Cost binder reinsertion is the generic ambient-context action, by
+definition. -/
+theorem thickenAmbientBVars_eq_renameAmbientBVarsAt
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (pattern : Pattern) :
+    thinning.thickenAmbientBVars depth pattern =
+      ContextSubstitution.renameAmbientBVarsAt thinning.toTargetIndex depth
+        pattern :=
+  rfl
+
+theorem thickenAmbientBVars_bvar
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth index : Nat) :
+    thinning.thickenAmbientBVars depth (.bvar index) =
+      .bvar (thinning.embedIndexAt depth index) := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt, embedIndexAt]
+  split <;> rfl
+
+theorem thickenAmbientBVars_fvar
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (name : String) :
+    thinning.thickenAmbientBVars depth (.fvar name) = .fvar name := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+
+theorem thickenAmbientBVars_apply
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (constructor : String) (arguments : List Pattern) :
+    thinning.thickenAmbientBVars depth (.apply constructor arguments) =
+      .apply constructor (arguments.map (thinning.thickenAmbientBVars depth)) := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+  rfl
+
+theorem thickenAmbientBVars_lambda
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (binder : Option String) (body : Pattern) :
+    thinning.thickenAmbientBVars depth (.lambda binder body) =
+      .lambda binder (thinning.thickenAmbientBVars (depth + 1) body) := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+  rfl
+
+theorem thickenAmbientBVars_multiLambda
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth arity : Nat) (binders : List String) (body : Pattern) :
+    thinning.thickenAmbientBVars depth (.multiLambda arity binders body) =
       .multiLambda arity binders
-        (thickenAmbientBVars thinning (depth + arity) body)
-  | .subst body replacement =>
-      .subst (thickenAmbientBVars thinning (depth + 1) body)
-        (thickenAmbientBVars thinning depth replacement)
-  | .collection collectionType elements rest =>
+        (thinning.thickenAmbientBVars (depth + arity) body) := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+  rfl
+
+theorem thickenAmbientBVars_subst
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (body replacement : Pattern) :
+    thinning.thickenAmbientBVars depth (.subst body replacement) =
+      .subst (thinning.thickenAmbientBVars (depth + 1) body)
+        (thinning.thickenAmbientBVars depth replacement) := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+  rfl
+
+theorem thickenAmbientBVars_collection
+    {source : CIGSLT} {color : CostStaticColor}
+    {sourceBound targetBound : List TypeExpr}
+    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
+    (depth : Nat) (collectionType : CollType) (elements : List Pattern)
+    (rest : Option String) :
+    thinning.thickenAmbientBVars depth
+        (.collection collectionType elements rest) =
       .collection collectionType
-        (elements.map (thickenAmbientBVars thinning depth)) rest
-termination_by pattern => sizeOf pattern
+        (elements.map (thinning.thickenAmbientBVars depth)) rest := by
+  rw [thickenAmbientBVars_eq_renameAmbientBVarsAt,
+    ContextSubstitution.renameAmbientBVarsAt]
+  rfl
 
 /-- A thinning into the empty target context carries no ambient positions to
 insert, so it acts identically at every local binder depth. -/
@@ -1574,35 +1383,35 @@ theorem thickenAmbientBVars_eq_self_of_targetBound_eq_nil
   cases thinning
   induction pattern using Pattern.inductionOn generalizing depth with
   | hbvar index =>
-      simp [thickenAmbientBVars, embedIndexAt, toTargetIndex]
+      simp [thickenAmbientBVars_bvar, embedIndexAt, toTargetIndex]
       omega
   | hfvar name =>
-      simp [thickenAmbientBVars]
+      simp [thickenAmbientBVars_fvar]
   | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.apply.injEq, true_and]
+      simp only [thickenAmbientBVars_apply, Pattern.apply.injEq, true_and]
       calc
         arguments.map
-              (CostStaticBinderThinning.nil.thickenAmbientBVars depth) =
+              (CostStaticTypeThinning.nil.thickenAmbientBVars depth) =
             arguments.map id :=
           List.map_congr_left (fun argument membership =>
             inductionHypothesis argument membership depth)
         _ = arguments := List.map_id arguments
   | hlambda binder body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.lambda.injEq, true_and]
+      simp only [thickenAmbientBVars_lambda, Pattern.lambda.injEq, true_and]
       exact inductionHypothesis (depth + 1)
   | hmultiLambda arity binders body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.multiLambda.injEq, true_and]
+      simp only [thickenAmbientBVars_multiLambda, Pattern.multiLambda.injEq, true_and]
       exact inductionHypothesis (depth + arity)
   | hsubst body replacement bodyInduction replacementInduction =>
-      simp only [thickenAmbientBVars, Pattern.subst.injEq]
+      simp only [thickenAmbientBVars_subst, Pattern.subst.injEq]
       exact
         ⟨bodyInduction (depth + 1), replacementInduction depth⟩
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.collection.injEq, true_and]
+      simp only [thickenAmbientBVars_collection, Pattern.collection.injEq, true_and]
       constructor
       · calc
           elements.map
-                (CostStaticBinderThinning.nil.thickenAmbientBVars depth) =
+                (CostStaticTypeThinning.nil.thickenAmbientBVars depth) =
               elements.map id :=
             List.map_congr_left (fun element membership =>
               inductionHypothesis element membership depth)
@@ -1616,7 +1425,7 @@ theorem embedIndexAt_mapped {source : CIGSLT}
     (sourceType : TypeExpr)
     (tail : CostStaticBinderThinning source color sourceBound targetBound)
     (depth index : Nat) :
-    (CostStaticBinderThinning.mapped sourceType tail).embedIndexAt depth index =
+    (CostStaticTypeThinning.mapped sourceType tail).embedIndexAt depth index =
       tail.embedIndexAt (depth + 1) index := by
   unfold embedIndexAt
   by_cases before : index < depth
@@ -1641,33 +1450,33 @@ theorem thickenAmbientBVars_mapped {source : CIGSLT}
     (sourceType : TypeExpr)
     (tail : CostStaticBinderThinning source color sourceBound targetBound)
     (depth : Nat) (pattern : Pattern) :
-    (CostStaticBinderThinning.mapped sourceType tail).thickenAmbientBVars
+    (CostStaticTypeThinning.mapped sourceType tail).thickenAmbientBVars
         depth pattern =
       tail.thickenAmbientBVars (depth + 1) pattern := by
   induction pattern using Pattern.inductionOn generalizing depth with
   | hbvar index =>
-      simpa only [thickenAmbientBVars, Pattern.bvar.injEq] using
+      simpa only [thickenAmbientBVars_bvar, thickenAmbientBVars_fvar, thickenAmbientBVars_apply, thickenAmbientBVars_lambda, thickenAmbientBVars_multiLambda, thickenAmbientBVars_subst, thickenAmbientBVars_collection, Pattern.bvar.injEq] using
         embedIndexAt_mapped sourceType tail depth index
-  | hfvar name => simp [thickenAmbientBVars]
+  | hfvar name => simp [thickenAmbientBVars_fvar]
   | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.apply.injEq, true_and]
+      simp only [thickenAmbientBVars_apply, Pattern.apply.injEq, true_and]
       apply List.map_congr_left
       intro argument membership
       exact inductionHypothesis argument membership depth
   | hlambda binder body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.lambda.injEq, true_and]
+      simp only [thickenAmbientBVars_lambda, Pattern.lambda.injEq, true_and]
       simpa [Nat.add_assoc] using inductionHypothesis (depth + 1)
   | hmultiLambda arity binders body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.multiLambda.injEq, true_and]
+      simp only [thickenAmbientBVars_multiLambda, Pattern.multiLambda.injEq, true_and]
       simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
         inductionHypothesis (depth + arity)
   | hsubst body replacement bodyInduction replacementInduction =>
-      simp only [thickenAmbientBVars, Pattern.subst.injEq]
+      simp only [thickenAmbientBVars_subst, Pattern.subst.injEq]
       exact ⟨by
         simpa [Nat.add_assoc] using bodyInduction (depth + 1),
         replacementInduction depth⟩
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.collection.injEq, true_and]
+      simp only [thickenAmbientBVars_collection, Pattern.collection.injEq, true_and]
       constructor
       · apply List.map_congr_left
         intro element membership
@@ -1712,73 +1521,30 @@ theorem thickenAmbientBVars_prependMapped {source : CIGSLT}
       tail.thickenAmbientBVars (depth + arity) pattern := by
   induction pattern using Pattern.inductionOn generalizing depth with
   | hbvar index =>
-      simpa only [thickenAmbientBVars, Pattern.bvar.injEq] using
+      simpa only [thickenAmbientBVars_bvar, thickenAmbientBVars_fvar, thickenAmbientBVars_apply, thickenAmbientBVars_lambda, thickenAmbientBVars_multiLambda, thickenAmbientBVars_subst, thickenAmbientBVars_collection, Pattern.bvar.injEq] using
         embedIndexAt_prependMapped arity sourceType tail depth index
-  | hfvar name => simp [thickenAmbientBVars]
+  | hfvar name => simp [thickenAmbientBVars_fvar]
   | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.apply.injEq, true_and]
+      simp only [thickenAmbientBVars_apply, Pattern.apply.injEq, true_and]
       apply List.map_congr_left
       intro argument membership
       exact inductionHypothesis argument membership depth
   | hlambda binder body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.lambda.injEq, true_and]
+      simp only [thickenAmbientBVars_lambda, Pattern.lambda.injEq, true_and]
       simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
         inductionHypothesis (depth + 1)
   | hmultiLambda innerArity binders body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.multiLambda.injEq, true_and]
+      simp only [thickenAmbientBVars_multiLambda, Pattern.multiLambda.injEq, true_and]
       simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
         inductionHypothesis (depth + innerArity)
   | hsubst body replacement bodyInduction replacementInduction =>
-      simp only [thickenAmbientBVars, Pattern.subst.injEq]
+      simp only [thickenAmbientBVars_subst, Pattern.subst.injEq]
       exact ⟨by
         simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
           bodyInduction (depth + 1),
         replacementInduction depth⟩
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.collection.injEq, true_and]
-      constructor
-      · apply List.map_congr_left
-        intro element membership
-        exact inductionHypothesis element membership depth
-      · trivial
-
-/-- Cost binder reinsertion is an instance of the generic ambient-context
-action.  Keeping this bridge explicit lets the equation semantics prove one
-renaming theorem and reuse it for both ordinary weakening and finite Cost
-region recomposition. -/
-theorem thickenAmbientBVars_eq_renameAmbientBVarsAt {source : CIGSLT}
-    {color : CostStaticColor} {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    (depth : Nat) (pattern : Pattern) :
-    thinning.thickenAmbientBVars depth pattern =
-      ContextSubstitution.renameAmbientBVarsAt thinning.toTargetIndex depth
-        pattern := by
-  induction pattern using Pattern.inductionOn generalizing depth with
-  | hbvar index =>
-      by_cases inside : index < depth <;>
-        simp [thickenAmbientBVars, embedIndexAt,
-          ContextSubstitution.renameAmbientBVarsAt, inside]
-  | hfvar name =>
-      simp [thickenAmbientBVars, ContextSubstitution.renameAmbientBVarsAt]
-  | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars,
-        ContextSubstitution.renameAmbientBVarsAt, Pattern.apply.injEq, true_and]
-      apply List.map_congr_left
-      intro argument membership
-      exact inductionHypothesis argument membership depth
-  | hlambda binderName body inductionHypothesis =>
-      simp [thickenAmbientBVars, ContextSubstitution.renameAmbientBVarsAt,
-        inductionHypothesis]
-  | hmultiLambda arity binderNames body inductionHypothesis =>
-      simp [thickenAmbientBVars, ContextSubstitution.renameAmbientBVarsAt,
-        inductionHypothesis]
-  | hsubst body replacement bodyInduction replacementInduction =>
-      simp [thickenAmbientBVars, ContextSubstitution.renameAmbientBVarsAt,
-        bodyInduction, replacementInduction]
-  | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars,
-        ContextSubstitution.renameAmbientBVarsAt, Pattern.collection.injEq,
-        true_and]
+      simp only [thickenAmbientBVars_collection, Pattern.collection.injEq, true_and]
       constructor
       · apply List.map_congr_left
         intro element membership
@@ -1897,12 +1663,12 @@ theorem thickenAmbientBVars_eq_self_of_binderSafeAt_le
       transformDepth with
   | hbvar index =>
       simp only [binderSafeAt, decide_eq_true_eq] at safe
-      simp [thickenAmbientBVars, embedIndexAt,
+      simp [thickenAmbientBVars_bvar, embedIndexAt,
         if_pos (lt_of_lt_of_le safe depthOrder)]
-  | hfvar name => simp [thickenAmbientBVars]
+  | hfvar name => simp [thickenAmbientBVars_fvar]
   | happly constructor arguments inductionHypothesis =>
       cases arguments with
-      | nil => simp [thickenAmbientBVars]
+      | nil => simp [thickenAmbientBVars_apply]
       | cons argument arguments =>
           cases arguments with
           | nil =>
@@ -1913,13 +1679,13 @@ theorem thickenAmbientBVars_eq_self_of_binderSafeAt_le
                   simpa [binderSafeAt] using safe
                 have fixed := inductionHypothesis argument (by simp)
                   argumentSafe (Nat.zero_le transformDepth)
-                simp [thickenAmbientBVars, fixed]
+                simp [thickenAmbientBVars_apply, fixed]
               · have argumentSafe :
                     binderSafeAt quoteConstructor safeDepth argument = true := by
                   simpa [binderSafeAt, binderSafeListAt, quoted] using safe
                 have fixed := inductionHypothesis argument (by simp)
                   argumentSafe depthOrder
-                simp [thickenAmbientBVars, fixed]
+                simp [thickenAmbientBVars_apply, fixed]
           | cons second remainder =>
               have argumentsSafe : ∀ member ∈
                   argument :: second :: remainder,
@@ -1932,27 +1698,27 @@ theorem thickenAmbientBVars_eq_self_of_binderSafeAt_le
                   intro member membership
                   exact inductionHypothesis member membership
                     (argumentsSafe member membership) depthOrder)
-              simp [thickenAmbientBVars, fixed]
+              simp [thickenAmbientBVars_apply, fixed]
   | hlambda binder body inductionHypothesis =>
       have bodySafe :
           binderSafeAt quoteConstructor (safeDepth + 1) body = true := by
         simpa [binderSafeAt] using safe
       have fixed := inductionHypothesis bodySafe
         (Nat.add_le_add_right depthOrder 1)
-      simp [thickenAmbientBVars, fixed]
+      simp [thickenAmbientBVars_lambda, fixed]
   | hmultiLambda arity binders body inductionHypothesis =>
       have bodySafe :
           binderSafeAt quoteConstructor (safeDepth + arity) body = true := by
         simpa [binderSafeAt] using safe
       have fixed := inductionHypothesis bodySafe
         (Nat.add_le_add_right depthOrder arity)
-      simp [thickenAmbientBVars, fixed]
+      simp [thickenAmbientBVars_multiLambda, fixed]
   | hsubst body replacement bodyHypothesis replacementHypothesis =>
       simp only [binderSafeAt, Bool.and_eq_true] at safe
       have bodyFixed := bodyHypothesis safe.1
         (Nat.add_le_add_right depthOrder 1)
       have replacementFixed := replacementHypothesis safe.2 depthOrder
-      simp [thickenAmbientBVars, bodyFixed, replacementFixed]
+      simp [thickenAmbientBVars_subst, bodyFixed, replacementFixed]
   | hcollection collectionType elements rest inductionHypothesis =>
       have elementsSafe : ∀ element ∈ elements,
           binderSafeAt quoteConstructor safeDepth element = true := by
@@ -1963,7 +1729,7 @@ theorem thickenAmbientBVars_eq_self_of_binderSafeAt_le
           intro element membership
           exact inductionHypothesis element membership
             (elementsSafe element membership) depthOrder)
-      simp [thickenAmbientBVars, fixed]
+      simp [thickenAmbientBVars_collection, fixed]
 
 /-- A frame sealed by a quotation boundary is unchanged by insertion of any
 target-only ambient binders. -/
@@ -1988,111 +1754,10 @@ theorem binderSafeAt_thickenAmbientBVars
     (safe : binderSafeAt quoteConstructor
       (depth + sourceBound.length) pattern = true) :
     binderSafeAt quoteConstructor (depth + targetBound.length)
-      (thinning.thickenAmbientBVars depth pattern) = true := by
-  induction pattern using Pattern.inductionOn generalizing depth with
-  | hbvar index =>
-      simp only [binderSafeAt, thickenAmbientBVars,
-        decide_eq_true_eq] at safe ⊢
-      exact thinning.embedIndexAt_lt safe
-  | hfvar name => simp [thickenAmbientBVars, binderSafeAt]
-  | happly constructor arguments inductionHypothesis =>
-      cases arguments with
-      | nil => simp [thickenAmbientBVars, binderSafeAt, binderSafeListAt]
-      | cons argument arguments =>
-          cases arguments with
-          | nil =>
-              by_cases quoted : constructor = quoteConstructor
-              · subst constructor
-                have argumentSafe :
-                    binderSafeAt quoteConstructor 0 argument = true := by
-                  simpa [binderSafeAt] using safe
-                have fixed :=
-                  thickenAmbientBVars_eq_self_of_binderSafeAt_le thinning
-                    quoteConstructor argumentSafe (Nat.zero_le depth)
-                simpa [thickenAmbientBVars, binderSafeAt, fixed] using
-                  argumentSafe
-              · have argumentSafe : binderSafeAt quoteConstructor
-                    (depth + sourceBound.length) argument = true := by
-                  simpa [binderSafeAt, binderSafeListAt, quoted] using safe
-                have mappedSafe := inductionHypothesis argument (by simp)
-                  depth argumentSafe
-                simpa [thickenAmbientBVars, binderSafeAt, binderSafeListAt,
-                  quoted] using
-                  mappedSafe
-          | cons second remainder =>
-              have argumentsSafe : ∀ member ∈
-                  argument :: second :: remainder,
-                  binderSafeAt quoteConstructor
-                    (depth + sourceBound.length) member = true := by
-                rw [← binderSafeListAt_eq_true_iff]
-                simpa [binderSafeAt] using safe
-              simp only [thickenAmbientBVars]
-              change binderSafeListAt quoteConstructor
-                (depth + targetBound.length)
-                ((argument :: second :: remainder).map
-                  (thinning.thickenAmbientBVars depth)) = true
-              rw [binderSafeListAt_eq_true_iff]
-              intro mapped membership
-              rw [List.mem_map] at membership
-              obtain ⟨member, memberIn, rfl⟩ := membership
-              exact inductionHypothesis member memberIn depth
-                (argumentsSafe member memberIn)
-  | hlambda binder body inductionHypothesis =>
-      have bodySafe : binderSafeAt quoteConstructor
-          ((depth + 1) + sourceBound.length) body = true := by
-        simpa [binderSafeAt, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
-          using safe
-      simpa [thickenAmbientBVars, binderSafeAt, Nat.add_assoc, Nat.add_comm,
-        Nat.add_left_comm] using inductionHypothesis (depth + 1) bodySafe
-  | hmultiLambda arity binders body inductionHypothesis =>
-      have bodySafe : binderSafeAt quoteConstructor
-          ((depth + arity) + sourceBound.length) body = true := by
-        simpa [binderSafeAt, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
-          using safe
-      simpa [thickenAmbientBVars, binderSafeAt, Nat.add_assoc, Nat.add_comm,
-        Nat.add_left_comm] using inductionHypothesis (depth + arity) bodySafe
-  | hsubst body replacement bodyHypothesis replacementHypothesis =>
-      simp only [thickenAmbientBVars, binderSafeAt,
-        Bool.and_eq_true] at safe ⊢
-      have bodySafe : binderSafeAt quoteConstructor
-          ((depth + 1) + sourceBound.length) body = true := by
-        simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using safe.1
-      exact ⟨by
-          simpa [thickenAmbientBVars, Nat.add_assoc, Nat.add_comm,
-            Nat.add_left_comm] using bodyHypothesis (depth + 1) bodySafe,
-        replacementHypothesis depth safe.2⟩
-  | hcollection collectionType elements rest inductionHypothesis =>
-      have elementsSafe : ∀ element ∈ elements,
-          binderSafeAt quoteConstructor
-            (depth + sourceBound.length) element = true := by
-        rw [← binderSafeListAt_eq_true_iff]
-        simpa [binderSafeAt] using safe
-      simp only [thickenAmbientBVars, binderSafeAt]
-      rw [binderSafeListAt_eq_true_iff]
-      intro mapped membership
-      rw [List.mem_map] at membership
-      obtain ⟨element, elementIn, rfl⟩ := membership
-      exact inductionHypothesis element elementIn depth
-        (elementsSafe element elementIn)
-
-private theorem canonicalBinderMetadataList_thickenAmbientBVars
-    {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    (depth : Nat) (patterns : List Pattern)
-    (pointwise : ∀ pattern ∈ patterns,
-      (thinning.thickenAmbientBVars depth pattern).hasCanonicalBinderMetadata =
-        pattern.hasCanonicalBinderMetadata) :
-    Pattern.hasCanonicalBinderMetadataList
-        (patterns.map (thinning.thickenAmbientBVars depth)) =
-      Pattern.hasCanonicalBinderMetadataList patterns := by
-  induction patterns with
-  | nil => rfl
-  | cons pattern patterns inductionHypothesis =>
-      simp only [List.map, Pattern.hasCanonicalBinderMetadataList]
-      rw [pointwise pattern (by simp), inductionHypothesis]
-      intro member membership
-      exact pointwise member (by simp [membership])
+      (thinning.thickenAmbientBVars depth pattern) = true :=
+  ContextSubstitution.binderSafeAt_renameAmbientBVarsAt thinning.toTargetIndex
+    (fun _ inRange => thinning.toTargetIndex_lt_length inRange)
+    quoteConstructor depth pattern safe
 
 /-- Ambient binder insertion changes indices only; locally nameless display
 metadata and its canonicality are invariant. -/
@@ -2103,50 +1768,9 @@ theorem hasCanonicalBinderMetadata_thickenAmbientBVars
     (thinning : CostStaticBinderThinning source color sourceBound targetBound)
     (depth : Nat) (pattern : Pattern) :
     (thinning.thickenAmbientBVars depth pattern).hasCanonicalBinderMetadata =
-      pattern.hasCanonicalBinderMetadata := by
-  induction pattern using Pattern.inductionOn generalizing depth with
-  | hbvar index => simp [thickenAmbientBVars,
-      Pattern.hasCanonicalBinderMetadata]
-  | hfvar name => simp [thickenAmbientBVars,
-      Pattern.hasCanonicalBinderMetadata]
-  | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.hasCanonicalBinderMetadata]
-      exact canonicalBinderMetadataList_thickenAmbientBVars thinning depth
-        arguments (fun member membership =>
-          inductionHypothesis member membership depth)
-  | hlambda binder body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.hasCanonicalBinderMetadata]
-      rw [inductionHypothesis (depth + 1)]
-  | hmultiLambda arity binders body inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.hasCanonicalBinderMetadata]
-      rw [inductionHypothesis (depth + arity)]
-  | hsubst body replacement bodyHypothesis replacementHypothesis =>
-      simp [thickenAmbientBVars, Pattern.hasCanonicalBinderMetadata,
-        bodyHypothesis, replacementHypothesis]
-  | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars, Pattern.hasCanonicalBinderMetadata]
-      exact canonicalBinderMetadataList_thickenAmbientBVars thinning depth
-        elements (fun member membership =>
-          inductionHypothesis member membership depth)
-
-private theorem objectPatternList_thickenAmbientBVars
-    {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    (depth : Nat) (patterns : List Pattern)
-    (pointwise : ∀ pattern ∈ patterns,
-      WellSorted.isObjectPattern (thinning.thickenAmbientBVars depth pattern) =
-        WellSorted.isObjectPattern pattern) :
-    WellSorted.isObjectPatternList
-        (patterns.map (thinning.thickenAmbientBVars depth)) =
-      WellSorted.isObjectPatternList patterns := by
-  induction patterns with
-  | nil => rfl
-  | cons pattern patterns inductionHypothesis =>
-      simp only [List.map, WellSorted.isObjectPatternList]
-      rw [pointwise pattern (by simp), inductionHypothesis]
-      intro member membership
-      exact pointwise member (by simp [membership])
+      pattern.hasCanonicalBinderMetadata :=
+  ContextSubstitution.hasCanonicalBinderMetadata_renameAmbientBVarsAt
+    thinning.toTargetIndex depth pattern
 
 /-- Ambient binder insertion preserves the object/schema boundary. -/
 @[simp]
@@ -2156,26 +1780,9 @@ theorem isObjectPattern_thickenAmbientBVars
     (thinning : CostStaticBinderThinning source color sourceBound targetBound)
     (depth : Nat) (pattern : Pattern) :
     WellSorted.isObjectPattern (thinning.thickenAmbientBVars depth pattern) =
-      WellSorted.isObjectPattern pattern := by
-  induction pattern using Pattern.inductionOn generalizing depth with
-  | hbvar index => simp [thickenAmbientBVars, WellSorted.isObjectPattern]
-  | hfvar name => simp [thickenAmbientBVars, WellSorted.isObjectPattern]
-  | happly constructor arguments inductionHypothesis =>
-      simp only [thickenAmbientBVars, WellSorted.isObjectPattern]
-      exact objectPatternList_thickenAmbientBVars thinning depth arguments
-        (fun member membership => inductionHypothesis member membership depth)
-  | hlambda binder body inductionHypothesis =>
-      simpa [thickenAmbientBVars, WellSorted.isObjectPattern] using
-        inductionHypothesis (depth + 1)
-  | hmultiLambda arity binders body inductionHypothesis =>
-      simpa [thickenAmbientBVars, WellSorted.isObjectPattern] using
-        inductionHypothesis (depth + arity)
-  | hsubst body replacement bodyHypothesis replacementHypothesis =>
-      simp [thickenAmbientBVars, WellSorted.isObjectPattern]
-  | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [thickenAmbientBVars, WellSorted.isObjectPattern]
-      rw [objectPatternList_thickenAmbientBVars thinning depth elements
-        (fun member membership => inductionHypothesis member membership depth)]
+      WellSorted.isObjectPattern pattern :=
+  ContextSubstitution.isObjectPattern_renameAmbientBVarsAt
+    thinning.toTargetIndex depth pattern
 
 /-- Pointwise contraction/embedding round trips lift to an ordered pattern
 spine without changing order or multiplicity. -/
@@ -2226,12 +1833,12 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
   | hbvar index =>
       simp only [thinAmbientBVars?, Option.map_eq_some_iff] at contracted
       obtain ⟨sourceIndex, contractedIndex, rfl⟩ := contracted
-      simp only [thickenAmbientBVars]
+      simp only [thickenAmbientBVars_bvar]
       rw [thinning.embedIndexAt_of_contractIndexAt?_eq_some contractedIndex]
   | hfvar name =>
       simp only [thinAmbientBVars?, Option.some.injEq] at contracted
       subst thinned
-      simp [thickenAmbientBVars]
+      simp [thickenAmbientBVars_fvar]
   | happly constructor arguments argumentsIH =>
       simp only [thinAmbientBVars?] at contracted
       cases argumentsResult :
@@ -2240,7 +1847,7 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
       | some thinnedArguments =>
           simp [argumentsResult] at contracted
           subst thinned
-          simp only [thickenAmbientBVars, Pattern.apply.injEq]
+          simp only [thickenAmbientBVars_apply, Pattern.apply.injEq]
           exact ⟨True.intro,
             thickenAmbientBVarList_of_mapM_eq_some thinning depth
               arguments thinnedArguments
@@ -2254,7 +1861,7 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
       | some thinnedBody =>
           simp [bodyResult] at contracted
           subst thinned
-          simp only [thickenAmbientBVars, Pattern.lambda.injEq]
+          simp only [thickenAmbientBVars_lambda, Pattern.lambda.injEq]
           exact ⟨True.intro, bodyIH bodyResult⟩
   | hmultiLambda arity binders body bodyIH =>
       simp only [thinAmbientBVars?] at contracted
@@ -2263,7 +1870,7 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
       | some thinnedBody =>
           simp [bodyResult] at contracted
           subst thinned
-          simp only [thickenAmbientBVars, Pattern.multiLambda.injEq]
+          simp only [thickenAmbientBVars_multiLambda, Pattern.multiLambda.injEq]
           exact ⟨True.intro, True.intro, bodyIH bodyResult⟩
   | hsubst body replacement bodyIH replacementIH =>
       simp only [thinAmbientBVars?] at contracted
@@ -2276,7 +1883,7 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
           | some thinnedReplacement =>
               simp [bodyResult, replacementResult] at contracted
               subst thinned
-              simp only [thickenAmbientBVars, Pattern.subst.injEq]
+              simp only [thickenAmbientBVars_subst, Pattern.subst.injEq]
               exact ⟨bodyIH bodyResult, replacementIH replacementResult⟩
   | hcollection collectionType elements rest elementsIH =>
       simp only [thinAmbientBVars?] at contracted
@@ -2286,7 +1893,7 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
       | some thinnedElements =>
           simp [elementsResult] at contracted
           subst thinned
-          simp only [thickenAmbientBVars, Pattern.collection.injEq, true_and]
+          simp only [thickenAmbientBVars_collection, Pattern.collection.injEq, true_and]
           exact ⟨thickenAmbientBVarList_of_mapM_eq_some thinning depth
               elements thinnedElements
               (fun pattern membership _ contractedPattern =>
@@ -2294,419 +1901,126 @@ theorem thickenAmbientBVars_of_thinAmbientBVars?_eq_some
               elementsResult,
             True.intro⟩
 
-/-- Ambient binder embedding preserves the source representation required
-by an authored constructor parameter. -/
-private theorem matchesParameterRepresentation_thickenAmbientBVars
+end CostStaticTypeThinning
+
+/-- Binder thinning is semantic weakening: inserting target-only ambient
+binders and embedding the affected de Bruijn indices preserves typing.
+The `inner` prefix is shared verbatim and accounts for binders introduced
+inside the traversed pattern. -/
+theorem WellSorted.HasType.thickenAmbientBVars
     {source : CIGSLT} {color : CostStaticColor}
-    {sourceBound targetBound : List TypeExpr}
-    (thinning : CostStaticBinderThinning source color sourceBound targetBound)
-    (depth : Nat) (parameter : TermParam) (pattern : Pattern) :
-    WellSorted.MatchesParameterRepresentation parameter pattern →
-      WellSorted.MatchesParameterRepresentation parameter
-        (thinning.thickenAmbientBVars depth pattern) := by
-  cases parameter with
-  | simple => exact fun _ => trivial
-  | abstractionNamed binderName bodyName type =>
-      cases pattern <;>
-        simp [WellSorted.MatchesParameterRepresentation,
-          CostStaticBinderThinning.thickenAmbientBVars]
-      case lambda binder body => cases binder <;> simp
-  | multiAbstractionNamed binderNames bodyName type =>
-      cases pattern <;>
-        simp [WellSorted.MatchesParameterRepresentation,
-          CostStaticBinderThinning.thickenAmbientBVars]
-      case multiLambda arity binders body => cases binders <;> simp
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {pattern : Pattern} {type : TypeExpr}
+    (typed : WellSorted.HasType language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      pattern type)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    WellSorted.HasType language free (inner ++ targetBound)
+      (thinning.thickenAmbientBVars inner.length pattern) type :=
+  typed.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-end CostStaticBinderThinning
+/-- Ordered constructor arguments inherit binder-thinning preservation
+pointwise, without changing arity or parameter representation. -/
+theorem WellSorted.ArgumentsHaveTypes.thickenAmbientBVars
+    {source : CIGSLT} {color : CostStaticColor}
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {arguments : List Pattern} {parameters : List TermParam}
+    (typed : WellSorted.ArgumentsHaveTypes language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      arguments parameters)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    WellSorted.ArgumentsHaveTypes language free (inner ++ targetBound)
+      (arguments.map (thinning.thickenAmbientBVars inner.length))
+      parameters :=
+  typed.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-mutual
-  /-- Binder thinning is semantic weakening: inserting target-only ambient
-  binders and embedding the affected de Bruijn indices preserves typing.
-  The `inner` prefix is shared verbatim and accounts for binders introduced
-  inside the traversed pattern. -/
-  theorem WellSorted.HasType.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {pattern : Pattern} {type : TypeExpr}
-      (typed : WellSorted.HasType language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        pattern type)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      WellSorted.HasType language free (inner ++ targetBound)
-        (thinning.thickenAmbientBVars inner.length pattern) type := by
-    cases typed with
-    | bvar lookup =>
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.bvar
-            (thinning.lookup_embedIndexAt inner lookup))
-    | fvar lookup =>
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.fvar (bound := inner ++ targetBound) lookup)
-    | constructor membership notBare argumentsTyped =>
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.constructor membership notBare
-            (WellSorted.ArgumentsHaveTypes.thickenAmbientBVars
-              (inner := inner) argumentsTyped thinning))
-    | @lambda _ binder body domain codomain bodyTyped =>
-        have thickenedBody := WellSorted.HasType.thickenAmbientBVars
-          (inner := domain :: inner) bodyTyped thinning
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.lambda (binder := binder) thickenedBody)
-    | @multiLambda _ arity binders body domain codomain bodyTyped =>
-        have bodyTyped' : WellSorted.HasType language free
-            ((List.replicate arity domain ++ inner) ++
-              sourceBound.map (mapTypeExpr (color.symbols source)))
-            body codomain := by
-          simpa only [List.append_assoc] using bodyTyped
-        have thickenedBody := WellSorted.HasType.thickenAmbientBVars
-          (inner := List.replicate arity domain ++ inner) bodyTyped' thinning
-        have thickenedBody' : WellSorted.HasType language free
-            (List.replicate arity domain ++ (inner ++ targetBound))
-            (thinning.thickenAmbientBVars (inner.length + arity) body)
-            codomain := by
-          simpa [List.append_assoc, List.length_append,
-            List.length_replicate, Nat.add_comm] using thickenedBody
-        simpa [CostStaticBinderThinning.thickenAmbientBVars,
-          List.append_assoc, List.length_append, List.length_replicate,
-          Nat.add_comm] using
-            (WellSorted.HasType.multiLambda (binders := binders)
-              thickenedBody')
-    | @subst _ body replacement domain codomain bodyTyped replacementTyped =>
-        have thickenedBody := WellSorted.HasType.thickenAmbientBVars
-          (inner := domain :: inner) bodyTyped thinning
-        have thickenedReplacement :=
-          WellSorted.HasType.thickenAmbientBVars (inner := inner)
-            replacementTyped thinning
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.subst thickenedBody thickenedReplacement)
-    | collection elementsTyped =>
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.collection
-            (WellSorted.ElementsHaveType.thickenAmbientBVars (inner := inner)
-              elementsTyped thinning))
-    | collectionConstructor membership parameterShape elementsTyped =>
-        simpa [CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.collectionConstructor membership parameterShape
-            (WellSorted.ElementsHaveType.thickenAmbientBVars (inner := inner)
-              elementsTyped thinning))
+/-- Homogeneous collection elements inherit binder-thinning preservation
+pointwise. -/
+theorem WellSorted.ElementsHaveType.thickenAmbientBVars
+    {source : CIGSLT} {color : CostStaticColor}
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {elements : List Pattern} {elementType : TypeExpr}
+    (typed : WellSorted.ElementsHaveType language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      elements elementType)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    WellSorted.ElementsHaveType language free (inner ++ targetBound)
+      (elements.map (thinning.thickenAmbientBVars inner.length))
+      elementType :=
+  typed.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-  /-- Ordered constructor arguments inherit binder-thinning preservation
-  pointwise, without changing arity or parameter representation. -/
-  theorem WellSorted.ArgumentsHaveTypes.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {arguments : List Pattern} {parameters : List TermParam}
-      (typed : WellSorted.ArgumentsHaveTypes language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        arguments parameters)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      WellSorted.ArgumentsHaveTypes language free (inner ++ targetBound)
-        (arguments.map (thinning.thickenAmbientBVars inner.length))
-        parameters := by
-    cases typed with
-    | nil => exact .nil
-    | cons representation parameterType argumentTyped argumentsTyped =>
-        exact .cons
-          (CostStaticBinderThinning.matchesParameterRepresentation_thickenAmbientBVars thinning
-            inner.length _ _ representation)
-          parameterType
-          (WellSorted.HasType.thickenAmbientBVars (inner := inner)
-            argumentTyped thinning)
-          (WellSorted.ArgumentsHaveTypes.thickenAmbientBVars (inner := inner)
-            argumentsTyped thinning)
+/-- Inserting target-only ambient binders preserves reflective support:
+support suffixes remain in the exact target fibre, while only the typed
+skeleton indices are embedded. -/
+theorem WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
+    {source : CIGSLT} {color : CostStaticColor}
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {pattern : Pattern} {type : TypeExpr}
+    {typed : WellSorted.HasType language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      pattern type}
+    {profile : ReflectionProfile}
+    {support : ContextSupport.Support} {available : List TypeExpr}
+    (safe : typed.ReflectiveSupportSafeAt profile support available id)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
+      profile support available id :=
+  safe.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-  /-- Homogeneous collection elements inherit binder-thinning preservation
-  pointwise. -/
-  theorem WellSorted.ElementsHaveType.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {elements : List Pattern} {elementType : TypeExpr}
-      (typed : WellSorted.ElementsHaveType language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        elements elementType)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      WellSorted.ElementsHaveType language free (inner ++ targetBound)
-        (elements.map (thinning.thickenAmbientBVars inner.length))
-        elementType := by
-    cases typed with
-    | nil => exact .nil _ _
-    | cons elementTyped elementsTyped =>
-        exact .cons
-          (WellSorted.HasType.thickenAmbientBVars (inner := inner)
-            elementTyped thinning)
-          (WellSorted.ElementsHaveType.thickenAmbientBVars (inner := inner)
-            elementsTyped thinning)
-end
+/-- Argument-spine companion to reflective-support-preserving ambient
+binder insertion. -/
+theorem WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.thickenAmbientBVars
+    {source : CIGSLT} {color : CostStaticColor}
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {arguments : List Pattern} {parameters : List TermParam}
+    {typed : WellSorted.ArgumentsHaveTypes language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      arguments parameters}
+    {profile : ReflectionProfile}
+    {support : ContextSupport.Support} {available : List TypeExpr}
+    (safe : typed.ReflectiveSupportSafeAt profile support available id)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
+      profile support available id :=
+  safe.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-mutual
-  /-- Inserting target-only ambient binders preserves reflective support:
-  support suffixes remain in the exact target fibre, while only the typed
-  skeleton indices are embedded. -/
-  theorem WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {pattern : Pattern} {type : TypeExpr}
-      {typed : WellSorted.HasType language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        pattern type}
-      {profile : ReflectionProfile}
-      {support : ContextSupport.Support} {available : List TypeExpr}
-      (safe : typed.ReflectiveSupportSafeAt profile support available id)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
-        profile support available id := by
-    cases safe with
-    | bvar lookup available =>
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.bvar
-          (support := support)
-          (binderImage := id)
-          (thinning.lookup_embedIndexAt inner lookup) available)
-    | fvar lookup available shape =>
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.fvar
-          (support := support)
-          (binderImage := id)
-          lookup available shape)
-    | @constructorQuote _ _ _ membership notBare _ _ _ quoted argumentsSafe =>
-        have thickenedArguments :=
-          WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) argumentsSafe thinning
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.constructorQuote
-            (support := support) (membership := membership)
-            (notBare := notBare) quoted thickenedArguments)
-    | @constructorOrdinary _ _ _ membership notBare _ _ _ ordinary
-        argumentsSafe =>
-        have thickenedArguments :=
-          WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) argumentsSafe thinning
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.constructorOrdinary
-            (support := support) (membership := membership)
-            (notBare := notBare) ordinary thickenedArguments)
-    | @lambda _ binder _ domain _ _ _ _ bodySafe =>
-        have thickenedBody :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (sourceBound := sourceBound)
-            (targetBound := targetBound) (inner := domain :: inner)
-            (support := support)
-            (available := domain :: available)
-            bodySafe thinning
-        have constructed :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.lambda
-            (support := support) (binder := binder) (binderImage := id)
-            thickenedBody
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          constructed
-    | @multiLambda _ arity binders body domain codomain bodyTyped _ _
-        bodySafe =>
-        have contextEquality :
-            List.replicate arity domain ++
-                (inner ++ sourceBound.map
-                  (mapTypeExpr (color.symbols source))) =
-              (List.replicate arity domain ++ inner) ++
-                sourceBound.map (mapTypeExpr (color.symbols source)) := by
-          simp only [List.append_assoc]
-        change bodyTyped.ReflectiveSupportSafeAt profile support
-          (List.replicate arity domain ++ available) id at bodySafe
-        have bodyTypedSafe :
-            ∃ bodyTyped' : WellSorted.HasType language free
-                ((List.replicate arity domain ++ inner) ++
-                  sourceBound.map (mapTypeExpr (color.symbols source)))
-                body codomain,
-              bodyTyped'.ReflectiveSupportSafeAt profile support
-                (List.replicate arity domain ++ available) id := by
-          rw [← contextEquality]
-          exact ⟨bodyTyped, by simpa only using bodySafe⟩
-        obtain ⟨bodyTyped', bodySafe'⟩ := bodyTypedSafe
-        have thickenedBody :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (sourceBound := sourceBound)
-            (targetBound := targetBound)
-            (inner := List.replicate arity domain ++ inner)
-            (support := support)
-            (available := List.replicate arity domain ++ available)
-            bodySafe' thinning
-        have thickenedBodyTyped : WellSorted.HasType language free
-            (List.replicate arity domain ++ (inner ++ targetBound))
-            (thinning.thickenAmbientBVars (inner.length + arity) body)
-            codomain := by
-          simpa [List.append_assoc, List.length_append,
-            List.length_replicate, Nat.add_comm] using
-              bodyTyped'.thickenAmbientBVars
-                (inner := List.replicate arity domain ++ inner) thinning
-        have thickenedBodySafe :
-            thickenedBodyTyped.ReflectiveSupportSafeAt profile support
-              (List.replicate arity domain ++ available) id := by
-          simpa [List.append_assoc, List.length_append,
-            List.length_replicate, Nat.add_comm] using thickenedBody
-        have constructed :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.multiLambda
-            (support := support) (arity := arity) (binders := binders)
-            (domain := domain) (bodyTyped := thickenedBodyTyped)
-            (binderImage := id)
-            thickenedBodySafe
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars,
-          List.append_assoc, List.length_append, List.length_replicate,
-          Nat.add_comm] using constructed
-    | @subst _ _ _ domain _ _ _ _ _ bodySafe replacementSafe =>
-        have thickenedBody :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (sourceBound := sourceBound)
-            (targetBound := targetBound) (inner := domain :: inner)
-            (support := support)
-            (available := domain :: available)
-            bodySafe thinning
-        have thickenedReplacement :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (sourceBound := sourceBound)
-            (targetBound := targetBound) (inner := inner)
-            (support := support) (available := available)
-            replacementSafe thinning
-        have constructed :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.subst (support := support)
-            thickenedBody thickenedReplacement
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          constructed
-    | @collection _ _ _ _ _ elementsTyped _ _ elementsSafe =>
-        have thickenedElements :=
-          WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) elementsSafe thinning
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.collection
-            (support := support) thickenedElements)
-    | @collectionConstructor _ _ parameterName _ _ _ _ membership parameterShape
-        elementsTyped _ _ elementsSafe =>
-        have thickenedElements :=
-          WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) elementsSafe thinning
-        simpa [WellSorted.HasType.thickenAmbientBVars,
-          CostStaticBinderThinning.thickenAmbientBVars] using
-          (WellSorted.HasType.ReflectiveSupportSafeAt.collectionConstructor
-            (support := support) (parameterName := parameterName)
-            (membership := membership) (parameterShape := parameterShape)
-            thickenedElements)
+/-- Collection-spine companion to reflective-support-preserving ambient
+binder insertion. -/
+theorem WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.thickenAmbientBVars
+    {source : CIGSLT} {color : CostStaticColor}
+    {language : LanguageDef} {free : WellSorted.FreeTypeContext}
+    {sourceBound targetBound inner : List TypeExpr}
+    {elements : List Pattern} {elementType : TypeExpr}
+    {typed : WellSorted.ElementsHaveType language free
+      (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
+      elements elementType}
+    {profile : ReflectionProfile}
+    {support : ContextSupport.Support} {available : List TypeExpr}
+    (safe : typed.ReflectiveSupportSafeAt profile support available id)
+    (thinning : CostStaticBinderThinning source color sourceBound
+      targetBound) :
+    (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
+      profile support available id :=
+  safe.renameAmbientBVarsAt thinning.toTargetIndex thinning.preservesBoundTypes
 
-  /-- Argument-spine companion to reflective-support-preserving ambient
-  binder insertion. -/
-  theorem WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {arguments : List Pattern} {parameters : List TermParam}
-      {typed : WellSorted.ArgumentsHaveTypes language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        arguments parameters}
-      {profile : ReflectionProfile}
-      {support : ContextSupport.Support} {available : List TypeExpr}
-      (safe : typed.ReflectiveSupportSafeAt profile support available id)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
-        profile support available id := by
-    cases safe with
-    | nil bound available =>
-        simpa [WellSorted.ArgumentsHaveTypes.thickenAmbientBVars] using
-          (WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.nil
-            (support := support)
-            (binderImage := id)
-            (inner ++ targetBound) available)
-    | @cons _ _ _ _ _ _ representation parameterType argumentTyped
-        argumentsTyped _ _ argumentSafe argumentsSafe =>
-        have thickenedArgument :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (inner := inner)
-            argumentSafe thinning
-        have thickenedArguments :=
-          WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) argumentsSafe thinning
-        have transformedRepresentation :=
-          CostStaticBinderThinning.matchesParameterRepresentation_thickenAmbientBVars
-            thinning inner.length _ _ representation
-        simpa [WellSorted.ArgumentsHaveTypes.thickenAmbientBVars] using
-          (WellSorted.ArgumentsHaveTypes.ReflectiveSupportSafeAt.cons
-            (support := support) (representation := transformedRepresentation)
-            (parameterType := parameterType)
-            (argumentTyped := argumentTyped.thickenAmbientBVars
-              (inner := inner) thinning)
-            (argumentsTyped := argumentsTyped.thickenAmbientBVars
-              (inner := inner) thinning)
-            thickenedArgument thickenedArguments)
-
-  /-- Collection-spine companion to reflective-support-preserving ambient
-  binder insertion. -/
-  theorem WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.thickenAmbientBVars
-      {source : CIGSLT} {color : CostStaticColor}
-      {language : LanguageDef} {free : WellSorted.FreeTypeContext}
-      {sourceBound targetBound inner : List TypeExpr}
-      {elements : List Pattern} {elementType : TypeExpr}
-      {typed : WellSorted.ElementsHaveType language free
-        (inner ++ sourceBound.map (mapTypeExpr (color.symbols source)))
-        elements elementType}
-      {profile : ReflectionProfile}
-      {support : ContextSupport.Support} {available : List TypeExpr}
-      (safe : typed.ReflectiveSupportSafeAt profile support available id)
-      (thinning : CostStaticBinderThinning source color sourceBound
-        targetBound) :
-      (typed.thickenAmbientBVars (inner := inner) thinning).ReflectiveSupportSafeAt
-        profile support available id := by
-    cases safe with
-    | nil bound elementType available =>
-        simpa [WellSorted.ElementsHaveType.thickenAmbientBVars] using
-          (WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.nil
-            (support := support)
-            (binderImage := id)
-            (inner ++ targetBound) elementType available)
-    | @cons _ _ _ _ elementTyped elementsTyped _ _ elementSafe
-        elementsSafe =>
-        have thickenedElement :=
-          WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color) (inner := inner)
-            elementSafe thinning
-        have thickenedElements :=
-          WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.thickenAmbientBVars
-            (source := source) (color := color)
-            (inner := inner) elementsSafe thinning
-        simpa [WellSorted.ElementsHaveType.thickenAmbientBVars] using
-          (WellSorted.ElementsHaveType.ReflectiveSupportSafeAt.cons
-            (support := support)
-            (elementTyped := elementTyped.thickenAmbientBVars
-              (inner := inner) thinning)
-            (elementsTyped := elementsTyped.thickenAmbientBVars
-              (inner := inner) thinning)
-            thickenedElement.castTyping thickenedElements.castTyping)
-end
-
-namespace CostStaticBinderThinning
+namespace CostStaticTypeThinning
 
 /-- The characteristic mixed-context witness contracts a reference through
 one foreign binder to the retained static-image binder. -/
 theorem thinAmbientBVars?_foreign_then_mapped
     (source : CIGSLT) (color : CostStaticColor)
     (foreignType sourceType : TypeExpr)
-    (foreign : decodeCostStaticTypeExpr source color foreignType = none) :
+    (foreign : CostStaticTypeImage.decode source.theory color foreignType = none) :
     let thinning : CostStaticBinderThinning source color [sourceType]
         [foreignType, mapTypeExpr (color.symbols source) sourceType] :=
       .foreign foreignType foreign (.mapped sourceType .nil)
@@ -2718,14 +2032,14 @@ silently redirected to the retained neighboring binder. -/
 theorem thinAmbientBVars?_rejects_foreign
     (source : CIGSLT) (color : CostStaticColor)
     (foreignType sourceType : TypeExpr)
-    (foreign : decodeCostStaticTypeExpr source color foreignType = none) :
+    (foreign : CostStaticTypeImage.decode source.theory color foreignType = none) :
     let thinning : CostStaticBinderThinning source color [sourceType]
         [foreignType, mapTypeExpr (color.symbols source) sourceType] :=
       .foreign foreignType foreign (.mapped sourceType .nil)
     thinning.thinAmbientBVars? 0 (.bvar 0) = none := by
   simp [thinAmbientBVars?, contractIndexAt?, toSourceIndex?]
 
-end CostStaticBinderThinning
+end CostStaticTypeThinning
 
 /-- Raw boundary data decoded from its exact generated typing fiber.  The
 source type must lie in the selected static image.  The source binder context
@@ -2735,12 +2049,12 @@ binders. -/
 def decodeCostRegionBoundary? (source : CIGSLT) (color : CostStaticColor)
     (targetSupport : List TypeExpr) (targetType : TypeExpr)
     (content : Pattern) : Option CostRegionBoundary :=
-  match decodeCostStaticTypeExpr source color targetType with
+  match CostStaticTypeImage.decode source.theory color targetType with
   | none => none
   | some sourceType =>
       some
         { type := sourceType
-          support := CostStaticBinderThinning.sourceContextOfTarget source color
+          support := CostStaticTypeThinning.sourceContextOfTarget source.theory color
             targetSupport
           targetType := targetType
           targetSupport := targetSupport
@@ -2755,12 +2069,12 @@ theorem decodeCostRegionBoundary_typeMap {source : CIGSLT}
     (decoded : decodeCostRegionBoundary? source color targetSupport targetType
       content = some boundary) :
     mapTypeExpr (color.symbols source) boundary.type = boundary.targetType := by
-  cases typeDecoded : decodeCostStaticTypeExpr source color targetType with
+  cases typeDecoded : CostStaticTypeImage.decode source.theory color targetType with
   | none => simp [decodeCostRegionBoundary?, typeDecoded] at decoded
   | some sourceType =>
       simp [decodeCostRegionBoundary?, typeDecoded] at decoded
       subst boundary
-      exact mapTypeExpr_decodeCostStaticTypeExpr source color typeDecoded
+      exact CostStaticTypeImage.mapTypeExpr_decode source.theory color typeDecoded
 
 /-- Successful boundary decoding records exactly the selected-color
 subcontext of the observed target binder support. -/
@@ -2771,9 +2085,9 @@ theorem decodeCostRegionBoundary_sourceSupport {source : CIGSLT}
     (decoded : decodeCostRegionBoundary? source color targetSupport targetType
       content = some boundary) :
     boundary.support =
-      CostStaticBinderThinning.sourceContextOfTarget source color
+      CostStaticTypeThinning.sourceContextOfTarget source.theory color
         targetSupport := by
-  cases typeDecoded : decodeCostStaticTypeExpr source color targetType with
+  cases typeDecoded : CostStaticTypeImage.decode source.theory color targetType with
   | none => simp [decodeCostRegionBoundary?, typeDecoded] at decoded
   | some sourceType =>
       simp [decodeCostRegionBoundary?, typeDecoded] at decoded
@@ -2802,7 +2116,7 @@ def certifyCostRegionBoundary? (source : CIGSLT) (color : CostStaticColor)
     (content : Pattern) :
     Option (CertifiedCostRegionBoundary source color targetFree
       targetSupport targetType content) :=
-  match decodeCostStaticTypeExpr source color targetType with
+  match CostStaticTypeImage.decode source.theory color targetType with
   | none => none
   | some sourceType =>
       if checked : ReflectiveWellSorted.checkOpenPatternWellSorted
@@ -2817,7 +2131,7 @@ def certifyCostRegionBoundary? (source : CIGSLT) (color : CostStaticColor)
               { boundary :=
                   { type := sourceType
                     support :=
-                      CostStaticBinderThinning.sourceContextOfTarget source color
+                      CostStaticTypeThinning.sourceContextOfTarget source.theory color
                         targetSupport
                     targetType := targetType
                     targetSupport := targetSupport
@@ -2857,7 +2171,7 @@ theorem certifyCostRegionBoundary?_typeMap {source : CIGSLT}
       targetSupport targetType content = some boundary) :
     mapTypeExpr (color.symbols source) boundary.typed.boundary.type =
       targetType := by
-  cases typeDecoded : decodeCostStaticTypeExpr source color targetType with
+  cases typeDecoded : CostStaticTypeImage.decode source.theory color targetType with
   | none =>
       simp [certifyCostRegionBoundary?, typeDecoded] at certified
   | some sourceType =>
@@ -2866,7 +2180,7 @@ theorem certifyCostRegionBoundary?_typeMap {source : CIGSLT}
             targetSupport targetType content = true
       · simp [certifyCostRegionBoundary?, typeDecoded, checked] at certified
         subst boundary
-        exact mapTypeExpr_decodeCostStaticTypeExpr source color typeDecoded
+        exact CostStaticTypeImage.mapTypeExpr_decode source.theory color typeDecoded
       · simp [certifyCostRegionBoundary?, typeDecoded, checked] at certified
 
 /-- Successful certification records exactly the selected-color subcontext
@@ -2880,9 +2194,9 @@ theorem certifyCostRegionBoundary?_sourceSupport {source : CIGSLT}
     (certified : certifyCostRegionBoundary? source color targetFree
       targetSupport targetType content = some boundary) :
     boundary.typed.boundary.support =
-      CostStaticBinderThinning.sourceContextOfTarget source color
+      CostStaticTypeThinning.sourceContextOfTarget source.theory color
         targetSupport := by
-  cases typeDecoded : decodeCostStaticTypeExpr source color targetType with
+  cases typeDecoded : CostStaticTypeImage.decode source.theory color targetType with
   | none =>
       simp [certifyCostRegionBoundary?, typeDecoded] at certified
   | some sourceType =>
@@ -2910,7 +2224,7 @@ theorem certifyCostRegionBoundary?_sourceSupport_eq {source : CIGSLT}
         content = some boundary) :
     boundary.typed.boundary.support = availableSource := by
   rw [certifyCostRegionBoundary?_sourceSupport certified]
-  exact CostStaticBinderThinning.sourceContextOfTarget_map source color
+  exact CostStaticTypeThinning.sourceContextOfTarget_map source.theory color
     availableSource
 
 /-- When the observed target type is the selected static image of a source
@@ -2931,11 +2245,11 @@ theorem certifyCostRegionBoundary?_sourceType_eq {source : CIGSLT}
       source.costWholeReflectionProfile source.costWholeLanguage targetFree
         targetSupport (mapTypeExpr (color.symbols source) sourceType) content =
           true
-  · simp [certifyCostRegionBoundary?, decodeCostStaticTypeExpr_mapTypeExpr,
+  · simp [certifyCostRegionBoundary?,
       checked] at certified
     subst boundary
     rfl
-  · simp [certifyCostRegionBoundary?, decodeCostStaticTypeExpr_mapTypeExpr,
+  · simp [certifyCostRegionBoundary?,
       checked] at certified
 
 /-- Every genuine open object in a decodable static fiber is accepted by the
@@ -2945,7 +2259,7 @@ theorem exists_certifyCostRegionBoundary?_eq_some {source : CIGSLT}
     {targetSupport : List TypeExpr} {targetType : TypeExpr}
     {content : Pattern}
     (typeInFiber : ∃ sourceType,
-      decodeCostStaticTypeExpr source color targetType = some sourceType)
+      CostStaticTypeImage.decode source.theory color targetType = some sourceType)
     (wellSorted : ReflectiveWellSorted.OpenPatternWellSorted
       source.costWholeReflectionProfile source.costWholeLanguage targetFree
       targetSupport targetType content) :
@@ -3415,7 +2729,7 @@ def costStaticCollectionTypingChoices (source : CIGSLT)
     (targetBound : List TypeExpr)
     (collectionType : CollType) (elements : List Pattern)
     (expected : TypeExpr) : List CostCollectionTypingChoice :=
-  match decodeCostStaticTypeExpr source color expected with
+  match CostStaticTypeImage.decode source.theory color expected with
   | none => []
   | some sourceExpected =>
       let bare := bareCostStaticCollectionTypingChoices source color targetFree
@@ -3614,11 +2928,11 @@ theorem mem_costStaticCollectionTypingChoices_sound
             WellSorted.checkElementsHaveType source.costWholeLanguage targetFree
               targetBound elements
                 (mapTypeExpr (color.symbols source) sourceElementType) = true) := by
-  cases decoded : decodeCostStaticTypeExpr source color expected with
+  cases decoded : CostStaticTypeImage.decode source.theory color expected with
   | none =>
       simp [costStaticCollectionTypingChoices, decoded] at membership
   | some sourceExpected =>
-      have expectedMap := mapTypeExpr_decodeCostStaticTypeExpr source color decoded
+      have expectedMap := CostStaticTypeImage.mapTypeExpr_decode source.theory color decoded
       cases sourceExpected with
       | collection actual sourceElementType =>
           by_cases sameCollection : actual = collectionType
@@ -3760,14 +3074,13 @@ theorem mem_costStaticCollectionTypingChoices_complete
   · rcases direct with
       ⟨sourceElementType, rfl, expectedEquality, elementsChecked⟩
     rw [expectedEquality]
-    simp [costStaticCollectionTypingChoices,
-      decodeCostStaticTypeExpr_mapTypeExpr, elementsChecked]
+    simp [costStaticCollectionTypingChoices, elementsChecked]
   · rcases bare with
       ⟨rule, sourceElementType, rfl, ruleMembership, wrappedMembership,
         expectedEquality, parameterName, parameterShape, elementsChecked⟩
     rw [expectedEquality]
     simp only [costStaticCollectionTypingChoices,
-      decodeCostStaticTypeExpr_mapTypeExpr]
+      CostStaticTypeImage.decode_mapTypeExpr]
     rw [mem_bareCostStaticCollectionTypingChoices_iff]
     exact ⟨rule, sourceElementType, rfl, ruleMembership, wrappedMembership,
       (WellSorted.bareCollectionElementType?_eq_some_iff rule collectionType
@@ -4168,23 +3481,16 @@ def collectCostStaticBoundaryFibers (source : CIGSLT)
   collectCostStaticBoundaryFibersAt source color targetFree available .hole
     pattern expected
 
-/-- A finite, occurrence-indexed table of typed region boundaries.  The list
-index is the exact collector output, so there is no value to invent for an
-uncollected occurrence and no total-function fallback. -/
-inductive TypedCostRegionBoundaryTable (source : CIGSLT)
-    (color : CostStaticColor)
-    (targetFree : WellSorted.FreeTypeContext) :
-    List CostRegionOccurrence → Type where
-  | nil : TypedCostRegionBoundaryTable source color targetFree []
-  | cons {occurrence : CostRegionOccurrence}
-      {occurrences : List CostRegionOccurrence}
-      (boundary : TypedCostRegionBoundary source color targetFree)
-      (content : boundary.boundary.content = occurrence.content)
-      (tail : TypedCostRegionBoundaryTable source color targetFree occurrences) :
-      TypedCostRegionBoundaryTable source color targetFree
-        (occurrence :: occurrences)
+/-- The exact collected occurrence list specializes the shared evidence
+carrier to the existing continued Cost language and reflection profile. -/
+abbrev TypedCostRegionBoundaryTable (source : CIGSLT)
+    (color : CostStaticColor) (targetFree : WellSorted.FreeTypeContext)
+    (occurrences : List CostRegionOccurrence) :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable source.costWholeLanguage
+    source.costWholeReflectionProfile color targetFree occurrences
 
 namespace TypedCostRegionBoundaryTable
+export CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable (nil cons)
 
 /-- A table indexed by the empty occurrence list contains no invented entry.
 This is the dependent eliminator that exposes its unique constructor to
@@ -4393,13 +3699,11 @@ theorem append_split {source : CIGSLT} {color : CostStaticColor}
 
 /-- Forget the occurrence index while retaining the finite ordered boundary
 entries. -/
-def entries {source : CIGSLT} {color : CostStaticColor}
-    {targetFree : WellSorted.FreeTypeContext} :
-    {occurrences : List CostRegionOccurrence} →
-      TypedCostRegionBoundaryTable source color targetFree occurrences →
-      List (TypedCostRegionBoundary source color targetFree)
-  | [], .nil => []
-  | _ :: _, .cons boundary _ tail => boundary :: tail.entries
+abbrev entries {source : CIGSLT} {color : CostStaticColor}
+    {targetFree : WellSorted.FreeTypeContext}
+    {occurrences : List CostRegionOccurrence}
+    (table : TypedCostRegionBoundaryTable source color targetFree occurrences) :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries table
 
 /-- Reindexing changes only the type-level collector expression, never the
 finite entries. -/
@@ -4420,11 +3724,8 @@ theorem entries_length {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {occurrences : List CostRegionOccurrence}
     (table : TypedCostRegionBoundaryTable source color targetFree occurrences) :
-    table.entries.length = occurrences.length := by
-  induction table with
-  | nil => rfl
-  | cons boundary content tail inductionHypothesis =>
-      simp [entries, inductionHypothesis]
+    table.entries.length = occurrences.length  :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries_length table
 
 /-- Boundary payloads agree pointwise with the exact occurrence list. -/
 theorem entries_content {source : CIGSLT} {color : CostStaticColor}
@@ -4432,11 +3733,8 @@ theorem entries_content {source : CIGSLT} {color : CostStaticColor}
     {occurrences : List CostRegionOccurrence}
     (table : TypedCostRegionBoundaryTable source color targetFree occurrences) :
     table.entries.map (fun boundary => boundary.boundary.content) =
-      occurrences.map CostRegionOccurrence.content := by
-  induction table with
-  | nil => rfl
-  | cons boundary content tail inductionHypothesis =>
-      simp [entries, content, inductionHypothesis]
+      occurrences.map CostRegionOccurrence.content  :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries_content table
 
 /-- Every finite typed entry is aligned with an actual collected occurrence.
 The witness retains occurrence identity; equal raw contents alone never
@@ -4520,7 +3818,7 @@ def resolve {source : CIGSLT} {color : CostStaticColor}
       if name = costRegionBoundaryVariableName boundary.boundary then
         some boundary
       else
-        tail.resolve name
+        resolve tail name
 
 /-- Successful finite lookup always returns an actual table entry. -/
 theorem mem_entries_of_resolve_eq_some {source : CIGSLT}
@@ -4557,7 +3855,7 @@ theorem resolve_of_mem_entries {source : CIGSLT}
   induction table with
   | nil => cases membership
   | cons head content tail inductionHypothesis =>
-      simp only [entries, List.mem_cons] at membership
+      simp only [entries, CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries, List.mem_cons] at membership
       rcases membership with equality | tailMembership
       · subst head
         simp [resolve]
@@ -4682,23 +3980,15 @@ The table retains stable boundary identity and source/target fibers; this
 second dependent list supplies the current open value for each entry.  It is
 therefore suitable for child-first normalization without changing boundary
 keys or reintroducing a total occurrence assignment. -/
-inductive Values (source : CIGSLT) (color : CostStaticColor)
-    (targetFree : WellSorted.FreeTypeContext) :
-    {occurrences : List CostRegionOccurrence} →
-      TypedCostRegionBoundaryTable source color targetFree occurrences → Type where
-  | nil : Values source color targetFree .nil
-  | cons {occurrence : CostRegionOccurrence}
-      {occurrences : List CostRegionOccurrence}
-      {boundary : TypedCostRegionBoundary source color targetFree}
-      {content : boundary.boundary.content = occurrence.content}
-      {tail : TypedCostRegionBoundaryTable source color targetFree occurrences}
-      (value : ReflectiveWellSorted.OpenPattern
-        source.costWholeReflectionProfile source.costWholeLanguage targetFree
-        boundary.boundary.targetSupport boundary.boundary.targetType)
-      (values : Values source color targetFree tail) :
-      Values source color targetFree (.cons boundary content tail)
+abbrev Values (source : CIGSLT) (color : CostStaticColor)
+    (targetFree : WellSorted.FreeTypeContext)
+    {occurrences : List CostRegionOccurrence}
+    (table : TypedCostRegionBoundaryTable source color targetFree occurrences) :=
+  CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.Values source.costWholeLanguage
+    source.costWholeReflectionProfile color targetFree table
 
 namespace Values
+export CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.Values (nil cons)
 
 /-- A successful finite value lookup retains the boundary whose stable key
 selected the value, so its typing and support indices remain available. -/
@@ -4843,7 +4133,7 @@ def sourceFreeContext {source : CIGSLT} {color : CostStaticColor}
   fun name =>
     match decodeCostRegionSourceVariableName name with
     | some sourceName =>
-        (targetFree sourceName).bind (decodeCostStaticTypeExpr source color)
+        (targetFree sourceName).bind (CostStaticTypeImage.decode source.theory color)
     | none =>
         (table.resolve name).map (fun typedBoundary =>
           typedBoundary.boundary.type)
@@ -4858,7 +4148,7 @@ theorem sourceFreeContext_sourceVariable {source : CIGSLT}
     (table : TypedCostRegionBoundaryTable source color targetFree occurrences)
     (name : String) :
     table.sourceFreeContext (costRegionSourceVariableName name) =
-      (targetFree name).bind (decodeCostStaticTypeExpr source color) := by
+      (targetFree name).bind (CostStaticTypeImage.decode source.theory color) := by
   simp [sourceFreeContext, decodeCostRegionSourceVariableName_encode]
 
 /-- Generated Cost free context after transporting a source skeleton back
@@ -4873,7 +4163,7 @@ def mappedFreeContext {source : CIGSLT} {color : CostStaticColor}
     match decodeCostRegionSourceVariableName name with
     | some sourceName =>
         ((targetFree sourceName).bind
-          (decodeCostStaticTypeExpr source color)).map
+          (CostStaticTypeImage.decode source.theory color)).map
             (mapTypeExpr (color.symbols source))
     | none =>
         (table.resolve name).map (fun typedBoundary =>
@@ -5059,8 +4349,7 @@ theorem sourceFreeContext_eq_retag_of_entries_eq_nil {source : CIGSLT}
             WellSorted.FreeTypeContext.map, decoded, lookup]
       | some type =>
           simp [sourceFreeContext, retagCostRegionFreeContext,
-            WellSorted.FreeTypeContext.map, decoded, lookup,
-            decodeCostStaticTypeExpr_mapTypeExpr]
+            WellSorted.FreeTypeContext.map, decoded, lookup]
 
 /-- Every finite boundary entry is assigned exactly its decoded source type
 in the source context used to type the static skeleton. -/
@@ -5294,7 +4583,7 @@ theorem certify?_singleton_sourceSupport_eq {source : CIGSLT}
   | some head =>
       simp [certify?, headResult] at certified
       cases certified
-      simp only [entries, List.mem_cons, List.not_mem_nil, or_false] at membership
+      simp only [entries, CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries, List.mem_cons, List.not_mem_nil, or_false] at membership
       subst boundary
       exact certifyCostRegionBoundary?_sourceSupport_eq headResult
 
@@ -5319,7 +4608,7 @@ theorem certify?_singleton_targetSupport_eq {source : CIGSLT}
   | some head =>
       simp [certify?, headResult] at certified
       cases certified
-      simp only [entries, List.mem_cons, List.not_mem_nil, or_false] at membership
+      simp only [entries, CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries, List.mem_cons, List.not_mem_nil, or_false] at membership
       subst boundary
       exact head.targetSupport_eq
 
@@ -5345,7 +4634,7 @@ theorem certify?_singleton_sourceType_eq {source : CIGSLT}
   | some head =>
       simp [certify?, headResult] at certified
       cases certified
-      simp only [entries, List.mem_cons, List.not_mem_nil, or_false] at membership
+      simp only [entries, CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries, List.mem_cons, List.not_mem_nil, or_false] at membership
       subst boundary
       exact certifyCostRegionBoundary?_sourceType_eq headResult
 
@@ -5381,7 +4670,7 @@ theorem certify?_fiberCoherent {source : CIGSLT}
               have tailCoherent := inductionHypothesis tailResult
               constructor
               intro entry membership
-              simp only [entries, List.mem_cons] at membership
+              simp only [entries, CostRegionBoundaryEvidence.TypedCostRegionBoundaryTable.entries, List.mem_cons] at membership
               rcases membership with rfl | membership
               · exact (certifyCostRegionBoundary?_typeMap headResult).trans
                   boundary.targetType_eq.symm
@@ -5580,14 +4869,14 @@ def supportedAssignment {source : CIGSLT} {color : CostStaticColor}
             simp [mappedFreeContext, decodedName, targetLookup] at lookup
         | some targetType =>
             cases decodedType :
-                decodeCostStaticTypeExpr source color targetType with
+                CostStaticTypeImage.decode source.theory color targetType with
             | none =>
                 simp [mappedFreeContext, decodedName, targetLookup,
                   decodedType] at lookup
             | some sourceType =>
                 have encodedType :
                     mapTypeExpr (color.symbols source) sourceType = targetType :=
-                  mapTypeExpr_decodeCostStaticTypeExpr source color decodedType
+                  CostStaticTypeImage.mapTypeExpr_decode source.theory color decodedType
                 have mappedType :
                     mapTypeExpr (color.symbols source) sourceType = type := by
                   simpa [mappedFreeContext, decodedName, targetLookup,
@@ -5705,14 +4994,14 @@ def supportedAssignment {source : CIGSLT} {color : CostStaticColor}
             simp [mappedFreeContext, decodedName, targetLookup] at lookup
         | some targetType =>
             cases decodedType :
-                decodeCostStaticTypeExpr source color targetType with
+                CostStaticTypeImage.decode source.theory color targetType with
             | none =>
                 simp [mappedFreeContext, decodedName, targetLookup,
                   decodedType] at lookup
             | some sourceType =>
                 have encodedType :
                     mapTypeExpr (color.symbols source) sourceType = targetType :=
-                  mapTypeExpr_decodeCostStaticTypeExpr source color decodedType
+                  CostStaticTypeImage.mapTypeExpr_decode source.theory color decodedType
                 have mappedType :
                     mapTypeExpr (color.symbols source) sourceType = type := by
                   simpa [mappedFreeContext, decodedName, targetLookup,
@@ -5843,8 +5132,8 @@ theorem supportedOpenAssignment_cons_equivalent
     (tailEquivalent :
       (values.supportedOpenAssignment tail).Equivalent
         ((Values.original tail).supportedOpenAssignment tail)) :
-    ((Values.cons value values).supportedOpenAssignment
-      (.cons boundary content tail)).Equivalent
+    (supportedOpenAssignment (.cons boundary content tail)
+      (Values.cons value values)).Equivalent
     ((Values.original (.cons boundary content tail)).supportedOpenAssignment
       (.cons boundary content tail)) := by
   intro name type lookup shift
@@ -5852,11 +5141,11 @@ theorem supportedOpenAssignment_cons_equivalent
     source.costWholeReflectionProfile defaultBasePremises
     source.costWholeLanguage
     (liftBVars 0 shift
-      ((Values.cons value values).assignment
-        (.cons boundary content tail) name))
+      (assignment (.cons boundary content tail)
+        (Values.cons value values) name))
     (liftBVars 0 shift
-      ((Values.original (.cons boundary content tail)).assignment
-        (.cons boundary content tail) name))
+      (assignment (.cons boundary content tail)
+        (Values.original (.cons boundary content tail)) name))
   cases decodedName : decodeCostRegionSourceVariableName name with
   | some sourceName =>
       simp [assignment, decodedName]
@@ -6567,7 +5856,9 @@ mutual
           (collectDeclaredCostStaticBoundaryOccurrencesAt_apply source color
             outer ((color.symbols source).constructor rule.label)
               (mapPatternList (color.symbols source) arguments)) table
-        rw [abstractCostStaticRegionFromTableAt.eq_3]
+        refine (abstractCostStaticRegionFromTableAt.eq_3 source color outer
+          ((color.symbols source).constructor rule.label)
+          (mapPatternList (color.symbols source) arguments) table).trans ?_
         change abstractCostStaticApplicationFromTable source color outer
             ((color.symbols source).constructor rule.label)
             (mapPatternList (color.symbols source) arguments)
@@ -6615,7 +5906,9 @@ mutual
         change abstractCostStaticRegionFromTableAt source color outer
             (.lambda binder (mapPattern (color.symbols source) body)) table =
           .lambda binder (retagCostRegionFreeVariables body)
-        rw [abstractCostStaticRegionFromTableAt.eq_4]
+        refine (abstractCostStaticRegionFromTableAt.eq_4 source color outer
+          binder
+          (mapPattern (color.symbols source) body) table).trans ?_
         exact congrArg (Pattern.lambda binder)
           (bodyTyped.abstractCostStaticRegionFromTableAt_mapCostStatic source color
             (outer.comp (.lambda binder .hole)) table)
@@ -6625,7 +5918,9 @@ mutual
             (.multiLambda arity binders
               (mapPattern (color.symbols source) body)) table =
           .multiLambda arity binders (retagCostRegionFreeVariables body)
-        rw [abstractCostStaticRegionFromTableAt.eq_5]
+        refine (abstractCostStaticRegionFromTableAt.eq_5 source color outer
+          arity binders
+          (mapPattern (color.symbols source) body) table).trans ?_
         exact congrArg (Pattern.multiLambda arity binders)
           (bodyTyped.abstractCostStaticRegionFromTableAt_mapCostStatic source color
             (outer.comp (.multiLambda arity binders .hole)) table)
@@ -6649,7 +5944,9 @@ mutual
             (mapPattern (color.symbols source) replacement)
         let divided := TypedCostRegionBoundaryTable.split bodyOccurrences
           replacementOccurrences table
-        rw [abstractCostStaticRegionFromTableAt.eq_6]
+        refine (abstractCostStaticRegionFromTableAt.eq_6 source color outer
+          (mapPattern (color.symbols source) body)
+          (mapPattern (color.symbols source) replacement) table).trans ?_
         exact congrArg₂ Pattern.subst
           (bodyTyped.abstractCostStaticRegionFromTableAt_mapCostStatic source color
             (outer.comp (.substBody .hole
@@ -6666,7 +5963,9 @@ mutual
               (mapPatternList (color.symbols source) elements) rest) table =
           .collection collectionType (retagCostRegionFreeVariableList elements)
             (rest.map costRegionSourceVariableName)
-        rw [abstractCostStaticRegionFromTableAt.eq_7]
+        refine (abstractCostStaticRegionFromTableAt.eq_7 source color outer
+          collectionType
+          (mapPatternList (color.symbols source) elements) rest table).trans ?_
         exact congrArg
           (fun mappedElements =>
             Pattern.collection collectionType mappedElements
@@ -6681,7 +5980,9 @@ mutual
               (mapPatternList (color.symbols source) elements) rest) table =
           .collection collectionType (retagCostRegionFreeVariableList elements)
             (rest.map costRegionSourceVariableName)
-        rw [abstractCostStaticRegionFromTableAt.eq_7]
+        refine (abstractCostStaticRegionFromTableAt.eq_7 source color outer
+          collectionType
+          (mapPatternList (color.symbols source) elements) rest table).trans ?_
         exact congrArg
           (fun mappedElements =>
             Pattern.collection collectionType mappedElements
@@ -6975,15 +6276,13 @@ mutual
         .apply constructor arguments := by
     cases decoded with
     | none =>
-        simp only [costStaticApplicationBoundaryOccurrences] at table resolves
         cases table with
         | cons boundary content tail =>
             cases tail
             have resolved : resolveBoundary
                 (costRegionBoundaryVariableName boundary.boundary) =
                   some boundary.boundary.content :=
-              resolves boundary (by
-                simp [TypedCostRegionBoundaryTable.entries])
+              resolves boundary (List.mem_cons_self)
             simp only [abstractCostStaticApplicationFromTable]
             change restoreCostStaticSkeleton color resolveBoundary
                 (.fvar (costRegionBoundaryVariableName boundary.boundary)) =
@@ -6992,7 +6291,6 @@ mutual
               decodeCostRegionSourceVariableName_boundary, resolved]
             exact content
     | some sourceConstructor =>
-        simp only [costStaticApplicationBoundaryOccurrences] at table resolves
         have argumentsResult :=
           restore_abstractCostStaticApplyRegionFromTable_of_resolves source color
             outer constructor [] arguments table resolveBoundary resolves
@@ -7390,21 +6688,21 @@ theorem decode_renderDeclaredCostConstructor_of_static
       cases color with
       | base =>
           exact ⟨sourceConstructor.1.label, by
-            simpa [CIGSLT.renderDeclaredCostConstructor,
+            simpa [CIGSLT.renderDeclaredCostConstructor, ContinuationDecorationProfile.renderDeclaredCostConstructor,
               CIGSLT.renderGeneratedCostConstructor,
               CostConstructor.render, CostStaticColor.constructorTag,
               costBaseConstructorName] using
                 decodeCostStaticConstructor_append .base
                   sourceConstructor.1.label⟩
       | wrapped =>
-          simp only [CIGSLT.declaredCostConstructorRole] at role
+          simp only [CIGSLT.declaredCostConstructorRole, ContinuationDecorationProfile.declaredCostConstructorRole] at role
           split at role <;> cases role
   | wrapped sourceConstructor =>
       cases color with
       | base => cases role
       | wrapped =>
           exact ⟨sourceConstructor.1.label, by
-            simpa [CIGSLT.renderDeclaredCostConstructor,
+            simpa [CIGSLT.renderDeclaredCostConstructor, ContinuationDecorationProfile.renderDeclaredCostConstructor,
               CIGSLT.renderGeneratedCostConstructor,
               CostConstructor.render, CostStaticColor.constructorTag,
               costWrappedConstructorName] using
@@ -7429,155 +6727,75 @@ theorem exists_decodeDeclaredCostStaticConstructor_of_static
     source.decodeDeclaredCostConstructor_render, role, decoded]
 
 /-- Exact authored preimage of one constructor in a selected static Cost
-fiber.  The parameter profile is retained as a `TermParam` map, so binder and
+fiber: the preimage record of the two-slot profile of a continued theory.
+The parameter profile is retained as a `TermParam` map, so binder and
 collection representation are not erased to result types during inversion. -/
-structure CostStaticConstructorPreimage (source : CIGSLT)
+abbrev CostStaticConstructorPreimage (source : CIGSLT)
     (color : CostStaticColor)
-    (constructor : source.DeclaredCostConstructor) where
-  sourceConstructor : AuthoredConstructor
-    source.theory.presentation.presentation
-  wrapped : sourceConstructor ∈
-    source.continuationRetyping.wrappedConstructors
-  labelMap :
-    (source.materializeDeclaredCostConstructor constructor).label =
-      (color.symbols source).constructor sourceConstructor.1.label
-  categoryMap :
-    (source.materializeDeclaredCostConstructor constructor).category =
-      (color.symbols source).sort sourceConstructor.1.category
-  parametersMap :
-    (source.materializeDeclaredCostConstructor constructor).params =
-      sourceConstructor.1.params.map (mapTermParam (color.symbols source))
+    (constructor : source.DeclaredCostConstructor) :=
+  (ContinuationDecorationProfile.ofRetypingPlan
+    source.continuationRetyping).StaticConstructorPreimage color constructor
 
-/-- The intrinsic generated constructor determines its authored static
-preimage uniquely.  The proof uses validated source-label uniqueness and the
-injectivity of the selected Cost namespace; no second constructor table is
-consulted. -/
-theorem CostStaticConstructorPreimage.eq
-    {source : CIGSLT} {color : CostStaticColor}
+namespace CostStaticConstructorPreimage
+
+theorem wrapped {source : CIGSLT} {color : CostStaticColor}
     {constructor : source.DeclaredCostConstructor}
-    (left right : CostStaticConstructorPreimage source color constructor) :
-    left = right := by
-  have sourceConstructorEquality :
-      left.sourceConstructor = right.sourceConstructor := by
-    apply ContinuationRetypingPlan.authoredConstructorLabel_injective
-      source.theory.presentation.presentation
-    have mappedLabelEquality :
-        (color.symbols source).constructor left.sourceConstructor.1.label =
-          (color.symbols source).constructor right.sourceConstructor.1.label :=
-      left.labelMap.symm.trans right.labelMap
-    cases color with
-    | base =>
-        exact costBaseConstructorName_injective mappedLabelEquality
-    | wrapped =>
-        exact costWrappedConstructorName_injective mappedLabelEquality
-  cases left
-  cases right
-  cases sourceConstructorEquality
-  rfl
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    preimage.sourceConstructor ∈
+      source.continuationRetyping.wrappedConstructors :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.wrapped preimage
 
-instance {source : CIGSLT} {color : CostStaticColor}
-    {constructor : source.DeclaredCostConstructor} :
-    Subsingleton (CostStaticConstructorPreimage source color constructor) :=
-  ⟨CostStaticConstructorPreimage.eq⟩
+theorem labelMap {source : CIGSLT} {color : CostStaticColor}
+    {constructor : source.DeclaredCostConstructor}
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    (source.materializeDeclaredCostConstructor constructor).label =
+      (color.symbols source).constructor preimage.sourceConstructor.1.label :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.labelMap preimage
+
+theorem categoryMap {source : CIGSLT} {color : CostStaticColor}
+    {constructor : source.DeclaredCostConstructor}
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    (source.materializeDeclaredCostConstructor constructor).category =
+      (color.symbols source).sort preimage.sourceConstructor.1.category :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.categoryMap preimage
+
+theorem parametersMap {source : CIGSLT} {color : CostStaticColor}
+    {constructor : source.DeclaredCostConstructor}
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    (source.materializeDeclaredCostConstructor constructor).params =
+      preimage.sourceConstructor.1.params.map
+        (mapTermParam (color.symbols source)) :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.parametersMap preimage
+
+theorem algebraMap {source : CIGSLT} {color : CostStaticColor}
+    {constructor : source.DeclaredCostConstructor}
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    (source.materializeDeclaredCostConstructor constructor).algebra? =
+      preimage.sourceConstructor.1.algebra?.map
+        (StructuralMorphism.mapCollectionAlgebra
+          (color.symbols source).constructor) :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.algebraMap preimage
+
+theorem usesBareCollection_iff {source : CIGSLT} {color : CostStaticColor}
+    {constructor : source.DeclaredCostConstructor}
+    (preimage : CostStaticConstructorPreimage source color constructor) :
+    WellSorted.UsesBareCollection
+        (source.materializeDeclaredCostConstructor constructor) ↔
+      WellSorted.UsesBareCollection preimage.sourceConstructor.1 :=
+  ContinuationDecorationProfile.StaticConstructorPreimage.usesBareCollection_iff preimage
+
+end CostStaticConstructorPreimage
 
 /-- Static role classification computes the complete authored constructor
 preimage.  Base principals and apparatus constructors cannot enter this
-result; the base proof uses the exact hereditary non-principal membership. -/
+result. -/
 def costStaticConstructorPreimage (source : CIGSLT)
     (color : CostStaticColor)
     (constructor : source.DeclaredCostConstructor)
     (role : source.declaredCostConstructorRole constructor = .static color) :
-    CostStaticConstructorPreimage source color constructor := by
-  rcases constructor with ⟨generated, declared⟩
-  cases generated with
-  | base sourceConstructor =>
-      cases color with
-      | base =>
-          have wrapped := source.mem_wrappedConstructors_of_base_static
-            sourceConstructor role
-          have wrappedLabel : sourceConstructor.1.label ∈
-              source.continuationRetyping.wrappedLabels :=
-            (source.continuationRetyping.mem_wrappedLabels_iff
-              sourceConstructor).2 wrapped
-          refine
-            { sourceConstructor := sourceConstructor
-              wrapped := wrapped
-              labelMap := rfl
-              categoryMap := rfl
-              parametersMap := ?_ }
-          exact costBaseConstructor_params_eq_map_of_mem_wrappedLabels source
-            sourceConstructor.1 sourceConstructor.2 wrappedLabel
-      | wrapped =>
-          simp only [CIGSLT.declaredCostConstructorRole] at role
-          split at role <;> cases role
-  | wrapped sourceConstructor =>
-      cases color with
-      | base => cases role
-      | wrapped =>
-          refine
-            { sourceConstructor := sourceConstructor
-              wrapped := declared
-              labelMap := rfl
-              categoryMap := ?_
-              parametersMap := ?_ }
-          · simp [CIGSLT.materializeDeclaredCostConstructor,
-              costWrappedConstructor, CostStaticColor.symbols,
-              costWrappedStaticSymbols]
-          · simp [CIGSLT.materializeDeclaredCostConstructor,
-              costWrappedConstructor, CostStaticColor.symbols]
-  | apparatus kind => cases role
-
-/-- Static decoding reflects the bare-collection representation back to the
-exact authored declaration.  This keeps collection typing choices rooted in
-the source `LanguageDef`, even though the compact target syntax omits the
-constructor label. -/
-theorem CostStaticConstructorPreimage.source_usesBareCollection
-    {source : CIGSLT} {color : CostStaticColor}
-    {constructor : source.DeclaredCostConstructor}
-    (preimage : CostStaticConstructorPreimage source color constructor)
-    (role : source.declaredCostConstructorRole constructor = .static color)
-    (bare : WellSorted.UsesBareCollection
-      (source.materializeDeclaredCostConstructor constructor)) :
-    WellSorted.UsesBareCollection preimage.sourceConstructor.1 := by
-  have preimageEquality : preimage =
-      costStaticConstructorPreimage source color constructor role :=
-    Subsingleton.elim _ _
-  subst preimage
-  rcases constructor with ⟨generated, declared⟩
-  cases generated with
-  | base authored =>
-      cases color with
-      | base =>
-          simpa [costStaticConstructorPreimage] using
-            (usesBareCollection_costBaseConstructor_iff source.cut
-              authored.1).mp bare
-      | wrapped =>
-          simp only [CIGSLT.declaredCostConstructorRole] at role
-          split at role <;> cases role
-  | wrapped authored =>
-      cases color with
-      | base => cases role
-      | wrapped =>
-          simpa [costStaticConstructorPreimage] using
-            (usesBareCollection_costWrappedConstructor_iff authored.1).mp bare
-  | apparatus kind =>
-      simp [CIGSLT.declaredCostConstructorRole] at role
-
-/-- Mapping an authored static declaration preserves the bare-collection
-representation in the forward direction as well. -/
-theorem CostStaticConstructorPreimage.target_usesBareCollection
-    {source : CIGSLT} {color : CostStaticColor}
-    {constructor : source.DeclaredCostConstructor}
-    (preimage : CostStaticConstructorPreimage source color constructor)
-    (bare : WellSorted.UsesBareCollection preimage.sourceConstructor.1) :
-    WellSorted.UsesBareCollection
-      (source.materializeDeclaredCostConstructor constructor) := by
-  rcases bare with ⟨parameterName, collectionType, sourceElementType,
-    sourceShape⟩
-  refine ⟨parameterName, collectionType,
-    mapTypeExpr (color.symbols source) sourceElementType, ?_⟩
-  rw [preimage.parametersMap, sourceShape]
-  simp [mapTermParam, mapTypeExpr]
+    CostStaticConstructorPreimage source color constructor :=
+  ContinuationDecorationProfile.staticConstructorPreimage (cut := source.cut)
+    [] [] color constructor role
 
 /-- A declaration accepted by the static decoder has the exact authored
 preimage computed by the intrinsic Cost constructor classification.  This is
@@ -7665,18 +6883,8 @@ theorem CIGSLT.renderDeclaredCostConstructor_eq_of_decode
     (constructor : source.DeclaredCostConstructor)
     (decoded : source.decodeDeclaredCostConstructor wireName =
       some constructor) :
-    source.renderDeclaredCostConstructor constructor = wireName := by
-  unfold CIGSLT.decodeDeclaredCostConstructor at decoded
-  generalize source.declaredCostConstructors = constructors at decoded
-  induction constructors with
-  | nil => simp [CIGSLT.resolveDeclaredCostConstructor] at decoded
-  | cons head tail inductionHypothesis =>
-      simp only [CIGSLT.resolveDeclaredCostConstructor] at decoded
-      split at decoded
-      · rename_i rendered
-        cases Option.some.inj decoded
-        exact rendered
-      · exact inductionHypothesis decoded
+    source.renderDeclaredCostConstructor constructor = wireName :=
+  (source.decodeDeclaredCostConstructor_eq_some_iff wireName constructor).mp decoded
 
 /-- A generated declaration is determined by its validated wire label.
 This is the proof-facing inverse to intrinsic constructor decoding: later
@@ -7733,9 +6941,10 @@ theorem CIGSLT.exists_static_role_of_materialize_usesBareCollection
   | apparatus kind =>
       rcases bare with ⟨parameterName, collectionType, elementType, shape⟩
       cases kind <;>
-        simp [CIGSLT.materializeDeclaredCostConstructor,
+        simp [CIGSLT.materializeDeclaredCostConstructor, ContinuationDecorationProfile.materializeDeclaredCostConstructor,
           CostApparatusConstructor.grammarRule,
           costSignatureUnitConstructor, costSignatureProductConstructor,
+          costKeyLeafConstructor, costKeyBranchConstructor, costSignatureCommitConstructor,
           costSignedConstructor, costTokenStackEmptyConstructor,
           costTokenStackConsConstructor, costFundingConstructor,
           costContactConstructor] at shape
@@ -7775,7 +6984,7 @@ theorem exists_costStaticCollectionTypingChoice?_of_typed_bare
   let preimage := costStaticConstructorPreimage source color constructor role
   have sourceBare : WellSorted.UsesBareCollection
       preimage.sourceConstructor.1 :=
-    preimage.source_usesBareCollection role targetBare
+    preimage.usesBareCollection_iff.mp targetBare
   rcases sourceBare with
     ⟨sourceParameterName, sourceCollectionType, sourceElementType,
       sourceShape⟩
@@ -7963,7 +7172,7 @@ mutual
         (correspondence : thinning.toSourceIndex? targetIndex =
           some sourceIndex)
         (availableScope : sourceIndex <
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             targetAvailable).length) :
         CostStaticRegionPlan source color targetFree sourceBound targetBound
           thinning targetAvailable outer (.bvar targetIndex) sourceType
@@ -8040,7 +7249,7 @@ mutual
           (List.replicate arity domain ++ sourceBound)
           (List.replicate arity
               (mapTypeExpr (color.symbols source) domain) ++ targetBound)
-          (CostStaticBinderThinning.prependMapped arity domain thinning)
+          (CostStaticTypeThinning.prependMapped arity domain thinning)
           (List.replicate arity
               (mapTypeExpr (color.symbols source) domain) ++ sourceAvailable)
           (outer.comp (.multiLambda arity binders .hole)) body codomain) :
@@ -8220,7 +7429,7 @@ mutual
         | .accepted sourceIndex correspondence =>
             if lookup : sourceBound[sourceIndex]? = some sourceType then
               if availableScope : sourceIndex <
-                  (CostStaticBinderThinning.sourceContextOfTarget source color
+                  (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                     sourceAvailable).length then
                 some (.bvar sourceIndex lookup correspondence availableScope)
               else
@@ -8313,7 +7522,7 @@ mutual
                   (List.replicate arity
                       (mapTypeExpr (color.symbols source) sourceDomain) ++
                     targetBound)
-                  (CostStaticBinderThinning.prependMapped arity sourceDomain
+                  (CostStaticTypeThinning.prependMapped arity sourceDomain
                     thinning)
                   (List.replicate arity
                       (mapTypeExpr (color.symbols source) sourceDomain) ++
@@ -8552,7 +7761,7 @@ theorem exists_buildCostStaticRegionPlan?_boundaryCollection
       (targetSupport := sourceAvailable)
       (targetType := mapTypeExpr (color.symbols source) sourceType)
       (content := .collection collectionType elements rest)
-      ⟨sourceType, decodeCostStaticTypeExpr_mapTypeExpr source color sourceType⟩
+      ⟨sourceType, CostStaticTypeImage.decode_mapTypeExpr source.theory color sourceType⟩
       wellSorted
   apply Option.isSome_iff_exists.mp
   simp [buildCostStaticRegionPlan?, currentRejected, oppositeSelected,
@@ -8570,16 +7779,16 @@ theorem exists_buildCostStaticRegionPlan?_bvar
     (inside : targetIndex < available.length) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer (.bvar targetIndex) sourceType = some plan := by
   obtain ⟨sourceIndex, contracted, sourceLookup, sourceInside⟩ :=
-    CostStaticBinderThinning.exists_toSourceIndex?_of_lookup_map_of_lt_prefix
+    CostStaticTypeThinning.exists_toSourceIndex?_of_lookup_map_of_lt_prefix
       available sealed lookup inside
-  rw [CostStaticBinderThinning.sourceContextOfTarget_append] at sourceLookup
+  rw [CostStaticTypeThinning.sourceContextOfTarget_append] at sourceLookup
   apply Option.isSome_iff_exists.mp
   simp [buildCostStaticRegionPlan?, contracted, sourceLookup, sourceInside]
 
@@ -8594,10 +7803,10 @@ theorem exists_buildCostStaticRegionPlan?_fvar
       some (mapTypeExpr (color.symbols source) sourceType)) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             targetBound)
           targetBound
-          (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+          (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
           available outer (.fvar name) sourceType = some plan := by
   apply Option.isSome_iff_exists.mp
   simp [buildCostStaticRegionPlan?, lookup]
@@ -8630,7 +7839,7 @@ theorem exists_buildCostStaticRegionPlan?_boundaryApplication
       (targetSupport := available)
       (targetType := mapTypeExpr (color.symbols source) sourceType)
       (content := .apply wireName arguments)
-      ⟨sourceType, decodeCostStaticTypeExpr_mapTypeExpr source color sourceType⟩
+      ⟨sourceType, CostStaticTypeImage.decode_mapTypeExpr source.theory color sourceType⟩
       wellSorted
   apply Option.isSome_iff_exists.mp
   simp [buildCostStaticRegionPlan?, decoded, outsideCurrent, certifies]
@@ -8654,10 +7863,10 @@ theorem exists_buildCostStaticArgumentPlan?_of_typed
               argument →
           ∃ plan,
             buildCostStaticRegionPlan? source color targetFree
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   (available ++ sealed))
                 (available ++ sealed)
-                (CostStaticBinderThinning.ofTargetThinning source color
+                (CostStaticTypeThinning.ofTargetThinning source.theory color
                   (available ++ sealed))
                 available localOuter argument sourceExpected = some plan)
     (typed : WellSorted.ArgumentsHaveTypes source.costWholeLanguage targetFree
@@ -8670,10 +7879,10 @@ theorem exists_buildCostStaticArgumentPlan?_of_typed
         arguments = true) :
     ∃ plan,
       buildCostStaticArgumentPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer wireName before arguments parameters = some plan := by
   induction parameters generalizing arguments before with
@@ -8805,10 +8014,10 @@ theorem exists_buildCostStaticRegionPlan?_application_of_wellSorted
               (mapTypeExpr (color.symbols source) sourceExpected) argument →
           ∃ plan,
             buildCostStaticRegionPlan? source color targetFree
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   (childAvailable ++ childSealed))
                 (childAvailable ++ childSealed)
-                (CostStaticBinderThinning.ofTargetThinning source color
+                (CostStaticTypeThinning.ofTargetThinning source.theory color
                   (childAvailable ++ childSealed))
                 childAvailable localOuter argument sourceExpected = some plan)
     (wellSorted : ReflectiveWellSorted.OpenPatternWellSorted
@@ -8817,10 +8026,10 @@ theorem exists_buildCostStaticRegionPlan?_application_of_wellSorted
         (.apply wireName arguments)) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer (.apply wireName arguments) sourceType = some plan := by
   have admission := wellSorted
@@ -8874,7 +8083,7 @@ theorem exists_buildCostStaticRegionPlan?_application_of_wellSorted
           intro sourceBare
           apply targetNotBare
           rw [← materializes]
-          exact preimage.target_usesBareCollection sourceBare
+          exact preimage.usesBareCollection_iff.mpr sourceBare
         have parametersEquality : rule.params =
             preimage.sourceConstructor.1.params.map
               (mapTermParam (color.symbols source)) := by
@@ -8927,10 +8136,10 @@ theorem exists_buildCostStaticRegionPlan?_application_of_wellSorted
               reflectiveAtZero
           have argumentPlanBuilt :
               buildCostStaticArgumentPlan? source color targetFree
-                  (CostStaticBinderThinning.sourceContextOfTarget source color
+                  (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                     (available ++ sealed))
                   (available ++ sealed)
-                  (CostStaticBinderThinning.ofTargetThinning source color
+                  (CostStaticTypeThinning.ofTargetThinning source.theory color
                     (available ++ sealed))
                   [] outer rule.label [] arguments
                     preimage.sourceConstructor.1.params = some argumentPlan := by
@@ -8998,10 +8207,10 @@ theorem exists_buildCostStaticElementPlan?_of_typed
               (mapTypeExpr (color.symbols source) sourceElementType) element →
           ∃ plan,
             buildCostStaticRegionPlan? source color targetFree
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   (available ++ sealed))
                 (available ++ sealed)
-                (CostStaticBinderThinning.ofTargetThinning source color
+                (CostStaticTypeThinning.ofTargetThinning source.theory color
                   (available ++ sealed))
                 available localOuter element sourceElementType = some plan)
     (typed : WellSorted.ElementsHaveType source.costWholeLanguage targetFree
@@ -9015,10 +8224,10 @@ theorem exists_buildCostStaticElementPlan?_of_typed
         elements = true) :
     ∃ plan,
       buildCostStaticElementPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer collectionType before elements rest
             sourceElementType = some plan := by
@@ -9107,10 +8316,10 @@ theorem exists_buildCostStaticRegionPlan?_collection_of_selected
               (mapTypeExpr (color.symbols source) sourceExpected) element →
           ∃ plan,
             buildCostStaticRegionPlan? source color targetFree
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   (childAvailable ++ childSealed))
                 (childAvailable ++ childSealed)
-                (CostStaticBinderThinning.ofTargetThinning source color
+                (CostStaticTypeThinning.ofTargetThinning source.theory color
                   (childAvailable ++ childSealed))
                 childAvailable localOuter element sourceExpected = some plan)
     (wellSorted : ReflectiveWellSorted.OpenPatternWellSorted
@@ -9119,10 +8328,10 @@ theorem exists_buildCostStaticRegionPlan?_collection_of_selected
         (.collection collectionType elements rest)) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer (.collection collectionType elements rest)
             sourceType = some plan := by
@@ -9179,10 +8388,10 @@ theorem exists_buildCostStaticRegionPlan?_collection_of_wellSorted
               (mapTypeExpr (color.symbols source) sourceExpected) element →
           ∃ plan,
             buildCostStaticRegionPlan? source color targetFree
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   (childAvailable ++ childSealed))
                 (childAvailable ++ childSealed)
-                (CostStaticBinderThinning.ofTargetThinning source color
+                (CostStaticTypeThinning.ofTargetThinning source.theory color
                   (childAvailable ++ childSealed))
                 childAvailable localOuter element sourceExpected = some plan)
     (wellSorted : ReflectiveWellSorted.OpenPatternWellSorted
@@ -9191,10 +8400,10 @@ theorem exists_buildCostStaticRegionPlan?_collection_of_wellSorted
         (.collection collectionType elements rest)) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer (.collection collectionType elements rest)
             sourceType = some plan := by
@@ -9249,10 +8458,10 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
         pattern) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color
             (available ++ sealed))
           (available ++ sealed)
-          (CostStaticBinderThinning.ofTargetThinning source color
+          (CostStaticTypeThinning.ofTargetThinning source.theory color
             (available ++ sealed))
           available outer pattern sourceType = some plan := by
   induction pattern using Pattern.inductionOn generalizing available sealed
@@ -9319,12 +8528,12 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                 (outer.comp (.lambda binder .hole)) codomain bodyWellSorted
               have bodyIsSome :
                   (buildCostStaticRegionPlan? source color targetFree
-                    (CostStaticBinderThinning.sourceContextOfTarget source color
+                    (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                       ((mapTypeExpr (color.symbols source) domain :: available) ++
                         sealed))
                     ((mapTypeExpr (color.symbols source) domain :: available) ++
                       sealed)
-                    (CostStaticBinderThinning.ofTargetThinning source color
+                    (CostStaticTypeThinning.ofTargetThinning source.theory color
                       ((mapTypeExpr (color.symbols source) domain :: available) ++
                         sealed))
                     (mapTypeExpr (color.symbols source) domain :: available)
@@ -9335,12 +8544,12 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
               have normalizedBodyIsSome :
                   (buildCostStaticRegionPlan? source color targetFree
                     (domain ::
-                      CostStaticBinderThinning.sourceContextOfTarget source color
+                      CostStaticTypeThinning.sourceContextOfTarget source.theory color
                         (available ++ sealed))
                     (mapTypeExpr (color.symbols source) domain ::
                       (available ++ sealed))
                     (.mapped domain
-                      (CostStaticBinderThinning.ofTargetThinning source color
+                      (CostStaticTypeThinning.ofTargetThinning source.theory color
                         (available ++ sealed)))
                     (mapTypeExpr (color.symbols source) domain :: available)
                     (outer.comp (.lambda binder .hole)) body codomain).isSome =
@@ -9348,21 +8557,21 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                 let targetContext :=
                   mapTypeExpr (color.symbols source) domain ::
                     (available ++ sealed)
-                let canonicalSlice : CostStaticBinderThinning.Slice source
+                let canonicalSlice : CostStaticTypeThinning.Slice source
                     color targetContext :=
-                  ⟨CostStaticBinderThinning.sourceContextOfTarget source color
+                  ⟨CostStaticTypeThinning.sourceContextOfTarget source.theory color
                       targetContext,
-                    CostStaticBinderThinning.ofTargetThinning source color
+                    CostStaticTypeThinning.ofTargetThinning source.theory color
                       targetContext⟩
-                let extendedSlice : CostStaticBinderThinning.Slice source
+                let extendedSlice : CostStaticTypeThinning.Slice source
                     color targetContext :=
                   ⟨domain ::
-                      CostStaticBinderThinning.sourceContextOfTarget source
+                      CostStaticTypeThinning.sourceContextOfTarget source.theory
                         color (available ++ sealed),
                     .mapped domain
-                      (CostStaticBinderThinning.ofTargetThinning source color
+                      (CostStaticTypeThinning.ofTargetThinning source.theory color
                         (available ++ sealed))⟩
-                let succeeds : CostStaticBinderThinning.Slice source color
+                let succeeds : CostStaticTypeThinning.Slice source color
                     targetContext → Prop := fun slice =>
                   (buildCostStaticRegionPlan? source color targetFree
                     slice.1 targetContext slice.2
@@ -9373,7 +8582,7 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                   simpa [succeeds, canonicalSlice, targetContext] using
                     bodyIsSome
                 have sliceEquality : canonicalSlice = extendedSlice :=
-                  CostStaticBinderThinning.slice_all_eq _ _
+                  CostStaticTypeThinning.slice_all_eq _ _
                 have extendedSucceeds : succeeds extendedSlice :=
                   Eq.mp (congrArg succeeds sliceEquality) canonicalSucceeds
                 simpa [succeeds, extendedSlice, targetContext] using
@@ -9435,7 +8644,7 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                     codomain bodyWellSorted
                   have bodyIsSome :
                       (buildCostStaticRegionPlan? source color targetFree
-                        (CostStaticBinderThinning.sourceContextOfTarget source
+                        (CostStaticTypeThinning.sourceContextOfTarget source.theory
                           color
                           ((List.replicate arity
                               (mapTypeExpr (color.symbols source) sourceDomain) ++
@@ -9443,7 +8652,7 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                         ((List.replicate arity
                             (mapTypeExpr (color.symbols source) sourceDomain) ++
                           available) ++ sealed)
-                        (CostStaticBinderThinning.ofTargetThinning source color
+                        (CostStaticTypeThinning.ofTargetThinning source.theory color
                           ((List.replicate arity
                               (mapTypeExpr (color.symbols source) sourceDomain) ++
                             available) ++ sealed))
@@ -9457,13 +8666,13 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                   have normalizedBodyIsSome :
                       (buildCostStaticRegionPlan? source color targetFree
                         (List.replicate arity sourceDomain ++
-                          CostStaticBinderThinning.sourceContextOfTarget source
+                          CostStaticTypeThinning.sourceContextOfTarget source.theory
                             color (available ++ sealed))
                         (List.replicate arity
                             (mapTypeExpr (color.symbols source) sourceDomain) ++
                           (available ++ sealed))
-                        (CostStaticBinderThinning.prependMapped arity sourceDomain
-                          (CostStaticBinderThinning.ofTargetThinning source color
+                        (CostStaticTypeThinning.prependMapped arity sourceDomain
+                          (CostStaticTypeThinning.ofTargetThinning source.theory color
                             (available ++ sealed)))
                         (List.replicate arity
                             (mapTypeExpr (color.symbols source) sourceDomain) ++
@@ -9479,23 +8688,23 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                           (mapTypeExpr (color.symbols source) sourceDomain) ++
                         (available ++ sealed)
                     let canonicalBundle :
-                        CostStaticBinderThinning.ContextSlice source color :=
+                        CostStaticTypeThinning.ContextSlice source color :=
                       ⟨canonicalContext,
-                        ⟨CostStaticBinderThinning.sourceContextOfTarget source
+                        ⟨CostStaticTypeThinning.sourceContextOfTarget source.theory
                             color canonicalContext,
-                          CostStaticBinderThinning.ofTargetThinning source color
+                          CostStaticTypeThinning.ofTargetThinning source.theory color
                             canonicalContext⟩⟩
                     let extendedBundle :
-                        CostStaticBinderThinning.ContextSlice source color :=
+                        CostStaticTypeThinning.ContextSlice source color :=
                       ⟨extendedContext,
                         ⟨List.replicate arity sourceDomain ++
-                            CostStaticBinderThinning.sourceContextOfTarget source
+                            CostStaticTypeThinning.sourceContextOfTarget source.theory
                               color (available ++ sealed),
-                          CostStaticBinderThinning.prependMapped arity
+                          CostStaticTypeThinning.prependMapped arity
                             sourceDomain
-                            (CostStaticBinderThinning.ofTargetThinning source
+                            (CostStaticTypeThinning.ofTargetThinning source.theory
                               color (available ++ sealed))⟩⟩
-                    let succeeds : CostStaticBinderThinning.ContextSlice source
+                    let succeeds : CostStaticTypeThinning.ContextSlice source
                         color → Prop := fun bundle =>
                       (buildCostStaticRegionPlan? source color targetFree
                         bundle.2.1 bundle.1 bundle.2.2
@@ -9512,7 +8721,7 @@ theorem exists_buildCostStaticRegionPlan?_of_wellSorted
                       simp [canonicalBundle, extendedBundle, canonicalContext,
                         extendedContext, List.append_assoc]
                     have bundleEquality : canonicalBundle = extendedBundle :=
-                      CostStaticBinderThinning.contextSlice_eq_of_target_eq
+                      CostStaticTypeThinning.contextSlice_eq_of_target_eq
                         canonicalBundle extendedBundle targetEquality
                     have extendedSucceeds : succeeds extendedBundle :=
                       Eq.mp (congrArg succeeds bundleEquality) canonicalSucceeds
@@ -9552,25 +8761,25 @@ theorem exists_buildCostStaticRegionPlan?_root_of_wellSorted
         pattern) :
     ∃ plan,
       buildCostStaticRegionPlan? source color targetFree
-          (CostStaticBinderThinning.sourceContextOfTarget source color available)
+          (CostStaticTypeThinning.sourceContextOfTarget source.theory color available)
           available
-          (CostStaticBinderThinning.ofTargetThinning source color available)
+          (CostStaticTypeThinning.ofTargetThinning source.theory color available)
           available .hole pattern sourceType = some plan := by
   obtain ⟨plan, built⟩ :=
     exists_buildCostStaticRegionPlan?_of_wellSorted
       (source := source) (color := color) (targetFree := targetFree)
       available [] .hole pattern sourceType wellSorted
-  let appendedBundle : CostStaticBinderThinning.ContextSlice source color :=
+  let appendedBundle : CostStaticTypeThinning.ContextSlice source color :=
     ⟨available ++ [],
-      ⟨CostStaticBinderThinning.sourceContextOfTarget source color
+      ⟨CostStaticTypeThinning.sourceContextOfTarget source.theory color
           (available ++ []),
-        CostStaticBinderThinning.ofTargetThinning source color
+        CostStaticTypeThinning.ofTargetThinning source.theory color
           (available ++ [])⟩⟩
-  let rootBundle : CostStaticBinderThinning.ContextSlice source color :=
+  let rootBundle : CostStaticTypeThinning.ContextSlice source color :=
     ⟨available,
-      ⟨CostStaticBinderThinning.sourceContextOfTarget source color available,
-        CostStaticBinderThinning.ofTargetThinning source color available⟩⟩
-  let succeeds : CostStaticBinderThinning.ContextSlice source color → Prop :=
+      ⟨CostStaticTypeThinning.sourceContextOfTarget source.theory color available,
+        CostStaticTypeThinning.ofTargetThinning source.theory color available⟩⟩
+  let succeeds : CostStaticTypeThinning.ContextSlice source color → Prop :=
     fun bundle =>
       (buildCostStaticRegionPlan? source color targetFree
         bundle.2.1 bundle.1 bundle.2.2 available .hole pattern sourceType).isSome =
@@ -9582,7 +8791,7 @@ theorem exists_buildCostStaticRegionPlan?_root_of_wellSorted
   have targetEquality : appendedBundle.1 = rootBundle.1 := by
     simp [appendedBundle, rootBundle]
   have bundleEquality : appendedBundle = rootBundle :=
-    CostStaticBinderThinning.contextSlice_eq_of_target_eq
+    CostStaticTypeThinning.contextSlice_eq_of_target_eq
       appendedBundle rootBundle targetEquality
   have rootSucceeds : succeeds rootBundle :=
     Eq.mp (congrArg succeeds bundleEquality) appendedSucceeds
@@ -10407,7 +9616,7 @@ mutual
         targetBound thinning sourceAvailable outer pattern sourceType) :
       ReflectiveWellSorted.ReflectiveScopeSafeAt
         source.reflection.1
-        (CostStaticBinderThinning.sourceContextOfTarget source color
+        (CostStaticTypeThinning.sourceContextOfTarget source.theory color
           sourceAvailable).length plan.abstractPattern := by
     intro presentation membership
     cases plan with
@@ -10433,28 +9642,28 @@ mutual
               presentation.quoteConstructor 0 children.abstractPatterns =
                 true := by
             simpa [globallyQuoted,
-              CostStaticBinderThinning.sourceContextOfTarget] using childSafe
+              CostStaticTypeThinning.sourceContextOfTarget] using childSafe
           have ordinarySafe : binderSafeListAt
               presentation.quoteConstructor
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   sourceAvailable).length
                 children.abstractPatterns = true :=
             binderSafeListAt_mono presentation.quoteConstructor resetSafe
               (Nat.zero_le _)
           exact binderSafeAt_apply_of_spines presentation.quoteConstructor
             preimage.sourceConstructor.1.label
-            (CostStaticBinderThinning.sourceContextOfTarget source color
+            (CostStaticTypeThinning.sourceContextOfTarget source.theory color
               sourceAvailable).length
             children.abstractPatterns (fun _ => resetSafe) ordinarySafe
         · have ordinarySafe : binderSafeListAt
               presentation.quoteConstructor
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   sourceAvailable).length
                 children.abstractPatterns = true := by
             simpa [globallyQuoted] using childSafe
           apply binderSafeAt_apply_of_spines presentation.quoteConstructor
             preimage.sourceConstructor.1.label
-            (CostStaticBinderThinning.sourceContextOfTarget source color
+            (CostStaticTypeThinning.sourceContextOfTarget source.theory color
               sourceAvailable).length
             children.abstractPatterns
           · intro labelEquality
@@ -10468,29 +9677,29 @@ mutual
           · exact ordinarySafe
     | lambda bodyPlan =>
         simpa [CostStaticRegionPlan.abstractPattern, binderSafeAt,
-          CostStaticBinderThinning.sourceContextOfTarget,
+          CostStaticTypeThinning.sourceContextOfTarget,
           Nat.add_comm] using
           bodyPlan.abstractPattern_reflectiveScopeSafeAt presentation membership
     | @multiLambda sourceBound targetBound sourceAvailable thinning outer arity
         binders body domain codomain bodyPlan =>
         have sourceContextEquality :
-            CostStaticBinderThinning.sourceContextOfTarget source color
+            CostStaticTypeThinning.sourceContextOfTarget source.theory color
                 (List.replicate arity
                     (mapTypeExpr (color.symbols source) domain) ++
                   sourceAvailable) =
               List.replicate arity domain ++
-                CostStaticBinderThinning.sourceContextOfTarget source color
+                CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   sourceAvailable := by
           simpa only [List.map_replicate] using
-            CostStaticBinderThinning.sourceContextOfTarget_map_append
+            CostStaticTypeThinning.sourceContextOfTarget_map_append
               source color (List.replicate arity domain) sourceAvailable
         have depthEquality :
-            (CostStaticBinderThinning.sourceContextOfTarget source color
+            (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                 (List.replicate arity
                     (mapTypeExpr (color.symbols source) domain) ++
                   sourceAvailable)).length =
               arity +
-                (CostStaticBinderThinning.sourceContextOfTarget source color
+                (CostStaticTypeThinning.sourceContextOfTarget source.theory color
                   sourceAvailable).length := by
           rw [sourceContextEquality]
           simp
@@ -10520,7 +9729,7 @@ mutual
       (membership : presentation ∈
         source.reflection.1.presentations) :
       binderSafeListAt presentation.quoteConstructor
-        (CostStaticBinderThinning.sourceContextOfTarget source color
+        (CostStaticTypeThinning.sourceContextOfTarget source.theory color
           sourceAvailable).length plan.abstractPatterns = true := by
     cases plan with
     | nil => rfl
@@ -10547,7 +9756,7 @@ mutual
       (membership : presentation ∈
         source.reflection.1.presentations) :
       binderSafeListAt presentation.quoteConstructor
-        (CostStaticBinderThinning.sourceContextOfTarget source color
+        (CostStaticTypeThinning.sourceContextOfTarget source.theory color
           sourceAvailable).length plan.abstractPatterns = true := by
     cases plan with
     | nil => rfl
@@ -10723,16 +9932,15 @@ mutual
     cases plan with
     | bvar sourceIndex lookup correspondence availableScope =>
         have embedded :=
-          thinning.toTargetIndex_of_toSourceIndex?_eq_some correspondence
+          thinning.toTargetIndex_toSourceIndex? correspondence
         simp [CostStaticRegionPlan.abstractPattern,
           CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
-          CostStaticBinderThinning.embedIndexAt,
+          CostStaticTypeThinning.thickenAmbientBVars_bvar,
+          CostStaticTypeThinning.embedIndexAt,
           ReflectiveContextSupport.substituteAt, embedded]
     | @fvar _ _ _ _ _ name _ lookup =>
         simp [CostStaticRegionPlan.abstractPattern,
-          CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar,
           ReflectiveContextSupport.substituteAt,
           globalTable.restorationAssignment_sourceVariable, liftBVars]
     | boundaryApplication constructor rendered outsideCurrent certified
@@ -10742,8 +9950,7 @@ mutual
           change certified.typed ∈ [certified.typed]
           simp
         simp [CostStaticRegionPlan.abstractPattern,
-          CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar,
           ReflectiveContextSupport.substituteAt,
           globalTable.restorationAssignment_boundaryVariable certified.typed
             globalMembership,
@@ -10774,8 +9981,7 @@ mutual
             rw [← CostStaticColor.symbols_constructor source color]
             simpa only [reflectiveIsQuoteConstructor_mapCostStatic] using quoted
           simp only [CostStaticRegionPlan.abstractPattern,
-            CostStaticRegionPlan.recomposePattern, mapPattern,
-            CostStaticBinderThinning.thickenAmbientBVars,
+            CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_apply,
             ReflectiveContextSupport.substituteAt, Pattern.apply.injEq]
           constructor
           · exact labelEquality
@@ -10795,8 +10001,7 @@ mutual
             simpa only [reflectiveIsQuoteConstructor_mapCostStatic] using
               sourceOrdinary
           simp only [CostStaticRegionPlan.abstractPattern,
-            CostStaticRegionPlan.recomposePattern, mapPattern,
-            CostStaticBinderThinning.thickenAmbientBVars,
+            CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_apply,
             ReflectiveContextSupport.substituteAt, Pattern.apply.injEq]
           constructor
           · exact labelEquality
@@ -10813,9 +10018,9 @@ mutual
             globalTable entriesSubset bodyObject
         simpa [CostStaticRegionPlan.abstractPattern,
           CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection,
           ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars_mapped,
+          CostStaticTypeThinning.thickenAmbientBVars_mapped,
           Nat.add_comm] using bodyRestored
     | @multiLambda sourceBound targetBound sourceAvailable thinning outer arity
         binders body domain codomain bodyPlan =>
@@ -10826,9 +10031,9 @@ mutual
             globalTable entriesSubset bodyObject
         simpa [CostStaticRegionPlan.abstractPattern,
           CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticTypeThinning.thickenAmbientBVars_bvar, CostStaticTypeThinning.thickenAmbientBVars_fvar, CostStaticTypeThinning.thickenAmbientBVars_apply, CostStaticTypeThinning.thickenAmbientBVars_lambda, CostStaticTypeThinning.thickenAmbientBVars_multiLambda, CostStaticTypeThinning.thickenAmbientBVars_subst, CostStaticTypeThinning.thickenAmbientBVars_collection,
           ReflectiveContextSupport.substituteAt,
-          CostStaticBinderThinning.thickenAmbientBVars_prependMapped,
+          CostStaticTypeThinning.thickenAmbientBVars_prependMapped,
           List.length_append, Nat.add_comm, Nat.add_left_comm, Nat.add_assoc]
           using bodyRestored
     | @collection sourceBound targetBound sourceAvailable thinning outer
@@ -10845,8 +10050,7 @@ mutual
           CostStaticElementPlan.restoreMappedAbstractPatterns children
             globalTable entriesSubset childrenObject
         simp only [CostStaticRegionPlan.abstractPattern,
-          CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_collection,
           ReflectiveContextSupport.substituteAt, Pattern.collection.injEq,
           true_and]
         constructor
@@ -10860,8 +10064,7 @@ mutual
           change certified.typed ∈ [certified.typed]
           simp
         simp [CostStaticRegionPlan.abstractPattern,
-          CostStaticRegionPlan.recomposePattern, mapPattern,
-          CostStaticBinderThinning.thickenAmbientBVars,
+          CostStaticRegionPlan.recomposePattern, mapPattern, CostStaticTypeThinning.thickenAmbientBVars_fvar,
           ReflectiveContextSupport.substituteAt,
           globalTable.restorationAssignment_boundaryVariable certified.typed
             globalMembership,
@@ -11961,15 +11164,15 @@ structure CostStaticRegionNode (source : CIGSLT)
     targetBound
     (color.mapLangSort source sourceSort)
   plan : CostStaticRegionPlan source color targetFree
-    (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+    (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
     targetBound
-    (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+    (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
     targetBound .hole term.1 (.base sourceSort.1)
   rootStatic : plan.isStaticRoot = true
   skeleton : ReflectiveWellSorted.OpenTerm source.reflection.1
     source.theory.presentation.presentation.language
     plan.boundaryTable.sourceFreeContext
-    (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+    (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
     sourceSort
   skeleton_pattern : skeleton.1 =
     plan.abstractPattern
@@ -11977,7 +11180,7 @@ structure CostStaticRegionNode (source : CIGSLT)
     source.theory.presentation.presentation.language
     (· ∈ source.continuationRetyping.wrappedLabels)
     plan.boundaryTable.sourceFreeContext
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       skeleton.1
       (.base sourceSort.1)
   supportSafe : skeleton.toCore.2.1.ReflectiveSupportSafeAt
@@ -11990,7 +11193,7 @@ namespace CostStaticRegionNode
 abbrev sourceBound {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) : List TypeExpr :=
-  CostStaticBinderThinning.sourceContextOfTarget source color node.targetBound
+  CostStaticTypeThinning.sourceContextOfTarget source.theory color node.targetBound
 
 /-- Every node uses the executable target-context thinning, rather than an
 independently supplied proof-relevant path. -/
@@ -11998,7 +11201,7 @@ abbrev thinning {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) :
     CostStaticBinderThinning source color node.sourceBound node.targetBound :=
-  CostStaticBinderThinning.ofTargetThinning source color node.targetBound
+  CostStaticTypeThinning.ofTargetThinning source.theory color node.targetBound
 
 /-- The finite table is a projection of the sole structural plan. -/
 def boundaryTable {source : CIGSLT} {color : CostStaticColor}
@@ -12018,9 +11221,9 @@ def ofPlan {source : CIGSLT} {color : CostStaticColor}
       targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (rootStatic : plan.isStaticRoot = true) :
     CostStaticRegionNode source color targetFree := by
@@ -12035,7 +11238,7 @@ def ofPlan {source : CIGSLT} {color : CostStaticColor}
   let coreSkeleton : WellSorted.OpenTerm
       source.theory.presentation.presentation.language
       table.sourceFreeContext
-        (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+        (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
         sourceSort :=
     ⟨plan.abstractPattern, supported.toHasType,
       plan.abstractPattern_canonicalBinderMetadata term.2.2.1,
@@ -12044,7 +11247,7 @@ def ofPlan {source : CIGSLT} {color : CostStaticColor}
   let skeleton : ReflectiveWellSorted.OpenTerm source.reflection.1
       source.theory.presentation.presentation.language
       table.sourceFreeContext
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       sourceSort :=
     ⟨coreSkeleton.1, coreSkeleton.2,
       plan.abstractPattern_reflectiveScopeSafeAt⟩
@@ -12089,9 +11292,9 @@ def build? {source : CIGSLT} {color : CostStaticColor}
       targetBound
       (color.mapLangSort source sourceSort)) :
     Option (CostStaticRegionNode source color targetFree) :=
-  let sourceBound := CostStaticBinderThinning.sourceContextOfTarget source color
+  let sourceBound := CostStaticTypeThinning.sourceContextOfTarget source.theory color
     targetBound
-  let thinning := CostStaticBinderThinning.ofTargetThinning source color
+  let thinning := CostStaticTypeThinning.ofTargetThinning source.theory color
     targetBound
   match buildCostStaticRegionPlan? source color targetFree sourceBound
       targetBound thinning targetBound .hole term.1 (.base sourceSort.1) with
@@ -12117,9 +11320,9 @@ theorem build?_term_eq {source : CIGSLT} {color : CostStaticColor}
   unfold CostStaticRegionNode.build? at built
   dsimp only at built
   cases planned : buildCostStaticRegionPlan? source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1) with
   | none => simp [planned] at built
   | some plan =>
@@ -12144,9 +11347,9 @@ theorem build?_targetBound_eq {source : CIGSLT} {color : CostStaticColor}
   unfold CostStaticRegionNode.build? at built
   dsimp only at built
   cases planned : buildCostStaticRegionPlan? source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1) with
   | none => simp [planned] at built
   | some plan =>
@@ -12172,9 +11375,9 @@ theorem build?_sourceSort_eq {source : CIGSLT} {color : CostStaticColor}
   unfold CostStaticRegionNode.build? at built
   dsimp only at built
   cases planned : buildCostStaticRegionPlan? source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1) with
   | none => simp [planned] at built
   | some plan =>
@@ -12350,7 +11553,7 @@ theorem buildForColor?_mem_buildForColorCandidates
   apply List.mem_filterMap.mpr
   refine ⟨sourceName, ?_, ?_⟩
   · simp [split]
-  · simpa [candidateBuilt]
+  · simp [candidateBuilt]
 
 theorem mem_buildForColorCandidates_iff
     {source : CIGSLT}
@@ -12386,9 +11589,9 @@ theorem exists_mem_buildForColorCandidates_of_plan
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true) :
@@ -12408,7 +11611,7 @@ theorem exists_mem_buildForColorCandidates_of_plan
   obtain ⟨candidate, built⟩ := Option.isSome_iff_exists.mp rootSome
   refine ⟨candidate, ?_, ?_⟩
   · rw [CostStaticRootNode.mem_buildForColorCandidates_iff]
-    exact ⟨⟨sourceSort.1, sourceSort.2⟩, by simpa using built⟩
+    exact ⟨sourceSort, built⟩
   · exact CostStaticRootNode.buildFor?_fields term color sourceSort built
 
 /-- The complete two-colour candidate family.  Base-first ordering is only a
@@ -12629,9 +11832,9 @@ theorem exists_mem_buildCandidates_of_plan
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true) :
@@ -12856,9 +12059,9 @@ theorem exists_build?_eq_some_of_plan {source : CIGSLT}
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree
       targetBound (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true) :
@@ -12878,9 +12081,9 @@ theorem build?_eq_some_of_plan {source : CIGSLT}
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree
       targetBound (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true) :
@@ -12936,9 +12139,9 @@ def CostStaticRootNode.ofPlan {source : CIGSLT} {color : CostStaticColor}
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (rootStatic : plan.isStaticRoot = true) :
     CostStaticRootNode source targetFree targetBound
@@ -13081,10 +12284,10 @@ def monochromatic {source : CIGSLT} {free : WellSorted.FreeTypeContext}
     (color : CostStaticColor)
     (plan : CostStaticRegionPlan source color
       (free.map (color.symbols source))
-      (CostStaticBinderThinning.sourceContextOfTarget source color
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color
         (bound.map (mapTypeExpr (color.symbols source))))
       (bound.map (mapTypeExpr (color.symbols source)))
-      (CostStaticBinderThinning.ofTargetThinning source color
+      (CostStaticTypeThinning.ofTargetThinning source.theory color
         (bound.map (mapTypeExpr (color.symbols source))))
       (bound.map (mapTypeExpr (color.symbols source))) .hole
       (term.mapCostStatic supported color).1 (.base sort.1))
@@ -13104,7 +12307,7 @@ def finiteBoundaryTable {source : CIGSLT} {color : CostStaticColor}
 
 /-- Transport is derived from the finite table's pointwise coherence; it is
 not a separately authored premise of a region node. -/
-def transport {source : CIGSLT} {color : CostStaticColor}
+theorem transport {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree) :
     node.boundaryTable.Transport node.boundaryTable.sourceFreeContext
@@ -13194,7 +12397,8 @@ theorem normalizeCostStaticStratum_skeletonIn_eq
       node.skeleton.recontextualizeFree preserves =
         node.skeletonIn globalTable entriesSubset := by
     apply Subtype.ext
-    simp
+    exact (ReflectiveWellSorted.OpenTerm.recontextualizeFree_pattern node.skeleton preserves).trans
+      (node.skeletonIn_pattern globalTable entriesSubset).symm
   have natural :=
     source.openCanonical.normalizeRecontextualizeFree node.skeleton preserves
   unfold normalizeCostStaticStratum
@@ -13304,12 +12508,10 @@ def mappedThickenedSkeleton {source : CIGSLT}
   · simpa only [List.nil_append, List.length_nil, mapTypeExpr,
       CostStaticColor.mapLangSort_name] using
       mappedTyped.thickenAmbientBVars (inner := []) node.thinning
-  · rw [CostStaticBinderThinning.hasCanonicalBinderMetadata_thickenAmbientBVars]
-    simpa only [mapped, WellSorted.OpenTerm.mapCostStatic_pattern] using
-      mapped.2.2.1
-  · rw [CostStaticBinderThinning.isObjectPattern_thickenAmbientBVars]
-    simpa only [mapped, WellSorted.OpenTerm.mapCostStatic_pattern] using
-      mapped.2.2.2.1
+  · rw [CostStaticTypeThinning.hasCanonicalBinderMetadata_thickenAmbientBVars]
+    exact mapped.2.2.1
+  · rw [CostStaticTypeThinning.isObjectPattern_thickenAmbientBVars]
+    exact mapped.2.2.2.1
   · simpa [WellSorted.ScopeSafeAt] using
       (mappedTyped.thickenAmbientBVars (inner := []) node.thinning).isWellScopedAt
 
@@ -13339,8 +12541,10 @@ def mappedThickenedReflectiveSkeleton {source : CIGSLT}
   have mappedOrdinaryScope :
       (mapPattern (color.symbols source) node.skeleton.toCore.1).isWellScopedAt
           node.sourceBound.length = true := by
-    simpa only [mapped, WellSorted.OpenTerm.mapCostStatic_pattern,
-      List.length_map] using mapped.2.1.isWellScopedAt
+    have scope : (mapPattern (color.symbols source) node.skeleton.toCore.1).isWellScopedAt
+        (node.sourceBound.map (mapTypeExpr (color.symbols source))).length = true :=
+      mapped.2.1.isWellScopedAt
+    simpa only [List.length_map] using scope
   have mappedScope := reflectiveScopeSafeAt_mapCostStatic source color
     sourceScope mappedOrdinaryScope
   refine ⟨node.mappedThickenedSkeleton.1,
@@ -13405,6 +12609,7 @@ theorem normalizedThickenedSkeletonRaw_equationEquiv
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (node : CostStaticRegionNode source color targetFree)
+    (derivedStable : DerivedEquationMapCostStaticStable source color)
     (stable : SupportedEquationAmbientRenamingStable
       (profile := source.costWholeReflectionProfile)
       source.costWholeLanguage) :
@@ -13414,12 +12619,12 @@ theorem normalizedThickenedSkeletonRaw_equationEquiv
       (node.thinning.thickenAmbientBVars 0
         (mapPattern (color.symbols source) node.skeleton.1)) := by
   have normalized := normalizeCostStaticStratum_equationEquiv
-    source color node.skeleton
+    source color derivedStable node.skeleton
   have renamed := equationEquiv_renameAmbientBVarsAt stable
     node.thinning.toTargetIndex node.thinning.toTargetIndex_strictMono 0
       normalized
   simpa only [normalizedThickenedSkeletonRaw,
-    CostStaticBinderThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
+    CostStaticTypeThinning.thickenAmbientBVars_eq_renameAmbientBVarsAt]
     using renamed
 
 /-- The normalized, binder-reinserted skeleton inhabits the exact target
@@ -13479,8 +12684,10 @@ def normalizedThickenedReflectiveSkeleton {source : CIGSLT}
   have mappedOrdinaryScope :
       (mapPattern (color.symbols source) normalizedSource.toCore.1).isWellScopedAt
           node.sourceBound.length = true := by
-    simpa only [mapped, WellSorted.OpenTerm.mapCostStatic_pattern,
-      List.length_map] using mapped.2.1.isWellScopedAt
+    have scope : (mapPattern (color.symbols source) normalizedSource.toCore.1).isWellScopedAt
+        (node.sourceBound.map (mapTypeExpr (color.symbols source))).length = true :=
+      mapped.2.1.isWellScopedAt
+    simpa only [List.length_map] using scope
   have mappedScope := reflectiveScopeSafeAt_mapCostStatic source color
     sourceScope mappedOrdinaryScope
   refine ⟨node.normalizedThickenedSkeleton.1,
@@ -13724,20 +12931,15 @@ authored source generator is mapped into a single selected colour, ambient
 binders are reinserted by one intrinsic thinning, and only then are rigid
 boundary variables replaced by arbitrary well-sorted Cost values. -/
 
-/-- A source open term together with exactly the constructor and reflective-
-support evidence needed to act on it inside one generated static colour. -/
-structure CostStaticSourceTerm (source : CIGSLT) (color : CostStaticColor)
+/-- The finite-profile static source fibre at the existing continued plan.
+Its source term, declaration support and target binder support are retained
+by the general carrier. -/
+abbrev CostStaticSourceTerm (source : CIGSLT) (color : CostStaticColor)
     (free : WellSorted.FreeTypeContext) (support : ContextSupport.Support)
     (sourceBound targetBound : List TypeExpr)
-    (sort : LangSort source.theory.presentation.presentation.language) where
-  term : ReflectiveWellSorted.OpenTerm source.reflection.1
-    source.theory.presentation.presentation.language free sourceBound sort
-  supported : WellSorted.HasTypeWithConstructors
-    source.theory.presentation.presentation.language
-    (· ∈ source.continuationRetyping.wrappedLabels)
-    free sourceBound term.1 (.base sort.1)
-  safe : term.2.1.1.ReflectiveSupportSafeAt source.reflection.1 support
-    targetBound (mapTypeExpr (color.symbols source))
+    (sort : LangSort source.theory.presentation.presentation.language) :=
+  (ContinuationDecorationProfile.ofRetypingPlan source.continuationRetyping).StaticSourceTerm
+    source.reflection color free support sourceBound targetBound sort
 
 namespace CostStaticSourceTerm
 
@@ -13751,9 +12953,7 @@ def generator {source : CIGSLT} {color : CostStaticColor}
     {sort : LangSort source.theory.presentation.presentation.language}
     (left right : CostStaticSourceTerm source color free support sourceBound
       targetBound sort) : Prop :=
-  ReflectiveEquationSemantics.ReflectiveEquationContextStep
-    source.reflection.1 defaultBasePremises
-      source.theory.presentation.presentation.language left.term.1 right.term.1
+  ContinuationDecorationProfile.StaticSourceTerm.generator left right
 
 /-- Least source equation relation whose intermediate vertices all retain
 the selected static constructor fragment and the same target-support fiber. -/
@@ -13762,12 +12962,8 @@ def equationSetoid (source : CIGSLT) (color : CostStaticColor)
     (sourceBound targetBound : List TypeExpr)
     (sort : LangSort source.theory.presentation.presentation.language) :
     Setoid (CostStaticSourceTerm source color free support sourceBound
-      targetBound sort) where
-  r := Relation.EqvGen generator
-  iseqv :=
-    { refl := Relation.EqvGen.refl
-      symm := fun relation => Relation.EqvGen.symm _ _ relation
-      trans := fun first second => Relation.EqvGen.trans _ _ _ first second }
+      targetBound sort) :=
+  ContinuationDecorationProfile.StaticSourceTerm.equationSetoid
 
 /-- Map one certified source term into a single Cost colour, reinsert its
 ambient target binders, and restore an arbitrary supported finite value
@@ -13801,18 +12997,10 @@ def mappedThickenedOpenTerm {source : CIGSLT} {color : CostStaticColor}
     (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
     WellSorted.OpenTerm source.costWholeLanguage
       (free.map (color.symbols source)) targetBound
-      (color.mapLangSort source sort) := by
-  let mapped := term.term.toCore.mapCostStatic term.supported color
-  refine ⟨thinning.thickenAmbientBVars 0 mapped.1, ?_, ?_, ?_, ?_⟩
-  · simpa only [List.nil_append, List.length_nil,
-      WellSorted.OpenTerm.mapCostStatic_pattern] using
-      mapped.2.1.thickenAmbientBVars (inner := []) thinning
-  · rw [CostStaticBinderThinning.hasCanonicalBinderMetadata_thickenAmbientBVars]
-    exact mapped.2.2.1
-  · rw [CostStaticBinderThinning.isObjectPattern_thickenAmbientBVars]
-    exact mapped.2.2.2.1
-  · simpa [WellSorted.ScopeSafeAt] using
-      (mapped.2.1.thickenAmbientBVars (inner := []) thinning).isWellScopedAt
+      (color.mapLangSort source sort) :=
+  (ContinuationDecorationProfile.StaticSourceTerm.reinsert term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping) thinning).toCore
 
 /-- The mapped endpoint together with the independently authored quote-scope
 certificate selected by the Cost reflection profile. -/
@@ -13826,30 +13014,10 @@ def mappedThickenedReflectiveOpenTerm
     (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
     ReflectiveWellSorted.OpenTerm source.costWholeReflectionProfile
       source.costWholeLanguage (free.map (color.symbols source)) targetBound
-      (color.mapLangSort source sort) := by
-  let mapped := term.term.toCore.mapCostStatic term.supported color
-  let core := term.mappedThickenedOpenTerm thinning
-  have mappedOrdinaryScope :
-      (mapPattern (color.symbols source) term.term.toCore.1).isWellScopedAt
-          sourceBound.length = true := by
-    simpa only [mapped, WellSorted.OpenTerm.mapCostStatic_pattern,
-      List.length_map] using mapped.2.1.isWellScopedAt
-  have mappedScope := reflectiveScopeSafeAt_mapCostStatic source color
-    term.term.2.2 mappedOrdinaryScope
-  have mappedScopeCore : ReflectiveWellSorted.ReflectiveScopeSafeAt
-      source.costWholeReflectionProfile sourceBound.length
-        (mapPattern (color.symbols source) term.term.toCore.1) := by
-    simpa only [ReflectiveWellSorted.OpenTerm.toCore_pattern] using mappedScope
-  refine ⟨core.1, core.2, ?_⟩
-  intro declaration membership
-  have thickenedScope := thinning.binderSafeAt_thickenAmbientBVars
-    declaration.quoteConstructor 0
-      (mapPattern (color.symbols source) term.term.toCore.1) (by
-        simpa only [zero_add] using mappedScopeCore declaration membership)
-  change binderSafeAt declaration.quoteConstructor targetBound.length
-    (thinning.thickenAmbientBVars 0
-      (mapPattern (color.symbols source) term.term.toCore.1)) = true
-  simpa only [zero_add] using thickenedScope
+      (color.mapLangSort source sort) :=
+  ContinuationDecorationProfile.StaticSourceTerm.reinsert term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping) thinning
 
 /-- The mapped and binder-reinserted source endpoint is safe for the exact
 support index carried by the source static fibre. -/
@@ -13862,13 +13030,11 @@ theorem mappedThickenedOpenTerm_supportSafe
       targetBound sort)
     (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
     (term.mappedThickenedOpenTerm thinning).2.1.ReflectiveSupportSafeAt
-      source.costWholeReflectionProfile support targetBound := by
-  obtain ⟨mappedTyped, mappedSafe⟩ := term.safe.mapCostStatic source color
-    term.supported.constructorsWithin
-  have thickenedSafe :=
-    WellSorted.HasType.ReflectiveSupportSafeAt.thickenAmbientBVars
-      (source := source) (color := color) (inner := []) mappedSafe thinning
-  exact thickenedSafe.castTyping
+      source.costWholeReflectionProfile support targetBound :=
+  ContinuationDecorationProfile.StaticSourceTerm.reinsert_support term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping)
+    source.bareCollectionConstructorsWrapped thinning
 
 /-- Package one mapped static endpoint in the support-safe carrier consumed
 by finite boundary substitution. -/
@@ -13915,8 +13081,9 @@ def mappedThickenedAvailable
       source.costWholeLanguage
       (free.map (color.symbols source)) targetBound []
       (.base (color.mapLangSort source sort).1) :=
-  WellSorted.AvailableOpenPattern.ofOpenPattern
-    (term.mappedThickenedReflectiveOpenTerm thinning)
+  ContinuationDecorationProfile.StaticSourceTerm.reinsertAvailable term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping) thinning
 
 @[simp]
 theorem mappedThickenedAvailable_pattern
@@ -13943,10 +13110,11 @@ theorem mappedThickenedAvailable_supportSafe
       targetBound sort)
     (thinning : CostStaticBinderThinning source color sourceBound targetBound) :
     (term.mappedThickenedAvailable thinning).typed.ReflectiveSupportSafeAt
-      source.costWholeReflectionProfile support targetBound := by
-  exact WellSorted.HasType.ReflectiveSupportSafeAt.castBound
-    (List.append_nil targetBound).symm
-    (term.mappedThickenedOpenTerm_supportSafe thinning)
+      source.costWholeReflectionProfile support targetBound :=
+  ContinuationDecorationProfile.StaticSourceTerm.reinsertAvailable_support term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping)
+    source.bareCollectionConstructorsWrapped thinning
 
 /-- Apply one finite boundary assignment while preserving the exact target
 typing fiber and quote-visible binder split. -/
@@ -13969,8 +13137,10 @@ def actAvailable
       (.base (color.mapLangSort source sort).1) := by
   subst assignmentFree
   subst assignmentSupport
-  exact (term.mappedThickenedAvailable thinning).substitute assignment
-    (term.mappedThickenedAvailable_supportSafe thinning)
+  exact ContinuationDecorationProfile.StaticSourceTerm.actAvailable term
+    (ContinuationDecorationProfile.ofRetypingPlan_nonprincipal
+      source.continuationRetyping)
+    source.bareCollectionConstructorsWrapped thinning assignment
 
 @[simp]
 theorem actAvailable_pattern
@@ -14786,7 +13956,7 @@ theorem CostRegionTree.exists_buildStatic?_eq_some
     CostRegionBoundaryTrees.exists_build?_eq_some decompose
       node.finiteBoundaryTable succeeds
   exact ⟨.static node children, by
-    simp [CostRegionTree.buildStatic?, childrenBuilt]⟩
+    exact (congrArg (Option.map (CostRegionTree.static node)) childrenBuilt).trans rfl⟩
 
 /-- Inversion for one completed static node.  A successful result contains
 exactly the recursively built finite boundary forest; no other tree
@@ -14808,7 +13978,12 @@ theorem CostRegionTree.buildStatic?_eq_some_iff
   unfold CostRegionTree.buildStatic?
   cases childrenBuilt : CostRegionBoundaryTrees.build? decompose
       node.finiteBoundaryTable with
-  | none => simp
+  | none =>
+      constructor
+      · intro impossible
+        cases impossible
+      · rintro ⟨_, impossible, _⟩
+        cases impossible
   | some children =>
       simp only [Option.map_some, Option.some.injEq]
       constructor
@@ -14851,9 +14026,9 @@ theorem CostStaticRegionNode.exists_ofPlan_buildStatic?_eq_some
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (rootStatic : plan.isStaticRoot = true)
     (decompose : (boundary : TypedCostRegionBoundary source color targetFree) →
@@ -15104,9 +14279,9 @@ theorem CostRegionTree.buildCheckedStaticRoot?_isSome_of_plan
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true)
@@ -15154,9 +14329,9 @@ theorem CostRegionTree.exists_buildStaticRootForColor?_eq_some_of_plan
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true)
@@ -15649,9 +14824,9 @@ theorem CostRegionTree.buildFuel?_isSome_of_staticPlan
     (term : WellSorted.OpenTerm source.costWholeLanguage targetFree targetBound
       (color.mapLangSort source sourceSort))
     (plan : CostStaticRegionPlan source color targetFree
-      (CostStaticBinderThinning.sourceContextOfTarget source color targetBound)
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color targetBound)
       targetBound
-      (CostStaticBinderThinning.ofTargetThinning source color targetBound)
+      (CostStaticTypeThinning.ofTargetThinning source.theory color targetBound)
       targetBound .hole term.1 (.base sourceSort.1))
     (compiled : plan.CompilerReceipt)
     (rootStatic : plan.isStaticRoot = true)
@@ -16375,7 +15550,7 @@ theorem CostRegionTree.buildFuel?_isSome_of_wellSorted_application
               simp only [costRegionPatternWeight] at enough boundaryBound
               omega
             exact succeeds
-              ⟨boundary.openPattern.2,
+              ⟨(TypedCostRegionBoundary.openPattern boundary).2,
                 boundary.contentReflectiveScopeSafe⟩ childBound)
       rw [targetCategoryEquality]
       simpa [term, sourceSort] using staticSuccess
@@ -16657,7 +15832,7 @@ theorem CostRegionTree.buildFuel?_isSome_of_wellSorted_bareCollection
               simp only [costRegionPatternWeight] at enough boundaryBound
               omega
             exact succeeds
-              ⟨boundary.openPattern.2,
+              ⟨(TypedCostRegionBoundary.openPattern boundary).2,
                 boundary.contentReflectiveScopeSafe⟩ childBound)
       rw [expectedEquality]
       simpa [mapTypeExpr, term, sourceSort] using staticSuccess
@@ -17243,10 +16418,10 @@ def CostRegionTree.monochromatic {source : CIGSLT}
     (color : CostStaticColor)
     (plan : CostStaticRegionPlan source color
       (free.map (color.symbols source))
-      (CostStaticBinderThinning.sourceContextOfTarget source color
+      (CostStaticTypeThinning.sourceContextOfTarget source.theory color
         (bound.map (mapTypeExpr (color.symbols source))))
       (bound.map (mapTypeExpr (color.symbols source)))
-      (CostStaticBinderThinning.ofTargetThinning source color
+      (CostStaticTypeThinning.ofTargetThinning source.theory color
         (bound.map (mapTypeExpr (color.symbols source))))
       (bound.map (mapTypeExpr (color.symbols source))) .hole
       (term.mapCostStatic supported color).1 (.base sort.1))
@@ -17268,7 +16443,7 @@ mutual
   /-- Forget the decomposition certificate and recover the original typing
   derivation.  Thus every tree is a typed view of the sole `Pattern` carrier,
   never an independently admitted syntax. -/
-  def CostRegionTree.toHasType {source : CIGSLT}
+  theorem CostRegionTree.toHasType {source : CIGSLT}
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {pattern : Pattern} {type : TypeExpr} :
       CostRegionTree source targetFree available outer pattern type →
@@ -17295,7 +16470,7 @@ mutual
         .collection children.toElementsHaveType
 
   /-- Forget the region decomposition of constructor arguments. -/
-  def CostRegionArgumentTrees.toArgumentsHaveTypes {source : CIGSLT}
+  theorem CostRegionArgumentTrees.toArgumentsHaveTypes {source : CIGSLT}
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {arguments : List Pattern}
       {parameters : List TermParam} :
@@ -17309,7 +16484,7 @@ mutual
           tail.toArgumentsHaveTypes
 
   /-- Forget the region decomposition of homogeneous collection elements. -/
-  def CostRegionElementTrees.toElementsHaveType {source : CIGSLT}
+  theorem CostRegionElementTrees.toElementsHaveType {source : CIGSLT}
       {targetFree : WellSorted.FreeTypeContext}
       {available outer : List TypeExpr} {elements : List Pattern}
       {elementType : TypeExpr} :
@@ -17620,77 +16795,28 @@ The following mutually recursive projections expose that typing directly,
 without re-running the executable checker or consulting constructor order.
 -/
 
-mutual
-  def CostRegionTree.originalTyped {source : CIGSLT}
-      {targetFree : WellSorted.FreeTypeContext}
-      {available outer : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
-      (tree : CostRegionTree source targetFree available outer pattern type) :
-      WellSorted.HasType source.costWholeLanguage targetFree
-        (available ++ outer) pattern type :=
-    match tree with
-    | .bvar lookup => .bvar lookup
-    | .fvar lookup => .fvar lookup
-    | @CostRegionTree.static _ _ color outer node children =>
-        node.term.2.1.extendOuter outer
-    | .neutralApplicationOrdinary membership notBareCollection _constructor
-        _materializes _neutral _ordinary children =>
-        .constructor membership notBareCollection children.originalTyped
-    | @CostRegionTree.neutralApplicationQuote _ _ available outer rule
-        arguments membership notBareCollection constructor materializes neutral
-        quoted children =>
-        .constructor membership notBareCollection (by
-          simpa only [List.nil_append, List.append_assoc] using
-            children.originalTyped)
-    | .lambda bodyTree =>
-        .lambda bodyTree.originalTyped
-    | @CostRegionTree.multiLambda _ _ available outer arity binders body domain
-        codomain bodyTree =>
-        .multiLambda (by
-          simpa only [List.append_assoc] using bodyTree.originalTyped)
-    | .subst bodyTree replacementTree =>
-        .subst bodyTree.originalTyped replacementTree.originalTyped
-    | .collection children =>
-        .collection children.originalTyped
-  termination_by tree.weight
-  decreasing_by
-    all_goals simp [CostRegionTree.weight]
-    all_goals omega
+/-- The original typing is the intrinsic tree projection. -/
+theorem CostRegionTree.originalTyped {source : CIGSLT}
+    {targetFree : WellSorted.FreeTypeContext}
+    {available outer : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
+    (tree : CostRegionTree source targetFree available outer pattern type) :
+    WellSorted.HasType source.costWholeLanguage targetFree
+      (available ++ outer) pattern type := tree.toHasType
 
-  def CostRegionArgumentTrees.originalTyped {source : CIGSLT}
-      {targetFree : WellSorted.FreeTypeContext}
-      {available outer : List TypeExpr} {arguments : List Pattern}
-      {parameters : List TermParam}
-      (trees : CostRegionArgumentTrees source targetFree available outer
-        arguments parameters) :
-      WellSorted.ArgumentsHaveTypes source.costWholeLanguage targetFree
-        (available ++ outer) arguments parameters :=
-    match trees with
-    | .nil => .nil
-    | .cons representation parameterType head tail =>
-        .cons representation parameterType head.originalTyped
-          tail.originalTyped
-  termination_by trees.weight
-  decreasing_by
-    all_goals simp [CostRegionArgumentTrees.weight]
-    all_goals omega
+theorem CostRegionArgumentTrees.originalTyped {source : CIGSLT}
+    {targetFree : WellSorted.FreeTypeContext}
+    {available outer : List TypeExpr} {arguments : List Pattern}
+    {parameters : List TermParam}
+    (trees : CostRegionArgumentTrees source targetFree available outer arguments parameters) :
+    WellSorted.ArgumentsHaveTypes source.costWholeLanguage targetFree
+      (available ++ outer) arguments parameters := trees.toArgumentsHaveTypes
 
-  def CostRegionElementTrees.originalTyped {source : CIGSLT}
-      {targetFree : WellSorted.FreeTypeContext}
-      {available outer : List TypeExpr} {elements : List Pattern}
-      {elementType : TypeExpr}
-      (trees : CostRegionElementTrees source targetFree available outer elements
-        elementType) :
-      WellSorted.ElementsHaveType source.costWholeLanguage targetFree
-        (available ++ outer) elements elementType :=
-    match trees with
-    | .nil _ _ _ => .nil _ _
-    | .cons head tail =>
-        .cons head.originalTyped tail.originalTyped
-  termination_by trees.weight
-  decreasing_by
-    all_goals simp [CostRegionElementTrees.weight]
-    all_goals omega
-end
+theorem CostRegionElementTrees.originalTyped {source : CIGSLT}
+    {targetFree : WellSorted.FreeTypeContext}
+    {available outer : List TypeExpr} {elements : List Pattern} {elementType : TypeExpr}
+    (trees : CostRegionElementTrees source targetFree available outer elements elementType) :
+    WellSorted.ElementsHaveType source.costWholeLanguage targetFree
+      (available ++ outer) elements elementType := trees.toElementsHaveType
 
 /-- Package the original tree index in the split binder-fiber carrier. -/
 def CostRegionTree.originalAvailableOpenPattern {source : CIGSLT}
@@ -19315,8 +18441,12 @@ mutual
         have normalized := node.normalizeRawWith_equationEquiv
           laws.mappedGeneratorAction children.normalizeValues valuesEquivalent
           (laws.canonicalPathSafe node)
-        simpa only [CostRegionTree.normalize,
-          CostStaticRegionNode.normalizeWithReflective_pattern] using normalized
+        simp only [CostRegionTree.normalize]
+        exact Eq.mpr (congrArg
+          (fun pattern => ReflectiveEquationSemantics.ReflectiveEquationEquiv
+            source.costWholeReflectionProfile defaultBasePremises
+            source.costWholeLanguage pattern node.term.1)
+          (node.normalizeWithReflective_pattern children.normalizeValues)) normalized
     | @CostRegionTree.neutralApplicationOrdinary _ _ available outer rule
         arguments membership notBareCollection constructor materializes neutral
         ordinary children => by

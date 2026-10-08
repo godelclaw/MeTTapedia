@@ -1,0 +1,162 @@
+diff --git a/DocGen4/Output.lean b/DocGen4/Output.lean
+index ed6a9c7..51339aa 100644
+--- a/DocGen4/Output.lean
++++ b/DocGen4/Output.lean
+@@ -184,12 +184,30 @@ def getSimpleBaseContext (buildDir : System.FilePath) (hierarchy : Hierarchy) :
+     | .error err =>
+       throw <| IO.userError s!"Failed to parse 'references.json': {err}"
+     | .ok (refs : Array BibItem) =>
++      -- Optional interproject linking: a documentation site for this project's dependencies
++      -- (e.g. Mathlib) plus the set of module namespaces that are local to this project. When
++      -- both are set, modules outside `localModuleRoots` are treated as external — their pages
++      -- are not generated and references to them link to `depsDocsUrl?`. See
++      -- `SiteBaseContext.depsDocsUrl?`, `SiteBaseContext.localModuleRoots`, and `moduleIsExternal`.
++      let depsDocsUrl? ← do
++        match ← IO.getEnv "DOCGEN_DEPS_DOCS_URL" with
++        | some url =>
++          let u := url.trimAscii.copy
++          if u.isEmpty then pure none else pure (some u)
++        | none => pure none
++      let localModuleRoots ← do
++        match ← IO.getEnv "DOCGEN_LOCAL_MODULE_ROOTS" with
++        | some s =>
++          pure <| s.splitOn "," |>.map (·.trimAscii.copy) |>.filter (! ·.isEmpty) |>.map String.toName |>.toArray
++        | none => pure #[]
+       return {
+         buildDir := buildDir
+         depthToRoot := 0
+         currentName := none
+         hierarchy := hierarchy
+         refs := refs
++        depsDocsUrl?
++        localModuleRoots
+       }
+ 
+ def htmlOutputIndex (baseConfig : SiteBaseContext) (modules : Array JsonModule) (tacticInfo : Array (Process.TacticInfo Html)) : IO Unit := do
+diff --git a/DocGen4/Output/Base.lean b/DocGen4/Output/Base.lean
+index 85bd496..eb605f3 100644
+--- a/DocGen4/Output/Base.lean
++++ b/DocGen4/Output/Base.lean
+@@ -70,6 +70,23 @@ structure SiteBaseContext where
+   The list of references, as an array.
+   -/
+   refs : Array BibItem
++  /--
++  Base URL of a documentation site for this project's dependencies, e.g. Mathlib's
++  `https://leanprover-community.github.io/mathlib4_docs`. Set via the `DOCGEN_DEPS_DOCS_URL`
++  environment variable. When set together with `localModuleRoots`, references to declarations
++  that live in *external* modules (see `localModuleRoots`) are linked into that site's `/find`
++  resolver — which looks a declaration up by name, tolerating version skew — instead of being
++  linked locally. `none` reproduces the previous behaviour.
++  -/
++  depsDocsUrl? : Option String := none
++  /--
++  The top-level module namespaces that belong to *this* project, e.g. `#[`TauCeti]`. Set via
++  the `DOCGEN_LOCAL_MODULE_ROOTS` environment variable (comma-separated). A module is
++  "external" when this array is non-empty and the module's root is not one of these — its pages
++  are not generated and references to it link to `depsDocsUrl?`. Empty (the default) means
++  every module is local, reproducing the previous behaviour.
++  -/
++  localModuleRoots : Array Name := #[]
+ 
+ /--
+ Declaration decorator function type: given a module name, declaration name, and declaration kind,
+@@ -183,12 +200,47 @@ def templateExtends {α β} {m} [Bind m] (base : α → m β) (new : m α) : m 
+ def templateLiftExtends {α β} {m n} [Bind m] [MonadLiftT n m] (base : α → n β) (new : m α) : m β :=
+   new >>= (monadLift ∘ base)
+ /--
+-Returns the doc-gen4 link to a module name.
++The base URL of the dependency documentation site, with any trailing slash removed, or `none`
++when interproject linking is not configured.
+ -/
+-def moduleNameToLink (n : Name) : BaseHtmlM String := do
++def depsDocsBaseUrl? : BaseHtmlM (Option String) := do
++  match (← read).depsDocsUrl? with
++  | some url => return some (if url.endsWith "/" then (url.dropEnd 1).copy else url)
++  | none => return none
++
++/--
++Whether `mod` belongs to an external dependency rather than to this project, and therefore
++should be linked to `depsDocsUrl?` instead of documented locally. A module is external only
++when `localModuleRoots` is non-empty (interproject linking enabled) and the module's root
++namespace is not among them.
++-/
++def moduleIsExternal (mod : Name) : BaseHtmlM Bool := do
++  let roots := (← read).localModuleRoots
++  if roots.isEmpty then
++    return false
++  else
++    return !roots.contains mod.getRoot
++
++/-- The relative on-site path for a module, e.g. `../Foo/Bar.html`. -/
++def moduleOnSitePath (n : Name) : BaseHtmlM String := do
+   let parts := n.components.map (Name.toString (escape := False))
+   return (← getRoot) ++ (parts.intersperse "/").foldl (· ++ ·) "" ++ ".html"
+ 
++/--
++Returns the doc-gen4 link to a module name. For a module belonging to an external dependency
++(see `moduleIsExternal`), this points at the configured dependency documentation site; for a
++local module it is a relative on-site link, as before.
++-/
++def moduleNameToLink (n : Name) : BaseHtmlM String := do
++  match ← depsDocsBaseUrl? with
++  | some base =>
++    if ← moduleIsExternal n then
++      let parts := n.components.map (Name.toString (escape := False))
++      return base ++ "/" ++ (parts.intersperse "/").foldl (· ++ ·) "" ++ ".html"
++    else
++      moduleOnSitePath n
++  | none => moduleOnSitePath n
++
+ /--
+ Returns the HTML doc-gen4 link to a module name.
+ -/
+@@ -226,11 +278,18 @@ are used in documentation generation, notably JS and CSS ones.
+ end Static
+ 
+ /--
+-Returns the doc-gen4 link to a declaration name.
++Returns the doc-gen4 link to a declaration name. When the declaration lives in an external
++dependency module (see `moduleIsExternal`), the link goes to the dependency documentation
++site's `/find` resolver, which looks the declaration up by name — this is robust to the
++dependency's docs being built from a slightly different revision than the one linked against.
++Otherwise it is a local relative link, as before.
+ -/
+ def declNameToLink (name : Name) : HtmlM String := do
+   let res ← getResult
+   let module := res.moduleNames[res.name2ModIdx[name]!.toNat]!
++  if let some base ← depsDocsBaseUrl? then
++    if ← moduleIsExternal module then
++      return base ++ "/find/?pattern=" ++ name.toString ++ "#doc"
+   return (← moduleNameToLink module) ++ "#" ++ name.toString
+ 
+ /--
+diff --git a/Main.lean b/Main.lean
+index 3bd39f1..08b03d2 100644
+--- a/Main.lean
++++ b/Main.lean
+@@ -89,13 +89,22 @@ def runFromDbCmd (p : Parsed) : IO UInt32 := do
+   let linkCtx ← db.loadLinkingContext
+ 
+   -- Determine which modules to generate HTML for
+-  let targetModules ←
++  let targetModulesAll ←
+     if moduleRoots.isEmpty then
+       pure linkCtx.moduleNames
+     else
+       db.getTransitiveImports moduleRoots
+ 
+-  let baseConfig ← getSimpleBaseContext buildDir (Hierarchy.fromArray targetModules)
++  let baseConfig ← getSimpleBaseContext buildDir (Hierarchy.fromArray targetModulesAll)
++
++  -- Interproject linking: when `localModuleRoots` is configured (via `DOCGEN_LOCAL_MODULE_ROOTS`),
++  -- only generate pages for the project's own modules. The excluded (external, e.g. Mathlib)
++  -- modules stay in the linking context so references to them still resolve, but their links
++  -- point at the dependency documentation site instead of local pages (see `moduleIsExternal`).
++  let targetModules :=
++    if baseConfig.localModuleRoots.isEmpty then targetModulesAll
++    else targetModulesAll.filter (fun m => baseConfig.localModuleRoots.contains m.getRoot)
++
+   -- Add `references` pseudo-module to hierarchy only when bibliography data exists
+   let hierarchy := Hierarchy.fromArray
+     (if baseConfig.refs.isEmpty then targetModules else targetModules.push `references)

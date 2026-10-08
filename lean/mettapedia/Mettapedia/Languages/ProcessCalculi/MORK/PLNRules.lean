@@ -319,7 +319,7 @@ theorem pln_step_implies_mork_fireSourceRule
     ∃ r_source ∈ languageDefToSourceExecRules plnPremiseLanguageDef,
       ∃ σ : Subst, applySinks s σ r_source.tmpl ∈ fireSourceRule s r_source :=
   languageStep_implies_mork_fireSourceRule
-    relEnv plnPremiseLanguageDef p q step rfl
+    relEnv plnPremiseLanguageDef p q step
     (by
       intro rule ruleMember
       simp [plnPremiseLanguageDef] at ruleMember
@@ -328,6 +328,10 @@ theorem pln_step_implies_mork_fireSourceRule
       · exact .relationQuery (.relationQuery .nil)
       · exact .relationQuery .nil)
     plnPremise_all_fvar_lhs plnPremise_all_rhs_translatable
+    (by
+      intro rule ruleMember
+      simp [plnPremiseLanguageDef] at ruleMember
+      rcases ruleMember with rfl | rfl | rfl <;> decide)
     plnPremise_all_premises_translatable hground s hp_in hchain
 
 /-- PLN guarded ext bridge: if the authored language takes a step using a rule
@@ -353,7 +357,7 @@ theorem pln_guarded_step_implies_mork_fireSourceRule
     ∃ r_source ∈ languageDefToSourceExecRulesExt plnGuardedPremiseLanguageDef,
       ∃ σ : Subst, applySinks s σ r_source.tmpl ∈ fireSourceRule s r_source :=
   languageStep_implies_mork_fireSourceRuleExt
-    relEnv plnGuardedPremiseLanguageDef p q step rfl
+    relEnv plnGuardedPremiseLanguageDef p q step
     (by
       intro rule ruleMember
       simp [plnGuardedPremiseLanguageDef] at ruleMember
@@ -362,6 +366,10 @@ theorem pln_guarded_step_implies_mork_fireSourceRule
       · exact .relationQuery (.relationQuery (.freshness (.freshness .nil)))
       · exact .relationQuery (.relationQuery .nil))
     plnGuardedPremise_all_fvar_lhs plnGuardedPremise_all_rhs_translatable
+    (by
+      intro rule ruleMember
+      simp [plnGuardedPremiseLanguageDef] at ruleMember
+      rcases ruleMember with rfl | rfl | rfl <;> decide)
     plnGuardedPremise_all_premises_ext_translatable hground s hp_in hchain
 
 /-! ## Canary -/

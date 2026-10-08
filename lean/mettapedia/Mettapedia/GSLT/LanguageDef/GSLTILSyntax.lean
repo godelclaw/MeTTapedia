@@ -1,7 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.GSLTIL
 
 /-!
-# A MeTTa-facing syntax for finite GSLT-IL programs
+# A MeTTa-facing syntax for finite GSLT-ML programs
 
 The indexed command calculus retains dependent source and target indices in
 its proof and compilation IR.  Authors do not need to repeat those indices on
@@ -27,7 +27,7 @@ open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef.GSLTIL
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
-/-! ## Syntax syntax -/
+/-! ## Surface commands -/
 
 def symbol (name : String) : Pattern := .apply name []
 
@@ -387,11 +387,11 @@ inductive Runs (program : Program) : Pattern → Pattern → Prop where
       Step program source middle → Runs program middle target →
       Runs program source target
 
-def Runs.single (program : Program) {source target : Pattern}
+theorem Runs.single (program : Program) {source target : Pattern}
     (step : Step program source target) : Runs program source target :=
   .tail step (.refl target)
 
-def Runs.trans (program : Program) {first middle last : Pattern}
+theorem Runs.trans (program : Program) {first middle last : Pattern}
     (earlier : Runs program first middle)
     (later : Runs program middle last) : Runs program first last :=
   by

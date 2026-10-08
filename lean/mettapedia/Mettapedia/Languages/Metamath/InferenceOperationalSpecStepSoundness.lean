@@ -1,5 +1,7 @@
 import Mettapedia.Languages.Metamath.InferenceAssertionStepAgreement
 
+open Mettapedia.GSLT.LanguageDef
+
 /-!
 # Soundness of projected Metamath steps in the operational specification
 
@@ -73,6 +75,7 @@ def operationalFrame (frame : RuntimeFrame)
       cases hypothesis <;>
         simp [operationalHyp, floatingVariableNames,
           HypothesisView.floatingVariable?, ih]
+      rfl
 
 theorem convertHyp_of_projectHypothesis
     (db : RuntimeDB) (label : String) (hypothesis : HypothesisView)
@@ -126,7 +129,8 @@ theorem toFrame_of_projectHypotheses
   have hmap := mapM_convertHyp_of_forall₂ db
     (projectHypotheses?_forall₂ db frame.hyps.toList hypotheses hproject)
   simp [Metamath.Kernel.toFrame, hmap, operationalFrame,
-    ToSpecDVPairs, Metamath.Kernel.convertDV]
+    ToSpecDVPairs]
+  rfl
 
 /-- The ambient caller frame of a successful projection has the exact
 operational image used below. -/
@@ -735,8 +739,8 @@ application, supplies all essential, DV, and result-substitution evidence
 needed by the exact upstream `useAxiom` constructor. -/
 theorem generatedAssertionNode_toProofValidFrom
     (db : RuntimeDB) (projection : PrefixProjection)
-    (target : ValidatedPresentation)
-    (hprojection : presentationOfProjection? projection = some target.1)
+    (target : ValidatedCalculusLanguageDef)
+    (hprojection : calculusLanguageDefOfProjection? projection = some target.1)
     (assertion : AssertionView)
     (actuals : List ConstantHeadedFormula)
     (result : ConstantHeadedFormula)
@@ -773,8 +777,8 @@ the direct operational-spec constructor and the already-proved exact live
 transition. -/
 theorem generatedAssertionNode_toSpec_and_stepNormal
     (db : RuntimeDB) (projection : PrefixProjection)
-    (target : ValidatedPresentation)
-    (hprojection : presentationOfProjection? projection = some target.1)
+    (target : ValidatedCalculusLanguageDef)
+    (hprojection : calculusLanguageDefOfProjection? projection = some target.1)
     (assertion : AssertionView) (pr : RuntimeProofState)
     (actuals : List ConstantHeadedFormula)
     (result : ConstantHeadedFormula)

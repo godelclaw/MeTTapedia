@@ -162,7 +162,7 @@ theorem rhoCutOrder_atomClosed_normal_canary :
       rhoCutOrderRightPattern := by
   rw [rhoCutOrder_reify_left, rhoCutOrder_atomFrame_canonical]
   simp [rhoCutOrderAtomFrame, restoreRhoCutOrderAtoms,
-    restoreRhoCutOrderAtomList, mapPattern, CostStaticColor.symbols,
+    restoreRhoCutOrderAtomList, mapPattern, CostStaticColor.symbols, CostStaticColor.symbolsOf,
     costWrappedStaticSymbols, rhoCutOrderRightPattern, rhoCutOrderParallel,
     rhoCutOrderWrappedDrop, rhoCutOrderZeroAtom, rhoCutOrderAAtom]
 
@@ -176,12 +176,13 @@ theorem rhoCutOrder_atomClosed_right_canary :
       rhoCutOrderRightPattern := by
   rw [rhoCutOrder_reify_right, rhoCutOrder_atomFrame_canonical]
   simp [rhoCutOrderAtomFrame, restoreRhoCutOrderAtoms,
-    restoreRhoCutOrderAtomList, mapPattern, CostStaticColor.symbols,
+    restoreRhoCutOrderAtomList, mapPattern, CostStaticColor.symbols, CostStaticColor.symbolsOf,
     costWrappedStaticSymbols, rhoCutOrderRightPattern, rhoCutOrderParallel,
     rhoCutOrderWrappedDrop, rhoCutOrderZeroAtom, rhoCutOrderAAtom]
 
 /-! ## Production semantic-atom regression -/
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The actual typed base-colour Quote/Drop frame and its structural source
 variable meet at one retained semantic atom. -/
 noncomputable def rhoCutOrderBaseRedexNodeSemanticAtomJoin :
@@ -274,6 +275,7 @@ theorem rhoCutOrderBaseRedexTree_normalizeHereditary_eq_node :
       (normalizeStatic := rhoHereditaryStaticNormalizer)]
   exact rhoCutOrderBaseRedexStaticTree_normalizeHereditary_eq_node
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Positive selected-root regression: the exact generated Quote/Drop region
 aligns to the structural source variable through one retained semantic atom. -/
 noncomputable def rhoCutOrderBaseSelectedTreeNormalizationAlignment :
@@ -327,6 +329,7 @@ def rhoCutOrderBaseSelectedRight :
   · simp [rhoCutOrderFree, FreeTypeContext.ofList, sortName]
   · intro declaration membership
     rfl
+set_option backward.isDefEq.respectTransparency false in
 
 @[simp]
 theorem rhoCutOrderBaseSelectedLeft_pattern :
@@ -409,6 +412,7 @@ def rhoCutOrderBaseRedexTree_staticRootColor :
       (.reindexAvailable rhoCutOrderBaseRedexNode_targetBound _
         (.static rhoCutOrderBaseRedexNode rhoCutOrderBaseRedexChildren)))
 
+set_option backward.isDefEq.respectTransparency false in
 /-- Root-only semantic certificate for the selected base Quote/Drop cell. -/
 noncomputable def rhoCutOrderBaseSelectedRootBridge :
     CostRegionRootNormalizationBridge rhoCIGSLT
@@ -799,7 +803,7 @@ theorem rhoCutOrder_boundary_source_semanticAtom_coalescence :
           (costRegionSourceVariableName "0") = some (.base "Name") := by
     rw [TypedCostRegionBoundaryTable.sourceFreeContext_sourceVariable]
     simp [rhoCutOrderFree, WellSorted.FreeTypeContext.ofList,
-      decodeCostStaticTypeExpr, costBaseSortName_ne_wrapped,
+      CostStaticTypeImage.decode, costBaseSortName_ne_wrapped,
       rhoCutOrderName_ne_interactingSort]
   have rightSourceType :
       (rightEnvironment.atomValue rightSlot).key.sourceType = .base "Name" := by
@@ -869,7 +873,7 @@ theorem rhoCutOrder_boundary_source_semanticAtom_coalescence :
           (.base "Name")) := by
     simp [TypedCostRegionBoundaryTable.mappedFreeContext,
       rhoCutOrderFree, WellSorted.FreeTypeContext.ofList,
-      decodeCostStaticTypeExpr, costBaseSortName_ne_wrapped,
+      CostStaticTypeImage.decode, costBaseSortName_ne_wrapped,
       rhoCutOrderName_ne_interactingSort]
   have rightTargetType :
       (rightEnvironment.atomValue rightSlot).key.targetType =
@@ -1154,9 +1158,9 @@ theorem rhoCutOrder_commonMappedSemanticFrames_eq :
       rhoCutOrderRightNode.mappedThickenedSkeleton.1
   rw [rhoCutOrderLeftNode.mappedThickenedSkeleton_pattern,
     rhoCutOrderRightNode.mappedThickenedSkeleton_pattern]
-  rw [CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+  rw [CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
       rhoCutOrderLeftNode.thinning rfl,
-    CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+    CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
       rhoCutOrderRightNode.thinning rfl]
   rw [cospan.reifyWith_mapPattern, cospan.reifyWith_mapPattern]
   exact congrArg (mapPattern (CostStaticColor.symbols rhoCIGSLT .wrapped))
@@ -1258,6 +1262,7 @@ theorem rhoCutOrder_commonKeyedSemanticFrames_eq :
     (canonicalizeByAt (cospan.commonSemanticPatternKeyAt rhoCIGSLT)
       declaration rhoCutOrderLeftNode.targetBound.length) commonFrames
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The selected canonical frames themselves meet in the common semantic
 namespace before either endpoint restores atom values.  Thus equality of the
 hereditary evaluator results is obtained from the canonical atom square, not
@@ -1656,7 +1661,7 @@ theorem rhoCutOrder_reified_frames_parallel :
             (cospan.reifyWith leftEnvironment.slotOfName? cospan.leftSlot
               rhoCutOrderLeftNode.skeleton.1) := by
       rw [rhoCutOrderLeftNode.mappedThickenedSkeleton_pattern,
-        CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+        CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
           rhoCutOrderLeftNode.thinning rfl]
       exact cospan.reifyWith_mapPattern _ _ _ _
     have skeletonList := congrArg
@@ -1738,6 +1743,7 @@ theorem rhoCutOrder_commonSemanticRestoration_eq :
   exact CostStaticAtomFrameAlignment.restoredFrames_eq
     rhoCutOrderSemanticFrameAlignment 0
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The direct endpoint's finite substitution is the expected compact
 wrapped frame.  This is the endpoint factor of the semantic-atom square,
 separate from hereditary canonicalization. -/
@@ -1751,14 +1757,14 @@ theorem rhoCutOrderRight_commonSemanticRestoration_pattern :
         0 rhoCutOrderRightNode.mappedThickenedSkeleton.1 =
       rhoCutOrderRightPattern := by
   rw [rhoCutOrderRightNode.mappedThickenedSkeleton_pattern,
-    CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+    CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
       rhoCutOrderRightNode.thinning rfl,
     ReflectiveWellSorted.OpenTerm.toCore_pattern,
     rhoCutOrderRightNode_skeleton_pattern]
   simp [ReflectiveContextSupport.substituteAt,
     hereditaryValues_assignment_sourceVariable,
     rhoCutOrderRightPattern, rhoCutOrderParallel, rhoCutOrderWrappedDrop,
-    mapPattern, mapPatternList_eq_map, CostStaticColor.symbols_constructor,
+    mapPattern, mapPatternList_eq_map,
     CostStaticColor.constructorTag, costWrappedConstructorName,
     Mettapedia.OSLF.MeTTaIL.Substitution.liftBVars_zero]
 
@@ -1798,7 +1804,7 @@ theorem rhoCutOrderRightNode_normalizeHereditary :
 /-- The two local hereditary evaluator results factor through the generic
 proof-relevant semantic-atom square.  Exact evaluator equality is not stored
 in this certificate; it is derived from the mapped-frame alignment. -/
-noncomputable def rhoCutOrderStaticEvaluationBridge :
+theorem rhoCutOrderStaticEvaluationBridge :
     CostStaticAtomEvaluationBridge rhoCutOrderSemanticFrameAlignment 0
       (rhoHereditaryStaticNormalizer rhoCutOrderLeftNode
         (rhoCutOrderLeftChildren.normalizeValues

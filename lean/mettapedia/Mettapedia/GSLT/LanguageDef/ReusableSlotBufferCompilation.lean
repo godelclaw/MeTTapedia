@@ -132,6 +132,83 @@ def reusableSlotBufferRealization [DecidableEq (Fin width)] :
     intro _ source
     exact executeReusable_eq_fresh source.transactions
 
+/-! ## Payload transport at fixed slot identities -/
+
+section PayloadTransport
+
+universe uTransportTarget uTransportThird
+variable {width : Nat} {Value : Type uValue} {Target : Type uTransportTarget} {Third : Type uTransportThird}
+
+/-- Transport payloads without changing the dense slot identities. -/
+def mapValues (mapping : Value → Target) (buffer : Buffer width Value) :
+    Buffer width Target := fun slot => (buffer slot).map mapping
+
+def mapEntries (mapping : Value → Target) (transaction : Transaction width Value) :
+    Transaction width Target := transaction.map fun entry => (entry.1, mapping entry.2)
+
+theorem mapValues_identity (buffer : Buffer width Value) : mapValues id buffer = buffer := by
+  funext slot
+  simp [mapValues]
+
+theorem mapValues_composition (first : Value → Target) (second : Target → Third)
+    (buffer : Buffer width Value) :
+    mapValues second (mapValues first buffer) = mapValues (second ∘ first) buffer := by
+  funext slot
+  simp [mapValues, Option.map_map]
+
+theorem mapValues_emptyBuffer (mapping : Value → Target) :
+    mapValues mapping (emptyBuffer : Buffer width Value) = emptyBuffer := rfl
+
+theorem write_mapValues (mapping : Value → Target) (buffer : Buffer width Value)
+    (entry : Fin width × Value) :
+    mapValues mapping (write buffer entry) =
+      write (mapValues mapping buffer) (entry.1, mapping entry.2) := by
+  funext slot
+  by_cases same : slot = entry.1 <;> simp [mapValues, write, same]
+
+theorem runFrom_mapValues (mapping : Value → Target) (buffer : Buffer width Value)
+    (transaction : Transaction width Value) :
+    mapValues mapping (runFrom buffer transaction) =
+      runFrom (mapValues mapping buffer) (mapEntries mapping transaction) := by
+  induction transaction generalizing buffer with
+  | nil => rfl
+  | cons entry entries ih =>
+      simp only [runFrom, mapEntries, List.map_cons]
+      rw [ih, write_mapValues]
+      rfl
+
+theorem runFresh_mapEntries (mapping : Value → Target)
+    (transaction : Transaction width Value) :
+    runFresh (mapEntries mapping transaction) = mapValues mapping (runFresh transaction) := by
+  simpa only [runFresh, mapValues_emptyBuffer] using
+    (runFrom_mapValues mapping emptyBuffer transaction).symm
+
+theorem snapshot_mapValues (mapping : Value → Target) (buffer : Buffer width Value) :
+    snapshot (mapValues mapping buffer) = (snapshot buffer).map (Option.map mapping) := by
+  simp only [snapshot, List.map_ofFn, Function.comp_def]
+  rfl
+
+/-- An injective value transport does not merge distinct logical buffers. -/
+theorem mapValues_injective (mapping : Value → Target) (faithful : Function.Injective mapping) :
+    Function.Injective (mapValues (width := width) mapping) := by
+  intro first second same
+  funext slot
+  have current := congrFun same slot
+  change (first slot).map mapping = (second slot).map mapping at current
+  cases left : first slot with
+  | none =>
+      cases right : second slot with
+      | none => rfl
+      | some value => simp [left, right] at current
+  | some value =>
+      cases right : second slot with
+      | none => simp [left, right] at current
+      | some other =>
+          have equal : mapping value = mapping other := by simpa [left, right] using current
+          simpa only [left, right] using congrArg some (faithful equal)
+
+end PayloadTransport
+
 /-! ## Allocation-cost certificate -/
 
 /-- Fresh execution allocates one physical slot buffer per transaction. -/
@@ -1028,5 +1105,83 @@ example :
     executeWithoutResetFrom binderTransactions (emptyBuffer : Buffer 3 String) !=
       executeFresh binderTransactions := by
   decide
+
+/-! ## Demand-allocated buffers
+
+An absent physical allocation represents empty slots. Reads and writes demand
+storage; invalidation clears an existing allocation but need not allocate an
+unused one. Allocation timing is independent of slot values and reset policy.
+-/
+
+inductive BufferAction (width : Nat) (Value : Type uValue) where
+  | read (slot : Fin width)
+  | write (slot : Fin width) (value : Value)
+  | clear
+
+/-- The semantic contents of optional physical storage. -/
+def decodeOptionalBuffer (storage : Option (Buffer width Value)) :
+    Buffer width Value := storage.getD emptyBuffer
+
+def bufferStep (buffer : Buffer width Value) :
+    BufferAction width Value -> List (Option Value) × Buffer width Value
+  | .read slot => ([buffer slot], buffer)
+  | .write slot value => ([], write buffer (slot, value))
+  | .clear => ([], reset buffer)
+
+def demandedBufferStep (storage : Option (Buffer width Value)) :
+    BufferAction width Value ->
+      List (Option Value) × Option (Buffer width Value)
+  | .read slot =>
+      let ready := decodeOptionalBuffer storage
+      ([ready slot], some ready)
+  | .write slot value =>
+      ([], some (write (decodeOptionalBuffer storage) (slot, value)))
+  | .clear => ([], storage.map reset)
+
+/-- Allocation demand commutes with slot observation and logical update. -/
+theorem demandedBufferStep_refines (storage : Option (Buffer width Value))
+    (action : BufferAction width Value) :
+    (demandedBufferStep storage action).1 =
+        (bufferStep (decodeOptionalBuffer storage) action).1 ∧
+      decodeOptionalBuffer (demandedBufferStep storage action).2 =
+        (bufferStep (decodeOptionalBuffer storage) action).2 := by
+  cases action <;> cases storage <;>
+    simp [demandedBufferStep, bufferStep, decodeOptionalBuffer, reset]
+
+def bufferTrace : Buffer width Value -> List (BufferAction width Value) ->
+    List (Option Value)
+  | _, [] => []
+  | buffer, action :: actions =>
+      let next := bufferStep buffer action
+      next.1 ++ bufferTrace next.2 actions
+
+def demandedBufferTrace : Option (Buffer width Value) ->
+    List (BufferAction width Value) -> List (Option Value)
+  | _, [] => []
+  | storage, action :: actions =>
+      let next := demandedBufferStep storage action
+      next.1 ++ demandedBufferTrace next.2 actions
+
+/-- Every read, including misses and reads after invalidation, is preserved. -/
+theorem demandedBufferTrace_refines (actions : List (BufferAction width Value))
+    (storage : Option (Buffer width Value)) :
+    demandedBufferTrace storage actions =
+      bufferTrace (decodeOptionalBuffer storage) actions := by
+  induction actions generalizing storage with
+  | nil => rfl
+  | cons action actions ih =>
+      simp only [demandedBufferTrace, bufferTrace]
+      rw [ih, (demandedBufferStep_refines storage action).1,
+        (demandedBufferStep_refines storage action).2]
+
+example : demandedBufferTrace (none : Option (Buffer 1 Nat))
+    [.read 0, .write 0 7, .read 0, .clear, .read 0] =
+      [none, some 7, none] := by decide
+
+/-- Dropping invalidation is observable even with lazy physical storage. -/
+example : demandedBufferTrace (none : Option (Buffer 1 Nat))
+    [.write 0 7, .read 0] ≠
+      demandedBufferTrace (none : Option (Buffer 1 Nat))
+        [.write 0 7, .clear, .read 0] := by decide
 
 end Mettapedia.GSLT.LanguageDef.ReusableSlotBufferCompilation

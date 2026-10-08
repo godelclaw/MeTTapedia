@@ -5,8 +5,15 @@ import Mettapedia.OSLF.MeTTaIL.Syntax
 # Substitution for MeTTaIL (Locally Nameless)
 
 Substitution operations for the locally nameless Pattern representation.
-Bound variables use de Bruijn indices, so capture-avoidance is automatic —
-no environment filtering needed.
+
+**Capture-avoidance is not automatic here.**  De Bruijn indices make it automatic
+only when the replacement is locally closed, and nothing in this file requires
+that.  `applySubst [("x", .bvar 0)] (\lambda y. x)` returns `\lambda y. .bvar 0`,
+capturing an index that was free outside the binder; `Match.applyBindings` does
+the same. `ScopedSyntax` carries a scope-indexed representation with explicit
+binder-preserving lifts, together with `untyped_disagrees_with_scoped`, which
+exhibits this raw-helper defect against its lifted substitution. Scope indices
+alone do not uniquely determine the lift.
 
 ## Key Operations
 
@@ -39,6 +46,7 @@ def openBVar (k : Nat) (u : Pattern) : Pattern → Pattern
   | .collection ct elems rest =>
     .collection ct (elems.map (openBVar k u)) rest
 termination_by p => sizeOf p
+decreasing_by all_goals sizeOf_pattern_dec
 
 /-- Replace `FVar x` with `BVar k` (abstracting a free variable). -/
 def closeFVar (k : Nat) (x : String) : Pattern → Pattern
@@ -51,19 +59,38 @@ def closeFVar (k : Nat) (x : String) : Pattern → Pattern
   | .collection ct elems rest =>
     .collection ct (elems.map (closeFVar k x)) rest
 termination_by p => sizeOf p
+decreasing_by all_goals sizeOf_pattern_dec
 
-/-- Shift bound variable indices ≥ `cutoff` by `shift`. -/
+mutual
+/-- Shift bound variable indices >= `cutoff` by `shift`.
+
+Written as a structural recursion with an explicit list traversal rather than
+through `List.map`, so that the kernel reduces it: a shift is executed whenever
+a rule moves a matched value across binders, and a definition the kernel cannot
+unfold makes every such execution opaque to `decide`. -/
 def liftBVars (cutoff shift : Nat) : Pattern → Pattern
   | .bvar n => if n >= cutoff then .bvar (n + shift) else .bvar n
   | .fvar x => .fvar x
-  | .apply c args => .apply c (args.map (liftBVars cutoff shift))
+  | .apply c args => .apply c (liftBVarsList cutoff shift args)
   | .lambda nm body => .lambda nm (liftBVars (cutoff + 1) shift body)
   | .multiLambda n nms body => .multiLambda n nms (liftBVars (cutoff + n) shift body)
   | .subst body repl =>
     .subst (liftBVars (cutoff + 1) shift body) (liftBVars cutoff shift repl)
   | .collection ct elems rest =>
-    .collection ct (elems.map (liftBVars cutoff shift)) rest
-termination_by p => sizeOf p
+    .collection ct (liftBVarsList cutoff shift elems) rest
+
+def liftBVarsList (cutoff shift : Nat) : List Pattern → List Pattern
+  | [] => []
+  | p :: ps => liftBVars cutoff shift p :: liftBVarsList cutoff shift ps
+end
+
+/-- The explicit traversal is the map, so proofs written against the previous
+shape are unaffected. -/
+@[simp] theorem liftBVarsList_eq_map (cutoff shift : Nat) :
+    ∀ (ps : List Pattern), liftBVarsList cutoff shift ps = ps.map (liftBVars cutoff shift)
+  | [] => rfl
+  | p :: ps => by
+      simp only [liftBVarsList, List.map_cons, liftBVarsList_eq_map cutoff shift ps]
 
 /-! `openBVar` is the standard locally nameless opening operation: it replaces
 one index but does not remove an ambient de Bruijn level.  Executing an explicit
@@ -97,6 +124,7 @@ def instantiateBVarAt (depth : Nat) (replacement : Pattern) : Pattern → Patter
       .collection collectionType
         (elems.map (instantiateBVarAt depth replacement)) rest
 termination_by body => sizeOf body
+decreasing_by all_goals sizeOf_pattern_dec
 
 /-- Execute the binder-eliminating substitution represented by
 `Pattern.subst body replacement`. -/
@@ -135,6 +163,7 @@ def dropBVarAt? (cutoff : Nat) : Pattern → Option Pattern
       pure (.collection collectionType
         (← elems.mapM (dropBVarAt? cutoff)) rest)
 termination_by pattern => sizeOf pattern
+decreasing_by all_goals sizeOf_pattern_dec
 
 /-- Eliminate the innermost unused binder. -/
 def dropBVar? (body : Pattern) : Option Pattern :=
@@ -280,9 +309,9 @@ theorem liftBVars_isGroundAt {ambient cutoff shift : Nat} {pattern : Pattern}
       · simp only [Pattern.isGroundAt]
         exact decide_eq_true (by omega)
   | hfvar _ =>
-      simpa only [liftBVars, Pattern.isGroundAt] using hground
+      simpa only [liftBVars, liftBVarsList_eq_map, Pattern.isGroundAt] using hground
   | happly _ args ih =>
-      simp only [liftBVars, Pattern.isGroundAt] at hground ⊢
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.isGroundAt] at hground ⊢
       exact isGroundListAt_map_of_forall fun argument hmem =>
         ih argument hmem (isGroundListAt_mem hground hmem)
   | hlambda _ body ih =>
@@ -303,7 +332,8 @@ theorem liftBVars_isGroundAt {ambient cutoff shift : Nat} {pattern : Pattern}
           simpa only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hBody,
         ihReplacement (ambient := ambient) (cutoff := cutoff) hground.2⟩
   | hcollection _ elements rest ih =>
-      simp only [liftBVars, Pattern.isGroundAt, Bool.and_eq_true] at hground ⊢
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.isGroundAt,
+        Bool.and_eq_true] at hground ⊢
       exact ⟨isGroundListAt_map_of_forall fun element hmem =>
           ih element hmem (isGroundListAt_mem hground.1 hmem), hground.2⟩
 
@@ -325,7 +355,7 @@ theorem liftBVars_isWellScopedAt {ambient cutoff shift : Nat} {pattern : Pattern
         exact decide_eq_true (by omega)
   | hfvar _ => simp only [liftBVars, Pattern.isWellScopedAt]
   | happly _ args ih =>
-      simp only [liftBVars, Pattern.isWellScopedAt] at hscoped ⊢
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.isWellScopedAt] at hscoped ⊢
       exact isWellScopedListAt_map_of_forall fun argument hmem =>
         ih argument hmem (isWellScopedListAt_mem hscoped hmem)
   | hlambda _ body ih =>
@@ -346,7 +376,7 @@ theorem liftBVars_isWellScopedAt {ambient cutoff shift : Nat} {pattern : Pattern
           simpa only [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hBody,
         ihReplacement (ambient := ambient) (cutoff := cutoff) hscoped.2⟩
   | hcollection _ elements _ ih =>
-      simp only [liftBVars, Pattern.isWellScopedAt] at hscoped ⊢
+      simp only [liftBVars, liftBVarsList_eq_map, Pattern.isWellScopedAt] at hscoped ⊢
       exact isWellScopedListAt_map_of_forall fun element hmem =>
         ih element hmem (isWellScopedListAt_mem hscoped hmem)
 
@@ -496,7 +526,7 @@ theorem liftBVars_eq_self_of_isWellScopedAt {cutoff shift : Nat} {pattern : Patt
   | hfvar _ => simp only [liftBVars]
   | happly _ arguments ih =>
       simp only [Pattern.isWellScopedAt] at hscoped
-      simp only [liftBVars]
+      simp only [liftBVars, liftBVarsList_eq_map]
       congr 1
       exact list_map_eq_self_scoped fun argument hmem =>
         ih argument hmem (isWellScopedListAt_mem hscoped hmem)
@@ -518,7 +548,7 @@ theorem liftBVars_eq_self_of_isWellScopedAt {cutoff shift : Nat} {pattern : Patt
       · exact ihReplacement hscoped.2
   | hcollection _ elements _ ih =>
       simp only [Pattern.isWellScopedAt] at hscoped
-      simp only [liftBVars]
+      simp only [liftBVars, liftBVarsList_eq_map]
       congr 1
       exact list_map_eq_self_scoped fun element hmem =>
         ih element hmem (isWellScopedListAt_mem hscoped hmem)
@@ -539,6 +569,7 @@ private def unliftBVars (cutoff shift : Nat) : Pattern → Pattern
   | .collection collectionType elements rest =>
       .collection collectionType (elements.map (unliftBVars cutoff shift)) rest
 termination_by pattern => sizeOf pattern
+decreasing_by all_goals sizeOf_pattern_dec
 
 private theorem unliftBVars_liftBVars (cutoff shift : Nat) :
     ∀ pattern, unliftBVars cutoff shift (liftBVars cutoff shift pattern) =
@@ -552,7 +583,7 @@ private theorem unliftBVars_liftBVars (cutoff shift : Nat) :
         simp [liftBVars, shifted, unliftBVars, notRaised]
   | hfvar name => simp [liftBVars, unliftBVars]
   | happly constructor arguments inductionHypothesis =>
-      simp only [liftBVars, unliftBVars, List.map_map]
+      simp only [liftBVars, liftBVarsList_eq_map, unliftBVars, List.map_map]
       congr 1
       calc
         List.map (unliftBVars cutoff shift ∘ liftBVars cutoff shift)
@@ -574,7 +605,7 @@ private theorem unliftBVars_liftBVars (cutoff shift : Nat) :
         (bodyHypothesis (cutoff + 1))
         (replacementHypothesis cutoff)
   | hcollection collectionType elements rest inductionHypothesis =>
-      simp only [liftBVars, unliftBVars, List.map_map]
+      simp only [liftBVars, liftBVarsList_eq_map, unliftBVars, List.map_map]
       congr 1
       calc
         List.map (unliftBVars cutoff shift ∘ liftBVars cutoff shift)
@@ -589,6 +620,47 @@ theorem liftBVars_injective (cutoff shift : Nat) :
   intro left right equality
   have lowered := congrArg (unliftBVars cutoff shift) equality
   simpa only [unliftBVars_liftBVars] using lowered
+
+/-- Eliminating a binder above every index of a scoped pattern leaves that
+pattern unchanged, independently of the replacement. -/
+theorem instantiateBVarAt_eq_self_of_isWellScopedAt {depth : Nat}
+    {replacement body : Pattern}
+    (hbody : body.isWellScopedAt depth = true) :
+    instantiateBVarAt depth replacement body = body := by
+  induction body using Pattern.inductionOn generalizing depth with
+  | hbvar index =>
+      simp only [Pattern.isWellScopedAt] at hbody
+      have below : index < depth := of_decide_eq_true hbody
+      simp [instantiateBVarAt, below]
+  | hfvar _ => simp only [instantiateBVarAt]
+  | happly _ arguments ih =>
+      simp only [Pattern.isWellScopedAt] at hbody
+      simp only [instantiateBVarAt]
+      congr 1
+      exact list_map_eq_self_scoped fun argument hmem =>
+        ih argument hmem (isWellScopedListAt_mem hbody hmem)
+  | hlambda _ body ih =>
+      simp only [Pattern.isWellScopedAt] at hbody
+      simp only [instantiateBVarAt]
+      congr 1
+      exact ih hbody
+  | hmultiLambda _ _ body ih =>
+      simp only [Pattern.isWellScopedAt] at hbody
+      simp only [instantiateBVarAt]
+      congr 1
+      exact ih hbody
+  | hsubst nestedBody nestedReplacement ihBody ihReplacement =>
+      simp only [Pattern.isWellScopedAt, Bool.and_eq_true] at hbody
+      simp only [instantiateBVarAt]
+      congr 1
+      · exact ihBody hbody.1
+      · exact ihReplacement hbody.2
+  | hcollection _ elements _ ih =>
+      simp only [Pattern.isWellScopedAt] at hbody
+      simp only [instantiateBVarAt]
+      congr 1
+      exact list_map_eq_self_scoped fun element hmem =>
+        ih element hmem (isWellScopedListAt_mem hbody hmem)
 
 /-- On a body scoped beneath exactly the eliminated binder and a closed
 replacement, binder-eliminating instantiation agrees with ordinary opening. -/
@@ -693,6 +765,7 @@ def applySubst (env : SubstEnv) : Pattern → Pattern
   | .collection ct elements rest =>
     .collection ct (elements.map (applySubst env)) rest
 termination_by p => sizeOf p
+decreasing_by all_goals sizeOf_pattern_dec
 
 section BinderEliminationScopeFixtures
 
@@ -761,6 +834,7 @@ def freeVars : Pattern → List String
   | .subst body replacement => freeVars body ++ freeVars replacement
   | .collection _ elements _ => elements.flatMap freeVars
 termination_by p => sizeOf p
+decreasing_by all_goals sizeOf_pattern_dec
 
 /-- Check if a variable is fresh in a pattern -/
 def isFresh (x : String) (p : Pattern) : Bool :=
@@ -925,7 +999,7 @@ theorem liftBVars_zero (p : Pattern) (cutoff : Nat) :
   | hbvar n => simp only [liftBVars]; split <;> simp
   | hfvar _ => simp only [liftBVars]
   | happly c args ih =>
-    simp only [liftBVars]; congr 1
+    simp only [liftBVars, liftBVarsList_eq_map]; congr 1
     exact list_map_eq_self (fun q hq => ih q hq cutoff)
   | hlambda _ body ih =>
     simp only [liftBVars]; congr 1; exact ih (cutoff + 1)
@@ -936,7 +1010,7 @@ theorem liftBVars_zero (p : Pattern) (cutoff : Nat) :
     · exact ihb (cutoff + 1)
     · exact ihr cutoff
   | hcollection ct elems rest ih =>
-    simp only [liftBVars]; congr 1
+    simp only [liftBVars, liftBVarsList_eq_map]; congr 1
     exact list_map_eq_self (fun q hq => ih q hq cutoff)
 
 /-- Opening a locally-closed term at level k is identity. -/

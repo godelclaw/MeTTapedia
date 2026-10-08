@@ -6,12 +6,15 @@ import Mathlib.CategoryTheory.Limits.Shapes.Pullback.IsPullback.BicartesianSq
 /-!
 # Predicate Fibration over Presheaf Categories
 
-This file establishes the predicate fibration πΩ over presheaf categories,
-connecting the subobject classifier to the fibration structure.
+This file supplies predicate fibers and concrete reindexing over presheaf
+categories, together with their order structure and quantification laws.
+`PresheafPredicateProjection` constructs the associated total category,
+projection, and cartesian-lift universal property. The fiber-data record
+below does not establish that categorical structure on its own.
 
 ## Main Definitions
 
-* `PredicateFib` - The fibration πΩ over Psh(C)
+* `PredicateFib` - A package of predicate fibers and reindexing operations
 * `beckChevalleyPresheaf` - Beck-Chevalley condition for presheaves
 
 ## Key Insights
@@ -34,8 +37,8 @@ For a morphism f : P → Q in Psh(C):
 
 namespace Mettapedia.GSLT.Topos
 
-open CategoryTheory
-open CategoryTheory.Limits
+open _root_.CategoryTheory
+open _root_.CategoryTheory.Limits
 open Opposite
 open Mettapedia.GSLT.Core
 
@@ -64,12 +67,13 @@ Primary theorem provenance for the presheaf predicate-fibration path:
 
 /-! ## Abstract Predicate Fibration
 
-We define the predicate fibration abstractly, axiomatizing the key properties
-that hold in presheaf toposes. The concrete construction would use sieves
-and the subobject classifier Ω.
+We package predicate fibers and their order-preserving reindexing. This record
+does not include identity/composition coherence or a total category. The
+concrete presheaf operations below use subfunctors; their categorical
+assembly is constructed in `PresheafPredicateProjection`.
 -/
 
-/-- A predicate fibration over a category C assigns:
+/-- Predicate fiber data over a category C assigns:
     - To each object X, a Frame Sub(X) of "predicates"
     - Change-of-base functors between fibers
 
@@ -115,8 +119,7 @@ noncomputable instance presheafSubfunctorFrame
     {C : Type u} [Category.{v} C] (F : C ⥤ Type w) : Order.Frame (CategoryTheory.Subfunctor F) := by
   refine Order.Frame.ofMinimalAxioms ?_
   refine
-    { toCompleteLattice := inferInstance
-      inf_sSup_le_iSup_inf := ?_ }
+    { inf_sSup_le_iSup_inf := ?_ }
   intro a s
   have hs :
       (sSup s : CategoryTheory.Subfunctor F) =
@@ -238,20 +241,27 @@ noncomputable def presheafChangeOfBase (C : Type u) [Category C] :
     rcases hy with ⟨x, hx, rfl⟩
     exact ⟨x, hφ U hx, rfl⟩
   · intro X Y f φ ψ hφ
+    change CategoryTheory.Subfunctor X at φ ψ
     refine iSup_le ?_
     intro θ
+    change CategoryTheory.Subfunctor Y at θ
     by_cases hθ : CategoryTheory.Subfunctor.preimage θ f ≤ φ
     · have hθ' : CategoryTheory.Subfunctor.preimage θ f ≤ ψ := le_trans hθ hφ
       have hθsup : θ ≤
           (⨆ θ' : CategoryTheory.Subfunctor Y,
             if CategoryTheory.Subfunctor.preimage θ' f ≤ ψ then θ' else ⊥) :=
         le_iSup_of_le θ (by simp [hθ'])
-      simp only [if_pos hθ]; exact hθsup
+      have hlower : (if θ.preimage f ≤ φ then θ else
+          (⊥ : CategoryTheory.Subfunctor Y)) ≤ θ := by
+        simp only [if_pos hθ, le_refl]
+      exact le_trans hlower hθsup
     · simp [hθ]
   · intro X Y f φ ψ
     exact CategoryTheory.Subfunctor.image_le_iff
       (G := φ) (f := f) (G' := ψ)
   · intro X Y f ψ φ
+    change CategoryTheory.Subfunctor X at φ
+    change CategoryTheory.Subfunctor Y at ψ
     constructor
     · intro h
       have hψ : CategoryTheory.Subfunctor.preimage ψ f ≤ φ := h

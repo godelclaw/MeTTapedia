@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.MeTTaZeroLanguageAdequacy
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceCoreFragment
+import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Space
 
 /-!
 # PeTTa interprets and extends the query-first MeTTa Zero kernel
@@ -37,7 +38,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 /-! ## Exact PeTTa model -/
 
 /-- PeTTa's real stored-atom list and matcher instantiate the kernel. -/
-def model (groundApply : Pattern → Multiset Pattern := fun _ => 0) :
+abbrev model (groundApply : Pattern → Multiset Pattern := fun _ => 0) :
     MeTTaZero.Model where
   Space := PeTTaSpace
   contents := fun space => space.storedAtoms
@@ -48,7 +49,7 @@ theorem model_lawful (groundApply : Pattern → Multiset Pattern) :
     MeTTaZero.Lawful (model groundApply) := by
   constructor
   intro name atom
-  simp [model, matchPattern]
+  simp [matchPattern]
 
 /-- **Exact occurrence-bag query interpretation.**  The only quotient forgets
 PeTTa's enumeration order; it preserves every occurrence and uses the same
@@ -57,7 +58,7 @@ matcher. -/
     (space : PeTTaSpace) (pattern template : Pattern) :
     MeTTaZero.query (model groundApply) space pattern template =
       (space.spaceMatch pattern template : Multiset Pattern) := by
-  simp [MeTTaZero.query, model, PeTTaSpace.spaceMatch]
+  simp [MeTTaZero.query, PeTTaSpace.spaceMatch]
 
 /-- Enumerating the public query recovers exactly PeTTa's reflective medium,
 including ordinary facts and premise-free equations. -/
@@ -172,9 +173,13 @@ noncomputable def authoredQueryRealization
   observeArtifact := fun _ answers => answers.map unwrapQueryAnswer
   adequate := by
     intro request _
-    rw [MeTTaZeroLanguageAdequacy.authoredRealization_query,
-      Multiset.map_map]
-    simp
+    have realized := MeTTaZeroLanguageAdequacy.authoredRealization_query
+      (model groundApply) request.space request.spaceTerm request.pattern request.template
+    refine (congrArg (Multiset.map unwrapQueryAnswer) realized).trans ?_
+    rw [Multiset.map_map]
+    have roundtrip : unwrapQueryAnswer ∘ queryAnswerPattern = id :=
+      funext unwrapQueryAnswer_queryAnswerPattern
+    rw [roundtrip, Multiset.map_id]
 
 /-- Select the generic authored executor or PeTTa's native query evaluator per
 request.  The selector is deliberately unconstrained: correctness follows

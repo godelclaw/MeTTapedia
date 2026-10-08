@@ -109,7 +109,7 @@ structure TypedCostStaticAtom (source : CIGSLT) (color : CostStaticColor)
 namespace TypedCostStaticAtom
 
 /-- Ordinary typing projected from the single reflective target fibre. -/
-def normalTyped {source : CIGSLT} {color : CostStaticColor}
+theorem normalTyped {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (atom : TypedCostStaticAtom source color targetFree) :
     WellSorted.HasType source.costWholeLanguage targetFree
@@ -118,21 +118,21 @@ def normalTyped {source : CIGSLT} {color : CostStaticColor}
 
 /-- Canonical binder metadata projected from the single reflective target
 fibre. -/
-def normalCanonicalBinderMetadata {source : CIGSLT}
+theorem normalCanonicalBinderMetadata {source : CIGSLT}
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     (atom : TypedCostStaticAtom source color targetFree) :
     atom.key.normal.hasCanonicalBinderMetadata = true :=
   atom.normalWellSorted.1.2.1
 
 /-- Object admissibility projected from the single reflective target fibre. -/
-def normalObject {source : CIGSLT} {color : CostStaticColor}
+theorem normalObject {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (atom : TypedCostStaticAtom source color targetFree) :
     WellSorted.isObjectPattern atom.key.normal = true :=
   atom.normalWellSorted.1.2.2.1
 
 /-- Quote-scope safety projected from the single reflective target fibre. -/
-def normalReflectiveScopeSafe {source : CIGSLT} {color : CostStaticColor}
+theorem normalReflectiveScopeSafe {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (atom : TypedCostStaticAtom source color targetFree) :
     ReflectiveWellSorted.ReflectiveScopeSafeAt
@@ -190,7 +190,7 @@ def ofSourceFVar {source : CIGSLT} {color : CostStaticColor}
     (name : String) (sourceType targetType : TypeExpr)
     (targetLookup : targetFree name = some targetType)
     (_decodedType :
-      decodeCostStaticTypeExpr source color targetType = some sourceType) :
+      CostStaticTypeImage.decode source.theory color targetType = some sourceType) :
     TypedCostStaticAtom source color targetFree where
   key :=
     { sourceType := sourceType
@@ -448,7 +448,7 @@ inductive CostStaticParameterOccurrence
       (decodesName : decodeCostRegionSourceVariableName occurrence.name =
         some sourceName)
       (targetLookup : targetFree sourceName = some targetType)
-      (decodesType : decodeCostStaticTypeExpr source color targetType =
+      (decodesType : CostStaticTypeImage.decode source.theory color targetType =
         some sourceType) :
       CostStaticParameterOccurrence source color targetFree table values root
   | boundary
@@ -491,7 +491,7 @@ def classify? {source : CIGSLT} {color : CostStaticColor}
       match targetLookup : targetFree sourceName with
       | none => none
       | some targetType =>
-          match decodedType : decodeCostStaticTypeExpr source color targetType with
+          match decodedType : CostStaticTypeImage.decode source.theory color targetType with
           | none => none
           | some sourceType =>
               some (.sourceFVar (sourceType := sourceType) occurrence
@@ -540,7 +540,7 @@ theorem classify?_sourceFVar_isSome
     (decodedName : decodeCostRegionSourceVariableName occurrence.name =
       some sourceName)
     (targetLookup : targetFree sourceName = some targetType)
-    (decodedType : decodeCostStaticTypeExpr source color targetType =
+    (decodedType : CostStaticTypeImage.decode source.theory color targetType =
       some sourceType) :
     (classify? table values occurrence).isSome = true := by
   unfold classify?
@@ -594,7 +594,7 @@ theorem classify?_isSome_of_typed
           simp [TypedCostRegionBoundaryTable.sourceFreeContext, decodedName,
             targetLookup] at lookup
       | some targetType =>
-          cases decodedType : decodeCostStaticTypeExpr source color targetType with
+          cases decodedType : CostStaticTypeImage.decode source.theory color targetType with
           | none =>
               simp [TypedCostRegionBoundaryTable.sourceFreeContext, decodedName,
                 targetLookup, decodedType] at lookup
@@ -753,7 +753,7 @@ theorem mappedFreeContext_eq_atom_targetType
   cases parameter with
   | sourceFVar occurrence decodedName targetLookup decodedType =>
       have encodedType :=
-        mapTypeExpr_decodeCostStaticTypeExpr source color decodedType
+        CostStaticTypeImage.mapTypeExpr_decode source.theory color decodedType
       simp [TypedCostRegionBoundaryTable.mappedFreeContext, decodedName,
         targetLookup, decodedType, atom, TypedCostStaticAtom.ofSourceFVar,
         encodedType, fvarOccurrence]
@@ -854,7 +854,7 @@ theorem atom_targetType_eq_map_sourceType
   cases parameter with
   | sourceFVar occurrence decodedName targetLookup decodedType =>
       simpa [atom, TypedCostStaticAtom.ofSourceFVar] using
-        mapTypeExpr_decodeCostStaticTypeExpr source color decodedType
+        CostStaticTypeImage.mapTypeExpr_decode source.theory color decodedType
   | boundary occurrence notSource resolved resolution =>
       have tableResolution : table.resolve occurrence.name =
           some resolved.1 := by
@@ -1252,9 +1252,13 @@ theorem decodeCostStaticAtomVariableName_encode (slot : Nat) :
 theorem decodeCostStaticAtomVariableName_sourceVariable (name : String) :
     decodeCostStaticAtomVariableName (costRegionSourceVariableName name) =
       none := by
-  simp [decodeCostStaticAtomVariableName, decodeTaggedPayload,
-    costStaticAtomVariableTag, costRegionSourceVariableName,
-    costRegionSourceVariableTag, dropListPrefix?]
+  have mismatch (suffix : List Char) :
+      dropListPrefix? costStaticAtomVariableTag.toList
+        (costRegionSourceVariableTag.toList ++ suffix) = none := by
+    cbv
+  simp only [decodeCostStaticAtomVariableName, costRegionSourceVariableName,
+    decodeTaggedPayload, String.toList_append, mismatch, Option.map_none]
+  rfl
 
 /-- Internal atom names are disjoint from proof-relevant boundary names. -/
 @[simp]
@@ -1262,9 +1266,13 @@ theorem decodeCostStaticAtomVariableName_boundaryVariable
     (boundary : CostRegionBoundary) :
     decodeCostStaticAtomVariableName
         (costRegionBoundaryVariableName boundary) = none := by
-  simp [decodeCostStaticAtomVariableName, decodeTaggedPayload,
-    costStaticAtomVariableTag, costRegionBoundaryVariableName,
-    costRegionBoundaryVariableTag, dropListPrefix?]
+  have mismatch (suffix : List Char) :
+      dropListPrefix? costStaticAtomVariableTag.toList
+        (costRegionBoundaryVariableTag.toList ++ suffix) = none := by
+    cbv
+  simp only [decodeCostStaticAtomVariableName, costRegionBoundaryVariableName,
+    decodeTaggedPayload, String.toList_append, mismatch, Option.map_none]
+  rfl
 
 /-- Finite semantic quotient of an explicit positional occurrence inventory.
 

@@ -76,7 +76,7 @@ theorem costStaticReflectivePresentationDecl_mem_profile {source : CIGSLT}
     (mem : declaration ∈ source.reflection.1.presentations) :
     costStaticReflectivePresentationDecl source color declaration ∈
       source.costWholeReflectionProfile.presentations := by
-  simpa only [CIGSLT.costWholeReflectionProfile_presentations] using
+  simpa only [WrappableIGSLT.costWholeReflectionProfile_presentations] using
     costStaticReflectivePresentationDecl_mem source color declaration mem
 
 /-- **The agreement hypothesis is refuted over Cost, at both colours.**
@@ -96,7 +96,7 @@ theorem not_quoteStatusAgrees_costStatic {source : CIGSLT}
         costBaseReflectivePresentationDecl, mapReflectivePresentation,
         costStaticReflectivePresentationDecl, costWrappedStaticReflectiveSymbols,
         costBaseStaticReflectiveSymbols, costBaseStaticSymbols,
-        costWrappedStaticSymbols, costBasePresentationSymbols] using
+        costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
         (costConstructorName_distinct declaration.quoteConstructor).symm
   | wrapped =>
       refine CostStaticAtomKeyCospan.not_quoteStatusAgrees_of_foreignQuote
@@ -105,7 +105,7 @@ theorem not_quoteStatusAgrees_costStatic {source : CIGSLT}
         costBaseReflectivePresentationDecl, mapReflectivePresentation,
         costStaticReflectivePresentationDecl, costWrappedStaticReflectiveSymbols,
         costBaseStaticReflectiveSymbols, costBaseStaticSymbols,
-        costWrappedStaticSymbols, costBasePresentationSymbols] using
+        costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
         (costConstructorName_distinct declaration.quoteConstructor)
 
 /-- The profile recognizes **either** colour's quote as a restoration
@@ -120,7 +120,7 @@ theorem isQuoteConstructor_costStaticReflectivePresentationDecl {source : CIGSLT
           declaration).quoteConstructor = true := by
   unfold ReflectiveContextSupport.isQuoteConstructor
   refine List.any_eq_true.mpr ⟨_, ?_, beq_self_eq_true _⟩
-  simpa only [CIGSLT.costWholeReflectionProfile_presentations] using
+  simpa only [WrappableIGSLT.costWholeReflectionProfile_presentations] using
     costStaticReflectivePresentationDecl_mem source color declaration mem
 
 /-- **Distinct colours spell the same authored quote differently.**  Together
@@ -139,13 +139,13 @@ theorem costStaticReflectivePresentationDecl_quoteConstructor_ne {source : CIGSL
       costBaseReflectivePresentationDecl, costWrappedReflectivePresentationDecl,
       mapReflectivePresentation, costBaseStaticReflectiveSymbols,
       costWrappedStaticReflectiveSymbols, costBaseStaticSymbols,
-      costWrappedStaticSymbols, costBasePresentationSymbols] using
+      costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
       costConstructorName_distinct declaration.quoteConstructor
   · simpa [costStaticReflectivePresentationDecl,
       costBaseReflectivePresentationDecl, costWrappedReflectivePresentationDecl,
       mapReflectivePresentation, costBaseStaticReflectiveSymbols,
       costWrappedStaticReflectiveSymbols, costBaseStaticSymbols,
-      costWrappedStaticSymbols, costBasePresentationSymbols] using
+      costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
       (costConstructorName_distinct declaration.quoteConstructor).symm
   · exact absurd rfl distinct
 
@@ -178,12 +178,12 @@ theorem hereditaryConstructorImage_disjoint {source : CIGSLT}
   cases leftColor <;> cases rightColor
   · exact distinct rfl
   · exact costBaseConstructorName_ne_wrapped leftSource rightSource
-      (by simpa [CostStaticColor.symbols, costBaseStaticSymbols,
-        costWrappedStaticSymbols, costBasePresentationSymbols] using
+      (by simpa [CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+        costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
         leftSpelling.symm.trans rightSpelling)
   · exact costBaseConstructorName_ne_wrapped rightSource leftSource
-      (by simpa [CostStaticColor.symbols, costBaseStaticSymbols,
-        costWrappedStaticSymbols, costBasePresentationSymbols] using
+      (by simpa [CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+        costWrappedStaticSymbols, costBaseLanguageDefSymbolMap] using
         rightSpelling.symm.trans leftSpelling)
   · exact distinct rfl
 

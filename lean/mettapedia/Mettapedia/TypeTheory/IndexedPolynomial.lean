@@ -27,6 +27,8 @@ namespace Mettapedia.TypeTheory
 
 universe u v w uBase uIndex uShape uPosition uNewBase uSource uTarget
 
+-- The bundled fields intentionally retain separate universes.
+set_option linter.checkUnivs false in
 /-- A context-indexed dependent polynomial.  Recursive occurrences are exactly
 the positions, and every position records the index of its recursive child. -/
 structure IndexedPolynomial (Base : Type uBase) (Index : Base → Type uIndex) where
@@ -253,9 +255,8 @@ theorem hom_eq_fold (targetAlgebra : Algebra polynomial target)
         homomorphism.toFun base index tree =
           Fix.fold polynomial targetAlgebra.act base index tree)
       (fun {index} shape children hypotheses => by
-      rw [show Fix.roll shape children =
-        (initial polynomial).act base index ⟨shape, children⟩ from rfl]
-      rw [homomorphism.commutes]
+      refine (homomorphism.commutes base index
+        (⟨shape, children⟩ : polynomial.Extension polynomial.Fix base index)).trans ?_
       change targetAlgebra.act base index
           ⟨shape, fun position =>
             homomorphism.toFun base _ (children position)⟩ =
@@ -456,7 +457,7 @@ tail occupies the unique recursive position. -/
 def cons {A : Type u} (head : A) (tail : ListP A) : ListP A :=
   .roll (.cons head) (consChildren tail)
 
-/-- Every presentation of the empty child assignment yields `nil`. -/
+/-- Every encoding of the empty child assignment yields `nil`. -/
 theorem roll_nil_eq_nil {A : Type u}
     (children :
       (position : (polynomial A).Position (base := .star) (index := .star)
@@ -469,7 +470,7 @@ theorem roll_nil_eq_nil {A : Type u}
   rw [childrenEqual]
   rfl
 
-/-- Every presentation of the singleton child assignment yields `cons`. -/
+/-- Every encoding of the singleton child assignment yields `cons`. -/
 theorem roll_cons_eq_cons {A : Type u} (head : A)
     (children :
       (position : (polynomial A).Position (base := .star) (index := .star)
@@ -539,6 +540,7 @@ noncomputable def eliminate {A : Type u}
     (consCase : ∀ head tail, motive tail → motive (cons head tail)) :
     eliminate motive nilCase consCase nil = nilCase := by
   simp only [eliminate, nil, Fix.eliminate_roll, motiveAtNil_canonical]
+  rfl
 
 /-- List elimination computes at `cons`. -/
 @[simp] theorem eliminate_cons {A : Type u}
@@ -548,7 +550,7 @@ noncomputable def eliminate {A : Type u}
     (head : A) (tail : ListP A) :
     eliminate motive nilCase consCase (cons head tail) =
       consCase head tail (eliminate motive nilCase consCase tail) := by
-  simp only [eliminate, cons, Fix.eliminate_roll, motiveAtCons_canonical]
+  simp only [eliminate, cons, Fix.eliminate_roll]
   rfl
 
 /-- Functorial action of lists, obtained from the native eliminator. -/
@@ -1041,6 +1043,7 @@ noncomputable def eliminate {A : Type u}
       motive length tail → motive (length + 1) (cons head tail)) :
     eliminate motive nilCase consCase 0 nil = nilCase := by
   simp only [eliminate, nil, Fix.eliminate_roll, motiveAtNil_canonical]
+  rfl
 
 @[simp] theorem eliminate_cons {A : Type u}
     (motive : ∀ length, VectorP A length → Sort v)
@@ -1050,7 +1053,7 @@ noncomputable def eliminate {A : Type u}
     (length : Nat) (head : A) (tail : VectorP A length) :
     eliminate motive nilCase consCase (length + 1) (cons head tail) =
       consCase length head tail (eliminate motive nilCase consCase length tail) := by
-  simp only [eliminate, cons, Fix.eliminate_roll, motiveAtCons_canonical]
+  simp only [eliminate, cons, Fix.eliminate_roll]
   rfl
 
 /-- Forget the length index while retaining every element. -/
@@ -1141,7 +1144,7 @@ def refl {A : Type u} (point : A) : Identity A point point :=
 
 /-- Every empty recursive-child assignment gives the same reflexivity
 constructor. -/
-def roll_eq_refl {A : Type u} (point : A)
+theorem roll_eq_refl {A : Type u} (point : A)
     (children :
       (position : (polynomial A).Position (base := One.star)
         (Shape.refl point)) →
@@ -1161,7 +1164,7 @@ assignment. -/
     roll_eq_refl point (reflChildren point) = rfl :=
   Subsingleton.elim _ _
 
-/-- Transport a reflexivity case to an arbitrary presentation of the same
+/-- Transport a reflexivity case to an arbitrary encoding of the same
 zero-child constructor. -/
 def motiveAtRoll {A : Type u}
     (motive : ∀ left right, Identity A left right → Sort v)
@@ -1213,9 +1216,10 @@ noncomputable def j {A : Type u}
     (point : A) :
     j motive reflexivity (refl point) = reflexivity point := by
   simp only [j, refl, motiveAtRoll_canonical]
+  rfl
 
 /-- Polynomial identity reflects to ordinary equality. -/
-noncomputable def toEq {A : Type u} {left right : A} :
+theorem toEq {A : Type u} {left right : A} :
     Identity A left right → left = right :=
   j (fun left right _ => left = right) (fun _ => rfl)
 

@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Core.Composition
-import Mettapedia.Languages.MeTTa.LeafPatchViewKernel
+import Mettapedia.Logic.Unification.BinaryPatternViews
 
 /-!
 # Ground linear-head compilation
@@ -18,7 +18,7 @@ matcher path.
 
 namespace Mettapedia.GSLT.LanguageDef.GroundLinearHeadCompilation
 
-open Mettapedia.Languages.MeTTa.LeafPatchViewKernel
+open Mettapedia.Logic.Unification.BinaryPatternViews
 
 variable {Symbol : Type} [DecidableEq Symbol]
 
@@ -44,7 +44,8 @@ def admit? (source : Pat Symbol) : Option (AdmittedLinearHead Symbol) :=
 /-- Admission is exactly the source pattern's no-duplicate-slots property. -/
 theorem admit?_isSome_iff (source : Pat Symbol) :
     (admit? source).isSome = true ↔ Linear source := by
-  simp [admit?, Linear]
+  unfold admit?
+  split <;> simp_all [Linear]
 
 /-- Compile an admitted source head to its positional slot program. -/
 def compile (source : AdmittedLinearHead Symbol) : LinearHeadPlan :=

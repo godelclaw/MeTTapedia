@@ -175,9 +175,16 @@ theorem plnSelector_lang_extBayes2 (pp qq ll : Pattern) :
   refine ⟨1, StepAt.rule (rule := ruleExtBayes2)
     (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [matchPatternForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
+  · simp [Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      matchPatternForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
       matchPattern, matchArgs, mergeBindings]
-  · simp [applyBindingsForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      applyBindingsForRule, bs0, ruleExtBayes2, pUpdate, pFuse,
       applyBindings]
 
 theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
@@ -189,9 +196,16 @@ theorem plnSelector_lang_extBayesFamily (xsp ll : Pattern) :
   refine ⟨1, StepAt.rule (rule := ruleExtBayesFamily)
     (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [matchPatternForRule, bs0, ruleExtBayesFamily, pUpdate,
+  · simp [Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      matchPatternForRule, bs0, ruleExtBayesFamily, pUpdate,
       pFuseFamily, matchPattern, matchArgs, mergeBindings]
-  · simp [applyBindingsForRule, bs0, ruleExtBayesFamily, pFuseFamily,
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      applyBindingsForRule, bs0, ruleExtBayesFamily, pFuseFamily,
       pFMapUpdate, applyBindings]
 
 theorem plnSelector_lang_normalize (ep : Pattern) :
@@ -201,9 +215,16 @@ theorem plnSelector_lang_normalize (ep : Pattern) :
   refine ⟨1, StepAt.rule (rule := ruleNormalizeStrength)
     (initialBindings := bs0) (finalBindings := bs0) ?hr ?hmatch (.nil bs0) ?happly⟩
   · simp [plnSelectorLanguageDef]
-  · simp [matchPatternForRule, bs0, ruleNormalizeStrength, pNormalizeNZ,
+  · simp [Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      matchPatternForRule, bs0, ruleNormalizeStrength, pNormalizeNZ,
       matchPattern, matchArgs, mergeBindings]
-  · simp [applyBindingsForRule, bs0, ruleNormalizeStrength,
+  · simp [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?,
+      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRuleUsing,
+      applyBindingsForRule, bs0, ruleNormalizeStrength,
       pNormalizeNZ, applyBindings]
 
 /-! ## One-Way Soundness: DSL Rewrite ⇒ LanguageDef Rewrite -/
@@ -435,7 +456,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
   cases hStep with
   | @rule fuel source target r bs0 bs hr hbs0 hprem hq =>
   simp only [matchPatternForRule_eq_syntactic] at hbs0
-  simp only [applyBindingsForRule_eq_syntactic] at hq
+  simp only [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, applyBindingsForRule_eq_syntactic] at hq
   have hrCases :
       r = ruleExtBayes2 ∨ r = ruleExtBayesFamily ∨ r = ruleNormalizeStrength := by
     simpa [plnSelectorLanguageDef] using hr
@@ -455,7 +476,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
             have hq' :
                 q = pFuse (pUpdate (encodeExpr p) (encodeExpr l))
                   (pUpdate (encodeExpr q0) (encodeExpr l)) := by
-              simpa [ruleExtBayes2, pFuse, pUpdate, applyBindings] using hq.symm
+              simpa [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.applyBindingsScoped_zero_of_binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, ruleExtBayes2, pFuse, pUpdate, applyBindings] using hq.symm
             refine ⟨.fuse (.update p l) (.update q0 l), ?_, ?_⟩
             · exact PLNSelectorExpr.Reduces.extBayes2 p q0 l
             · simpa [hq'] using
@@ -499,7 +520,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
             subst bs0
             have hq' :
                 q = pFuseFamily (pFMapUpdate (encodeFamily xs) (encodeExpr l)) := by
-              simpa [ruleExtBayesFamily, pFuseFamily, pFMapUpdate, applyBindings] using hq.symm
+              simpa [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.applyBindingsScoped_zero_of_binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, ruleExtBayesFamily, pFuseFamily, pFMapUpdate, applyBindings] using hq.symm
             refine ⟨.fuseFamily (xs.map (fun e => .update e l)), ?_, ?_⟩
             · exact PLNSelectorExpr.Reduces.extBayesFamily xs l
             · simpa [hq'] using
@@ -539,7 +560,7 @@ theorem langReduces_to_reduces_exists_of_normalizeFinite
             pNormalizeNZ, pFuseFamily, matchPattern, matchArgs, mergeBindings] using hbs0
         subst bs0
         have hq' : q = encodeExpr e0 := by
-          simpa [ruleNormalizeStrength, pNormalizeNZ, applyBindings] using hq.symm
+          simpa [Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings, Mettapedia.OSLF.MeTTaIL.Match.applyBindingsScoped_zero_of_binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFree, Mettapedia.OSLF.MeTTaIL.Match.binderFreeList, ruleNormalizeStrength, pNormalizeNZ, applyBindings] using hq.symm
         refine ⟨e0, PLNSelectorExpr.Reduces.normalizeStrength t ht htop e0, ?_⟩
         simpa [hq'] using encodeExpr_encodes e0
     | atom _ =>
@@ -639,6 +660,13 @@ def selectorAtomCheck : AtomCheck := fun a p =>
 def selectorAtomSem : AtomSem := fun a p =>
   if a = "isExtBayes2RHS" then p = extBayes2Target else False
 
+/-- The selector observations admitted to the canonical equation-respecting
+OSLF.  This presentation has no equations, so the saturation is extensionally
+transparent; using the common admission operation keeps that fact explicit. -/
+def selectorEquationAtomSem (relEnv : RelationEnv) :
+    EquationAtomSemUsing relEnv plnSelectorLanguageDef :=
+  saturateAtomSemUsing relEnv plnSelectorLanguageDef selectorAtomSem
+
 theorem selectorAtom_sound :
     ∀ a p, selectorAtomCheck a p = true → selectorAtomSem a p := by
   intro a p h
@@ -653,11 +681,14 @@ theorem selectorAtom_sound :
 theorem plnSelector_checkLangUsing_sat_sound
     {relEnv : RelationEnv} {fuel : Nat} {p : Pattern} {φ : OSLFFormula}
     (hSat : checkLangUsing relEnv plnSelectorLanguageDef selectorAtomCheck fuel p φ = .sat) :
-    sem (langReducesUsing relEnv plnSelectorLanguageDef) selectorAtomSem φ p := by
+    langFormulaSemUsing relEnv plnSelectorLanguageDef
+      (selectorEquationAtomSem relEnv) φ p := by
   exact checkLangUsing_sat_sound
     (relEnv := relEnv) (lang := plnSelectorLanguageDef)
-    (I_check := selectorAtomCheck) (I_sem := selectorAtomSem)
-    (h_atoms := selectorAtom_sound) hSat
+    (I_check := selectorAtomCheck) (I_sem := selectorEquationAtomSem relEnv)
+    (h_atoms := fun a p holds =>
+      holds_saturateAtomSemUsing relEnv plnSelectorLanguageDef
+        selectorAtomSem a p (selectorAtom_sound a p holds)) hSat
 
 /-- Graph-level checker soundness corollary specialized to the PLN selector
 LanguageDef. -/
@@ -671,13 +702,16 @@ theorem plnSelector_checkLangUsing_sat_sound_graph
       (C := C) relEnv plnSelectorLanguageDef).Edge.obj X,
       ((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
         (C := C) relEnv plnSelectorLanguageDef).source.app X e).down = p ∧
-      sem (langReducesUsing relEnv plnSelectorLanguageDef) selectorAtomSem φ
+      (langFormulaSemUsing relEnv plnSelectorLanguageDef
+        (selectorEquationAtomSem relEnv) φ).1
         (((Mettapedia.OSLF.Framework.ToposReduction.reductionGraphUsing
           (C := C) relEnv plnSelectorLanguageDef).target.app X e).down) := by
   exact checkLangUsing_sat_sound_graph
     (C := C) (relEnv := relEnv) (lang := plnSelectorLanguageDef)
-    (I_check := selectorAtomCheck) (I_sem := selectorAtomSem)
-    (h_atoms := selectorAtom_sound) hSat
+    (I_check := selectorAtomCheck) (I_sem := selectorEquationAtomSem relEnv)
+    (h_atoms := fun a p holds =>
+      holds_saturateAtomSemUsing relEnv plnSelectorLanguageDef
+        selectorAtomSem a p (selectorAtom_sound a p holds)) hSat
 
 def demoExtBayes2Src : Pattern := pUpdate (pFuse pAtom pAtom) pAtom
 def demoIrreducible : Pattern := pAtom
@@ -699,8 +733,9 @@ example :
 set_option maxRecDepth 4096 in
 set_option maxHeartbeats 800000 in
 theorem demoExtBayes2_sat_sem :
-    sem (langReducesUsing RelationEnv.empty plnSelectorLanguageDef)
-      selectorAtomSem (.dia (.atom "isExtBayes2RHS")) demoExtBayes2Src := by
+    langFormulaSemUsing RelationEnv.empty plnSelectorLanguageDef
+      (selectorEquationAtomSem RelationEnv.empty)
+      (.dia (.atom "isExtBayes2RHS")) demoExtBayes2Src := by
   have hSat :
       checkLangUsing RelationEnv.empty plnSelectorLanguageDef selectorAtomCheck
         3 demoExtBayes2Src (.dia (.atom "isExtBayes2RHS")) = .sat := by

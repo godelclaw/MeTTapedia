@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.Cost.Layer.Basic
 import Mathlib.CategoryTheory.Limits.Shapes.Equalizers
+import Mathlib.CategoryTheory.Widesubcategory
 
 /-!
 # The normalizer-indexed one-step Cost category
@@ -11,7 +12,7 @@ is for ordinary `IGSLT.Morphism`s.
 
 This file builds that action in layers.  It does not accept an output
 `CIGSLT.Morphism` as data: the generated interactive map is constructed from
-the source continued morphism, and later layers add only the irreducible laws
+the source morphism, and later layers add only the irreducible laws
 needed for reflection, selected-normalizer naturality, and canonical keys.
 -/
 
@@ -28,12 +29,12 @@ private theorem typeDecl_ext {left right : TypeDecl}
   cases right
   simp_all
 
-namespace CIGSLT.Morphism
+namespace WrappableIGSLT.Morphism
 
 /-- The declaration-derived Cost interaction map.  Its symbol action is
-forced by `costPresentationSymbols`; the selected wrapped carrier, contact,
+forced by `costLanguageDefSymbolMap`; the selected wrapped carrier, contact,
 and funded rewrite are transported from their generated declarations. -/
-def costWholeInteractive {source target : CIGSLT}
+def costWholeInteractive {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     InteractiveMorphism source.costWholeInteractivePresentation
       target.costWholeInteractivePresentation where
@@ -41,57 +42,57 @@ def costWholeInteractive {source target : CIGSLT}
   mapsInteractingSort := by
     apply Subtype.ext
     change TypeDecl.mk
-        ((costPresentationSymbols
+        ((costLanguageDefSymbolMap
           morphism.underlying.structural.structural.symbols).sort
             costWrappedSortName) .ast =
       TypeDecl.mk costWrappedSortName .ast
-    rw [costPresentationSymbols_sort_wrapped]
+    rw [costLanguageDefSymbolMap_sort_wrapped]
   mapsContactConstructor := by
     apply Subtype.ext
     simp [costWholeInteractivePresentation, costWholeContactConstructor,
       costWholeStructural, StructuralMorphism.mapConstructor,
       costContactConstructor, mapGrammarRule, mapTermParam, mapTypeExpr,
       costContactConstructorName,
-      costPresentationSymbols_constructor_apparatus]
+      costLanguageDefSymbolMap_constructor_apparatus]
   mapsInteractionRewrite := by
     apply Subtype.ext
     exact morphism.map_costWholeRedexRewrite
 
 /-- The generated interactive action sends identity to identity. -/
 @[simp]
-theorem costWholeInteractive_id (source : CIGSLT) :
-    (CIGSLT.Morphism.id source).costWholeInteractive =
+theorem costWholeInteractive_id (source : WrappableIGSLT) :
+    (WrappableIGSLT.Morphism.id source).costWholeInteractive =
       InteractiveMorphism.id source.costWholeInteractivePresentation := by
   apply InteractiveMorphism.ext
   apply StructuralMorphism.ext
-  exact costPresentationSymbols_id
+  exact costLanguageDefSymbolMap_id
 
 /-- The generated interactive action respects composition. -/
-theorem costWholeInteractive_comp {first second third : CIGSLT}
+theorem costWholeInteractive_comp {first second third : WrappableIGSLT}
     (left : first.Morphism second) (right : second.Morphism third) :
-    (CIGSLT.Morphism.comp left right).costWholeInteractive =
+    (WrappableIGSLT.Morphism.comp left right).costWholeInteractive =
       InteractiveMorphism.comp left.costWholeInteractive
         right.costWholeInteractive := by
   apply InteractiveMorphism.ext
   apply StructuralMorphism.ext
-  exact costPresentationSymbols_comp
+  exact costLanguageDefSymbolMap_comp
     left.underlying.structural.structural.symbols
     right.underlying.structural.structural.symbols
 
 /-- The distinguished contact sort of the generated cut is the natural base
 copy of the source contact sort. -/
-theorem mapsCostCoreSort {source target : CIGSLT}
+theorem mapsCostCoreSort {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     morphism.costWholeStructural.mapSort
         source.costInteractionCut.coreContact.sort =
       target.costInteractionCut.coreContact.sort := by
   apply Subtype.ext
   apply typeDecl_ext
-  · change (costPresentationSymbols
+  · change (costLanguageDefSymbolMap
       morphism.underlying.structural.structural.symbols).sort
         (costBaseSortName source.cut.coreContact.sort.1.name) =
       costBaseSortName target.cut.coreContact.sort.1.name
-    rw [costPresentationSymbols_sort_base]
+    rw [costLanguageDefSymbolMap_sort_base]
     exact congrArg (fun name => costBaseSortName name)
       (congrArg TypeDecl.name
         (congrArg Subtype.val morphism.mapsCoreSort))
@@ -103,14 +104,14 @@ theorem mapsCostCoreSort {source target : CIGSLT}
 
 /-- The distinguished contact constructor of the generated cut is the
 natural base copy of the source contact constructor. -/
-theorem mapsCostCoreContactConstructor {source target : CIGSLT}
+theorem mapsCostCoreContactConstructor {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     morphism.costWholeStructural.mapConstructor
         source.costInteractionCut.coreContact.constructor =
       target.costInteractionCut.coreContact.constructor := by
   apply Subtype.ext
   change mapGrammarRule
-      (costPresentationSymbols
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
       (costBaseConstructor source.cut source.cut.coreContact.constructor.1) =
     costBaseConstructor target.cut target.cut.coreContact.constructor.1
@@ -122,32 +123,33 @@ theorem mapsCostCoreContactConstructor {source target : CIGSLT}
     congrArg Subtype.val morphism.mapsCoreContactConstructor]
 
 /-- The generated cut core is natural under the forced Cost symbol action. -/
-theorem mapsCostCorePattern {source target : CIGSLT}
+theorem mapsCostCorePattern {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.sourceShape.core =
       target.costInteractionCut.sourceShape.core := by
   change mapPattern
-      (costPresentationSymbols
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
       source.costBaseInteractionCore = target.costBaseInteractionCore
   exact morphism.map_costBaseInteractionCore
 
 /-- The generated whole-redex envelope is natural independently of the
 pattern plugged into its hole. -/
-theorem mapsCostSourceEnvelope {source target : CIGSLT}
+theorem mapsCostSourceEnvelope {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
-    mapOneHoleContext morphism.costWholeStructural.symbols
+    CIGSLT.mapOneHoleContext morphism.costWholeStructural.symbols
         source.costInteractionCut.sourceShape.envelope =
       target.costInteractionCut.sourceShape.envelope := by
-  change mapOneHoleContext
-      (costPresentationSymbols
+  change CIGSLT.mapOneHoleContext
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
       source.costWholeRedexEnvelope = target.costWholeRedexEnvelope
   exact morphism.map_costWholeRedexEnvelope
 
-/-- Base transport of an operand schema is natural under a continued map. -/
-theorem mapCostBaseSchemaPattern {source target : CIGSLT}
+/-- Base transport of an operand schema is natural under a map of wrappable
+theories. -/
+theorem mapCostBaseSchemaPattern {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (pattern : Pattern) :
     mapPattern morphism.costWholeStructural.symbols
         (costBaseSchemaPattern pattern) =
@@ -158,14 +160,14 @@ theorem mapCostBaseSchemaPattern {source target : CIGSLT}
   rw [mapPattern_mapPatternSchemaNames]
   apply congrArg (mapPatternSchemaNames costSourceSchemaName)
   change mapPattern
-      (costPresentationSymbols
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
-      (mapPattern costBasePresentationSymbols pattern) = _
+      (mapPattern costBaseLanguageDefSymbolMap pattern) = _
   exact mapPattern_costBasePresentation_natural _ _
 
 /-- The generated program introduction is the natural base copy of the
 selected source introduction. -/
-theorem mapsCostProgramConstructor {source target : CIGSLT}
+theorem mapsCostProgramConstructor {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     morphism.costWholeStructural.mapConstructor
         source.costInteractionCut.program.constructor =
@@ -177,7 +179,7 @@ theorem mapsCostProgramConstructor {source target : CIGSLT}
       (costBaseConstructor source.cut source.cut.program.constructor.1) =
     costBaseConstructor target.cut target.cut.program.constructor.1
   change mapGrammarRule
-      (costPresentationSymbols
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
       (costBaseConstructor source.cut source.cut.program.constructor.1) = _
   rw [morphism.mapGrammarRule_costBaseConstructor]
@@ -187,7 +189,7 @@ theorem mapsCostProgramConstructor {source target : CIGSLT}
     congrArg Subtype.val morphism.mapsProgramConstructor]
 
 /-- The generated environment introduction is natural for the same reason. -/
-theorem mapsCostEnvironmentConstructor {source target : CIGSLT}
+theorem mapsCostEnvironmentConstructor {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     morphism.costWholeStructural.mapConstructor
         source.costInteractionCut.environment.constructor =
@@ -199,7 +201,7 @@ theorem mapsCostEnvironmentConstructor {source target : CIGSLT}
       (costBaseConstructor source.cut source.cut.environment.constructor.1) =
     costBaseConstructor target.cut target.cut.environment.constructor.1
   change mapGrammarRule
-      (costPresentationSymbols
+      (costLanguageDefSymbolMap
         morphism.underlying.structural.structural.symbols)
       (costBaseConstructor source.cut source.cut.environment.constructor.1) = _
   rw [morphism.mapGrammarRule_costBaseConstructor]
@@ -209,7 +211,7 @@ theorem mapsCostEnvironmentConstructor {source target : CIGSLT}
         target.cut.environment.constructor.1 from
     congrArg Subtype.val morphism.mapsEnvironmentConstructor]
 
-theorem mapsCostProgramSchema {source target : CIGSLT}
+theorem mapsCostProgramSchema {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.program.schemaTerm =
@@ -219,7 +221,7 @@ theorem mapsCostProgramSchema {source target : CIGSLT}
   rw [costProgramOperand_schemaTerm, costProgramOperand_schemaTerm,
     morphism.mapCostBaseSchemaPattern, morphism.mapsProgramSchema]
 
-theorem mapsCostEnvironmentSchema {source target : CIGSLT}
+theorem mapsCostEnvironmentSchema {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.environment.schemaTerm =
@@ -231,7 +233,7 @@ theorem mapsCostEnvironmentSchema {source target : CIGSLT}
     costEnvironmentOperand_schemaTerm,
     morphism.mapCostBaseSchemaPattern, morphism.mapsEnvironmentSchema]
 
-theorem mapsCostProgramContinuation {source target : CIGSLT}
+theorem mapsCostProgramContinuation {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.program.continuationPattern =
@@ -243,7 +245,7 @@ theorem mapsCostProgramContinuation {source target : CIGSLT}
     costProgramOperand_continuationPattern,
     morphism.mapCostBaseSchemaPattern, morphism.mapsProgramContinuation]
 
-theorem mapsCostEnvironmentContinuation {source target : CIGSLT}
+theorem mapsCostEnvironmentContinuation {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     mapPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.environment.continuationPattern =
@@ -255,17 +257,17 @@ theorem mapsCostEnvironmentContinuation {source target : CIGSLT}
     costEnvironmentOperand_continuationPattern,
     morphism.mapCostBaseSchemaPattern, morphism.mapsEnvironmentContinuation]
 
-theorem reflectsCostInteractingSort {source target : CIGSLT}
+theorem reflectsCostInteractingSort {source target : WrappableIGSLT}
     (morphism : source.Morphism target) (sourceSort : String)
     (mapped : morphism.costWholeStructural.symbols.sort sourceSort =
       target.costIGSLT.presentation.interactingSort.1.name) :
     sourceSort = source.costIGSLT.presentation.interactingSort.1.name := by
-  change (costPresentationSymbols
+  change (costLanguageDefSymbolMap
       morphism.underlying.structural.structural.symbols).sort sourceSort =
     costWrappedSortName at mapped
-  exact (costPresentationSymbols_sort_eq_wrapped_iff _ _).mp mapped
+  exact (costLanguageDefSymbolMap_sort_eq_wrapped_iff _ _).mp mapped
 
-theorem mapsCostProgramContinuationIndex {source target : CIGSLT}
+theorem mapsCostProgramContinuationIndex {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.costInteractionCut.program.continuation.index =
       target.costInteractionCut.program.continuation.index := by
@@ -273,7 +275,7 @@ theorem mapsCostProgramContinuationIndex {source target : CIGSLT}
     costInteractionCut_program_continuation_index]
   exact morphism.mapsProgramContinuationIndex
 
-theorem mapsCostEnvironmentContinuationIndex {source target : CIGSLT}
+theorem mapsCostEnvironmentContinuationIndex {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.costInteractionCut.environment.continuation.index =
       target.costInteractionCut.environment.continuation.index := by
@@ -281,7 +283,7 @@ theorem mapsCostEnvironmentContinuationIndex {source target : CIGSLT}
     costInteractionCut_environment_continuation_index]
   exact morphism.mapsEnvironmentContinuationIndex
 
-theorem mapsCostProgramKind {source target : CIGSLT}
+theorem mapsCostProgramKind {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.costInteractionCut.program.kind =
       target.costInteractionCut.program.kind := by
@@ -289,7 +291,7 @@ theorem mapsCostProgramKind {source target : CIGSLT}
   rw [costProgramOperand_kind, costProgramOperand_kind]
   exact morphism.mapsProgramKind
 
-theorem mapsCostEnvironmentKind {source target : CIGSLT}
+theorem mapsCostEnvironmentKind {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
     source.costInteractionCut.environment.kind =
       target.costInteractionCut.environment.kind := by
@@ -297,32 +299,33 @@ theorem mapsCostEnvironmentKind {source target : CIGSLT}
   rw [costEnvironmentOperand_kind, costEnvironmentOperand_kind]
   exact morphism.mapsEnvironmentKind
 
-theorem mapsCostProgramSubject {source target : CIGSLT}
+theorem mapsCostProgramSubject {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
-    mapOptionalPattern morphism.costWholeStructural.symbols
+    CIGSLT.mapOptionalPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.program.subject.pattern =
       target.costInteractionCut.program.subject.pattern := by
-  change mapOptionalPattern morphism.costWholeStructural.symbols
+  change CIGSLT.mapOptionalPattern morphism.costWholeStructural.symbols
       source.costProgramOperand.subject.pattern =
     target.costProgramOperand.subject.pattern
-  simp [mapOptionalPattern]
+  simp [CIGSLT.mapOptionalPattern]
 
-theorem mapsCostEnvironmentSubject {source target : CIGSLT}
+theorem mapsCostEnvironmentSubject {source target : WrappableIGSLT}
     (morphism : source.Morphism target) :
-    mapOptionalPattern morphism.costWholeStructural.symbols
+    CIGSLT.mapOptionalPattern morphism.costWholeStructural.symbols
         source.costInteractionCut.environment.subject.pattern =
       target.costInteractionCut.environment.subject.pattern := by
-  change mapOptionalPattern morphism.costWholeStructural.symbols
+  change CIGSLT.mapOptionalPattern morphism.costWholeStructural.symbols
       source.costEnvironmentOperand.subject.pattern =
     target.costEnvironmentOperand.subject.pattern
-  simp [mapOptionalPattern]
+  simp [CIGSLT.mapOptionalPattern]
 
-end CIGSLT.Morphism
+end WrappableIGSLT.Morphism
 
-/-- The irreducible behavioral condition for lifting a continued morphism
-through the generated Cost iGSLT.  The term action is not supplied: it is the
-structural action forced by `CIGSLT.Morphism.costWholeInteractive`. -/
-def CostGeneratedBisimPreserving {source target : CIGSLT}
+/-- The irreducible behavioral condition for lifting a morphism of wrappable
+theories through the generated Cost iGSLT.  The term action is not supplied: it
+is the structural action forced by
+`WrappableIGSLT.Morphism.costWholeInteractive`. -/
+def CostGeneratedBisimPreserving {source target : WrappableIGSLT}
     (morphism : source.Morphism target) : Prop :=
   ∀ {left right : source.costIGSLT.presentation.Term},
     source.costIGSLT.toGSLT.Bisimilar left right →
@@ -331,10 +334,10 @@ def CostGeneratedBisimPreserving {source target : CIGSLT}
         (IGSLT.mapClosedTerm morphism.costWholeInteractive right)
 
 /-- Preservation of the generated Cost quotation boundaries.  As for an
-ordinary continued morphism, this is stronger than declaration membership:
-the target may contain additional reflective presentations, so scope safety
-must hold against the entire target profile. -/
-def CostGeneratedReflectiveScopePreserving {source target : CIGSLT}
+ordinary morphism of wrappable theories, this is stronger than declaration
+membership: the target may contain additional reflective presentations, so
+scope safety must hold against the entire target profile. -/
+def CostGeneratedReflectiveScopePreserving {source target : WrappableIGSLT}
     (morphism : source.Morphism target) : Prop :=
   ∀ {depth pattern},
     ReflectiveWellSorted.ReflectiveScopeSafeAt
@@ -342,14 +345,14 @@ def CostGeneratedReflectiveScopePreserving {source target : CIGSLT}
       ReflectiveWellSorted.ReflectiveScopeSafeAt
         target.costWholeReflectionProfile depth
         (mapPattern
-          (costPresentationSymbols
+          (costLanguageDefSymbolMap
             morphism.underlying.structural.structural.symbols)
           pattern)
 
-namespace CIGSLT.Morphism
+namespace WrappableIGSLT.Morphism
 
 /-- Map one typed open term of the generated Cost presentation. -/
-def mapCostOpenTerm {source target : CIGSLT}
+def mapCostOpenTerm {source target : WrappableIGSLT}
     (morphism : source.Morphism target)
     (scope : CostGeneratedReflectiveScopePreserving morphism)
     {free bound sort}
@@ -362,36 +365,36 @@ def mapCostOpenTerm {source target : CIGSLT}
       (WellSorted.mapLangSort morphism.costWholeStructural sort) :=
   term.map morphism.costWholeStructural scope
 
-/-- A Cost-behavior-preserving continued map induces the exact generated
-iGSLT morphism.  Only the semantic preservation proof is additional; the
-interactive declaration map was constructed above. -/
-def costIGSLTMorphism {source target : CIGSLT}
+/-- A Cost-behavior-preserving map of wrappable theories induces the exact
+generated iGSLT morphism.  Only the semantic preservation proof is additional;
+the interactive declaration map was constructed above. -/
+def costIGSLTMorphism {source target : WrappableIGSLT}
     (morphism : source.Morphism target)
     (preserves : CostGeneratedBisimPreserving morphism) :
     IGSLT.Morphism source.costIGSLT target.costIGSLT where
   structural := morphism.costWholeInteractive
   preservesBisim := preserves
 
-end CIGSLT.Morphism
+end WrappableIGSLT.Morphism
 
 namespace CostGeneratedBisimPreserving
 
 /-- Identity satisfies the generated behavioral obligation. -/
-theorem id (source : CIGSLT) :
-    CostGeneratedBisimPreserving (CIGSLT.Morphism.id source) := by
+theorem id (source : WrappableIGSLT) :
+    CostGeneratedBisimPreserving (WrappableIGSLT.Morphism.id source) := by
   intro left right equivalent
-  rw [CIGSLT.Morphism.costWholeInteractive_id]
+  rw [WrappableIGSLT.Morphism.costWholeInteractive_id]
   simpa [IGSLT.mapClosedTerm, InteractiveMorphism.id,
     StructuralMorphism.id, mapPattern_id] using equivalent
 
 /-- Generated behavioral preservation is closed under composition. -/
-theorem comp {first second third : CIGSLT}
+theorem comp {first second third : WrappableIGSLT}
     {left : first.Morphism second} {right : second.Morphism third}
     (leftPreserves : CostGeneratedBisimPreserving left)
     (rightPreserves : CostGeneratedBisimPreserving right) :
-    CostGeneratedBisimPreserving (CIGSLT.Morphism.comp left right) := by
+    CostGeneratedBisimPreserving (WrappableIGSLT.Morphism.comp left right) := by
   intro source target equivalent
-  rw [CIGSLT.Morphism.costWholeInteractive_comp]
+  rw [WrappableIGSLT.Morphism.costWholeInteractive_comp]
   exact (IGSLT.Morphism.comp
     (left.costIGSLTMorphism leftPreserves)
     (right.costIGSLTMorphism rightPreserves)).preservesBisim equivalent
@@ -401,42 +404,245 @@ end CostGeneratedBisimPreserving
 namespace CostGeneratedReflectiveScopePreserving
 
 /-- Identity preserves every generated Cost quotation boundary. -/
-theorem id (source : CIGSLT) :
-    CostGeneratedReflectiveScopePreserving (CIGSLT.Morphism.id source) := by
+theorem id (source : WrappableIGSLT) :
+    CostGeneratedReflectiveScopePreserving (WrappableIGSLT.Morphism.id source) := by
   intro depth pattern safe
   change ReflectiveWellSorted.ReflectiveScopeSafeAt
     source.costWholeReflectionProfile depth
-      (mapPattern (costPresentationSymbols PresentationSymbols.id) pattern)
-  rw [costPresentationSymbols_id, mapPattern_id]
+      (mapPattern (costLanguageDefSymbolMap LanguageDefSymbolMap.id) pattern)
+  rw [costLanguageDefSymbolMap_id, mapPattern_id]
   exact safe
 
 /-- Generated Cost quotation-boundary preservation composes. -/
-theorem comp {first second third : CIGSLT}
+theorem comp {first second third : WrappableIGSLT}
     {left : first.Morphism second} {right : second.Morphism third}
     (leftPreserves : CostGeneratedReflectiveScopePreserving left)
     (rightPreserves : CostGeneratedReflectiveScopePreserving right) :
     CostGeneratedReflectiveScopePreserving
-      (CIGSLT.Morphism.comp left right) := by
+      (WrappableIGSLT.Morphism.comp left right) := by
   intro depth pattern safe
   have firstSafe := leftPreserves safe
   have secondSafe := rightPreserves firstSafe
   change ReflectiveWellSorted.ReflectiveScopeSafeAt
     third.costWholeReflectionProfile depth
       (mapPattern
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           (left.underlying.structural.structural.symbols.comp
             right.underlying.structural.structural.symbols)) pattern)
-  rw [costPresentationSymbols_comp, mapPattern_comp]
+  rw [costLanguageDefSymbolMap_comp, mapPattern_comp]
   exact secondSafe
 
 end CostGeneratedReflectiveScopePreserving
+
+namespace WrappableIGSLT.Morphism
+
+/-- The semantic laws under which the Cost image of a morphism of wrappable
+theories is a morphism of the Cost images.  The declaration-derived
+construction does not force them: the first two concern the generated
+behaviour and quotation scope, the other three the generated cut. -/
+structure CostLaws {source target : WrappableIGSLT}
+    (morphism : source.Morphism target) : Prop where
+  preservesGeneratedBisim : CostGeneratedBisimPreserving morphism
+  preservesGeneratedReflectiveScope :
+    CostGeneratedReflectiveScopePreserving morphism
+  reflectsGeneratedProgramConstructor : ∀ constructor,
+    mapGrammarRule
+        (costLanguageDefSymbolMap morphism.underlying.structural.structural.symbols)
+        constructor = target.costInteractionCut.program.constructor.1 →
+      constructor = source.costInteractionCut.program.constructor.1
+  reflectsGeneratedEnvironmentConstructor : ∀ constructor,
+    mapGrammarRule
+        (costLanguageDefSymbolMap morphism.underlying.structural.structural.symbols)
+        constructor = target.costInteractionCut.environment.constructor.1 →
+      constructor = source.costInteractionCut.environment.constructor.1
+  mapsGeneratedWrappedLabelMembership : ∀ sourceLabel,
+    (costLanguageDefSymbolMap
+        morphism.underlying.structural.structural.symbols).constructor
+          sourceLabel ∈ target.costContinuationRetyping.wrappedLabels ↔
+      sourceLabel ∈ source.costContinuationRetyping.wrappedLabels
+
+namespace CostLaws
+
+/-- The identity satisfies the laws. -/
+theorem id (source : WrappableIGSLT) : (Morphism.id source).CostLaws where
+  preservesGeneratedBisim := CostGeneratedBisimPreserving.id _
+  preservesGeneratedReflectiveScope :=
+    CostGeneratedReflectiveScopePreserving.id _
+  reflectsGeneratedProgramConstructor := by
+    intro constructor equality
+    change mapGrammarRule
+      (costLanguageDefSymbolMap LanguageDefSymbolMap.id) constructor = _
+        at equality
+    rw [costLanguageDefSymbolMap_id, mapGrammarRule_id] at equality
+    exact equality
+  reflectsGeneratedEnvironmentConstructor := by
+    intro constructor equality
+    change mapGrammarRule
+      (costLanguageDefSymbolMap LanguageDefSymbolMap.id) constructor = _
+        at equality
+    rw [costLanguageDefSymbolMap_id, mapGrammarRule_id] at equality
+    exact equality
+  mapsGeneratedWrappedLabelMembership := by
+    intro sourceLabel
+    change (costLanguageDefSymbolMap LanguageDefSymbolMap.id).constructor
+        sourceLabel ∈ _ ↔ sourceLabel ∈ _
+    rw [costLanguageDefSymbolMap_id]
+    rfl
+
+/-- The laws are closed under composition. -/
+theorem comp {first second third : WrappableIGSLT}
+    {left : first.Morphism second} {right : second.Morphism third}
+    (leftLaws : left.CostLaws) (rightLaws : right.CostLaws) :
+    (Morphism.comp left right).CostLaws where
+  preservesGeneratedBisim := CostGeneratedBisimPreserving.comp
+    leftLaws.preservesGeneratedBisim rightLaws.preservesGeneratedBisim
+  preservesGeneratedReflectiveScope :=
+    CostGeneratedReflectiveScopePreserving.comp
+      leftLaws.preservesGeneratedReflectiveScope
+      rightLaws.preservesGeneratedReflectiveScope
+  reflectsGeneratedProgramConstructor := by
+    intro constructor equality
+    change mapGrammarRule
+        (costLanguageDefSymbolMap
+          (left.underlying.structural.structural.symbols.comp
+            right.underlying.structural.structural.symbols))
+        constructor = _ at equality
+    rw [costLanguageDefSymbolMap_comp, mapGrammarRule_comp] at equality
+    exact leftLaws.reflectsGeneratedProgramConstructor constructor
+      (rightLaws.reflectsGeneratedProgramConstructor _ equality)
+  reflectsGeneratedEnvironmentConstructor := by
+    intro constructor equality
+    change mapGrammarRule
+        (costLanguageDefSymbolMap
+          (left.underlying.structural.structural.symbols.comp
+            right.underlying.structural.structural.symbols))
+        constructor = _ at equality
+    rw [costLanguageDefSymbolMap_comp, mapGrammarRule_comp] at equality
+    exact leftLaws.reflectsGeneratedEnvironmentConstructor constructor
+      (rightLaws.reflectsGeneratedEnvironmentConstructor _ equality)
+  mapsGeneratedWrappedLabelMembership := by
+    intro sourceLabel
+    change (costLanguageDefSymbolMap
+        (left.underlying.structural.structural.symbols.comp
+          right.underlying.structural.structural.symbols)).constructor
+          sourceLabel ∈ _ ↔ sourceLabel ∈ _
+    rw [costLanguageDefSymbolMap_comp]
+    change (costLanguageDefSymbolMap
+        right.underlying.structural.structural.symbols).constructor
+          ((costLanguageDefSymbolMap
+            left.underlying.structural.structural.symbols).constructor
+              sourceLabel) ∈ _ ↔ sourceLabel ∈ _
+    rw [rightLaws.mapsGeneratedWrappedLabelMembership,
+      leftLaws.mapsGeneratedWrappedLabelMembership]
+
+end CostLaws
+
+/-- **The Cost image of a lawful morphism of wrappable theories.**  Every
+field is the structural action forced by the Cost symbol map; the laws supply
+only what that action cannot derive. -/
+def cost {source target : WrappableIGSLT} (morphism : source.Morphism target)
+    (laws : morphism.CostLaws) : source.cost.Morphism target.cost where
+  underlying := morphism.costIGSLTMorphism
+    laws.preservesGeneratedBisim
+  reflectionSymbols :=
+    (costReflectiveSymbols morphism.reflectiveSymbols).reflection
+  mapsReflectivePresentations := by
+    intro declaration membership
+    exact morphism.mapsCostStaticReflectivePresentations
+      declaration membership
+  mapsReflectiveRules := by
+    intro declaration membership
+    exact morphism.mapsCostInteractionReflectiveRules
+      declaration membership
+  mapsReflectiveScope := laws.preservesGeneratedReflectiveScope
+  mapsCoreSort := morphism.mapsCostCoreSort
+  mapsCoreContactConstructor :=
+    morphism.mapsCostCoreContactConstructor
+  mapsCorePattern := morphism.mapsCostCorePattern
+  mapsSourceEnvelope := morphism.mapsCostSourceEnvelope
+  reflectsInteractingSort :=
+    morphism.reflectsCostInteractingSort
+  mapsWrappedLabelMembership := laws.mapsGeneratedWrappedLabelMembership
+  reflectsProgramConstructor := laws.reflectsGeneratedProgramConstructor
+  reflectsEnvironmentConstructor :=
+    laws.reflectsGeneratedEnvironmentConstructor
+  mapsProgramConstructor := morphism.mapsCostProgramConstructor
+  mapsEnvironmentConstructor :=
+    morphism.mapsCostEnvironmentConstructor
+  mapsProgramContinuationIndex :=
+    morphism.mapsCostProgramContinuationIndex
+  mapsEnvironmentContinuationIndex :=
+    morphism.mapsCostEnvironmentContinuationIndex
+  mapsProgramKind := morphism.mapsCostProgramKind
+  mapsEnvironmentKind := morphism.mapsCostEnvironmentKind
+  mapsProgramSchema := morphism.mapsCostProgramSchema
+  mapsEnvironmentSchema := morphism.mapsCostEnvironmentSchema
+  mapsProgramContinuation :=
+    morphism.mapsCostProgramContinuation
+  mapsEnvironmentContinuation :=
+    morphism.mapsCostEnvironmentContinuation
+  mapsProgramSubject := morphism.mapsCostProgramSubject
+  mapsEnvironmentSubject := morphism.mapsCostEnvironmentSubject
+
+/-- Cost sends the identity to the identity. -/
+@[simp]
+theorem cost_id (source : WrappableIGSLT) :
+    (Morphism.id source).cost (CostLaws.id source) = Morphism.id source.cost := by
+  apply Morphism.ext
+  · apply IGSLT.Morphism.ext
+    exact costWholeInteractive_id source
+  · change (costReflectiveSymbols
+        ReflectionExtension.ReflectiveSymbols.id).reflection =
+      ReflectionExtension.ReflectionSymbols.id
+    exact congrArg ReflectionExtension.ReflectiveSymbols.reflection
+      costReflectiveSymbols_id
+
+/-- Cost sends a composite to the composite of the images. -/
+theorem cost_comp {first second third : WrappableIGSLT}
+    {left : first.Morphism second} {right : second.Morphism third}
+    (leftLaws : left.CostLaws) (rightLaws : right.CostLaws) :
+    (Morphism.comp left right).cost (CostLaws.comp leftLaws rightLaws) =
+      Morphism.comp (left.cost leftLaws) (right.cost rightLaws) := by
+  apply Morphism.ext
+  · apply IGSLT.Morphism.ext
+    exact costWholeInteractive_comp left right
+  · change (costReflectiveSymbols
+        (left.reflectiveSymbols.comp right.reflectiveSymbols)).reflection =
+      ((costReflectiveSymbols left.reflectiveSymbols).reflection.comp
+        (costReflectiveSymbols right.reflectiveSymbols).reflection)
+    exact congrArg ReflectionExtension.ReflectiveSymbols.reflection
+      (costReflectiveSymbols_comp left.reflectiveSymbols right.reflectiveSymbols)
+
+end WrappableIGSLT.Morphism
+
+namespace WrappableIGSLT
+
+/-- The morphisms of wrappable theories that satisfy the Cost laws. -/
+def costLawful : CategoryTheory.MorphismProperty WrappableIGSLT :=
+  fun _ _ morphism => Morphism.CostLaws morphism
+
+instance : costLawful.IsMultiplicative where
+  id_mem source := Morphism.CostLaws.id source
+  comp_mem _ _ leftLaws rightLaws := Morphism.CostLaws.comp leftLaws rightLaws
+
+/-- **Cost is a functor** from the wrappable interactive GSLTs with their
+Cost-lawful morphisms to the wrappable interactive GSLTs.  Whether the image
+of a lawful morphism is again lawful is not claimed. -/
+def costFunctor :
+    CategoryTheory.Functor (CategoryTheory.WideSubcategory costLawful) WrappableIGSLT where
+  obj source := source.obj.cost
+  map morphism := Morphism.cost morphism.hom morphism.property
+  map_id source := Morphism.cost_id source.obj
+  map_comp left right := Morphism.cost_comp left.property right.property
+
+end WrappableIGSLT
 
 /-- Fibrewise semiconjugacy of two selected Cost normalizers along a generated
 structural map.  This is the exact square needed for the `mapsOpenCanonical`
 field of the eventual continued Cost morphism. -/
 def Cost.Normalizer.Semiconj {source target : CIGSLT}
     (morphism : source.Morphism target)
-    (scope : CostGeneratedReflectiveScopePreserving morphism)
+    (scope : CostGeneratedReflectiveScopePreserving morphism.toMorphism)
     (sourceNormalizer : CostOpenNormalizer source)
     (targetNormalizer : CostOpenNormalizer target) : Prop :=
   ∀ {free : WellSorted.FreeTypeContext} {bound : List TypeExpr}
@@ -457,30 +663,8 @@ normalizers carried by the endpoint objects; `quoteFaithful` is the exact
 canonical-key condition required by a continued morphism. -/
 structure Cost.Layer.Hom.CompactMapLaws
     (source target : Cost.Layer)
-    (underlying : OrderedCIGSLT.Morphism source.source target.source) : Prop where
-  preservesGeneratedBisim :
-    CostGeneratedBisimPreserving underlying.underlying
-  preservesGeneratedReflectiveScope :
-    CostGeneratedReflectiveScopePreserving underlying.underlying
-  reflectsGeneratedProgramConstructor : ∀ constructor,
-    mapGrammarRule
-        (costPresentationSymbols underlying.underlying.underlying.structural.structural.symbols)
-        constructor = target.source.toCIGSLT.costInteractionCut.program.constructor.1 →
-      constructor = source.source.toCIGSLT.costInteractionCut.program.constructor.1
-  reflectsGeneratedEnvironmentConstructor : ∀ constructor,
-    mapGrammarRule
-        (costPresentationSymbols underlying.underlying.underlying.structural.structural.symbols)
-        constructor =
-          target.source.toCIGSLT.costInteractionCut.environment.constructor.1 →
-      constructor =
-        source.source.toCIGSLT.costInteractionCut.environment.constructor.1
-  mapsGeneratedWrappedLabelMembership : ∀ sourceLabel,
-    (costPresentationSymbols
-        underlying.underlying.underlying.structural.structural.symbols).constructor
-          sourceLabel ∈
-        target.source.toCIGSLT.costContinuationRetyping.wrappedLabels ↔
-      sourceLabel ∈
-        source.source.toCIGSLT.costContinuationRetyping.wrappedLabels
+    (underlying : OrderedCIGSLT.Morphism source.source target.source) : Prop
+    extends underlying.underlying.toMorphism.CostLaws where
   normalizerSemiconj :
     Cost.Normalizer.Semiconj underlying.underlying
       preservesGeneratedReflectiveScope source.normalizeOpen
@@ -488,7 +672,7 @@ structure Cost.Layer.Hom.CompactMapLaws
   quoteFaithful : Function.Injective
     (fun key : source.compactOutput.toCIGSLT.CanonicalKey =>
       mapPattern
-        (costPresentationSymbols
+        (costLanguageDefSymbolMap
           underlying.underlying.underlying.structural.structural.symbols)
         key.1.1)
 
@@ -497,39 +681,17 @@ namespace Cost.Layer.Hom.CompactMapLaws
 /-- Identity satisfies every generated Cost arrow law.  Normalizer
 naturality is inherited from the checked continued identity on the selected
 compact output. -/
-def id (source : Cost.Layer) :
+theorem id (source : Cost.Layer) :
     Cost.Layer.Hom.CompactMapLaws source source
       (OrderedCIGSLT.Morphism.id source.source) where
-  preservesGeneratedBisim := CostGeneratedBisimPreserving.id _
-  preservesGeneratedReflectiveScope :=
-    CostGeneratedReflectiveScopePreserving.id _
-  reflectsGeneratedProgramConstructor := by
-    intro constructor equality
-    change mapGrammarRule
-      (costPresentationSymbols PresentationSymbols.id) constructor = _
-        at equality
-    rw [costPresentationSymbols_id, mapGrammarRule_id] at equality
-    exact equality
-  reflectsGeneratedEnvironmentConstructor := by
-    intro constructor equality
-    change mapGrammarRule
-      (costPresentationSymbols PresentationSymbols.id) constructor = _
-        at equality
-    rw [costPresentationSymbols_id, mapGrammarRule_id] at equality
-    exact equality
-  mapsGeneratedWrappedLabelMembership := by
-    intro sourceLabel
-    change (costPresentationSymbols PresentationSymbols.id).constructor
-        sourceLabel ∈ _ ↔ sourceLabel ∈ _
-    rw [costPresentationSymbols_id]
-    rfl
+  toCostLaws := WrappableIGSLT.Morphism.CostLaws.id _
   normalizerSemiconj := by
     intro free bound sort term
     symm
     let structural :=
       (OrderedCIGSLT.Morphism.id source.source).underlying.costWholeStructural
-    have symbolsIdentity : structural.symbols = PresentationSymbols.id := by
-      exact costPresentationSymbols_id
+    have symbolsIdentity : structural.symbols = LanguageDefSymbolMap.id := by
+      exact costLanguageDefSymbolMap_id
     have freeEquality : free = free.map structural.symbols := by
       rw [symbolsIdentity]
       exact (WellSorted.FreeTypeContext.map_id free).symm
@@ -538,7 +700,7 @@ def id (source : Cost.Layer) :
       rw [symbolsIdentity]
       symm
       calc
-        bound.map (mapTypeExpr PresentationSymbols.id) =
+        bound.map (mapTypeExpr LanguageDefSymbolMap.id) =
             bound.map _root_.id := by
           apply List.map_congr_left
           intro type membership
@@ -588,11 +750,11 @@ def id (source : Cost.Layer) :
     intro left right equality
     apply Subtype.ext
     apply Subtype.ext
-    change mapPattern (costPresentationSymbols PresentationSymbols.id)
+    change mapPattern (costLanguageDefSymbolMap LanguageDefSymbolMap.id)
         left.1.1 =
-      mapPattern (costPresentationSymbols PresentationSymbols.id) right.1.1
+      mapPattern (costLanguageDefSymbolMap LanguageDefSymbolMap.id) right.1.1
         at equality
-    simpa [costPresentationSymbols_id] using equality
+    simpa [costLanguageDefSymbolMap_id] using equality
 
 /-- Assemble the unique compact continued Cost map selected by the source
 arrow and its explicit semantic admission laws.  No output morphism is
@@ -603,100 +765,22 @@ def toCompactCIGSLTMorphism
     (laws : Cost.Layer.Hom.CompactMapLaws source target underlying) :
     CIGSLT.Morphism source.compactOutput.toCIGSLT
       target.compactOutput.toCIGSLT where
-  underlying := underlying.underlying.costIGSLTMorphism
-    laws.preservesGeneratedBisim
-  reflectionSymbols :=
-    (costReflectiveSymbols underlying.underlying.reflectiveSymbols).reflection
-  mapsReflectivePresentations := by
-    intro declaration membership
-    exact underlying.underlying.mapsCostStaticReflectivePresentations
-      declaration membership
-  mapsReflectiveRules := by
-    intro declaration membership
-    exact underlying.underlying.mapsCostInteractionReflectiveRules
-      declaration membership
-  mapsReflectiveScope := laws.preservesGeneratedReflectiveScope
-  mapsCoreSort := underlying.underlying.mapsCostCoreSort
-  mapsCoreContactConstructor :=
-    underlying.underlying.mapsCostCoreContactConstructor
-  mapsCorePattern := underlying.underlying.mapsCostCorePattern
-  mapsSourceEnvelope := underlying.underlying.mapsCostSourceEnvelope
-  reflectsInteractingSort :=
-    underlying.underlying.reflectsCostInteractingSort
-  mapsWrappedLabelMembership := laws.mapsGeneratedWrappedLabelMembership
-  reflectsProgramConstructor := laws.reflectsGeneratedProgramConstructor
-  reflectsEnvironmentConstructor :=
-    laws.reflectsGeneratedEnvironmentConstructor
-  mapsProgramConstructor := underlying.underlying.mapsCostProgramConstructor
-  mapsEnvironmentConstructor :=
-    underlying.underlying.mapsCostEnvironmentConstructor
-  mapsProgramContinuationIndex :=
-    underlying.underlying.mapsCostProgramContinuationIndex
-  mapsEnvironmentContinuationIndex :=
-    underlying.underlying.mapsCostEnvironmentContinuationIndex
-  mapsProgramKind := underlying.underlying.mapsCostProgramKind
-  mapsEnvironmentKind := underlying.underlying.mapsCostEnvironmentKind
-  mapsProgramSchema := underlying.underlying.mapsCostProgramSchema
-  mapsEnvironmentSchema := underlying.underlying.mapsCostEnvironmentSchema
-  mapsProgramContinuation :=
-    underlying.underlying.mapsCostProgramContinuation
-  mapsEnvironmentContinuation :=
-    underlying.underlying.mapsCostEnvironmentContinuation
-  mapsProgramSubject := underlying.underlying.mapsCostProgramSubject
-  mapsEnvironmentSubject := underlying.underlying.mapsCostEnvironmentSubject
+  toMorphism := underlying.underlying.toMorphism.cost laws.toCostLaws
   mapsOpenCanonical := fun term => (laws.normalizerSemiconj term).symm
   quoteFaithful := laws.quoteFaithful
 
 /-- The admissible generated Cost laws are closed under composition.  The
 normalizer square is composed in the indexed open-term fibres; the explicit
 reindexing below is proof-only and does not alter the represented pattern. -/
-def comp {first second third : Cost.Layer}
+theorem comp {first second third : Cost.Layer}
     {left : OrderedCIGSLT.Morphism first.source second.source}
     {right : OrderedCIGSLT.Morphism second.source third.source}
     (leftLaws : Cost.Layer.Hom.CompactMapLaws first second left)
     (rightLaws : Cost.Layer.Hom.CompactMapLaws second third right) :
     Cost.Layer.Hom.CompactMapLaws first third
       (OrderedCIGSLT.Morphism.comp left right) where
-  preservesGeneratedBisim := CostGeneratedBisimPreserving.comp
-    leftLaws.preservesGeneratedBisim rightLaws.preservesGeneratedBisim
-  preservesGeneratedReflectiveScope :=
-    CostGeneratedReflectiveScopePreserving.comp
-      leftLaws.preservesGeneratedReflectiveScope
-      rightLaws.preservesGeneratedReflectiveScope
-  reflectsGeneratedProgramConstructor := by
-    intro constructor equality
-    change mapGrammarRule
-        (costPresentationSymbols
-          (left.underlying.underlying.structural.structural.symbols.comp
-            right.underlying.underlying.structural.structural.symbols))
-        constructor = _ at equality
-    rw [costPresentationSymbols_comp, mapGrammarRule_comp] at equality
-    exact leftLaws.reflectsGeneratedProgramConstructor constructor
-      (rightLaws.reflectsGeneratedProgramConstructor _ equality)
-  reflectsGeneratedEnvironmentConstructor := by
-    intro constructor equality
-    change mapGrammarRule
-        (costPresentationSymbols
-          (left.underlying.underlying.structural.structural.symbols.comp
-            right.underlying.underlying.structural.structural.symbols))
-        constructor = _ at equality
-    rw [costPresentationSymbols_comp, mapGrammarRule_comp] at equality
-    exact leftLaws.reflectsGeneratedEnvironmentConstructor constructor
-      (rightLaws.reflectsGeneratedEnvironmentConstructor _ equality)
-  mapsGeneratedWrappedLabelMembership := by
-    intro sourceLabel
-    change (costPresentationSymbols
-        (left.underlying.underlying.structural.structural.symbols.comp
-          right.underlying.underlying.structural.structural.symbols)).constructor
-          sourceLabel ∈ _ ↔ sourceLabel ∈ _
-    rw [costPresentationSymbols_comp]
-    change (costPresentationSymbols
-        right.underlying.underlying.structural.structural.symbols).constructor
-          ((costPresentationSymbols
-            left.underlying.underlying.structural.structural.symbols).constructor
-              sourceLabel) ∈ _ ↔ sourceLabel ∈ _
-    rw [rightLaws.mapsGeneratedWrappedLabelMembership,
-      leftLaws.mapsGeneratedWrappedLabelMembership]
+  toCostLaws := WrappableIGSLT.Morphism.CostLaws.comp leftLaws.toCostLaws
+    rightLaws.toCostLaws
   normalizerSemiconj := by
     intro free bound sort term
     symm
@@ -706,7 +790,7 @@ def comp {first second third : Cost.Layer}
       (OrderedCIGSLT.Morphism.comp left right).underlying.costWholeStructural
     have symbolsComposite : compositeStructural.symbols =
         firstStructural.symbols.comp secondStructural.symbols := by
-      exact costPresentationSymbols_comp
+      exact costLanguageDefSymbolMap_comp
         left.underlying.underlying.structural.structural.symbols
         right.underlying.underlying.structural.structural.symbols
     let firstMapped := term.map firstStructural
@@ -779,7 +863,7 @@ def comp {first second third : Cost.Layer}
         sortEquality) combined
     have fiberNaturality := normalizationTransport.trans transportedCombined
     have compositeScope : CostGeneratedReflectiveScopePreserving
-        (OrderedCIGSLT.Morphism.comp left right).underlying :=
+        (OrderedCIGSLT.Morphism.comp left right).underlying.toMorphism :=
       CostGeneratedReflectiveScopePreserving.comp
         leftLaws.preservesGeneratedReflectiveScope
         rightLaws.preservesGeneratedReflectiveScope
@@ -833,18 +917,18 @@ def comp {first second third : Cost.Layer}
       leftLaws.toCompactCIGSLTMorphism
       rightLaws.toCompactCIGSLTMorphism).quoteFaithful
     change mapPattern
-        ((costPresentationSymbols
+        ((costLanguageDefSymbolMap
           left.underlying.underlying.structural.structural.symbols).comp
-          (costPresentationSymbols
+          (costLanguageDefSymbolMap
             right.underlying.underlying.structural.structural.symbols))
         leftKey.1.1 =
       mapPattern
-        ((costPresentationSymbols
+        ((costLanguageDefSymbolMap
           left.underlying.underlying.structural.structural.symbols).comp
-          (costPresentationSymbols
+          (costLanguageDefSymbolMap
             right.underlying.underlying.structural.structural.symbols))
         rightKey.1.1
-    rw [← costPresentationSymbols_comp]
+    rw [← costLanguageDefSymbolMap_comp]
     exact equality
 
 /-- The constructed compact Cost map sends the admissible identity laws to
@@ -855,7 +939,7 @@ theorem toCompactCIGSLTMorphism_id (source : Cost.Layer) :
       CIGSLT.Morphism.id source.compactOutput.toCIGSLT := by
   apply CIGSLT.Morphism.ext
   · apply IGSLT.Morphism.ext
-    exact CIGSLT.Morphism.costWholeInteractive_id source.source.toCIGSLT
+    exact WrappableIGSLT.Morphism.costWholeInteractive_id source.source.toCIGSLT
   · change (costReflectiveSymbols
         ReflectionExtension.ReflectiveSymbols.id).reflection =
       ReflectionExtension.ReflectionSymbols.id
@@ -875,8 +959,8 @@ theorem toCompactCIGSLTMorphism_comp
         rightLaws.toCompactCIGSLTMorphism := by
   apply CIGSLT.Morphism.ext
   · apply IGSLT.Morphism.ext
-    exact CIGSLT.Morphism.costWholeInteractive_comp left.underlying
-      right.underlying
+    exact WrappableIGSLT.Morphism.costWholeInteractive_comp
+      left.underlying.toMorphism right.underlying.toMorphism
   · change (costReflectiveSymbols
         (left.underlying.reflectiveSymbols.comp
           right.underlying.reflectiveSymbols)).reflection =
@@ -996,9 +1080,12 @@ def Cost.Layer.forget :
   map_id _ := rfl
   map_comp _ _ := rfl
 
-/-- Genuine nondegenerate one-step compact Cost functor.  Its codomain is
-the ordered continued category, not the cost layer domain: closure under a second
-compact Cost step is independently refuted for rho. -/
+/-- The one-step compact Cost functor.  Its codomain is the ordered continued
+category, not the category of Cost layers: a compact output carries no layer
+structure of its own.  For rho, the compact normalizer of a second step does
+not agree with erasing and recompiling
+(`rhoHereditaryCostLayer_not_compactCostNormalizationCoherent`); that a second
+layer cannot exist is not claimed. -/
 def Cost.Layer.compact :
     CategoryTheory.Functor Cost.Layer OrderedCIGSLT where
   obj source := source.compactOutput

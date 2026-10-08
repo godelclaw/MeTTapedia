@@ -33,11 +33,11 @@ open Mettapedia.Logic.MarkovLogicAbstract
 private def mkActiveGoalClaim
     {World : Type} (φ : Formula World)
     (ground : EthicalGround Nat := .asserted)
-    (presentation : EthicalPresentation := .unmodalized) :
+    (normativeForm : NormativeForm := .unmodalized) :
     StructuredEthicalClaim World Nat where
   subject := 1
   content := .propositional φ
-  presentation := presentation
+  normativeForm := normativeForm
   ground := ground
   role := .activeGoal
 
@@ -59,19 +59,28 @@ inductive PrivacyDisclosureAction where
   | askConsent
   | alertTrustedContact
   | broadcastWidely
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype PrivacyDisclosureAction :=
+  ⟨{.keepPrivate, .askConsent, .alertTrustedContact, .broadcastWidely}, by intro x; cases x <;> simp⟩
 
 /-- Duties tracked in the privacy/emergency case. -/
 inductive PrivacyDisclosureDuty where
   | privacy
   | autonomy
   | nonMaleficence
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype PrivacyDisclosureDuty :=
+  ⟨{.privacy, .autonomy, .nonMaleficence}, by intro x; cases x <;> simp⟩
 
 /-- One explicit feature: emergency severity. -/
 inductive PrivacyDisclosureFeature where
   | emergencySeverity
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype PrivacyDisclosureFeature :=
+  ⟨{.emergencySeverity}, by intro x; cases x; simp⟩
 
 def keepPrivateFormula : Formula PrivacyDisclosureWorld := fun w => w = .keepPrivateCue
 
@@ -258,8 +267,11 @@ theorem mem_privacyDisclosure_admissibleCandidates_iff
         privacyDisclosurePracticalProblem
         privacyDisclosureCandidateSet.toFinset ↔
       a = .askConsent ∨ a = .alertTrustedContact := by
+  classical
+  unfold admissibleCandidates
+  rw [Finset.mem_filter]
   cases a <;>
-    simp [admissibleCandidates, privacyDisclosureCandidateSet_toFinset,
+    simp [ privacyDisclosureCandidateSet_toFinset,
       privacyDisclosureCandidates, privacyDisclosureConflictDiscipline,
       privacyDisclosurePracticalProblem, privacyDisclosureConflictLane,
       privacyDisclosureActionFormula, mkActiveGoalClaim,
@@ -418,25 +430,25 @@ def privacyDisclosureActionRendering :
     | .keepPrivate =>
         { subject := 1
           content := .propositional keepPrivateFormula
-          presentation := .deontic .Permission
+          normativeForm := .deontic .Permission
           ground := .asserted
           role := .activeGoal }
     | .askConsent =>
         { subject := 1
           content := .propositional askConsentFormula
-          presentation := .deontic .Obligation
+          normativeForm := .deontic .Obligation
           ground := .universalDuty .respectAutonomy
           role := .activeGoal }
     | .alertTrustedContact =>
         { subject := 1
           content := .propositional trustedContactFormula
-          presentation := .deontic .Obligation
+          normativeForm := .deontic .Obligation
           ground := .careRelation 1 2 .trust
           role := .activeGoal }
     | .broadcastWidely =>
         { subject := 1
           content := .propositional broadcastWidelyFormula
-          presentation := .deontic .Prohibition
+          normativeForm := .deontic .Prohibition
           ground := .asserted
           role := .activeGoal }
 
@@ -445,7 +457,7 @@ def privacyDisclosureAskConsentObligationClaim :
   privacyDisclosureActionRendering.toClaim .askConsent
 
 /-- Label policy for staging privacy-disclosure claims through the legacy
-encoder.  It depends on content/ground and intentionally ignores presentation
+encoder. It depends on content/ground and intentionally ignores normative form
 so aligned deontic/value views keep the same label. -/
 def privacyDisclosureStructuredLabeler :
     StructuredClaimLabeler PrivacyDisclosureWorld Nat PrivacyDisclosureUpperShardLabel where
@@ -475,7 +487,7 @@ theorem privacyDisclosureLegacyPracticalBridge_askConsent_query_eq_axiological :
     privacyDisclosureLegacyPracticalBridge.actionQuery .askConsent =
       ({ subject := 1
          content := .propositional askConsentFormula
-         presentation := .axiological (deonticToMoralValue .Obligation)
+         normativeForm := .axiological (deonticToMoralValue .Obligation)
          ground := .universalDuty .respectAutonomy
          role := .activeGoal } : StructuredEthicalClaim PrivacyDisclosureWorld Nat).toQuery
         (StructuredEthicsQueryEncoder.ofLegacy
@@ -537,8 +549,8 @@ theorem privacyDisclosureStructuredESOModel_regionSupportAdequate :
       privacyDisclosureAutonomyRegion := by
   intro claim hsat
   cases claim with
-  | mk subject content presentation ground role =>
-      cases content <;> cases presentation <;>
+  | mk subject content normativeForm ground role =>
+      cases content <;> cases normativeForm <;>
         simp [privacyDisclosureStructuredESOModel, ESOUpperShardModel.SatStructured,
           StructuredEthicalClaim.supportedOn, StructuredEthicalClaim.toQuery,
           privacyDisclosureStructuredEncoder, privacyDisclosureAutonomyRegion,
@@ -592,17 +604,26 @@ inductive ShutdownAction where
   | pauseAndAsk
   | ignoreOperator
   | shutdown
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ShutdownAction :=
+  ⟨{.continueAutonomously, .pauseAndAsk, .ignoreOperator, .shutdown}, by intro x; cases x <;> simp⟩
 
 inductive ShutdownDuty where
   | nonMaleficence
   | corrigibility
   | continuity
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ShutdownDuty :=
+  ⟨{.nonMaleficence, .corrigibility, .continuity}, by intro x; cases x <;> simp⟩
 
 inductive ShutdownFeature where
   | controlRisk
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ShutdownFeature :=
+  ⟨{.controlRisk}, by intro x; cases x; simp⟩
 
 def continueAutonomouslyFormula : Formula ShutdownWorld := fun w => w = .continueCue
 
@@ -783,8 +804,11 @@ theorem mem_shutdown_admissibleCandidates_iff
         shutdownPracticalProblem
         shutdownCandidateSet.toFinset ↔
       a = .pauseAndAsk ∨ a = .shutdown := by
+  classical
+  unfold admissibleCandidates
+  rw [Finset.mem_filter]
   cases a <;>
-    simp [admissibleCandidates, shutdownCandidateSet_toFinset, shutdownCandidates,
+    simp [ shutdownCandidateSet_toFinset, shutdownCandidates,
       shutdownConflictDiscipline, shutdownPracticalProblem, shutdownConflictLane,
       shutdownActionFormula, mkActiveGoalClaim,
       continueAutonomouslyClaim, pauseAndAskClaim,
@@ -892,17 +916,26 @@ inductive ForceEscalationAction where
   | warn
   | lockDown
   | lethalForce
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ForceEscalationAction :=
+  ⟨{.observe, .warn, .lockDown, .lethalForce}, by intro x; cases x <;> simp⟩
 
 inductive ForceEscalationDuty where
   | nonMaleficence
   | protection
   | proportionality
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ForceEscalationDuty :=
+  ⟨{.nonMaleficence, .protection, .proportionality}, by intro x; cases x <;> simp⟩
 
 inductive ForceEscalationFeature where
   | threatSeverity
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ForceEscalationFeature :=
+  ⟨{.threatSeverity}, by intro x; cases x; simp⟩
 
 def observeFormula : Formula ForceEscalationWorld := fun w => w = .observeCue
 
@@ -1078,8 +1111,11 @@ theorem mem_forceEscalation_admissibleCandidates_iff
         forceEscalationPracticalProblem
         forceEscalationCandidateSet.toFinset ↔
       a = .warn ∨ a = .lockDown := by
+  classical
+  unfold admissibleCandidates
+  rw [Finset.mem_filter]
   cases a <;>
-    simp [admissibleCandidates, forceEscalationCandidateSet_toFinset,
+    simp [ forceEscalationCandidateSet_toFinset,
       forceEscalationCandidates, forceEscalationConflictDiscipline,
       forceEscalationPracticalProblem, forceEscalationConflictLane,
       forceEscalationActionFormula, mkActiveGoalClaim,
@@ -1228,7 +1264,7 @@ theorem forceEscalationUpperShardEncoder_aligned :
   cases l <;> rfl
 
 /-- Top-down rendering of the force-escalation actions into structured ethical
-claims.  The `lockDown` option is presented as a consequentialist obligation so
+claims.  The `lockDown` option is expressed as a consequentialist obligation so
 its lowering can exercise both the practical seam and the new candidate-local
 ground witness. -/
 def forceEscalationActionRendering :
@@ -1237,25 +1273,25 @@ def forceEscalationActionRendering :
     | .observe =>
         { subject := 1
           content := .propositional observeFormula
-          presentation := .deontic .Permission
+          normativeForm := .deontic .Permission
           ground := .asserted
           role := .activeGoal }
     | .warn =>
         { subject := 1
           content := .propositional warnFormula
-          presentation := .deontic .Obligation
+          normativeForm := .deontic .Obligation
           ground := .universalDuty .noHarm
           role := .activeGoal }
     | .lockDown =>
         { subject := 1
           content := .propositional lockDownFormula
-          presentation := .deontic .Obligation
+          normativeForm := .deontic .Obligation
           ground := .consequentialist
           role := .activeGoal }
     | .lethalForce =>
         { subject := 1
           content := .propositional lethalForceFormula
-          presentation := .deontic .Prohibition
+          normativeForm := .deontic .Prohibition
           ground := .asserted
           role := .activeGoal }
 
@@ -1264,7 +1300,7 @@ def forceEscalationLockDownObligationClaim :
   forceEscalationActionRendering.toClaim .lockDown
 
 /-- Label policy for staging force-escalation claims through the legacy
-encoder.  It is presentation-insensitive, so aligned deontic/value views keep
+encoder. It is normative-form-insensitive, so aligned deontic/value views keep
 the same label. -/
 def forceEscalationStructuredLabeler :
     StructuredClaimLabeler ForceEscalationWorld Nat ForceEscalationUpperShardLabel where
@@ -1294,7 +1330,7 @@ theorem forceEscalationLegacyPracticalBridge_lockDown_query_eq_axiological :
     forceEscalationLegacyPracticalBridge.actionQuery .lockDown =
       ({ subject := 1
          content := .propositional lockDownFormula
-         presentation := .axiological (deonticToMoralValue .Obligation)
+         normativeForm := .axiological (deonticToMoralValue .Obligation)
          ground := .consequentialist
          role := .activeGoal } : StructuredEthicalClaim ForceEscalationWorld Nat).toQuery
         (StructuredEthicsQueryEncoder.ofLegacy
@@ -1353,8 +1389,8 @@ theorem forceEscalationStructuredESOModel_regionSupportAdequate :
       forceEscalationProtectionRegion := by
   intro claim hsat
   cases claim with
-  | mk subject content presentation ground role =>
-      cases content <;> cases presentation <;>
+  | mk subject content normativeForm ground role =>
+      cases content <;> cases normativeForm <;>
         simp [forceEscalationStructuredESOModel, ESOUpperShardModel.SatStructured,
           StructuredEthicalClaim.supportedOn, StructuredEthicalClaim.toQuery,
           forceEscalationStructuredEncoder, forceEscalationProtectionRegion,
@@ -1443,16 +1479,25 @@ inductive ControlReviewTieAction where
   | askHuman
   | autoContain
   | ignore
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ControlReviewTieAction :=
+  ⟨{.askHuman, .autoContain, .ignore}, by intro x; cases x <;> simp⟩
 
 inductive ControlReviewTieDuty where
   | autonomy
   | nonMaleficence
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ControlReviewTieDuty :=
+  ⟨{.autonomy, .nonMaleficence}, by intro x; cases x <;> simp⟩
 
 inductive ControlReviewTieFeature where
   | controlRisk
-  deriving DecidableEq, Repr, Fintype
+  deriving DecidableEq, Repr
+
+instance : Fintype ControlReviewTieFeature :=
+  ⟨{.controlRisk}, by intro x; cases x; simp⟩
 
 def askHumanFormula : Formula ControlReviewTieWorld := fun w => w = .askHumanCue
 
@@ -1576,8 +1621,11 @@ theorem mem_controlReviewTie_admissibleCandidates_iff
         controlReviewTiePracticalProblem
         controlReviewTieCandidateSet.toFinset ↔
       a = .askHuman ∨ a = .autoContain := by
+  classical
+  unfold admissibleCandidates
+  rw [Finset.mem_filter]
   cases a <;>
-    simp [admissibleCandidates, controlReviewTieConflictDiscipline,
+    simp [ controlReviewTieConflictDiscipline,
       controlReviewTiePracticalProblem, controlReviewTieConflictLane,
       controlReviewTieActionFormula, ExplicitFiniteSet.toFinset, mkActiveGoalClaim,
       askHumanClaim, autoContainClaim, ignoreClaim,

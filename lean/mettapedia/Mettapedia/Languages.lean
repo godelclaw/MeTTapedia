@@ -1,5 +1,6 @@
 import Mettapedia.Languages.GF
 import Mettapedia.Languages.IMP
+import Mettapedia.Languages.KIF
 import Mettapedia.Languages.Lean
 import Mettapedia.Languages.MM0
 import Mettapedia.Languages.MM0Lite
@@ -7,6 +8,9 @@ import Mettapedia.Languages.MeTTa
 import Mettapedia.Languages.Metamath
 import Mettapedia.Languages.TPTP
 import Mettapedia.Languages.MinskyLite
+import Mettapedia.Languages.PartrecMachine
+import Mettapedia.Languages.TuringMachine
+import Mettapedia.Languages.ChoicePoints
 import Mettapedia.Languages.OSLFNTTReadout
 import Mettapedia.Languages.ProcessCalculi
 import Mettapedia.Languages.Prolog

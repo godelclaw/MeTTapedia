@@ -111,7 +111,7 @@ private theorem rhoBreadthBaseQuote_typed (process : Pattern)
     exact .cons (by trivial) rfl typed .nil
 
 private def rhoBreadthDropConstructor :
-    AuthoredConstructor rhoIGSLT.presentation.presentation :=
+    DeclaredConstructor rhoIGSLT.presentation.presentation :=
   ⟨rhoCalc.terms[1], rhoBreadthRule_mem 1 (by omega)⟩
 
 private theorem rhoBreadthDrop_selected :
@@ -374,9 +374,11 @@ def rhoBreadthBaseDropPreimage :
   costStaticConstructorPreimage rhoCIGSLT .base rhoBreadthBaseDropDeclared
     rhoBreadthBaseDropRole
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rhoBreadthBaseDrop_notBare :
     ¬ UsesBareCollection rhoBreadthBaseDropPreimage.sourceConstructor.1 := by
   simp [rhoBreadthBaseDropPreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoBreadthBaseDropDeclared, UsesBareCollection, rhoCalc, TypeExpr.name,
     TypeExpr.proc, TypeExpr.baseType]
 
@@ -394,26 +396,28 @@ def rhoBreadthBaseQuotePreimage :
   costStaticConstructorPreimage rhoCIGSLT .base rhoBreadthBaseQuoteDeclared
     rhoBreadthBaseQuoteRole
 
+set_option backward.isDefEq.respectTransparency false in
 theorem rhoBreadthBaseQuote_notBare :
     ¬ UsesBareCollection rhoBreadthBaseQuotePreimage.sourceConstructor.1 := by
   simp [rhoBreadthBaseQuotePreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoBreadthBaseQuoteDeclared, UsesBareCollection, rhoCalc, TypeExpr.name,
     TypeExpr.proc, TypeExpr.baseType]
 
 def rhoBreadthBaseFvarAPlan (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] outer (.fvar "a") (.base "Name") :=
   .fvar (by
     simp [rhoCutOrderFree, FreeTypeContext.ofList, mapTypeExpr,
-      CostStaticColor.symbols, costBaseStaticSymbols,
-      costBasePresentationSymbols])
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, costBaseStaticSymbols,
+      costBaseLanguageDefSymbolMap])
 
 def rhoBreadthBaseDropAPlan (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] outer (rhoCutOrderBaseDrop (.fvar "a")) (.base "Proc") := by
   apply CostStaticRegionPlan.application rhoBreadthBaseDropDeclared rfl
     rhoBreadthBaseDropRole rhoBreadthBaseDropPreimage
@@ -426,8 +430,8 @@ def rhoBreadthBaseDropAPlan (outer : OneHoleContext) :
 
 def rhoBreadthBaseRedexAPlan :
     CostStaticRegionPlan rhoCIGSLT .base rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .base []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .base [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .base []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .base [])
       [] .hole rhoBreadthRedexA (.base "Name") := by
   apply CostStaticRegionPlan.application rhoBreadthBaseQuoteDeclared rfl
     rhoBreadthBaseQuoteRole rhoBreadthBaseQuotePreimage
@@ -446,6 +450,7 @@ private theorem rhoBreadthRedexA_typed :
       rhoBreadthRedexA (.base (costBaseSortName "Name")) :=
   rhoBreadthBaseQuote_typed _ (rhoBreadthBaseDrop_typed _ rhoBreadthA_typed)
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoBreadthRedexA_wellSorted :
     ReflectiveWellSorted.OpenPatternWellSorted
       rhoCIGSLT.costWholeReflectionProfile rhoCIGSLT.costWholeLanguage
@@ -457,7 +462,7 @@ private theorem rhoBreadthRedexA_wellSorted :
       rhoBreadthRedexA
         (mapTypeExpr (CostStaticColor.wrapped.symbols rhoCIGSLT)
           (.base "Name")) := by
-    simpa [mapTypeExpr, CostStaticColor.symbols,
+    simpa [mapTypeExpr, CostStaticColor.symbols, CostStaticColor.symbolsOf,
       costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
       rhoInteractivePresentation, rhoCalc, TypeDecl.plain,
       show "Name" ≠ "Proc" by decide] using rhoBreadthRedexA_typed
@@ -520,6 +525,7 @@ theorem rhoBreadthBaseRedexANode_skeleton_pattern :
           [.fvar (costRegionSourceVariableName "a")]] := by
   rfl
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The typed base Quote/Drop frame over `a` and its structural source
 variable meet at one retained semantic atom. -/
 noncomputable def rhoBreadthBaseRedexANodeSemanticAtomJoin :
@@ -598,7 +604,7 @@ private theorem rhoBreadthBoundaryCertificateA_exists :
           rhoBreadthRedexA =
         some certificate := by
   apply exists_certifyCostRegionBoundary?_eq_some
-  · exact ⟨.base "Name", decodeCostStaticTypeExpr_mapTypeExpr _ _ _⟩
+  · exact ⟨.base "Name", CostStaticTypeImage.decode_mapTypeExpr _ _ _⟩
   · exact rhoBreadthRedexA_wellSorted
 
 /-- Certified wrapped-colour boundary carrying the inner base redex over
@@ -625,8 +631,8 @@ private theorem rhoBreadthBaseQuoteOutsideWrapped :
 private noncomputable def rhoBreadthWrappedBoundaryAPlan
     (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] outer rhoBreadthRedexA (.base "Name") :=
   .boundaryApplication rhoBreadthBaseQuoteDeclared rfl
     rhoBreadthBaseQuoteOutsideWrapped rhoBreadthBoundaryWitnessA
@@ -647,18 +653,20 @@ private def rhoBreadthWrappedDropPreimage :
   costStaticConstructorPreimage rhoCIGSLT .wrapped
     rhoBreadthWrappedDropDeclared rhoBreadthWrappedDropRole
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoBreadthWrappedDrop_notBare :
     ¬ UsesBareCollection
       rhoBreadthWrappedDropPreimage.sourceConstructor.1 := by
   simp [rhoBreadthWrappedDropPreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoBreadthWrappedDropDeclared, rhoBreadthDropConstructor,
     UsesBareCollection, rhoCalc, TypeExpr.name, TypeExpr.proc,
     TypeExpr.baseType]
 
 noncomputable def rhoBreadthLeftProcessPlan :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] .hole rhoBreadthLeftProcess (.base "Proc") := by
   apply CostStaticRegionPlan.application rhoBreadthWrappedDropDeclared rfl
     rhoBreadthWrappedDropRole rhoBreadthWrappedDropPreimage
@@ -669,21 +677,22 @@ noncomputable def rhoBreadthLeftProcessPlan :
           (.apply (costWrappedConstructorName "PDrop") [] .hole [])))
       .nil
 
+set_option backward.isDefEq.respectTransparency false in
 private def rhoBreadthWrappedFvarAPlan (outer : OneHoleContext) :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] outer (.fvar "a") (.base "Name") :=
   .fvar (by
     simp [rhoCutOrderFree, FreeTypeContext.ofList, mapTypeExpr,
-      CostStaticColor.symbols, costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
+      CostStaticColor.symbols, CostStaticColor.symbolsOf, costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
       rhoInteractivePresentation, rhoCalc, TypeDecl.plain,
       show "Name" ≠ "Proc" by decide])
 
 private def rhoBreadthRightProcessPlan :
     CostStaticRegionPlan rhoCIGSLT .wrapped rhoCutOrderFree
-      (CostStaticBinderThinning.sourceContextOfTarget rhoCIGSLT .wrapped []) []
-      (CostStaticBinderThinning.ofTargetThinning rhoCIGSLT .wrapped [])
+      (CostStaticTypeThinning.sourceContextOfTarget rhoCIGSLT.theory .wrapped []) []
+      (CostStaticTypeThinning.ofTargetThinning rhoCIGSLT.theory .wrapped [])
       [] .hole rhoBreadthRightProcess (.base "Proc") := by
   apply CostStaticRegionPlan.application rhoBreadthWrappedDropDeclared rfl
     rhoBreadthWrappedDropRole rhoBreadthWrappedDropPreimage
@@ -694,6 +703,7 @@ private def rhoBreadthRightProcessPlan :
           (.apply (costWrappedConstructorName "PDrop") [] .hole [])))
       .nil
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoBreadthWrappedProc_wellSorted (process : Pattern)
     (typed : HasType rhoCIGSLT.costWholeLanguage rhoCutOrderFree [] process
       (.base costWrappedSortName))
@@ -711,7 +721,7 @@ private theorem rhoBreadthWrappedProc_wellSorted (process : Pattern)
   have mappedTyped : HasType rhoCIGSLT.costWholeLanguage rhoCutOrderFree []
       process (mapTypeExpr (CostStaticColor.wrapped.symbols rhoCIGSLT)
         (.base "Proc")) := by
-    simpa [mapTypeExpr, CostStaticColor.symbols,
+    simpa [mapTypeExpr, CostStaticColor.symbols, CostStaticColor.symbolsOf,
       costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
       rhoInteractivePresentation, rhoCalc, TypeDecl.plain] using typed
   exact ⟨⟨mappedTyped, canonical, object, mappedTyped.isWellScopedAt⟩, scope⟩
@@ -755,11 +765,12 @@ def rhoBreadthRightProcessNode :
     rhoBreadthRightProcessPlan
     (by unfold rhoBreadthRightProcessPlan; rfl)
 
+set_option backward.isDefEq.respectTransparency false in
 private theorem rhoBreadthWrappedNameType :
     (.base (costBaseSortName "Name") : TypeExpr) =
       mapTypeExpr (CostStaticColor.wrapped.symbols rhoCIGSLT)
         (.base "Name") := by
-  simp [mapTypeExpr, CostStaticColor.symbols,
+  simp [mapTypeExpr, CostStaticColor.symbols, CostStaticColor.symbolsOf,
     costWrappedStaticSymbols, rhoCIGSLT, rhoIGSLT,
     rhoInteractivePresentation, rhoCalc, TypeDecl.plain,
     show "Name" ≠ "Proc" by decide]
@@ -827,6 +838,7 @@ theorem rhoBreadthValues_assignment_sourceVariable
       .fvar name := by
   simp [TypedCostRegionBoundaryTable.Values.assignment]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The left wrapped frame receives the hereditary normal form of its unique
 opposite-colour child at the exact proof-relevant boundary slot. -/
 theorem rhoBreadthLeftProcessHereditaryValues_boundaryAssignment :
@@ -885,7 +897,7 @@ theorem rhoBreadthProcess_canonicalFrame
           CostStaticAtomEnvironment.reifyName, selected]
   rw [CostStaticRegionNode.canonicalizeReifiedTargetFrame_eq_map_sourceCanonicalize
     node environment]
-  rw [CostStaticBinderThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
+  rw [CostStaticTypeThinning.thickenAmbientBVars_eq_self_of_targetBound_eq_nil
     node.thinning closed]
   rw [reifiedFrame]
   have targetDepth : node.targetBound.length = 0 := by simp [closed]
@@ -893,10 +905,10 @@ theorem rhoBreadthProcess_canonicalFrame
   simp [Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeListByDepths,
     Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply,
-    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map,
-    CostStaticColor.symbols_constructor, CostStaticColor.constructorTag,
+    rhoReflectivePresentation, mapPattern, mapPatternList_eq_map, CostStaticColor.constructorTag,
     costWrappedConstructorName]
 
+set_option backward.isDefEq.respectTransparency false in
 /-- The two wrapped process siblings restore to the same compact drop of `a`
 at the independently constructed common semantic apex.  The left atom is a
 certified foreign boundary; the right atom is a direct source variable; only
@@ -1101,7 +1113,7 @@ theorem rhoBreadthOutput_materializes :
 theorem rhoBreadthOutputRole :
     rhoCIGSLT.declaredCostConstructorRole rhoBreadthOutputDeclared =
       .interactionPrincipal := by
-  simp only [CIGSLT.declaredCostConstructorRole, rhoBreadthOutputDeclared]
+  simp only [CIGSLT.declaredCostConstructorRole, ContinuationDecorationProfile.declaredCostConstructorRole, rhoBreadthOutputDeclared]
   rw [if_pos]
   right
   apply Subtype.ext
@@ -1113,30 +1125,16 @@ theorem rhoBreadthOutput_notQuote :
   decide
 
 theorem rhoBreadthOutputFirstParam :
-    costBaseParameter rhoInteractionCut rhoCalc.terms[4]
+    (ContinuationDecorationProfile.primary rhoInteractionCut).baseParameter rhoCalc.terms[4]
       (TermParam.simple "n" TypeExpr.name, 0) =
       .simple "n" (.base (costBaseSortName "Name")) := by
-  simp [costBaseParameter, isSelectedContinuation, rhoCalc, mapParameterType,
-    costBaseTypeExpr,
-    rhoInteractionCut_program_constructor_value,
-    rhoInteractionCut_environment_constructor_value,
-    rhoInteractionCut_program_continuation_index,
-    rhoInteractionCut_environment_continuation_index,
-    rhoIGSLT, rhoInteractivePresentation, TypeDecl.plain,
-    TypeExpr.name, TypeExpr.proc, TypeExpr.baseType]
+  decide +kernel
 
 theorem rhoBreadthOutputSecondParam :
-    costBaseParameter rhoInteractionCut rhoCalc.terms[4]
+    (ContinuationDecorationProfile.primary rhoInteractionCut).baseParameter rhoCalc.terms[4]
       (TermParam.simple "q" TypeExpr.proc, 0 + 1) =
       .simple "q" (.base costWrappedSortName) := by
-  simp [costBaseParameter, isSelectedContinuation, rhoCalc, mapParameterType,
-    costWrappedTypeExpr,
-    rhoInteractionCut_program_constructor_value,
-    rhoInteractionCut_environment_constructor_value,
-    rhoInteractionCut_program_continuation_index,
-    rhoInteractionCut_environment_continuation_index,
-    rhoIGSLT, rhoInteractivePresentation, TypeDecl.plain,
-    TypeExpr.name, TypeExpr.proc, TypeExpr.baseType]
+  decide +kernel
 
 noncomputable def rhoBreadthLeftSpine :
     CostRegionArgumentTrees rhoCIGSLT rhoCutOrderFree [] []
@@ -1345,6 +1343,7 @@ theorem rhoBreadth_contextView_reached :
   simp only [CostStaticRegionPlan.abstractPattern,
     CostStaticArgumentPlan.abstractPatterns, OneHoleContext.fill,
     rhoBreadthBaseQuotePreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoBreadthBaseQuoteDeclared, rhoCalc, List.nil_append]
   rfl
 
@@ -1388,6 +1387,7 @@ theorem rhoBreadth_contextView_stopped :
   simp only [CostStaticRegionPlan.abstractPattern,
     CostStaticArgumentPlan.abstractPatterns, OneHoleContext.fill,
     rhoBreadthWrappedDropPreimage, costStaticConstructorPreimage,
+      ContinuationDecorationProfile.staticConstructorPreimage,
     rhoBreadthWrappedDropDeclared, rhoBreadthDropConstructor, rhoCalc,
     List.nil_append]
   rfl
@@ -1433,15 +1433,14 @@ theorem rhoBreadth_contextView_reachedOnly_false :
       obtain ⟨inner, selected⟩ := declared
       cases inner with
       | base sourceConstructor =>
-          simp only [CIGSLT.declaredCostConstructorRole] at current
+          simp only [CIGSLT.declaredCostConstructorRole, ContinuationDecorationProfile.declaredCostConstructorRole] at current
           split at current <;> exact absurd current (by decide)
       | wrapped sourceConstructor =>
-          simp only [CIGSLT.renderDeclaredCostConstructor,
-            CIGSLT.renderGeneratedCostConstructor,
+          simp only [CIGSLT.renderDeclaredCostConstructor, ContinuationDecorationProfile.renderDeclaredCostConstructor,
             CostConstructor.render] at rendered
           exact costBaseConstructorName_ne_wrapped _ _ rendered.symm
       | apparatus kind =>
-          simp only [CIGSLT.declaredCostConstructorRole] at current
+          simp only [CIGSLT.declaredCostConstructorRole, ContinuationDecorationProfile.declaredCostConstructorRole] at current
           exact absurd current (by simp)
   | boundaryApplication declared rendered outsideCurrent certified
       certifies =>

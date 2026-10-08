@@ -29,10 +29,13 @@ structure RuleInterpretation where
 
 namespace RuleInterpretation
 
-/-- Ordinary first-order matching and substitution. -/
+/-- Ordinary first-order matching and substitution, with the binder-depth
+alignment rule firing requires: a value captured outside a binder and delivered
+underneath one is shifted by the difference in depth. -/
 def syntactic : RuleInterpretation where
   matchRule := fun _ rule term => matchPattern rule.left term
-  instantiateRule := fun _ rule bindings => applyBindings bindings rule.right
+  instantiateRule := fun _ rule bindings =>
+    Mettapedia.OSLF.MeTTaIL.Match.applyRuleBindings rule bindings
 
 /-- Matching and substitution selected by a separately authored profile. -/
 def reflection (profile : ReflectionProfile) : RuleInterpretation where
@@ -107,6 +110,16 @@ mutual
         mergeBindings bindings premiseBindings = some result →
         PremiseAt interpretation base language fuel bindings
           (.congruence source target) result
+    | scopedRoot
+        {bindings premiseBindings result : Bindings}
+        {step : ScopedStepPremise} {candidate : Pattern} :
+        step.binders = [] →
+        StepAt interpretation base language fuel
+          (applyBindings bindings step.source) candidate →
+        premiseBindings ∈ matchPattern step.target candidate →
+        mergeBindings bindings premiseBindings = some result →
+        PremiseAt interpretation base language fuel bindings
+          (.scopedStep step) result
 
   /-- Evidence for an ordered list of interpreted premises. -/
   inductive PremisesAt
@@ -176,6 +189,28 @@ private theorem mem_premiseStepUsing_iff
             simp only [premiseStepUsing, List.mem_flatMap,
               List.mem_filterMap]
             exact ⟨_, recursiveExact.mpr recursive, _, matchMember, merged⟩
+  | scopedStep step =>
+      by_cases empty : step.binders = []
+      · constructor
+        · intro member
+          simp only [premiseStepUsing, empty, List.isEmpty_nil, ↓reduceIte,
+            List.mem_flatMap, List.mem_filterMap] at member
+          obtain ⟨candidate, recursiveMember, premiseBindings,
+            matchMember, merged⟩ := member
+          exact .scopedRoot empty (recursiveExact.mp recursiveMember)
+            matchMember merged
+        · intro evidence
+          cases evidence with
+          | scopedRoot empty' recursive matchMember merged =>
+              simp only [premiseStepUsing, empty', List.isEmpty_nil, ↓reduceIte,
+                List.mem_flatMap, List.mem_filterMap]
+              exact ⟨_, recursiveExact.mpr recursive, _, matchMember, merged⟩
+      · constructor
+        · intro member
+          simp [premiseStepUsing, empty] at member
+        · intro evidence
+          cases evidence with
+          | scopedRoot empty' _ _ _ => exact (empty empty').elim
 
 private theorem mem_premisesUsing_iff
     {interpretation : RuleInterpretation}
@@ -248,6 +283,55 @@ theorem mem_rewriteAt_iff_stepAt
             rw [List.mem_map]
             exact ⟨_, (mem_premisesUsing_iff
               (fun {_ _} => inductionHypothesis)).mpr premises, targetEq⟩
+
+/-! ## Syntactic interpretation recovers the core contextual engine -/
+
+/-- Executing the explicit syntactic rule interpretation is exactly the core
+contextual compiler at every finite recursive depth.  This is an operational
+compiler theorem; it does not define a second OSLF construction. -/
+theorem rewriteAt_syntactic_eq_contextual
+    (base : BasePremiseEvaluator) (language : LanguageDef)
+    (fuel : Nat) (source : Pattern) :
+    rewriteAt .syntactic base language fuel source =
+      Mettapedia.OSLF.MeTTaIL.ContextualStep.rewriteAt
+        base language fuel source := by
+  induction fuel generalizing source with
+  | zero => rfl
+  | succ fuel inductionHypothesis =>
+      simp only [rewriteAt,
+        Mettapedia.OSLF.MeTTaIL.ContextualStep.rewriteAt]
+      apply List.flatMap_congr
+      intro rule _ruleMember
+      unfold applyRuleUsing
+        Mettapedia.OSLF.MeTTaIL.ContextualStep.applyRuleUsing
+      rw [show
+        rewriteAt .syntactic base language fuel =
+          Mettapedia.OSLF.MeTTaIL.ContextualStep.rewriteAt
+            base language fuel from
+        funext inductionHypothesis]
+      simp only [RuleInterpretation.syntactic,
+        matchPatternForRule_eq_syntactic,
+        applyBindingsForRule_eq_syntactic]
+
+/-- The least relational syntactic interpretation is exactly the core
+contextual relation. -/
+theorem step_syntactic_iff_contextual
+    (base : BasePremiseEvaluator) (language : LanguageDef)
+    (source target : Pattern) :
+    Step .syntactic base language source target ↔
+      Mettapedia.OSLF.MeTTaIL.ContextualStep.Step
+        base language source target := by
+  constructor
+  · rintro ⟨fuel, step⟩
+    refine ⟨fuel,
+      Mettapedia.OSLF.MeTTaIL.ContextualStep.mem_rewriteAt_iff_stepAt.mp ?_⟩
+    rw [← rewriteAt_syntactic_eq_contextual base language fuel source]
+    exact mem_rewriteAt_iff_stepAt.mpr step
+  · rintro ⟨fuel, step⟩
+    refine ⟨fuel, mem_rewriteAt_iff_stepAt.mp ?_⟩
+    rw [rewriteAt_syntactic_eq_contextual base language fuel source]
+    exact
+      Mettapedia.OSLF.MeTTaIL.ContextualStep.mem_rewriteAt_iff_stepAt.mpr step
 
 /-- A single authored congruence premise lifts one interpreted recursive step. -/
 theorem step_of_single_congruence_rule
