@@ -97,7 +97,7 @@ theorem serviceLE_trans (a b c : Goal) (positive : 0 < b.share)
   have second := Nat.mul_le_mul_right a.share bc
   have joined : (a.service * c.share) * b.share ≤
       (c.service * a.share) * b.share := by
-    exact le_trans (by simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using first)
+    exact Nat.le_trans (by simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using first)
       (by simpa [Nat.mul_assoc, Nat.mul_comm, Nat.mul_left_comm] using second)
   exact Nat.le_of_mul_le_mul_right joined positive
 
@@ -504,7 +504,7 @@ theorem waitBudget_bounded_by_shares (target : Goal) (goals : List Goal) (quantu
       target.service * other.share ≤ other.service * target.share + quantum * other.share) :
     waitBudget target goals ≤ shareBudget quantum target goals := by
   induction goals with
-  | nil => rfl
+  | nil => exact Nat.le_refl _
   | cons goal goals ih =>
       exact Nat.add_le_add
         (capacity_bounded_by_shares target goal quantum positive (bounded goal List.mem_cons_self))

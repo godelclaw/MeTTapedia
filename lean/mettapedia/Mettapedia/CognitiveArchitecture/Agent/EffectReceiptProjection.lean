@@ -1,4 +1,4 @@
-import Mathlib
+import Std
 
 /-!
 # Effect receipts and completion claims

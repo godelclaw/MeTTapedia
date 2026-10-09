@@ -397,8 +397,8 @@ theorem failure_uses_positive_cooldown (state : State) (now retry : Int)
     (snap : Snapshot) (error : Nat) :
     now + 1 ≤ (handleReply state now snap (.failure error retry)).cooldownUntil := by
   simp only [handleReply]
-  have bound : (1 : Int) ≤ max 1 retry := le_max_left _ _
-  have retained := le_max_right state.cooldownUntil (now + max 1 retry)
+  have bound : (1 : Int) ≤ max 1 retry := Int.le_max_left _ _
+  have retained := Int.le_max_right state.cooldownUntil (now + max 1 retry)
   omega
 
 theorem provider_failure_preserves_pending_work (state : State) (now retry : Int)
@@ -586,7 +586,7 @@ theorem finish_cannot_discharge_another_request
   · rfl
 
 theorem dependent_precommitment_requires_observation_invariance
-    {Observation Continuation : Type*} [Inhabited Observation]
+    {Observation Continuation : Type _} [Inhabited Observation]
     (required : Observation → Continuation) :
     (∃ fixed, PettaClaw.FeedbackSensitiveBatch.PrecommitmentCorrect required fixed) ↔
       PettaClaw.FeedbackSensitiveBatch.ObservationInvariant required :=

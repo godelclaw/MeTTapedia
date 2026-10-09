@@ -126,7 +126,7 @@ are derived from the models, deployed, and re-observed live.
 
 Most models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
-axiom-free. Files that import Mathlib, including the three batch files
+axiom-free. Files that import Mathlib, including the probabilistic batch models
 above, compile with Mathlib's build directory on `LEAN_PATH` (the revision
 pinned by the MeTTapedia Lake manifest), and their audits may also list
 `Classical.choice`. `IterArchitecture.lean` imports the two comparison models.
@@ -163,3 +163,57 @@ PDF alongside) tells the whole story: architecture, doctrine, the two
 incidents, the theorems, the live verifications. Model-to-code
 conformance tests live with the agent runtime
 ([godelclaw/pettaclaw](https://github.com/godelclaw/pettaclaw)).
+
+## Owned asynchronous topics
+
+`TopicAsync.lean` extends the existing observed strategy and fair goal queue.
+It allows bounded provider requests for independent topics while preserving
+one shared request ledger, one budget, and the dependent-tool observation
+barrier. `TopicAsyncChecks.lean` supplies finite replays and deliberately
+broken alternatives.
+
+```text
+topic context -> captured request -> same-topic result inbox
+                        |                     |
+                 shared fair queue     observe -> version check -> broker
+```
+
+Each call retains its agent/generation/serial identity, original topic,
+context revision, declared dependency revisions, captured tool authority and
+response reservation. Partial content is provisional. A slow or disconnected
+attempt remains owned; recovery marks it uncertain and preserves its spent
+budget. Late results remain evidence, while changed context or authority
+blocks stale commands. Failure evidence applies shared cooldown before the
+slot is retired. Provider text alone cannot complete a goal.
+
+The model proves bounded reservations and unfinished-work preservation over
+arbitrary operational traces, unchanged result ownership, commuting distinct
+arrivals, idempotent settlement, capture accounting, stale-command exclusion
+and reuse of the existing checked completion rule. Weighted fairness retains
+its finite-cohort and continued-admission assumptions; arbitrary task success
+and unbounded arrival fairness are not claimed.
+
+The default permits one retained call. Response capacity must be configured
+explicitly; the default reservation budget is zero. Raising concurrency is a
+managed-host choice, independent of the reference Iter/Omega loops.
+
+From the repository root:
+
+```sh
+python3 lean/pettaclaw/check_observed_strategy.py \
+  --suite topic-async --output-dir build/topic-async
+```
+
+The topic, fair-goal and observed-strategy suites build from Lean's standard
+library. The generic typed state and query contracts are in
+`Mettapedia.CognitiveArchitecture.Agent.WorldStateCore`; `Agent.WorldState`
+re-exports them and adds the Mathlib finite-cardinality theorem. No extra
+Mathlib copy is needed for these executable architecture checks.
+
+Runtime correspondence requires atomic durable capture/charging, faithful
+result IDs, declared shared reads and versioned writes, honest payload
+accounting, and the existing broker/task checker. Reservations cover modeled
+retained responses, not decoder, TLS or total process memory. Uncertain calls
+need explicit reconciliation; the model does not retry a remote POST or
+silently erase an unknown outcome. Runtime implementation and paired live
+qualification remain separate milestones.

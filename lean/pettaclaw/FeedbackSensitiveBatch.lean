@@ -1,4 +1,4 @@
-import Mathlib
+import Std
 
 /-!
 # Feedback-sensitive batches
@@ -20,18 +20,18 @@ boundary returns control to the policy before the next dependent effect.
 namespace PettaClaw.FeedbackSensitiveBatch
 
 /-- The continuation which would be correct after each possible observation. -/
-abbrev RequiredContinuation (Observation Continuation : Type*) :=
+abbrev RequiredContinuation (Observation Continuation : Type _) :=
   Observation → Continuation
 
 /-- A workflow is feedback-sensitive when two possible observations require
 different continuations. -/
-def FeedbackSensitive {Observation Continuation : Type*}
+def FeedbackSensitive {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation) : Prop :=
   ∃ first second, required first ≠ required second
 
 /-- A precommitted continuation is correct only if the same choice is correct
 for every observation which the preceding effect may produce. -/
-def PrecommitmentCorrect {Observation Continuation : Type*}
+def PrecommitmentCorrect {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation)
     (fixed : Continuation) : Prop :=
   ∀ observation, fixed = required observation
@@ -39,7 +39,7 @@ def PrecommitmentCorrect {Observation Continuation : Type*}
 /-- No fixed continuation can correctly implement a feedback-sensitive step.
 This is the elementary no-go theorem behind interactive batch failures. -/
 theorem no_precommitted_continuation_for_feedback_sensitive_step
-    {Observation Continuation : Type*}
+    {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation)
     (sensitive : FeedbackSensitive required) :
     ¬ ∃ fixed, PrecommitmentCorrect required fixed := by
@@ -50,12 +50,12 @@ theorem no_precommitted_continuation_for_feedback_sensitive_step
 
 /-- Observation-invariance is exactly the condition under which a fixed
 continuation can be adequate. -/
-def ObservationInvariant {Observation Continuation : Type*}
+def ObservationInvariant {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation) : Prop :=
   ∀ first second, required first = required second
 
 theorem precommitment_exists_iff_observation_invariant
-    {Observation Continuation : Type*} [Inhabited Observation]
+    {Observation Continuation : Type _} [Inhabited Observation]
     (required : RequiredContinuation Observation Continuation) :
     (∃ fixed, PrecommitmentCorrect required fixed) ↔
       ObservationInvariant required := by
@@ -67,13 +67,13 @@ theorem precommitment_exists_iff_observation_invariant
 
 /-- Returning the observation to the policy before choosing the continuation
 implements every such requirement directly. -/
-def observeThenChoose {Observation Continuation : Type*}
+def observeThenChoose {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation)
     (observation : Observation) : Continuation :=
   required observation
 
 theorem observe_then_choose_is_correct
-    {Observation Continuation : Type*}
+    {Observation Continuation : Type _}
     (required : RequiredContinuation Observation Continuation)
     (observation : Observation) :
     observeThenChoose required observation = required observation := by

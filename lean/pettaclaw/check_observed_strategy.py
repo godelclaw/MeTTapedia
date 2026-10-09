@@ -14,17 +14,31 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
-    parser.add_argument('--suite', choices=['strategy', 'fair-goals'], default='strategy',
-                        help='Check the original strategy or weighted goal scheduling and its ledger adapter.')
+    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async'], default='strategy',
+                        help='Check the original strategy, fair goal scheduling, or owned asynchronous topics.')
+    parser.add_argument('--dependency-root', type=Path,
+                        help='Reuse a workspace with the same toolchain and pinned mathlib revision.')
     args = parser.parse_args()
     local = Path(__file__).resolve().parent
     canonical = local.parent / 'mettapedia'
     output = args.output_dir.resolve()
     output.mkdir(parents=True, exist_ok=True)
     lib = output / 'lib'
-    paths = [lib, canonical / '.lake/build/lib/lean']
+    dependency_root = args.dependency_root.resolve() if args.dependency_root else canonical
+    if dependency_root != canonical:
+        if (dependency_root / 'lean-toolchain').read_text() != (canonical / 'lean-toolchain').read_text():
+            parser.error('dependency workspace must use the same Lean toolchain')
+        def mathlib_revision(root):
+            packages = json.loads((root / 'lake-manifest.json').read_text())['packages']
+            return next(package['rev'] for package in packages if package['name'] == 'mathlib')
+        pinned = mathlib_revision(canonical)
+        actual = subprocess.check_output(['git', '-C', str(dependency_root / '.lake/packages/mathlib'),
+                                          'rev-parse', 'HEAD'], text=True).strip()
+        if mathlib_revision(dependency_root) != pinned or actual != pinned:
+            parser.error('dependency workspace must use the pinned mathlib revision')
+    paths = [lib, dependency_root / '.lake/build/lib/lean']
     paths += sorted(path for path in
-                    (canonical / '.lake/packages').glob('*/.lake/build/lib/lean')
+                    (dependency_root / '.lake/packages').glob('*/.lake/build/lib/lean')
                     if path.is_dir())
     env = dict(os.environ, LEAN_PATH=':'.join(map(str, paths)), LEAN_NUM_THREADS='1')
     toolchain = (canonical / 'lean-toolchain').read_text().strip()
@@ -82,12 +96,15 @@ def main():
         built[module] = fingerprint
         return fingerprint
 
-    targets = (['FairGoalChecks'] if args.suite == 'fair-goals' else
+    targets = (['TopicAsyncChecks'] if args.suite == 'topic-async' else
+               ['FairGoalChecks'] if args.suite == 'fair-goals' else
                ['ObservedStrategyChecks', 'IterAuthoring', 'WeakAgentEcology'])
     try:
         for module in targets:
             build(module)
-        modules = (['GoalSystem', 'GoalReview', 'GoalReviewChecks',
+        modules = (['TopicAsync', 'TopicAsyncChecks', 'FairGoalScheduling', 'FairGoalStrategy']
+                   if args.suite == 'topic-async' else
+                   ['GoalSystem', 'GoalReview', 'GoalReviewChecks',
                     'FairGoalScheduling', 'FairGoalStrategy', 'FairGoalChecks']
                    if args.suite == 'fair-goals' else
                    ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
@@ -100,7 +117,8 @@ def main():
             names += [namespace + '.' + name for name in
                       re.findall(r'^theorem\s+(\w+)', source.read_text(), re.M)]
         audit = output / 'StrategyAxiomAudit.lean'
-        audit_import = 'FairGoalChecks' if args.suite == 'fair-goals' else 'ObservedStrategyChecks'
+        audit_import = ('TopicAsyncChecks' if args.suite == 'topic-async' else
+                        'FairGoalChecks' if args.suite == 'fair-goals' else 'ObservedStrategyChecks')
         audit.write_text('import ' + audit_import + '\n\n' + '\n'.join(
             '#print axioms ' + name for name in names) + '\n')
         checked = run('axiom-audit', audit)
