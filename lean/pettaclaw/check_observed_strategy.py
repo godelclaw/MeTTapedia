@@ -14,7 +14,7 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
-    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async'], default='strategy',
+    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async', 'cooperative-input'], default='strategy',
                         help='Check the original strategy, fair goal scheduling, or owned asynchronous topics.')
     parser.add_argument('--dependency-root', type=Path,
                         help='Reuse a workspace with the same toolchain and pinned mathlib revision.')
@@ -96,13 +96,16 @@ def main():
         built[module] = fingerprint
         return fingerprint
 
-    targets = (['TopicAsyncChecks'] if args.suite == 'topic-async' else
+    targets = (['CooperativeInputChecks'] if args.suite == 'cooperative-input' else
+               ['TopicAsyncChecks'] if args.suite == 'topic-async' else
                ['FairGoalChecks'] if args.suite == 'fair-goals' else
                ['ObservedStrategyChecks', 'IterAuthoring', 'WeakAgentEcology'])
     try:
         for module in targets:
             build(module)
-        modules = (['TopicAsync', 'TopicAsyncChecks', 'FairGoalScheduling', 'FairGoalStrategy']
+        modules = (['CooperativeInput', 'CooperativeInputChecks', 'TopicAsync', 'TopicAsyncChecks']
+                   if args.suite == 'cooperative-input' else
+                   ['TopicAsync', 'TopicAsyncChecks', 'FairGoalScheduling', 'FairGoalStrategy']
                    if args.suite == 'topic-async' else
                    ['GoalSystem', 'GoalReview', 'GoalReviewChecks',
                     'FairGoalScheduling', 'FairGoalStrategy', 'FairGoalChecks']
@@ -117,7 +120,8 @@ def main():
             names += [namespace + '.' + name for name in
                       re.findall(r'^theorem\s+(\w+)', source.read_text(), re.M)]
         audit = output / 'StrategyAxiomAudit.lean'
-        audit_import = ('TopicAsyncChecks' if args.suite == 'topic-async' else
+        audit_import = ('CooperativeInputChecks' if args.suite == 'cooperative-input' else
+                        'TopicAsyncChecks' if args.suite == 'topic-async' else
                         'FairGoalChecks' if args.suite == 'fair-goals' else 'ObservedStrategyChecks')
         audit.write_text('import ' + audit_import + '\n\n' + '\n'.join(
             '#print axioms ' + name for name in names) + '\n')
