@@ -184,3 +184,15 @@ codex_scratch/
 **/_scratch/
 
 !lean/mettapedia/scripts/check_import_closure.py
+
+# Regenerable grammar output and local reference corpora.
+*.gfo
+*.lean.bak
+lean/mettapedia/Mettapedia/DocText/gf_runtime/DocTextClaims.pgf
+lean/algorithms/gf_fragments/generated/
+megalodon/theory/numbers/
+megalodon/theory/atp/
+megalodon/tests/dedukti_bridge/test_triangle.dk
+megalodon/tests/dedukti_bridge/test_triangle.mg
+cakeml/milawa-ref/
+!megalodon/theory/EXTERNAL-CORPORA.md
