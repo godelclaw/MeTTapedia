@@ -402,3 +402,32 @@ lake env lean ../pettaclaw/AgentMemory/PersonalizedPageRank.lean
 lake env lean ../pettaclaw/AgentMemory/RetrievalContract.lean
 lake env lean ../pettaclaw/AgentMemory/HierarchicalSummary.lean
 ```
+
+## Native tensor retrieval composition
+
+`NativeTensorRetrieval.lean` adds the contracts for CeTTa's stamped row masks
+and incremental packed retrieval. It proves exact Boolean filter transport,
+refusal of mismatched view stamps, exclusion of retired rows, reconstruction
+of the current view from an admitted base plus latest changed IDs, deletion
+without resurrection, compaction equivalence and a bounded delta between
+compactions. Local top-k selections cover a global top-k under a shared total
+order, and merging two selections touches at most twice the kernel result
+budget. The general exact reranking theorem remains in `RetrievalContract.lean`.
+
+A checked example shows that retiring a row only after top-k loses an available
+answer. Equal row counts also do not establish selector compatibility. These
+are useful counterexamples to incorrect optimizations.
+
+The assumptions are explicit: source admission and posting construction must
+be faithful, every written ID must be retired, numerical scores must be finite
+and agree with the declared profile, and partition/merge ordering must agree.
+The model does not verify the C allocator, floating-point kernels, transport
+or compiler. CeTTa's independent kernel oracle, selector fixtures, lifecycle
+checks and deliberate policy mutations check those boundaries separately.
+
+Compile this file like the other standalone models:
+
+```sh
+cd lean/mettapedia
+lake env lean ../pettaclaw/AgentMemory/NativeTensorRetrieval.lean
+```
