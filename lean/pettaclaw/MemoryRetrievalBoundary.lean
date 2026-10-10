@@ -145,6 +145,41 @@ theorem current_candidates_are_known (current : Capture) (head : Nat)
     observation current ⟨current, head :: tail, coverage⟩ = .known (head :: tail) := by
   simp [observation]
 
+/-- Last-known context and fresh decision input have different roles. A
+consumer sees availability even when earlier context rows are retained. -/
+structure Readout where
+  status : ContextProjection.Observation (List Nat)
+  contextRows : Option (List Nat)
+  decisionRows : Option (List Nat)
+deriving Repr, DecidableEq
+
+def readout (previous : Option (List Nat)) (current : Capture)
+    (result : Retrieval) : Readout :=
+  let status := observation current result
+  { status := status
+    contextRows := ContextProjection.admit previous status
+    decisionRows := match status with
+      | .unavailable => none
+      | .absent => some []
+      | .known rows => some rows }
+
+theorem stale_result_cannot_supply_decision_rows (previous : Option (List Nat))
+    (current : Capture) (result : Retrieval) (different : current ≠ result.capture) :
+    (readout previous current result).decisionRows = none := by
+  simp [readout, mismatched_capture_is_unavailable current result different]
+
+theorem incomplete_empty_retains_context_without_decision_authority
+    (previous : Option (List Nat)) (current : Capture) :
+    readout previous current ⟨current, [], .candidates⟩ =
+      ⟨.unavailable, previous, none⟩ := by
+  simp [readout, empty_candidates_are_unavailable, ContextProjection.admit]
+
+theorem complete_empty_supplies_explicit_absence (previous : Option (List Nat))
+    (current : Capture) :
+    readout previous current ⟨current, [], .exhaustive⟩ =
+      ⟨.absent, none, some []⟩ := by
+  simp [readout, current_complete_empty_is_absent, ContextProjection.admit]
+
 /-- This is an evidence identity set, not a count of independent witnesses. -/
 abbrev EvidenceSet := Nat → Bool
 
@@ -208,5 +243,8 @@ private def current : Capture := ⟨5, 6, 7, profile⟩
 #guard observation current ⟨{ current with scope := 8 }, [], .exhaustive⟩ == .unavailable
 #guard evidenceDecision 0 [⟨1, true⟩] == false
 #guard evidenceDecision 0 [⟨0, false⟩, ⟨0, true⟩] == true
+#guard (readout (some [9]) current ⟨current, [], .candidates⟩).decisionRows == none
+#guard (readout (some [9]) current ⟨{ current with sourceRevision := 8 }, [10], .exhaustive⟩).contextRows == some [9]
+#guard (readout (some [9]) current ⟨{ current with sourceRevision := 8 }, [10], .exhaustive⟩).decisionRows == none
 
 end MemoryRetrievalBoundary
