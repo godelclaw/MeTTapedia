@@ -1,6 +1,6 @@
 # Agent memory: essential mechanisms in Lean
 
-These Lean 4 models extract four mechanisms from published agent-memory
+These Lean 4 models extract five mechanisms from published agent-memory
 systems and state what a long-lived companion agent needs from each. Every
 mechanism pairs safety laws with liveness, termination or quantitative bounds.
 The models assume a MeTTa named space as the authoritative store. Vector,
@@ -14,7 +14,7 @@ and declare no axioms. Their theorems depend on at most `propext`,
 
 | System | Paper | Core mechanism used here |
 | --- | --- | --- |
-| HippoRAG | arXiv 2405.14831 (NeurIPS 2024) | OpenIE triples form a knowledge graph with synonym edges (cosine ≥ 0.8). Query entities seed Personalized PageRank (damping 0.5), weighted by node specificity `1/|passages|`. Passages are ranked by count-weighted node scores. |
+| HippoRAG | arXiv 2405.14831 (NeurIPS 2024) | OpenIE triples form a knowledge graph with synonym edges (cosine ≥ 0.8). Query entities seed Personalized PageRank (damping 0.5), weighted by node specificity (the inverse of the number of passages containing the node). Passages are ranked by count-weighted node scores. |
 | HippoRAG 2 | arXiv 2502.14802 | Passage nodes and `contains` edges join the graph. The query is matched to triples, and an LLM filters them. PPR seeds phrase nodes by triple scores and all passage nodes by dense similarity, with weight 0.05. |
 | GraphRAG | arXiv 2404.16130 | An LLM extracts entities, relations and claims from 600-token chunks. Hierarchical Leiden communities (levels C0–C3) get bottom-up LLM summaries. Global questions run map-reduce over community summaries. |
 | Zep / Graphiti | arXiv 2501.13956 | Three tiers: episodes (non-lossy raw input), entities with fact edges, and communities. Each fact has valid/invalid times on the event timeline and created/expired times on the ingestion timeline. A contradicting fact closes an older one at its own start. Retrieval combines cosine, BM25 and BFS search, reranking (RRF, MMR, graph distance) and a context builder. |
@@ -47,7 +47,8 @@ provenance, multi-hop associative recall, consolidation and bounded cost.
    fusion preserves. Formalized in `RetrievalContract.lean`.
 5. **Hierarchical summaries (GraphRAG communities, Zep communities, Mem0's
    rolling summary).** They help with global questions. They are lossy derived
-   caches and must carry provenance; they are useful later, not first.
+   caches and must carry exact provenance; they are useful later, not first.
+   Their exact part is formalized in `HierarchicalSummary.lean`.
 6. **Note links with annotation evolution (A-MEM).** Links between memories are
    useful as provenance-carrying assertions. Rewriting other notes' annotations
    in place is not.
@@ -222,6 +223,26 @@ constant `c`.
   exactly to items that some ranking returned, at least `1/(c + m)` for rank
   `m` in any one ranking, and at most `|rankings|/(c + 1)`.
 
+### `HierarchicalSummary.lean` (`AgentMemory.Summary`)
+
+A `children` function splits each community into sub-communities. `hsum` and
+`hsup` aggregate bottom-up through `n` levels.
+
+- `hsum_eq_flat` (S): additive aggregates (counts, sums, evidence totals) through
+  any number of levels of disjoint sub-communities equal the aggregate over the
+  members.
+- `hsup_eq_flat`, `provenance_exact` (S): idempotent aggregates (supporting
+  episodes, latest update time) are exact through any covering hierarchy, even
+  with overlapping communities. Provenance stays exact while summary text is
+  lossy.
+- `mean_of_means_ne_mean`: averaging sub-community averages is wrong. Cache the
+  sum and the count instead.
+- `sum_update_of_not_mem`, `card_containing_le_one`, `update_cost_le_levels`
+  (Q): an update changes only the summaries of communities containing the
+  member, at most one per level.
+- `stale_iff` (S): a cached summary is stale exactly when a member changed after
+  its recorded latest time.
+
 ## Realization in CeTTa
 
 The named space stays authoritative, and every structure below is derived from
@@ -336,6 +357,26 @@ Synonym and A-MEM-style links are retractable assertions with sources.
   BFS fuse by `rrf` with `c = 60`. The `rrf_*` laws state what fusion
   preserves.
 
+### Hierarchical summaries
+
+```metta
+(Community $id $level $parent)
+(Member $community $node)
+(Summary $community $text (Stats $count $sum $latest $sources) $built-at)
+```
+
+- The text comes from an LLM and is lossy. `Stats` holds aggregates that are
+  exact at every level (`hsum_eq_flat`, `hsup_eq_flat`): counts and evidence
+  sums, the latest member update and the set of supporting episodes. A summary
+  cites `$sources` exactly (`provenance_exact`).
+- Freshness is one comparison: rebuild when the members' latest update exceeds
+  `$built-at` (`stale_iff`). A member update marks at most one community per
+  level (`update_cost_le_levels`), so refresh work is bounded by the depth.
+- Communities can be maintained incrementally, as in Zep: a new node joins the
+  community held by most of its neighbours, with periodic full refreshes.
+  GraphRAG's whole-corpus Leiden rebuild is the expensive alternative.
+- No tensor kernels are needed beyond the existing ones.
+
 ## Limits and open questions
 
 - The PPR model works over real numbers. f64 rounding, summation order and
@@ -344,8 +385,9 @@ Synonym and A-MEM-style links are retractable assertions with sources.
   slot is repaired by retraction, not prevented.
 - When should conflicting claims supersede each other in time, and when should
   they merge as PLN evidence? The models cover supersession only.
-- Hierarchical summaries (GraphRAG, Zep communities) and A-MEM link evolution
-  are ranked but not modeled here.
+- A-MEM link evolution is ranked but not modeled. For hierarchical summaries
+  only the exact aggregates are modeled; the adequacy of LLM-written text is
+  not.
 - These are model laws. Runtime correspondence needs finite replays and
   deliberately broken implementations, checked against the deployed code.
 
@@ -358,4 +400,5 @@ lake env lean ../pettaclaw/AgentMemory/BitemporalClaims.lean
 lake env lean ../pettaclaw/AgentMemory/EventSourcedMemory.lean
 lake env lean ../pettaclaw/AgentMemory/PersonalizedPageRank.lean
 lake env lean ../pettaclaw/AgentMemory/RetrievalContract.lean
+lake env lean ../pettaclaw/AgentMemory/HierarchicalSummary.lean
 ```
