@@ -458,3 +458,139 @@ existing index implements it.
 cd lean/mettapedia
 lake env lean ../pettaclaw/AgentMemory/SelectorContract.lean
 ```
+
+## Working memory, derived beliefs and evidence
+
+Three files analyze memory designs from agent-loop code rather than papers:
+
+| Source | Revision | Mechanism analyzed |
+| --- | --- | --- |
+| `bgoertzel-sing/iter` WMTM | master `3399366`, branch `agent/protocosmo2-wmtm-live-20261005` at `4564185` | A bounded working set with STI/ATI/LTI attention, a forgetting log, two inference engines (text triples and PLN atoms), attention-based contradiction resolution and journal writeback. |
+| `patham9/mettaclaw` | branch `neoclaw` at `2af37c3` | `support`, `contradict`, `link`, `unlink`, `update` and `forget` on ChromaDB memories, with NAL truth revision. |
+| `patham9/iter` | branch `omega` at `3e376bb` (merged into `erayindex`) | The same operations as Python tools addressed by UUID, plus a `confidence_boost` tool. |
+
+### Verdicts
+
+- **Sound as designed:** the store never exceeds its capacity; attention decays
+  and unused items are evicted within a computable number of ticks; truth
+  revision is exact on independent evidence; the deduction strength `s_AB · s_BC`
+  is a valid lower bound under a stated condition; UUID addressing preserves
+  other memories.
+- **Unsound or lossy:** contradiction checks on relations that the same engine
+  closes under deduction; resolution of contradictions by attention; abduction,
+  induction and analogy strengths; revision applied twice to one episode, or
+  left in place after an unlink; a default truth value that is one phantom
+  observation; timestamp addressing; noisy-OR over restatements; truth values
+  computed from attention; a forgetting log that bars PLN conclusions
+  permanently; writeback that turns derived beliefs into recalled facts.
+
+### `WorkingMemory.lean` (`AgentMemory.WorkingMemory`)
+
+- `admitU_length_le`, `admitG_length_le` (S): admission keeps the store within
+  capacity.
+- `admitU_evicts_better`: the upstream store admits every newcomer, evicting its
+  minimum even for a weaker newcomer. `admitG_evicts_only_worse` (S): guarded
+  admission evicts only a minimal item, and only for a strictly better one.
+- `eviction_ignores_long_term_importance`: eviction compares STI only, so the
+  item at the top of the STI+LTI focus can be evicted first.
+- `unboosted_falls_below_floor` (L), `floor_eviction_tick` (Q): an unused item
+  leaves; with decay `0.9` and floor `0.01`, STI 100 is evicted at tick 88.
+- `sti_bounded` (Q): bounded boosts give bounded STI.
+- `shown_dominates_forever`: the live branch boosts every item shown to the
+  model, so without outside stimulus the shown items keep dominating.
+- `displayed_derived_is_promoted`: showing an item counts as using it, so any
+  derived item shown for 15 cycles meets the writeback threshold.
+- `pln_forgotten_is_exiled`: a forgotten content needs initial STI 500 to
+  return; a PLN conclusion starts at `s · c ≤ 1`, so it never returns, whatever
+  the evidence.
+- `recordAll_eq`, `forgotten_stays_barred`, `forgotten_returns_after` (Q): with
+  the live branch's cap of `N` records, a content stays barred for fewer than
+  `N` later evictions and returns after `N`.
+- `recall_writeback_launders`: a derived belief written back is recalled as an
+  ordinary recalled item without its premises. `recallP_writeback` (S): keeping
+  provenance in the stored atom makes the round trip the identity.
+
+### `DerivedBeliefs.lean` (`AgentMemory.Derived`)
+
+- `exclusive_closed_trivial` (S): a relation closed under deduction and checked
+  for conflicts can hold only trivial chains.
+  `deduction_conflicts_with_premise`, `analogy_conflicts_with_premise` and
+  `master_flags_consistent_has` are the upstream instances.
+- `premise_evicted_by_own_conclusions`: with three objects the resolver evicts
+  a premise that its own valid conclusions outscore on attention.
+  `resolution_ignores_evidence`: the better-supported item can lose.
+- `product_le_cond` (S): `s_AB · s_BC ≤ P(C | A)` when
+  `P(C | A ∧ B) ≥ P(C | B)`; `product_unsound` without it.
+  `product_le_independence`: the product never exceeds PLN's
+  independence-based deduction strength.
+- `abduction_overstates`, `induction_overstates`: these strengths reach `1`
+  while the estimated probability is small.
+- `default_deduction_constant`: with the live branch's default `(stv 0.8 0.5)`,
+  every deduction over items without stored truth values gives `(0.64, 0.25)`.
+- `conclude_holds_iff`, `holds_erase_iff`, `holds_restore` (S): a conclusion
+  that carries its support holds exactly when its premises hold; retracting a
+  base fact withdraws exactly its dependents, and restoring it restores them.
+  `orphan_survives_upstream`: upstream derived items outlive their premises.
+
+### `EvidenceRevision.lean` (`AgentMemory.Evidence`)
+
+- `revise_tv` (S): `Truth_Revision` on evidence-derived truth values is addition
+  of evidence. `revise_self_overcounts`: revision is not idempotent.
+- `Ledger` keeps supporting and contradicting episodes as sets.
+  `support_idem`, `contradict_idem`, `unlink_support_fresh`, `support_comm`
+  (S): support is idempotent, exactly retractable and order-independent.
+  `tv_support_fresh`, `tv_contradict_fresh`: for a new episode the ledger
+  reproduces the upstream revision step exactly.
+- `neoclaw_double_support`, `neoclaw_unlink_keeps_evidence`,
+  `iter_relink_double_counts`, `default_is_phantom_evidence`: the upstream
+  record of a truth value plus a link list counts episodes twice, keeps
+  unlinked evidence and starts from evidence no episode supplied.
+- `self_support_counted`, `origin_support_noop`: a boost from the episode in
+  which a memory was created raises confidence upstream; with the origin in the
+  evidential base it changes nothing.
+- `update_by_time_loses_memory`: two memories created in the same second are
+  both deleted by one `update`. `update_by_id_preserves_others` (S).
+- `noisy_or_self_inflates`, `wmtm_aggregate_restatement`: noisy-OR counts a
+  restatement as new evidence. `noisyOrSet_insert_mem` (S): over a set of
+  sources it is idempotent.
+- `rehearsal_raises_confidence`: a confidence computed from attention rises
+  with rehearsal alone.
+
+### Realization in CeTTa
+
+```metta
+(Evidence $claim $episode Support)        ; or Contradict; one atom per episode
+(Origin $claim $episode)                  ; the creation episode, part of the base
+(Derived $claim $rule ($premise ...) $support)
+(Forgotten $claim $support $kt)           ; a working-set eviction, not a deletion
+```
+
+- Truth values are views. `(stv f c)` for a claim is computed from its evidence
+  atoms by counting (`tv_support_fresh`); adding an evidence atom twice changes
+  nothing and removing it restores the earlier value. The origin episode is
+  evidence already, so self-support is a no-op. Revision of two stored truth
+  values is used only across disjoint evidential bases (`revise_tv`).
+- Addressing uses atom identities or claim keys, never timestamps.
+- Derived atoms carry their rule, premises and support. A retraction in the
+  bitemporal log withdraws exactly the dependents (`holds_erase_iff`), and
+  conflict checks apply to declared functional slots (one value per slot and
+  event time, as in `BitemporalClaims.lean`), never to relations that the
+  engine closes under deduction.
+- Attention ranks; it never decides truth or survival of evidence. The working
+  set is a bounded selection derived from the space, with guarded admission
+  (`admitG_evicts_only_worse`) and a usefulness signal that counts uses the
+  model makes rather than items shown. Eviction from the working set leaves the
+  space unchanged.
+- A forgetting record names the evidential base of the forgotten conclusion,
+  so re-derivation from the same base is skipped and a changed base admits it
+  again. Writeback is an admission event that keeps `Derived` provenance
+  (`recallP_writeback`).
+
+### Checking
+
+```sh
+cd lean/mettapedia
+lake env lean ../pettaclaw/AgentMemory/WorkingMemory.lean
+lake env lean ../pettaclaw/AgentMemory/DerivedBeliefs.lean
+lake env lean ../pettaclaw/AgentMemory/EvidenceRevision.lean
+```
