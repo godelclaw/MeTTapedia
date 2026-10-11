@@ -1,4 +1,5 @@
 import ChannelJoin
+import ReadyQueue
 import FairGoalScheduling
 
 /-!
@@ -99,6 +100,20 @@ theorem missing_rotation_starves_second_task (slots : Nat) : 1 ∉ oldServices s
 
 theorem rotation_serves_despite_new_work :
     EventPump.services 4 (fun n => [100 + n]) [0, 1, 2] = [0, 1, 2, 0] := by decide
+
+theorem retired_head_does_not_skip_waiting_task :
+    let first := ReadyQueue.step ⟨2, [0, 1]⟩ .visit
+    let removed := ReadyQueue.step first.2 (.remove 0)
+    let admitted := ReadyQueue.step removed.2 (.admit 2)
+    first.1.visited = some 0 ∧ (ReadyQueue.step admitted.2 .visit).1.visited = some 1 := by decide
+
+/-- Advancing an array cursor before removing slot zero skips the waiter
+when a new task fills that slot's former position. -/
+theorem advancing_cursor_violates_prefix_bound :
+    let original := [0, 1]
+    let nextCursor := (0 + 1) % original.length
+    let refilled := original.tail ++ [2]
+    refilled[nextCursor]? = some 2 ∧ refilled.head? = some 1 := by decide
 
 theorem unbounded_slot_breaks_any_proposed_time_bound (q p : Nat) :
     p + [q + 1].sum > p + 1 * q := by simp

@@ -105,7 +105,7 @@ def main():
     try:
         for module in targets:
             build(module)
-        modules = (['AsyncWait', 'EventPump', 'ChannelJoin', 'EventPumpChecks', 'FairGoalScheduling']
+        modules = (['AsyncWait', 'EventPump', 'ChannelJoin', 'ReadyQueue', 'EventPumpChecks', 'FairGoalScheduling']
                    if args.suite == 'event-pump' else
                    ['RuntimeObservation', 'RuntimeObservationChecks']
                    if args.suite == 'runtime-observation' else

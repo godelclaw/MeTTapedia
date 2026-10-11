@@ -277,6 +277,21 @@ Capacity admission preserves unique runnable keys and the configured limit.
 A finite inbox drains within its pending-event count when handling slots return
 and commit dispositions. Neither service theorem promises provider completion.
 
+`ReadyQueue.lean` specializes admission, rotation and removal to an executable
+native-queue reference. Its invariant holds across arbitrary operation traces:
+membership remains unique and within capacity. Its service theorem permits
+visited competitors to retire as well as yield, while continuing arrivals
+cannot overtake an existing finite prefix. `EventPumpChecks` exhibits the old
+advancing-array failure after retirement and the preserved order in the new
+model. `ReadyQueueOracle.lean` runs these same transition definitions for CeTTa's
+native differential test; this avoids an independently rewritten test oracle.
+The finite C comparison establishes checked cases, not a proof of native
+pointers, the compiler, or all host transitions.
+The model also proves exact suffix recovery using `(revision, position)`
+cursors under the store's ordering assumption, with a counterexample to
+resuming a partially discovered batch from its revision alone. Native channel
+tests exercise the multi-effect case through a queue of capacity one.
+
 The wall-time theorem requires bounded whole-slot durations, including pump,
 storage and evaluation work, as well as a wake-up bound and continued service.
 For a queue bounded by `N` and slot cost bounded by `q`, the modeled latency is
