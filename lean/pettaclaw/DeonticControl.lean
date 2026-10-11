@@ -43,11 +43,19 @@ Results:
   any delay. The integrated pipeline fails closed.
 * `derived_item_becomes_observation`: the observer adapter turns every
   working-memory item, derived beliefs included, into an `Observation`.
+* `deontic_status_rewrites_truth` and `prohibition_loses_attention`: branch
+  `agent/protocosmo2-402-circuit` (`7c603b5`) enforces `forbidden` decisions by
+  lowering the attention and the PLN strength of everything that shares a
+  keyword with the action. The reason for a prohibition and its negation both
+  drop to a tenth of their strength, which breaks `s(X) + s(¬X) = 1`, and the
+  prohibition itself loses attention. `enforcement_only_lowers_attention`: the
+  enforcer touches no grant or monitor state, so it cannot block an action.
 
 A CeTTa-native controller keeps these invariants in the space. Grants,
 approvals, revocations and consumed keys are atoms in the same log as effects
 and observations, so they survive restarts and an effect atom can only be
-added together with the approval it consumes. Revisions are log positions.
+added together with the approval it consumes. Deontic status is a separate
+atom consulted by the gate; it never rewrites truth values or attention. Revisions are log positions.
 Each effect is checked against the current revision immediately before
 dispatch, a stop atom is checked before every effect, and only atoms from
 observation channels can satisfy an observation premise.
@@ -379,6 +387,64 @@ theorem derived_item_becomes_observation :
     (⟨3, false⟩ : Observation) ∈ observeU [⟨3, .derived⟩] ∧ observeC [⟨3, .derived⟩] = [] := by
   decide
 
+/-! ## Deontic status as attention and truth
+
+Branch `agent/protocosmo2-402-circuit` (`7c603b5`) adds a `DeonticEnforcer`
+and deontic propagation into PLN. For each decision labeled `forbidden`, every
+working-memory item sharing a keyword (a word longer than three letters) with
+the decision has its STI multiplied by `0.2`, and every PLN atom sharing one has
+its strength multiplied by `0.1` and its confidence raised by `0.2`. Values are
+in hundredths here. -/
+
+/-- A PLN atom: its words, strength and confidence (hundredths). -/
+structure Atom where
+  words : List Nat
+  strength : Nat
+  confidence : Nat
+deriving Repr, DecidableEq
+
+def overlaps (keywords : List Nat) (a : Atom) : Bool := a.words.any (fun w => keywords.contains w)
+
+/-- `apply_deontic_constraints_to_atoms` for a `forbidden` decision. -/
+def forbidTruth (keywords : List Nat) (a : Atom) : Atom :=
+  if overlaps keywords a then
+    { a with strength := a.strength / 10, confidence := min 100 (a.confidence + 20) }
+  else a
+
+/-- Words: 1 delete, 2 backups, 3 loses, 4 data, 5 safe. The decision forbids
+"delete backups". The claim that deleting backups loses data, the reason for the
+prohibition, and its negation both drop to a tenth of their strength while
+gaining confidence. Their strengths no longer sum to one. -/
+theorem deontic_status_rewrites_truth :
+    let reason : Atom := ⟨[1, 2, 3, 4], 80, 50⟩
+    let negation : Atom := ⟨[1, 2, 5], 20, 50⟩
+    forbidTruth [1, 2] reason = ⟨[1, 2, 3, 4], 8, 70⟩ ∧
+      forbidTruth [1, 2] negation = ⟨[1, 2, 5], 2, 70⟩ ∧
+      reason.strength + negation.strength = 100 ∧
+      (forbidTruth [1, 2] reason).strength + (forbidTruth [1, 2] negation).strength = 10 := by
+  decide
+
+/-- `DeonticEnforcer.enforce` for a `forbidden` decision: STI times `0.2` for an
+overlapping item. -/
+def forbidAttention (keywords : List Nat) (words : List Nat) (sti : Nat) : Nat :=
+  if words.any (fun w => keywords.contains w) then sti / 5 else sti
+
+/-- The item stating the prohibition shares its keywords, so it loses four fifths
+of its attention each time the decision is processed. -/
+theorem prohibition_loses_attention :
+    forbidAttention [1, 2] [6, 1, 2] 100 = 20 ∧
+      forbidAttention [1, 2] [6, 1, 2] (forbidAttention [1, 2] [6, 1, 2] 100) = 4 := by
+  decide
+
+/-- The enforcer only lowers attention. It reads and writes no grant, approval or
+monitor state, so it cannot block an authorized action. -/
+theorem enforcement_only_lowers_attention (keywords words : List Nat) (sti : Nat) :
+    forbidAttention keywords words sti ≤ sti := by
+  unfold forbidAttention
+  split
+  · exact Nat.div_le_self sti 5
+  · exact Nat.le_refl sti
+
 end DeonticControl
 
 /-! ## Axiom audit -/
@@ -398,3 +464,6 @@ end DeonticControl
 #print axioms DeonticControl.stop_checked_per_dispatch
 #print axioms DeonticControl.adapter_grant_expired_on_arrival
 #print axioms DeonticControl.derived_item_becomes_observation
+#print axioms DeonticControl.deontic_status_rewrites_truth
+#print axioms DeonticControl.prohibition_loses_attention
+#print axioms DeonticControl.enforcement_only_lowers_attention

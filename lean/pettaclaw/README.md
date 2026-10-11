@@ -406,7 +406,7 @@ its sound part, and gives explicit counterexamples where it fails.
 | --- | --- | --- |
 | `IterBranches.lean` | `bgoertzel-sing/iter` master `3399366`, branch `agent/protocosmo2-multi-branch` `6ea3dd6` | background branches, merge queue, model-call semaphore, shutdown drain |
 | `IterTurnControl.lean` | same, commits `2727dbe`, `87374c3` | progress checkpoints, terminal and transient provider errors |
-| `DeonticControl.lean` | branch `agent/protocosmo2-wmtm-live-20261005` `4564185` | OODA cycle, deontic appraisal, reference monitor, grants, event store |
+| `DeonticControl.lean` | branches `agent/protocosmo2-wmtm-live-20261005` `4564185` and `agent/protocosmo2-402-circuit` `7c603b5` | OODA cycle, deontic appraisal, reference monitor, grants, event store, deontic enforcer |
 | `WorkLease.lean` | `bgoertzel-sing/iter-work-lease-controller` `ccbaa30` | budgeted work leases with periodic review |
 | `ContextFrames.lean` | `singnet/Omega` PR #284 `a72837e` | context frames, modes, priority selection |
 | `NativeToolCalls.lean` | `singnet/Omega` PRs #379 (merged), #358 `030c014`, #349 `9d28e83` | text command parsing versus native tool calls |
@@ -458,7 +458,12 @@ steps run against a state earlier steps changed (`stale_plan_step_runs`, fixed b
 (`stop_mid_plan_ignored`, fixed by `stop_checked_per_dispatch`); the integration
 adapter's grants are expired on arrival (`adapter_grant_expired_on_arrival`);
 derived working-memory items become observations
-(`derived_item_becomes_observation`).
+(`derived_item_becomes_observation`). The 402-circuit enforcer lowers the
+attention and PLN strength of everything sharing a keyword with a forbidden
+action, including the reason for the prohibition and its negation
+(`deontic_status_rewrites_truth`, `prohibition_loses_attention`), and cannot
+block the action (`enforcement_only_lowers_attention`). Deontic status belongs
+in the authorization gate, as a separate atom.
 
 **Work leases (`WorkLease.lean`).** The counters are sound: turns never
 decrease and stay within the turn and token budgets on every trace
