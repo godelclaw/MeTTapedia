@@ -3438,6 +3438,139 @@ theorem fixed_resolves_accumulation (owner : EventPump.Key) (D n : Nat) :
   obtain ⟨m, h1, h2, h3⟩ := every_input_processed h n ev hev
   exact ⟨m, h1, by omega, h3⟩
 
+/-! ## Runtime journal, command quarantine and owned wait refinement
+
+The runtime commits the successor and settled input IDs in one SQLite
+transaction. The JSON file is a projection of that transaction; transport
+acknowledgement is a subsequent, guarded operation. A crash exposes either
+the old transaction or the new transaction, never a partly committed one.
+That atomic-storage premise is supplied by SQLite, not proved by this model.
+-/
+
+namespace RuntimeJournal
+
+structure State (α : Type) where
+  working : α
+  settled : Nat → Bool
+  acknowledged : Nat → Bool
+
+def Safe (s : State α) : Prop :=
+  ∀ id, s.acknowledged id = true → s.settled id = true
+
+def commit (s : State α) (next : α) (ids : List Nat) : State α :=
+  { s with working := next, settled := fun id => if id ∈ ids then true else s.settled id }
+
+def acknowledge (s : State α) (id : Nat) : State α :=
+  if s.settled id then
+    { s with acknowledged := fun j => if j = id then true else s.acknowledged j }
+  else s
+
+def recover (s : State α) (next : α) (ids : List Nat) (committed : Bool) : State α :=
+  if committed then commit s next ids else s
+
+theorem commit_preserves_ack_safety (s : State α) (h : Safe s) (next : α) (ids : List Nat) :
+    Safe (commit s next ids) := by
+  intro id ha
+  simp only [commit] at ha ⊢
+  split
+  · rfl
+  · exact h id ha
+
+theorem acknowledge_preserves_safety (s : State α) (h : Safe s) (id : Nat) :
+    Safe (acknowledge s id) := by
+  unfold acknowledge
+  split
+  · rename_i hs
+    intro j hj
+    simp only at hj ⊢
+    split at hj
+    · rename_i heq
+      subst j
+      exact hs
+    · exact h j hj
+  · exact h
+
+theorem recovery_is_atomic (s : State α) (next : α) (ids : List Nat) (done : Bool) :
+    recover s next ids done = s ∨ recover s next ids done = commit s next ids := by
+  cases done <;> simp [recover]
+
+theorem committed_input_keeps_successor (s : State α) (next : α) (ids : List Nat)
+    (id : Nat) (hi : id ∈ ids) :
+    (recover s next ids true).working = next ∧
+    (recover s next ids true).settled id = true := by
+  simp [recover, commit, hi]
+
+theorem later_arrival_remains_unsettled (s : State α) (next : α) (ids : List Nat)
+    (id : Nat) (hi : id ∉ ids) (hs : s.settled id = false) :
+    (recover s next ids true).settled id = false := by
+  simp [recover, commit, hi, hs]
+
+end RuntimeJournal
+
+namespace CommandQuarantine
+
+structure State where
+  blocked : Bool
+  permits : Nat
+  releases : Nat
+
+def recover (s : State) (interrupted : Bool) : State :=
+  if interrupted then { s with blocked := true, permits := 0 } else s
+
+def release (s : State) (budget : Nat) : State :=
+  if s.blocked ∧ s.permits = 0 ∧ s.releases < budget then
+    { s with permits := 1, releases := s.releases + 1 }
+  else s
+
+def mayRun (s : State) : Bool := !s.blocked || decide (0 < s.permits)
+
+theorem recovery_refuses_poison (s : State) : mayRun (recover s true) = false := by
+  simp [recover, mayRun]
+
+theorem release_budget_invariant (s : State) (budget : Nat) (h : s.releases ≤ budget) :
+    (release s budget).releases ≤ budget := by
+  unfold release
+  split
+  · rename_i hallowed
+    simp only
+    omega
+  · exact h
+
+theorem no_stacked_retry_permits (s : State) (budget : Nat) (h : 0 < s.permits) :
+    release s budget = s := by
+  simp [release, show s.permits ≠ 0 by omega]
+
+end CommandQuarantine
+
+namespace OwnedDeadline
+
+/-- The hard deadline is fixed when a call is submitted. An observation
+refreshes progress only when the actual byte count strictly increases. -/
+structure State where
+  deadline : Nat
+  bytes : Nat
+  progress : Nat
+
+def observe (s : State) (bytes now : Nat) : State :=
+  if s.bytes < bytes then { s with bytes := bytes, progress := now } else s
+
+theorem observations_never_extend_deadline (s : State) (bytes now : Nat) :
+    (observe s bytes now).deadline = s.deadline := by
+  unfold observe
+  split <;> rfl
+
+theorem polling_is_not_progress (s : State) (bytes now : Nat) (h : bytes ≤ s.bytes) :
+    observe s bytes now = s := by
+  simp [observe, Nat.not_lt_of_ge h]
+
+/-- A progress receipt during an owned wait sends the base watchdog duration
+plus the remaining lease. Its absolute expiry is unchanged by polling time. -/
+theorem watchdog_expiry_during_wait (base deadline now : Nat) (h : now ≤ deadline) :
+    now + base + (deadline - now) = base + deadline := by
+  omega
+
+end OwnedDeadline
+
 /-! ## Axiom audit (kernel-level trust check) -/
 #print axioms ProcessSupervision.freeze_is_absorbing
 #print axioms ProcessSupervision.unguarded_freezes_forever
@@ -3497,3 +3630,7 @@ theorem fixed_resolves_accumulation (owner : EventPump.Key) (D n : Nat) :
 #print axioms ProcessSupervision.kill_mid_call_is_recovery
 #print axioms ProcessSupervision.fixed_bounds_incident
 #print axioms ProcessSupervision.fixed_resolves_accumulation
+#print axioms ProcessSupervision.RuntimeJournal.acknowledge_preserves_safety
+#print axioms ProcessSupervision.RuntimeJournal.recovery_is_atomic
+#print axioms ProcessSupervision.CommandQuarantine.release_budget_invariant
+#print axioms ProcessSupervision.OwnedDeadline.watchdog_expiry_during_wait
