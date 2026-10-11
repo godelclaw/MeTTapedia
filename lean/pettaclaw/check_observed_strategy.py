@@ -14,8 +14,8 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
-    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async', 'cooperative-input', 'runtime-observation'], default='strategy',
-                        help='Check strategy, fair goals, asynchronous topics, cooperative input or runtime observations.')
+    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async', 'cooperative-input', 'runtime-observation', 'event-pump'], default='strategy',
+                        help='Check strategy, fair goals, asynchronous topics, cooperative input, runtime observations or event/channel contracts.')
     parser.add_argument('--dependency-root', type=Path,
                         help='Reuse a workspace with the same toolchain and pinned mathlib revision.')
     args = parser.parse_args()
@@ -96,7 +96,8 @@ def main():
         built[module] = fingerprint
         return fingerprint
 
-    targets = (['RuntimeObservationChecks'] if args.suite == 'runtime-observation' else
+    targets = (['EventPumpChecks'] if args.suite == 'event-pump' else
+               ['RuntimeObservationChecks'] if args.suite == 'runtime-observation' else
                ['CooperativeInputChecks'] if args.suite == 'cooperative-input' else
                ['TopicAsyncChecks'] if args.suite == 'topic-async' else
                ['FairGoalChecks'] if args.suite == 'fair-goals' else
@@ -104,7 +105,9 @@ def main():
     try:
         for module in targets:
             build(module)
-        modules = (['RuntimeObservation', 'RuntimeObservationChecks']
+        modules = (['AsyncWait', 'EventPump', 'ChannelJoin', 'EventPumpChecks', 'FairGoalScheduling']
+                   if args.suite == 'event-pump' else
+                   ['RuntimeObservation', 'RuntimeObservationChecks']
                    if args.suite == 'runtime-observation' else
                    ['CooperativeInput', 'CooperativeInputChecks', 'TopicAsync', 'TopicAsyncChecks']
                    if args.suite == 'cooperative-input' else
@@ -124,7 +127,8 @@ def main():
             names += [namespace + '.' + name for name in
                       re.findall(r'^theorem\s+(\w+)', source.read_text(), re.M)]
         audit = output / 'StrategyAxiomAudit.lean'
-        audit_import = ('RuntimeObservationChecks' if args.suite == 'runtime-observation' else
+        audit_import = ('EventPumpChecks' if args.suite == 'event-pump' else
+                        'RuntimeObservationChecks' if args.suite == 'runtime-observation' else
                         'CooperativeInputChecks' if args.suite == 'cooperative-input' else
                         'TopicAsyncChecks' if args.suite == 'topic-async' else
                         'FairGoalChecks' if args.suite == 'fair-goals' else 'ObservedStrategyChecks')

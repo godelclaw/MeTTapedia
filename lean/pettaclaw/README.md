@@ -254,6 +254,78 @@ arrives. These are model properties and bounded implementation comparisons;
 they do not verify the C executor, transport, or arbitrary host scheduling.
 Conditional fairness still requires continued service and bounded admission.
 
+## Event pump and channel contract
+
+`EventPump.lean` models owner/generation/serial identities, immutable input
+records, queued/claimed/settled delivery, selective receive and safe suspension.
+Steps preserve other mailboxes, and independent mailbox steps commute.
+An epoch-bound wait ticket is checked against durable readiness immediately
+before parking. Arrival both before and after that check is covered. Accepted
+evidence survives arbitrary action/recovery traces; settlement cannot reopen
+or produce another delivery receipt. Recovery requeues local claims, while
+`AsyncWait` retains remote uncertainty and denies another provider submission
+while the original call remains owned. Local delivery settlement is distinct
+from goal fulfillment and remote execution.
+
+The scheduling policy pops one runnable task per slot and appends both yielding
+continuations and new arrivals to the tail. Every task in an existing finite
+prefix receives service within its prefix length plus one, even with continuing
+arrivals. Ready-owner publication connects accepted inbox events to this queue.
+The existing weighted goal policy remains available; round-robin is a concrete
+policy whose bound is proved, not a claim about Tokio's internal algorithm.
+Capacity admission preserves unique runnable keys and the configured limit.
+A finite inbox drains within its pending-event count when handling slots return
+and commit dispositions. Neither service theorem promises provider completion.
+
+The wall-time theorem requires bounded whole-slot durations, including pump,
+storage and evaluation work, as well as a wake-up bound and continued service.
+For a queue bounded by `N` and slot cost bounded by `q`, the modeled latency is
+at most `p + N*q`, where `p` is wake-up delay. These are implementation
+obligations. Reduction counts alone cannot bound an unbounded primitive. The
+journal/filter definitions are reference semantics; efficient implementations
+should use derived pending indexes instead of rescanning historical rows.
+
+`ChannelJoin.lean` models the RSpace data/continuation/reaction boundary. Each
+join selects a distinct occurrence for every pattern, with channel and payload
+checks. Invalid/partial candidates stutter. A valid join consumes its selected
+sends and records the complete runnable input tuple in one transition. Unchosen
+data and other receives are preserved. One-shot receives retire; persistent
+receives remain but cannot reuse consumed sends, including after arbitrary
+later actions. Joins using distinct receives and disjoint occurrences leave
+each other enabled. All accepted occurrences remain available or recorded in a
+reaction across arbitrary channel traces. Matching is nondeterministic at this
+boundary: the validator does not claim an incomplete candidate finder is
+complete, and this model does not implement the full Rholang pattern language.
+
+`EventPumpChecks.lean` includes the answer/timer latch race in both orders,
+late-answer receipt after the timer wins, distinct sends with equal payloads,
+selective receive, restart and duplicate-delivery replays. Counterexamples show
+lost wake-ups without rechecking, starvation without rotation, violation of any
+proposed latency without bounded slots, and lost work after partial join
+publication. A stuttering host satisfies safety refinement without making
+service progress. The checker audits these contracts, the shared admission boundary
+and the reused scheduling dependency against Lean's standard axioms.
+
+`HostAdapter` states the per-transition refinement equation required of an
+actual implementation. Its trace theorem lifts evidence and wake-up safety to
+any host that proves that equation, allowing bookkeeping stutters. Liveness
+additionally requires service progress and timing bounds: a host that stutters
+forever can preserve safety while never handling an event. Atomic durable
+commit, never-reused identities/epochs, trusted classifications and faithful
+clock/transport observations remain host obligations. No C/MeTTa deployment,
+Erlang, Tokio or RSpace implementation is verified by these files.
+
+Primary sources: [Erlang mailboxes and selective receive](https://www.erlang.org/doc/system/conc_prog.html),
+[Tokio fairness assumptions](https://docs.rs/tokio/latest/tokio/runtime/index.html),
+[RSpace matching](https://rholang.github.io/docs/rspace-intro/).
+
+From the repository root:
+
+```sh
+python3 lean/pettaclaw/check_observed_strategy.py \
+  --suite event-pump --output-dir build/event-pump
+```
+
 ## Owned asynchronous topics
 
 `TopicAsync.lean` extends the existing observed strategy and fair goal queue.
