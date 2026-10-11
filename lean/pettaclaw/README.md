@@ -30,6 +30,9 @@ are derived from the models, deployed, and re-observed live.
   store activate at the next capture with a revision-bound receipt.  The
   repair changes neither the replace-or-stutter reducer nor the protected
   source-promotion boundary.
+- `OmegaArchitecture.lean` — the pinned `singnet/Omega` core: duplicate-input
+  pacing, signed loop budget, strict timed wakeup, provider request settings,
+  ordered dispatch/history observations and the provider-failure boundary.
 - `ProtectedPlasticity.lean` — the essential Iter–PettaClaw fusion: an
   invariant constitution, freely transformable development, lawfully evolving
   life, and conservative projection of every mixed trace back to both source
@@ -62,6 +65,26 @@ are derived from the models, deployed, and re-observed live.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
+- `ConversationContinuation.lean` — the shared managed-host request ledger:
+  delivery acknowledgements, interruptions and bounded context cannot discharge
+  unfinished requests; dependent effects wait for observed broker results;
+  completion requires a correlated successful receipt and the task's own
+  acceptance check. This is an executable architecture contract, not a claim
+  that unchanged upstream loops or the deployed framework already conform.
+- `ObservedStrategy.lean` — the composition of Iter preparation, Codex request
+  authority/result observation and Omega wake scheduling over that ledger.
+  It protects unfinished work across arbitrary operational traces, invalidates
+  stale decisions after input and mode changes, preserves pending effects on
+  restart, accounts for every provider attempt, and gates scope-specific
+  absence and completion claims. Independent batches remain possible when
+  their continuations are proved observation-invariant.
+- `ObservedStrategyChecks.lean` — finite model replays and deliberately broken
+  alternatives covering stale effects, skipped observation, schema-only
+  authority, false completion, unavailable searches and lost checkpoint state.
+- `AdmissionFrontier.lean` — separate thought and tool admission, trusted
+  observation/effect classes, unchanged unresolved outcomes, and snapshot
+  invalidation after late receipts. `ObservedStrategy.lean` reuses its thought
+  gate; dependent effects and checked goal completion retain separate gates.
 - `AgentArchitecture.lean` — an architecture-neutral reliability contract:
   protected constraints outside lossy compaction, append-only receipts,
   distinct process/cognitive/verified liveness, end-to-end completion evidence,
@@ -158,18 +181,86 @@ LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
 ```
 
+For the composed strategy and its imported model dependencies, from the
+repository root with the pinned Lake dependencies already available:
+
+```sh
+python3 lean/pettaclaw/check_observed_strategy.py \
+  --output-dir lean/mettapedia/.lake/observed-strategy
+```
+
+This checks the modules, the finite replays, and the theorem axiom audit. Its
+JSON receipts identify source hashes and reject proof dependencies outside
+Lean's standard axioms. This is an executable managed-host specification;
+conformance of a deployed runtime must still be established at this boundary.
+The reference models are pinned to Iter `f4064d97849ecaccac7939315a3f1a68de15c3ef`,
+Omega `ee0618a293ec3662a32b10b09c6cbb073f59d6b2`, and the Codex snapshot documented
+in `CodingAgent.lean`. The managed composition does not rewrite upstream loops.
+
+The composition reuses the source models at these boundaries:
+
+| Mechanism | Reused definition | Composition property |
+| --- | --- | --- |
+| Iter ordered preparation | `CodingAgent.prepareWithIter`, `IterArchitecture.applyTransformations` | Exact message order; failed transforms stutter; authority is unchanged |
+| Iter persistence | `IterArchitecture.rollback_preserves_checkpoint` | Reference checkpoint law remains available; managed restore also retains obligations and issued effects |
+| Codex captured authority | `CodingAgent.RequestView` | Commands require the captured implementation and permission; advertisements grant neither |
+| Codex result observation | `ConversationContinuation.propose`, `brokerResult`, `observeResult` | Dependent effects wait for correlated result observation |
+| Omega wake scheduling | `OmegaArchitecture.armWake`, `idleWake` | Submission arms the deadline; strict wake changes scheduling without discharging work |
+| Managed lifecycle | `ObservedStrategy.step`, `run` | Input, mode changes, restart and compaction preserve accepted unfinished requests |
+
+The protected request ledger, stale-decision gate, allowance/cooldown policy,
+full host checkpoint and scoped search-evidence gate are managed additions.
+The model assumes durable atomic storage, faithful IDs, a trusted coverage
+validator and a task-specific completion checker. It proves preservation,
+admission and conditional readiness; it does not prove eventual success of
+arbitrary tasks, natural-language interpretation, or external tool behavior.
+
 The paper (repository [`papers/pettaclaw.tex`](../../papers/pettaclaw.tex),
 PDF alongside) tells the whole story: architecture, doctrine, the two
 incidents, the theorems, the live verifications. Model-to-code
 conformance tests live with the agent runtime
 ([godelclaw/pettaclaw](https://github.com/godelclaw/pettaclaw)).
 
+## Scheduling boundary
+
+The rho reduction relation determines which communications are enabled. The
+host executor chooses and runs enabled continuations. In Rholang, RSpace keeps
+unmatched sends and waiting continuations; a matching `produce` or `consume`
+returns runnable work to the interpreter. The current F1R3FLY Rust interpreter
+uses Tokio tasks for parallel branches. This is execution machinery around the
+calculus, not an additional language-level ordering guarantee.
+
+Primary sources: [RSpace](https://rholang.github.io/docs/rspace-intro/),
+[F1R3FLY reduction and dispatch](https://github.com/F1R3FLY-io/f1r3node/blob/3507ce3daab1946cdda2050a6dbeedd0f0898575/rholang/src/rust/interpreter/reduce.rs).
+
+CeTTa already supplies canonical/rotating rho reduction scheduling and a
+bounded reducer. A long-lived agent additionally needs an event pump that
+retains continuations, delivers correlated HTTP/timer completions, resumes
+runnable work and checkpoints ownership across restart. Reaching quiescence
+means no reaction is enabled now; it does not complete a pending external call.
+Scheduling policy can remain MeTTa over native transport and storage services.
+
+The active strategy and topic models share `AdmissionFrontier` for provider
+admission. A missing broker outcome cannot disable eligible thinking. Unknown
+effects still block dependent effects; task completion checks settlement and
+the task-specific acceptance rule. This conservative strategic model treats
+every command as an effect. The richer observation/effect distinction and its
+runtime decision correspondence belong to `AdmissionFrontier`.
+
+The checker audits this shared admission dependency in every suite. Replays
+cover thinking with an unresolved effect, retaining that effect after a text
+reply, refusing a second effect and invalidating a plan when a late receipt
+arrives. These are model properties and bounded implementation comparisons;
+they do not verify the C executor, transport, or arbitrary host scheduling.
+Conditional fairness still requires continued service and bounded admission.
+
 ## Owned asynchronous topics
 
 `TopicAsync.lean` extends the existing observed strategy and fair goal queue.
 It allows bounded provider requests for independent topics while preserving
-one shared request ledger, one budget, and the dependent-tool observation
-barrier. `TopicAsyncChecks.lean` supplies finite replays and deliberately
+one shared request ledger and budget. Its thought gate is independent of the
+dependent-tool observation barrier; effect dispatch checks that barrier
+explicitly. `TopicAsyncChecks.lean` supplies finite replays and deliberately
 broken alternatives.
 
 ```text

@@ -3,6 +3,7 @@ import CodingAgent
 import OmegaArchitecture
 import ContextProjection
 import FeedbackSensitiveBatch
+import AdmissionFrontier
 
 /-!
 # An observed, interruptible strategy over the shared request ledger
@@ -19,10 +20,12 @@ advance the revision. A reply to an older snapshot can be recorded as stale but
 cannot initiate an effect. Already issued effects remain pending across these
 events: interruption is not rollback, and restart is not permission to replay.
 
-The single-call phase concerns dependent decisions. Independent batches can
-use a separate adapter after establishing that their decisions do not depend
-on one another's observations. Strict upstream profiles keep their own loops;
-this module specifies the additional managed-host boundary.
+Provider admission and dependent-effect admission are separate. Unknown broker
+outcomes cannot freeze thinking; they retain their observation barrier for
+new effects. This strategic quotient conservatively treats every command as
+an effect. AdmissionFrontier supplies the richer observation/effect contract;
+TopicAsync reuses this strategic gate for its bounded owned call pool. Strict
+upstream profiles keep their own loops.
 
 Host assumptions include the previous request-ledger assumptions, a durable
 atomic checkpoint, faithful provider and broker correlation, monotone clock
@@ -121,14 +124,47 @@ def snapshot (state : State) (focus : ConversationContinuation.RequestKey)
   ⟨state.nextSample, state.revision, state.mode, focus,
     state.requests.commitments focus, prepared, router⟩
 
+/-- Runnable thought depends on input/control and the owned provider slot,
+not on the broker's pending or unobserved action. -/
 def ready (state : State) : Bool :=
   !state.requests.interrupted && state.requests.inbox.isEmpty &&
-  decide (state.requests.phase = .ready) &&
-  decide (state.pending = none) && decide (state.dispatch = none)
+  decide (state.pending = none)
+
+/-- The signed host clock is projected by its due predicate. The abstract
+clock coordinates encode that predicate, not elapsed wall time. -/
+def admissionControls (state : State) (now : Int)
+    (focus : ConversationContinuation.RequestKey) : AdmissionFrontier.Controls :=
+  { available := state.requests.inbox.isEmpty &&
+      decide (state.requests.commitments focus = .active)
+    paused := state.requests.interrupted
+    pending := state.pending.map Snapshot.serial
+    allowance := some state.allowance
+    cooldown := if state.cooldownUntil ≤ now then 0 else 1 }
 
 def canCapture (state : State) (now : Int) (focus : ConversationContinuation.RequestKey) : Bool :=
-  ready state && decide (state.requests.commitments focus = .active) &&
-    decide (0 < state.allowance) && decide (state.cooldownUntil ≤ now)
+  decide (AdmissionFrontier.thoughtDenial (admissionControls state now focus) = none)
+
+theorem canCapture_eq (state : State) (now : Int)
+    (focus : ConversationContinuation.RequestKey) :
+    canCapture state now focus =
+      (ready state && decide (state.requests.commitments focus = .active) &&
+        decide (0 < state.allowance) && decide (state.cooldownUntil ≤ now)) := by
+  cases pending : state.pending <;>
+    cases interrupted : state.requests.interrupted <;>
+    by_cases inbox : state.requests.inbox.isEmpty = true <;>
+    by_cases active : state.requests.commitments focus = .active <;>
+    by_cases allowance : state.allowance = 0 <;>
+    by_cases due : state.cooldownUntil ≤ now <;>
+    simp_all [canCapture, admissionControls, AdmissionFrontier.thoughtDenial, ready] <;> omega
+
+/-- Outcome uncertainty still gates every command in this conservative
+strategic quotient. The typed observation contract lives in AdmissionFrontier. -/
+def effectsReady (state : State) : Bool :=
+  decide (state.requests.phase = .ready) && decide (state.dispatch = none)
+
+/-- Completion requires both an available provider coordinate and a settled
+effect frontier. Runnable thought alone cannot certify task completion. -/
+def completionReady (state : State) : Bool := ready state && effectsReady state
 
 /-- Every provider attempt spends one allowance, including a failed attempt.
 There is no hidden retry transition inside this submission. -/
@@ -143,14 +179,17 @@ def capture (state : State) (now : Int) (focus : ConversationContinuation.Reques
 
 def current (state : State) (snap : Snapshot) : Bool :=
   decide (snap.revision = state.revision) && decide (snap.mode = state.mode) &&
-  !state.requests.interrupted && state.requests.inbox.isEmpty &&
-  decide (state.requests.phase = .ready) && decide (state.dispatch = none)
+  !state.requests.interrupted && state.requests.inbox.isEmpty
 
 /-- Advertising a schema grants neither an implementation nor permission. -/
 def admitCommand (snap : Snapshot) (ticket : ConversationContinuation.Ticket) (tool : Nat) :
     Option Dispatch :=
   if ticket.request = snap.focus ∧ tool ∈ snap.router.executable ∧
       tool ∈ snap.router.permitted then some ⟨ticket, tool, snap⟩ else none
+
+def admitEffect (state : State) (snap : Snapshot)
+    (ticket : ConversationContinuation.Ticket) (tool : Nat) : Option Dispatch :=
+  if effectsReady state then admitCommand snap ticket tool else none
 
 inductive Reply where
   | failure (error : Nat) (retryAfter : Int)
@@ -169,7 +208,7 @@ def handleReply (state : State) (now : Int) (snap : Snapshot) : Reply → State
         pending := none
         decisions := state.decisions ++ [.text snap.serial answer] }
   | .command ticket tool =>
-      match admitCommand snap ticket tool with
+      match admitEffect state snap ticket tool with
       | none =>
           { state with
             pending := none
@@ -357,7 +396,7 @@ theorem exhausted_allowance_blocks_capture (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey) (empty : state.allowance = 0)
     (changes : List IterArchitecture.Transformation) :
     capture state now focus changes = state := by
-  simp [capture, canCapture, empty]
+  simp [capture, canCapture_eq, empty]
 
 theorem cooldown_blocks_early_capture (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey)
@@ -365,7 +404,7 @@ theorem cooldown_blocks_early_capture (state : State) (now : Int)
     (changes : List IterArchitecture.Transformation) :
     capture state now focus changes = state := by
   have notDue : ¬state.cooldownUntil ≤ now := by omega
-  simp [capture, canCapture, notDue]
+  simp [capture, canCapture_eq, notDue]
 
 theorem capture_preserves_request_ledger (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey)
@@ -386,7 +425,7 @@ theorem capture_conserves_request_budget (state : State) (now : Int)
     have facts : ready state = true ∧
         state.requests.commitments focus = .active ∧
         0 < state.allowance ∧ state.cooldownUntil ≤ now := by
-      simpa only [canCapture, Bool.and_eq_true, decide_eq_true_eq, and_assoc]
+      simpa only [canCapture_eq, Bool.and_eq_true, decide_eq_true_eq, and_assoc]
         using admitted
     have enough := facts.2.2.1
     simp only
@@ -490,28 +529,36 @@ theorem unavailable_search_preserves_last_known (scope revision : Nat)
 
 /-! ## Observation barriers and checked fulfillment -/
 
-theorem awaiting_effect_blocks_another_provider_decision (state : State)
-    (ticket : ConversationContinuation.Ticket) (now : Int)
-    (focus : ConversationContinuation.RequestKey)
-    (changes : List IterArchitecture.Transformation)
-    (waiting : state.requests.phase = .awaitingBroker ticket) :
-    capture state now focus changes = state := by
-  simp [capture, canCapture, ready, waiting]
+theorem broker_frontier_cannot_block_thinking (state : State) (now : Int)
+    (focus : ConversationContinuation.RequestKey) (phase : ConversationContinuation.Phase)
+    (dispatch : Option Dispatch) :
+    canCapture { state with
+      requests := { state.requests with phase := phase }
+      dispatch := dispatch } now focus = canCapture state now focus := rfl
 
-theorem unobserved_result_blocks_another_provider_decision (state : State)
-    (receipt : ConversationContinuation.Receipt) (now : Int)
-    (focus : ConversationContinuation.RequestKey)
-    (changes : List IterArchitecture.Transformation)
+theorem awaiting_effect_blocks_new_effects (state : State)
+    (ticket : ConversationContinuation.Ticket)
+    (waiting : state.requests.phase = .awaitingBroker ticket) :
+    effectsReady state = false := by simp [effectsReady, waiting]
+
+theorem unobserved_result_blocks_new_effects (state : State)
+    (receipt : ConversationContinuation.Receipt)
     (waiting : state.requests.phase = .awaitingObservation receipt) :
-    capture state now focus changes = state := by
-  simp [capture, canCapture, ready, waiting]
+    effectsReady state = false := by simp [effectsReady, waiting]
+
+theorem blocked_effect_preserves_broker (state : State) (now : Int) (snap : Snapshot)
+    (ticket : ConversationContinuation.Ticket) (tool : Nat)
+    (blocked : effectsReady state = false) :
+    (handleReply state now snap (.command ticket tool)).requests = state.requests ∧
+    (handleReply state now snap (.command ticket tool)).dispatch = state.dispatch := by
+  simp [handleReply, admitEffect, blocked]
 
 theorem pending_input_blocks_capture (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey)
     (changes : List IterArchitecture.Transformation)
     (pending : state.requests.inbox.isEmpty = false) :
     capture state now focus changes = state := by
-  simp [capture, canCapture, ready, pending]
+  simp [capture, canCapture_eq, ready, pending]
 
 theorem admitted_capture_submits_exactly_one_attempt (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey)
@@ -528,7 +575,7 @@ theorem eligible_unfinished_work_can_capture (state : State) (now : Int)
     (active : state.requests.commitments focus = .active)
     (budget : 0 < state.allowance) (due : state.cooldownUntil ≤ now) :
     canCapture state now focus = true := by
-  simp [canCapture, available, active, budget, due]
+  simp [canCapture_eq, available, active, budget, due]
 
 theorem handle_reply_consumes_provider_slot (state : State) (now : Int)
     (snap : Snapshot) (response : Reply) :
@@ -537,7 +584,7 @@ theorem handle_reply_consumes_provider_slot (state : State) (now : Int)
   | failure => rfl
   | text => rfl
   | command ticket tool =>
-      cases admitted : admitCommand snap ticket tool <;> simp [handleReply, admitted]
+      cases admitted : admitEffect state snap ticket tool <;> simp [handleReply, admitted]
       split <;> rfl
 
 theorem provider_response_cannot_be_delivered_twice (state : State) (now : Int)
@@ -602,7 +649,7 @@ theorem handle_reply_preserves_active_work (state : State) (now : Int)
   | failure => exact active
   | text => exact active
   | command ticket tool =>
-      cases admitted : admitCommand snap ticket tool with
+      cases admitted : admitEffect state snap ticket tool with
       | none => simpa [handleReply, admitted] using active
       | some dispatch =>
           simp only [handleReply, admitted]
@@ -717,7 +764,7 @@ theorem handle_reply_preserves_accepted_request (state : State) (now : Int)
   | failure => exact present
   | text => exact present
   | command ticket tool =>
-      cases admitted : admitCommand snap ticket tool with
+      cases admitted : admitEffect state snap ticket tool with
       | none => simpa [handleReply, admitted] using present
       | some dispatch =>
           simp only [handleReply, admitted]

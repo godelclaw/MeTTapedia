@@ -116,6 +116,7 @@ def main():
                    ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
                     'Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation',
                     'FeedbackSensitiveBatch', 'ObservedStrategy', 'ObservedStrategyChecks'])
+        modules = list(dict.fromkeys(['AdmissionFrontier', 'ObservedStrategy'] + modules))
         names = []
         for module in modules:
             source = source_for(module)

@@ -13,6 +13,8 @@ A terminal provider reply first becomes owned evidence. Observation does not
 grant effect authority: context versions, declared dependencies, global control
 revision and captured permissions are checked again at dispatch. Tool effects
 remain serialized through the existing broker and its observation barrier.
+The shared AdmissionFrontier gate admits thought independently of that barrier;
+the barrier is checked explicitly when a terminal command is issued.
 
 The host must checkpoint identities, versions, reservations and routing
 atomically. All shared reads must declare dependencies, all relevant writes
@@ -139,6 +141,14 @@ def canCapture (state : State) (now : Int) (topic : Topic)
   decide (retainedBytes state.calls + bytes ≤ state.maxBytes) &&
   ObservedStrategy.canCapture (topicAgent state topic) now focus
 
+theorem broker_frontier_cannot_block_topic_thinking (state : State) (now : Int)
+    (topic : Topic) (focus : ConversationContinuation.RequestKey) (bytes : Nat)
+    (phase : ConversationContinuation.Phase) (dispatch : Option ObservedStrategy.Dispatch) :
+    canCapture { state with core := { state.core with agent := { state.core.agent with
+      requests := { state.core.agent.requests with phase := phase }
+      dispatch := dispatch } } } now topic focus bytes =
+      canCapture state now topic focus bytes := rfl
+
 def makeCall (state : State) (topic : Topic) (focus : ConversationContinuation.RequestKey)
     (changes : List IterArchitecture.Transformation) (dependencies : List Topic) (bytes : Nat) : Call :=
   { id := ⟨state.agentId, state.generation, state.core.agent.nextSample⟩
@@ -208,7 +218,8 @@ def issue (state : State) (now : Int) (id : CallId) : State :=
       match slot.phase with
       | .terminal (.command ticket tool) =>
           if slot.observed && !slot.handled && current state slot.call &&
-              ObservedStrategy.ready state.core.agent then
+              ObservedStrategy.ready state.core.agent &&
+              ObservedStrategy.effectsReady state.core.agent then
             let admitted := ObservedStrategy.reply
               { state.core.agent with pending := some slot.call.snapshot }
               now slot.call.snapshot.serial (.command ticket tool)

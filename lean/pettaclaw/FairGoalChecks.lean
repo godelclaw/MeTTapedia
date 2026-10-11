@@ -130,10 +130,13 @@ theorem provider_text_is_neither_a_refund_nor_completion :
     text.goals.map Goal.service = [1, 0] ∧
     text.agent.requests.commitments (cfg.key (research.id, research.round)) = .active := by decide
 
-theorem result_must_be_observed_before_the_next_turn :
+theorem unobserved_result_allows_thinking_but_not_completion :
     let attempted := FairGoalStrategy.capture cfg true returned 1 (cfg.key (review.id, review.round)) []
-    attempted.goals.map Goal.service = [1, 0] ∧ attempted.agent.nextSample = 1 ∧
-    FairGoalStrategy.next returned true = .wait := by decide
+    attempted.goals.map Goal.service = [1, 1] ∧ attempted.agent.nextSample = 2 ∧
+    FairGoalStrategy.next returned true = .goal review ∧
+    attempted.agent.requests.phase = returned.agent.requests.phase ∧
+    canAcknowledge cfg checks returned.agent research
+      ⟨research.id, returned.agent.revision, GoalReviewChecks.receipt research⟩ = false := by decide
 
 theorem checked_completion_preserves_service_and_other_obligations :
     let done := FairGoalStrategy.step cfg checks true observed

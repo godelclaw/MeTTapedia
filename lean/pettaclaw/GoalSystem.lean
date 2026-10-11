@@ -102,7 +102,7 @@ deriving Repr, DecidableEq
 def canAcknowledge (cfg : Config)
     (checks : ConversationContinuation.RequestKey → ConversationContinuation.Receipt → Bool)
     (agent : ObservedStrategy.State) (goal : Goal) (report : Report) : Bool :=
-  !goal.blocked && !goal.finished && ObservedStrategy.ready agent &&
+  !goal.blocked && !goal.finished && ObservedStrategy.completionReady agent &&
     decide (report.goal = goal.id ∧ report.revision = agent.revision ∧
       report.receipt.ticket.request = cfg.key (goal.id, goal.round)) &&
     ConversationContinuation.canComplete checks agent.requests
@@ -277,7 +277,7 @@ theorem admission_denial_waits (state : State)
     (clear : state.agent.requests.inbox.isEmpty = true) :
     next state false = .wait := by simp [next, clear]
 
-theorem pending_observation_waits (state : State) (admitted : Bool)
+theorem unavailable_thought_waits (state : State) (admitted : Bool)
     (clear : state.agent.requests.inbox.isEmpty = true)
     (pending : ObservedStrategy.ready state.agent = false) :
     next state admitted = .wait := by simp [next, clear, pending]
@@ -291,12 +291,18 @@ theorem admitted_selection_is_generic (state : State) (goal : Goal)
 theorem acknowledgement_contract (cfg : Config) (checks)
     (agent : ObservedStrategy.State) (goal : Goal) (report : Report) :
     canAcknowledge cfg checks agent goal report = true ↔
-      goal.blocked = false ∧ goal.finished = false ∧ ObservedStrategy.ready agent = true ∧
+      goal.blocked = false ∧ goal.finished = false ∧ ObservedStrategy.completionReady agent = true ∧
       (report.goal = goal.id ∧ report.revision = agent.revision ∧
         report.receipt.ticket.request = cfg.key (goal.id, goal.round)) ∧
       ConversationContinuation.canComplete checks agent.requests
         (cfg.key (goal.id, goal.round)) report.receipt = true := by
   simp [canAcknowledge, Bool.and_eq_true, and_assoc]
+
+theorem unsettled_effects_block_completion (cfg : Config) (checks)
+    (agent : ObservedStrategy.State) (goal : Goal) (report : Report)
+    (unsettled : ObservedStrategy.effectsReady agent = false) :
+    canAcknowledge cfg checks agent goal report = false := by
+  simp [canAcknowledge, ObservedStrategy.completionReady, unsettled]
 
 theorem checked_cycle_finishes_its_ledger_request (cfg : Config) (checks)
     (agent : ObservedStrategy.State) (goal : Goal) (report : Report)
@@ -305,8 +311,9 @@ theorem checked_cycle_finishes_its_ledger_request (cfg : Config) (checks)
         report.receipt.ticket.request = .discharged ⟨.achieved, .result report.receipt⟩ := by
   have facts := (acknowledgement_contract cfg checks agent goal report).mp checked
   have readyFacts : agent.requests.interrupted = false ∧ agent.requests.inbox.isEmpty = true ∧
-      agent.requests.phase = .ready ∧ agent.pending = none ∧ agent.dispatch = none := by
-    simpa [ObservedStrategy.ready, Bool.and_eq_true, and_assoc] using facts.2.2.1
+      agent.pending = none ∧ agent.requests.phase = .ready ∧ agent.dispatch = none := by
+    simpa [ObservedStrategy.completionReady, ObservedStrategy.ready,
+      ObservedStrategy.effectsReady, Bool.and_eq_true, and_assoc] using facts.2.2.1
   have completing := facts.2.2.2.2
   have active := (ConversationContinuation.completion_requires_matching_observed_success
     checks agent.requests (cfg.key (goal.id, goal.round)) report.receipt completing).1

@@ -118,7 +118,7 @@ theorem pending_capture_stutters (cfg : Config) (state : State) (now : Int)
     (pending : state.agent.pending ≠ none) :
     capture cfg admitted state now focus changes = state := by
   apply host_denial_stutters
-  simp [ObservedStrategy.canCapture, ObservedStrategy.ready, pending]
+  simp [ObservedStrategy.canCapture_eq, ObservedStrategy.ready, pending]
 
 theorem duplicate_capture_stutters (cfg : Config) (state : State) (now : Int)
     (focus : ConversationContinuation.RequestKey) (changes) (admitted : Bool) :

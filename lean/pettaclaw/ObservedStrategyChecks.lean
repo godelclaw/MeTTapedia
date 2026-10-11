@@ -66,10 +66,25 @@ theorem duplicate_provider_completion_cannot_enqueue_twice :
     duplicate.requests.issued = [ticket] ∧ duplicate.decisions.length = 1 ∧
     duplicate.dispatch = proposed.dispatch := by decide
 
-theorem dependent_capture_waits_for_result_observation :
-    (capture proposed 0 task []).nextSample = 1 ∧
-    (capture returned 0 task []).nextSample = 1 ∧
+theorem thinking_continues_before_broker_result_observation :
+    (capture proposed 0 task []).nextSample = 2 ∧
+    (capture returned 0 task []).nextSample = 2 ∧
     (capture observed 0 task []).nextSample = 2 := by decide
+
+theorem text_reply_preserves_missing_broker_outcome :
+    let thinking := capture proposed 0 task []
+    let answered := reply thinking 0 1 (.text 77)
+    answered.pending = none ∧ answered.dispatch = proposed.dispatch ∧
+    answered.requests.phase = .awaitingBroker ticket ∧
+    answered.requests.issued = [ticket] ∧ answered.decisions.getLast? = some (.text 1 77) := by decide
+
+theorem late_receipt_invalidates_an_in_flight_plan :
+    let thinking := capture proposed 0 task []
+    let arrived := report thinking success
+    let answered := reply arrived 0 1 (.command ⟨task, 2⟩ 10)
+    answered.pending = none ∧ answered.requests.journal = [success] ∧
+    answered.requests.issued = [ticket] ∧
+    answered.decisions.getLast? = some (.stale 1) := by decide
 
 theorem task_fulfillment_needs_the_task_checker :
     returned.requests.commitments task = .active ∧
@@ -118,8 +133,9 @@ theorem ignoring_snapshot_revision_admits_stale_effect :
 theorem clearing_observation_barrier_permits_blind_followup :
     let failed := report proposed failure
     let broken := { failed with requests := { failed.requests with phase := .ready } }
-    (capture failed 0 task []).nextSample = 1 ∧
-    (capture broken 0 task []).nextSample = 2 := by decide
+    let followup := ConversationContinuation.Ticket.mk task 2
+    (reply (capture failed 0 task []) 0 1 (.command followup 10)).dispatch = none ∧
+    (reply (capture broken 0 task []) 0 1 (.command followup 10)).dispatch.isSome = true := by decide
 
 def advertisementOnly (snap : Snapshot) (tool : Nat) : Bool :=
   decide (tool ∈ snap.router.advertised)

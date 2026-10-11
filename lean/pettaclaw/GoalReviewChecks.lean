@@ -86,9 +86,11 @@ theorem incoming_input_preempts_without_resetting_age :
     let state := step cfg checks owed (.operational (.delivered steering))
     next state true = .input ∧ state.goals = owed.goals := by decide
 
-theorem unobserved_return_waits_before_selection :
+theorem unobserved_return_allows_selection_but_not_completion :
     let state : State := { owed with agent := returned review }
-    next state true = .wait ∧ state.goals = owed.goals := by decide
+    next state true = .goal review ∧ state.goals = owed.goals ∧
+      canAcknowledge cfg checks state.agent review
+        ⟨review.id, state.agent.revision, receipt review⟩ = false := by decide
 
 theorem goals_survive_control_recovery_and_time :
     let later := run cfg checks owed

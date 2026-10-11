@@ -119,6 +119,24 @@ theorem provider_parallelism_keeps_tools_serialized :
     second.core.agent.dispatch.map (fun dispatch => dispatch.ticket) = some ticketA ∧
       second.core.agent.requests.issued = [ticketA] := by decide
 
+theorem unresolved_effect_does_not_freeze_an_unoccupied_topic :
+    let arrived := observe (receive sampledA callA (.command ticketA 10) 20) callA
+    let dispatched := issue arrived 0 callA
+    let peer := capture cfg dispatched 0 goalB [] [] 64
+    peer.calls.length = 2 ∧ peer.core.agent.allowance = 8 ∧
+    peer.core.agent.dispatch.map (fun dispatch => dispatch.ticket) = some ticketA ∧
+    peer.core.agent.requests.issued = [ticketA] := by decide
+
+theorem peer_completion_cannot_overwrite_an_unresolved_effect :
+    let arrived := observe (receive sampledA callA (.command ticketA 10) 20) callA
+    let dispatched := issue arrived 0 callA
+    let peer := capture cfg dispatched 0 goalB [] [] 64
+    let answered := observe (receive peer callB (.command ticketB 10) 20) callB
+    let attempted := issue answered 0 callB
+    attempted.core.agent.dispatch.map (fun dispatch => dispatch.ticket) = some ticketA ∧
+    attempted.core.agent.requests.issued = [ticketA] ∧
+    attempted.calls.getLast?.map Slot.handled = some false := by decide
+
 theorem failures_apply_cooldown_before_retirement :
     let arrived := observe (receive sampledA callA (.failure 429 100) 20) callA
     let handled := retire (issue arrived 4 callA) callA
