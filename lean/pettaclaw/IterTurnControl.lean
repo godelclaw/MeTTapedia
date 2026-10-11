@@ -12,8 +12,9 @@ Step 45 adds a prompt reminder. A `nop` ends the burst and resets the step
 count. The send flag is reset only by new input. The checkpoint is a progress
 report, not a recovery point.
 
-**Provider errors.** Commits `2727dbe` and `87374c3` classify HTTP 400, 401,
-402, 403 and 413 as terminal: the loop sends one notice, truncates the
+**Provider errors.** Commits `2727dbe` and `87374c3`, on the live,
+multi-send and multi-branch branches, classify HTTP 400, 401, 402, 403 and 413
+as terminal: the loop sends one notice, truncates the
 transcript to the start of the cycle (before the user's input was appended),
 and waits for new input, even when the notice could not be delivered. Every
 other error is retried after one second. Branch

@@ -215,9 +215,10 @@ theorem sti_bounded (d B M : ℚ) (s b : ℕ → ℚ) (hrec : ∀ k, s (k + 1) =
     have := hb k
     nlinarith [mul_le_mul_of_nonneg_left ih hd0]
 
-/-- The live branch boosts every item shown to the model by `b` per cycle,
-while every item decays by `d`. An item shown once dominates every item that is
-not shown, for every later cycle. -/
+/-- The live branch records every item shown to the model as used, and each full
+cycle boosts the used items by `b` while every item decays by `d`. An item
+shown once dominates every item that is not shown, for every later cycle
+without outside stimulus. -/
 theorem shown_dominates_forever (d b : ℚ) (x y : ℕ → ℚ) (hd : 0 ≤ d) (hb : 0 ≤ b)
     (hx : ∀ k, x (k + 1) = d * x k + b) (hy : ∀ k, y (k + 1) = d * y k)
     (h0 : y 0 ≤ x 0) : ∀ k, y k ≤ x k := by

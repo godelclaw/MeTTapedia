@@ -160,10 +160,12 @@ def evicted (g : List Contender) (objects : ℕ) : List Contender :=
     | none => []
   else []
 
-/-- Premises `a implies b` (STI 1), `b implies c` and `b implies d` (STI 10)
-yield the conclusions `a implies c` and `a implies d`. Their initial STI is
-`0.64 · (1 + 10) / 2 + 0.5 = 4.02`. The group at `(a, implies)` has the three
-objects `b, c, d`, and the resolver evicts the premise. -/
+/-- Premises `p implies q` (STI 1), `q implies r` and `q implies s` (STI 10)
+share the store with three unrelated items of lower STI, so all three premises
+are in the inference focus (the upper half by STI). Deduction yields
+`p implies r` and `p implies s` with initial STI `0.64 · (1 + 10) / 2 + 0.5 = 4.02`.
+The group at `(p, implies)` has the three objects `q, r, s`, and the resolver
+evicts the premise. -/
 theorem premise_evicted_by_own_conclusions :
     let premise : Contender := ⟨1, 100, 0, 5⟩
     let conclusion1 : Contender := ⟨4, 402, 0, 3⟩
