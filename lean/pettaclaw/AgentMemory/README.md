@@ -431,3 +431,30 @@ Compile this file like the other standalone models:
 cd lean/mettapedia
 lake env lean ../pettaclaw/AgentMemory/NativeTensorRetrieval.lean
 ```
+
+## Score bounds and shared selectors
+
+`RetrievalContract.lean` additionally proves `screen_covers_topK` and
+`screened_rerank_exact`: sound score intervals and a threshold supported by
+`min(k, source size)` distinct lower-bound witnesses preserve every exact
+top-k selection. Inclusive boundary checks retain ties. Counterexamples show
+that a strict check loses ties and ambiguous intervals may retain every row.
+The theorem assumes bounds on the declared final score, including numerical
+rounding and normalization. It does not supply a verification of a particular
+quantizer or C floating-point kernel.
+
+`SelectorContract.lean` models source/revision/layout/projection/profile
+identity, exact/complete/approximate guarantees and cross-domain transport.
+Complete supersets compose by intersection and union. Difference additionally
+needs an exact right operand; subtracting a superset can discard a true answer.
+`admitComplete` refuses approximate providers. `admitted_complete_covers`
+requires both successful admission and a sound provider contract; a label
+alone cannot supply that contract.
+Symbolic multiplicity and substitutions remain separate from row selectors.
+This is a contract for a shared runtime interface, not a claim that every
+existing index implements it.
+
+```sh
+cd lean/mettapedia
+lake env lean ../pettaclaw/AgentMemory/SelectorContract.lean
+```

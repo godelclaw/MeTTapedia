@@ -238,6 +238,86 @@ theorem rerank_exact_of_bound {k : ℕ} {S C T : Finset X} (hCS : C ⊆ S) (hk :
 
 end TopK
 
+/-! ## Bounded-score screening before exact reranking
+
+The bounds concern the declared final score, including arithmetic and
+normalization. A compact representation alone does not supply this hypothesis.
+The native implementation must separately qualify its interval construction.
+-/
+
+section BoundedScores
+
+variable {X β : Type*} [DecidableEq X] [LinearOrder β]
+
+def screen (upper : X → β) (threshold : β) (source : Finset X) : Finset X :=
+  source.filter (fun x => threshold ≤ upper x)
+
+/-- A threshold with `min k |source|` distinct lower-bound witnesses cannot
+discard any member of any exact top-k. The inclusive comparison preserves ties.
+In the implementation the threshold is the k-th largest lower bound. -/
+theorem screen_covers_topK (score lower upper : X → β) (threshold : β)
+    {k : ℕ} {source witnesses selected : Finset X}
+    (hselected : IsTopK score k source selected)
+    (hw : witnesses ⊆ source) (hcard : min k source.card ≤ witnesses.card)
+    (hlower : ∀ x ∈ source, lower x ≤ score x)
+    (hupper : ∀ x ∈ source, score x ≤ upper x)
+    (hthreshold : ∀ x ∈ witnesses, threshold ≤ lower x) :
+    selected ⊆ screen upper threshold source := by
+  intro x hx
+  apply Finset.mem_filter.mpr
+  refine ⟨hselected.1 hx, ?_⟩
+  by_contra h
+  have hxt : upper x < threshold := lt_of_not_ge h
+  have hbetter : ∀ y ∈ witnesses, score x < score y := by
+    intro y hy
+    exact lt_of_le_of_lt (hupper x (hselected.1 hx))
+      (lt_of_lt_of_le hxt ((hthreshold y hy).trans (hlower y (hw hy))))
+  have hsub : witnesses ⊆ selected.erase x := by
+    intro y hy
+    apply Finset.mem_erase.mpr
+    refine ⟨?_, ?_⟩
+    · intro heq
+      subst y
+      exact (lt_irrefl _ (hbetter x hy))
+    · by_contra hyn
+      exact (not_le_of_gt (hbetter y hy)) (hselected.2.2 x hx y (hw hy) hyn)
+  have hc := Finset.card_le_card hsub
+  rw [Finset.card_erase_of_mem hx] at hc
+  have ht := hselected.2.1
+  have hp : 0 < selected.card := Finset.card_pos.mpr ⟨x, hx⟩
+  omega
+
+/-- Exact reranking of the retained candidates is an exact top-k of the source.
+This proves selection composition, not IEEE arithmetic or a candidate-count
+speedup. -/
+theorem screened_rerank_exact (score lower upper : X → β) (threshold : β)
+    {k : ℕ} {source witnesses original result : Finset X}
+    (horiginal : IsTopK score k source original)
+    (hw : witnesses ⊆ source) (hcard : min k source.card ≤ witnesses.card)
+    (hlower : ∀ x ∈ source, lower x ≤ score x)
+    (hupper : ∀ x ∈ source, score x ≤ upper x)
+    (hthreshold : ∀ x ∈ witnesses, threshold ≤ lower x)
+    (hresult : IsTopK score k (screen upper threshold source) result) :
+    IsTopK score k source result :=
+  rerank_exact horiginal
+    (screen_covers_topK score lower upper threshold horiginal hw hcard hlower hupper hthreshold)
+    (Finset.filter_subset _ _) hresult
+
+omit [DecidableEq X] in
+/-- With ambiguous intervals, every row may survive. No universal reduction in
+candidate count follows from certified screening. -/
+theorem ambiguous_screen_keeps_all (source : Finset X) (threshold : β) :
+    screen (fun _ => threshold) threshold source = source := by
+  simp [screen]
+
+/-- Dropping equal boundary bounds can discard every candidate. -/
+theorem strict_boundary_loses_tie :
+    ({0} : Finset ℕ).filter (fun _ => (1 : ℕ) < 1) = ∅ ∧
+    screen (fun _ : ℕ => 1) 1 {0} = {0} := by
+  decide
+
+end BoundedScores
+
 /-! ## Reciprocal rank fusion -/
 
 section Fusion
