@@ -395,3 +395,120 @@ retained responses, not decoder, TLS or total process memory. Uncertain calls
 need explicit reconciliation; the model does not retry a remote POST or
 silently erase an unknown outcome. Runtime implementation and paired live
 qualification remain separate milestones.
+
+## Upstream loop mechanisms
+
+Seven files analyze loop and control changes proposed upstream after the
+pinned Iter and Omega revisions. Each states what the mechanism solves, proves
+its sound part, and gives explicit counterexamples where it fails.
+
+| File | Upstream source | Mechanism |
+| --- | --- | --- |
+| `IterBranches.lean` | `bgoertzel-sing/iter` master `3399366`, branch `agent/protocosmo2-multi-branch` `6ea3dd6` | background branches, merge queue, model-call semaphore, shutdown drain |
+| `IterTurnControl.lean` | same, commits `2727dbe`, `87374c3` | progress checkpoints, terminal and transient provider errors |
+| `DeonticControl.lean` | branch `agent/protocosmo2-wmtm-live-20261005` `4564185` | OODA cycle, deontic appraisal, reference monitor, grants, event store |
+| `WorkLease.lean` | `bgoertzel-sing/iter-work-lease-controller` `ccbaa30` | budgeted work leases with periodic review |
+| `ContextFrames.lean` | `singnet/Omega` PR #284 `a72837e` | context frames, modes, priority selection |
+| `NativeToolCalls.lean` | `singnet/Omega` PRs #379 (merged), #358 `030c014`, #349 `9d28e83` | text command parsing versus native tool calls |
+| `PromptCacheLayout.lean` (extended) | `singnet/Omega` PR #341 `5455049` | stable-first context order |
+
+**Background branches (`IterBranches.lean`).** A slow model call continues in a
+thread so the loop stays responsive. Sound: the multi-branch set tracks every
+running branch and stays within its cap (`multi_tracks_running`,
+`multi_bounded`); the semaphore bounds concurrent calls (`semaphore_bound`);
+an abandoned branch stops after its current step (`multi_abandon_leak_le`).
+Counterexamples: master overwrites its single slot and orphans a running branch
+(`master_orphans_branch`); an abandoned master branch can still run 249 tool
+calls (`master_abandon_leak`); results pushed after abandonment are merged
+(`abandoned_results_merged`); merging per message can separate a tool call
+from its result, which the chat protocol forbids
+(`interleaved_merge_breaks_protocol`); shutdown can leave an executed effect
+without a record (`shutdown_loses_record`). Fixes proved: merging a call with
+all its results preserves well-formedness (`wf_append`,
+`group_merge_preserves`), and journaling the intent first covers every effect
+(`intent_covers_effects`). In CeTTa a call is never abandoned: it stays owned
+(`EventPump.lean`, `AsyncWait.lean`), its late result is evidence
+(`TopicAsync.lean`), and a call and its results publish atomically
+(`ChannelJoin.lean`).
+
+**Checkpoints and provider errors (`IterTurnControl.lean`).** A burst with no
+reply produces a progress message at step 50 (`silent_burst_checkpoints`), but
+one early `send` disables the watchdog until the next input
+(`acknowledgement_disables_checkpoints`), and bursts ended by `nop` never trigger
+it (`nop_resets_without_message`). Counting working steps since the last
+visible message bounds silence on every trace (`quiet_bounded`). Transient
+errors back off and reach the idle state at the ninth failure
+(`transient_errors_idle_at_ninth`); errors that are neither terminal nor
+transient retry every second forever (`other_errors_retry_forever`); the
+terminal path truncates the user's input away (`terminal_error_drops_input`).
+One failure budget for every class leaves the retry state
+(`budgeted_errors_leave_retry`); the request ledger keeps a failed request with
+its receipt.
+
+**Deontic control (`DeonticControl.lean`).** The appraisal filter is sound
+(`deontic_filter_sound`), and a dispatcher that accepts only consumed monitor
+approvals executes each approved grant at most once and never after revocation
+(`effects_authorized_once`, `revoked_stays_without_effect`). The deployed
+dispatcher trusts a caller flag (`dispatch_trusts_flag`); revocation is inert
+(`revoke_is_inert`); used keys vanish on restart (`restart_reauthorizes`);
+superseding the newest event can lower the revision and revalidate a stale
+grant (`revision_aba`, fixed by log positions, `knowledge_time_monotone`); plan
+steps run against a state earlier steps changed (`stale_plan_step_runs`, fixed by
+`one_effect_per_revision`); a stop is read once per cycle
+(`stop_mid_plan_ignored`, fixed by `stop_checked_per_dispatch`); the integration
+adapter's grants are expired on arrival (`adapter_grant_expired_on_arrival`);
+derived working-memory items become observations
+(`derived_item_becomes_observation`).
+
+**Work leases (`WorkLease.lean`).** The counters are sound: turns never
+decrease and stay within the turn and token budgets on every trace
+(`turns_monotone`, `turns_within_budget`, `tokens_within_budget`); a paused
+lease reserves nothing (`paused_lease_reserves_nothing`); admission is idempotent
+with one active lease per bot (`admit_idempotent`, `one_active_lease`). The review
+gate waits for a reserved review, not a verdict
+(`review_gate_is_reservation_only`; fixed by `pending_review_blocks_turns`); a
+paused lease does not stop a new event from opening a fresh one
+(`paused_lease_admits_new_event`); completion is allowed with an uncertain effect
+(`completes_with_uncertain_effect`).
+
+**Context frames (`ContextFrames.lean`).** Completed frames are never selected
+again and selection respects the root mode (`completed_never_selected`,
+`selected_matches_mode`); user input preempts autonomous work
+(`user_input_preempts_slow_work`). Nothing bounds waiting: a lower-priority
+frame starves while a higher one stays active (`lower_priority_starves`), later
+user requests wait behind the oldest (`older_user_frame_wins`,
+`user_input_waits_behind_user_work`), and the per-frame history in the prompt
+grows without bound (`history_summary_unbounded`). Frames map to owned topics
+under `FairGoalScheduling.lean`, with a bounded window per topic
+(`ContextWindow.lean`).
+
+**Native tool calls (`NativeToolCalls.lean`).** Decoding tokens before splitting
+lines turns relayed text into commands (`decode_then_split_injects`); splitting
+first keeps the command count (`split_then_decode_keeps_commands`). Serialized
+structured calls round-trip exactly when the reader inverts the writer's
+escaping (`readStr_escape`, `roundtrip`); a reader that ignores `\\` misplaces
+literal boundaries and rejects the batch (`quirky_reader_misplaces_boundary`,
+`quirky_breaks_roundtrip`). Validation admits only calls advertised in the
+request (`validated_call_was_advertised`). Building call atoms directly from the
+provider's fields removes the text round trip.
+
+**Context order (`PromptCacheLayout.lean`).** History ahead of per-cycle results
+is stable-first, and an appended history is shared while it fits
+(`appended_history_shared`). A sliding tail window shares nothing once full
+(`sliding_window_shares_nothing`); a block-aligned cut shares the history between
+block boundaries (`block_window_shared`, `block_window_example`).
+
+These models check the stated mechanisms at the modeled boundary. They do not
+verify Python threads, SQLite, provider behavior or the MeTTa runtime.
+
+```sh
+cd lean/pettaclaw
+lean IterBranches.lean
+lean IterTurnControl.lean
+lean DeonticControl.lean
+lean WorkLease.lean
+lean ContextFrames.lean
+lean NativeToolCalls.lean
+cd ../mettapedia
+lake env lean ../pettaclaw/PromptCacheLayout.lean
+```

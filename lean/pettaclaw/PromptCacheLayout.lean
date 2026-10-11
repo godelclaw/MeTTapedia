@@ -121,6 +121,74 @@ theorem deployed_turns_share_everything_before_the_last_boundary
     simp [deployed, render]
   exact ⟨shared turn, shared turn'⟩
 
+/-! ## History windows
+
+`singnet/Omega` pull request #341 (head `5455049`, open) adds a flag that moves
+the conversation history ahead of the per-cycle skill results, making the
+layout stable-first (`stable_part_is_a_prefix`). The history section is the
+tail of the history file (`read_file_tail` with `maxHistory`): a sliding window
+of the newest `N` characters. While the history fits, it only grows by appending, and two
+consecutive prompts share the whole history (`appended_history_shared`). Once
+it exceeds `N`, every append moves the window's start, and consecutive prompts
+can share nothing after the head (`sliding_window_shares_nothing`). Cutting the
+history at a multiple of a block size `B` instead keeps the window's start
+fixed until the history grows past the next block boundary, and the history is
+shared in between (`block_window_shared`). -/
+
+/-- The newest `N` characters of the history. -/
+def window (N : Nat) (history : List α) : List α := history.drop (history.length - N)
+
+/-- While the history fits in the window, an append keeps the old history as a
+prefix of the new one. -/
+theorem appended_history_shared (N : Nat) (history added : List α)
+    (fits : history.length + added.length ≤ N) :
+    window N history <+: window N (history ++ added) := by
+  have h1 : history.length - N = 0 := by omega
+  have h2 : (history ++ added).length - N = 0 := by simp; omega
+  simp only [window, h1, h2, List.drop_zero]
+  exact List.prefix_append history added
+
+/-- Once the history exceeds the window, one appended character moves its start:
+the two windows share no prefix. -/
+theorem sliding_window_shares_nothing :
+    window 3 [1, 2, 3] = [1, 2, 3] ∧ window 3 [1, 2, 3, 4] = [2, 3, 4] ∧
+      ∀ common : List Nat, common <+: window 3 [1, 2, 3] →
+        common <+: window 3 [1, 2, 3, 4] → common = [] := by
+  refine ⟨rfl, rfl, ?_⟩
+  intro common inFirst inSecond
+  cases common with
+  | nil => rfl
+  | cons head tail =>
+      have one := (List.cons_prefix_cons.mp inFirst).1
+      have two := (List.cons_prefix_cons.mp inSecond).1
+      omega
+
+/-- Drop a multiple of `B` characters: the smallest one leaving at most `N`. -/
+def blockCut (B N length : Nat) : Nat :=
+  if length ≤ N then 0 else B * ((length - N + B - 1) / B)
+
+def blockWindow (B N : Nat) (history : List α) : List α :=
+  history.drop (blockCut B N history.length)
+
+/-- If an append does not cross a block boundary, the old window is a prefix of
+the new one. -/
+theorem block_window_shared (B N : Nat) (history added : List α)
+    (same : blockCut B N history.length = blockCut B N (history ++ added).length)
+    (within : blockCut B N history.length ≤ history.length) :
+    blockWindow B N history <+: blockWindow B N (history ++ added) := by
+  unfold blockWindow
+  rw [← same, List.drop_append_of_le_length within]
+  exact List.prefix_append _ _
+
+/-- Window 3, block 2: from four to five characters the sliding window shares
+nothing, while the block-aligned window keeps its start and is shared. -/
+theorem block_window_example :
+    blockWindow 2 3 [1, 2, 3, 4] = [3, 4] ∧ blockWindow 2 3 [1, 2, 3, 4, 5] = [3, 4, 5] ∧
+      blockWindow 2 3 [1, 2, 3, 4] <+: blockWindow 2 3 [1, 2, 3, 4, 5] ∧
+      window 3 [1, 2, 3, 4] = [2, 3, 4] ∧ window 3 [1, 2, 3, 4, 5] = [3, 4, 5] := by
+  refine ⟨rfl, rfl, ?_, rfl, rfl⟩
+  exact ⟨[5], rfl⟩
+
 end PettaClaw.PromptCacheLayout
 
 #print axioms PettaClaw.PromptCacheLayout.stable_part_is_a_prefix
@@ -128,3 +196,7 @@ end PettaClaw.PromptCacheLayout
 #print axioms PettaClaw.PromptCacheLayout.changing_text_first_can_share_nothing
 #print axioms PettaClaw.PromptCacheLayout.deployed_layout_is_stable_first
 #print axioms PettaClaw.PromptCacheLayout.deployed_turns_share_everything_before_the_last_boundary
+#print axioms PettaClaw.PromptCacheLayout.appended_history_shared
+#print axioms PettaClaw.PromptCacheLayout.sliding_window_shares_nothing
+#print axioms PettaClaw.PromptCacheLayout.block_window_shared
+#print axioms PettaClaw.PromptCacheLayout.block_window_example
