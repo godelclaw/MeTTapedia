@@ -358,6 +358,21 @@ python3 lean/pettaclaw/check_observed_strategy.py \
   --suite event-pump --output-dir build/event-pump
 ```
 
+## Response timing and periodic work
+
+`ResponseTiming.lean` separates the existing local service bound from provider
+completion and outbound delivery. It proves that local responsiveness alone
+cannot bound a model answer, derives an answer bound when the external stages
+are bounded, and checks periodic deadlines against the complete scheduling
+slot and handler cost. Absolute releases avoid accumulated handler drift;
+meeting a deadline still requires enough time for dispatch and execution.
+These conditional results do not verify the live scheduler or remote delivery.
+
+```sh
+python3 lean/pettaclaw/check_observed_strategy.py \
+  --suite response-timing --output-dir build/response-timing
+```
+
 ## Owned asynchronous topics
 
 `TopicAsync.lean` extends the existing observed strategy and fair goal queue.

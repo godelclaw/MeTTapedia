@@ -14,8 +14,8 @@ import sys
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path, required=True)
-    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async', 'cooperative-input', 'runtime-observation', 'event-pump'], default='strategy',
-                        help='Check strategy, fair goals, asynchronous topics, cooperative input, runtime observations or event/channel contracts.')
+    parser.add_argument('--suite', choices=['strategy', 'fair-goals', 'topic-async', 'cooperative-input', 'runtime-observation', 'event-pump', 'response-timing'], default='strategy',
+                        help='Check strategy, fair goals, asynchronous topics, cooperative input, runtime observations, event/channel contracts or response deadlines.')
     parser.add_argument('--dependency-root', type=Path,
                         help='Reuse a workspace with the same toolchain and pinned mathlib revision.')
     args = parser.parse_args()
@@ -96,7 +96,8 @@ def main():
         built[module] = fingerprint
         return fingerprint
 
-    targets = (['EventPumpChecks'] if args.suite == 'event-pump' else
+    targets = (['ResponseTiming'] if args.suite == 'response-timing' else
+               ['EventPumpChecks'] if args.suite == 'event-pump' else
                ['RuntimeObservationChecks'] if args.suite == 'runtime-observation' else
                ['CooperativeInputChecks'] if args.suite == 'cooperative-input' else
                ['TopicAsyncChecks'] if args.suite == 'topic-async' else
@@ -105,7 +106,9 @@ def main():
     try:
         for module in targets:
             build(module)
-        modules = (['AsyncWait', 'EventPump', 'ChannelJoin', 'ReadyQueue', 'EventPumpChecks', 'FairGoalScheduling']
+        modules = (['AsyncWait', 'EventPump', 'ResponseTiming']
+                   if args.suite == 'response-timing' else
+                   ['AsyncWait', 'EventPump', 'ChannelJoin', 'ReadyQueue', 'EventPumpChecks', 'FairGoalScheduling']
                    if args.suite == 'event-pump' else
                    ['RuntimeObservation', 'RuntimeObservationChecks']
                    if args.suite == 'runtime-observation' else
@@ -119,7 +122,9 @@ def main():
                    ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
                     'Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation',
                     'FeedbackSensitiveBatch', 'ObservedStrategy', 'ObservedStrategyChecks'])
-        modules = list(dict.fromkeys(['AdmissionFrontier', 'ObservedStrategy'] + modules))
+        shared_modules = (['AdmissionFrontier'] if args.suite == 'response-timing'
+                          else ['AdmissionFrontier', 'ObservedStrategy'])
+        modules = list(dict.fromkeys(shared_modules + modules))
         names = []
         for module in modules:
             source = source_for(module)
@@ -127,7 +132,8 @@ def main():
             names += [namespace + '.' + name for name in
                       re.findall(r'^theorem\s+(\w+)', source.read_text(), re.M)]
         audit = output / 'StrategyAxiomAudit.lean'
-        audit_import = ('EventPumpChecks' if args.suite == 'event-pump' else
+        audit_import = ('ResponseTiming' if args.suite == 'response-timing' else
+                        'EventPumpChecks' if args.suite == 'event-pump' else
                         'RuntimeObservationChecks' if args.suite == 'runtime-observation' else
                         'CooperativeInputChecks' if args.suite == 'cooperative-input' else
                         'TopicAsyncChecks' if args.suite == 'topic-async' else
