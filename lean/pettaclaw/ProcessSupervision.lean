@@ -11,16 +11,18 @@ The cognition service runs under a memory controller with a soft limit `H`
 manager that restarts the process whenever it exits. Its memory grows with
 work.
 
-In the failure reconstructed here the service crossed `H` in the middle of a
-command. Throttled, it made no progress, so it never reached `M`; and since
-the service manager restarts only on exit, the process stayed frozen. A
-periodic recycle only sets a flag that the loop honours at its next turn
-boundary, which a frozen turn never reaches. Meanwhile the separate transport
-kept accepting inputs, durably, as queued, and the status responder reported
-the last checkpoint: `working`, `turn=completed`. A pressure killer attached to
-the whole user session ended one such freeze after about eleven minutes and
-did not act on another in eighteen: it watches the session's aggregate
-pressure, which other running tasks keep low.
+In the failure reconstructed here a single command took the service past `H`
+in the middle of its execution. Throttled, it made no progress, so it never
+reached `M`; and since the service manager restarts only on exit, the process
+stayed frozen. Each later run issued the same command first. A periodic
+recycle only sets a flag that the loop honours at its next turn boundary,
+which a frozen turn never reaches. Meanwhile the separate transport kept
+accepting inputs, durably, as queued, and the status responder reported the
+last checkpoint: `working`, `turn=completed`. A pressure killer attached to the
+whole user session ended one such freeze after about eleven minutes and did
+not act on another in eighteen: it watches the session's aggregate pressure,
+which other running tasks keep low. Many small turns that accumulate memory
+reach the same freeze more slowly.
 
 ## Model
 
@@ -39,8 +41,11 @@ Breaking theorems, for the deployed policy and every policy without a
 graceful threshold or an independent backstop:
 * `freeze_is_absorbing`: a throttled process that the kernel keeps
   withholding is never restarted, makes no progress and processes nothing.
-* `unguarded_freezes_forever`, `incident_reconstruction`: turns that each grow
-  memory by only `g` freeze the agent mid-turn, for ever.
+* `incident_reconstruction`, `runaway_freezes_without_backstop`: a single
+  command that outgrows the soft limit freezes the agent mid-command, for ever,
+  with the status reporting `working`/`completed`.
+* `unguarded_freezes_forever`, `accumulation_at_deployed_limits`: turns that
+  each grow memory by only `g` reach the same freeze by accumulation.
 * `unguarded_recycle_starves`: the boundary-honoured recycle request is set
   and never honoured.
 * `unguarded_inputs_wait_forever`: inputs keep being accepted and are never
@@ -76,10 +81,12 @@ The fixed design has four parts.
   freeze, and `no_exact_stale_responder` shows that a freshness signal is
   necessary.
 
-`fixed_resolves_incident` applies the fixed design to the incident's
-workload; `freeze_stops_wakes` and `nominal_wakes_recur` relate the result to
-the wake-counted guarantees of `ClawArchitectures`, `HeartModel` and
-`FuelPolicy`.
+On the incident's workloads, `fixed_bounds_incident` shows the fixed design
+bounds the single-command freeze, while that command still needs a bound on
+its growth or its attempts (`poison_never_processed`), and
+`fixed_resolves_accumulation` shows it resolves accumulation completely.
+`freeze_stops_wakes` and `nominal_wakes_recur` relate the results to the
+wake-counted guarantees of `ClawArchitectures`, `HeartModel` and `FuelPolicy`.
 
 ## Trusted boundary
 
@@ -818,17 +825,16 @@ theorem unguarded_status_while_frozen (hthr : P.threshold = none)
 
 end DeployedFreeze
 
-/-- The deployed limits, in MiB: soft limit 3 GiB, hard limit 4 GiB. With a
-20-second tick, the accumulation workload grows memory by 41 MiB per minute
-and the two-hour recycle timer fires at tick 360. The 512 MiB footprint of a
-fresh process is illustrative. -/
+/-- The deployed limits, in MiB: soft limit 3 GiB, hard limit 4 GiB. The
+512 MiB footprint of a fresh process is illustrative. -/
 def deployedLimits : Limits := ⟨3072, 4096, 512⟩
 
-/-- **The incident, reconstructed.** With the deployed limits the agent
-freezes at tick 188 (about 63 minutes) and stays frozen. The recycle requested
-at two hours is never honoured, and the deployed responder reports
+/-- **Accumulation at the deployed limits.** With a 20-second tick, many small
+turns that together grow memory by 41 MiB per minute freeze the deployed
+policy at tick 188 (about 63 minutes), and it stays frozen. The recycle
+requested at two hours is never honoured, and the deployed responder reports
 `working`/`completed` throughout. -/
-theorem incident_reconstruction (owner : EventPump.Key) (n : Nat) :
+theorem accumulation_at_deployed_limits (owner : EventPump.Key) (n : Nat) :
     moveAt deployed deployedLimits (accumulation owner 41 360) (boot deployedLimits owner)
         (188 + n) = some .stalled ∧
     (run deployed deployedLimits (accumulation owner 41 360) (boot deployedLimits owner)
@@ -1308,12 +1314,14 @@ theorem working_ticks (P : Policy) (L : Limits) (env : Nat → Tick) (s : State)
       (∃ r, (run P L env s (n + j)).life =
         .up { p with mem := p.mem + j * g, phase := .busy k, recycle := r }) ∧
       (run P L env s (n + j)).generation = (run P L env s n).generation ∧
-      (run P L env s (n + j)).processed = (run P L env s n).processed := by
+      (run P L env s (n + j)).processed = (run P L env s n).processed ∧
+      (run P L env s (n + j)).checkpoint = (run P L env s n).checkpoint ∧
+      (0 < j → (run P L env s (n + j)).callInFlight = false) := by
   intro j
   induction j with
   | zero =>
     intro k hph _ _ _
-    refine ⟨⟨p.recycle, ?_⟩, rfl, rfl⟩
+    refine ⟨⟨p.recycle, ?_⟩, rfl, rfl, rfl, fun h => absurd h (Nat.lt_irrefl 0)⟩
     simp only [Nat.add_zero, Nat.zero_mul] at hph ⊢
     rw [hs]; cases p; simp_all
   | succ j ih =>
@@ -1321,7 +1329,7 @@ theorem working_ticks (P : Policy) (L : Limits) (env : Nat → Tick) (s : State)
     have hjM : p.mem + j * g ≤ L.max := by
       have : j * g ≤ (j + 1) * g := Nat.mul_le_mul_right g (by omega)
       omega
-    obtain ⟨⟨r, hr⟩, hgen, hproc⟩ := ih (k + 1) (by rw [hph]; congr 1; omega)
+    obtain ⟨⟨r, hr⟩, hgen, hproc, hcp, -⟩ := ih (k + 1) (by rw [hph]; congr 1; omega)
       (fun i hi => henv i (by omega)) (fun i hi => hle i (by omega)) hjM
     obtain ⟨hst, hwt, hext, hal, hfr⟩ := henv j (by omega)
     have hgrown : grown { p with mem := p.mem + j * g, phase := .busy (k + 1), recycle := r }
@@ -1335,59 +1343,125 @@ theorem working_ticks (P : Policy) (L : Limits) (env : Nat → Tick) (s : State)
     have hk := killedAt_progress P L (run P L env s (n + j)) (env (n + j)) _ hP
       (by rw [hm]; rfl) (by rw [hm]; rfl) hst hext
     rw [← Nat.add_assoc, run_succ, step_of_up P L _ _ _ hr]
-    refine ⟨⟨r || (env (n + j)).timer, ?_⟩, by simp [hgen], ?_⟩
+    refine ⟨⟨r || (env (n + j)).timer, ?_⟩, by simp [hgen], ?_, ?_, fun _ => by simp [hm]⟩
     · simp [hk, survivor, advance, hm, hgrown]
     · simp [hm, completes, hproc]
+    · simp [hm, completes, hcp]
 
-/-- One long turn: every unit allocates `g`. -/
+/-- One long turn: the kernel withholds every tick it may, the turn has `N + 1`
+units, each allocating `g`, and nothing arrives or fires at its start. -/
+def RunawayWork (g N : Nat) (env : Nat → Tick) : Prop :=
+  (∀ n, (env n).stall = true ∧ (env n).wait = false ∧ (env n).externalKill = false ∧
+    (env n).alloc = g ∧ (env n).free = 0 ∧ (env n).work = N) ∧
+  (env 0).arrivals = [] ∧ (env 0).timer = false
+
+/-- The plainest runaway workload. -/
 def runaway (g N : Nat) (_ : Nat) : Tick := { stall := true, work := N, alloc := g }
+
+theorem runaway_work (g N : Nat) : RunawayWork g N (runaway g N) :=
+  ⟨fun _ => ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, rfl⟩
 
 /-- **Layer (a) needs the per-turn bound, and is not a backstop.** A single
 turn that outgrows the soft limit before its end freezes the service under
 any policy without an independent backstop, including a graceful threshold
 and a watchdog withheld with the service: the threshold is consulted only at
-a boundary, and none comes. -/
+a boundary, and none comes. The process is never restarted, a recycle request
+made after the freeze is set but never honoured, and the deployed responder
+reports `working`/`completed` throughout. -/
 theorem runaway_freezes_without_backstop (P : Policy) (L : Limits) (owner : EventPump.Key)
-    (g N i : Nat) (hP : NoIndependentBackstop P) (hleave : leaves P (fresh L) = false)
-    (hbase : L.base ≤ L.high) (hi : L.base + i * g ≤ L.high)
-    (hi' : L.high < L.base + (i + 1) * g) (hM : L.base + (i + 1) * g ≤ L.max)
-    (hN : i + 1 ≤ N) (n : Nat) :
-    moveAt P L (runaway g N) (boot L owner) (i + 2 + n) = some .stalled ∧
-    (run P L (runaway g N) (boot L owner) (i + 2 + n)).generation = 0 := by
-  -- the first tick starts the long turn
-  have hpass : move P L (fresh L) (runaway g N 0) = .passed := by
-    have hns : ¬ ((runaway g N 0).stall = true ∧ L.high < (fresh L).mem) := by
-      simp only [fresh, runaway]; omega
+    (env : Nat → Tick) (g N i : Nat) (henv : RunawayWork g N env) (hP : NoIndependentBackstop P)
+    (hleave : leaves P (fresh L) = false) (hbase : L.base ≤ L.high)
+    (hi : L.base + i * g ≤ L.high) (hi' : L.high < L.base + (i + 1) * g)
+    (hM : L.base + (i + 1) * g ≤ L.max) (hN : i + 1 ≤ N) (n : Nat) :
+    (∃ r, (run P L env (boot L owner) (i + 2 + n)).life =
+        .up { mem := L.base + (i + 1) * g, phase := .busy (N - (i + 1)), turnBase := L.base,
+              recycle := r, claimed := [] } ∧
+      ((∃ k < n, (env (i + 2 + k)).timer = true) → r = true)) ∧
+    moveAt P L env (boot L owner) (i + 2 + n) = some .stalled ∧
+    (run P L env (boot L owner) (i + 2 + n)).generation = 0 ∧
+    deployedReport (run P L env (boot L owner) (i + 2 + n)) = ⟨.working, .completed⟩ := by
+  obtain ⟨hall, harr0, htim0⟩ := henv
+  have hpass : move P L (fresh L) (env 0) = .passed := by
+    have hns : ¬ ((env 0).stall = true ∧ L.high < (fresh L).mem) := by
+      simp only [fresh]; omega
     rw [move_of_not_withheld hns]
     show (if leaves P (fresh L) then Move.exited else Move.passed) = .passed
     rw [hleave]; rfl
-  have h1 : (run P L (runaway g N) (boot L owner) 1).life =
+  have h1 : (run P L env (boot L owner) 1).life =
       .up { fresh L with phase := .busy N, turnBase := L.base, claimed := [] } := by
-    have hk := killedAt_progress P L (boot L owner) (runaway g N 0) (fresh L) hP
-      (by rw [hpass]; rfl) (by rw [hpass]; rfl) rfl rfl
+    have hk := killedAt_progress P L (boot L owner) (env 0) (fresh L) hP
+      (by rw [hpass]; rfl) (by rw [hpass]; rfl) (hall 0).1 (hall 0).2.2.1
     rw [run_succ, run_zero, step_of_up P L _ _ (fresh L) rfl]
     simp only [hk, hpass, Bool.false_eq_true, if_false]
-    simp [survivor, advance, boot, runaway, pendingIds, EventPump.pending, fresh]
-  have hg1 : (run P L (runaway g N) (boot L owner) 1).generation = 0 := by
+    simp [survivor, advance, boot, pendingIds, EventPump.pending, fresh, harr0, htim0,
+      (hall 0).2.2.2.2.2]
+  have hg1 : (run P L env (boot L owner) 1).generation = 0 := by
     rw [run_succ, run_zero, step_of_up P L _ _ (fresh L) rfl]; rfl
-  obtain ⟨⟨r, hr⟩, hgen, -⟩ := working_ticks P L (runaway g N) (boot L owner) hP g 1 _ h1 (i + 1)
-    (N - (i + 1)) (by simp only; congr 1; omega) (fun _ _ => ⟨rfl, rfl, rfl, rfl, rfl⟩)
+  have hcp1 : (run P L env (boot L owner) 1).checkpoint = defaultWorkingSet := by
+    rw [run_succ, run_zero, step_of_up P L _ _ (fresh L) rfl]
+    simp [hpass, completes, boot, defaultWorkingSet]
+  obtain ⟨⟨r, hr⟩, hgen, -, hcp, hcall⟩ :=
+    working_ticks P L env (boot L owner) hP g 1 _ h1 (i + 1)
+    (N - (i + 1)) (by simp only; congr 1; omega)
+    (fun i' _ => ⟨(hall _).1, (hall _).2.1, (hall _).2.2.1, (hall _).2.2.2.1,
+      (hall _).2.2.2.2.1⟩)
     (fun i' hi'' => by
       have : i' * g ≤ i * g := Nat.mul_le_mul_right g (by omega)
       simp [fresh]; omega)
     (by simpa [fresh] using hM)
-  have hfrozen := freeze_is_absorbing P L hP (fun j => runaway g N (1 + (i + 1) + j))
-    (fun _ => rfl) (fun _ => rfl) (run P L (runaway g N) (boot L owner) (1 + (i + 1))) _ hr
-    (by simpa [fresh] using hi') n
-  have hrun : run P L (runaway g N) (boot L owner) (i + 2 + n) =
-      run P L (fun j => runaway g N (1 + (i + 1) + j))
-        (run P L (runaway g N) (boot L owner) (1 + (i + 1))) n := by
+  have hfrozen := freeze_is_absorbing P L hP (fun j => env (1 + (i + 1) + j))
+    (fun j => (hall _).1) (fun j => (hall _).2.2.1)
+    (run P L env (boot L owner) (1 + (i + 1))) _ hr (by simpa [fresh] using hi') n
+  have hrun : run P L env (boot L owner) (i + 2 + n) =
+      run P L (fun j => env (1 + (i + 1) + j))
+        (run P L env (boot L owner) (1 + (i + 1))) n := by
     rw [show i + 2 + n = 1 + (i + 1) + n by omega, run_add]
   rw [hfrozen] at hrun
-  constructor
+  refine ⟨⟨r || timerBefore (fun j => env (1 + (i + 1) + j)) n, ?_, fun hex => ?_⟩, ?_,
+    by rw [hrun]; simp [hgen, hg1], ?_⟩
+  · rw [hrun]; simp [fresh]
+  · obtain ⟨k, hk, htk⟩ := hex
+    have hkk : 1 + (i + 1) + k = i + 2 + k := by omega
+    have htk' : (env (1 + (i + 1) + k)).timer = true := by rw [hkk]; exact htk
+    rw [timerBefore_of (fun j => env (1 + (i + 1) + j)) k htk' n hk]
+    exact Bool.or_true r
   · simp only [moveAt, hrun]
-    simp [move, runaway, fresh, hi']
-  · rw [hrun]; simp [hgen, hg1]
+    simp [move, (hall _).1, fresh, hi']
+  · rw [hrun]
+    simp [deployedReport, hcp, hcp1, hcall (by omega), defaultWorkingSet, HeartModel.maxLoops]
+
+/-- The observed trigger: one command whose units each allocate `g`, under the
+recycle timer of period `R`. -/
+def incidentCommand (g N R : Nat) (n : Nat) : Tick :=
+  { stall := true, work := N, alloc := g, timer := decide (0 < n ∧ n % R = 0) }
+
+theorem incidentCommand_work (g N R : Nat) : RunawayWork g N (incidentCommand g N R) :=
+  ⟨fun _ => ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩, rfl, by simp [incidentCommand]⟩
+
+/-- **The incident, reconstructed.** At the deployed limits, one command whose
+units allocate 700 MiB each takes a fresh 512 MiB process past the soft limit
+in its fourth unit. From tick 5 on the agent is frozen mid-command and never
+restarted. The recycle requested at two hours (tick 360) is set and never
+honoured, and the deployed responder reports `working`/`completed`
+throughout. Re-issued first after every restart, such a command is completed
+by no policy (`poison_never_processed`). -/
+theorem incident_reconstruction (owner : EventPump.Key) (n : Nat) :
+    moveAt deployed deployedLimits (incidentCommand 700 8 360) (boot deployedLimits owner)
+        (5 + n) = some .stalled ∧
+    (run deployed deployedLimits (incidentCommand 700 8 360) (boot deployedLimits owner)
+        (5 + n)).generation = 0 ∧
+    deployedReport (run deployed deployedLimits (incidentCommand 700 8 360)
+        (boot deployedLimits owner) (5 + n)) = ⟨.working, .completed⟩ ∧
+    ∃ r, (run deployed deployedLimits (incidentCommand 700 8 360) (boot deployedLimits owner)
+        (5 + n)).life =
+        .up { mem := 3312, phase := .busy 4, turnBase := 512, recycle := r, claimed := [] } ∧
+      (360 < 5 + n → r = true) := by
+  obtain ⟨⟨r, hlife, hrec⟩, hmove, hgen, hrep⟩ := runaway_freezes_without_backstop deployed
+    deployedLimits owner (incidentCommand 700 8 360) 700 8 3 (incidentCommand_work 700 8 360)
+    deployed_has_no_backstop rfl (by decide) (by decide) (by decide) (by decide) (by decide) n
+  refine ⟨hmove, hgen, hrep, r, hlife, fun hn => hrec ⟨355, by omega, ?_⟩⟩
+  rw [show 3 + 2 + 355 = 360 by rfl]
+  decide
 
 /-! ## Layer (b): an independent backstop -/
 
@@ -3108,17 +3182,16 @@ theorem report_flags_freeze (P : Policy) (L : Limits) (env : Nat → Tick) (owne
   · rw [hp] at hq; cases hq; omega
 
 /-- **The incident under both responders.** On the reconstructed freeze, the
-deployed responder says `working`/`completed` while the fixed responder,
+deployed responder says `working`/`completed`, while the fixed responder,
 whatever its window, does not say `working`. -/
 theorem incident_reports (owner : EventPump.Key) (F n : Nat) :
-    deployedReport (run deployed deployedLimits (accumulation owner 41 360)
-      (boot deployedLimits owner) (188 + n)) = ⟨.working, .completed⟩ ∧
-    report F deployedLimits (run deployed deployedLimits (accumulation owner 41 360)
-      (boot deployedLimits owner) (188 + n)) ≠ .working := by
-  refine ⟨(incident_reconstruction owner n).2.2.1, report_flags_freeze _ _ _ owner F _ (Or.inr ?_)⟩
-  obtain ⟨⟨r, hr⟩, -⟩ := unguarded_freezes_forever deployed deployedLimits owner 41 360 62 rfl
-    deployed_has_no_backstop (by decide) (by decide) (by decide) (by decide) n
-  exact ⟨_, hr, by show (3072 : Nat) < 512 + (62 + 1) * 41; decide⟩
+    deployedReport (run deployed deployedLimits (incidentCommand 700 8 360)
+      (boot deployedLimits owner) (5 + n)) = ⟨.working, .completed⟩ ∧
+    report F deployedLimits (run deployed deployedLimits (incidentCommand 700 8 360)
+      (boot deployedLimits owner) (5 + n)) ≠ .working := by
+  obtain ⟨-, -, hrep, r, hlife, -⟩ := incident_reconstruction owner n
+  exact ⟨hrep, report_flags_freeze _ _ _ owner F _
+    (Or.inr ⟨_, hlife, by show (3072 : Nat) < 3312; decide⟩)⟩
 
 /-! ### Without a freshness signal no responder is exact -/
 
@@ -3309,7 +3382,7 @@ theorem kill_mid_call_is_recovery (call : AsyncWait.Call) (revision : Nat)
   ⟨AsyncWait.recovery_records_uncertainty call hsent hpend,
    AsyncWait.recovered_call_cannot_act call revision hsent hpend, rfl⟩
 
-/-! ## The fix on the incident's workload -/
+/-! ## The fix on the incident's workloads -/
 
 /-- The fixed policy for the deployed limits: leave at a boundary above
 2990 MiB, and kill after more than `D` throttled ticks or `D` ticks without
@@ -3317,7 +3390,22 @@ progress. -/
 def fixedPolicy (D : Nat) : Policy :=
   { threshold := some 2990, throttleDeadline := some D, progressDeadline := some D }
 
-theorem fixed_nominal_on_incident (owner : EventPump.Key) (D : Nat) :
+/-- **The fix bounds the incident's freeze.** Under the fixed policy the same
+command can no longer hang the agent: every window of `D + 3` ticks contains
+progress, and no process stays above the soft limit for more than `D`
+consecutive ticks. The command itself is still never completed
+(`poison_never_processed`): completing or retiring it needs a bound on a
+command's growth, or on the attempts an input gets. -/
+theorem fixed_bounds_incident (owner : EventPump.Key) (D n : Nat) :
+    (∃ i ≤ D + 2, progressAt (fixedPolicy D) deployedLimits (incidentCommand 700 8 360)
+      (boot deployedLimits owner) (n + i) = true) ∧
+    ∀ k, (∀ i ≤ k, ∃ p, (run (fixedPolicy D) deployedLimits (incidentCommand 700 8 360)
+      (boot deployedLimits owner) (n + i)).life = .up p ∧ (0 < i → 3072 < p.mem)) → k ≤ D :=
+  ⟨backstop_restores_progress (fixedPolicy D) deployedLimits _ _ D rfl rfl (by decide)
+      (fun T hT => by simp [fixedPolicy] at hT; subst hT; decide) n,
+   fun k hk => backstop_bounds_throttling (fixedPolicy D) deployedLimits _ _ D rfl rfl n k hk⟩
+
+theorem fixed_nominal_on_accumulation (owner : EventPump.Key) (D : Nat) :
     Nominal (fixedPolicy D) deployedLimits (accumulation owner 41 360) 2990 41 1 0 where
   threshold := rfl
   freshBelow := by decide
@@ -3328,11 +3416,11 @@ theorem fixed_nominal_on_incident (owner : EventPump.Key) (D : Nat) :
   deadline := fun D' hD' => Nat.zero_le _
   noExternal := fun _ => rfl
 
-/-- **The fix resolves the incident.** On the workload that froze the deployed
-policy, the fixed policy never enters the throttled regime, its only deaths
-are boundary recycles, and every input is processed within seven ticks of
-reaching the journal. -/
-theorem fixed_resolves_incident (owner : EventPump.Key) (D n : Nat) :
+/-- **The fix resolves accumulation.** On the workload that froze the
+deployed policy by accumulation, the fixed policy never enters the throttled
+regime, its only deaths are boundary recycles, and every input is processed
+within seven ticks of reaching the journal. -/
+theorem fixed_resolves_accumulation (owner : EventPump.Key) (D n : Nat) :
     (∀ p, (run (fixedPolicy D) deployedLimits (accumulation owner 41 360)
       (boot deployedLimits owner) n).life = .up p → p.mem ≤ 3072) ∧
     (∀ ev ∈ (run (fixedPolicy D) deployedLimits (accumulation owner 41 360)
@@ -3344,13 +3432,11 @@ theorem fixed_resolves_incident (owner : EventPump.Key) (D n : Nat) :
       (run (fixedPolicy D) deployedLimits (accumulation owner 41 360)
         (boot deployedLimits owner) (n + 1)).life = .down →
       p.phase = .boundary) := by
-  have h := fixed_nominal_on_incident owner D
+  have h := fixed_nominal_on_accumulation owner D
   refine ⟨fun p hp => nominal_mem h n p hp, fun ev hev => ?_, fun p hp hd =>
     (nominal_deaths_are_exits h n p hp hd).2⟩
   obtain ⟨m, h1, h2, h3⟩ := every_input_processed h n ev hev
   exact ⟨m, h1, by omega, h3⟩
-
-end ProcessSupervision
 
 /-! ## Axiom audit (kernel-level trust check) -/
 #print axioms ProcessSupervision.freeze_is_absorbing
@@ -3359,6 +3445,7 @@ end ProcessSupervision
 #print axioms ProcessSupervision.unguarded_inputs_wait_forever
 #print axioms ProcessSupervision.unguarded_status_while_frozen
 #print axioms ProcessSupervision.incident_reconstruction
+#print axioms ProcessSupervision.accumulation_at_deployed_limits
 #print axioms ProcessSupervision.session_killer_silent_forever
 #print axioms ProcessSupervision.session_killer_delay_unbounded
 #print axioms ProcessSupervision.graceful_never_throttles
@@ -3408,4 +3495,5 @@ end ProcessSupervision
 #print axioms ProcessSupervision.freeze_stops_wakes
 #print axioms ProcessSupervision.nominal_wakes_recur
 #print axioms ProcessSupervision.kill_mid_call_is_recovery
-#print axioms ProcessSupervision.fixed_resolves_incident
+#print axioms ProcessSupervision.fixed_bounds_incident
+#print axioms ProcessSupervision.fixed_resolves_accumulation
