@@ -19,6 +19,18 @@ are derived from the models, deployed, and re-observed live.
   separation cycle, and why the deployed fixes end it), and the
   developmental bound (substrate continuity as a precondition for
   higher intentionality).
+- `ProcessSupervision.lean` — supervision of a memory-throttled loop. Under
+  soft-limit throttling, boundary-only recycling and restart-on-exit, a turn
+  the kernel keeps withholding freezes for ever: the recycle request starves,
+  inputs queue unprocessed, the checkpoint-based status reports `working`, and
+  a session-wide pressure killer gives no per-agent bound. The fix and its
+  proofs: a graceful threshold recycle that never throttles when `T + δ ≤ H`
+  (sharp); an independent progress/throttle watchdog with bounded silence in
+  every environment, plus the exact conditions under which a watchdog inside
+  the service could serve; inputs acknowledged only after the checkpoint, so
+  no kill loses one and every input is processed within a stated bound, each
+  assumption shown essential; and a status report that is exact about recent
+  progress, which no responder without a freshness signal can be.
 - `IterArchitecture.lean` — the current `patham9/iter` reference loop: ordered
   failure-transactional transformations, the separation between advertised
   and executable tools, one-cycle hot reload, burst pacing, restart behavior,
@@ -179,6 +191,11 @@ LEAN_PATH=. lean RestEnergy.lean
 LEAN_PATH=. lean StiMass.lean
 LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
+lean -o HeartModel.olean HeartModel.lean
+LEAN_PATH=. lean -o AsyncWait.olean AsyncWait.lean
+LEAN_PATH=. lean -o AdmissionFrontier.olean AdmissionFrontier.lean
+LEAN_PATH=. lean -o EventPump.olean EventPump.lean
+LEAN_PATH=. lean ProcessSupervision.lean
 ```
 
 For the composed strategy and its imported model dependencies, from the
