@@ -71,8 +71,10 @@ lean_lib HOLLightMeTTaQuotation where
   roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
   needs := #[`@/holLightMeTTaSources]
 
+-- The GSLT execution library lives beside these proofs in `metta/gslt/lib`.
+-- Every quoted file is an input of the module that quotes it.
 input_file gsltMatchAutomataSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_match_automata.metta"
+  path := "../../metta/gslt/lib/gslt_match_automata.metta"
   text := false
 
 lean_lib GSLTMatchAutomataQuotation where
@@ -80,21 +82,85 @@ lean_lib GSLTMatchAutomataQuotation where
   needs := #[`@/gsltMatchAutomataSource]
 
 input_file gsltRuleExecutionSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_rule_execution.metta"
+  path := "../../metta/gslt/lib/gslt_rule_execution.metta"
   text := false
 
 input_file gsltPremiseOperationsSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_premise_operations.metta"
+  path := "../../metta/gslt/lib/gslt_premise_operations.metta"
   text := false
 
 input_file gsltScopedExecutionSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_scoped_execution.metta"
+  path := "../../metta/gslt/lib/gslt_scoped_execution.metta"
   text := false
 
 lean_lib GSLTRuleExecutionQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleExecutionProgram]
   needs := #[`@/gsltRuleExecutionSource, `@/gsltPremiseOperationsSource,
     `@/gsltScopedExecutionSource]
+
+input_file gsltMatchNormalizedSource where
+  path := "../../metta/gslt/lib/gslt_match_normalized.metta"
+  text := false
+
+lean_lib GSLTMatchNormalizedQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataNormalizedExecution]
+  needs := #[`@/gsltMatchNormalizedSource]
+
+input_file gsltEquationExecutionSource where
+  path := "../../metta/gslt/lib/gslt_equation_execution.metta"
+  text := false
+
+lean_lib GSLTEquationExecutionQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationExecutionProgram]
+  needs := #[`@/gsltEquationExecutionSource]
+
+input_file gsltEquationContextsSource where
+  path := "../../metta/gslt/lib/gslt_equation_contexts.metta"
+  text := false
+
+lean_lib GSLTEquationContextsQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationContextExecutionProgram]
+  needs := #[`@/gsltEquationContextsSource]
+
+input_file gsltModuleSource where
+  path := "../../metta/gslt/lib/gslt_module.metta"
+  text := false
+
+lean_lib GSLTModuleQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ModuleAssemblyExecution]
+  needs := #[`@/gsltModuleSource]
+
+input_file gsltTypedSitesSource where
+  path := "../../metta/gslt/lib/gslt_typed_sites.metta"
+  text := false
+
+lean_lib GSLTTypedSitesQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Program]
+  needs := #[`@/gsltTypedSitesSource]
+
+input_file gsltRuleReadoutCacheSource where
+  path := "../../metta/gslt/lib/gslt_rule_readout_cache.metta"
+  text := false
+
+lean_lib GSLTRuleReadoutCacheQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleReadoutCache]
+  needs := #[`@/gsltRuleReadoutCacheSource]
+
+input_file gsltExecutionDriverSource where
+  path := "../../metta/gslt/lib/gslt_execution_driver.metta"
+  text := false
+
+lean_lib GSLTExecutionDriverQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecution.Program]
+  needs := #[`@/gsltExecutionDriverSource]
+
+input_file gsltProgramDriverSource where
+  path := "../../metta/gslt/lib/gslt_program_driver.metta"
+  text := false
+
+lean_lib GSLTProgramDriverQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution]
+  needs := #[`@/gsltProgramDriverSource]
 
 -- Concrete MM2 execution examples are an explicit proof audit, not a
 -- dependency of the routine language umbrellas or the default library.

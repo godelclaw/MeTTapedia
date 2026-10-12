@@ -28,6 +28,14 @@ The *jump* evaluates every specification in a valuation.
   satisfies every specification; Boolean negation has no fixed point, while
   strong Kleene negation fixes `none` (`kleeneNot_none`,
   `liar_status_eq_none`).  This is the Lawvere obstruction and its escape.
+* **The dual escape** (Fitting's conflation): with bivalent base facts the jump
+  commutes with the dual (`jump_dual`), so the dual of the least fixed point is
+  the greatest fixed point (`jump_greatest`, `le_greatest`).  There every
+  judgment is held or failed (`greatest_complete`), and a judgment is undetermined
+  in the least fixed point exactly when it is both held and failed in the
+  greatest (`undetermined_least_iff_both_greatest`); the liar is both
+  (`liar_both_greatest`).  The paracomplete escape (neither) and the
+  paraconsistent escape (both) are one ungrounded status read through the dual.
 
 **Outcomes.**  The verdict of a valuation is an `Outcome`: `established` on
 held judgments, `refuted` on failed ones, `outsideFragment` (ungrounded)
@@ -419,6 +427,137 @@ theorem verdict_liar_outside {liar : Judgment} (isLiar : system.spec liar = .neg
 
 end System
 
+/-! ## The greatest fixed point: the dual of the least
+
+With bivalent base facts the jump commutes with the dual valuation.  The dual of the
+least fixed point is then the greatest fixed point, every judgment is held or failed
+there, and a judgment left undetermined by the least fixed point is both held and
+failed by the greatest.  The two non-classical values of Belnap's square, neither and
+both, are the two readings of one ungrounded judgment, exchanged by the dual. -/
+
+namespace Valuation
+
+variable {Judgment : Type u}
+
+theorem ext' {first second : Valuation Judgment} (holds : first.holds = second.holds)
+    (fails : first.fails = second.fails) : first = second := by
+  cases first
+  cases second
+  simp_all
+
+theorem le_antisymm {first second : Valuation Judgment} (le : first.Le second)
+    (ge : second.Le first) : first = second :=
+  ext' (Set.Subset.antisymm le.1 ge.1) (Set.Subset.antisymm le.2 ge.2)
+
+/-- The dual is an involution. -/
+theorem dual_dual (valuation : Valuation Judgment) : valuation.dual.dual = valuation := by
+  apply ext' <;> ext judgment <;> simp [dual]
+
+/-- The dual reverses the knowledge order. -/
+theorem dual_le_dual {first second : Valuation Judgment} (le : first.Le second) :
+    second.dual.Le first.dual :=
+  ⟨fun _ notFailed failed => notFailed (le.2 failed), fun _ notHeld held => notHeld (le.1 held)⟩
+
+end Valuation
+
+namespace System
+
+variable {Judgment : Type u} {Base : Type v} (system : System Judgment Base)
+
+/-- Every base fact holds or fails. -/
+def Bivalent : Prop :=
+  ∀ fact, system.baseHolds fact ∨ system.baseFails fact
+
+variable {system}
+
+/-- With bivalent base facts, evaluating in the dual valuation is the dual of
+evaluating in the valuation. -/
+theorem eval_dual_iff (bivalent : system.Bivalent) (valuation : Valuation Judgment) :
+    ∀ formula : Formula Judgment Base,
+      ((system.eval valuation.dual formula).1 ↔ ¬ (system.eval valuation formula).2) ∧
+        ((system.eval valuation.dual formula).2 ↔ ¬ (system.eval valuation formula).1)
+  | .base fact =>
+      ⟨⟨fun held failed => system.base_consistent fact held failed,
+          fun notFailed => (bivalent fact).resolve_right notFailed⟩,
+        ⟨fun failed held => system.base_consistent fact held failed,
+          fun notHeld => (bivalent fact).resolve_left notHeld⟩⟩
+  | .truth _ => ⟨Iff.rfl, Iff.rfl⟩
+  | .neg formula =>
+      let ih := eval_dual_iff bivalent valuation formula
+      ⟨ih.2, ih.1⟩
+  | .conj first second => by
+      have ihFirst := eval_dual_iff bivalent valuation first
+      have ihSecond := eval_dual_iff bivalent valuation second
+      change ((system.eval valuation.dual first).1 ∧ (system.eval valuation.dual second).1 ↔
+          ¬ ((system.eval valuation first).2 ∨ (system.eval valuation second).2)) ∧
+        ((system.eval valuation.dual first).2 ∨ (system.eval valuation.dual second).2 ↔
+          ¬ ((system.eval valuation first).1 ∧ (system.eval valuation second).1))
+      rw [ihFirst.1, ihFirst.2, ihSecond.1, ihSecond.2, not_or, not_and_or]
+      exact ⟨Iff.rfl, Iff.rfl⟩
+  | .disj first second => by
+      have ihFirst := eval_dual_iff bivalent valuation first
+      have ihSecond := eval_dual_iff bivalent valuation second
+      change ((system.eval valuation.dual first).1 ∨ (system.eval valuation.dual second).1 ↔
+          ¬ ((system.eval valuation first).2 ∧ (system.eval valuation second).2)) ∧
+        ((system.eval valuation.dual first).2 ∧ (system.eval valuation.dual second).2 ↔
+          ¬ ((system.eval valuation first).1 ∨ (system.eval valuation second).1))
+      rw [ihFirst.1, ihFirst.2, ihSecond.1, ihSecond.2, not_or, not_and_or]
+      exact ⟨Iff.rfl, Iff.rfl⟩
+
+/-- **The jump commutes with the dual** when base facts are bivalent. -/
+theorem jump_dual (bivalent : system.Bivalent) (valuation : Valuation Judgment) :
+    system.jump valuation.dual = (system.jump valuation).dual := by
+  apply Valuation.ext' <;> ext judgment
+  · exact (eval_dual_iff bivalent valuation (system.spec judgment)).1
+  · exact (eval_dual_iff bivalent valuation (system.spec judgment)).2
+
+variable (system)
+
+/-- The least fixed point is a fixed point. -/
+theorem jump_least : system.jump system.least = system.least :=
+  Valuation.le_antisymm system.jump_least_le system.le_jump_least
+
+/-- **The greatest fixed point**: the dual of the least. -/
+def greatest : Valuation Judgment := system.least.dual
+
+variable {system}
+
+theorem jump_greatest (bivalent : system.Bivalent) :
+    system.jump system.greatest = system.greatest := by
+  rw [greatest, jump_dual bivalent, jump_least]
+
+/-- **Every fixed point lies below the dual of the least.** -/
+theorem le_greatest (bivalent : system.Bivalent) {valuation : Valuation Judgment}
+    (fixed : system.jump valuation = valuation) : valuation.Le system.greatest := by
+  have dualFixed : system.jump valuation.dual = valuation.dual := by
+    rw [jump_dual bivalent, fixed]
+  have below : system.least.Le valuation.dual := system.least_le (by
+    rw [dualFixed]
+    exact Valuation.le_refl _)
+  have reversed := Valuation.dual_le_dual below
+  rwa [Valuation.dual_dual] at reversed
+
+/-- Every judgment is held or failed by the greatest fixed point. -/
+theorem greatest_complete (judgment : Judgment) :
+    judgment ∈ system.greatest.holds ∨ judgment ∈ system.greatest.fails := by
+  by_cases failed : judgment ∈ system.least.fails
+  · exact Or.inr fun held => system.least_consistent judgment held failed
+  · exact Or.inl failed
+
+/-- **Neither in the least exactly when both in the greatest.** -/
+theorem undetermined_least_iff_both_greatest (judgment : Judgment) :
+    (judgment ∉ system.least.holds ∧ judgment ∉ system.least.fails) ↔
+      (judgment ∈ system.greatest.holds ∧ judgment ∈ system.greatest.fails) :=
+  ⟨fun ⟨notHeld, notFailed⟩ => ⟨notFailed, notHeld⟩,
+    fun ⟨notFailed, notHeld⟩ => ⟨notHeld, notFailed⟩⟩
+
+/-- **The liar is both held and failed by the greatest fixed point.** -/
+theorem liar_both_greatest {liar : Judgment} (isLiar : system.spec liar = .neg (.truth liar)) :
+    liar ∈ system.greatest.holds ∧ liar ∈ system.greatest.fails :=
+  (undetermined_least_iff_both_greatest liar).mp (system.liar_not_mem_least isLiar)
+
+end System
+
 /-! ## A concrete system -/
 
 namespace Example
@@ -550,6 +689,23 @@ theorem verdicts :
     System.verdict_asBool_eq_some_true.mpr fact_chain_held.1,
     (System.verdict_asBool_eq_some_false system.least_consistent).mpr liarAndNotFact_failed,
     ?_, ?_, ?_, ?_⟩ <;> simp [holdsEq, failsEq, groundedHolds, groundedFails]
+
+theorem bivalent : system.Bivalent := fun _ => Or.inl trivial
+
+/-- **The ungrounded judgments are both in the greatest fixed point, the grounded
+ones keep their single value**: the liar, the truth-teller and the disjunction of
+the liar with a false judgment are held and failed; the grounded fact is held and
+not failed. -/
+theorem greatest_values :
+    (Sentence.liar ∈ system.greatest.holds ∧ Sentence.liar ∈ system.greatest.fails) ∧
+      (Sentence.teller ∈ system.greatest.holds ∧ Sentence.teller ∈ system.greatest.fails) ∧
+      (Sentence.liarOrNotFact ∈ system.greatest.holds ∧
+        Sentence.liarOrNotFact ∈ system.greatest.fails) ∧
+      (Sentence.fact ∈ system.greatest.holds ∧ Sentence.fact ∉ system.greatest.fails) ∧
+      system.jump system.greatest = system.greatest := by
+  obtain ⟨holdsEq, failsEq⟩ := least_eq_grounded
+  refine ⟨system.liar_both_greatest rfl, ?_, ?_, ?_, System.jump_greatest bivalent⟩ <;>
+    simp [System.greatest, Valuation.dual, holdsEq, failsEq, groundedHolds, groundedFails]
 
 end Example
 

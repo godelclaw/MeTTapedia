@@ -32,8 +32,10 @@ The rules for `hol.Thm` are the ten inference operations of `HOLLight.Rules`, RE
 TRANS, MK_COMB, ABS, BETA, EQ_MP, DEDUCT_ANTISYM_RULE, INST and INST_TYPE, and one rule per
 sequent of a finite axiom list.
 
-`holCalculus axioms` is valid and first-order for the empty axiom list (`holCalculus_valid`,
-`holCalculus_firstOrder`).
+`holCalculus axioms` is valid and first-order for every finite axiom list
+(`holCalculus_valid_axioms`, `holCalculus_firstOrder_axioms` in `Validation`).
+The empty-list instances `holCalculus_valid` and `holCalculus_firstOrder` remain
+the local admission controls.
 -/
 
 set_option autoImplicit false

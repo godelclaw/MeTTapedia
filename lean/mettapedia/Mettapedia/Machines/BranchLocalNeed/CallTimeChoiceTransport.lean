@@ -1,4 +1,5 @@
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceRenaming
+import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceStrict
 
 /-!
 # Transport of branch-local worlds
@@ -101,6 +102,30 @@ theorem cell_of_index (h : Transport φ σ σ') {ℓ ℓ' : Nat} (hφ : φ[ℓ]?
   have hlt : ℓ < σ.cells.length := by
     rw [← h.length]; exact (List.getElem?_eq_some_iff.mp hφ).1
   exact ⟨σ.cells[ℓ], List.getElem?_eq_getElem hlt⟩
+
+/-- A transported value's references resolve in the target store's allocated
+range. Readiness and retention use the same role-preserving cell map. -/
+theorem value_referencesBounded (h : Transport φ σ σ')
+    {value represented : Val Nat} (related : ValRel φ value represented) :
+    represented.referencesSatisfy (fun i => i < σ'.cells.length) :=
+  related.referencesSatisfy h.bound
+
+/-- The environments captured by transferred cells keep their live target
+references, even when the target has additional unrelated cells. -/
+theorem captured_referencesBounded (h : Transport φ σ σ')
+    {source target : Suspension} (related : SuspTr φ source target) :
+    EnvReferencesSatisfy (fun i => i < σ'.cells.length) target.env :=
+  related.env.referencesSatisfy h.bound
+
+/-- An earlier carrier without a mapped field cannot represent this result.
+Keeping the original field identifier alone does not repair the transport. -/
+theorem missing_named {index target : Nat} (named : φ[index]? = some target)
+    (missing : σ'.cells[target]? = none) : ¬ Transport φ σ σ' := by
+  intro transferred
+  obtain ⟨source, sourceLookup⟩ := transferred.cell_of_index named
+  obtain ⟨_, targetLookup, _⟩ := transferred.lookup named sourceLookup
+  rw [missing] at targetLookup
+  cases targetLookup
 
 theorem fresh_not_mem (h : Transport φ σ σ') : σ'.cells.length ∉ φ :=
   fun hm => Nat.lt_irrefl _ (h.bound _ hm)
@@ -567,6 +592,34 @@ theorem transport_eval_unique {σ σ' : Store} {ρ ρ' : List (Val Nat)} {M : Co
   obtain ⟨L'', h'', r⟩ := transport_eval P h hσ hρ
   rw [Derives.deterministic h' h'']
   exact r
+
+/-- Materialization uses the transported origins, caches and branch stores.
+Its complete ordered results remain related, and each successful transported
+result is ready for a consumer. No source-text replay supplies the transport. -/
+theorem normalized_transport (hP : candidates P normHead 1 = [normRule])
+    {σ σ' : Store} {ρ ρ' : List (Val Nat)} {M : Comp} {L : List Result} {φ : List Nat}
+    (source : Derives P (.eval σ ρ (normalized M)) L)
+    (world : Transport φ σ σ') (environment : EnvRel φ ρ ρ') :
+    ∃ L', Derives P (.eval σ' ρ' (normalized M)) L' ∧
+      List.Forall₂ (ResTr φ) L L' ∧ OkAll IsNormal L' := by
+  obtain ⟨results, target, related⟩ := transport_eval P source world environment
+  exact ⟨results, target, related, normalized_okNormal hP target⟩
+
+/-- A ready value's certificate survives transport with its owning world.
+Both ordinary normalization calls preserve their own store, and their results
+retain the same role-preserving value relation. -/
+theorem norm_ready_transport (hP : candidates P normHead 1 = [normRule])
+    {σ σ' : Store} {value value' : Val Nat} {φ : List Nat}
+    (world : Transport φ σ σ') (valueRelated : ValRel φ value value') (ready : IsNormal value) :
+    Derives P (.eval σ [value] (.call normHead [.var 0])) [(.ok value, σ)] ∧
+    Derives P (.eval σ' [value'] (.call normHead [.var 0])) [(.ok value', σ')] ∧
+    ResTr φ (.ok value, σ) (.ok value', σ') := by
+  have targetReady : IsNormal value' := by
+    change value'.noSusp = true
+    rw [valueRelated.noSusp_eq]
+    exact ready
+  exact ⟨norm_call_ready hP σ [value] (.var 0) ready,
+    norm_call_ready hP σ' [value'] (.var 0) targetReady, ResTr.base world (.ok valueRelated)⟩
 
 /-- Evaluation after two actual transports has the original ordered results,
 related by the computed composite cell map and each result's own world. -/

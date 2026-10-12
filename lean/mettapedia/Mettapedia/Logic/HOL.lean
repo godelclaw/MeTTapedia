@@ -31,6 +31,8 @@ import Mettapedia.Logic.HOL.ProofSyntaxModuloKripke
 import Mettapedia.Logic.HOL.ProofSyntaxModuloConservativity
 import Mettapedia.Logic.HOL.ImpredicativeProofModulo
 import Mettapedia.Logic.HOL.PublishedFacts
+import Mettapedia.Logic.HOL.HornConsequence
+import Mettapedia.Logic.HOL.Embedding.InferenceRuleInstances
 import Mettapedia.Logic.HOL.ProofCarryingPipeline
 import Mettapedia.Logic.HOL.UniformListMapFusion
 import Mettapedia.Logic.HOL.Embedding.GroundUnaryEquationalProofSyntax

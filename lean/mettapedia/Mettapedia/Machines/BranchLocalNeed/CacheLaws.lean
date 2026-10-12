@@ -12,7 +12,7 @@ this file adds no new machine, only laws about the existing one.
 
 The central artifact is `HeapCellStep`: for every small-step successor
 `next ∈ step spec machine`, every cell descends through exactly one of a
-small number of transitions.  All headline laws are corollaries of that
+small number of transitions.  The lifecycle laws are corollaries of that
 single case analysis:
 
 * **Forced once** (`steps_preserve_completed`,
@@ -37,6 +37,10 @@ single case analysis:
 * **Sibling isolation** (`sibling_fresh_distinct`): a cell freshly
   allocated in one sibling fork carries that sibling's birth path and is
   provably distinct from the other sibling's fresh cells.
+* **Retained references** (`ReferenceDiscipline.step_closed`,
+  `ReferenceDiscipline.runFrontier_closed`): local language operations preserve
+  captured, cached, active and saved continuation references. Every successor
+  and unfinished frontier uses its own heap as the reference domain.
 
 ## Non-claims
 
@@ -340,9 +344,10 @@ else. -/
   rfl
 
 /-- **Lifecycle of one step.**  Every cell of the heap descends through
-`HeapCellStep` when the machine takes one small step.  This is the only
-place the machine's write cases are enumerated; every law in this module
-is a corollary. -/
+`HeapCellStep` when the machine takes one small step.  This case analysis supplies the
+cell lifecycle used by the cache, origin and production laws. The retained-root
+invariant separately checks the reference-bearing inputs and outputs of local
+language operations. -/
 theorem step_cellMove
     (spec :
       Spec Origin Local Resume Rule Value StableFault RetryableFault
@@ -799,6 +804,41 @@ theorem force_cached_value_step
         (recorded machine.world (.observe cell (.value v)))
         (.returned (.value v) stack) 1 0 1 0] := by
   simp [step, hControl, hLookup]
+
+
+/-- Deliver a completed value to its retained consumer in exactly two actual
+steps. The original cell and branch heap are retained, with one lookup and
+one delivery receipt, no cache write and no allocation. No producer code
+is evaluated by these steps; the consumer continues with the cached value. -/
+theorem force_cached_value_resume
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (world : World Origin Rule Value StableFault RetryableFault Effect)
+    (cell : CellId) (token : Resume) (rest : List (Frame Resume)) (work : Work)
+    {origin : Origin} {value : Value}
+    (cached : world.heap.lookup cell = some ⟨origin, .value value⟩) :
+    UniqueSteps spec 2
+      ⟨world, .force cell (.resume token :: rest), work⟩
+      ⟨recorded world (.observe cell (.value value)),
+        .run (spec.afterDemand token (.value value)) rest,
+        (work.bump 1 0 1 0).bump 0 0 0 0⟩ := by
+  apply UniqueSteps.cons (force_cached_value_step spec _ rfl cached)
+  apply UniqueSteps.cons (by rfl)
+  exact UniqueSteps.refl _
+
+/-- Exact singleton-frontier equality for cached delivery followed by resumption.
+This is stronger than the existence of a path through the machine. -/
+theorem force_cached_value_resume_frontier
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (world : World Origin Rule Value StableFault RetryableFault Effect)
+    (cell : CellId) (token : Resume) (rest : List (Frame Resume)) (work : Work)
+    {origin : Origin} {value : Value}
+    (cached : world.heap.lookup cell = some ⟨origin, .value value⟩) :
+    runFrontier spec 2 [⟨world, .force cell (.resume token :: rest), work⟩] =
+      [⟨recorded world (.observe cell (.value value)),
+        .run (spec.afterDemand token (.value value)) rest,
+        (work.bump 1 0 1 0).bump 0 0 0 0⟩] :=
+  (force_cached_value_resume spec world cell token rest work cached).runFrontier_eq spec
+
 
 /-- **Shared demand is deterministic.**  Within one lineage, a cell that
 already completed as `v` is forced to the same `v` on every later
@@ -1765,6 +1805,399 @@ theorem observed_payload_does_not_determine_role :
 end CompletedReceiptControls
 
 
+/-! ## References retained by pending controls and continuations -/
+
+/-- The operational reference domain of a heap. Diagnostic cell names in
+fault receipts are not operational references. -/
+def heapLive (heap : Heap Origin Value StableFault) (cell : CellId) : Prop :=
+  ∃ record, heap.lookup cell = some record
+
+/-- The language supplies reference predicates, rather than a second heap or
+step relation. Each localState operation must preserve those predicates for any
+reference domain. Monotonicity allows allocation to extend that domain. -/
+structure ReferenceDiscipline
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect) where
+  origin : (CellId → Prop) → Origin → Prop
+  localState : (CellId → Prop) → Local → Prop
+  resume : (CellId → Prop) → Resume → Prop
+  value : (CellId → Prop) → Value → Prop
+  origin_mono : ∀ {p q}, (∀ c, p c → q c) → ∀ {o}, origin p o → origin q o
+  local_mono : ∀ {p q}, (∀ c, p c → q c) → ∀ {l}, localState p l → localState q l
+  resume_mono : ∀ {p q}, (∀ c, p c → q c) → ∀ {k}, resume p k → resume q k
+  value_mono : ∀ {p q}, (∀ c, p c → q c) → ∀ {v}, value p v → value q v
+  alternatives : ∀ {p o r l}, origin p o → (r, l) ∈ spec.alternatives o → localState p l
+  action : ∀ {p l}, localState p l →
+    match spec.action l with
+    | .done (.value v) => value p v
+    | .done _ => True
+    | .demand c k | .resample c k => p c ∧ resume p k
+    | .allocate o k => origin p o ∧ resume p k
+    | .perform _ next => localState p next
+  afterDemand : ∀ {p k outcome}, resume p k →
+    (match outcome with | .value v => value p v | _ => True) →
+    localState p (spec.afterDemand k outcome)
+  afterAllocation : ∀ {p k c}, resume p k → p c →
+    localState p (spec.afterAllocation k c)
+
+namespace ReferenceDiscipline
+
+variable {spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (discipline : ReferenceDiscipline spec)
+
+def outcome (p : CellId → Prop) : Produced Value StableFault RetryableFault → Prop
+  | .value v => discipline.value p v
+  | _ => True
+
+def cache (p : CellId → Prop) : Cache Value StableFault → Prop
+  | .value v => discipline.value p v
+  | _ => True
+
+def frame (p : CellId → Prop) : Frame Resume → Prop
+  | .commit c _ => p c
+  | .resume k => discipline.resume p k
+
+abbrev stack (p : CellId → Prop) (frames : List (Frame Resume)) : Prop :=
+  ∀ f ∈ frames, discipline.frame p f
+
+def control (p : CellId → Prop) : Control Local Resume Value StableFault RetryableFault → Prop
+  | .force c frames => p c ∧ discipline.stack p frames
+  | .run l frames => discipline.localState p l ∧ discipline.stack p frames
+  | .returned result frames => discipline.outcome p result ∧ discipline.stack p frames
+  | .halted result => discipline.outcome p result
+
+/-- All captured origins and cached values resolve in this same heap. -/
+def heapClosed (heap : Heap Origin Value StableFault) : Prop :=
+  ∀ c record, heap.lookup c = some record →
+    discipline.origin (heapLive heap) record.origin ∧ discipline.cache (heapLive heap) record.cache
+
+/-- The actual heap, active control and saved continuation roots are checked
+against one reference domain. Work and diagnostic receipts do not create roots. -/
+def machineClosed
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) : Prop :=
+  discipline.heapClosed machine.world.heap ∧
+    discipline.control (heapLive machine.world.heap) machine.control
+
+theorem outcome_mono {p q : CellId → Prop} (grows : ∀ c, p c → q c)
+    {result : Produced Value StableFault RetryableFault}
+    (valid : discipline.outcome p result) : discipline.outcome q result := by
+  cases result with
+  | value v => exact discipline.value_mono grows valid
+  | stableFault => trivial
+  | retryableFault => trivial
+
+theorem cache_mono {p q : CellId → Prop} (grows : ∀ c, p c → q c)
+    {cached : Cache Value StableFault} (valid : discipline.cache p cached) :
+    discipline.cache q cached := by
+  cases cached with
+  | value v => exact discipline.value_mono grows valid
+  | suspended => trivial
+  | evaluating => trivial
+  | stableFault => trivial
+
+theorem frame_mono {p q : CellId → Prop} (grows : ∀ c, p c → q c)
+    {saved : Frame Resume} (valid : discipline.frame p saved) : discipline.frame q saved := by
+  cases saved with
+  | commit c owner => exact grows c valid
+  | resume k => exact discipline.resume_mono grows valid
+
+theorem stack_mono {p q : CellId → Prop} (grows : ∀ c, p c → q c)
+    {saved : List (Frame Resume)} (valid : discipline.stack p saved) :
+    discipline.stack q saved := by
+  intro f member
+  exact discipline.frame_mono grows (valid f member)
+
+theorem stack_cons {p : CellId → Prop} {f : Frame Resume} {rest : List (Frame Resume)} :
+    discipline.stack p (f :: rest) ↔ discipline.frame p f ∧ discipline.stack p rest := by
+  simp only [stack, List.mem_cons, forall_eq_or_imp]
+
+theorem control_mono {p q : CellId → Prop} (grows : ∀ c, p c → q c)
+    {current : Control Local Resume Value StableFault RetryableFault}
+    (valid : discipline.control p current) : discipline.control q current := by
+  cases current with
+  | force c frames => exact ⟨grows c valid.1, discipline.stack_mono grows valid.2⟩
+  | run l frames => exact ⟨discipline.local_mono grows valid.1, discipline.stack_mono grows valid.2⟩
+  | returned result frames => exact ⟨discipline.outcome_mono grows valid.1,
+      discipline.stack_mono grows valid.2⟩
+  | halted result => exact discipline.outcome_mono grows valid
+
+theorem setKnownCache_live {heap : Heap Origin Value StableFault} {c : CellId}
+    {record : CellRecord Origin Value StableFault} (lookup : heap.lookup c = some record)
+    (cached : Cache Value StableFault) (other : CellId) :
+    heapLive (heap.setKnownCache c record cached) other ↔ (heapLive heap) other := by
+  by_cases same : other = c
+  · subst other
+    constructor
+    · intro _; exact ⟨record, lookup⟩
+    · intro _; exact ⟨_, Heap.setKnownCache_lookup_same _ _ _ _⟩
+  · simp only [heapLive, Heap.setKnownCache_preserves_other _ _ _ same]
+
+theorem heapClosed_setKnownCache {heap : Heap Origin Value StableFault} {c : CellId}
+    {record : CellRecord Origin Value StableFault} (closed : discipline.heapClosed heap)
+    (lookup : heap.lookup c = some record) {cached : Cache Value StableFault}
+    (valid : discipline.cache (heapLive heap) cached) :
+    discipline.heapClosed (heap.setKnownCache c record cached) := by
+  intro other result found
+  have grows := fun cell => (setKnownCache_live lookup cached cell).mpr
+  by_cases same : other = c
+  · subst other
+    rw [Heap.setKnownCache_lookup_same, Option.some.injEq] at found
+    subst result
+    exact ⟨discipline.origin_mono grows (closed c record lookup).1,
+      discipline.cache_mono grows valid⟩
+  · rw [Heap.setKnownCache_preserves_other _ _ _ same] at found
+    exact ⟨discipline.origin_mono grows (closed other result found).1,
+      discipline.cache_mono grows (closed other result found).2⟩
+
+theorem allocate_live {world next : World Origin Rule Value StableFault RetryableFault Effect}
+    {o : Origin} {generation : Nat} {c : CellId}
+    (allocated : world.allocate? o generation = some (next, c)) :
+    ∀ other, (heapLive world.heap) other → (heapLive next.heap) other := by
+  intro other live
+  by_cases same : other = c
+  · subst other; exact ⟨_, World.allocate?_lookup_same allocated⟩
+  · rcases live with ⟨record, lookup⟩
+    exact ⟨record, by rw [World.allocate?_preserves_other allocated same]; exact lookup⟩
+
+theorem heapClosed_allocate {world next : World Origin Rule Value StableFault RetryableFault Effect}
+    {o : Origin} {generation : Nat} {c : CellId}
+    (closed : discipline.heapClosed world.heap) (valid : discipline.origin (heapLive world.heap) o)
+    (allocated : world.allocate? o generation = some (next, c)) :
+    discipline.heapClosed next.heap := by
+  intro other record lookup
+  have grows := allocate_live allocated
+  by_cases same : other = c
+  · subst other
+    rw [World.allocate?_lookup_same allocated, Option.some.injEq] at lookup
+    subst record
+    exact ⟨discipline.origin_mono grows valid, True.intro⟩
+  · rw [World.allocate?_preserves_other allocated same] at lookup
+    exact ⟨discipline.origin_mono grows (closed other record lookup).1,
+      discipline.cache_mono grows (closed other record lookup).2⟩
+
+theorem branchAlternatives_closed
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (base : World Origin Rule Value StableFault RetryableFault Effect)
+    (c : CellId) (record : CellRecord Origin Value StableFault) (owner : EvaluatorId)
+    (saved : List (Frame Resume)) (start : Nat) (choices : List (Rule × Local))
+    (closed : discipline.heapClosed base.heap) (lookup : base.heap.lookup c = some record)
+    (roots : discipline.stack (heapLive base.heap) saved)
+    (locals : ∀ pair ∈ choices, discipline.localState (heapLive base.heap) pair.2)
+    {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (member : next ∈ branchAlternatives machine base c record owner saved start choices) :
+    discipline.machineClosed next := by
+  induction choices generalizing start with
+  | nil => simp [branchAlternatives] at member
+  | cons pair rest ih =>
+      simp only [branchAlternatives, List.mem_cons] at member
+      rcases member with rfl | member
+      · have grows := fun cell => (setKnownCache_live lookup (.evaluating owner) cell).mpr
+        change discipline.heapClosed (base.heap.setKnownCache c record (.evaluating owner)) ∧
+          discipline.localState (heapLive (base.heap.setKnownCache c record (.evaluating owner))) pair.2 ∧
+          discipline.stack (heapLive (base.heap.setKnownCache c record (.evaluating owner)))
+            (.commit c owner :: saved)
+        refine ⟨discipline.heapClosed_setKnownCache closed lookup True.intro,
+          discipline.local_mono grows (locals pair (by simp)), ?_⟩
+        apply discipline.stack_cons.mpr
+        exact ⟨grows c ⟨record, lookup⟩, discipline.stack_mono grows roots⟩
+      · exact ih (start + 1) (fun pair found => locals pair (List.mem_cons_of_mem _ found)) member
+
+/-- Every actual successor retains its heap references, active roots and
+saved continuation roots. The language obligations are local operations;
+no source/native correspondence or whole-step preservation is assumed. -/
+theorem step_closed
+    {machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (valid : discipline.machineClosed machine) (member : next ∈ step spec machine) :
+    discipline.machineClosed next := by
+  rcases machine with ⟨world, current, work⟩
+  rcases valid with ⟨closed, roots⟩
+  cases current with
+  | halted result => simp [step] at member
+  | force c saved =>
+      rcases roots with ⟨live, savedRoots⟩
+      cases lookup : world.heap.lookup c with
+      | none => obtain ⟨record, found⟩ := live; simp [lookup] at found
+      | some record =>
+          have recordRoots := closed c record lookup
+          cases cached : record.cache with
+          | value value =>
+              simp only [step, lookup, cached, List.mem_singleton] at member
+              subst next
+              exact ⟨closed, by simpa [cache, outcome, cached] using recordRoots.2, savedRoots⟩
+          | stableFault fault =>
+              simp only [step, lookup, cached, List.mem_singleton] at member
+              subst next
+              exact ⟨closed, True.intro, savedRoots⟩
+          | evaluating owner =>
+              simp only [step, lookup, cached, List.mem_singleton] at member
+              subst next
+              exact ⟨closed, True.intro, savedRoots⟩
+          | suspended =>
+              cases choices : spec.alternatives record.origin with
+              | nil =>
+                  simp only [step, lookup, cached, choices, List.mem_singleton] at member
+                  subst next
+                  exact ⟨closed, True.intro, savedRoots⟩
+              | cons pair rest =>
+                  simp only [step, lookup, cached, choices] at member
+                  apply discipline.branchAlternatives_closed _
+                    { world with nextEvaluator := world.nextEvaluator + 1 }
+                    c record world.nextEvaluator saved 0 (pair :: rest) closed lookup savedRoots
+                    (next := next) (member := member)
+                  intro pair found
+                  exact discipline.alternatives recordRoots.1 (by rwa [choices])
+  | run state saved =>
+      rcases roots with ⟨localRoots, savedRoots⟩
+      have exposed := discipline.action localRoots
+      cases act : spec.action state with
+      | done result =>
+          simp only [step, act, List.mem_singleton] at member
+          subst next
+          refine ⟨closed, ?_, savedRoots⟩
+          change discipline.outcome (heapLive world.heap) result
+          cases result with
+          | value v => simpa only [act, outcome] using exposed
+          | stableFault => trivial
+          | retryableFault => trivial
+      | demand c token =>
+          simp only [step, act, List.mem_singleton] at member
+          subst next
+          simp only [act] at exposed
+          exact ⟨closed, exposed.1, discipline.stack_cons.mpr ⟨exposed.2, savedRoots⟩⟩
+      | allocate origin token =>
+          simp only [act] at exposed
+          cases allocated : world.allocate? origin with
+          | none =>
+              simp only [step, act, allocated, List.mem_singleton] at member
+              subst next
+              exact ⟨closed, True.intro, savedRoots⟩
+          | some pair =>
+              rcases pair with ⟨freshWorld, cell⟩
+              simp only [step, act, allocated, List.mem_singleton] at member
+              subst next
+              have grows := allocate_live allocated
+              exact ⟨discipline.heapClosed_allocate closed exposed.1 allocated,
+                discipline.afterAllocation (discipline.resume_mono grows exposed.2)
+                  ⟨_, World.allocate?_lookup_same allocated⟩,
+                  discipline.stack_mono grows savedRoots⟩
+      | resample source token =>
+          simp only [act] at exposed
+          cases lookup : world.heap.lookup source with
+          | none => obtain ⟨record, found⟩ := exposed.1; simp [lookup] at found
+          | some record =>
+              cases allocated : world.allocate? record.origin (source.generation + 1) with
+              | none =>
+                  simp only [step, act, lookup, allocated, List.mem_singleton] at member
+                  subst next
+                  exact ⟨closed, True.intro, savedRoots⟩
+              | some pair =>
+                  rcases pair with ⟨freshWorld, cell⟩
+                  simp only [step, act, lookup, allocated, List.mem_singleton] at member
+                  subst next
+                  have grows := allocate_live allocated
+                  change discipline.heapClosed freshWorld.heap ∧
+                    discipline.localState (heapLive freshWorld.heap) (spec.afterAllocation token cell) ∧
+                    discipline.stack (heapLive freshWorld.heap) saved
+                  exact ⟨discipline.heapClosed_allocate closed (closed source record lookup).1 allocated,
+                    discipline.afterAllocation (discipline.resume_mono grows exposed.2)
+                      ⟨_, World.allocate?_lookup_same allocated⟩,
+                      discipline.stack_mono grows savedRoots⟩
+      | perform event following =>
+          simp only [step, act, List.mem_singleton] at member
+          subst next
+          exact ⟨closed, by simpa only [act, finished_world, recorded_heap] using exposed, savedRoots⟩
+  | returned result saved =>
+      rcases roots with ⟨outcomeRoots, savedRoots⟩
+      cases saved with
+      | nil =>
+          simp only [step, List.mem_singleton] at member
+          subst next
+          exact ⟨closed, outcomeRoots⟩
+      | cons frame rest =>
+          rcases discipline.stack_cons.mp savedRoots with ⟨frameRoots, restRoots⟩
+          cases frame with
+          | resume token =>
+              simp only [step, List.mem_singleton] at member
+              subst next
+              exact ⟨closed, discipline.afterDemand frameRoots outcomeRoots, restRoots⟩
+          | commit c owner =>
+              change heapLive world.heap c at frameRoots
+              cases lookup : world.heap.lookup c with
+              | none => obtain ⟨record, found⟩ := frameRoots; simp [lookup] at found
+              | some record =>
+                  cases cached : record.cache with
+                  | evaluating actual =>
+                      by_cases same : actual = owner
+                      · simp only [step, lookup, cached, same, ↓reduceDIte] at member
+                        let committed : Cache Value StableFault := match result with
+                          | .value v => .value v
+                          | .stableFault f => .stableFault f
+                          | .retryableFault _ => .suspended
+                        have newCache : discipline.cache (heapLive world.heap) committed := by
+                          cases result <;> exact outcomeRoots
+                        have newClosed := discipline.heapClosed_setKnownCache closed lookup newCache
+                        have grows := fun cell => (setKnownCache_live lookup committed cell).mpr
+                        cases result with
+                        | value value =>
+                            simp only [List.mem_singleton] at member
+                            subst next
+                            exact ⟨newClosed, discipline.value_mono grows outcomeRoots,
+                              discipline.stack_mono grows restRoots⟩
+                        | stableFault fault =>
+                            simp only [List.mem_singleton] at member
+                            subst next
+                            exact ⟨newClosed, True.intro, discipline.stack_mono grows restRoots⟩
+                        | retryableFault reason =>
+                            simp only [List.mem_singleton] at member
+                            subst next
+                            exact ⟨newClosed, True.intro, discipline.stack_mono grows restRoots⟩
+                      · simp only [step, lookup, cached, same, ↓reduceDIte, List.mem_singleton] at member
+                        subst next
+                        exact ⟨closed, True.intro, restRoots⟩
+                  | suspended | value _ | stableFault _ =>
+                      simp only [step, lookup, cached, List.mem_singleton] at member
+                      subst next
+                      exact ⟨closed, True.intro, restRoots⟩
+
+theorem steps_closed
+    {machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {length : Nat}
+    (valid : discipline.machineClosed machine) (path : Steps spec length machine next) :
+    discipline.machineClosed next := by
+  induction path with
+  | refl => exact valid
+  | cons occurrence _ ih => exact ih (discipline.step_closed valid (occurrence.mem spec))
+
+theorem advance_closed
+    {machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (valid : discipline.machineClosed machine) (member : next ∈ advance spec machine) :
+    discipline.machineClosed next := by
+  unfold advance at member
+  cases stepped : step spec machine with
+  | nil => simp only [stepped, List.mem_singleton] at member; subst next; exact valid
+  | cons first rest =>
+      apply discipline.step_closed valid
+      simpa only [stepped] using member
+
+/-- The bounded frontier retains the invariant even before any branch has
+returned. Pausing never substitutes an ancestor heap for a refined branch. -/
+theorem runFrontier_closed (fuel : Nat)
+    {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
+    (valid : ∀ machine ∈ states, discipline.machineClosed machine)
+    {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (member : next ∈ runFrontier spec fuel states) : discipline.machineClosed next := by
+  induction fuel generalizing states with
+  | zero => exact valid next member
+  | succ fuel ih =>
+      simp only [runFrontier] at member
+      split at member
+      · exact valid next member
+      · apply ih (states := states.flatMap (advance spec)) (member := member)
+        intro candidate found
+        rcases List.mem_flatMap.mp found with ⟨parent, selected, stepped⟩
+        exact discipline.advance_closed (valid parent selected) stepped
+
+end ReferenceDiscipline
+
 /-! ## Axiom audits -/
 
 #print axioms step_cellMove
@@ -1775,6 +2208,8 @@ end CompletedReceiptControls
 #print axioms commit_retryable_restores_suspended
 #print axioms commit_retryable_cache_suspended
 #print axioms forced_once_deterministic_observation
+#print axioms force_cached_value_resume
+#print axioms force_cached_value_resume_frontier
 #print axioms step_path_extends
 #print axioms steps_new_cells_extend_path
 #print axioms sibling_lineage_absent

@@ -410,13 +410,13 @@ theorem wrong_arity_prefix_still_selects_the_first_success (space : Space) (suff
       FunctionCandidateScanRel PublishedCandidateApplicabilityRel space
         (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty
         (binaryArrow :: policy.functionType :: suffix) (.success policy Bindings.empty) := by
-  have rejected : FirstSuccessSourceScan.RejectedPrefix (.symbol "hold") Atom.undefinedType
+  have rejected : FirstSuccessSourceScan.RejectedPrefix space 0 (.symbol "hold") Atom.undefinedType
       [heldSyntax] [binaryArrow]
       [⟨binaryArrow, .error [mkError (.expression [.symbol "hold", heldSyntax])
         .incorrectNumberOfArguments]⟩] :=
     .wrongArity (domains := [Atom.atomType, Atom.atomType]) (returned := .symbol "Result")
       (by decide) .nil
-  exact FirstSuccessSourceScan.raw_prefix_selected rejected space (.symbol "Result") Bindings.empty 0 suffix
+  exact FirstSuccessSourceScan.raw_prefix_selected rejected (.symbol "Result") Bindings.empty suffix
 
 theorem repeated_type_paths_remain_two_binding_occurrences :
     checkIfFunctionTypeIsApplicable (.expression [.symbol "hold", heldSyntax]) unaryArrow

@@ -116,7 +116,60 @@ def cellFree : Val Cell → Bool
   | .app f x => f.cellFree && x.cellFree
   | _ => false
 
+/-- A predicate on every cell referenced by the value, including opaque code.
+Structural readiness alone does not establish that those references are live. -/
+def referencesSatisfy (p : Cell → Prop) : Val Cell → Prop
+  | .sym _ => True
+  | .app f x => f.referencesSatisfy p ∧ x.referencesSatisfy p
+  | .need c => p c
+  | .thunk c => p c
+  | .code c => p c
+
+theorem referencesSatisfy_mono {p q : Cell → Prop}
+    (implies : ∀ c, p c → q c) {value : Val Cell}
+    (valid : value.referencesSatisfy p) : value.referencesSatisfy q := by
+  induction value with
+  | sym => trivial
+  | app f x ihf ihx => exact ⟨ihf valid.1, ihx valid.2⟩
+  | need c => exact implies c valid
+  | thunk c => exact implies c valid
+  | code c => exact implies c valid
+
+/-- Cell renaming transports the reference predicate through the same map;
+it does not turn an implicit reference into code or into constructor data. -/
+theorem referencesSatisfy_mapCells {Cell' : Type} (rename : Cell → Cell')
+    (p : Cell' → Prop) (value : Val Cell) :
+    (value.mapCells rename).referencesSatisfy p ↔
+      value.referencesSatisfy (fun c => p (rename c)) := by
+  induction value <;> simp_all [mapCells, referencesSatisfy]
+
 end Val
+
+/-- Every cell referenced from an environment satisfies the given predicate. -/
+abbrev EnvReferencesSatisfy {Cell : Type} (p : Cell → Prop) (env : List (Val Cell)) : Prop :=
+  ∀ value ∈ env, value.referencesSatisfy p
+
+theorem EnvReferencesSatisfy.mono {Cell : Type} {p q : Cell → Prop}
+    (implies : ∀ c, p c → q c) {env : List (Val Cell)}
+    (valid : EnvReferencesSatisfy p env) : EnvReferencesSatisfy q env :=
+  fun value member => Val.referencesSatisfy_mono implies (valid value member)
+
+theorem EnvReferencesSatisfy.cons {Cell : Type} {p : Cell → Prop}
+    {value : Val Cell} {env : List (Val Cell)}
+    (head : value.referencesSatisfy p) (tail : EnvReferencesSatisfy p env) :
+    EnvReferencesSatisfy p (value :: env) := by
+  intro next member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact head
+  · exact tail next member
+
+theorem EnvReferencesSatisfy.append {Cell : Type} {p : Cell → Prop}
+    {left right : List (Val Cell)} (first : EnvReferencesSatisfy p left)
+    (second : EnvReferencesSatisfy p right) : EnvReferencesSatisfy p (left ++ right) := by
+  intro value member
+  rcases List.mem_append.mp member with member | member
+  · exact first value member
+  · exact second value member
 
 /-- Evaluate a value expression in an environment. An index outside the
 environment reads the symbol `0`. -/
@@ -124,6 +177,65 @@ def VExp.eval {Cell : Type} (ρ : List (Val Cell)) : VExp → Val Cell
   | .var i => ρ.getD i (.sym 0)
   | .sym c => .sym c
   | .app f x => .app (f.eval ρ) (x.eval ρ)
+
+/-- Evaluation of a value expression introduces no new cell reference. -/
+theorem VExp.eval_referencesSatisfy {Cell : Type} {p : Cell → Prop}
+    {env : List (Val Cell)} (valid : EnvReferencesSatisfy p env) (value : VExp) :
+    (value.eval env).referencesSatisfy p := by
+  induction value with
+  | var i =>
+      simp only [VExp.eval, List.getD_eq_getElem?_getD]
+      cases lookup : env[i]? with
+      | none => trivial
+      | some found =>
+          exact valid found (List.mem_of_getElem? lookup)
+  | sym => trivial
+  | app f x ihf ihx => exact ⟨ihf, ihx⟩
+
+theorem VExp.evalList_referencesSatisfy {Cell : Type} {p : Cell → Prop}
+    {env : List (Val Cell)} (valid : EnvReferencesSatisfy p env) (values : List VExp) :
+    EnvReferencesSatisfy p (values.map (·.eval env)) := by
+  intro value member
+  obtain ⟨source, _, rfl⟩ := List.mem_map.mp member
+  exact source.eval_referencesSatisfy valid
+
+/-- Taking apart a constructor preserves the validity of all its fields. -/
+theorem Val.spine_referencesSatisfy {Cell : Type} {p : Cell → Prop}
+    {value : Val Cell} (valid : value.referencesSatisfy p)
+    {name : Nat} {fields : List (Val Cell)} (matched : value.spine = some (name, fields)) :
+    EnvReferencesSatisfy p fields := by
+  induction value generalizing name fields with
+  | sym c => cases matched; intro value member; cases member
+  | app f x ihf _ =>
+      simp only [Val.spine, Option.map_eq_some_iff] at matched
+      obtain ⟨⟨head, previous⟩, first, equal⟩ := matched
+      cases equal
+      exact (ihf valid.1 first).append
+        (EnvReferencesSatisfy.cons valid.2 (by intro value member; cases member))
+  | need => simp [Val.spine] at matched
+  | thunk => simp [Val.spine] at matched
+  | code => simp [Val.spine] at matched
+
+theorem Val.matchCon_referencesSatisfy {Cell : Type} {p : Cell → Prop}
+    {value : Val Cell} (valid : value.referencesSatisfy p)
+    {name arity : Nat} {fields : List (Val Cell)}
+    (matched : value.matchCon name arity = some fields) : EnvReferencesSatisfy p fields := by
+  unfold Val.matchCon at matched
+  cases spine : value.spine with
+  | none => simp [spine] at matched
+  | some found =>
+      obtain ⟨head, previous⟩ := found
+      simp only [spine] at matched
+      split at matched
+      · cases matched
+        exact value.spine_referencesSatisfy valid spine
+      · simp at matched
+
+theorem Val.matchApp_referencesSatisfy {Cell : Type} {p : Cell → Prop}
+    {value head argument : Val Cell} (valid : value.referencesSatisfy p)
+    (matched : value.matchApp = some (head, argument)) :
+    head.referencesSatisfy p ∧ argument.referencesSatisfy p := by
+  cases value <;> simp_all [Val.matchApp, Val.referencesSatisfy]
 
 /-- Primitive operations: functions of the argument values they are given.
 `eq yes no` compares two values structurally and answers the symbol `yes` or
@@ -225,6 +337,74 @@ def emit (σ : Store) (e : Nat) : Store :=
 
 end Store
 
+/-- Cached values retain the same reference obligation as ordinary values. -/
+def Memo.referencesSatisfy (p : Nat → Prop) : Memo → Prop
+  | .pending => True
+  | .evaluating => True
+  | .done value => value.referencesSatisfy p
+
+def Suspension.referencesSatisfy (p : Nat → Prop) (cell : Suspension) : Prop :=
+  EnvReferencesSatisfy p cell.env ∧ cell.memo.referencesSatisfy p
+
+theorem Suspension.referencesSatisfy_mono {p q : Nat → Prop}
+    (implies : ∀ c, p c → q c) {cell : Suspension}
+    (valid : cell.referencesSatisfy p) : cell.referencesSatisfy q := by
+  refine ⟨valid.1.mono implies, ?_⟩
+  cases memo : cell.memo with
+  | pending => trivial
+  | evaluating => trivial
+  | done value =>
+      exact Val.referencesSatisfy_mono implies
+        (by simpa only [Memo.referencesSatisfy, memo] using valid.2)
+
+/-- Every reference in a captured environment or a cache names an allocated
+cell of this store. This is a heap-closure property, not an ownership license. -/
+def Store.referencesClosed (store : Store) : Prop :=
+  ∀ cell ∈ store.cells, cell.referencesSatisfy (fun i => i < store.cells.length)
+
+theorem Store.referencesClosed_empty : Store.empty.referencesClosed := by
+  simp [Store.referencesClosed, Store.empty]
+
+theorem Store.referencesClosed_lookup {store : Store} (closed : store.referencesClosed)
+    {index : Nat} {cell : Suspension} (lookup : store.cells[index]? = some cell) :
+    cell.referencesSatisfy (fun i => i < store.cells.length) :=
+  closed cell (List.mem_of_getElem? lookup)
+
+theorem Store.referencesClosed_alloc {store : Store} (closed : store.referencesClosed)
+    (code : Comp) {env : List (Val Nat)}
+    (captured : EnvReferencesSatisfy (fun i => i < store.cells.length) env) :
+    (store.alloc code env).referencesClosed := by
+  intro cell member
+  simp only [Store.alloc, List.length_append, List.length_singleton]
+  simp only [Store.alloc, List.mem_append, List.mem_singleton] at member
+  rcases member with previous | rfl
+  · exact Suspension.referencesSatisfy_mono (fun _ hi => Nat.lt_succ_of_lt hi) (closed cell previous)
+  · exact ⟨captured.mono (fun _ hi => Nat.lt_succ_of_lt hi), trivial⟩
+
+theorem Store.referencesClosed_setMemo {store : Store} (closed : store.referencesClosed)
+    (index : Nat) {memo : Memo}
+    (cached : memo.referencesSatisfy (fun i => i < store.cells.length)) :
+    (store.setMemo index memo).referencesClosed := by
+  intro cell member
+  obtain ⟨position, inRange, same⟩ := List.getElem_of_mem member
+  have lookup := List.getElem?_eq_some_iff.mpr ⟨inRange, same⟩
+  simp only [Store.setMemo, List.length_modify]
+  simp only [Store.setMemo, List.getElem?_modify] at lookup
+  by_cases selected : index = position
+  · subst position
+    cases old : store.cells[index]? with
+    | none => simp [old] at lookup
+    | some original =>
+        simp only [old, if_true, Option.map_eq_map, Option.map_some,
+          Option.some.injEq] at lookup
+        rw [← lookup]
+        exact ⟨(closed original (List.mem_of_getElem? old)).1, cached⟩
+  · simp only [selected, if_false, Option.map_eq_map, Option.map_id'] at lookup
+    exact closed cell (List.mem_of_getElem? lookup)
+
+theorem Store.referencesClosed_emit {store : Store} (closed : store.referencesClosed)
+    (event : Nat) : (store.emit event).referencesClosed := closed
+
 /-- The outcome of one alternative. -/
 inductive Outcome where
   | ok (value : Val Nat)
@@ -244,6 +424,74 @@ def primOutcome (op : Prim) (vs : List (Val Nat)) : Outcome :=
 
 /-- One alternative's outcome with the store of its branch. -/
 abbrev Result := Outcome × Store
+
+/-- Failure outcomes have no value reference. Successful outcomes retain
+their own branch's reference obligation. -/
+def Outcome.referencesSatisfy (p : Nat → Prop) : Outcome → Prop
+  | .ok value => value.referencesSatisfy p
+  | .fail => True
+  | .blackhole => True
+
+/-- A result retains a closed heap and all referenced cells, and allocation
+has not moved backwards from the continuation's captured lower bound. -/
+def ResultReferencesClosed (minimum : Nat) (result : Result) : Prop :=
+  minimum ≤ result.2.cells.length ∧ result.2.referencesClosed ∧
+    result.1.referencesSatisfy (fun i => i < result.2.cells.length)
+
+abbrev ResultsReferencesClosed (minimum : Nat) (results : List Result) : Prop :=
+  ∀ result ∈ results, ResultReferencesClosed minimum result
+
+theorem ResultsReferencesClosed.append {minimum : Nat} {left right : List Result}
+    (first : ResultsReferencesClosed minimum left)
+    (second : ResultsReferencesClosed minimum right) :
+    ResultsReferencesClosed minimum (left ++ right) := by
+  intro result member
+  rcases List.mem_append.mp member with member | member
+  · exact first result member
+  · exact second result member
+
+theorem ResultsReferencesClosed.lower {minimum smaller : Nat} {results : List Result}
+    (bound : smaller ≤ minimum) (valid : ResultsReferencesClosed minimum results) :
+    ResultsReferencesClosed smaller results := by
+  intro result member
+  have current := valid result member
+  exact ⟨Nat.le_trans bound current.1, current.2⟩
+
+theorem ResultsReferencesClosed.singleton {minimum : Nat} {store : Store}
+    {outcome : Outcome} (bound : minimum ≤ store.cells.length)
+    (closed : store.referencesClosed)
+    (value : outcome.referencesSatisfy (fun i => i < store.cells.length)) :
+    ResultsReferencesClosed minimum [(outcome, store)] := by
+  intro result member
+  have same := List.mem_singleton.mp member
+  subst result
+  exact ⟨bound, closed, value⟩
+
+theorem ResultsReferencesClosed.cons {minimum : Nat} {result : Result} {results : List Result}
+    (head : ResultReferencesClosed minimum result)
+    (tail : ResultsReferencesClosed minimum results) :
+    ResultsReferencesClosed minimum (result :: results) := by
+  intro next member
+  rcases List.mem_cons.mp member with rfl | member
+  · exact head
+  · exact tail next member
+
+theorem Outcome.referencesSatisfy_of_stop {outcome : Outcome} (stopped : outcome.isOk = false)
+    (p : Nat → Prop) : outcome.referencesSatisfy p := by
+  cases outcome <;> simp_all [Outcome.isOk, Outcome.referencesSatisfy]
+
+theorem primOutcome_referencesSatisfy (op : Prim) (values : List (Val Nat))
+    (p : Nat → Prop) : (primOutcome op values).referencesSatisfy p := by
+  cases op with
+  | eq yes no =>
+      cases values with
+      | nil => trivial
+      | cons first rest =>
+          cases rest with
+          | nil => trivial
+          | cons second rest =>
+              cases rest <;> simp [primOutcome, Prim.apply, Outcome.referencesSatisfy,
+                Val.referencesSatisfy]
 
 /-! ## The natural semantics -/
 
@@ -372,6 +620,222 @@ inductive Derives (P : Program) : Goal → List Result → Prop where
   | followStop {o : Outcome} {σ : Store} {rs L₂ : List Result} :
       o.isOk = false → Derives P (.followK rs) L₂ →
       Derives P (.followK ((o, σ) :: rs)) ((o, σ) :: L₂)
+
+/-- A singleton successful stage continues in that result's own store and
+with its value bound above the caller's environment. -/
+theorem Derives.seq_single {P : Program} {σ σ' : Store} {ρ : List (Val Nat)}
+    {m n : Comp} {value : Val Nat} {results : List Result}
+    (first : Derives P (.eval σ ρ m) [(.ok value, σ')])
+    (second : Derives P (.eval σ' (value :: ρ) n) results) :
+    Derives P (.eval σ ρ (.seq m n)) results := by
+  simpa only [List.append_nil] using Derives.seq first (Derives.seqKOk second Derives.seqKNil)
+
+/-- The ordinary call procedure constructs a one-rule dispatch when its
+actual candidate list is a singleton. The body uses the evaluated arguments. -/
+theorem Derives.call_single_rule {P : Program} {σ : Store} {ρ : List (Val Nat)}
+    {head : Nat} {arguments : List VExp} {rule : Rule} {results : List Result}
+    (selected : candidates P head arguments.length = [rule])
+    (body : Derives P (.eval σ (arguments.map (·.eval ρ)) rule.body) results) :
+    Derives P (.eval σ ρ (.call head arguments)) results := by
+  apply Derives.call (by rw [selected]; simp)
+  simpa only [selected, List.map_cons, List.map_nil, List.append_nil] using
+    Derives.altsCons body Derives.altsNil
+
+/-! ## Retention of cell references -/
+
+/-- The actual judgments preserve their own refined branch stores. A saved
+continuation's environment remains valid because allocation never shrinks.
+No theorem here grants a right to activate an opaque code reference. -/
+def ReferenceMotive : Goal → List Result → Prop
+  | .eval store env _, results =>
+      store.referencesClosed →
+      EnvReferencesSatisfy (fun i => i < store.cells.length) env →
+      ResultsReferencesClosed store.cells.length results
+  | .alts store branches, results =>
+      store.referencesClosed →
+      (∀ branch ∈ branches,
+        EnvReferencesSatisfy (fun i => i < store.cells.length) branch.2) →
+      ResultsReferencesClosed store.cells.length results
+  | .seqK _ env previous, results =>
+      ∀ minimum, EnvReferencesSatisfy (fun i => i < minimum) env →
+        ResultsReferencesClosed minimum previous → ResultsReferencesClosed minimum results
+  | .forceVal store value, results =>
+      store.referencesClosed → value.referencesSatisfy (fun i => i < store.cells.length) →
+      ResultsReferencesClosed store.cells.length results
+  | .commitK _ previous, results =>
+      ∀ minimum, ResultsReferencesClosed minimum previous → ResultsReferencesClosed minimum results
+  | .followK previous, results =>
+      ∀ minimum, ResultsReferencesClosed minimum previous → ResultsReferencesClosed minimum results
+
+/-- Every finite derivation retains the references of returned values,
+captured environments and caches in its resulting heap. The proof follows
+the evaluator's allocation, cache updates and each ordered branch. -/
+theorem reference_invariant (program : Program) :
+    ∀ goal results, Derives program goal results → ReferenceMotive goal results := by
+  intro goal results derivation
+  induction derivation with
+  | @ret store env value =>
+      intro closed captured
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed
+        (value.eval_referencesSatisfy captured)
+  | @seq store env first rest previous results _ _ firstIH restIH =>
+      intro closed captured
+      exact restIH store.cells.length captured (firstIH closed captured)
+  | @need store env producer body results _ ih =>
+      intro closed captured
+      have nextEnv := EnvReferencesSatisfy.cons
+        (show (Val.need store.cells.length).referencesSatisfy
+          (fun i => i < (store.alloc producer env).cells.length) from by simp [Store.alloc,
+            Val.referencesSatisfy])
+        (by simpa only [Store.alloc, List.length_append, List.length_singleton] using
+          (captured.mono (fun _ hi => Nat.lt_succ_of_lt hi)))
+      exact (ih (Store.referencesClosed_alloc closed producer captured) nextEnv).lower
+        (by simp [Store.alloc])
+  | @delay store env producer body results _ ih =>
+      intro closed captured
+      have nextEnv := EnvReferencesSatisfy.cons
+        (show (Val.thunk store.cells.length).referencesSatisfy
+          (fun i => i < (store.alloc producer env).cells.length) from by simp [Store.alloc,
+            Val.referencesSatisfy])
+        (by simpa only [Store.alloc, List.length_append, List.length_singleton] using
+          (captured.mono (fun _ hi => Nat.lt_succ_of_lt hi)))
+      exact (ih (Store.referencesClosed_alloc closed producer captured) nextEnv).lower
+        (by simp [Store.alloc])
+  | force _ ih =>
+      intro closed captured
+      exact ih closed (VExp.eval_referencesSatisfy captured _)
+  | caseConHit matched _ ih =>
+      intro closed captured
+      exact ih closed ((Val.matchCon_referencesSatisfy
+        (VExp.eval_referencesSatisfy captured _) matched).append captured)
+  | caseConMiss _ _ ih => exact ih
+  | caseAppHit matched _ ih =>
+      intro closed captured
+      have fields := Val.matchApp_referencesSatisfy (VExp.eval_referencesSatisfy captured _) matched
+      exact ih closed (EnvReferencesSatisfy.cons fields.1 (EnvReferencesSatisfy.cons fields.2 captured))
+  | caseAppMiss _ _ ih => exact ih
+  | @call store env head args results _ _ ih =>
+      intro closed captured
+      apply ih closed
+      intro branch member
+      obtain ⟨rule, _, rfl⟩ := List.mem_map.mp member
+      exact VExp.evalList_referencesSatisfy captured args
+  | callNone =>
+      intro closed _
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed trivial
+  | @callRule store env index args rule results _ _ _ ih =>
+      intro closed captured
+      exact ih closed (VExp.evalList_referencesSatisfy captured args)
+  | callRuleNone =>
+      intro closed _
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed trivial
+  | choose _ _ leftIH rightIH =>
+      intro closed captured
+      exact (leftIH closed captured).append (rightIH closed captured)
+  | fail =>
+      intro closed _
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed trivial
+  | emit _ ih =>
+      intro closed captured
+      exact ih (Store.referencesClosed_emit closed _) captured
+  | @quote store env body =>
+      intro closed captured
+      exact ResultsReferencesClosed.singleton (by simp [Store.alloc])
+        (Store.referencesClosed_alloc closed body captured)
+        (by simp [Outcome.referencesSatisfy, Val.referencesSatisfy, Store.alloc])
+  | runCode _ lookup _ _ bodyIH followIH =>
+      intro closed _
+      exact followIH _ (bodyIH closed (Store.referencesClosed_lookup closed lookup).1)
+  | runOther =>
+      intro closed captured
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed
+        ⟨trivial, VExp.eval_referencesSatisfy captured _⟩
+  | @prim store env op args =>
+      intro closed _
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed
+        (primOutcome_referencesSatisfy op _ _)
+  | altsNil => intro _ _ result member; cases member
+  | altsCons _ _ firstIH restIH =>
+      intro closed captured
+      exact (firstIH closed (captured _ List.mem_cons_self)).append
+        (restIH closed (fun branch member => captured branch (List.mem_cons_of_mem _ member)))
+  | seqKNil => intro _ _ _ result member; cases member
+  | @seqKOk rest env value store previous firstResults restResults _ _ firstIH restIH =>
+      intro minimum captured valid
+      have first := valid _ List.mem_cons_self
+      have nextEnv := EnvReferencesSatisfy.cons first.2.2
+        (captured.mono (fun i hi => Nat.lt_of_lt_of_le hi first.1))
+      exact (firstIH first.2.1 nextEnv).lower first.1 |>.append
+        (restIH minimum captured (fun result member => valid result (List.mem_cons_of_mem _ member)))
+  | seqKStop _ _ ih =>
+      intro minimum captured valid
+      exact ResultsReferencesClosed.cons (valid _ List.mem_cons_self)
+        (ih minimum captured (fun result member => valid result (List.mem_cons_of_mem _ member)))
+  | forceWhnf =>
+      intro closed value
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed value
+  | forceDone lookup memo _ ih =>
+      intro closed _
+      apply ih closed
+      simpa only [memo, Memo.referencesSatisfy] using (Store.referencesClosed_lookup closed lookup).2
+  | forceBlackhole =>
+      intro closed _
+      exact ResultsReferencesClosed.singleton (Nat.le_refl _) closed trivial
+  | @forcePending store cell record previous results lookup _ _ _ bodyIH commitIH =>
+      intro closed _
+      have nextClosed := Store.referencesClosed_setMemo closed cell
+        (show Memo.evaluating.referencesSatisfy (fun i => i < store.cells.length) from trivial)
+      have nextEnv := (Store.referencesClosed_lookup closed lookup).1
+      have capturedNext : EnvReferencesSatisfy
+          (fun i => i < (store.setMemo cell .evaluating).cells.length) record.env := by
+        simpa only [Store.setMemo, List.length_modify] using nextEnv
+      have evaluated : ResultsReferencesClosed store.cells.length previous := by
+        simpa only [Store.setMemo, List.length_modify] using bodyIH nextClosed capturedNext
+      exact commitIH _ evaluated
+  | forceThunk lookup _ _ bodyIH followIH =>
+      intro closed _
+      exact followIH _ (bodyIH closed (Store.referencesClosed_lookup closed lookup).1)
+  | commitNil => intro _ _ result member; cases member
+  | @commitOk cell value store previous firstResults restResults _ _ firstIH restIH =>
+      intro minimum valid
+      have first := valid _ List.mem_cons_self
+      have nextClosed := Store.referencesClosed_setMemo first.2.1 cell
+        (memo := .done value) first.2.2
+      have nextValue : value.referencesSatisfy
+          (fun i => i < (store.setMemo cell (.done value)).cells.length) := by
+        simpa only [Store.setMemo, List.length_modify, Outcome.referencesSatisfy] using first.2.2
+      have evaluated : ResultsReferencesClosed store.cells.length firstResults := by
+        simpa only [Store.setMemo, List.length_modify] using firstIH nextClosed nextValue
+      exact evaluated.lower first.1 |>.append
+        (restIH minimum (fun result member => valid result (List.mem_cons_of_mem _ member)))
+  | @commitStop cell outcome store previous results stopped _ ih =>
+      intro minimum valid
+      have first := valid _ List.mem_cons_self
+      apply ResultsReferencesClosed.cons
+      · refine ⟨by simpa only [Store.setMemo, List.length_modify] using first.1,
+          Store.referencesClosed_setMemo first.2.1 cell trivial, ?_⟩
+        exact Outcome.referencesSatisfy_of_stop stopped _
+      · exact ih minimum (fun result member => valid result (List.mem_cons_of_mem _ member))
+  | followNil => intro _ _ result member; cases member
+  | followOk _ _ firstIH restIH =>
+      intro minimum valid
+      have first := valid _ List.mem_cons_self
+      exact (firstIH first.2.1 first.2.2).lower first.1 |>.append
+        (restIH minimum (fun result member => valid result (List.mem_cons_of_mem _ member)))
+  | followStop _ _ ih =>
+      intro minimum valid
+      exact ResultsReferencesClosed.cons (valid _ List.mem_cons_self)
+        (ih minimum (fun result member => valid result (List.mem_cons_of_mem _ member)))
+
+/-- Complete evaluation preserves the live carrier of every returned value
+and all suspended origins retained in that value's branch. -/
+theorem Derives.eval_referencesClosed {program : Program} {store : Store}
+    {env : List (Val Nat)} {code : Comp} {results : List Result}
+    (executed : Derives program (.eval store env code) results)
+    (closed : store.referencesClosed)
+    (captured : EnvReferencesSatisfy (fun i => i < store.cells.length) env) :
+    ResultsReferencesClosed store.cells.length results :=
+  reference_invariant program _ _ executed closed captured
 
 /-! ## An executable interpreter -/
 
@@ -705,6 +1169,24 @@ theorem run_sound (P : Program) :
               simp only [run, Option.bind_eq_some_iff, Option.some.injEq] at h
               obtain ⟨L₂, h₂, rfl⟩ := h
               exact .followStop rfl (ih _ _ h₂)
+
+/-- A completed run retains a closed heap and all captured and returned
+references. Failed and blackhole branches keep their own closed stores too. -/
+theorem run_eval_referencesClosed {program : Program} {store : Store}
+    {env : List (Val Nat)} {code : Comp} {fuel : Nat} {results : List Result}
+    (ran : run program fuel (.eval store env code) = some results)
+    (closed : store.referencesClosed)
+    (captured : EnvReferencesSatisfy (fun i => i < store.cells.length) env) :
+    ResultsReferencesClosed store.cells.length results :=
+  (run_sound program fuel _ _ ran).eval_referencesClosed closed captured
+
+/-- Starting with no injected references constructs valid carriers at every
+successful finite execution, including every allocated explicit code value. -/
+theorem run_closed_referencesClosed {program : Program} {code : Comp}
+    {fuel : Nat} {results : List Result}
+    (ran : run program fuel (.eval Store.empty [] code) = some results) :
+    ResultsReferencesClosed 0 results :=
+  run_eval_referencesClosed ran Store.referencesClosed_empty (by intro value member; cases member)
 
 /-- A goal has at most one derivable answer list: the semantics is a
 function of its configuration, including order and multiplicity. -/

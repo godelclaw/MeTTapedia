@@ -522,7 +522,7 @@ theorem raw_refusals_no_positive_result (fixture : RefusalFixture) (member : fix
   cases observed : run program 100
       { state := Effects.empty, control := .evaluate [] (encoded fixture.queryTerm) } with
   | exhausted _ => simp [observed] at finished
-  | fault _ => simp [observed] at finished
+  | fault _ _ => simp [observed] at finished
   | complete after answers input output =>
       have noAnswers : answers = [] := by simpa [observed] using finished
       subst answers

@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.InteractionEventAuthority
-import Mettapedia.Machines.BranchLocalNeed.ReferenceSemantics
+import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
 
 /-!
 # Occurrence-authenticated interaction authority for reference Need
@@ -56,6 +56,31 @@ structure OccurrenceEvidence
       Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (index : Nat) (source target : PrimeMachine) : Type where
   successorAt : (step spec source)[index]? = some target
+
+/-- A recording execution admits exactly the reference occurrence at the
+same list position. Full readback supplies the reverse implication; this
+does not identify distinct occurrences with equal endpoints. -/
+theorem recording_occurrence_iff
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (index : Nat) (source target : PrimeMachine) :
+    (NeedExecution.step spec (NeedExecution.projectMachine true source))[index]? =
+        some (NeedExecution.projectMachine true target) ↔
+      Nonempty (OccurrenceEvidence spec index source target) := by
+  rw [← NeedExecution.project_step_commutes, List.getElem?_map]
+  constructor
+  · intro recorded
+    cases original : (step spec source)[index]? with
+    | none => simp [original] at recorded
+    | some next =>
+        have same : NeedExecution.projectMachine true next =
+            NeedExecution.projectMachine true target := by
+          simpa only [original, Option.map_some, Option.some.injEq] using recorded
+        have endpoints : next = target := by
+          have readback := congrArg NeedExecution.CoreMachine.readback? same
+          simpa only [NeedExecution.readback_projectMachine, Option.some.injEq] using readback
+        exact ⟨⟨endpoints ▸ original⟩⟩
+  · rintro ⟨occurrence⟩
+    simp only [occurrence.successorAt, Option.map_some]
 
 /-- Exact list occurrence is the interaction site. -/
 def machinePresentation

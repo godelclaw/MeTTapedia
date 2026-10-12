@@ -1,4 +1,5 @@
 import Mettapedia.Machines.BranchLocalNeed.Representation
+import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
 import Mettapedia.GSLT.Distinction.OrderedSimulation
 
 /-!
@@ -15,6 +16,10 @@ pending machines and their order included, and the relation runs back from
 target to source (`Compatible.frontiers_related_back`).  This wraps the
 existing commutation laws; the relation it states is the place where
 non-functional relations between machine states enter the same theorems.
+
+The independent execution machine uses this interface too. Receipt projection
+is an ordered simulation, and recorded depth-first prefixes recover the full
+reference frontier, including causal graphs and pending alternatives.
 -/
 
 set_option autoImplicit false
@@ -32,6 +37,64 @@ def needSystem (spec : Spec Origin Local Resume Rule Value StableFault Retryable
     OrderedSystem (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) where
   step := step spec
   halted := isHalted
+
+/-- The independently defined execution machine uses the same ordered-system
+interface, with the world's receipt-retention choice preserved. -/
+def executionSystem
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    OrderedSystem
+      (NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect) where
+  step := NeedExecution.step spec
+  halted := NeedExecution.isHalted
+
+theorem executionSystem_advance
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine :
+      NeedExecution.CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    (executionSystem spec).advance machine = NeedExecution.advance spec machine := by
+  simp only [OrderedSystem.advance, NeedExecution.advance, executionSystem]
+  cases NeedExecution.step spec machine <;> rfl
+
+/-- Receipt projection is an ordered simulation because its independently
+defined transitions commute, including alternative occurrence positions. -/
+theorem projection_orderedSimulation
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (keepReceipts : Bool) :
+    OrderedSimulation (needSystem spec) (executionSystem spec)
+      (fun source target => target = NeedExecution.projectMachine keepReceipts source) :=
+  OrderedSimulation.ofMap (NeedExecution.projectMachine keepReceipts)
+    (fun machine => (NeedExecution.project_step_commutes spec machine).symm)
+    NeedExecution.isHalted_project
+
+/-- The common depth-first scheduler commutes with receipt projection at
+every prefix, including prefixes with unresolved alternatives. -/
+theorem project_depthFirst
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (keepReceipts : Bool) (count : Nat)
+    (states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :
+    ((executionSystem spec).expandFirst)^[count]
+        (states.map (NeedExecution.projectMachine keepReceipts)) =
+      (((needSystem spec).expandFirst)^[count] states).map
+        (NeedExecution.projectMachine keepReceipts) :=
+  OrderedSimulation.expandFirst_iterate_map (NeedExecution.projectMachine keepReceipts)
+    (fun machine => (NeedExecution.project_step_commutes spec machine).symm)
+    NeedExecution.isHalted_project count states
+
+/-- Read the complete rich frontier from an unfinished recorded depth-first
+execution. No producer is rerun to reconstruct its causal graph. -/
+theorem recording_depthFirst_readback
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (count : Nat)
+    (states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :
+    (((executionSystem spec).expandFirst)^[count]
+      (states.map (NeedExecution.projectMachine true))).mapM
+        NeedExecution.CoreMachine.readback? =
+      some (((needSystem spec).expandFirst)^[count] states) := by
+  rw [project_depthFirst]
+  generalize ((needSystem spec).expandFirst)^[count] states = final
+  induction final with
+  | nil => rfl
+  | cons head tail ih => simp [ih]
 
 theorem needSystem_advance (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :

@@ -21,7 +21,7 @@ open scoped ProgramQuotation
 
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_equation_contexts.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_equation_contexts.metta"
     sha256 "2e0e745e16c45ae480b49344081214e71539b8d3d5ad9686147f9974ce206867"
 
 def program : Program := EquationExecutionProgram.program.append source.program

@@ -6,6 +6,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Space
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Commands
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.OperationalGSLT
 import Mettapedia.Languages.MeTTa.PeTTa.OperationalGSLT
+import Mettapedia.Languages.MeTTa.PeTTa.FaultObservation
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef
 import Mettapedia.Languages.MeTTa.PeTTa.UpstreamAgreement

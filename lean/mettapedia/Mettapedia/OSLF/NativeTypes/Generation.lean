@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.CenterStability
+import Mettapedia.OSLF.NativeTypes.Generation.Authored
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.EmptyAmbient
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.ValueRepresentation
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Laws.ActiveSystem

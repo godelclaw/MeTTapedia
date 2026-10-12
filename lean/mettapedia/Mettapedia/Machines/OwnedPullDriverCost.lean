@@ -314,9 +314,8 @@ theorem CostedRuns.paidSlice {Value Event : Type} {work : Program Value Event}
 /-- An item addresses one invocation and supplies its next quantum. The
 snapshot and seed are unused because each packet already holds its program. -/
 def paidKernel (Id Value Event : Type) :
-    SnapshotBatch.Kernel Unit (Id × Nat) Unit Id (Nat × State Value Event) where
-  destination := Prod.fst
-  compute _ item _ packet := paidSlice item.2 packet
+    SnapshotBatch.Kernel Unit (Id × Nat) Unit Id (Nat × State Value Event) :=
+  SnapshotBatch.Kernel.fromOwnerAction (fun _ fuel packet => paidSlice fuel packet)
 
 /-- Any interleaving preserving each owner's command sequence keeps the
 complete paid pool. This includes unfinished recursive children. -/
@@ -337,6 +336,66 @@ theorem paidKernel_partitioned {Id Value Event : Type} [DecidableEq Id]
     (paidKernel Id Value Event).partitioned () (fun _ => ()) pool parts =
       (paidKernel Id Value Event).run () (fun _ => ()) pool schedule :=
   SnapshotBatch.Kernel.partitioned_eq_run _ _ _ _ _ _ coverage distinct
+
+
+/-- Fixed private-machine grants may be fused. The equality retains cumulative
+charge and every unfinished child/caller frame; emitted history is a separate
+observer. It does not apply to stateful callback acceptance allowances. -/
+theorem paidSlice_foldl {Value Event : Type} (grants : List Nat)
+    (packet : Nat × State Value Event) :
+    grants.foldl (fun current grant => paidSlice grant current) packet =
+      paidSlice grants.sum packet := by
+  induction grants generalizing packet with
+  | nil => simp
+  | cons first rest ih =>
+      rw [List.foldl_cons, ih, List.sum_cons]
+      exact (paidSlice_add first rest.sum packet).symm
+
+/-- Per-owner scheduler grants act on the original complete private packet.
+Equal total allocation preserves its actual debit and residual at this fixed
+machine boundary, independently of other owners' interleaving. -/
+theorem paidKernel_run_at_owner {Id Value Event : Type} [DecidableEq Id]
+    (pool : Id → Nat × State Value Event) (schedule : List (Id × Nat)) (owner : Id) :
+    (paidKernel Id Value Event).run () (fun _ => ()) pool schedule owner =
+      paidSlice ((schedule.filter (fun item => decide (item.1 = owner))).map Prod.snd).sum
+        (pool owner) := by
+  rw [SnapshotBatch.Kernel.run_at_location]
+  change (schedule.filter (fun item : Id × Nat => decide (item.1 = owner))).foldl
+    (fun current item => paidSlice item.2 current) (pool owner) = _
+  have fused := paidSlice_foldl (Value := Value) (Event := Event)
+    ((schedule.filter (fun item => decide (item.1 = owner))).map Prod.snd) (pool owner)
+  rw [List.foldl_map] at fused
+  exact fused
+
+theorem paidKernel_owner_debit_bounds {Id Value Event : Type} [DecidableEq Id]
+    (pool : Id → Nat × State Value Event) (schedule : List (Id × Nat)) (owner : Id) :
+    (pool owner).1 ≤ ((paidKernel Id Value Event).run () (fun _ => ()) pool schedule owner).1 ∧
+      ((paidKernel Id Value Event).run () (fun _ => ()) pool schedule owner).1 ≤
+        (pool owner).1 + ((schedule.filter (fun item => decide (item.1 = owner))).map Prod.snd).sum := by
+  rw [paidKernel_run_at_owner]
+  exact paidSlice_debit_bounds _ _
+
+/-- Ordered local grant chunks use the same private kernel and whole-store
+partition law. A chunk's commands must address its stated owner; equal payload
+values do not establish ownership. -/
+theorem paidKernel_grouped {Id Value Event : Type} [DecidableEq Id]
+    (pool : Id → Nat × State Value Event)
+    (parts : List (List (Id × List (Id × Nat)))) (chunks : List (Id × List (Id × Nat)))
+    (coverage : parts.flatten.Perm chunks) (distinct : (chunks.map Prod.fst).Nodup)
+    (owned : ∀ chunk ∈ chunks, ∀ item ∈ chunk.2, item.1 = chunk.1) :
+    ((paidKernel Id Value Event).grouped () (fun _ => ())).partitioned () (fun _ => ()) pool parts =
+      (paidKernel Id Value Event).run () (fun _ => ()) pool (chunks.flatMap Prod.snd) :=
+  SnapshotBatch.Kernel.grouped_partitioned _ _ _ _ _ _ coverage distinct owned
+
+namespace GrantControls
+private def pool : Nat → Nat × State Nat Nat := fun owner => (owner,⟨exampleProgram,[]⟩)
+
+theorem grouped_grants_preserve_child_work_and_unused_allowance :
+    let result := ((paidKernel Nat Nat Nat).grouped () (fun _ => ())).partitioned
+      () (fun _ => ()) pool [[(0,[(0,1),(0,1),(0,3)])],[(1,[(1,2),(1,0),(1,4)])]]
+    result 0 = ⟨5,⟨.done 6,[]⟩⟩ ∧ result 1 = ⟨6,⟨.done 6,[]⟩⟩ := by
+  constructor <;> rfl
+end GrantControls
 
 theorem exampleProgram_costed : CostedRuns exampleProgram [1, 1, 3] 6 1 1 :=
   CostedRuns.child
@@ -370,11 +429,19 @@ example :
     (later.1, earlier.2 + later.2) = (⟨.done 6, []⟩, 5) := rfl
 
 -- Forgetting events is allowed for this runner, but is not faithful replay.
-example :
+theorem erased_account_cannot_recover_event_trace :
     MachineCore.runSlice (machineCore Nat Nat) 1 ⟨.emit 1 (.done 6), []⟩ =
       MachineCore.runSlice (machineCore Nat Nat) 1 ⟨.emit 2 (.done 6), []⟩ ∧
     (advance 1 (⟨.emit 1 (.done 6), []⟩ : State Nat Nat)).1 ≠
       (advance 1 (⟨.emit 2 (.done 6), []⟩ : State Nat Nat)).1 := by
   exact ⟨rfl, by decide⟩
+
+
+#print axioms paidSlice_foldl
+#print axioms paidKernel_run_at_owner
+#print axioms paidKernel_owner_debit_bounds
+#print axioms paidKernel_grouped
+#print axioms GrantControls.grouped_grants_preserve_child_work_and_unused_allowance
+#print axioms erased_account_cannot_recover_event_trace
 
 end Mettapedia.Machines.OwnedPullDriver

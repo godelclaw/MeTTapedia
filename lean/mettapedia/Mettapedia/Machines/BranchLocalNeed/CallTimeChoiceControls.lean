@@ -1,4 +1,4 @@
-import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceBackward
+import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceOrdered
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceWitnesses
 
 /-!
@@ -413,5 +413,307 @@ theorem equal_heap_does_not_erase_emission :
   intro h
   have events := h.events
   simp [initialWorld, Store.empty, Store.emit] at events
+
+/-! ## Shared-return observer boundary -/
+
+/-- The shared-return implementation retains the selected producer value:
+`same pick` has just the two diagonal pairs. -/
+theorem shared_samePick :
+    SharedFinished program samePickCall 200 ∧
+      machineValues (sharedAnswers program 200 samePickCall) = [mpair mA mA, mpair mB mB] := by
+  constructor
+  · unfold SharedFinished
+    apply List.length_eq_zero_iff.mp
+    decide +kernel
+  · decide +kernel
+
+/-- Equal answers from distinct alternatives remain separate occurrences in
+the shared-return representation. -/
+theorem shared_duplicate_occurrences :
+    let code := .choose (.emit 11 (.ret (.sym symA))) (.emit 22 (.ret (.sym symA)))
+    SharedFinished program code 120 ∧
+      sharedAnswers program 120 code = [.value mA, .value mA] := by
+  dsimp only
+  constructor
+  · unfold SharedFinished
+    apply List.length_eq_zero_iff.mp
+    decide +kernel
+  · decide +kernel
+
+/-- Receipt erasure admits an answer comparison that an event observer must
+reject: sharing emits once, resampling twice. Both shared runs finish, so
+equality of their answer lists is not an empty-prefix coincidence. -/
+theorem shared_answers_do_not_determine_events :
+    let shared := .need (.emit 11 (.ret (.sym symA))) useTwice
+    let resampled := .delay (.emit 11 (.ret (.sym symA))) useTwice
+    SharedFinished program shared 200 ∧ SharedFinished program resampled 200 ∧
+      sharedAnswers program 200 shared = sharedAnswers program 200 resampled ∧
+      machineObservations program 200 shared ≠ machineObservations program 200 resampled := by
+  dsimp only
+  refine ⟨?_, ?_, by decide +kernel, ?_⟩
+  · unfold SharedFinished
+    apply List.length_eq_zero_iff.mp
+    decide +kernel
+  · unfold SharedFinished
+    apply List.length_eq_zero_iff.mp
+    decide +kernel
+  · rw [machine_shared_and_resampled_events.1, machine_shared_and_resampled_events.2]
+    decide
+
+/-- The recorded shared representation distinguishes choose-once reuse from
+resampling by their actual retained event histories. -/
+theorem shared_recorded_need_and_resampling :
+    sharedObservations program 200 (.need (.emit 11 (.ret (.sym symA))) useTwice) =
+      some [(.value (mpair mA mA), [11])] ∧
+    sharedObservations program 200 (.delay (.emit 11 (.ret (.sym symA))) useTwice) =
+      some [(.value (mpair mA mA), [11, 11])] := by
+  constructor <;> decide +kernel
+
+/-- Duplicate answers remain distinct branches with their own effect histories. -/
+theorem shared_recorded_sibling_events :
+    sharedObservations program 120
+      (.choose (.emit 11 (.ret (.sym symA))) (.emit 22 (.ret (.sym symA)))) =
+      some [(.value mA, [11]), (.value mA, [22])] := by
+  decide +kernel
+
+/-- Forgetting is explicit: a completed answer-only run cannot claim that an
+emission-free computation has a recorded empty history. -/
+theorem shared_erased_history_unavailable :
+    SharedFinished program (.ret (.sym symA)) 80 ∧
+    sharedObservations program 80 (.ret (.sym symA)) false = none ∧
+    sharedObservations program 80 (.ret (.sym symA)) true = some [(.value mA, [])] := by
+  refine ⟨?_, by decide +kernel, by decide +kernel⟩
+  unfold SharedFinished
+  apply List.length_eq_zero_iff.mp
+  decide +kernel
+
+/-- A failed branch retains the emission preceding its failure. -/
+theorem shared_recorded_failed_branch :
+    sharedObservations program 80 (.emit 11 .fail) =
+      some [(.retryableFault (.domain .fail), [11])] := by
+  decide +kernel
+
+/-- Pause after the producer has emitted and before observation completes.
+Resumption retains that receipt and forces the shared value without replay. -/
+theorem shared_recorded_resume :
+    let core := SharedContinuation.sharedCore
+      (NeedContinuation.program (machineSpec (observed program)))
+    let initial := SharedContinuation.encode
+      (sharedInitial (.need (.emit 11 (.ret (.sym symA))) useTwice) true)
+    let paused := MachineCore.runSlice core 56 initial
+    let resumed := MachineCore.runSlice core 200 paused.1
+    paused.1.1.frontier.length = 1 ∧
+      ((NeedContinuation.machines paused.1.1.decode).mapM
+        NeedExecution.CoreMachine.readback?).map
+          (List.map fun m => m.world.receipts.effects) = some [[11]] ∧
+      ((NeedContinuation.machines resumed.1.1.decode).mapM
+        NeedExecution.CoreMachine.readback?).map (List.filterMap haltedObservation) =
+          some [(.value (mpair mA mA), [11])] := by
+  refine ⟨by decide +kernel, by decide +kernel, by decide +kernel⟩
+
+/-- The eager divergent witness never acquires a completed recorded run.
+This follows from the independent source nonderivability result, not a timeout. -/
+theorem recorded_eager_loop_never_finishes (steps : Nat) :
+    ¬ SharedFinished (Witnesses.programExt.toCore .value)
+      (Witnesses.konstLoop.toCore .value id) steps true := by
+  intro done
+  obtain ⟨results, source, _⟩ := shared_answers_backward done
+  exact Witnesses.konstLoop_value_diverges results source
+
+/-- Every pause of that nonterminating computation still has exact rich
+readback and makes reference progress at the proved bounded overhead. Infinite
+administration cannot account for its divergence. -/
+theorem recorded_eager_loop_productive_prefix (steps : Nat) :
+    ∃ count ≤ steps, steps ≤ 2 * count + 1 ∧
+      sharedReadback (Witnesses.programExt.toCore .value) steps
+        (Witnesses.konstLoop.toCore .value id) =
+      some (((orderedMachine (Witnesses.programExt.toCore .value)).expandFirst)^[count]
+        [initialMachine (observe (Witnesses.konstLoop.toCore .value id))]) := by
+  obtain ⟨count, bound, productive, readback⟩ :=
+    shared_readback_prefix (Witnesses.programExt.toCore .value)
+      (Witnesses.konstLoop.toCore .value id) steps
+  exact ⟨count, bound, productive (recorded_eager_loop_never_finishes steps), readback⟩
+
+/-- The same source expression under call-time choice does finish: its unused
+diverging argument remains suspended in the recorded machine. -/
+theorem recorded_unused_loop_finishes :
+    sharedObservations (Witnesses.programExt.toCore .need) 400
+      (Witnesses.konstLoop.toCore .need id) = some [(.value mA, [])] := by
+  decide +kernel
+
+/-! ## Constructor returns and structural consumer demand -/
+
+def fieldProducer : Comp := .emit 91 (.ret (.sym symA))
+
+/-- Returning an outer constructor retains its pending field rather than
+running it or replacing its cell by the producer's source. -/
+def pendingConstructorReturn : Comp :=
+  .need fieldProducer (.ret (.app (.sym fSame) (.var 0)))
+
+def demandReturnedTwice : Comp :=
+  .seq pendingConstructorReturn
+    (.seq (normalized (.ret (.var 0))) (normalized (.ret (.var 0))))
+
+theorem constructor_return_retains_field :
+    run (observed program) 40 (.eval Store.empty [] pendingConstructorReturn) =
+      some [(.ok (.app (.sym fSame) (.need 0)), Store.empty.alloc fieldProducer [])] ∧
+    (Val.app (.sym fSame) (.need 0) : Val Nat).isCell = false ∧
+    (Val.app (.sym fSame) (.need 0) : Val Nat).noSusp = false := by
+  refine ⟨by decide +kernel, rfl, rfl⟩
+
+/-- A declared callable head remains a data head during structural demand. -/
+theorem callable_looking_value_stays_inert :
+    candidates program fSame 1 ≠ [] ∧
+    run (observed program) 100
+      (.eval Store.empty [.app (.sym fSame) (.sym symA)] (.call normHead [.var 0])) =
+      some [(.ok (.app (.sym fSame) (.sym symA)), Store.empty)] := by
+  constructor <;> decide +kernel
+
+/-- Two demands of the returned field keep one cached producer and one
+emission. The second demand receives the completed constructor unchanged. -/
+theorem returned_field_demanded_once :
+    (run (observed program) 200 (.eval Store.empty [] demandReturnedTwice)).map
+      (List.map fun result => (result.1, result.2.trace, result.2.cells[0]?.map Suspension.memo)) =
+        some [(.ok (.app (.sym fSame) (.sym symA)), [91], some (.done vA))] := by
+  decide +kernel
+
+def sharedReturnedChoice : Comp :=
+  .need (.emit 92 (.choose (.ret (.sym symA))
+    (.choose (.ret (.sym symA)) (.ret (.sym symB)))))
+    (.ret (pairE (.app (.sym fSame) (.var 0)) (.app (.sym fSame) (.var 0))))
+
+/-- Repeated equal producer alternatives remain separate ordered answers.
+Both returned fields share their branch's one choice and single emission. -/
+theorem returned_choice_keeps_duplicates_and_correlation :
+    (run (observed program) 200 (.eval Store.empty [] (observe sharedReturnedChoice))).map
+      (List.map fun result => (result.1, result.2.trace)) = some [
+        (.ok (pair (.app (.sym fSame) vA) (.app (.sym fSame) vA)), [92]),
+        (.ok (pair (.app (.sym fSame) vA) (.app (.sym fSame) vA)), [92]),
+        (.ok (pair (.app (.sym fSame) vB) (.app (.sym fSame) vB)), [92])] := by
+  decide +kernel
+
+/-- Quoted code is ready opaque data. Normalization does not activate it. -/
+theorem quoted_callable_not_activated :
+    (run (observed program) 100
+      (.eval Store.empty [] (normalized (.quote fieldProducer)))).map
+      (List.map fun result => (result.1, result.2.trace)) = some [(.ok (.code 0), [])] ∧
+    (run (observed program) 100
+      (.eval Store.empty [] (strictRun (.quote fieldProducer)))).map
+      (List.map fun result => (result.1, result.2.trace)) = some [(.ok vA, [91])] := by
+  constructor <;> decide +kernel
+
+/-- The actual recorded shared machine retains the source's single effect
+through constructor return and repeated consumer demand. -/
+theorem recorded_returned_field_demanded_once :
+    sharedObservations program 600 demandReturnedTwice =
+      some [(.value (.app (.sym fSame) mA), [91])] := by
+  decide +kernel
+
+/-- Equal completed values and effect traces do not imply equal internal
+administration: repeated preparation can change private allocation counters.
+An observer of those identities cannot erase the extra preparation. -/
+theorem ready_value_observation_differs_from_administration :
+    let returned := Comp.ret (.app (.sym fSame) (.sym symA))
+    sharedObservations program 600 returned = some [(.value (.app (.sym fSame) mA), [])] ∧
+    sharedObservations program 600 (normalized returned) = some [(.value (.app (.sym fSame) mA), [])] ∧
+    (sharedReadback program 600 returned).map (List.map fun machine => machine.world.nextCell) ≠
+      (sharedReadback program 600 (normalized returned)).map (List.map fun machine => machine.world.nextCell) := by
+  refine ⟨by decide +kernel, by decide +kernel, by decide +kernel⟩
+
+/-! ## Retained carriers at value-reader boundaries -/
+
+/-- A field created while producing a constructor exists in its result's
+store and cannot be resolved using the ancestor's empty heap. -/
+theorem returned_field_requires_refined_store :
+    let retained := Store.empty.alloc fieldProducer []
+    let value := Val.app (.sym fSame) (.need 0)
+    value.referencesSatisfy (fun i => i < retained.cells.length) ∧
+    ¬ value.referencesSatisfy (fun i => i < Store.empty.cells.length) ∧
+    run (observed program) 100 (.forceVal Store.empty (.need 0)) = none ∧
+    run (observed program) 100 (.forceVal retained (.need 0)) =
+      some [(.ok vA, (retained.emit 91).setMemo 0 (.done vA))] := by
+  refine ⟨by simp [Val.referencesSatisfy, Store.alloc, Store.empty],
+    by simp [Val.referencesSatisfy, Store.empty], by decide +kernel, by decide +kernel⟩
+
+/-- A normalizer does not validate an injected code carrier. This reference
+is ready opaque data but is absent from the supplied heap. Closed execution
+cannot manufacture it, by `run_closed_referencesClosed`. -/
+theorem readiness_does_not_validate_carrier :
+    (Val.code 0 : Val Nat).noSusp = true ∧
+    ¬ (Val.code 0 : Val Nat).referencesSatisfy (fun i => i < Store.empty.cells.length) ∧
+    run (observed program) 100
+      (.eval Store.empty [.code 0] (normalized (.ret (.var 0)))) =
+        some [(.ok (.code 0), Store.empty)] := by
+  refine ⟨rfl, by simp [Val.referencesSatisfy, Store.empty], by decide +kernel⟩
+
+/-- Genuine quotation allocates its carrier while keeping the body inert.
+It returns both a ready value and the live store that owns its captured code. -/
+theorem quotation_constructs_live_carrier :
+    let retained := Store.empty.alloc fieldProducer []
+    run (observed program) 100 (.eval Store.empty [] (normalized (.quote fieldProducer))) =
+      some [(.ok (.code 0), retained)] ∧
+    retained.referencesClosed ∧
+    (Val.code 0 : Val Nat).referencesSatisfy (fun i => i < retained.cells.length) ∧
+    retained.trace = [] := by
+  refine ⟨by decide +kernel, ?_, by simp [Val.referencesSatisfy, Store.alloc, Store.empty], rfl⟩
+  exact Store.referencesClosed_alloc Store.referencesClosed_empty fieldProducer
+    (by intro value member; cases member)
+
+/-- A producer can change the world while returning the same ready value.
+An atom-only equality check does not license restoring the prior carrier. -/
+theorem same_value_still_changes_world :
+    run program 100 (.eval Store.empty [] (.ret (.sym symA))) =
+      some [(.ok vA, Store.empty)] ∧
+    run program 100 (.eval Store.empty [] (.emit 91 (.ret (.sym symA)))) =
+      some [(.ok vA, Store.empty.emit 91)] ∧
+    Store.empty.trace ≠ (Store.empty.emit 91).trace := by
+  refine ⟨by decide +kernel, by decide +kernel, by decide +kernel⟩
+
+/-! ## Pending continuation carriers -/
+
+/-- The saved continuation captures a suspension even though the computation
+that returns to it produces an ordinary constructor value. -/
+def capturedSequence : Comp :=
+  .need fieldProducer (.seq (.ret (.sym symA)) (.force (.var 1)))
+
+def capturedCell : NeedReference.CellId := initialWorld.freshCell 0
+
+/-- An actual six-transition prefix, paused before the saved continuation runs. -/
+def capturedPause : MMachine :=
+  (NeedReference.runFrontier (machineSpec program) 6 [initialMachine capturedSequence]).headD
+    (initialMachine capturedSequence)
+
+theorem capturedPause_frontier :
+    NeedReference.runFrontier (machineSpec program) 6 [initialMachine capturedSequence] =
+      [capturedPause] := rfl
+
+/-- The active value is plain data; the only operational reference in this
+returned control is inside the saved continuation's environment. -/
+theorem capturedPause_control :
+    capturedPause.control = .returned (.value mA)
+      [.resume (.seqRet (.force (.var 1)) [.need capturedCell])] := rfl
+
+/-- The real prefix is reference-closed, while transporting its plain result
+and continuation to the ancestor's empty heap loses the captured producer. -/
+theorem paused_continuation_requires_refined_heap :
+    (machineReferenceDiscipline program).machineClosed capturedPause ∧
+    ¬ (machineReferenceDiscipline program).control
+      (NeedCacheLaws.heapLive initialWorld.heap) capturedPause.control := by
+  constructor
+  · apply runFrontier_referencesClosed program capturedSequence 6
+    rw [capturedPause_frontier]
+    exact List.mem_singleton_self _
+  · rw [capturedPause_control]
+    intro valid
+    have saved := ((machineReferenceDiscipline program).stack_cons.mp valid.2).1
+    change EnvReferencesSatisfy (NeedCacheLaws.heapLive initialWorld.heap) [.need capturedCell] at saved
+    obtain ⟨record, lookup⟩ := saved (.need capturedCell) (List.mem_singleton_self _)
+    simp [initialWorld, NeedReference.Heap.empty, NeedReference.Heap.lookup] at lookup
+
+/-- Resuming the computation evaluates its captured producer in its retained
+world and commits the emission once. -/
+theorem captured_continuation_commits_once :
+    sharedObservations program 600 capturedSequence = some [(.value mA, [91])] := by
+  decide +kernel
 
 end Mettapedia.Machines.BranchLocalNeed.CallTimeChoice.Controls

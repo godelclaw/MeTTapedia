@@ -6,7 +6,7 @@ import Mettapedia.Languages.MeTTa.HE.NativeArgumentControlHistory
 # Ordered nonleaf source derivations through retained first-success execution
 
 The admitted read-only profile uses independently checked closed type casts
-and wildcard argument domains. Recursive derivations retain the ordered type
+and argument domains. Recursive derivations retain the ordered accepted type
 paths and every resulting occurrence. They construct paths in the existing
 first-success worker; they do not install a second expression evaluator.
 
@@ -78,8 +78,10 @@ structure ApplicationTyping (space : Space) (name : String) (arguments : List At
   after : List Atom
   declined : List NativeSelectedTypeScan.Candidate
   sourceTypes : getAtomTypes space (.symbol name) = before ++ arrow domains returned :: after
-  rejected : RejectedPrefix (.symbol name) expected arguments before declined
-  wildcards : List.Forall₂ (fun _ domain => WildcardDomain domain) arguments domains
+  rejected : RejectedPrefix space fuel (.symbol name) expected arguments before declined
+  argumentChecks : List.Forall₂ (fun argument domain =>
+    ArgumentDomainEvidence space argument domain fuel) arguments domains
+  argumentPaths : 0 < admittedPathCount space arguments domains
   expectedClosed : TypeSubst.typeVars expected = []
   returnedClosed : TypeSubst.typeVars returned = []
   returnedFits : ClosedTypeFits expected returned
@@ -115,7 +117,7 @@ inductive AtomDerivation (space : Space) (bindings : Bindings) :
       (typing : ApplicationTyping space name arguments expected fuel) (values : List (List Atom)) :
       ArgsDerivation space bindings arguments typing.domains fuel values →
       AtomDerivation space bindings (.expression (.symbol name :: arguments)) expected (fuel + 3)
-        ((List.replicate (pathCount space arguments)
+        ((List.replicate (admittedPathCount space arguments typing.domains)
           (values.map fun packet => .expression (.symbol name :: packet))).flatten)
 
 inductive ArgsDerivation (space : Space) (bindings : Bindings) :
@@ -313,13 +315,13 @@ theorem application_selected {space : Space} {name : String} {arguments : List A
     FirstSuccessRecursiveStrategy.select space (.expression (.symbol name :: arguments)) expected bindings
       (fuel + 1) (getAtomTypes space (.symbol name)) =
         .selected (selectedPolicy typing.domains typing.returned)
-          (List.replicate (pathCount space arguments) bindings) ∧
+          (List.replicate (admittedPathCount space arguments typing.domains) bindings) ∧
     FunctionCandidateScanRel PublishedCandidateApplicabilityRel space
       (.expression (.symbol name :: arguments)) expected bindings
       (getAtomTypes space (.symbol name))
       (.success (selectedPolicy typing.domains typing.returned) bindings) := by
-  obtain ⟨policy, domains, returned, selected, scan⟩ := wildcard_prefix_selected typing.rejected
-    space typing.returned typing.domains bindings fuel typing.after typing.wildcards
+  obtain ⟨policy, domains, returned, selected, scan⟩ := checked_prefix_selected typing.rejected
+    typing.returned typing.domains bindings typing.after typing.argumentChecks typing.argumentPaths
     typing.expectedClosed typing.returnedClosed typing.returnedFits typing.returnBudget
   have same : policy = selectedPolicy typing.domains typing.returned := by
     cases policy with
@@ -479,10 +481,10 @@ theorem application_realizes {space : Space} {name : String} {arguments : List A
     (free : EquationFree space) (bindings : Bindings) (values : List (List Atom))
     (argumentsRun : Realizes space (.args arguments typing.domains bindings fuel) (packets bindings values)) :
     Realizes space (.atom (.expression (.symbol name :: arguments)) expected bindings (fuel + 3))
-      (replies bindings ((List.replicate (pathCount space arguments)
+      (replies bindings ((List.replicate (admittedPathCount space arguments typing.domains)
         (values.map fun packet => .expression (.symbol name :: packet))).flatten)) := by
   intro stack emitted
-  let resultValues := (List.replicate (pathCount space arguments)
+  let resultValues := (List.replicate (admittedPathCount space arguments typing.domains)
     (values.map fun packet => Atom.expression (.symbol name :: packet))).flatten
   have atom := enter_request space HE.GroundedDispatch.none
     (.atom (.expression (.symbol name :: arguments)) expected bindings (fuel + 3)) stack emitted
@@ -491,7 +493,7 @@ theorem application_realizes {space : Space} {name : String} {arguments : List A
   have selection := enter_request space HE.GroundedDispatch.none
     (.functions (.expression (.symbol name :: arguments)) expected bindings (fuel + 1)
       (getAtomTypes space (.symbol name))) (.filter :: stack) emitted
-  have alternatives := binding_alternatives typing free bindings values (pathCount space arguments)
+  have alternatives := binding_alternatives typing free bindings values (admittedPathCount space arguments typing.domains)
     argumentsRun (.filter :: stack) emitted
   have filtered := consume_continuation space HE.GroundedDispatch.none .filter (replies bindings resultValues)
     stack emitted
@@ -569,7 +571,7 @@ private theorem application_law (space : Space) (free : EquationFree space) (bin
     (typing : ApplicationTyping space name arguments expected fuel) (values : List (List Atom))
     (tail : ArgsLaw space bindings arguments typing.domains fuel values) :
     AtomLaw space bindings (.expression (.symbol name :: arguments)) expected (fuel + 3)
-      ((List.replicate (pathCount space arguments)
+      ((List.replicate (admittedPathCount space arguments typing.domains)
         (values.map fun packet => .expression (.symbol name :: packet))).flatten) := by
   refine ⟨application_realizes typing free bindings values tail.1, ?_, ?_⟩
   · intro result member scope
@@ -1150,14 +1152,17 @@ private def innerSyntax : Atom := .expression [.symbol "inner", heldSyntax]
 private def outerSyntax : Atom := .expression [.symbol "outer", innerSyntax]
 private def numberType : Atom := .symbol "Number"
 private def booleanType : Atom := .symbol "Bool"
+private def textType : Atom := .symbol "Text"
 private def sourceSpace : Space := ⟨[
   .expression [.symbol ":", .symbol "inner", arrow [Atom.atomType] numberType],
-  .expression [.symbol ":", .symbol "outer", arrow [Atom.undefinedType] booleanType],
-  .expression [.symbol ":", .symbol "outer", arrow [Atom.undefinedType] numberType],
+  .expression [.symbol ":", .symbol "outer", arrow [textType] numberType],
+  .expression [.symbol ":", .symbol "outer", arrow [numberType] booleanType],
+  .expression [.symbol ":", .symbol "outer", arrow [numberType] numberType],
   .expression [.symbol ":", heldSyntax, numberType],
   .expression [.symbol ":", heldSyntax, booleanType],
   .expression [.symbol ":", innerSyntax, numberType],
-  .expression [.symbol ":", innerSyntax, numberType]]⟩
+  .expression [.symbol ":", innerSyntax, numberType],
+  .expression [.symbol ":", innerSyntax, booleanType]]⟩
 
 private theorem source_free : EquationFree sourceSpace := by
   intro left right
@@ -1165,7 +1170,28 @@ private theorem source_free : EquationFree sourceSpace := by
 
 private def controlFuel : Nat := 4096
 
-private def innerTyping : ApplicationTyping sourceSpace "inner" [heldSyntax] Atom.undefinedType (controlFuel + 2) where
+private theorem inner_type_occurrences :
+    getAtomTypes sourceSpace innerSyntax = [numberType, numberType, booleanType] := by decide
+
+private theorem control_argument_checked (domain : Atom)
+    (closed : TypeSubst.typeVars domain = [])
+    (numberBudget : sizeOf domain + sizeOf numberType + 2 ≤ controlFuel + 6)
+    (booleanBudget : sizeOf domain + sizeOf booleanType + 2 ≤ controlFuel + 6) :
+    ArgumentDomainEvidence sourceSpace innerSyntax domain (controlFuel + 6) := by
+  refine .closed closed ?_ ?_
+  · intro actual member
+    rw [inner_type_occurrences] at member
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl | rfl <;> rfl
+  · intro actual member
+    rw [inner_type_occurrences] at member
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl | rfl
+    · exact numberBudget
+    · exact numberBudget
+    · exact booleanBudget
+
+private def innerTyping : ApplicationTyping sourceSpace "inner" [heldSyntax] numberType (controlFuel + 2) where
   domains := [Atom.atomType]
   returned := numberType
   before := []
@@ -1173,10 +1199,11 @@ private def innerTyping : ApplicationTyping sourceSpace "inner" [heldSyntax] Ato
   declined := []
   sourceTypes := by decide
   rejected := .nil
-  wildcards := .cons (Or.inl rfl) .nil
+  argumentChecks := .cons (.wildcard (Or.inl rfl)) .nil
+  argumentPaths := by decide
   expectedClosed := rfl
   returnedClosed := rfl
-  returnedFits := Or.inl rfl
+  returnedFits := Or.inr (Or.inr (Or.inr (Or.inr rfl)))
   returnBudget := by decide
   earlierClosed := by simp
   earlierHeadRejects := by simp
@@ -1189,21 +1216,33 @@ private def innerTyping : ApplicationTyping sourceSpace "inner" [heldSyntax] Ato
   ordinaryOperator := by decide
 
 private def outerTyping : ApplicationTyping sourceSpace "outer" [innerSyntax] numberType (controlFuel + 6) where
-  domains := [Atom.undefinedType]
+  domains := [numberType]
   returned := numberType
-  before := [arrow [Atom.undefinedType] booleanType]
+  before := [arrow [textType] numberType, arrow [numberType] booleanType]
   after := []
-  declined := [⟨arrow [Atom.undefinedType] booleanType,
+  declined := [⟨arrow [textType] numberType,
+    .error [mkError outerSyntax (.badArgType 1 textType numberType)]⟩,
+    ⟨arrow [numberType] booleanType,
     .error [mkError outerSyntax (.badType numberType booleanType)]⟩]
   sourceTypes := by decide
-  rejected := .badReturn (.cons (Or.inr rfl) .nil) rfl rfl (by decide) .nil
-  wildcards := .cons (Or.inr rfl) .nil
+  rejected := .badArguments (.cons (control_argument_checked textType rfl (by decide) (by decide)) .nil)
+    (by decide) (by decide)
+    (.badReturn (.cons (control_argument_checked numberType rfl (by decide) (by decide)) .nil)
+      (by decide) rfl rfl (by decide) .nil)
+  argumentChecks := .cons (control_argument_checked numberType rfl (by decide) (by decide)) .nil
+  argumentPaths := by decide
   expectedClosed := rfl
   returnedClosed := rfl
   returnedFits := Or.inr (Or.inr (Or.inr (Or.inr rfl)))
   returnBudget := by decide
-  earlierClosed := by intro candidate member; obtain rfl := List.mem_singleton.mp member; rfl
-  earlierHeadRejects := by intro candidate member; obtain rfl := List.mem_singleton.mp member; decide
+  earlierClosed := by
+    intro candidate member
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl <;> rfl
+  earlierHeadRejects := by
+    intro candidate member
+    simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl <;> decide
   headClosed := rfl
   headBudget := by decide
   demandNotRaw := by decide
@@ -1219,37 +1258,133 @@ theorem source_quote_is_held (bindings : Bindings) :
   .leaf heldSyntax Atom.atomType controlFuel (Or.inr ⟨Atom.expressionType, .expression _, Or.inl rfl⟩)
 
 private theorem inner_derivation (bindings : Bindings) :
-    AtomDerivation sourceSpace bindings innerSyntax Atom.undefinedType (controlFuel + 5) [innerSyntax, innerSyntax] := by
+    AtomDerivation sourceSpace bindings innerSyntax numberType (controlFuel + 5) [innerSyntax, innerSyntax] := by
   have arguments : ArgsDerivation sourceSpace bindings [heldSyntax] [Atom.atomType] (controlFuel + 2) [[heldSyntax]] := by
     simpa using ArgsDerivation.cons heldSyntax Atom.atomType [] [] (controlFuel + 1) [heldSyntax] [[]]
       (source_quote_is_held bindings) (.nil controlFuel)
-  have derived := AtomDerivation.application "inner" [heldSyntax] Atom.undefinedType (controlFuel + 2) innerTyping
+  have derived := AtomDerivation.application "inner" [heldSyntax] numberType (controlFuel + 2) innerTyping
     [[heldSyntax]] arguments
-  have count : pathCount sourceSpace [heldSyntax] = 2 := by decide
+  have count : admittedPathCount sourceSpace [heldSyntax] innerTyping.domains = 2 := by decide
   simpa only [count, List.replicate_succ, List.replicate_zero, List.flatten_cons, List.flatten_nil,
     List.map_cons, List.map_nil, List.append_nil, List.singleton_append, Nat.add_assoc, innerSyntax] using derived
 
-/-- Four interpreted occurrences are earned by nested source evaluation:
-two real type paths in each application. The earlier outer Bool return
-candidate is independently declined before the Number arrow is selected. -/
+/-- Four interpreted occurrences are earned by nested source evaluation.
+The outer argument rejects its Bool occurrence and retains both Number
+occurrences. Earlier Text-domain and Bool-return candidates are independently
+declined before the Number arrow is selected. Quoted fields remain raw. -/
 theorem nested_nonleaf_derivation (bindings : Bindings) :
     AtomDerivation sourceSpace bindings outerSyntax numberType (controlFuel + 9)
       [outerSyntax, outerSyntax, outerSyntax, outerSyntax] := by
-  have arguments : ArgsDerivation sourceSpace bindings [innerSyntax] [Atom.undefinedType] (controlFuel + 6)
+  have arguments : ArgsDerivation sourceSpace bindings [innerSyntax] [numberType] (controlFuel + 6)
       [[innerSyntax], [innerSyntax]] := by
-    simpa using ArgsDerivation.cons innerSyntax Atom.undefinedType [] [] (controlFuel + 5)
+    simpa using ArgsDerivation.cons innerSyntax numberType [] [] (controlFuel + 5)
       [innerSyntax, innerSyntax] [[]] (inner_derivation bindings) (.nil (controlFuel + 4))
   have derived := AtomDerivation.application "outer" [innerSyntax] numberType (controlFuel + 6) outerTyping
     [[innerSyntax], [innerSyntax]] arguments
-  have count : pathCount sourceSpace [innerSyntax] = 2 := by decide
+  have count : admittedPathCount sourceSpace [innerSyntax] outerTyping.domains = 2 := by decide
   simpa only [count, List.replicate_succ, List.replicate_zero, List.flatten_cons, List.flatten_nil,
     List.map_cons, List.map_nil, List.append_nil, List.singleton_append, List.cons_append, List.nil_append, Nat.add_assoc, outerSyntax] using derived
 
 theorem earlier_typed_candidate_rejected (bindings output : Bindings) :
-    ¬ApplicationSuccessRel sourceSpace outerSyntax (arrow [Atom.undefinedType] booleanType)
+    ¬ApplicationSuccessRel sourceSpace outerSyntax (arrow [numberType] booleanType)
       numberType bindings output :=
   closed_return_excludes_success sourceSpace (.symbol "outer") numberType booleanType [innerSyntax]
-    [Atom.undefinedType] bindings output rfl rfl (by decide)
+    [numberType] bindings output rfl rfl (by decide)
+
+theorem earlier_argument_candidate_rejected (bindings output : Bindings) :
+    ¬ApplicationSuccessRel sourceSpace outerSyntax (arrow [textType] numberType)
+      numberType bindings output :=
+  checked_arguments_exclude_success sourceSpace (.symbol "outer") numberType numberType [innerSyntax]
+    [textType] bindings output (controlFuel + 6)
+    (.cons (control_argument_checked textType rfl (by decide) (by decide)) .nil) (by decide)
+
+theorem checked_duplicate_paths_are_retained (bindings : Bindings) :
+    getAtomTypes sourceSpace innerSyntax = [numberType, numberType, booleanType] ∧
+    acceptedTypes sourceSpace innerSyntax numberType = [numberType, numberType] ∧
+    checkIfFunctionTypeIsApplicable outerSyntax (arrow [numberType] numberType) numberType
+      sourceSpace bindings (controlFuel + 7) = .inr [bindings, bindings] := by
+  refine ⟨inner_type_occurrences, by decide, ?_⟩
+  have checked := checked_applicability_success sourceSpace (.symbol "outer") numberType numberType
+    [innerSyntax] [numberType] bindings (controlFuel + 6)
+    (.cons (control_argument_checked numberType rfl (by decide) (by decide)) .nil)
+    (by decide) rfl rfl (by decide) (by decide)
+  have count : admittedPathCount sourceSpace [innerSyntax] [numberType] = 2 := by decide
+  simpa only [count, List.replicate_succ, List.replicate_zero, outerSyntax, arrow, Nat.add_assoc] using checked
+
+theorem rejected_argument_errors_keep_duplicates (bindings : Bindings) :
+    checkIfFunctionTypeIsApplicable outerSyntax (arrow [textType] numberType) numberType
+      sourceSpace bindings (controlFuel + 7) = .inl [
+        mkError outerSyntax (.badArgType 1 textType numberType),
+        mkError outerSyntax (.badArgType 1 textType numberType),
+        mkError outerSyntax (.badArgType 1 textType booleanType)] := by
+  have checked := checked_applicability_argument_failure sourceSpace (.symbol "outer") numberType numberType
+    [innerSyntax] [textType] bindings (controlFuel + 6)
+    (.cons (control_argument_checked textType rfl (by decide) (by decide)) .nil) (by decide)
+  have errors : argumentErrorBlocks sourceSpace outerSyntax [innerSyntax] [textType] 1 1 = [
+      mkError outerSyntax (.badArgType 1 textType numberType),
+      mkError outerSyntax (.badArgType 1 textType numberType),
+      mkError outerSyntax (.badArgType 1 textType booleanType)] := by decide
+  change checkIfFunctionTypeIsApplicable outerSyntax (arrow [textType] numberType) numberType
+    sourceSpace bindings (controlFuel + 6 + 1) =
+      .inl (argumentErrorBlocks sourceSpace outerSyntax [innerSyntax] [textType] 1 1) at checked
+  rw [errors] at checked
+  simpa only [Nat.add_assoc] using checked
+
+/-- Errors from an earlier mixed argument precede the later argument's
+errors. The two surviving Number paths repeat the second argument's whole
+error block, with its original one-based position. Each occurrence has an
+independent rejection derivation. -/
+theorem argument_errors_follow_surviving_paths (bindings : Bindings) :
+    let expression : Atom := .expression [.symbol "outer", innerSyntax, heldSyntax]
+    let errors := [mkError expression (.badArgType 1 numberType booleanType),
+      mkError expression (.badArgType 2 textType numberType),
+      mkError expression (.badArgType 2 textType booleanType),
+      mkError expression (.badArgType 2 textType numberType),
+      mkError expression (.badArgType 2 textType booleanType)]
+    checkIfFunctionTypeIsApplicable expression (arrow [numberType, textType] numberType) numberType
+      sourceSpace bindings (controlFuel + 7) = .inl errors ∧
+    ∀ error ∈ errors, ApplicabilityRel sourceSpace expression (arrow [numberType, textType] numberType)
+      numberType bindings (.error error) := by
+  let expression : Atom := .expression [.symbol "outer", innerSyntax, heldSyntax]
+  let errors := [mkError expression (.badArgType 1 numberType booleanType),
+    mkError expression (.badArgType 2 textType numberType),
+    mkError expression (.badArgType 2 textType booleanType),
+    mkError expression (.badArgType 2 textType numberType),
+    mkError expression (.badArgType 2 textType booleanType)]
+  have heldTypes : getAtomTypes sourceSpace heldSyntax = [numberType, booleanType] := by decide
+  have heldChecked : ArgumentDomainEvidence sourceSpace heldSyntax textType (controlFuel + 6) := by
+    refine .closed rfl ?_ ?_
+    · intro actual member
+      rw [heldTypes] at member
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with rfl | rfl <;> rfl
+    · intro actual member
+      rw [heldTypes] at member
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with rfl | rfl <;> decide
+  have checked : List.Forall₂ (fun argument domain =>
+      ArgumentDomainEvidence sourceSpace argument domain (controlFuel + 6))
+      [innerSyntax, heldSyntax] [numberType, textType] :=
+    .cons (control_argument_checked numberType rfl (by decide) (by decide)) (.cons heldChecked .nil)
+  have exhausted : admittedPathCount sourceSpace [innerSyntax, heldSyntax] [numberType, textType] = 0 := by decide
+  have orderedErrors : argumentErrorBlocks sourceSpace expression [innerSyntax, heldSyntax]
+      [numberType, textType] 1 1 = errors := by decide
+  constructor
+  · have result := checked_applicability_argument_failure sourceSpace (.symbol "outer") numberType numberType
+      [innerSyntax, heldSyntax] [numberType, textType] bindings (controlFuel + 6) checked exhausted
+    change checkIfFunctionTypeIsApplicable expression (arrow [numberType, textType] numberType) numberType
+      sourceSpace bindings (controlFuel + 6 + 1) =
+        .inl (argumentErrorBlocks sourceSpace expression [innerSyntax, heldSyntax] [numberType, textType] 1 1) at result
+    rw [orderedErrors] at result
+    simpa only [Nat.add_assoc] using result
+  · intro error member
+    have noSuccess : ∀ output, ¬ApplicationSuccessRel sourceSpace expression
+        (arrow [numberType, textType] numberType) numberType bindings output :=
+      fun output => checked_arguments_exclude_success sourceSpace (.symbol "outer") numberType numberType
+        [innerSyntax, heldSyntax] [numberType, textType] bindings output (controlFuel + 6) checked exhausted
+    exact checked_argument_errors_sound sourceSpace (.symbol "outer") numberType numberType
+      [innerSyntax, heldSyntax] [numberType, textType] bindings (controlFuel + 6) checked noSuccess error
+      (orderedErrors ▸ member)
 
 theorem nested_source_collects_four (bindings : Bindings) :
     ∃ budget, collectReply sourceSpace outerSyntax numberType bindings (controlFuel + 9) budget =

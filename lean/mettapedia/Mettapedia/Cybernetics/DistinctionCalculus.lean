@@ -10,6 +10,7 @@ import Mettapedia.Cybernetics.DistinctionCalculus.U3Degeneracy
 import Mettapedia.Cybernetics.DistinctionCalculus.EvidenceContexts
 import Mettapedia.Cybernetics.DistinctionCalculus.SanityTheorems
 import Mettapedia.Cybernetics.DistinctionCalculus.FiniteLaboratory
+import Mettapedia.Cybernetics.DistinctionCalculus.Exclusion
 
 /-!
 # Checkable distinction calculus
@@ -25,6 +26,9 @@ evidence, its resonance embedding, interference and polarity propagation.
 Path laws give metric, product and ultrametric closures; pattern scores,
 dissonance, change of base and a three-object laboratory check the sanity
 theorems and worked examples of *Hyperseed in the d-Calculus*, ch. 3–5.
+Concepts by exclusion close an observer's apartness under double exclusion; every
+concept and its exclusion cover the instances exactly when indistinguishability is
+transitive, as the metric law makes it.
 
 This is a formalized fragment of the September 2026 distinction-calculus
 papers, not a claim that their analytic, statistical, hive, or metacognitive

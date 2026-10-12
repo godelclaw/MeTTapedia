@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Poly.CollectionIndexed
+import Mathlib.Data.List.Forall2
 import Mathlib.Data.List.OfFn
 
 /-!
@@ -1767,5 +1768,695 @@ theorem exists_toPattern_of_size
                           argumentSort typedPattern objectPattern)
                       (HasType.collectionConstructor member paramsEq elementsTyped)
                       elementObjects elementSmaller
+
+/-! ## Printing is injective -/
+
+theorem multiBase_of_collection {parameter : TermParam} {kind : CollType} {element : String}
+    (shape : baseCollection? parameter = some (kind, element)) :
+    multiBase? parameter = none := by
+  cases parameter with
+  | simple _ type =>
+      cases type with
+      | collection _ elementType =>
+          cases elementType with
+          | base _ => rfl
+          | arrow _ _ => simp [baseCollection?] at shape
+          | multiBinder _ => simp [baseCollection?] at shape
+          | collection _ _ => simp [baseCollection?] at shape
+      | base _ => simp [baseCollection?] at shape
+      | arrow _ _ => simp [baseCollection?] at shape
+      | multiBinder _ => simp [baseCollection?] at shape
+  | abstractionNamed _ _ _ => simp [baseCollection?] at shape
+  | multiAbstractionNamed _ _ _ => simp [baseCollection?] at shape
+
+theorem nodeOf_ne_bvar {sort : String}
+    (operator : (indexedSignature language).Op sort)
+    (printed : Fin ((indexedSignature language).arity operator).length → Pattern)
+    (index : Nat) : nodeOf operator printed ≠ .bvar index := by
+  intro same
+  cases reading : bareCollection? operator.1.1 with
+  | some _ => simp [nodeOf, reading] at same
+  | none => simp [nodeOf, reading] at same
+
+/-- A bare collection stores the count zero and a single length, the number of
+directions. -/
+theorem bare_head {sort : String} {kind : CollType} {element : String}
+    (operator : (indexedSignature language).Op sort)
+    (shape : bareCollection? operator.1.1 = some (kind, element)) :
+    operator.2.counts = [0] ∧
+      operator.2.lengths = [((indexedSignature language).arity operator).length] := by
+  obtain ⟨_name, paramsEq⟩ := bare_rule_params shape
+  have counted : operator.2.counts.length = 1 := by
+    simpa [paramsEq] using operator.2.counts_length
+  have lengthed : operator.2.lengths.length = 1 := by
+    simpa [paramsEq] using operator.2.lengths_length
+  obtain ⟨count, countsShape⟩ := List.length_eq_one_iff.mp counted
+  obtain ⟨length, lengthsShape⟩ := List.length_eq_one_iff.mp lengthed
+  have countZero : count = 0 := by
+    have fixed :=
+      operator.2.counts_fixed 0 (by simp [paramsEq, List.getD, multiBase?])
+    rw [countsShape] at fixed
+    simpa [List.getD] using fixed
+  have lengthValue : length = ((indexedSignature language).arity operator).length := by
+    have slots := bare_slot_length operator shape
+    rw [lengthsShape] at slots
+    simpa [List.headD] using slots.symm
+  refine ⟨?_, ?_⟩
+  · rw [countsShape, countZero]
+  · rw [lengthsShape, lengthValue]
+
+theorem headData_ext {parameters : List TermParam} {left right : HeadData parameters}
+    (countsEq : left.counts = right.counts) (lengthsEq : left.lengths = right.lengths) :
+    left = right := by
+  cases left with
+  | mk countsL lengthsL _ _ _ _ =>
+      cases right with
+      | mk countsR lengthsR _ _ _ _ =>
+          cases countsEq
+          cases lengthsEq
+          rfl
+
+theorem ofFn_length_eq {m n : Nat} {f : Fin m → Pattern} {g : Fin n → Pattern}
+    (same : List.ofFn f = List.ofFn g) : m = n := by
+  have lengths := congrArg List.length same
+  simpa [List.length_ofFn] using lengths
+
+theorem ofFn_point_of_eq {m n : Nat} {f : Fin m → Pattern} {g : Fin n → Pattern}
+    (same : List.ofFn f = List.ofFn g) (index : Fin m) :
+    f index = g (index.cast (ofFn_length_eq same)) := by
+  have lengthEq := ofFn_length_eq same
+  have rewritten :
+      List.ofFn f =
+        List.ofFn (fun index : Fin m => g (index.cast lengthEq)) :=
+    same.trans (List.ofFn_congr lengthEq.symm g)
+  exact congrFun (List.ofFn_inj.mp rewritten) index
+
+/-- Assembled arguments determine the binder counts, the collection lengths,
+and every printed direction. Each parameter contributes one argument, so the
+split between parameters is the parameter list itself. -/
+theorem assemblePrinted_recover {total total' : Nat}
+    (printed : Fin total → Pattern) (printed' : Fin total' → Pattern)
+    (offset : Nat) (parameters : List TermParam)
+    (counts lengths counts' lengths' : List Nat)
+    (countsLength : counts.length = parameters.length)
+    (lengthsLength : lengths.length = parameters.length)
+    (countsLength' : counts'.length = parameters.length)
+    (lengthsLength' : lengths'.length = parameters.length)
+    (countsFixed : ∀ index : Nat,
+      (multiBase? (parameters.getD index missingParameter)).isNone →
+        counts.getD index 0 = 0)
+    (countsFixed' : ∀ index : Nat,
+      (multiBase? (parameters.getD index missingParameter)).isNone →
+        counts'.getD index 0 = 0)
+    (lengthsFixed : ∀ index : Nat,
+      (baseCollection? (parameters.getD index missingParameter)).isNone →
+        lengths.getD index 0 = 0)
+    (lengthsFixed' : ∀ index : Nat,
+      (baseCollection? (parameters.getD index missingParameter)).isNone →
+        lengths'.getD index 0 = 0)
+    (same : assemblePrinted printed offset parameters counts lengths =
+      assemblePrinted printed' offset parameters counts' lengths') :
+    counts = counts' ∧ lengths = lengths' ∧
+      ∀ index : Nat, index < slotCount parameters counts lengths →
+        nthPrinted printed (offset + index) = nthPrinted printed' (offset + index) := by
+  induction parameters generalizing counts lengths counts' lengths' offset with
+  | nil =>
+      cases counts with
+      | cons _ _ => simp at countsLength
+      | nil =>
+          cases lengths with
+          | cons _ _ => simp at lengthsLength
+          | nil =>
+              cases counts' with
+              | cons _ _ => simp at countsLength'
+              | nil =>
+                  cases lengths' with
+                  | cons _ _ => simp at lengthsLength'
+                  | nil =>
+                      refine ⟨rfl, rfl, ?_⟩
+                      intro index bound
+                      simp [slotCount] at bound
+  | cons parameter parameters inductionHypothesis =>
+      cases counts with
+      | nil => simp at countsLength
+      | cons count counts =>
+          cases lengths with
+          | nil => simp at lengthsLength
+          | cons length lengths =>
+              cases counts' with
+              | nil => simp at countsLength'
+              | cons count' counts' =>
+                  cases lengths' with
+                  | nil => simp at lengthsLength'
+                  | cons length' lengths' =>
+                      have tailCountsLength : counts.length = parameters.length := by
+                        simp only [List.length_cons] at countsLength
+                        exact Nat.succ.inj countsLength
+                      have tailLengthsLength : lengths.length = parameters.length := by
+                        simp only [List.length_cons] at lengthsLength
+                        exact Nat.succ.inj lengthsLength
+                      have tailCountsLength' : counts'.length = parameters.length := by
+                        simp only [List.length_cons] at countsLength'
+                        exact Nat.succ.inj countsLength'
+                      have tailLengthsLength' : lengths'.length = parameters.length := by
+                        simp only [List.length_cons] at lengthsLength'
+                        exact Nat.succ.inj lengthsLength'
+                      have tailCountsFixed : ∀ index : Nat,
+                          (multiBase? (parameters.getD index missingParameter)).isNone →
+                            counts.getD index 0 = 0 := by
+                        intro index hypothesis
+                        have counted :=
+                          countsFixed (index + 1) (by simpa [List.getD] using hypothesis)
+                        simpa [List.getD] using counted
+                      have tailCountsFixed' : ∀ index : Nat,
+                          (multiBase? (parameters.getD index missingParameter)).isNone →
+                            counts'.getD index 0 = 0 := by
+                        intro index hypothesis
+                        have counted :=
+                          countsFixed' (index + 1) (by simpa [List.getD] using hypothesis)
+                        simpa [List.getD] using counted
+                      have tailLengthsFixed : ∀ index : Nat,
+                          (baseCollection? (parameters.getD index missingParameter)).isNone →
+                            lengths.getD index 0 = 0 := by
+                        intro index hypothesis
+                        have counted :=
+                          lengthsFixed (index + 1) (by simpa [List.getD] using hypothesis)
+                        simpa [List.getD] using counted
+                      have tailLengthsFixed' : ∀ index : Nat,
+                          (baseCollection? (parameters.getD index missingParameter)).isNone →
+                            lengths'.getD index 0 = 0 := by
+                        intro index hypothesis
+                        have counted :=
+                          lengthsFixed' (index + 1) (by simpa [List.getD] using hypothesis)
+                        simpa [List.getD] using counted
+                      cases reading : baseCollection? parameter with
+                      | some packed =>
+                          obtain ⟨kind, _element⟩ := packed
+                          simp only [assemblePrinted, reading, List.cons.injEq] at same
+                          obtain ⟨headEq, tailEq⟩ := same
+                          simp only [Pattern.collection.injEq] at headEq
+                          obtain ⟨_kindEq, elementsEq, _restEq⟩ := headEq
+                          have lengthEq : length = length' := ofFn_length_eq elementsEq
+                          rw [← lengthEq] at tailEq
+                          have countEq : count = count' := by
+                            have countZero : count = 0 := by
+                              have fixed := countsFixed 0
+                                (by simp [List.getD, multiBase_of_collection reading])
+                              simpa [List.getD] using fixed
+                            have countZero' : count' = 0 := by
+                              have fixed := countsFixed' 0
+                                (by simp [List.getD, multiBase_of_collection reading])
+                              simpa [List.getD] using fixed
+                            rw [countZero, countZero']
+                          obtain ⟨countsTailEq, lengthsTailEq, tailAgree⟩ :=
+                            inductionHypothesis (offset + length) counts lengths counts' lengths'
+                              tailCountsLength tailLengthsLength tailCountsLength'
+                              tailLengthsLength' tailCountsFixed tailCountsFixed' tailLengthsFixed
+                              tailLengthsFixed' tailEq
+                          refine ⟨?_, ?_, ?_⟩
+                          · rw [countEq, countsTailEq]
+                          · rw [lengthEq, lengthsTailEq]
+                          · intro index indexBound
+                            have width :
+                                slotCount (parameter :: parameters) (count :: counts)
+                                    (length :: lengths) =
+                                  length + slotCount parameters counts lengths := by
+                              simp [slotCount, directionsOf, reading]
+                            rw [width] at indexBound
+                            by_cases below : index < length
+                            · have point :=
+                                ofFn_point_of_eq elementsEq ⟨index, below⟩
+                              simpa [Fin.val_cast] using point
+                            · have lower : length ≤ index := Nat.le_of_not_lt below
+                              have tailBound :
+                                  index - length < slotCount parameters counts lengths := by
+                                omega
+                              have shifted := tailAgree (index - length) tailBound
+                              have reassoc :
+                                  (offset + length) + (index - length) = offset + index := by
+                                omega
+                              rw [reassoc] at shifted
+                              exact shifted
+                      | none =>
+                          simp only [assemblePrinted, reading, List.cons.injEq] at same
+                          obtain ⟨headEq, tailEq⟩ := same
+                          have countCanonical : (multiBase? parameter).isNone → count = 0 := by
+                            intro notMulti
+                            have fixed := countsFixed 0 (by simpa [List.getD] using notMulti)
+                            simpa [List.getD] using fixed
+                          have countCanonical' : (multiBase? parameter).isNone → count' = 0 := by
+                            intro notMulti
+                            have fixed := countsFixed' 0 (by simpa [List.getD] using notMulti)
+                            simpa [List.getD] using fixed
+                          have countEq : count = count' := by
+                            have leftCount :=
+                              observableCount_print parameter count
+                                (nthPrinted printed offset) countCanonical
+                            have rightCount :=
+                              observableCount_print parameter count'
+                                (nthPrinted printed' offset) countCanonical'
+                            have sameCount := congrArg (observableCount parameter) headEq
+                            rw [leftCount, rightCount] at sameCount
+                            exact sameCount
+                          have bodyEq :
+                              nthPrinted printed offset = nthPrinted printed' offset := by
+                            have rewritten :
+                                printArgument parameter count (nthPrinted printed offset) =
+                                  printArgument parameter count (nthPrinted printed' offset) := by
+                              simpa [countEq] using headEq
+                            exact printArgument_injective parameter count rewritten
+                          have lengthEq : length = length' := by
+                            have lengthZero : length = 0 := by
+                              have fixed := lengthsFixed 0 (by simp [List.getD, reading])
+                              simpa [List.getD] using fixed
+                            have lengthZero' : length' = 0 := by
+                              have fixed := lengthsFixed' 0 (by simp [List.getD, reading])
+                              simpa [List.getD] using fixed
+                            rw [lengthZero, lengthZero']
+                          obtain ⟨countsTailEq, lengthsTailEq, tailAgree⟩ :=
+                            inductionHypothesis (offset + 1) counts lengths counts' lengths'
+                              tailCountsLength tailLengthsLength tailCountsLength'
+                              tailLengthsLength' tailCountsFixed tailCountsFixed' tailLengthsFixed
+                              tailLengthsFixed' tailEq
+                          refine ⟨?_, ?_, ?_⟩
+                          · rw [countEq, countsTailEq]
+                          · rw [lengthEq, lengthsTailEq]
+                          · intro index indexBound
+                            have width :
+                                slotCount (parameter :: parameters) (count :: counts)
+                                    (length :: lengths) =
+                                  1 + slotCount parameters counts lengths := by
+                              simp [slotCount, directionsOf, reading]
+                            rw [width] at indexBound
+                            cases index with
+                            | zero => simpa [Nat.zero_add] using bodyEq
+                            | succ index =>
+                                have tailBound :
+                                    index < slotCount parameters counts lengths := by
+                                  omega
+                                have shifted := tailAgree index tailBound
+                                have reassoc : (offset + 1) + index = offset + index.succ := by
+                                  omega
+                                rw [reassoc] at shifted
+                                exact shifted
+
+/-- Distinct labels and at most one bare rule of each kind make printing
+injective. A bare collection does not print its label, so labels alone do not
+separate two bare rules. -/
+theorem toPattern_injective
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language)
+    {index : List String × String} (left : Tree language index) :
+    ∀ right : Tree language index,
+      CollectionIndexed.toPattern left = CollectionIndexed.toPattern right → left = right := by
+  induction left with
+  | pure variable_ =>
+      intro right printed
+      cases right with
+      | pure variable' =>
+          rw [CollectionIndexed.toPattern_pure, CollectionIndexed.toPattern_pure] at printed
+          simp only [Pattern.bvar.injEq] at printed
+          exact congrArg (IFreeM.pure (P := polynomial (indexedSignature language)))
+            (varIndex_injective variable_ variable' printed)
+      | liftBind operator _children =>
+          rw [CollectionIndexed.toPattern_pure, CollectionIndexed.toPattern_liftBind] at printed
+          exact absurd printed (nodeOf_ne_bvar operator _ _).symm
+  | liftBind operator children inductionHypothesis =>
+      intro right printed
+      cases right with
+      | pure variable_ =>
+          rw [CollectionIndexed.toPattern_liftBind, CollectionIndexed.toPattern_pure] at printed
+          exact absurd printed (nodeOf_ne_bvar operator _ _)
+      | liftBind operator' children' =>
+          rcases operator with ⟨packed, data⟩
+          rcases operator' with ⟨packed', data'⟩
+          rw [CollectionIndexed.toPattern_liftBind, CollectionIndexed.toPattern_liftBind] at printed
+          cases reading : bareCollection? packed.1 with
+          | some pair =>
+              obtain ⟨kind, element⟩ := pair
+              cases reading' : bareCollection? packed'.1 with
+              | some pair' =>
+                  obtain ⟨kind', element'⟩ := pair'
+                  simp only [nodeOf, reading, reading'] at printed
+                  simp only [Pattern.collection.injEq] at printed
+                  obtain ⟨kindEq, elementsEq, _restEq⟩ := printed
+                  subst kindEq
+                  have sameRule : packed.1 = packed'.1 :=
+                    uniqueBare packed.2.1 packed'.2.1
+                      (packed.2.2.2.trans packed'.2.2.2.symm) reading reading'
+                  have packedEq : packed = packed' := Subtype.ext sameRule
+                  subst packedEq
+                  obtain ⟨countsL, lengthsL⟩ := bare_head ⟨packed, data⟩ reading
+                  obtain ⟨countsR, lengthsR⟩ := bare_head ⟨packed, data'⟩ reading'
+                  have lengthEq :
+                      ((indexedSignature language).arity ⟨packed, data⟩).length =
+                        ((indexedSignature language).arity ⟨packed, data'⟩).length :=
+                    ofFn_length_eq elementsEq
+                  have dataEq : data = data' :=
+                    headData_ext (by rw [countsL, countsR]) (by rw [lengthsL, lengthsR, lengthEq])
+                  subst dataEq
+                  refine congrArg
+                    (fun continuation =>
+                      IFreeM.liftBind (P := polynomial (indexedSignature language))
+                        ⟨packed, data⟩ continuation) ?_
+                  funext direction
+                  exact inductionHypothesis direction (children' direction)
+                    (ofFn_point_of_eq elementsEq direction)
+              | none => simp [nodeOf, reading, reading'] at printed
+          | none =>
+              cases reading' : bareCollection? packed'.1 with
+              | some _ => simp [nodeOf, reading, reading'] at printed
+              | none =>
+                  simp only [nodeOf, reading, reading', Pattern.apply.injEq] at printed
+                  obtain ⟨sameLabel, sameArgs⟩ := printed
+                  have sameRule : packed.1 = packed'.1 :=
+                    List.inj_on_of_nodup_map labels packed.2.1 packed'.2.1 sameLabel
+                  have packedEq : packed = packed' := Subtype.ext sameRule
+                  subst packedEq
+                  obtain ⟨countsEq, lengthsEq, agree⟩ :=
+                    assemblePrinted_recover
+                      (fun direction => CollectionIndexed.toPattern (children direction))
+                      (fun direction => CollectionIndexed.toPattern (children' direction))
+                      0 packed.1.params data.counts data.lengths data'.counts data'.lengths
+                      data.counts_length data.lengths_length data'.counts_length
+                      data'.lengths_length data.counts_fixed data'.counts_fixed data.lengths_fixed
+                      data'.lengths_fixed sameArgs
+                  have dataEq : data = data' := headData_ext countsEq lengthsEq
+                  subst dataEq
+                  refine congrArg
+                    (fun continuation =>
+                      IFreeM.liftBind (P := polynomial (indexedSignature language))
+                        ⟨packed, data⟩ continuation) ?_
+                  funext direction
+                  have bound : direction.val <
+                      slotCount packed.1.params data.counts data.lengths := by
+                    simpa [indexedSignature, expandSlots_length] using direction.isLt
+                  have agreed := agree direction.val bound
+                  rw [Nat.zero_add] at agreed
+                  rw [nthPrinted_of_lt _ direction.isLt, nthPrinted_of_lt _ direction.isLt] at agreed
+                  exact inductionHypothesis direction (children' direction) agreed
+
+/-- Closed object patterns at a base sort are the indexed trees there.
+
+`UniqueBare` is required because a bare collection is printed without its
+label. Distinct labels do not separate two bare rules of one kind. -/
+noncomputable def closedIndexedEquiv
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language) (sort : String) :
+    Tree language ([], sort) ≃ ClosedObject language sort :=
+  Equiv.ofBijective
+    (fun tree =>
+      ⟨CollectionIndexed.toPattern tree,
+        ⟨toPattern_hasType tree, toPattern_isObject tree⟩⟩)
+    ⟨fun left right same =>
+      toPattern_injective labels uniqueBare left right (congrArg Subtype.val same),
+      fun object => by
+        obtain ⟨tree, printed⟩ :=
+          exists_toPattern_of_size fragment (sizeOf object.1 + 1) [] object.1
+            (Nat.lt_succ_self _) sort object.2.1 object.2.2
+        exact ⟨tree, Subtype.ext printed⟩⟩
+
+/-- Every collection node is a `vec`. -/
+def VecShaped : Pattern → Prop
+  | .bvar _ => True
+  | .fvar _ => True
+  | .apply _ arguments => ∀ argument ∈ arguments, VecShaped argument
+  | .lambda _ body => VecShaped body
+  | .multiLambda _ _ body => VecShaped body
+  | .subst body replacement => VecShaped body ∧ VecShaped replacement
+  | .collection kind elements _ => kind = .vec ∧ ∀ element ∈ elements, VecShaped element
+
+theorem wrapBinders_vecShaped (binders : List String) {body : Pattern}
+    (shaped : VecShaped body) : VecShaped (wrapBinders binders body) := by
+  induction binders generalizing body with
+  | nil => simpa [wrapBinders] using shaped
+  | cons _ binders inductionHypothesis =>
+      exact inductionHypothesis (by simpa [wrapBinders, VecShaped] using shaped)
+
+theorem printArgument_vecShaped (parameter : TermParam) (count : Nat) {body : Pattern}
+    (shaped : VecShaped body) : VecShaped (printArgument parameter count body) := by
+  cases parameter with
+  | simple _ type =>
+      cases type <;> simpa [printArgument, slotBinders, wrapBinders] using shaped
+  | abstractionNamed _ _ type =>
+      cases type with
+      | base _ => simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+      | arrow domain codomain =>
+          cases domain <;> cases codomain <;>
+            simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+      | multiBinder _ =>
+          simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+      | collection _ _ =>
+          simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+  | multiAbstractionNamed _ _ type =>
+      cases type with
+      | base _ => simpa [printArgument, VecShaped] using shaped
+      | arrow domain codomain =>
+          cases domain with
+          | multiBinder inner =>
+              cases inner <;> cases codomain <;>
+                simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+          | base _ =>
+              simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+          | arrow _ _ =>
+              simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+          | collection _ _ =>
+              simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+      | multiBinder _ =>
+          simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+      | collection _ _ =>
+          simpa [printArgument, slotBinders, wrapBinders, VecShaped] using shaped
+
+theorem nthPrinted_vecShaped {total : Nat} (printed : Fin total → Pattern)
+    (shaped : ∀ index, VecShaped (printed index)) (index : Nat) :
+    VecShaped (nthPrinted printed index) := by
+  rw [nthPrinted]
+  split
+  · exact shaped _
+  · simp [VecShaped]
+
+theorem assemblePrinted_vecShaped
+    (vecOnly : VecOnly language) {rule : GrammarRule}
+    (member : rule ∈ language.terms)
+    {total : Nat} (printed : Fin total → Pattern)
+    (shaped : ∀ index, VecShaped (printed index))
+    (offset : Nat) (parameters : List TermParam)
+    (subset : ∀ parameter ∈ parameters, parameter ∈ rule.params)
+    (counts lengths : List Nat) :
+    ∀ argument ∈ assemblePrinted printed offset parameters counts lengths,
+      VecShaped argument := by
+  induction parameters generalizing counts lengths offset with
+  | nil =>
+      intro argument memberArgument
+      simp [assemblePrinted] at memberArgument
+  | cons parameter parameters inductionHypothesis =>
+      cases counts with
+      | nil =>
+          intro argument memberArgument
+          simp [assemblePrinted] at memberArgument
+      | cons count counts =>
+          cases lengths with
+          | nil =>
+              intro argument memberArgument
+              simp [assemblePrinted] at memberArgument
+          | cons length lengths =>
+              cases reading : baseCollection? parameter with
+              | some packed =>
+                  obtain ⟨kind, element⟩ := packed
+                  intro argument memberArgument
+                  simp only [assemblePrinted, reading, List.mem_cons] at memberArgument
+                  cases memberArgument with
+                  | inl head =>
+                      subst head
+                      have kindVec : kind = .vec :=
+                        vecOnly rule member parameter (subset parameter (by simp)) kind element
+                          reading
+                      simp only [VecShaped]
+                      refine ⟨kindVec, ?_⟩
+                      intro elementPattern elementMember
+                      obtain ⟨index, elementAt⟩ := List.mem_ofFn.mp elementMember
+                      rw [← elementAt]
+                      exact nthPrinted_vecShaped printed shaped _
+                  | inr tail =>
+                      exact inductionHypothesis (offset + length)
+                        (fun parameter parameterMember =>
+                          subset parameter (List.mem_cons_of_mem _ parameterMember))
+                        counts lengths argument tail
+              | none =>
+                  intro argument memberArgument
+                  simp only [assemblePrinted, reading, List.mem_cons] at memberArgument
+                  cases memberArgument with
+                  | inl head =>
+                      subst head
+                      exact printArgument_vecShaped parameter count
+                        (nthPrinted_vecShaped printed shaped offset)
+                  | inr tail =>
+                      exact inductionHypothesis (offset + 1)
+                        (fun parameter parameterMember =>
+                          subset parameter (List.mem_cons_of_mem _ parameterMember))
+                        counts lengths argument tail
+
+theorem toPattern_vecShaped (vecOnly : VecOnly language)
+    {index : List String × String} (tree : Tree language index) :
+    VecShaped (CollectionIndexed.toPattern tree) := by
+  induction tree using IFreeM.inductionOn with
+  | pure _ _ =>
+      rw [CollectionIndexed.toPattern_pure]
+      simp [VecShaped]
+  | liftBind _ operator children inductionHypothesis =>
+      rw [CollectionIndexed.toPattern_liftBind]
+      cases reading : bareCollection? operator.1.1 with
+      | some packed =>
+          obtain ⟨kind, element⟩ := packed
+          obtain ⟨name, paramsEq⟩ := bare_rule_params reading
+          have kindVec : kind = .vec :=
+            vecOnly operator.1.1 operator.1.2.1
+              (.simple name (.collection kind (.base element))) (by simp [paramsEq]) kind element
+              (by simp [baseCollection?])
+          simp only [nodeOf, reading, VecShaped]
+          refine ⟨kindVec, ?_⟩
+          intro elementPattern elementMember
+          obtain ⟨direction, elementAt⟩ := List.mem_ofFn.mp elementMember
+          rw [← elementAt]
+          exact inductionHypothesis direction
+      | none =>
+          simp only [nodeOf, reading, VecShaped]
+          exact assemblePrinted_vecShaped vecOnly operator.1.2.1
+            (fun direction => CollectionIndexed.toPattern (children direction))
+            inductionHypothesis 0 operator.1.1.params (fun _ parameterMember => parameterMember)
+            operator.2.counts operator.2.lengths
+
+/-- On patterns whose collections are vectors, the bag and set generators do
+not apply, so the pattern congruence is equality. -/
+theorem vec_cong_eq {left right : Pattern} (related : PatternCong left right)
+    (shaped : VecShaped left ∨ VecShaped right) : left = right := by
+  induction related with
+  | refl _ => rfl
+  | symm _ inductionHypothesis =>
+      exact (inductionHypothesis shaped.symm).symm
+  | trans _ _ inductionHypothesis inductionHypothesis' =>
+      cases shaped with
+      | inl shapedLeft =>
+          have leftMid := inductionHypothesis (Or.inl shapedLeft)
+          exact leftMid.trans (inductionHypothesis' (Or.inl (leftMid ▸ shapedLeft)))
+      | inr shapedRight =>
+          have midRight := inductionHypothesis' (Or.inr shapedRight)
+          exact (inductionHypothesis (Or.inr (midRight.symm ▸ shapedRight))).trans midRight
+  | bagPerm _ =>
+      cases shaped with
+      | inl shapedLeft =>
+          simp only [VecShaped] at shapedLeft
+          cases shapedLeft.1
+      | inr shapedRight =>
+          simp only [VecShaped] at shapedRight
+          cases shapedRight.1
+  | setPerm _ =>
+      cases shaped with
+      | inl shapedLeft =>
+          simp only [VecShaped] at shapedLeft
+          cases shapedLeft.1
+      | inr shapedRight =>
+          simp only [VecShaped] at shapedRight
+          cases shapedRight.1
+  | setDup =>
+      cases shaped with
+      | inl shapedLeft =>
+          simp only [VecShaped] at shapedLeft
+          cases shapedLeft.1
+      | inr shapedRight =>
+          simp only [VecShaped] at shapedRight
+          cases shapedRight.1
+  | applyAt _ inductionHypothesis =>
+      expose_names
+      cases shaped with
+      | inl shapedLeft =>
+          have argumentShaped : VecShaped left_1 := by
+            simp only [VecShaped] at shapedLeft
+            exact shapedLeft left_1
+              (List.mem_append_right before (List.mem_cons_self (a := left_1)))
+          rw [inductionHypothesis (Or.inl argumentShaped)]
+      | inr shapedRight =>
+          have argumentShaped : VecShaped right_1 := by
+            simp only [VecShaped] at shapedRight
+            exact shapedRight right_1
+              (List.mem_append_right before (List.mem_cons_self (a := right_1)))
+          rw [inductionHypothesis (Or.inr argumentShaped)]
+  | lambdaAt _ inductionHypothesis =>
+      cases shaped with
+      | inl shapedLeft =>
+          rw [inductionHypothesis (by simpa [VecShaped] using Or.inl shapedLeft)]
+      | inr shapedRight =>
+          rw [inductionHypothesis (by simpa [VecShaped] using Or.inr shapedRight)]
+  | multiLambdaAt _ inductionHypothesis =>
+      cases shaped with
+      | inl shapedLeft =>
+          rw [inductionHypothesis (by simpa [VecShaped] using Or.inl shapedLeft)]
+      | inr shapedRight =>
+          rw [inductionHypothesis (by simpa [VecShaped] using Or.inr shapedRight)]
+  | collectionAt _ inductionHypothesis =>
+      expose_names
+      cases shaped with
+      | inl shapedLeft =>
+          have elementShaped : VecShaped left_1 := by
+            simp only [VecShaped] at shapedLeft
+            exact shapedLeft.2 left_1
+              (List.mem_append_right before (List.mem_cons_self (a := left_1)))
+          rw [inductionHypothesis (Or.inl elementShaped)]
+      | inr shapedRight =>
+          have elementShaped : VecShaped right_1 := by
+            simp only [VecShaped] at shapedRight
+            exact shapedRight.2 right_1
+              (List.mem_append_right before (List.mem_cons_self (a := right_1)))
+          rw [inductionHypothesis (Or.inr elementShaped)]
+
+theorem closed_vecShaped
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (vecOnly : VecOnly language) {sort : String} (object : ClosedObject language sort) :
+    VecShaped object.1 := by
+  obtain ⟨tree, printed⟩ :=
+    exists_toPattern_of_size fragment (sizeOf object.1 + 1) [] object.1 (Nat.lt_succ_self _)
+      sort object.2.1 object.2.2
+  rw [← printed]
+  exact toPattern_vecShaped vecOnly tree
+
+/-- With only `vec` parameters, pattern congruence does not identify distinct
+closed object patterns. -/
+theorem vecOnly_patternCong_eq
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (vecOnly : VecOnly language) {sort : String} {left right : ClosedObject language sort}
+    (related : PatternCong left.1 right.1) : left = right :=
+  Subtype.ext (vec_cong_eq related (Or.inl (closed_vecShaped fragment vecOnly left)))
+
+/-- Closed object patterns, read as indexed trees. The vec hypothesis is not
+required for the bijection; `vecOnly_patternCong_eq` says there is nothing
+further to quotient. -/
+noncomputable def vecIndexedEquiv
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language) (sort : String) :
+    ClosedObject language sort ≃ Tree language ([], sort) :=
+  (closedIndexedEquiv fragment labels uniqueBare sort).symm
+
+/-- Collapsing a setoid whose relation is equality. -/
+noncomputable def quotientCollapse {α : Type} (setoid : Setoid α)
+    (trivial : ∀ left right, setoid.r left right → left = right) : Quotient setoid ≃ α where
+  toFun := Quotient.lift id trivial
+  invFun := Quotient.mk setoid
+  left_inv quotient := by
+    induction quotient using Quotient.inductionOn with
+    | _ element => rfl
+  right_inv _ := rfl
+
+/-- For a vec language the pattern quotient is the indexed tree. -/
+noncomputable def vecQuotientEquiv
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language) (vecOnly : VecOnly language) (sort : String) :
+    Quotient (patternSetoid (language := language) sort) ≃ Tree language ([], sort) :=
+  (quotientCollapse (patternSetoid (language := language) sort)
+      (fun left right related =>
+        vecOnly_patternCong_eq fragment vecOnly (left := left) (right := right) related)).trans
+    (vecIndexedEquiv fragment labels uniqueBare sort)
 
 end Mettapedia.GSLT.Poly.CollectionIndexedEquiv

@@ -293,4 +293,297 @@ theorem out_of_bounds_refused (cache : Array J) (index : Nat)
     lookupPremises cache (index :: rest) = none := by
   simp [lookupPremises, Array.getElem?_eq_none outside]
 
+
+/-- Relocate parent addresses without changing the rule, result or occurrence origin. -/
+def Node.relocate (address : Nat → Nat) (node : Node J W Origin) : Node J W Origin :=
+  { node with parents := node.parents.map address }
+
+/-- Full positional lookup agreement includes refusal of absent addresses. -/
+def LookupAgreement (source target : Array J) (address : Nat → Nat) : Prop :=
+  ∀ index, target[address index]? = source[index]?
+
+/-- Relocating the physical parent list preserves its exact ordered lookup result. -/
+theorem lookupPremises_relocate {source target : Array J} {address : Nat → Nat}
+    (agreement : LookupAgreement source target address) (parents : List Nat) :
+    lookupPremises target (parents.map address) = lookupPremises source parents := by
+  induction parents with
+  | nil => rfl
+  | cons parent rest ih => simp [lookupPremises, agreement parent, ih]
+
+/-- Every successful premise address is earlier than the current cache end. -/
+theorem lookupPremises_indices_lt {cache : Array J} {indices : List Nat} {premises : List J}
+    (found : lookupPremises cache indices = some premises) :
+    ∀ index ∈ indices, index < cache.size := by
+  induction indices generalizing premises with
+  | nil => simp
+  | cons index rest ih =>
+      cases head : cache[index]? with
+      | none => simp [lookupPremises, head] at found
+      | some premise =>
+          cases tail : lookupPremises cache rest with
+          | none => simp [lookupPremises, head, tail] at found
+          | some earlier =>
+              intro selected member
+              rcases List.mem_cons.mp member with rfl | member
+              · exact (Array.getElem?_eq_some_iff.mp head).1
+              · exact ih tail selected member
+
+/-- An absent parent anywhere in the list refuses the entire premise vector. -/
+theorem lookupPremises_none_of_future {cache : Array J} {indices : List Nat} {index : Nat}
+    (member : index ∈ indices) (future : cache.size ≤ index) :
+    lookupPremises cache indices = none := by
+  cases found : lookupPremises cache indices with
+  | none => rfl
+  | some premises =>
+      have earlier := lookupPremises_indices_lt found index member
+      omega
+
+/-- A node cannot be authorized by a parent that is stored only later. -/
+theorem Node.future_reference_refused {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) (cache : Array J)
+    (node : Node J interface.W Origin) {index : Nat}
+    (member : index ∈ node.parents) (future : cache.size ≤ index) :
+    node.replay interface cache = none := by
+  simp [Node.replay, lookupPremises_none_of_future member future]
+
+/-- Each accepted node adds one physical conclusion. -/
+theorem replayFrom_size {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {cache result : Array J}
+    {nodes : List (Node J interface.W Origin)}
+    (accepted : replayFrom interface cache nodes = some result) :
+    result.size = cache.size + nodes.length := by
+  induction nodes generalizing cache with
+  | nil => cases Option.some.inj accepted; simp
+  | cons node rest ih =>
+      cases first : node.replay interface cache with
+      | none => simp [replayFrom, first] at accepted
+      | some next =>
+          have remaining : replayFrom interface next rest = some result := by
+            simpa [replayFrom, first] using accepted
+          have counted := ih remaining
+          rw [Node.replay_eq_push interface first, Array.size_push] at counted
+          simp only [List.length_cons]
+          omega
+
+/-- The completed cache retains its prefix and every physical node conclusion. -/
+theorem replayFrom_toList {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {cache result : Array J}
+    {nodes : List (Node J interface.W Origin)}
+    (accepted : replayFrom interface cache nodes = some result) :
+    result.toList = cache.toList ++ nodes.map Node.conclusion := by
+  induction nodes generalizing cache with
+  | nil => cases Option.some.inj accepted; simp
+  | cons node rest ih =>
+      cases first : node.replay interface cache with
+      | none => simp [replayFrom, first] at accepted
+      | some next =>
+          have remaining : replayFrom interface next rest = some result := by
+            simpa [replayFrom, first] using accepted
+          rw [ih remaining, Node.replay_eq_push interface first]
+          simp
+
+/-- Appending one corresponding conclusion preserves complete address agreement.
+Future local addresses are shifted to the future of the target cache as well. -/
+theorem LookupAgreement.push {source target : Array J} {address : Nat → Nat}
+    (agreement : LookupAgreement source target address)
+    (future : ∀ offset, address (source.size + offset) = target.size + offset)
+    (conclusion : J) : LookupAgreement (source.push conclusion) (target.push conclusion) address := by
+  intro index
+  by_cases newest : index = source.size
+  · subst index
+    have last := future 0
+    simp only [Nat.add_zero] at last
+    simp [last]
+  · by_cases previous : index < source.size
+    · have sourcePresent : ∃ judgment, source[index]? = some judgment := by
+        exact ⟨source[index], Array.getElem?_eq_getElem previous⟩
+      obtain ⟨judgment, found⟩ := sourcePresent
+      have targetFound := (agreement index).trans found
+      have targetInside : address index < target.size := (Array.getElem?_eq_some_iff.mp targetFound).1
+      rw [Array.getElem?_push, if_neg (Nat.ne_of_lt targetInside)]
+      rw [Array.getElem?_push, if_neg newest]
+      exact agreement index
+    · have later : source.size < index := by omega
+      have shifted := future (index - source.size)
+      have restored : source.size + (index - source.size) = index := by omega
+      rw [restored] at shifted
+      have targetLater : target.size < address index := by omega
+      rw [Array.getElem?_push, if_neg (Nat.ne_of_gt targetLater)]
+      rw [Array.getElem?_push, if_neg newest]
+      exact agreement index
+
+/-- The remaining local address tail starts after the newly appended node. -/
+theorem futureAddresses_push {source target : Array J} {address : Nat → Nat}
+    (future : ∀ offset, address (source.size + offset) = target.size + offset)
+    (conclusion : J) :
+    ∀ offset, address ((source.push conclusion).size + offset) =
+      (target.push conclusion).size + offset := by
+  intro offset
+  have next := future (offset + 1)
+  simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using next
+
+/-- A relocated node executes exactly the same rule witness against the same
+premise occurrences. -/
+theorem Node.replay_relocate {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {source target result : Array J}
+    {address : Nat → Nat} (agreement : LookupAgreement source target address)
+    {node : Node J interface.W Origin}
+    (accepted : node.replay interface source = some result) :
+    (node.relocate address).replay interface target = some (target.push node.conclusion) := by
+  obtain ⟨premises, found, admitted, _⟩ := (Node.replay_eq_some_iff interface _ _ _).mp accepted
+  apply (Node.replay_eq_some_iff interface _ _ _).mpr
+  refine ⟨premises, ?_, admitted, rfl⟩
+  simpa only [Node.relocate, lookupPremises_relocate agreement] using found
+
+/-- A refused local node remains refused under full positional relocation. -/
+theorem Node.replay_relocate_none {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {source target : Array J}
+    {address : Nat → Nat} (agreement : LookupAgreement source target address)
+    (node : Node J interface.W Origin) :
+    (node.relocate address).replay interface target = none ↔
+      node.replay interface source = none := by
+  simp only [Node.replay, Node.relocate, lookupPremises_relocate agreement]
+  cases lookupPremises source node.parents with
+  | none => simp
+  | some premises =>
+      by_cases accepted : interface.isInstance node.witness premises node.conclusion = true
+      · simp [accepted]
+      · simp [accepted]
+
+/-- A checked local graph is spliced into a larger checked cache without
+expanding any previously stored proof. Exact address agreement survives. -/
+theorem replayFrom_relocate {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {source target sourceResult : Array J}
+    {address : Nat → Nat} (agreement : LookupAgreement source target address)
+    (future : ∀ offset, address (source.size + offset) = target.size + offset)
+    {nodes : List (Node J interface.W Origin)}
+    (accepted : replayFrom interface source nodes = some sourceResult) :
+    ∃ targetResult, replayFrom interface target (nodes.map (Node.relocate address)) = some targetResult ∧
+      LookupAgreement sourceResult targetResult address := by
+  induction nodes generalizing source target with
+  | nil => cases Option.some.inj accepted; exact ⟨target, rfl, agreement⟩
+  | cons node rest ih =>
+      cases first : node.replay interface source with
+      | none => simp [replayFrom, first] at accepted
+      | some next =>
+          have remaining : replayFrom interface next rest = some sourceResult := by
+            simpa [replayFrom, first] using accepted
+          have nextEq := Node.replay_eq_push interface first
+          subst next
+          have actual := Node.replay_relocate interface agreement first
+          obtain ⟨targetResult, checked, finalAgreement⟩ := ih
+            (agreement.push future node.conclusion) (futureAddresses_push future node.conclusion) remaining
+          refine ⟨targetResult, ?_, finalAgreement⟩
+          simpa [replayFrom, actual] using checked
+
+/-- A block's refusal is reflected as well as preserved, including absent
+parents and malformed rule witnesses. -/
+theorem replayFrom_relocate_none_iff {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {source target : Array J}
+    {address : Nat → Nat} (agreement : LookupAgreement source target address)
+    (future : ∀ offset, address (source.size + offset) = target.size + offset)
+    (nodes : List (Node J interface.W Origin)) :
+    replayFrom interface target (nodes.map (Node.relocate address)) = none ↔
+      replayFrom interface source nodes = none := by
+  induction nodes generalizing source target with
+  | nil => simp [replayFrom]
+  | cons node rest ih =>
+      cases first : node.replay interface source with
+      | none =>
+          have refused := (Node.replay_relocate_none interface agreement node).mpr first
+          simp [replayFrom, first, refused]
+      | some next =>
+          have nextEq := Node.replay_eq_push interface first
+          subst next
+          have actual := Node.replay_relocate interface agreement first
+          simpa [replayFrom, actual, first] using
+            ih (agreement.push future node.conclusion) (futureAddresses_push future node.conclusion)
+
+
+/-- Successful premise selection agrees at every retained occurrence. -/
+theorem lookupPremises_at {cache : Array J} {roots : List Nat}
+    {premises : List J} (found : lookupPremises cache roots = some premises)
+    (index : Nat) (inside : index < roots.length) :
+    cache[roots[index]]? = premises[index]? := by
+  induction roots generalizing premises index with
+  | nil => simp at inside
+  | cons root rest ih =>
+      cases head : cache[root]? with
+      | none => simp [lookupPremises, head] at found
+      | some premise =>
+          cases tail : lookupPremises cache rest with
+          | none => simp [lookupPremises, head, tail] at found
+          | some later =>
+              have same : premise :: later = premises := by
+                simpa [lookupPremises, head, tail] using found
+              subst premises
+              cases index with
+              | zero => simpa using head
+              | succ index => simpa using ih tail index (by simpa using inside)
+
+/-- A checked extension preserves every ordered premise-vector lookup. -/
+theorem lookupPremises_preserved {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules)
+    {actual result : Array J} {nodes : List (Node J interface.W Origin)}
+    (accepted : replayFrom interface actual nodes = some result)
+    {indices : List Nat} {premises : List J}
+    (found : lookupPremises actual indices = some premises) :
+    lookupPremises result indices = some premises := by
+  induction indices generalizing premises with
+  | nil => cases Option.some.inj found; rfl
+  | cons index rest ih =>
+      cases head : actual[index]? with
+      | none => simp [lookupPremises, head] at found
+      | some premise =>
+          cases tail : lookupPremises actual rest with
+          | none => simp [lookupPremises, head, tail] at found
+          | some later =>
+              have same : premise :: later = premises := by
+                simpa [lookupPremises, head, tail] using found
+              subst premises
+              have preserved := replayFrom_preserves_lookup interface accepted head
+              simp [lookupPremises, preserved, ih tail]
+
+/-- Premise lookup distributes over ordered concatenation. -/
+theorem lookupPremises_append (actual : Array J) (left right : List Nat) :
+    lookupPremises actual (left ++ right) = (do
+      let earlier ← lookupPremises actual left
+      let later ← lookupPremises actual right
+      pure (earlier ++ later)) := by
+  induction left with
+  | nil => simp [lookupPremises]
+  | cons head rest ih =>
+      simp only [List.cons_append, lookupPremises, ih]
+      cases actual[head]? <;> cases lookupPremises actual rest <;>
+        cases lookupPremises actual right <;> rfl
+
+
+
+/-- Every parent of an accepted graph is a real physical position in the
+completed cache. This also bounds numeric reference encodings. -/
+theorem replayFrom_parents_lt_result {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {cache result : Array J}
+    {nodes : List (Node J interface.W Origin)}
+    (accepted : replayFrom interface cache nodes = some result) :
+    ∀ node ∈ nodes, ∀ index ∈ node.parents, index < result.size := by
+  induction nodes generalizing cache with
+  | nil => simp
+  | cons node rest ih =>
+      cases first : node.replay interface cache with
+      | none => simp [replayFrom, first] at accepted
+      | some next =>
+          have later : replayFrom interface next rest = some result := by
+            simpa [replayFrom, first] using accepted
+          have growth : result.size = next.size + rest.length :=
+            replayFrom_size interface (cache := next) (nodes := rest) later
+          have nextSize : next.size = cache.size + 1 := by
+            rw [Node.replay_eq_push interface first, Array.size_push]
+          obtain ⟨premises, selected, _, _⟩ := (Node.replay_eq_some_iff interface _ _ _).mp first
+          intro selectedNode member index cited
+          rcases List.mem_cons.mp member with same | member
+          · subst selectedNode
+            have earlier := lookupPremises_indices_lt selected index cited
+            omega
+          · exact ih later selectedNode member index cited
+
 end Mettapedia.Logic.DerivationGraph

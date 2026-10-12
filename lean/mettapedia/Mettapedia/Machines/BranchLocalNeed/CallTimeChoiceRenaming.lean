@@ -79,6 +79,45 @@ theorem ValRel.isCell_eq {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
     (h : ValRel φ v v') : v'.isCell = v.isCell := by
   cases h <;> rfl
 
+/-- A role-preserving cell renaming preserves readiness of the entire value
+tree. Code remains opaque; Need and resampling references retain their roles. -/
+theorem ValRel.noSusp_eq {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
+    (related : ValRel φ v v') : v'.noSusp = v.noSusp := by
+  induction related with
+  | sym => rfl
+  | app _ _ headIH argumentIH => simp only [Val.noSusp, headIH, argumentIH]
+  | need => rfl
+  | thunk => rfl
+  | code => rfl
+
+/-- A related value refers only to names in the actual representation map.
+The predicate applies to every role, including opaque code capabilities. -/
+theorem ValRel.referencesSatisfy {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
+    (related : ValRel φ v v') {p : C → Prop} (names : ∀ c ∈ φ, p c) :
+    v'.referencesSatisfy p := by
+  induction related with
+  | sym => trivial
+  | app _ _ headIH argumentIH => exact ⟨headIH, argumentIH⟩
+  | need lookup => exact names _ (List.mem_of_getElem? lookup)
+  | thunk lookup => exact names _ (List.mem_of_getElem? lookup)
+  | code lookup => exact names _ (List.mem_of_getElem? lookup)
+
+theorem ValRel.sourceReferencesSatisfy {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
+    (related : ValRel φ v v') : v.referencesSatisfy (fun i => i < φ.length) := by
+  induction related with
+  | sym => trivial
+  | app _ _ headIH argumentIH => exact ⟨headIH, argumentIH⟩
+  | need lookup => exact (List.getElem?_eq_some_iff.mp lookup).1
+  | thunk lookup => exact (List.getElem?_eq_some_iff.mp lookup).1
+  | code lookup => exact (List.getElem?_eq_some_iff.mp lookup).1
+
+theorem EnvRel.referencesSatisfy {C : Type} {φ : List C}
+    {env : List (Val Nat)} {env' : List (Val C)} (related : EnvRel φ env env')
+    {p : C → Prop} (names : ∀ c ∈ φ, p c) : EnvReferencesSatisfy p env' := by
+  induction related with
+  | nil => intro value member; cases member
+  | cons value _ ih => exact EnvReferencesSatisfy.cons (value.referencesSatisfy names) ih
+
 /-- A related value with no cell is the same constructor term. -/
 theorem ValRel.cellFree_eq {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
     (h : ValRel φ v v') (free : v.cellFree = true) (f : Nat → C) : v' = v.mapCells f := by

@@ -19,6 +19,8 @@ Bounded shared-arena slices use the common `MachineCore.runSlice` contract.
 Their readout retains native Need worlds, work accounts, pending update/resume
 frames and emitted occurrences. Shared-program dispatch counts remain distinct
 from Need transitions, and neither count certifies a compiled implementation.
+Recording mode additionally recovers the complete rich reference prefix at
+every pause and resumption, including the causal graph of each branch.
 
 The native shared producer also feeds the common owned occurrence log. Its
 representation comparison retains pending returns, source context, consumer
@@ -42,17 +44,58 @@ abbrev NativeTask := NeedContinuation.NeedTask Origin Local Resume Rule Atom Emp
 abbrev NativeState := NeedContinuation.NeedState Origin Local Resume Rule Atom Empty String Empty
 abbrev NativeContext := NeedContinuation.Context Origin Rule Atom Empty String Empty
 
-def initialTask (term : Atom) : NativeTask :=
-  let source := NeedExecution.eraseMachine (initial term)
+def initialTask (term : Atom) (keepReceipts : Bool := false) : NativeTask :=
+  let source := NeedExecution.projectMachine keepReceipts (initial term)
   ⟨⟨source.world, source.work⟩, .force rootCell, []⟩
 
-def initialState (term : Atom) : NativeState := ⟨[initialTask term], []⟩
+def initialState (term : Atom) (keepReceipts : Bool := false) : NativeState :=
+  ⟨[initialTask term keepReceipts], []⟩
 
 /-- The shared program starts from the independently constructed native Need
 machine; its heap contains the authored root expression, rather than answers. -/
-theorem initial_decodes (term : Atom) :
-    NeedContinuation.machines (initialState term) =
-      [NeedExecution.eraseMachine (initial term)] := rfl
+theorem initial_decodes (term : Atom) (keepReceipts : Bool := false) :
+    NeedContinuation.machines (initialState term keepReceipts) =
+      [NeedExecution.projectMachine keepReceipts (initial term)] := rfl
+
+/-- Recording the authored-equation evaluator retains its complete rich
+prefix through a checked arena pause: bindings, cells, branch paths, work and
+causal graph. This remains a Lean evaluator theorem, not a C realization proof. -/
+theorem native_recorded_partial_readback (equations : Program) (term : Atom) (fuel : Nat) :
+    ∃ count ≤ (MachineCore.runSlice
+        (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+        fuel (SharedContinuation.encode (initialState term true))).2,
+      (NeedContinuation.machines (MachineCore.runSlice
+        (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+        fuel (SharedContinuation.encode (initialState term true))).1.1.decode).mapM
+          NeedExecution.CoreMachine.readback? =
+        some (((NeedRepresentation.needSystem (specification equations)).expandFirst)^[count]
+          [initial term]) := by
+  apply NeedContinuation.shared_slice_recorded_prefix (specification equations) fuel
+    (SharedContinuation.encode (initialState term true))
+  · rw [SharedContinuation.decode_encode]
+    exact NeedContinuation.settled_single (initialTask term true) rfl
+  · rw [SharedContinuation.decode_encode]
+    rfl
+
+/-- The recorded authored equation run resumes its retained cells and causal
+history, even when the pause falls between lookup and claim. -/
+theorem native_recorded_resumption_readback
+    (equations : Program) (term : Atom) (first second : Nat) :
+    let core := SharedContinuation.sharedCore
+      (NeedContinuation.program (specification equations))
+    let earlier := MachineCore.runSlice core first
+      (SharedContinuation.encode (initialState term true))
+    let later := MachineCore.runSlice core second earlier.1
+    ∃ count ≤ earlier.2 + later.2,
+      (NeedContinuation.machines later.1.1.decode).mapM NeedExecution.CoreMachine.readback? =
+        some (((NeedRepresentation.needSystem (specification equations)).expandFirst)^[count]
+          [initial term]) := by
+  apply NeedContinuation.shared_resumption_recorded_prefix (specification equations)
+    first second (SharedContinuation.encode (initialState term true))
+  · rw [SharedContinuation.decode_encode]
+    exact NeedContinuation.settled_single (initialTask term true) rfl
+  · rw [SharedContinuation.decode_encode]
+    rfl
 
 /-- A bounded authored-equation run decodes to a genuine prefix of the
 independent Need evaluator. No completion premise discards its pending cells,
@@ -334,6 +377,29 @@ namespace Controls
 
 set_option maxRecDepth 20000
 set_option maxHeartbeats 3000000
+
+/-- Pausing at the initial claim preserves the authored root exactly. Resuming
+the recorded evaluator produces the two correlated pairs and two retained causal
+graphs; the empty initial history is not substituted for either completed one. -/
+theorem recorded_claim_resume_keeps_choice_histories :
+    let query := NativeEquationNeed.Controls.call "twice" [NativeEquationNeed.Controls.call "coin"]
+    let core := SharedContinuation.sharedCore
+      (NeedContinuation.program (specification NativeEquationNeed.Controls.program))
+    let earlier := MachineCore.runSlice core 1
+      (SharedContinuation.encode (initialState query true))
+    let later := MachineCore.runSlice core 100 earlier.1
+    earlier.2 = 1 ∧
+      (NeedContinuation.machines earlier.1.1.decode).mapM NeedExecution.CoreMachine.readback? =
+        some [initial query] ∧
+      ((NeedContinuation.machines later.1.1.decode).mapM NeedExecution.CoreMachine.readback?).map
+        (List.filterMap NeedReference.haltedOutcome) =
+          some [.value (NativeEquationNeed.Controls.call "Pair"
+            [NativeEquationNeed.Controls.integer 0, NativeEquationNeed.Controls.integer 0]),
+            .value (NativeEquationNeed.Controls.call "Pair"
+            [NativeEquationNeed.Controls.integer 1, NativeEquationNeed.Controls.integer 1])] ∧
+      ((NeedContinuation.machines later.1.1.decode).mapM NeedExecution.CoreMachine.readback?).map
+        (List.map fun machine => machine.world.receipts.nodes.isEmpty) = some [false, false] := by
+  refine ⟨rfl, rfl, ?_, ?_⟩ <;> decide +kernel
 
 example : NeedContinuation.cost (specification NativeEquationNeed.Controls.program)
     (initialTask (NativeEquationNeed.Controls.call "twice"

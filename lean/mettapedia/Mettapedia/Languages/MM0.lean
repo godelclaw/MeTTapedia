@@ -21,6 +21,8 @@ import Mettapedia.Languages.MM0.Translation.CertificateSimulation
 import Mettapedia.Languages.MM0.Translation.CertificateEquivalence
 import Mettapedia.Languages.MM0.Translation.UniversalTraceBound
 import Mettapedia.Languages.MM0.Translation.CalculusSimulation
+import Mettapedia.Languages.MM0.Translation.DerivationWeight
+import Mettapedia.Languages.MM0.Translation.LemmaSimulation
 
 /-!
 # MM0 theories, checking semantics, and language-definition translations
@@ -136,7 +138,11 @@ size-simulate it (`no_sizeSimulation`). `Translation.CalculusSimulation`
 extends the p-equivalence to every first-order calculus of the generic inference
 checker, through one fixed sorted grammar of patterns (`pEquivalent`), and MM0
 p-simulates every checker with a polynomial trace into such a calculus
-(`traceSimulation`).
+(`traceSimulation`). `Translation.DerivationWeight` bounds a certificate of a
+calculus whose rules cover their formals by its judgments. `Translation.LemmaSimulation`
+keeps sharing: a certificate made of lemmas, each an open proof from the ones before
+it, compiles lemma by lemma into MM0 saved proofs (`lemmaSimulation`), and both
+checkers are sound (`lemmaChecker_sound`, `savedChecker_sound`).
 
 `Translation.FirstOrderCertificates.checksModulo_iff_compiled` retains and
 checks the submitted named certificate tree, including local premise

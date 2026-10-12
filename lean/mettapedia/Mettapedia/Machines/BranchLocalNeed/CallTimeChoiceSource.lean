@@ -142,6 +142,14 @@ def SRule.toCore (p : Profile) (rule : SRule) : Rule :=
 def SProgram.toCore (p : Profile) (P : SProgram) : Program :=
   P.map (SRule.toCore p)
 
+/-- Authored function heads are shifted above the core normalization head.
+Every binding profile therefore reserves the same consumer operation. -/
+theorem SProgram.toCore_reserved (rules : SProgram) (p : Profile) :
+    ∀ rule ∈ rules.toCore p, rule.head ≠ normHead := by
+  intro rule member
+  obtain ⟨source, _, rfl⟩ := List.mem_map.mp member
+  simp [SRule.toCore, normHead]
+
 /-- The observed values of a closed source expression under a profile. -/
 def sourceValues (p : Profile) (P : SProgram) (fuel : Nat) (e : Expr) :
     Option (List (Val Nat)) :=

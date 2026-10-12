@@ -1,5 +1,6 @@
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceSpec
 import Mettapedia.Machines.BranchLocalNeed.ReturningRuns
+import Mettapedia.Machines.BranchLocalNeed.CacheLaws
 
 /-!
 # The core calculus on the reference Need machine
@@ -194,10 +195,211 @@ def initialWorld : MWorld where
   nextCell := 0
   nextEvaluator := 0
 
+/-! ## Captured references of active controls and saved continuations -/
+
+/-- Only the environment-bearing continuation forms capture value references. -/
+def MResume.referencesSatisfy (p : CellId → Prop) : MResume → Prop
+  | .seqAlloc _ env | .seqRet _ env | .needAlloc _ env | .delayAlloc _ env =>
+      EnvReferencesSatisfy p env
+  | _ => True
+
+def MLocal.referencesSatisfy (p : CellId → Prop) : MLocal → Prop
+  | .output (.value value) => value.referencesSatisfy p
+  | .output _ => True
+  | .alloc origin token => EnvReferencesSatisfy p origin.2 ∧ token.referencesSatisfy p
+  | .demand cell token | .resample cell token => p cell ∧ token.referencesSatisfy p
+  | .emit _ next => next.referencesSatisfy p
+
+theorem MResume.referencesSatisfy_mono {p q : CellId → Prop}
+    (grows : ∀ c, p c → q c) {token : MResume} (valid : token.referencesSatisfy p) :
+    token.referencesSatisfy q := by
+  cases token <;> first | exact valid.mono grows | trivial
+
+theorem MLocal.referencesSatisfy_mono {p q : CellId → Prop}
+    (grows : ∀ c, p c → q c) {state : MLocal} (valid : state.referencesSatisfy p) :
+    state.referencesSatisfy q := by
+  induction state with
+  | output result =>
+      cases result with
+      | value v => exact v.referencesSatisfy_mono grows valid
+      | stableFault => trivial
+      | retryableFault => trivial
+  | alloc origin token => exact ⟨valid.1.mono grows, token.referencesSatisfy_mono grows valid.2⟩
+  | demand c token | resample c token =>
+      exact ⟨grows c valid.1, token.referencesSatisfy_mono grows valid.2⟩
+  | emit event next ih => exact ih valid
+
+theorem forceLocal_referencesSatisfy {p : CellId → Prop} {value : MVal}
+    (valid : value.referencesSatisfy p) : (forceLocal value).referencesSatisfy p := by
+  cases value <;> simp_all [forceLocal, MLocal.referencesSatisfy, MResume.referencesSatisfy,
+    Val.referencesSatisfy]
+
+theorem runLocal_referencesSatisfy {p : CellId → Prop} {value : MVal}
+    (valid : value.referencesSatisfy p) : (runLocal value).referencesSatisfy p := by
+  cases value <;> simp_all [runLocal, MLocal.referencesSatisfy, MResume.referencesSatisfy,
+    Val.referencesSatisfy]
+
+theorem primLocal_referencesSatisfy (p : CellId → Prop) (op : Prim) (values : List MVal) :
+    (primLocal op values).referencesSatisfy p := by
+  cases op
+  cases values with
+  | nil => trivial
+  | cons first rest =>
+      cases rest with
+      | nil => trivial
+      | cons second tail =>
+          cases tail <;> simp [primLocal, Prim.apply, MLocal.referencesSatisfy, Val.referencesSatisfy]
+
+/-- Entering arbitrary nested syntax cannot manufacture a cell reference.
+Constructor destructuring reuses the common value-reference lemmas. -/
+theorem enter_referencesSatisfy {p : CellId → Prop} (code : Comp) {env : MEnv}
+    (valid : EnvReferencesSatisfy p env) : (enter code env).referencesSatisfy p := by
+  induction code generalizing env with
+  | ret value => exact value.eval_referencesSatisfy valid
+  | seq first rest _ _ => exact ⟨valid, valid⟩
+  | need producer body _ _ => exact ⟨valid, valid⟩
+  | delay producer body _ _ => exact ⟨valid, valid⟩
+  | force value => exact forceLocal_referencesSatisfy (value.eval_referencesSatisfy valid)
+  | caseCon value name arity hit miss ihHit ihMiss =>
+      simp only [enter]
+      cases matched : (value.eval env).matchCon name arity with
+      | none => exact ihMiss valid
+      | some fields =>
+          exact ihHit
+            ((Val.matchCon_referencesSatisfy (value.eval_referencesSatisfy valid) matched).append valid)
+  | caseApp value hit miss ihHit ihMiss =>
+      simp only [enter]
+      cases matched : (value.eval env).matchApp with
+      | none => exact ihMiss valid
+      | some pair =>
+          rcases pair with ⟨head, argument⟩
+          have fields := Val.matchApp_referencesSatisfy (value.eval_referencesSatisfy valid) matched
+          exact ihHit (EnvReferencesSatisfy.cons fields.1 (EnvReferencesSatisfy.cons fields.2 valid))
+  | call function args => exact ⟨valid, True.intro⟩
+  | callRule rule args => exact ⟨valid, True.intro⟩
+  | choose first second _ _ => exact ⟨valid, True.intro⟩
+  | fail => trivial
+  | emit event body ih => exact ih valid
+  | quote body _ => exact ⟨valid, True.intro⟩
+  | run value => exact runLocal_referencesSatisfy (value.eval_referencesSatisfy valid)
+  | prim op args => exact primLocal_referencesSatisfy p op _
+
+theorem afterDemand_referencesSatisfy {p : CellId → Prop} {token : MResume} {result : MOutcome}
+    (saved : token.referencesSatisfy p)
+    (returned : match result with | .value v => v.referencesSatisfy p | _ => True) :
+    (afterDemand token result).referencesSatisfy p := by
+  cases token with
+  | seqRet code env =>
+      cases result with
+      | value v => exact enter_referencesSatisfy code (EnvReferencesSatisfy.cons returned saved)
+      | stableFault => trivial
+      | retryableFault => trivial
+  | forceRet =>
+      cases result with
+      | value v => exact forceLocal_referencesSatisfy returned
+      | stableFault => trivial
+      | retryableFault => trivial
+  | callRet => cases result <;> exact returned
+  | seqAlloc | needAlloc | delayAlloc | resampleAlloc | callAlloc | quoteAlloc => trivial
+
+theorem afterAllocation_referencesSatisfy {p : CellId → Prop} {token : MResume} {cell : CellId}
+    (saved : token.referencesSatisfy p) (allocated : p cell) :
+    (afterAllocation token cell).referencesSatisfy p := by
+  cases token with
+  | seqAlloc code env => exact ⟨allocated, saved⟩
+  | needAlloc code env => exact enter_referencesSatisfy code (EnvReferencesSatisfy.cons allocated saved)
+  | delayAlloc code env => exact enter_referencesSatisfy code (EnvReferencesSatisfy.cons allocated saved)
+  | resampleAlloc | callAlloc => exact ⟨allocated, True.intro⟩
+  | quoteAlloc => exact allocated
+  | seqRet | forceRet | callRet => trivial
+
+theorem alternatives_referencesSatisfy (P : Program) {p : CellId → Prop} {origin : Comp × MEnv}
+    (captured : EnvReferencesSatisfy p origin.2) {rule : MRule} {state : MLocal}
+    (member : (rule, state) ∈ alternatives P origin) : state.referencesSatisfy p := by
+  rcases origin with ⟨code, env⟩
+  cases code with
+  | choose first second =>
+      rcases List.mem_cons.mp member with equal | member
+      · cases equal
+        exact enter_referencesSatisfy first captured
+      · cases List.mem_singleton.mp member
+        exact enter_referencesSatisfy second captured
+  | call function args =>
+      obtain ⟨candidate, _, equal⟩ := List.mem_map.mp member
+      cases equal
+      exact enter_referencesSatisfy _ (VExp.evalList_referencesSatisfy captured args)
+  | callRule index args =>
+      simp only [alternatives] at member
+      cases selected : P[index]? with
+      | none => simp [selected] at member
+      | some equation =>
+          simp only [selected] at member
+          split at member
+          · cases List.mem_singleton.mp member
+            exact enter_referencesSatisfy _ (VExp.evalList_referencesSatisfy captured args)
+          · simp at member
+  | ret | seq | need | delay | force | caseCon | caseApp | fail | emit | quote | run | prim =>
+      simp only [alternatives, List.mem_singleton] at member
+      cases member
+      exact enter_referencesSatisfy _ captured
+
+/-- A constructed instance of the general reference discipline. It checks
+language operations for every domain, without assuming a machine invariant. -/
+def machineReferenceDiscipline (P : Program) : NeedCacheLaws.ReferenceDiscipline (machineSpec P) where
+  origin p source := EnvReferencesSatisfy p source.2
+  localState := MLocal.referencesSatisfy
+  resume := MResume.referencesSatisfy
+  value p v := v.referencesSatisfy p
+  origin_mono := by
+    intro p q grows source valid
+    exact valid.mono grows
+  local_mono := MLocal.referencesSatisfy_mono
+  resume_mono := MResume.referencesSatisfy_mono
+  value_mono := Val.referencesSatisfy_mono
+  alternatives := by
+    intro p source rule state captured member
+    exact alternatives_referencesSatisfy P (p := p) (origin := source)
+      (rule := rule) (state := state) captured member
+  action := by
+    intro p state valid
+    cases state with
+    | output result => cases result <;> exact valid
+    | alloc | demand | resample | emit => exact valid
+  afterDemand := by
+    intro p token result saved returned
+    cases result with
+    | value v => exact afterDemand_referencesSatisfy saved returned
+    | stableFault fault => exact fault.elim
+    | retryableFault reason => exact afterDemand_referencesSatisfy saved True.intro
+  afterAllocation := by
+    intro p token cell saved allocated
+    exact afterAllocation_referencesSatisfy saved allocated
+
 /-- Run a closed computation from the empty heap. -/
 def initialMachine (M : Comp) : MMachine where
   world := initialWorld
   control := .run (enter M []) []
+
+theorem initialMachine_referencesClosed (P : Program) (code : Comp) :
+    (machineReferenceDiscipline P).machineClosed (initialMachine code) := by
+  constructor
+  · intro cell record lookup
+    simp [initialMachine, initialWorld, Heap.empty, Heap.lookup] at lookup
+  · change MLocal.referencesSatisfy (NeedCacheLaws.heapLive (Heap.empty : Heap (Comp × MEnv) MVal Empty))
+        (enter code []) ∧
+        (machineReferenceDiscipline P).stack (NeedCacheLaws.heapLive Heap.empty) []
+    exact ⟨enter_referencesSatisfy code (env := []) (by intro value member; cases member),
+      by intro frame member; cases member⟩
+
+/-- Every paused frontier of a closed program retains all captured, cached,
+active and continuation references in each branch's own world. -/
+theorem runFrontier_referencesClosed (P : Program) (code : Comp) (fuel : Nat) {machine : MMachine}
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code]) :
+    (machineReferenceDiscipline P).machineClosed machine := by
+  apply (machineReferenceDiscipline P).runFrontier_closed fuel (member := member)
+  intro initial selected
+  cases List.mem_singleton.mp selected
+  exact initialMachine_referencesClosed P code
 
 /-- The machine's answers for the observation of a closed computation. -/
 def machineAnswers (P : Program) (fuel : Nat) (M : Comp) : List MOutcome :=

@@ -55,6 +55,18 @@ def ResRel (φ : List CellId) (w : MWorld) (stk : List (Frame MResume)) (r : Res
   ∃ φ', φ <+: φ' ∧ Fresh φ φ' w ∧ Corr φ' r.2 m.world ∧ Grows w m.world ∧
     ∃ o, m.control = .returned o stk ∧ OutRel φ' r.1 o
 
+/-- A successful machine return retains its references in its own resulting
+world. The ancestor world in the relation is not a substitute carrier. -/
+theorem ResRel.value_references_live {φ : List CellId} {world : MWorld}
+    {stack : List (Frame MResume)} {value : Val Nat} {store : Store} {machine : MMachine}
+    (related : ResRel φ world stack (.ok value, store) machine) :
+    ∃ represented, machine.control = .returned (.value represented) stack ∧
+      represented.referencesSatisfy (fun c => ∃ rec, machine.world.heap.lookup c = some rec) := by
+  obtain ⟨_, _, _, correspondence, _, outcome, returned, output⟩ := related
+  cases output with
+  | ok valueRelated =>
+      exact ⟨_, returned, correspondence.value_references_live valueRelated⟩
+
 theorem ResRel.weaken {φ φ₁ : List CellId} {w w₁ : MWorld} {stk : List (Frame MResume)}
     {r : Result} {m : MMachine} (h : ResRel φ₁ w₁ stk r m) (hp : φ <+: φ₁) (hf : Fresh φ φ₁ w)
     (hg : Grows w w₁) : ResRel φ w stk r m := by

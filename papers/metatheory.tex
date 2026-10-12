@@ -17,6 +17,9 @@
 \usepackage{array}
 \usepackage{enumitem}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,calc}
+\newcommand{\leanname}[1]{\textup{\Urlmuskip=0mu\relax\nolinkurl{#1}}}
 \usepackage{xurl}
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black,
@@ -188,6 +191,156 @@ This distinction is especially important for final coalgebras.  Writing
 $\nu H$ is not a construction.  One must name the ambient category, prove that
 $H$ is an endofunctor of the required class, establish the relevant accessibility
 or small-based condition, and then instantiate an existence theorem.
+
+\section{Digest: what is known about HO MeTTa Prime, and how firmly}
+\label{sec:digest}
+
+This section is a map of the current state, dated 12 October 2026. Each row
+names a part of the design, says what is known, and gives its status in the
+sense of the previous section, together with a confidence that the part will
+survive in the finished language. \emph{Decided} marks a design decision that is
+no longer under investigation. The confidence figures are working estimates,
+revised as results arrive; they are not probabilities derived from a model.
+Section~\ref{sec:bubbles-hosted} explains the newest material, and
+Section~\ref{sec:status-ledger} keeps the detailed ledger.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  face/.style={draw, rounded corners, thick, align=center, inner sep=6pt},
+  bub/.style={draw, rounded corners=8pt, fill=blue!6, align=center,
+    font=\footnotesize, minimum height=1.05cm, text width=2.55cm},
+  guest/.style={draw, dashed, rounded corners, fill=orange!8, align=center,
+    font=\footnotesize, inner sep=4pt},
+  lab/.style={font=\footnotesize\itshape}]
+\node[face, fill=green!6, text width=11.6cm] (set) {%
+  \textbf{Set face (extensional, ambient).} Types are sets; the strongest
+  theory sits outermost and is still being chosen.};
+\node[face, fill=blue!3, text width=11.6cm, below=0.9cm of set, minimum height=3.3cm,
+  label={[anchor=north, yshift=-3pt]north:\textbf{Type face: weak core with
+  bubble-local definitional equality}}] (type) {};
+\node[bub] (b1) at ($(type.center)+(-4.4,-0.35)$) {default bubble\\
+  $\beta\,\iota\,\delta\,\eta$};
+\node[bub] (b2) at ($(type.center)+(-1.47,-0.35)$) {arithmetic\\
+  $n{+}0 \equiv n$};
+\node[bub] (b3) at ($(type.center)+(1.47,-0.35)$) {subset\\
+  proof\\irrelevance};
+\node[bub] (b4) at ($(type.center)+(4.4,-0.35)$) {HOL fibre\\
+  simple types\\$\beta\eta$};
+\node[face, fill=red!4, text width=11.6cm, below=0.9cm of type] (ops) {%
+  \textbf{Operational face (evaluator).} A shared value is computed once,
+  an effect happens once, \code{select}/\code{once} bound work and effects,
+  a paused search resumes only in its own world.};
+\draw[-{Stealth}, thick] (type.north) -- node[lab, right] {means} (set.south);
+\draw[-{Stealth}, thick] (ops.north) -- node[lab, right] {is typed by} (type.south);
+\node[face, fill=yellow!10, text width=11.6cm, below=0.9cm of ops] (gslt) {%
+  \textbf{Languages as GSLTs.} Every language (Prime, HE, PeTTa, the
+  $\rho$-calculus, each hosted logic) is presented by sorts, binders,
+  equations and rewrite rules.};
+\draw[-{Stealth}, thick] (gslt.north) -- node[lab, right] {rewrites run in}
+  (ops.south);
+\draw[-{Stealth}, thick, blue!60!black] (gslt.west) -- ++(-0.55,0)
+  |- node[lab, pos=0.25, left, align=right, text=blue!60!black]
+  {OSLF:\\native types,\\$\Diamond$ and $\Box$\\from the\\rewrites} (type.west);
+\node[guest, below=0.55cm of gslt, text width=11.6cm] (g) {%
+  Hosted logics beside Prime, linked by translations (biform routes) that state
+  what they preserve: native \code{hol:} profiles, the HOL Light guest
+  \code{hol-light:}, an LF kernel, MM0, Dedukti.};
+\end{tikzpicture}
+\caption{The three faces, the bubbles of the type face, and the hosted logics.
+Every language is presented as a GSLT: its rewrites run in the operational
+face, and from them OSLF derives native types and a modal logic in the type
+face. Every
+decidable or cheap fragment is a bubble carved inside the type face, and its good
+properties are theorems about that bubble.}
+\label{fig:prime-overview}
+\end{figure}
+
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{2.4cm}
+  >{\raggedright\arraybackslash}p{6.3cm}
+  >{\raggedright\arraybackslash}p{2.5cm}
+  >{\raggedright\arraybackslash}p{1.8cm}}
+\toprule
+Part & What is known & Status & Confidence\\
+\midrule
+\endhead
+Three faces & Every construct has a set face (meaning), a type face (checking)
+  and an operational face (running), with links between them. & Decided &
+  $\ge 90\%$\\
+Sets ambient & A type is a set; the extensional side is the strongest.
+  Membership is not yet connected to typing in the draft runtime. & Decided;
+  implementation open & $\ge 90\%$\\
+Identity & $J$ with its computation rule in the core; no global K or UIP; K
+  only in admitted regions. & Decided & $\ge 90\%$\\
+$\eta$ & Kept, and type-directed. & Decided & $\ge 90\%$\\
+HE's type engine & Prime never falls back to it. & Decided & $100\%$\\
+GSLT and OSLF & Every language is presented as a GSLT (sorts, binders,
+  equations, rewrites); OSLF derives its native types, predicates on terms with
+  $\Diamond$ and $\Box$ from the rewrite relation. Binding signatures are free
+  monads of context-indexed polynomial functors; collections as quotients are
+  proved for single languages, with the general case in progress. &
+  Proved pieces; design & $80\%$\\
+Hosting & Three layers with their own crossing contracts: conversion bubbles,
+  different logics, operational regions. A host preserves the counterexamples
+  of its guest and declares what it adds. & Decided & $\ge 90\%$\\
+Kernel shape & A weak core (syntax-directed dependent typing with identity
+  evidence) and bubbles that declare their conversion, each step justified by
+  a global proof. Soundness, widening, substitution and the weakness order are
+  proved; the version for full models of type theory and the decidability of
+  joins of bubbles are open. & Proved core; design recommendation & $75\%$\\
+Equality per bubble & Contextual by default: a paused read-only search that
+  resumes only in its own world cannot tell contextually equal programs apart.
+  & Proved for read-only searches; recommendation & $80\%$\\
+Propositions & In a set model an impredicative universe is
+  proof-irrelevant, so impredicative propositions are truth values and
+  proof-relevant propositions are predicative types; irrelevance is an opt-in
+  bubble. & Proved obstruction; recommendation & $70\%$\\
+The top & The kernel's universe rules do not depend on the set profile; the
+  top supplies universes as sets, at levels above $V_\omega$ exactly the
+  $V_\kappa$ for inaccessible $\kappa$. Which set theory is outermost
+  (hypersets are the stated direction) remains open. & Proved layering,
+  conditional on cofinal inaccessibles; top open & $80\%$ layering, $65\%$
+  top\\
+Operational contract & Twelve clauses: evaluation positions, binding,
+  quotation, held data positions, shared and independent choice, ignored
+  divergence, answer order, two kinds of effect, step/pause/resume, stale
+  dependencies, \code{once} versus \code{select}. Laws proved on the
+  specification cores; the C runtime is evidenced by fixtures, not proved. &
+  Proved specification; runtime evidenced & $85\%$\\
+HE types & HE indexes types by symbols, as in \code{(Vec \$t (S \$x))}, and
+  matches the indices syntactically; it has no binder naming an argument and no
+  conversion. Each fragment on which HE's checker is one well-defined typing
+  relation (static arrows, schemes, tuples, meta-types, \code{\%Undefined\%} as
+  the gradual unknown) is exactly typing in HOL, where every type is inhabited
+  and inhabitation is not truth. At run time the hosted HOL Light kernel
+  decides. The named binders of the \code{he-prime} profile are genuinely
+  dependent and need a dependent contract ($\lambda\Pi$). & Proved fragments;
+  runtime in progress; dependent part open & $75\%$\\
+Logic translations & The Grothendieck institution of a logic graph; borrowing
+  a prover is sound exactly when the translation is conservative; proofs travel
+  along routes. & Proved & $85\%$\\
+HOL and sets & Relativizing HOTG into the HOL core is exact; HOL Light into
+  HOTG and the HOL core into HOTG are not conservative, with the added
+  commitments named. & Proved in part; argued in part & $75\%$\\
+Evidence logic & The four-valued reading of evidence (true, false, both,
+  neither) is exactly double negation on the PLN evidence quantale. & Proved &
+  $90\%$\\
+Empty and null & No universal null. Zero answers is not a value; an error is a
+  value; an unknown call stays inert. Empty functions into different codomains
+  are equal as sets and equivalent, not equal, as types. & Proved pieces;
+  recommendation & $80\%$\\
+Names & ``Bubble type theory'' with a ``weak core''; the HOL profiles
+  \code{(hol:profile core)} and \code{(hol:profile megalodon-hotg)}. & Working
+  names & ---\\
+\bottomrule
+\end{longtable}
+}
+
+The weakest parts are the correspondence between the C runtime and the
+specification cores, the dependent half of HE's typing, and the choice of the
+outermost set theory. The strongest are the identity and $\eta$ decisions and
+the theorems that make bubbles and hosting precise.
 
 \section{The semantic envelope}
 
@@ -1425,6 +1578,7 @@ precedent \cite{BrownKaliszykPakHOTG}, not permission to identify all the
 extensional and intensional judgments globally.
 
 \subsection{Biform theories and GSLTs as the semantic transformation waist}
+\label{sec:biform-gslt}
 
 Farmer's biform theory separates a formal language and axioms from executable
 transformers, and attaches a meaning formula to each transformer
@@ -1942,6 +2096,402 @@ Qualification & soundness, completeness, consistency, and strength assumptions \
 This prevents an equation list, a rewrite strategy, a checker, and a semantic
 theory from being mistaken for one another.  It also prevents a large case table
 from masquerading as a language semantics.
+
+\section{Bubble type theory and hosted logics}
+\label{sec:bubbles-hosted}
+
+This section gathers the results that make two slogans of the semantic
+envelope precise. The first: definitional equality is local, so that a theory
+with very little global computation can still offer convenient computation
+where a program needs it. The second: other logics are hosted beside Prime and
+connected by translations that state what they preserve, rather than absorbed
+into one shared logic. Both rest on the GSLT presentation of languages
+(Section~\ref{sec:biform-gslt}): a bubble's declared steps form a small rewrite
+system read as definitional equality, OSLF derives the native types of each
+presented language from its rewrites, and a translation between logics is a
+biform route carrying a theory morphism, an operational cover and the transport
+of meanings. The Lean names cite the formal development; status
+labels follow Section~\ref{sec:digest}.
+
+\subsection{Bubbles: definitional equality declared where it is wanted}
+
+\begin{definition}[Bubble]
+A \emph{bubble} over the core judgments declares a set of directed steps
+between expressions. Its conversion $\equiv_b$ is the congruence generated by
+those steps. Typing in the bubble is global typing followed by one conversion:
+\[
+  \Gamma \vdash_b t : B \iff \exists A.\ \Gamma \vdash t : A \ \wedge\
+  A \equiv_b B .
+\]
+A step $l \mapsto r$ carries a \emph{justification}: a proof of the global
+identity $\mathrm{Id}\,l\,r$.
+\end{definition}
+
+The global layer, the \emph{weak core}, is the bubble with no steps: typing is
+syntax-directed, $J$ and its computation rule provide identity evidence, and
+nothing computes inside a type unless a proof says so. Today's conversion
+($\beta$, $\iota$, $\delta$ and type-directed $\eta$) becomes the \emph{default
+bubble}, which is the one most programs use.
+
+\begin{proposition}[Coherence of bubbles; proved]
+\leavevmode
+\begin{enumerate}[leftmargin=*]
+\item If every declared step of a bubble is justified, every conversion of the
+  bubble is a global identity (\leanname{Bubbles.sound}). A bubble with an
+  unjustified step admits no such translation
+  (\leanname{UnjustifiedControl.unjustified_step_not_sound}).
+\item A map of declared steps maps conversions, functorially
+  (\leanname{Bubbles.widen}, \leanname{widen_refl}, \leanname{widen_comp}),
+  and conversions are stable under substitution whenever the steps are
+  (\leanname{Bubbles.substitute}).
+\item Typing in a bubble is global typing followed by one conversion, and the
+  empty bubble is the global judgment (\leanname{hasTypeIn_iff},
+  \leanname{hasTypeIn_none_iff}).
+\end{enumerate}
+\end{proposition}
+
+Figure~\ref{fig:bubble-crossing} shows what entering and leaving a bubble
+means for a vector of length $n+0$. Inside an arithmetic bubble whose steps are
+the recursion equations of addition, $\mathsf{Vec}\,(n+0)$ and
+$\mathsf{Vec}\,n$ are the same type. Outside it, the program carries one
+transport along a proof of $n+0 = n$.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, align=center, font=\small, inner sep=5pt},
+  arr/.style={-{Stealth}, thick}]
+\node[draw, rounded corners=10pt, fill=blue!6, minimum width=7.6cm,
+  minimum height=2.5cm] (bub) at (0,0) {};
+\node[font=\small\bfseries] at (0,0.9) {arithmetic bubble};
+\node[box, fill=white] (in1) at (-2.1,0.05) {$v : \mathsf{Vec}\,(n{+}0)$};
+\node[box, fill=white] (in2) at (2.1,0.05) {$v : \mathsf{Vec}\,n$};
+\draw[arr] (in1) -- node[above, font=\footnotesize] {$\equiv_b$} (in2);
+\node[font=\footnotesize] at (0,-0.8) {no proof term: the checker computes
+  $n{+}0 \mapsto n$};
+\node[box] (out1) at (-4.0,-3.5) {$v : \mathsf{Vec}\,(n{+}0)$};
+\node[box] (out2) at (2.9,-3.5) {$\mathsf{transport}\,(\mathit{addZero}\,n)\,v :
+  \mathsf{Vec}\,n$};
+\draw[arr] (out1) -- (out2);
+\node[font=\footnotesize, align=center] at (-0.55,-4.45) {weak core: an
+  explicit transport along $\mathit{addZero}\,n : \mathrm{Id}\,(n{+}0)\,n$};
+\draw[arr, dashed] (bub.east) to[out=-20, in=80] node[right, pos=0.4,
+  font=\footnotesize, align=left] {leaving the bubble:\\the conversion
+  becomes\\the transport} (out2.north east);
+\end{tikzpicture}
+\caption{Entering and leaving an arithmetic bubble. Inside, the conversion is
+free; outside, the same step is an explicit transport whose proof is the step's
+justification.}
+\label{fig:bubble-crossing}
+\end{figure}
+
+The arithmetic bubbles are fully characterized, positive and negative cases
+included (Table~\ref{tab:vec-bubbles}). \leanname{arith} contains the two
+recursion equations of addition; \leanname{arithPlus} adds the left unit
+$0 + t \mapsto t$, justified by induction.
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{lccc}
+\toprule
+Judgment & global (weak core) & \leanname{arith} & \leanname{arithPlus}\\
+\midrule
+$v : \mathsf{Vec}\,(n{+}0)$ given $v : \mathsf{Vec}\,n$ & no & yes & yes\\
+$v : \mathsf{Vec}\,(0{+}n)$ given $v : \mathsf{Vec}\,n$ & no & no & yes\\
+$v : \mathsf{Vec}\,(n{+}1)$ given $v : \mathsf{Vec}\,n$ & no & no & no\\
+\bottomrule
+\end{tabular}
+\caption{Which vector judgments each bubble accepts
+(\leanname{vec_addZero_inside}, \leanname{vec_addZero_not_global},
+\leanname{vec_zeroAdd_plus}, \leanname{vec_zeroAdd_not_arith},
+\leanname{vec_succ_not_inside}). Each bubble's conversion is decided by a
+normal form (\leanname{Arith.conv_iff_norm}).}
+\label{tab:vec-bubbles}
+\end{table}
+
+The draft runtime realizes two bubbles. An arithmetic bubble arises when
+addition is admitted with its equations in a theory space. A subset bubble
+arises from \code{(hol:irrelevant F J)}, which makes all proofs of $F\,x$
+definitionally equal. It is admitted only when the justification $J$ proves
+$\Pi x\,p\,q.\ \mathrm{Id}\,(F\,x)\,p\,q$; an unjustified declaration is not
+admitted, and its verdict is undetermined, with the reason stated. A non-degenerate control remains: the
+pair $(0, p)$ is still distinct from $(2, q)$.
+
+\subsection{Why ``weak'': the weakness order on bubbles}
+
+Read a bubble's steps as equations, and call a congruence of the core's term
+syntax in which they hold on the nose a \emph{strict model} of the bubble.
+Bennett's weakness of a theory is the size of its class of models
+\cite{BennettWeakestNotShortest}; Goertzel's quantale weakness generalizes the
+count.
+
+\begin{theorem}[Weakness of bubbles; proved]
+\leavevmode
+\begin{enumerate}[leftmargin=*]
+\item A bubble's conversion is exactly what its steps entail over strict models
+  (\leanname{convertible_iff_entails}).
+\item One bubble has fewer strict models than another exactly when it converts
+  more (\leanname{models_equations_subset_iff}); every monotone measure of
+  model classes, Bennett's count included, falls as conversion grows
+  (\leanname{weaknessOf_le_of_convertible}).
+\item The weak core is the weakest bubble (\leanname{global_weakest}), strictly
+  weaker than any bubble converting two distinct expressions
+  (\leanname{models_ssubset_noSteps}).
+\item The weakest bubble sufficient for a program declares exactly the
+  program's conversion obligations (\leanname{isWeakestAdmissible_obligations},
+  \leanname{obligationBubble_types}, \leanname{obligationBubble_weakest}).
+\item Over a finite catalogue of interpretations, among bubbles correct on what
+  has been observed, the chance of remaining compatible with an unknown
+  exchangeable future is monotone in weakness
+  (\leanname{bubble_survival_mono}, \leanname{survival_antitone_in_conversion}).
+\end{enumerate}
+\end{theorem}
+
+So ``use the weakest bubble that suffices'' is the choice of the weakest
+sufficient hypothesis. Three limits keep the slogan honest. A justified
+bubble adds nothing to the propositional theory
+(\leanname{justified_bubble_propositionally_invisible}): weakness lives in
+the judgmental layer only. The order is stated model by model, and may vanish
+up to weak equivalence of models \cite{BocquetCoherence,OttenSpadettoPathCategories}.
+The obligation bubble is not stable under substitution
+(\leanname{obligation_not_substitution_stable}).
+
+\begin{remark}[Names]
+``Weak Type Theory'' already names an unrelated system for mathematical
+vernacular \cite{KamareddineNederpeltWTT}, and theories with no judgmental
+computation are called objective or axiomatic type theories. The working name
+here is \emph{bubble type theory}, with \emph{weak core} for the global layer,
+which is exactly the layer the theorem above shows to be weakest.
+\end{remark}
+
+\begin{remark}[Prior art]
+Varying judgmental equality by modal classification goes back to Pfenning's
+intensional, extensional and irrelevant modes \cite{PfenningIntensionalityLICS}.
+Multimodal type theory varies context structure per mode, but every mode keeps
+the same conversion \cite{GratzerKavvosNuytsBirkedalMTT}; the extension needed
+here makes $\beta$ and $\eta$ mode-indexed and adds an identity former as the
+global target. The closest theorem for the crossing discipline translates
+rewrite rules into axioms and conversion into transport, conservatively
+\cite{BlotDowekTraversieWinterhalter}. Two-level type theory and observational
+equality are candidate bubbles of the same kind
+\cite{AltenkirchCapriottiKraus2LTT,AltenkirchMcBrideOTT}.
+\end{remark}
+
+\subsection{The empty top and the inconsistent-top method}
+
+In the theory--model Galois connection, the theory of all sentences is the
+top. Under classical satisfaction it has no model. If the candidate structures
+include a degenerate one, a structure where everything holds, then that
+structure is the top's only model, and no axiom can carve it away: excluding it
+means choosing a different universe of structures. The model that is actually
+useful sits between the two: a \emph{permissive} model in which every type is
+inhabited while conversion stays non-degenerate.
+
+The same picture gives a method for metatheory. Syntactic properties such as
+$\Pi$-injectivity and subject reduction do not need consistency, so they can be
+proved for a maximally permissive, even inconsistent, theory with a universe
+$U : U$ through a domain-theoretic model \cite{CoquandDomainSemantics}. The
+method has been ported to Lean's own theory \cite{CarneiroLean4Lean}. For Prime
+its contract is: separations transfer to every carved fragment; closure results
+such as subject reduction transfer only along a conservative embedding;
+consistency and normalization never transfer, and each fragment needs its own
+model with an empty type.
+
+\subsection{Hosted logics and translations between them}
+
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.6cm}
+  >{\raggedright\arraybackslash}p{5.2cm}
+  >{\raggedright\arraybackslash}p{5.2cm}}
+\toprule
+Layer & What varies & What a crossing carries\\
+\midrule
+Conversion bubbles & which computations count as definitional equality,
+  within shared judgments & a justification for each step; substitution and
+  transport laws\\
+Different logics & judgments, equality, rules, axioms and models & an explicit
+  interpretation that states what it preserves\\
+Operational regions & machines, representations, scheduling, observation &
+  preservation of the declared observable behaviour\\
+\bottomrule
+\end{tabular}
+\caption{Three layers, three crossing contracts.}
+\label{tab:three-layers}
+\end{table}
+
+A host must preserve the distinctions and counterexamples of its guest, not
+only its truths, and must advertise any commitment it adds. The requirement is
+not cosmetic: a host can preserve every truth of a guest and still create new
+ones when its interpretation represents too few guest models
+(\leanname{InstitutionBridge}). The institution machinery makes the
+requirement checkable \cite{GoguenBurstallInstitutions}.
+
+\begin{theorem}[Hosting; proved]
+\leavevmode
+\begin{enumerate}[leftmargin=*]
+\item A logic graph flattens into its Grothendieck institution, with a
+  canonical comorphism from each node that preserves and reflects entailment
+  (\leanname{GrothendieckInstitution}) \cite{DiaconescuGrothendieckInstitutions}.
+\item For a sound and complete target, borrowing its prover through a
+  comorphism is sound exactly when the comorphism is conservative
+  (\leanname{borrow_sound_iff_conservative}) \cite{CerioliMeseguerBorrow};
+  borrowing along a collapsing translation derives a true conclusion from
+  false premises (\leanname{Control.collapse_borrows_false_conclusion}).
+\item Proof-carrying routes compose, and certificates return only along
+  conservative routes (\leanname{TheoryGraphProofTransport}).
+\item Route choice prefers a conservative route, then the route adding the
+  fewest commitments, then the weakest; two optimal routes can be
+  incomparable (\leanname{Control.incomparable_optima}).
+\end{enumerate}
+\end{theorem}
+
+The native higher-order logic has its own namespace. A theory space selects it
+with \code{(hol:profile core)} and is judged with \code{hol:}; the set theory
+HOTG is HOL with set axioms and is selected with
+\code{(hol:profile megalodon-hotg)}, never by default
+\cite{BrownKaliszykPakHOTG}. The hosted HOL Light kernel keeps its own
+operations under \code{hol-light:}, and \code{set:} names the set face only.
+Figure~\ref{fig:hol-set-routes} shows the routes between them that run today.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  node distance=3.4cm,
+  logic/.style={draw, rounded corners, thick, align=center, font=\small,
+    minimum width=2.6cm, minimum height=0.9cm},
+  cons/.style={-{Stealth}, very thick, green!45!black},
+  ncons/.style={-{Stealth}, thick, red!65!black, dashed},
+  unk/.style={-{Stealth}, thick, black!60, densely dotted}]
+\node[logic, fill=orange!8] (hl) {HOL Light\\\code{hol-light:} guest};
+\node[logic, fill=blue!6, right=of hl] (core) {HOL core\\\code{(hol:profile core)}};
+\node[logic, fill=green!6, right=of core] (hotg) {HOTG\\\code{megalodon-hotg}};
+\draw[unk] (hl) -- node[above, font=\footnotesize] {not yet proved}
+  node[below, font=\footnotesize, align=center] {adds propext,\\funext,
+  axioms} (core);
+\draw[ncons] (hl.north) to[bend left=25] node[above, font=\footnotesize]
+  {not conservative: HOTG proves HOL Light consistent} (hotg.north);
+\draw[ncons] ([yshift=5pt]core.east) -- node[above, font=\footnotesize,
+  align=center] {inclusion:\\not conservative} ([yshift=5pt]hotg.west);
+\draw[cons] ([yshift=-5pt]hotg.west) -- node[below, font=\footnotesize,
+  align=center] {relativization:\\exact} ([yshift=-5pt]core.east);
+\end{tikzpicture}
+\caption{Routes between HOL and set theory that run in the draft runtime.
+Solid: conservative (proved). Dashed: not conservative, with the added
+commitments named. Dotted: conservativity not yet proved.}
+\label{fig:hol-set-routes}
+\end{figure}
+
+The same module is importable from the other dialects: \code{import hol} gives
+Prime, HE and PeTTa programs the native HOL judgments, each over an explicit
+theory space and with answers returned as data. The HOL Light guest is not
+offered in HE until a translation into HE is qualified.
+
+\subsection{HE's types grounded in HOL}
+
+HE's types can mention symbols that also name terms: its own tests type
+length-indexed vectors with \code{(: Cons (-> \$t (Vec \$t \$x) (Vec \$t (S \$x))))}.
+The indices are matched by syntactic unification. HE has no binder that names an
+argument, so \code{(: remember (-> Fact (WitnessOf \$p)))} gives
+\code{(remember fact)} the type \code{(WitnessOf \$p)} for every \code{\$p};
+and it has no conversion, so \code{(Vec Nat (plusZ Z))} does not match
+\code{(Vec Nat Z)} even when \code{(plusZ \$n)} reduces to \code{\$n}. Read as
+propositions, HE's types are all inhabited: \code{if} has the type
+\code{(-> Bool Atom Atom \$t)}, so \code{(if True Z Z)} is accepted wherever any
+type is expected, including a declared type with no constructors. This is the
+situation of a programming language with general recursion, not a paradox:
+\code{Type} itself has the unknown type \code{\%Undefined\%}, not \code{Type}.
+Statically accepted terms are checked again at run time; \code{(needEmpty (if
+True Z Z))}, with \code{needEmpty} expecting the constructor-free type
+\code{Empty}, is accepted statically and evaluates to
+\code{(Error Z (BadType Empty Nat))}, as gradual typing prescribes.
+
+On a fragment, HE's checker is one well-defined typing relation, and each such
+fragment is exactly HOL typing, where every type denotes a non-empty set and the
+truth of a proposition is a theorem of type \code{bool}, not the inhabitation of
+a type: saturated applications of declared static arrows
+(\leanname{hol_iff_exact}), type variables as polymorphic constants with HE's
+answer as the principal scheme (\leanname{Schematic.schematic_hol_iff_exact}),
+tuples as products (\leanname{Tuples.reference_iff_tupleHOLTyped}), meta-types
+as a classification theory (\leanname{MetaTypes.metaAccepts_iff_entailed}), and
+\code{\%Undefined\%} as the unknown type of abstract gradual typing
+(\leanname{Gradual.corePlusR2Consistent_iff_top}) \cite{GarciaClarkTanterAGT}.
+Prime answers HE-style declarations from a stable HOL contract checked by the
+hosted HOL Light kernel; a Prime candidate may implement that contract only as a
+replaceable backend with proved correspondence. A failed check inside the
+fragments is a genuine refutation; outside them the answer is undetermined and
+never a reason to prune an alternative.
+
+The \code{he-prime} profile extends HE with named binders, as in
+\code{(-> (: \$p Fact) (WitnessOf \$p))}, for which upstream HE gives no type.
+These are genuinely dependent and lie outside every simple fragment. The proposed treatment is a stable $\lambda\Pi$
+contract, of which the HOL contract is the simple slice, checked by a hosted
+logical-framework kernel. Until then such declarations are left undetermined.
+
+\subsection{Demand, sharing and effects}
+
+The operational contract requires that a shared value be computed once, that an
+effect happen once, and that a bounded observation bound both work and effects.
+Figure~\ref{fig:select-timeline} contrasts an eager and a bounded run of
+\code{(select 2 (gen))}, where each of four alternatives writes an atom before
+answering.
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[x=1.45cm, y=0.9cm,
+  ev/.style={circle, draw, inner sep=1.3pt, font=\scriptsize},
+  lab/.style={font=\small, anchor=east}]
+\node[lab] at (-0.2,1) {eager, then truncate};
+\node[lab] at (-0.2,0) {bounded at $k=2$};
+\foreach \i in {1,...,4} {
+  \node[ev, fill=red!20] (e\i) at (\i,1) {w\i};
+}
+\node[font=\scriptsize, right] at (4.4,1) {four writes; answer $(1\ 2)$};
+\foreach \i in {1,2} {
+  \node[ev, fill=green!20] (b\i) at (\i,0) {w\i};
+}
+\draw[thick] (2.5,-0.35) -- (2.5,0.35);
+\node[font=\scriptsize, right] at (2.6,0) {stop: two answers held; two writes};
+\draw[-{Stealth}] (0.6,-0.7) -- node[below, font=\scriptsize] {time} (5.2,-0.7);
+\end{tikzpicture}
+\caption{Bounded selection. A bounded run performs exactly the prefix of the
+eager run's effects up to its $k$-th answer, and an infinite producer
+terminates.}
+\label{fig:select-timeline}
+\end{figure}
+
+Three runtime defects of this kind were found and removed in the draft runtime.
+Each now has a route-agreement fixture, so the default route, the reference
+route and the fuel-bounded evaluator must agree, and each has a mutation that
+reintroduces it and is killed:
+\begin{enumerate}[leftmargin=*]
+\item selection of $k \ge 2$ answers ran every alternative's effects before
+  truncating, and did not terminate on infinite producers
+  (\leanname{bounded_selection_stop}, \leanname{bounded_selection_effects});
+\item a shared pending value reaching two strict operands of a primitive was
+  computed twice (\leanname{strict_operand_sharing});
+\item a binding whose closed source produced no answer ran that source twice
+  (\leanname{empty_source_once}).
+\end{enumerate}
+The retained search, which can pause and resume, now admits producers with
+effects: a residual keeps the world position at which it paused, and a write by
+anyone else before resumption refuses the resumption.
+
+\subsection{Open decisions}
+
+\begin{enumerate}[leftmargin=*]
+\item The stable $\lambda\Pi$ contract for dependent HE declarations, and the
+  hosted kernel that checks it.
+\item The names: ``bubble type theory'', ``weak core'', and the word for the
+  logic-only HOL profile.
+\item Bounded \code{select} and \code{once} in HE's extended profiles, which are
+  present but eager.
+\item The decidability of joins of decidable bubbles, and the weakness order
+  for full models of type theory rather than term congruences.
+\item A fixed bound on contextual frame identities in the runtime, which
+  violates the requirement that no implementation limit become part of the
+  language.
+\end{enumerate}
 
 \section{Prime's planned CBPV basis and qualified evaluation strategies}
 
@@ -11538,6 +12088,66 @@ V. F. Turchin.
 \newblock \emph{ACM Transactions on Programming Languages and Systems}
   8(3):292--325, 1986.
 \newblock \url{https://doi.org/10.1145/5956.5957}.
+
+\bibitem{BennettWeakestNotShortest}
+M.~T. Bennett.
+\newblock The optimal choice of hypothesis is the weakest, not the shortest.
+\newblock In \emph{Artificial General Intelligence (AGI 2023)}, LNCS 13921, 2023.
+\newblock arXiv:2301.12987.
+
+\bibitem{OttenSpadettoPathCategories}
+D.~Otten and M.~Spadetto.
+\newblock The biequivalence of path categories and axiomatic Martin-L\"of type
+  theories.
+\newblock arXiv:2503.15431, 2025.
+
+\bibitem{KamareddineNederpeltWTT}
+F.~Kamareddine and R.~Nederpelt.
+\newblock A refinement of de~Bruijn's formal language of mathematics.
+\newblock \emph{Journal of Logic, Language and Information}, 13(3):287--340,
+  2004.
+
+\bibitem{PfenningIntensionalityLICS}
+F.~Pfenning.
+\newblock Intensionality, extensionality, and proof irrelevance in modal type
+  theory.
+\newblock In \emph{Proceedings of the 16th IEEE Symposium on Logic in Computer
+  Science (LICS 2001)}, pages 221--230, 2001.
+
+\bibitem{BlotDowekTraversieWinterhalter}
+V.~Blot, G.~Dowek, T.~Traversi\'e, and T.~Winterhalter.
+\newblock From rewrite rules to axioms in the $\lambda\Pi$-calculus modulo
+  theory.
+\newblock In \emph{Foundations of Software Science and Computation Structures
+  (FoSSaCS 2024)}, LNCS 14575, pages 3--23, 2024.
+
+\bibitem{CoquandDomainSemantics}
+T.~Coquand.
+\newblock $\Pi$-injectivity and subject reduction for $U : U$, by domain theory.
+\newblock Agda formalisation, 2026.
+\newblock \url{https://github.com/coquand/domain-semantics}.
+
+\bibitem{CarneiroLean4Lean}
+M.~Carneiro.
+\newblock Lean4Lean: Verifying a typechecker for Lean, in Lean.
+\newblock arXiv:2403.14064, 2024.
+
+\bibitem{DiaconescuGrothendieckInstitutions}
+R.~Diaconescu.
+\newblock Grothendieck institutions.
+\newblock \emph{Applied Categorical Structures}, 10(4):383--402, 2002.
+
+\bibitem{CerioliMeseguerBorrow}
+M.~Cerioli and J.~Meseguer.
+\newblock May {I} borrow your logic? ({T}ransporting logical structures along
+  maps).
+\newblock \emph{Theoretical Computer Science}, 173(2):311--347, 1997.
+
+\bibitem{GarciaClarkTanterAGT}
+R.~Garcia, A.~M. Clark, and \'E.~Tanter.
+\newblock Abstracting gradual typing.
+\newblock In \emph{Proceedings of the 43rd ACM SIGPLAN Symposium on Principles
+  of Programming Languages (POPL 2016)}, pages 429--442, 2016.
 
 \end{thebibliography}
 

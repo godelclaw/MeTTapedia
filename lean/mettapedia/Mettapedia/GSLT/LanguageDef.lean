@@ -127,6 +127,7 @@ import Mettapedia.GSLT.LanguageDef.ScopedMatchingControls
 import Mettapedia.GSLT.LanguageDef.BoundPrefixProjectionControls
 import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlans
 import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlanControls
+import Mettapedia.GSLT.LanguageDef.ProofSystemExecution
 
 /-!
 # Compositional language definitions

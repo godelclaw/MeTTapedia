@@ -1,5 +1,6 @@
 import Mathlib.Data.List.Forall2
 import Mathlib.Logic.Relation
+import Mathlib.Logic.Function.Iterate
 
 /-!
 # Ordered relations between nondeterministic machines
@@ -26,6 +27,9 @@ compared on their actual states, not on answer sets or endpoints.
 * **Functional instances** (`OrderedSimulation.ofMap`,
   `OrderedSimulation.runFrontier_map`): a map that commutes with the step lists
   and the halting test is the graph special case.
+* **Depth-first prefixes** (`OrderedSystem.expandFirst`,
+  `OrderedSimulation.expandFirst_iterate`): the same simulation transports
+  every unfinished prefix, retaining stuck occurrences and ordered alternatives.
 -/
 
 set_option autoImplicit false
@@ -55,6 +59,39 @@ def runFrontier : ℕ → List State → List State
   | 0, states => states
   | fuel + 1, states =>
       if states.all system.halted then states else runFrontier fuel (states.flatMap system.advance)
+
+/-- Expand the first running occurrence, retaining the halted prefix and the
+remaining alternatives in order. As in `runFrontier`, a running occurrence
+without successors stays visible; it cannot disappear as a successful return. -/
+def expandFirst : List State → List State
+  | [] => []
+  | state :: rest =>
+      if system.halted state then state :: expandFirst rest
+      else system.advance state ++ rest
+
+theorem expandFirst_append_of_all_halted {left : List State}
+    (halted : left.all system.halted = true) (right : List State) :
+    system.expandFirst (left ++ right) = left ++ system.expandFirst right := by
+  induction left with
+  | nil => rfl
+  | cons head tail ih =>
+      simp only [List.all_cons, Bool.and_eq_true] at halted
+      simp [expandFirst, halted.1, ih halted.2]
+
+theorem expandFirst_append_of_running {left : List State}
+    (running : left.all system.halted = false) (right : List State) :
+    system.expandFirst (left ++ right) = system.expandFirst left ++ right := by
+  induction left with
+  | nil => simp at running
+  | cons head tail ih =>
+      by_cases halted : system.halted head = true
+      · simp only [List.all_cons, halted, Bool.true_and] at running
+        simp [expandFirst, halted, ih running]
+      · simp [expandFirst, halted]
+
+theorem expandFirst_of_all_halted {states : List State}
+    (halted : states.all system.halted = true) : system.expandFirst states = states := by
+  simpa [expandFirst] using system.expandFirst_append_of_all_halted halted []
 
 /-- The complete frontier, including halted and pending occurrences, is the
 residual. Splitting a budget continues that frontier rather than reloading its
@@ -167,6 +204,32 @@ theorem all_halted (simulation : OrderedSimulation source target related) {state
   | nil => rfl
   | cons head _ ih => simp [List.all_cons, simulation.halted head, ih]
 
+/-- The first running occurrence is selected at the same position on both
+sides, including equal-looking alternatives at distinct positions. -/
+theorem expandFirst (simulation : OrderedSimulation source target related)
+    {states : List S} {states' : List T} (lists : List.Forall₂ related states states') :
+    List.Forall₂ related (source.expandFirst states) (target.expandFirst states') := by
+  induction lists with
+  | nil => exact .nil
+  | cons head rest ih =>
+      simp only [OrderedSystem.expandFirst, simulation.halted head]
+      split
+      · exact .cons head ih
+      · exact List.rel_append (simulation.advance head) rest
+
+/-- Ordered simulation preserves every depth-first prefix, without requiring
+that either computation terminates. -/
+theorem expandFirst_iterate (simulation : OrderedSimulation source target related)
+    (count : ℕ) {states : List S} {states' : List T}
+    (lists : List.Forall₂ related states states') :
+    List.Forall₂ related ((source.expandFirst)^[count] states)
+      ((target.expandFirst)^[count] states') := by
+  induction count generalizing states states' with
+  | zero => exact lists
+  | succ count ih =>
+      simp only [Function.iterate_succ_apply]
+      exact ih (simulation.expandFirst lists)
+
 /-- **Complete frontiers are related at every fuel**, position by position. -/
 theorem runFrontier (simulation : OrderedSimulation source target related) (fuel : ℕ)
     {states : List S} {states' : List T} (lists : List.Forall₂ related states states') :
@@ -261,6 +324,23 @@ theorem ofMap (map : S → T) (steps : ∀ state, target.step (map state) = (sou
     rw [steps, List.forall₂_map_right_iff]
     exact List.forall₂_same.mpr fun _ _ => rfl
 
+private theorem graph_frontier_eq (map : S → T) {left : List S} {right : List T}
+    (lists : List.Forall₂ (fun state state' => state' = map state) left right) :
+    right = left.map map := by
+  induction lists with
+  | nil => rfl
+  | cons head _ ih => rw [head, ih, List.map_cons]
+
+/-- The graph instance transports every depth-first prefix. -/
+theorem expandFirst_iterate_map (map : S → T)
+    (steps : ∀ state, target.step (map state) = (source.step state).map map)
+    (halts : ∀ state, target.halted (map state) = source.halted state) (count : ℕ)
+    (states : List S) :
+    (target.expandFirst)^[count] (states.map map) =
+      ((source.expandFirst)^[count] states).map map := by
+  exact graph_frontier_eq map ((ofMap map steps halts).expandFirst_iterate count
+    (List.forall₂_map_right_iff.mpr (List.forall₂_same.mpr fun _ _ => rfl)))
+
 /-- The graph instance recovers the functional frontier equation. -/
 theorem runFrontier_map (map : S → T)
     (steps : ∀ state, target.step (map state) = (source.step state).map map)
@@ -270,13 +350,7 @@ theorem runFrontier_map (map : S → T)
   have related := (ofMap map steps halts).runFrontier fuel
     (states := states) (states' := states.map map)
     (List.forall₂_map_right_iff.mpr (List.forall₂_same.mpr fun _ _ => rfl))
-  have functional : ∀ {left : List S} {right : List T},
-      List.Forall₂ (fun state state' => state' = map state) left right → right = left.map map := by
-    intro left right lists
-    induction lists with
-    | nil => rfl
-    | cons head _ ih => rw [head, ih, List.map_cons]
-  exact functional related
+  exact graph_frontier_eq map related
 
 end OrderedSimulation
 

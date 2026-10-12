@@ -32,7 +32,7 @@ def resume (program : Program) (fuel : Nat) : Outcome → Outcome
     (state : Effects.State) (reason : Effects.Fault) (frames : List Frame)
     (input output : List Atom) :
     run program fuel { state, control := .fault reason, frames, input, output } =
-      .fault reason := by
+      .fault reason { state, control := .fault reason, frames, input, output } := by
   cases fuel <;> rfl
 
 /-- Splitting an execution budget preserves the complete observation, not

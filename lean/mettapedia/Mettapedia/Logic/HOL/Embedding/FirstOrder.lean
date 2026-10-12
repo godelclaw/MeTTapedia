@@ -98,6 +98,30 @@ def mkApps {τ : Ty BaseTy} :
   | _, k + 1, t, v =>
       mkApps (τ := τ) (Γ := _) (k := k) (.app t (v 0)) (fun i => v i.succ)
 
+/-- Curried application commutes with the shared typed substitution action. -/
+theorem subst_mkApps {Γ Δ : Ctx BaseTy} {τ : Ty BaseTy}
+    (substitution : Subst (Const L) Γ Δ) :
+    ∀ {k : Nat} (head : Term (Const L) Γ (iterArrow k indTy τ))
+      (arguments : Fin k → Term (Const L) Γ indTy),
+      subst substitution (mkApps head arguments) =
+        mkApps (subst substitution head) (fun index => subst substitution (arguments index))
+  | 0, _, _ => rfl
+  | k + 1, head, arguments =>
+      subst_mkApps substitution (k := k) (.app head (arguments 0))
+        (fun index => arguments index.succ)
+
+/-- Mapping an argument list preserves the arity of its curried head. -/
+theorem mkApps_map {α β : Type*} {Γ : Ctx BaseTy} {τ : Ty BaseTy}
+    (head : (arity : Nat) → Term (Const L) Γ (iterArrow arity indTy τ))
+    (arguments : List α) (transform : α → β) (value : β → Term (Const L) Γ indTy) :
+    mkApps (head (arguments.map transform).length)
+        (fun index => value (getElem (arguments.map transform) index.val index.isLt)) =
+      mkApps (head arguments.length) (fun index => value (transform arguments[index.val])) := by
+  induction arguments generalizing head with
+  | nil => rfl
+  | cons argument arguments ih =>
+      exact ih (fun arity => .app (head (arity + 1)) (value (transform argument)))
+
 end Term
 
 section Translation

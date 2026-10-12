@@ -483,6 +483,10 @@ structure SetDeletion (language : LanguageDef) (Γ : List String) (sort element 
     (parameterIndex segmentStart : Nat) : Prop where
   sameRule : source.1 = target.1
   sameCounts : source.2.counts = target.2.counts
+  /-- Shorten the chosen set parameter by one and leave every other length. -/
+  lengthsDrop :
+    target.2.lengths =
+      source.2.lengths.set parameterIndex (source.2.lengths.getD parameterIndex 0 - 1)
   lengthDrop :
     ((indexedSignature language).arity target).length + 1 =
       ((indexedSignature language).arity source).length
@@ -552,6 +556,17 @@ inductive TreeCong (language : LanguageDef) :
       (fit : start + length ≤ ((indexedSignature language).arity operator).length)
       (kind : CollType)
       (bagOrSet : kind = .hashBag ∨ kind = .hashSet)
+      (parameterIndex : Nat)
+      (parameterBound : parameterIndex < operator.1.1.params.length)
+      (parameterShape :
+        baseCollection? (operator.1.1.params.get ⟨parameterIndex, parameterBound⟩) =
+          some (kind, element))
+      (segmentStart :
+        start =
+          slotCount (operator.1.1.params.take parameterIndex)
+            (operator.2.counts.take parameterIndex)
+            (operator.2.lengths.take parameterIndex))
+      (segmentLength : length = operator.2.lengths.getD parameterIndex 0)
       (uniform : ∀ index : Fin length,
         ((indexedSignature language).arity operator).get
             ⟨start + index.val, by omega⟩ = ([], element))

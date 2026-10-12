@@ -273,9 +273,12 @@ theorem cached_consumer_run {world : ServiceWorld family} {cell : CellId}
         .halted (consumeOutcome family expected (.value packet)),
         consumerFinishWork ((work.bump 0 0 0 0).bump 1 0 1 0)⟩ := by
   apply UniqueSteps.cons (by rfl)
-  exact UniqueSteps.trans (spec family producer)
-    (cached_force_returns family producer [.resume expected] (work.bump 0 0 0 0) cached)
-    (resume_and_halt family producer _ expected (.value packet) _)
+  apply UniqueSteps.trans (rightLength := 2) (spec family producer)
+    (NeedCacheLaws.force_cached_value_resume (spec family producer) world cell expected []
+      (work.bump 0 0 0 0) cached)
+  apply UniqueSteps.cons (by rfl)
+  apply UniqueSteps.cons (by rfl)
+  exact UniqueSteps.refl _
 
 /-- Exact frontier equality for a first consumer demand, not only reachability. -/
 theorem fresh_consumer_runFrontier {world : ServiceWorld family} {cell : CellId}

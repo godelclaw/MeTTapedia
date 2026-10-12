@@ -208,6 +208,31 @@ theorem stutter_realigns :
       List.Forall₂ stutter (source.runFrontier 2 [.root]) (target.runFrontier (2 * 2) [.root]) :=
   ⟨.cons trivial (.cons trivial .nil), .cons trivial (.cons trivial .nil)⟩
 
+/-- Equal numeric budgets need not expose equal prefixes under different
+schedules. The unserviced right branch remains present in the depth-first view. -/
+theorem depth_first_retains_unserviced_alternative :
+    source.expandFirst^[2] [.root] = [.leftDone, .right] ∧
+      source.runFrontier 2 [.root] = [.leftDone, .rightDone] ∧
+      source.expandFirst^[2] [.root] ≠ source.runFrontier 2 [.root] := by
+  decide +kernel
+
+/-- Separate equal-looking source occurrences stay separate throughout the
+common depth-first simulation, not only once they have both completed. -/
+theorem depth_first_duplicate_transport (count : Nat) :
+    chain.expandFirst^[count] [none, none] =
+      (single.expandFirst^[count] [false, false]).map relabel :=
+  OrderedSimulation.expandFirst_iterate_map (source := single) (target := chain) relabel
+    (by intro state; cases state <;> rfl)
+    (by intro state; cases state <;> rfl) count [false, false]
+
+/-- A nonhalting dead end cannot disappear from the frontier. In particular
+it cannot expose a later answer as though the first occurrence had finished. -/
+theorem depth_first_preserves_stuck :
+    let blocked : OrderedSystem Bool := { step := fun _ => [], halted := id }
+    blocked.expandFirst [false, true] = [false, true] ∧
+      blocked.expandFirst [false, true] ≠ [true] := by
+  decide +kernel
+
 /-! ## Independently serviced retained boundaries -/
 
 open ScheduledFrontier

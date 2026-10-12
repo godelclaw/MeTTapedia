@@ -1,4 +1,5 @@
 import Mettapedia.Machines.Cursor.Sequence
+import Mettapedia.Machines.SnapshotBatch
 
 /-!
 # A resumable fold client for a pull protocol
@@ -715,6 +716,96 @@ def resumeCall (allowance : Nat)
         previous.2.1.accepted previous.2.2
       (previous.1+later.1,later.2)
 
+
+/-- Publication allowance bounds successful acknowledgments, independently of
+producer inspections and the provider's declared operation charge. -/
+theorem fromCallbacks_acceptance_bound (allowance accepted : Nat)
+    (pending : Option Item) (state : M.State () ()) :
+    accepted ≤ (fromCallbacks M charge allowance pending accepted state).2.1.accepted ∧
+      (fromCallbacks M charge allowance pending accepted state).2.1.accepted ≤ accepted + allowance := by
+  induction allowance generalizing pending accepted state with
+  | zero => simp [fromCallbacks]
+  | succ allowance ih =>
+      cases pending with
+      | some item =>
+          cases response : M.step state (.accept item) with
+          | mk decision after =>
+              cases decision with
+              | false => simp [fromCallbacks, response]
+              | true =>
+                  have bound := ih (accepted+1) none after
+                  simp only [fromCallbacks, response] at *
+                  omega
+      | none =>
+          cases response : M.step state .next with
+          | mk reply after =>
+              cases reply with
+              | paused => simp [fromCallbacks, response]
+              | terminal reason => simp [fromCallbacks, response]
+              | returned item =>
+                  cases acknowledgment : M.step after (.accept item) with
+                  | mk decision final =>
+                      cases decision with
+                      | false => simp [fromCallbacks, response, acknowledgment]
+                      | true =>
+                          have bound := ih (accepted+1) none final
+                          simp only [fromCallbacks, response, acknowledgment] at *
+                          omega
+
+theorem resumeCall_zero (previous : Nat × (Result Item Terminal × M.State () ())) :
+    resumeCall M charge 0 previous = previous := by
+  rcases previous with ⟨spent,⟨⟨terminal,pending,accepted⟩,state⟩⟩
+  cases terminal <;> rfl
+
+/-- Refused work remains paid. Resuming a callback never subtracts its charge. -/
+theorem resumeCall_charge_mono (allowance : Nat)
+    (previous : Nat × (Result Item Terminal × M.State () ())) :
+    previous.1 ≤ (resumeCall M charge allowance previous).1 := by
+  unfold resumeCall
+  cases previous.2.1.terminal <;> simp
+
+theorem resumeCall_acceptance_bound (allowance : Nat)
+    (previous : Nat × (Result Item Terminal × M.State () ())) :
+    previous.2.1.accepted ≤ (resumeCall M charge allowance previous).2.1.accepted ∧
+      (resumeCall M charge allowance previous).2.1.accepted ≤ previous.2.1.accepted + allowance := by
+  unfold resumeCall
+  cases previous.2.1.terminal with
+  | some reason => simp
+  | none =>
+      exact fromCallbacks_acceptance_bound M charge allowance previous.2.1.accepted
+        previous.2.1.pending previous.2.2
+
+/-- A private callback task carries cumulative work, its complete loan/terminal
+result and the provider's complete post-state. This is the existing snapshot
+kernel; native independence and external-effect admission remain obligations. -/
+def kernel (Id : Type) :
+    SnapshotBatch.Kernel Unit (Id × Nat) Unit Id
+      (Nat × (Result Item Terminal × M.State () ())) :=
+  SnapshotBatch.Kernel.fromOwnerAction (fun _ allowance previous =>
+    resumeCall M charge allowance previous)
+
+/-- Reordering different owners retains each owner's command sequence. A
+stateful refusal prevents replacing that sequence by its total allowance. -/
+theorem kernel_interleaving {Id : Type} [DecidableEq Id]
+    (pool : Id → Nat × (Result Item Terminal × M.State () ()))
+    (first second : List (Id × Nat))
+    (same : ∀ owner, first.filter (fun item => decide (item.1 = owner)) =
+      second.filter (fun item => decide (item.1 = owner))) :
+    (kernel M charge Id).run () (fun _ => ()) pool first =
+      (kernel M charge Id).run () (fun _ => ()) pool second :=
+  SnapshotBatch.Kernel.run_eq_of_owner_sequences _ _ _ _ _ _ same
+
+/-- One quantum per distinct private owner can be prepared in any exact worker
+partition. Publication installs the computed packets without rerunning them. -/
+theorem kernel_partitioned {Id : Type} [DecidableEq Id]
+    (pool : Id → Nat × (Result Item Terminal × M.State () ()))
+    (parts : List (List (Id × Nat))) (schedule : List (Id × Nat))
+    (coverage : parts.flatten.Perm schedule) (distinct : (schedule.map Prod.fst).Nodup) :
+    (kernel M charge Id).partitioned () (fun _ => ()) pool parts =
+      (kernel M charge Id).run () (fun _ => ()) pool schedule :=
+  SnapshotBatch.Kernel.partitioned_eq_run _ _ _ _ _ _ coverage distinct
+
+
 /-- The earlier pure finite boundary is an actual provider instance of this
 callback protocol. Only its successful consumer update changes its accumulator;
 producer inspection counts exhaustion as well as each returned occurrence. -/
@@ -829,9 +920,41 @@ theorem terminal_call_never_repolls :
     resumeCall warming (fun _ _ => 1) 9 completed =
       ⟨1,⟨⟨some "complete",none,2⟩,⟨[],[7,7],3,true⟩⟩⟩ := rfl
 
+private def privatePool : Nat → Nat × (Result Nat String × Cache) :=
+  fun owner => (0,⟨⟨none,none,0⟩, if owner = 0 then cold else {cold with warmed := true}⟩)
+
+theorem partitioned_callbacks_retain_refusal_and_accepted_state :
+    let result := (kernel warming (fun _ _ => 1) Nat).partitioned () (fun _ => ())
+      privatePool [[(0,1)],[(1,1)]]
+    result 0 = refused ∧
+      result 1 = ⟨2,⟨⟨none,none,1⟩,⟨[7],[7],1,true⟩⟩⟩ := by decide
+
+/-- Two commands for one owner cannot both read its initial snapshot: the
+second command must see the warmed cache and the retained pending return. -/
+theorem repeated_owner_batch_loses_refusal_progress :
+    let region := kernel warming (fun _ _ => 1) Nat
+    (region.batch () (fun _ => ()) privatePool [(0,1),(0,1)] 0).2.1.accepted = 0 ∧
+      (region.run () (fun _ => ()) privatePool [(0,1),(0,1)] 0).2.1.accepted = 1 := by decide
+
+
+theorem grouped_callbacks_retry_without_repolling :
+    let result := ((kernel warming (fun _ _ => 1) Nat).grouped () (fun _ => ())).partitioned
+      () (fun _ => ()) privatePool [[(0,[(0,1),(0,1)])],[(1,[(1,1)])]]
+    result 0 = ⟨3,⟨⟨none,none,1⟩,⟨[7],[7],1,true⟩⟩⟩ ∧
+      result 1 = ⟨2,⟨⟨none,none,1⟩,⟨[7],[7],1,true⟩⟩⟩ := by decide
+
 end CallbackControls
 
 #print axioms finite_callbacks_agree_with_owned_sequence
+#print axioms fromCallbacks_acceptance_bound
+#print axioms resumeCall_zero
+#print axioms resumeCall_charge_mono
+#print axioms resumeCall_acceptance_bound
+#print axioms kernel_interleaving
+#print axioms kernel_partitioned
+#print axioms CallbackControls.partitioned_callbacks_retain_refusal_and_accepted_state
+#print axioms CallbackControls.repeated_owner_batch_loses_refusal_progress
+#print axioms CallbackControls.grouped_callbacks_retry_without_repolling
 #print axioms CallbackControls.stateful_refusal_breaks_naive_allowance_add
 
 end CallbackBoundary

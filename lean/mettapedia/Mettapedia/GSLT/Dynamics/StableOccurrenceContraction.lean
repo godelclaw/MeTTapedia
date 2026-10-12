@@ -445,6 +445,319 @@ example :
   intro transport
   cases transport
 
+/-! ## Batched contraction
+
+A removal may mark its occurrence and leave the contraction for later.  The
+marks of several removals then contract the family in one pass.  `refine`
+composes two masks: it keeps a source occurrence when the first mask keeps it
+and the second keeps its retained image.  One pass over the composed mask is
+the two contractions in turn, for the rows and for the coordinate map that
+carries derived indexes. -/
+
+/-- The source mask that keeps an occurrence when `outer` keeps it and
+`inner` keeps its retained image.  A missing `inner` suffix retains nothing,
+as in `contract`. -/
+def refine : List Bool → List Bool → List Bool
+  | true :: outer, keep :: inner => keep :: refine outer inner
+  | true :: outer, [] => false :: refine outer []
+  | false :: outer, inner => false :: refine outer inner
+  | [], _ => []
+
+theorem contract_nil_rows {Row : Type uRow} (mask : List Bool) :
+    contract mask ([] : List Row) = [] := by
+  cases mask with
+  | nil => rfl
+  | cons keep mask => cases keep <;> rfl
+
+/-- One pass over the composed marks is the two contractions in turn. -/
+theorem contract_refine {Row : Type uRow}
+    (outer inner : List Bool) (rows : List Row) :
+    contract inner (contract outer rows) =
+      contract (refine outer inner) rows := by
+  induction outer generalizing inner rows with
+  | nil => simp [contract, refine, contract_nil_rows]
+  | cons keepOuter outer ih =>
+      cases rows with
+      | nil => simp [contract_nil_rows]
+      | cons row rows =>
+          cases keepOuter with
+          | false => simpa [contract, refine] using ih inner rows
+          | true =>
+              cases inner with
+              | nil =>
+                  simpa [contract, refine, contract_nil_rows] using
+                    (ih [] rows).symm
+              | cons keepInner inner =>
+                  cases keepInner <;> simp [contract, refine, ih]
+
+/-- Coordinates through `outer`, then through `inner`. -/
+def composeCoordinates (outer inner : List (Option Nat)) :
+    List (Option Nat) :=
+  outer.map fun coordinate =>
+    coordinate.bind fun target => (inner[target]?).join
+
+private theorem composeCoordinates_shift_retained
+    (outer inner : List (Option Nat)) :
+    composeCoordinates (outer.map shiftCoordinate)
+        (some 0 :: inner.map shiftCoordinate) =
+      (composeCoordinates outer inner).map shiftCoordinate := by
+  simp only [composeCoordinates, List.map_map]
+  congr 1
+  funext coordinate
+  cases coordinate with
+  | none => rfl
+  | some target =>
+      cases found : inner[target]? with
+      | none => simp [shiftCoordinate, found]
+      | some value => cases value <;> simp [shiftCoordinate, found]
+
+private theorem composeCoordinates_shift_removed
+    (outer inner : List (Option Nat)) :
+    composeCoordinates (outer.map shiftCoordinate) (none :: inner) =
+      composeCoordinates outer inner := by
+  simp only [composeCoordinates, List.map_map]
+  congr 1
+  funext coordinate
+  cases coordinate <;> simp [shiftCoordinate]
+
+/-- The coordinate map of one pass over the composed marks is the composition
+of the two maps, so derived indexes may be carried once per batch. -/
+theorem compile_refine_sourceToTarget {Row : Type uRow}
+    (outer inner : List Bool) (rows : List Row) :
+    (compile (refine outer inner) rows).sourceToTarget =
+      composeCoordinates (compile outer rows).sourceToTarget
+        (compile inner (contract outer rows)).sourceToTarget := by
+  induction outer generalizing inner rows with
+  | nil =>
+      cases rows <;> simp [compile, refine, composeCoordinates]
+  | cons keepOuter outer ih =>
+      cases rows with
+      | nil =>
+          cases keepOuter <;> cases inner <;>
+            simp [compile, refine, composeCoordinates]
+      | cons row rows =>
+          cases keepOuter with
+          | false =>
+              simp only [refine, compile, contract]
+              rw [ih inner rows]
+              simp [composeCoordinates]
+          | true =>
+              cases inner with
+              | nil =>
+                  simp only [refine, compile]
+                  rw [ih [] rows]
+                  simp [composeCoordinates, compile, shiftCoordinate,
+                    Function.comp_def, List.map_const']
+              | cons keepInner inner =>
+                  cases keepInner with
+                  | false =>
+                      simp only [refine, compile, contract]
+                      rw [ih inner rows]
+                      have tail := composeCoordinates_shift_removed
+                        (compile outer rows).sourceToTarget
+                        (compile inner (contract outer rows)).sourceToTarget
+                      simp only [composeCoordinates, List.map_cons,
+                        Option.bind_some, List.getElem?_cons_zero,
+                        Option.join_some] at tail ⊢
+                      rw [tail]
+                  | true =>
+                      simp only [refine, compile, contract]
+                      rw [ih inner rows]
+                      have tail := composeCoordinates_shift_retained
+                        (compile outer rows).sourceToTarget
+                        (compile inner (contract outer rows)).sourceToTarget
+                      simp only [composeCoordinates, List.map_cons,
+                        Option.bind_some, List.getElem?_cons_zero,
+                        Option.join_some] at tail ⊢
+                      rw [tail]
+
+/-- With equal lengths, a mask retains one occurrence per kept position. -/
+theorem contract_length_count {Row : Type uRow}
+    (mask : List Bool) (rows : List Row) (lengths : mask.length = rows.length) :
+    (contract mask rows).length = mask.count true := by
+  induction mask generalizing rows with
+  | nil => simp [contract]
+  | cons keep mask ih =>
+      cases rows with
+      | nil => simp at lengths
+      | cons row rows =>
+          have tail : mask.length = rows.length := by simpa using lengths
+          cases keep <;> simp [contract, ih rows tail]
+
+private theorem contract_replicate_true {Row : Type uRow} (rows : List Row) :
+    contract (List.replicate rows.length true) rows = rows := by
+  induction rows with
+  | nil => rfl
+  | cons row rows ih => simp [List.replicate_succ, contract, ih]
+
+private theorem contract_replicate_set_false {Row : Type uRow}
+    (rows : List Row) (visible : Nat) :
+    contract ((List.replicate rows.length true).set visible false) rows =
+      rows.eraseIdx visible := by
+  induction rows generalizing visible with
+  | nil => simp [contract]
+  | cons row rows ih =>
+      cases visible with
+      | zero =>
+          simp [List.replicate_succ, contract, contract_replicate_true]
+      | succ visible =>
+          simp [List.replicate_succ, contract, ih visible]
+
+/-- Marks over the source rows: the occurrence at visible position `visible`
+is marked as well. -/
+def markVisible (alive : List Bool) (visible : Nat) : List Bool :=
+  refine alive ((List.replicate (alive.count true) true).set visible false)
+
+/-- Marking a visible occurrence removes exactly it from the observation: a
+marked removal is the ordered erasure, with the contraction left for later. -/
+theorem contract_markVisible {Row : Type uRow}
+    (alive : List Bool) (rows : List Row) (visible : Nat)
+    (lengths : alive.length = rows.length) :
+    contract (markVisible alive visible) rows =
+      (contract alive rows).eraseIdx visible := by
+  rw [markVisible, ← contract_refine, ← contract_length_count alive rows lengths]
+  exact contract_replicate_set_false (contract alive rows) visible
+
+/-! ### Scanning work of a threshold policy
+
+A store counts its live occurrences and the marked ones that still await a
+pass.  A pass reads every row, live or marked.  The threshold policy runs a
+pass when a removal leaves at least as many marked rows as live ones; then
+each pass reads at most twice the marks it clears, and the reading over any
+run is bounded by twice its removals. -/
+
+/-- Live occurrences and marked ones awaiting the next pass. -/
+structure Marks where
+  live : Nat
+  marked : Nat
+deriving DecidableEq, Repr
+
+/-- A change to a store: an appended occurrence or a removed one. -/
+inductive Change where
+  | append
+  | remove
+deriving DecidableEq, Repr
+
+/-- One change under the threshold policy, with the rows a pass reads. -/
+def thresholdStep (marks : Marks) : Change → Marks × Nat
+  | .append => ({ marks with live := marks.live + 1 }, 0)
+  | .remove =>
+      let live := marks.live - 1
+      let marked := marks.marked + 1
+      if live ≤ marked then ({ live := live, marked := 0 }, live + marked)
+      else ({ live := live, marked := marked }, 0)
+
+/-- One change under the eager policy: every removal runs a pass. -/
+def eagerStep (marks : Marks) : Change → Marks × Nat
+  | .append => ({ marks with live := marks.live + 1 }, 0)
+  | .remove => ({ live := marks.live - 1, marked := 0 }, marks.live + marks.marked)
+
+/-- The rows read by every pass of a run. -/
+def scanned (step : Marks → Change → Marks × Nat) :
+    Marks → List Change → Nat
+  | _, [] => 0
+  | marks, change :: changes =>
+      (step marks change).2 + scanned step (step marks change).1 changes
+
+def removals (changes : List Change) : Nat :=
+  changes.count .remove
+
+theorem removals_cons_append (changes : List Change) :
+    removals (.append :: changes) = removals changes := by
+  simp [removals]
+
+theorem removals_cons_remove (changes : List Change) :
+    removals (.remove :: changes) = removals changes + 1 := by
+  simp [removals]
+
+/-- Under the threshold policy a run reads at most twice the marks it starts
+with plus twice its removals, whatever the store's size. -/
+theorem scanned_threshold_le (marks : Marks) (changes : List Change) :
+    scanned thresholdStep marks changes ≤
+      2 * (marks.marked + removals changes) := by
+  induction changes generalizing marks with
+  | nil => simp [scanned]
+  | cons change changes ih =>
+      cases change with
+      | append =>
+          have tail : scanned thresholdStep ⟨marks.live + 1, marks.marked⟩ changes ≤
+              2 * (marks.marked + removals changes) :=
+            ih ⟨marks.live + 1, marks.marked⟩
+          have step : thresholdStep marks .append =
+              (⟨marks.live + 1, marks.marked⟩, 0) := rfl
+          rw [scanned, removals_cons_append, step]
+          dsimp only
+          omega
+      | remove =>
+          rw [scanned, removals_cons_remove]
+          by_cases pass : marks.live - 1 ≤ marks.marked + 1
+          · have tail : scanned thresholdStep ⟨marks.live - 1, 0⟩ changes ≤
+                2 * (0 + removals changes) := ih ⟨marks.live - 1, 0⟩
+            have step : thresholdStep marks .remove =
+                (⟨marks.live - 1, 0⟩, marks.live - 1 + (marks.marked + 1)) := by
+              simp [thresholdStep, pass]
+            rw [step]
+            dsimp only
+            omega
+          · have tail : scanned thresholdStep
+                ⟨marks.live - 1, marks.marked + 1⟩ changes ≤
+                2 * (marks.marked + 1 + removals changes) :=
+              ih ⟨marks.live - 1, marks.marked + 1⟩
+            have step : thresholdStep marks .remove =
+                (⟨marks.live - 1, marks.marked + 1⟩, 0) := by
+              simp [thresholdStep, pass]
+            rw [step]
+            dsimp only
+            omega
+
+/-- Removing every occurrence of eight: the threshold policy reads 15 rows,
+within twice the eight removals. -/
+example : scanned thresholdStep ⟨8, 0⟩ (List.replicate 8 .remove) = 15 := by
+  decide
+
+/-- The eager policy reads the whole store on each removal: 36 rows for the
+same run, more than twice its removals, and quadratic in the store's size. -/
+example : scanned eagerStep ⟨8, 0⟩ (List.replicate 8 .remove) = 36 := by
+  decide
+
+example : ¬ scanned eagerStep ⟨8, 0⟩ (List.replicate 8 .remove) ≤
+    2 * (0 + removals (List.replicate 8 .remove)) := by
+  decide
+
+/-- Marks of two removals, contracted in one pass, match two passes. -/
+example :
+    contract (refine [true, false, true, true] [true, false, true])
+        ["a", "b", "c", "d"] =
+      contract [true, false, true] (contract [true, false, true, true]
+        ["a", "b", "c", "d"]) := by
+  decide
+
+/-- The composed coordinates send each survivor to its final position. -/
+example :
+    (compile (refine [true, false, true, true] [true, false, true])
+        ["a", "b", "c", "d"]).sourceToTarget =
+      [some 0, none, none, some 1] := by
+  decide
+
+/-- A later mark cannot revive an occurrence an earlier mark removed. -/
+example :
+    contract (refine [true, false, true] [true, true])
+        ["a", "b", "c"] ≠ ["a", "b", "c"] := by
+  decide
+
+/-- Marking the second visible occurrence erases it, not a later equal one. -/
+example :
+    contract (markVisible [true, false, true, true] 1)
+        ["same", "gone", "same", "tail"] =
+      ["same", "tail"] := by
+  decide
+
+#print axioms contract_refine
+#print axioms compile_refine_sourceToTarget
+#print axioms contract_length_count
+#print axioms contract_markVisible
+#print axioms scanned_threshold_le
+
 #print axioms compile_rows_exact
 #print axioms contract_map
 #print axioms sourceToTarget_sound

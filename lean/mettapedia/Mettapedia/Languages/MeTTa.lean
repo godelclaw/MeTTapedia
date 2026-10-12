@@ -165,6 +165,8 @@ import Mettapedia.Machines.BranchLocalNeed.DependentService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandNeedSimulation
 import Mettapedia.OSLF.Framework.CandidateDTTCheckedIntroduction
 import Mettapedia.OSLF.Framework.CandidateDependentWorldModel
+import Mettapedia.Languages.MeTTa.HE.HOLContract.Guest
+import Mettapedia.Languages.MeTTa.HE.HOLContract.Backend
 
 /-!
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
@@ -176,4 +178,9 @@ open Mettapedia.TypeTheory.UniverseLevel
 - `HE` - Hyperon Experimental MeTTa (authoritative HE spec)
 - `Core` - MeTTa core state machine and language definition
 - `PeTTa` - Prolog-based MeTTa profile
+
+## Bridges
+- `HE.HOLContract.Guest` - the HOL contract of HE's type declarations and the
+  hosted HOL Light checker
+- `HE.HOLContract.Backend` - replaceable backends of the contract
 -/

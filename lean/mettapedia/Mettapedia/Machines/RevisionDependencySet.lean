@@ -66,6 +66,18 @@ theorem agreesOn_trans [DecidableEq StoreId] {support : Finset StoreId}
   intro store member
   exact (firstSecond store member).trans (secondThird store member)
 
+/-- A finite binding publication preserves every selected read outside its
+write support, including captured absences. -/
+theorem agreesOn_applyWrites {Value : Type} [DecidableEq StoreId]
+    (environment : RevisionEnvironment StoreId (Option Value))
+    (writes : List (StoreId × Value)) (reads : List StoreId)
+    (outside : List.Disjoint reads (writes.map Prod.fst)) :
+    AgreesOn reads.toFinset ⟨BindingPublication.applyWrites environment.current writes⟩
+      environment := by
+  intro key member
+  exact BindingPublication.applyWrites_lookup_of_not_mem environment.current writes key
+    (List.disjoint_left.mp outside (List.mem_toFinset.mp member))
+
 /-- Complete query results can be revision values in the same captured-read
 interface. Filtering retains row order and multiplicity; `Row` may carry a
 physical occurrence identity as well as a payload. -/
@@ -463,6 +475,17 @@ def CanPublish (view : CapturedReadView StoreId Revision)
   view.captureComplete = true ∧ view.firstMismatch = none ∧
     RevisionDependencySet.ValidAt live view.dependencies
 
+/-- Publication observes the captured support, including absence reads.
+World changes outside it may remain visible to other observers. -/
+theorem canPublish_iff_of_agreesOn (view : CapturedReadView StoreId Revision)
+    (left right : RevisionEnvironment StoreId Revision)
+    (agrees : RevisionEnvironment.AgreesOn view.consulted.toFinset left right) :
+    view.CanPublish left ↔ view.CanPublish right := by
+  unfold CanPublish
+  rw [RevisionDependencySet.validAt_iff_of_agreesOn_storeSupport
+    (dependencies := view.dependencies)]
+  simpa only [dependencies_storeSupport] using agrees
+
 /-- Both capture completeness and validation are checked before publication. -/
 def accepted (view : CapturedReadView StoreId Revision) : Bool :=
   view.captureComplete && view.firstMismatch.isNone
@@ -533,13 +556,8 @@ theorem canPublish_applyWrites_iff {Value : Type} [DecidableEq Value]
     (outside : List.Disjoint view.consulted (writes.map Prod.fst)) :
     view.CanPublish ⟨BindingPublication.applyWrites live.current writes⟩ ↔
       view.CanPublish live := by
-  unfold CanPublish
-  rw [RevisionDependencySet.validAt_iff_of_agreesOn_storeSupport
-    (dependencies := view.dependencies)]
-  rw [dependencies_storeSupport]
-  intro key member
-  exact BindingPublication.applyWrites_lookup_of_not_mem live.current writes key
-    (List.disjoint_left.mp outside (by simpa using member))
+  exact canPublish_iff_of_agreesOn view _ live
+    (RevisionEnvironment.agreesOn_applyWrites live writes view.consulted outside)
 
 /-- Complete-match and absence reads use the ordinary finite dependency
 contract. Rows appended outside every consulted predicate cannot invalidate
@@ -551,10 +569,7 @@ theorem canPublish_nonmatching_append_iff {Row : Type} [DecidableEq Row]
       ∀ row ∈ added, accepts query row = false) :
     view.CanPublish (RevisionEnvironment.matchingRows accepts (rows ++ added)) ↔
       view.CanPublish (RevisionEnvironment.matchingRows accepts rows) := by
-  unfold CanPublish
-  rw [RevisionDependencySet.validAt_iff_of_agreesOn_storeSupport
-    (dependencies := view.dependencies)]
-  rw [dependencies_storeSupport]
+  apply canPublish_iff_of_agreesOn
   exact RevisionEnvironment.agreesOn_symm
     (RevisionEnvironment.matchingRows_agrees_of_nonmatching_append
       accepts rows added view.consulted.toFinset outside)

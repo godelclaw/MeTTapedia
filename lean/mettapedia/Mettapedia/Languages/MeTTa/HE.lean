@@ -52,6 +52,7 @@ import Mettapedia.Languages.MeTTa.HE.MatcherBridge
 import Mettapedia.Languages.MeTTa.HE.OutcomeListContracts
 import Mettapedia.Languages.MeTTa.HE.LanguageDefRuleInventory
 import Mettapedia.Languages.MeTTa.HE.NativeGroundFastPath
+import Mettapedia.Languages.MeTTa.HE.HOLContract
 
 /-!
 # Hyperon Experimental MeTTa Semantics
@@ -89,7 +90,7 @@ Authoritative Lean 4 formalization of the HE MeTTa evaluation specification.
                              evaluator and native service correspondence remain
                              separate obligations
 - `FirstSuccessSourceExecution` — Independent equation-free nonleaf evaluation
-                                 with closed casts, wildcard domains, exact
+                                 with closed casts, checked argument domains, exact
                                  ordered replies, saved-prefix resumption and
                                  a represented resumable service; tuple fallback
                                  and native service adequacy remain separate
@@ -120,6 +121,9 @@ Authoritative Lean 4 formalization of the HE MeTTa evaluation specification.
                    `EvalAtomCertified` theorem boundary
 - `SemanticForms` — Named public facade for HE declarative, operational,
                    executable, and certified semantic layers
+- `HOLContract` — The HOL contract that HE's type declarations mean, with
+                  products, the agreement of HE's typing fragments with it, and
+                  gradual typing read beside it
 
 ## Key Design Decisions
 - Declarative inductive relations (no fuel, nondeterminism-native)

@@ -1,4 +1,5 @@
 import Mettapedia.Logic.TheoryModel.Basic
+import Mettapedia.Logic.TheoryModel.Consistency
 import Mettapedia.Logic.TheoryModel.Weakness
 import Mettapedia.Logic.TheoryModel.Universe
 import Mettapedia.Logic.TheoryModel.Forgetting
@@ -8,6 +9,8 @@ import Mettapedia.Logic.TheoryModel.ArrowIdentification
 import Mettapedia.Logic.TheoryModel.ClassifyingBridge
 import Mettapedia.Logic.TheoryModel.WeaknessMeasures
 import Mettapedia.Logic.TheoryModel.InstitutionBridge
+import Mettapedia.Logic.TheoryModel.DegenerateTop
+import Mettapedia.Logic.TheoryModel.WeakestCorrect
 
 /-!
 # Theories and models
@@ -16,6 +19,9 @@ import Mettapedia.Logic.TheoryModel.InstitutionBridge
   of structures for an arbitrary satisfaction relation, its closure operators,
   the anti-isomorphism of closed theories and elementary classes, adding
   axioms, and translations preserving satisfaction.
+* `Consistency`: a theory is consistent when it has a model; for two sentences
+  this is a common model, which is the consistency of gradual types when
+  concretization is the satisfaction relation.
 * `Weakness`: weakest admissible theories are theories of largest admissible
   classes; entailment constraints give the consequence closure, region
   constraints the elementary interior, which need not be elementary.
@@ -42,4 +48,13 @@ import Mettapedia.Logic.TheoryModel.InstitutionBridge
 * `InstitutionBridge`: institution consequence as `theoryOf ∘ models`, and a
   comorphism is conservative on a theory exactly when its universe of reducts
   hosts the theory faithfully.
+* `DegenerateTop`: the models of the theory of all sentences are the degenerate
+  structures, which no axiom carves away; consistency is vacuous when one
+  exists; a consistent theory in a second language changes no consequence of
+  the first, so "every type inhabited" is conservative; what transfers from a
+  top to its fragments; weakness across a declared translation.
+* `WeakestCorrect`: among candidates correct on the observed structures, the
+  chance of admitting every future requirement is ordered by the size of the
+  model class under a uniform future, and monotone in it under an exchangeable
+  one.
 -/

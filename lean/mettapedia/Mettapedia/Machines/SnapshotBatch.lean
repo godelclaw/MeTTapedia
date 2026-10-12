@@ -30,6 +30,16 @@ structure Kernel (Snapshot : Type uSnapshot) (Item : Type uItem)
   destination : Item → Id
   compute : Snapshot → Item → Seed → Value → Value
 
+namespace Kernel
+universe uCommand uOwner uState
+/-- Commands address one privately owned state. Each command carries its
+whole input; no worker-local seed or mutable cross-owner read is supplied. -/
+def fromOwnerAction {Id : Type uOwner} {Command : Type uCommand} {Value : Type uState}
+    (action : Id → Command → Value → Value) : Kernel Unit (Id × Command) Unit Id Value where
+  destination := Prod.fst
+  compute := fun _ item _ state => action item.1 item.2 state
+end Kernel
+
 variable {Snapshot : Type uSnapshot} {Item : Type uItem}
   {Seed : Type uSeed} {Id : Type uId} {Value : Type uValue}
   [DecidableEq Id]
@@ -356,6 +366,49 @@ theorem run_eq_of_owner_sequences (kernel : SnapshotBatch.Kernel Snapshot Item S
   rw [run_at_location, run_at_location, same location]
 
 
+/-- A chunk executes its ordered commands inside one private owner. -/
+def grouped : Kernel Unit (Id × List Item) Unit Id Value :=
+  fromOwnerAction (fun _ commands value => commands.foldl
+    (fun value item => kernel.compute snapshot item (seeds item) value) value)
+
+theorem grouped_step (state : Id → Value) (owner : Id) (commands : List Item)
+    (owned : ∀ item ∈ commands, kernel.destination item = owner) :
+    (kernel.grouped snapshot seeds).step () (fun _ => ()) state (owner,commands) =
+      kernel.run snapshot seeds state commands := by
+  funext location
+  rw [kernel.run_at_location]
+  by_cases same : location = owner
+  · subst location
+    have filtered : commands.filter (fun item => decide (kernel.destination item = owner)) = commands :=
+      List.filter_eq_self.mpr (by intro item member; simp [owned item member])
+    simp [grouped, fromOwnerAction, step, filtered]
+  · have filtered : commands.filter (fun item => decide (kernel.destination item = location)) = [] :=
+      List.filter_eq_nil_iff.mpr (by intro item member; simp [owned item member, Ne.symm same])
+    simp [grouped, fromOwnerAction, step, filtered, same]
+
+theorem grouped_run (state : Id → Value) (chunks : List (Id × List Item))
+    (owned : ∀ chunk ∈ chunks, ∀ item ∈ chunk.2, kernel.destination item = chunk.1) :
+    (kernel.grouped snapshot seeds).run () (fun _ => ()) state chunks =
+      kernel.run snapshot seeds state (chunks.flatMap Prod.snd) := by
+  induction chunks generalizing state with
+  | nil => rfl
+  | cons chunk rest ih =>
+      rw [run_cons, grouped_step kernel snapshot seeds state chunk.1 chunk.2
+        (owned chunk (by simp))]
+      rw [ih _ (by intro part member; exact owned part (by simp [member]))]
+      simp [List.flatMap_cons, run_append]
+
+theorem grouped_partitioned (state : Id → Value)
+    (parts : List (List (Id × List Item))) (chunks : List (Id × List Item))
+    (coverage : parts.flatten.Perm chunks) (distinct : (chunks.map Prod.fst).Nodup)
+    (owned : ∀ chunk ∈ chunks, ∀ item ∈ chunk.2, kernel.destination item = chunk.1) :
+    (kernel.grouped snapshot seeds).partitioned () (fun _ => ()) state parts =
+      kernel.run snapshot seeds state (chunks.flatMap Prod.snd) := by
+  have separate : (kernel.grouped snapshot seeds).Disjoint chunks := distinct
+  rw [(kernel.grouped snapshot seeds).partitioned_eq_run () (fun _ => ()) state parts chunks coverage separate]
+  exact kernel.grouped_run snapshot seeds state chunks owned
+
+
 end Kernel
 
 namespace Controls
@@ -416,6 +469,31 @@ theorem changed_seed_assignment_changes_result :
     privateKernel.run 10 (fun item => item.val + 1) (fun _ => 0) [0, 1, 2] 0 ≠
       privateKernel.run 10 (fun item => 3 - item.val) (fun _ => 0) [0, 1, 2] 0) atZero
 
+
+theorem grouped_private_updates_retain_repeated_commands :
+    (privateKernel.grouped 10 (fun item => item.val+1)).partitioned () (fun _ => ())
+      (fun _ => 0) [[(0,[0,0])],[(1,[1])],[(2,[])]] = ![22,12,0] := by
+  funext owner
+  fin_cases owner <;> decide
+
+theorem misdeclared_chunk_changes_other_owner :
+    (privateKernel.grouped 10 (fun item => item.val+1)).run () (fun _ => ())
+      (fun _ => 0) [(0,[1])] ≠
+    privateKernel.run 10 (fun item => item.val+1) (fun _ => 0) [1] := by
+  intro equal
+  have atZero := congrFun equal (0 : Fin 3)
+  have wrong : (privateKernel.grouped 10 (fun item => item.val+1)).run () (fun _ => ())
+      (fun _ => 0) [(0,[1])] 0 ≠
+      privateKernel.run 10 (fun item => item.val+1) (fun _ => 0) [1] 0 := by decide
+  exact wrong atZero
+
+
 end Controls
 
 end Mettapedia.Machines.SnapshotBatch
+
+#print axioms Mettapedia.Machines.SnapshotBatch.Kernel.grouped_step
+#print axioms Mettapedia.Machines.SnapshotBatch.Kernel.grouped_run
+#print axioms Mettapedia.Machines.SnapshotBatch.Kernel.grouped_partitioned
+#print axioms Mettapedia.Machines.SnapshotBatch.Controls.grouped_private_updates_retain_repeated_commands
+#print axioms Mettapedia.Machines.SnapshotBatch.Controls.misdeclared_chunk_changes_other_owner

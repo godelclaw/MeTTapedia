@@ -186,7 +186,7 @@ entire configuration and is not a logical refusal. -/
 def observation (source : Configuration) : Option Outcome :=
   match source.control, source.frames with
   | .returned answers, [] => some (.complete source.state answers source.input source.output)
-  | .fault reason, _ => some (.fault reason)
+  | .fault reason, _ => some (.fault reason source)
   | _, _ => none
 
 def run (program : Program) : Nat → Configuration → Outcome

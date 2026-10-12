@@ -22,13 +22,13 @@ open scoped ProgramQuotation
 
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_rule_execution.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_rule_execution.metta"
     sha256 "d5da4012ee1bc3858d85462e50e48f2bd8abc58a9d02b271e522565688c5dd5a"
 
 /-- Shared operations used by the existing ordered premise dispatcher. -/
 def premiseSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_premise_operations.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_premise_operations.metta"
     sha256 "c52fb422a6eddee21458ca6a560c55cc468d4b33ac34f65418ea80df1af9616f"
 
 def program : Program :=
@@ -101,7 +101,7 @@ theorem equation_heads_unique : (program.equations.map (·.head)).Nodup := by de
 The quoted artifact is independent of the source execution judgments. -/
 def scopedSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_scoped_execution.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_scoped_execution.metta"
     sha256 "fc5299ce7c11b012277e07aff675758bb7fbd9f42ac9c9d487a6f887d074de57"
 
 def scopedProgram : Program := scopedSource.program

@@ -234,7 +234,7 @@ def answerView : Outcome → Option (List Atom)
   | _ => none
 
 def faultView : Outcome → Option Effects.Fault
-  | .fault reason => some reason
+  | .fault reason _ => some reason
   | _ => none
 
 theorem authored_equation_atoms_retained :

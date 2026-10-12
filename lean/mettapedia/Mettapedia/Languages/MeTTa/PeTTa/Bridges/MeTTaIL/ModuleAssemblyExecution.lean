@@ -41,7 +41,7 @@ private abbrev rowValue {α : Type} (encode : α → Term) (rows : List α) : At
 
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_module.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_module.metta"
     sha256 "19c1ccfee0b2fe53809c61c1e6e0a89f6ec2ce89e9bced74dfc0d3ef95f509ee"
 
 def program : SpaceSemantics.Program := RuleExecutionProgram.program.append source.program

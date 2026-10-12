@@ -59,7 +59,7 @@ private theorem exact_outcome (result : Outcome) (state : Effects.State)
     simp only [returnedState] at store
     rw [store]
   | exhausted residual => simp [readout] at observed
-  | fault reason => simp [readout] at observed
+  | fault reason faulted => simp [readout] at observed
 
 theorem source_equations : program.equations =
     [⟨"bound-call:increment", [.var "x"], .expression [.symbol "+", .var "x", .grounded (.int 1)]⟩,

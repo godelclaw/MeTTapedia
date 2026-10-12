@@ -5,6 +5,8 @@ import Mettapedia.Machines.Cursor.SharedFactorCost
 import Mettapedia.Machines.Cursor.SharedFactorMachine
 import Mettapedia.Machines.Cursor.SuffixForwarding
 import Mettapedia.Machines.Cursor.ForwardedTableStore
+import Mettapedia.Machines.Cursor.TermPathPostingRefinement
+import Mettapedia.Machines.Cursor.KeyedPostingChains
 import Mettapedia.Machines.Cursor.SharedFactor
 import Mettapedia.Machines.ConeDuality
 import Mettapedia.Machines.BranchLocalNeed

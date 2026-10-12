@@ -257,21 +257,21 @@ def demoReflectSource : Proc := pReflect demoChan demoCommSource
 def demoReflectTarget : Proc := pFor (tProc demoCommTarget) demoChan pZero
 
 example : unifyPattern? (.fvar "x") pZero = some [("x", pZero)] := by
-  native_decide
+  decide +kernel
 
 example : unifyPattern? pZero (tSym "Mismatch") = none := by
-  native_decide
+  decide +kernel
 
 example : demoCommTarget ∈ step demoCommSource := by
-  native_decide
+  decide +kernel
 
 example : step demoBlocked = [] := by
-  native_decide
+  decide +kernel
 
 example : demoReflectTarget ∈ step demoReflectSource := by
-  native_decide
+  decide +kernel
 
 example : step (pReflect demoChan demoBlocked) = [] := by
-  native_decide
+  decide +kernel
 
 end Mettapedia.Languages.ProcessCalculi.MeTTaCalculus

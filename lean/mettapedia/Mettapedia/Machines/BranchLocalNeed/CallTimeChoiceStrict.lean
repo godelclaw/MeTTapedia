@@ -29,6 +29,13 @@ only change the computations that produce the arguments; `strictPrim_normal` and
 `strictRun_forces` hold for all such computations. `prim_normal_every_binding`
 and `activate_whnf_every_binding` state the consequence for every profile and
 every variable map.
+
+This normalizer follows the core's force semantics, including resampling of
+implicit by-name argument thunks. Explicit code is already opaque. A native
+adapter for public promises and resamplers needs its own proved
+admission/representation map; the core normalizer alone does not implement
+every native operand policy. Readiness also differs from retention: every
+reference in a returned value must resolve in that result's refined world.
 -/
 
 set_option autoImplicit false
@@ -343,6 +350,136 @@ theorem normalized_okNormal {P : Program} (hP : candidates P normHead 1 = [normR
                 exact OkAll.append ((norm_invariant P hP _ _ h₁).1 _ rfl) (ih _ h₂)
             | seqKStop hs h₂ => exact OkAll.cons_stop hs (ih _ h₂)
       exact key _ _ hk
+
+/-! ## Preservation of ready values and repeated demand -/
+
+/-- A ready constructor tree is normalized by the existing body without
+changing its store. Constructor symbols are data even when the program also
+has equations for their names; opaque code values are not activated. -/
+theorem normBody_ready {P : Program} (hP : candidates P normHead 1 = [normRule])
+    (value : Val Nat) (normal : IsNormal value) (σ : Store) (ρ : List (Val Nat)) :
+    Derives P (.eval σ (value :: ρ) normBody) [(.ok value, σ)] := by
+  induction value generalizing ρ with
+  | sym name =>
+      rw [normBody_eq]
+      apply Derives.seq_single (Derives.force (Derives.forceWhnf rfl))
+      rw [normK_eq]
+      exact Derives.caseAppMiss rfl Derives.ret
+  | code cell =>
+      rw [normBody_eq]
+      apply Derives.seq_single (Derives.force (Derives.forceWhnf rfl))
+      rw [normK_eq]
+      exact Derives.caseAppMiss rfl Derives.ret
+  | need cell => simp [IsNormal, Val.noSusp] at normal
+  | thunk cell => simp [IsNormal, Val.noSusp] at normal
+  | app head argument headIH argumentIH =>
+      simp only [IsNormal, Val.noSusp, Bool.and_eq_true] at normal
+      obtain ⟨headNormal, argumentNormal⟩ := normal
+      rw [normBody_eq]
+      apply Derives.seq_single (Derives.force (Derives.forceWhnf rfl))
+      rw [normK_eq]
+      apply Derives.caseAppHit (f := head) (x := argument) rfl
+      rw [normApp_eq]
+      apply Derives.seq_single
+        (Derives.call_single_rule hP (by
+          simpa only [List.map_cons, List.map_nil, VExp.eval, normRule, List.getD_cons_zero] using headIH headNormal []))
+      rw [normApp2_eq]
+      apply Derives.seq_single
+        (Derives.call_single_rule hP (by
+          simpa only [List.map_cons, List.map_nil, VExp.eval, normRule, List.getD_cons_zero,
+            List.getD_cons_succ] using argumentIH argumentNormal []))
+      exact Derives.ret
+
+/-- Ready values are passed through the actual normalization call, together
+with their exact branch store. No equation for a constructor head is run. -/
+theorem norm_call_ready {P : Program} (hP : candidates P normHead 1 = [normRule])
+    (σ : Store) (ρ : List (Val Nat)) (value : VExp) (normal : IsNormal (value.eval ρ)) :
+    Derives P (.eval σ ρ (.call normHead [value])) [(.ok (value.eval ρ), σ)] := by
+  apply Derives.call_single_rule hP
+  simpa only [List.map_cons, List.map_nil, normRule] using normBody_ready hP (value.eval ρ) normal σ []
+
+theorem norm_call_ready_iff {P : Program} (hP : candidates P normHead 1 = [normRule])
+    (σ : Store) (ρ : List (Val Nat)) (value : VExp) (normal : IsNormal (value.eval ρ))
+    (results : List Result) :
+    Derives P (.eval σ ρ (.call normHead [value])) results ↔ results = [(.ok (value.eval ρ), σ)] := by
+  constructor
+  · intro derived
+    exact derived.deterministic (norm_call_ready hP σ ρ value normal)
+  · rintro rfl
+    exact norm_call_ready hP σ ρ value normal
+
+/-- Continuing a complete ready-result list through normalization preserves
+every ordered occurrence, its own store, and failures or blackholes. -/
+theorem norm_ready_results {P : Program} (hP : candidates P normHead 1 = [normRule])
+    (ρ : List (Val Nat)) (results : List Result) (normal : OkAll IsNormal results) :
+    Derives P (.seqK (.call normHead [.var 0]) ρ results) results := by
+  induction results with
+  | nil => exact Derives.seqKNil
+  | cons result results ih =>
+      have tailNormal : OkAll IsNormal results := fun result member value same =>
+        normal result (List.mem_cons_of_mem _ member) value same
+      obtain ⟨outcome, σ⟩ := result
+      cases outcome with
+      | ok value =>
+          have ready : IsNormal value := normal (.ok value, σ) List.mem_cons_self value rfl
+          exact Derives.seqKOk (norm_call_ready hP σ (value :: ρ) (.var 0) ready) (ih tailNormal)
+      | fail => exact Derives.seqKStop rfl (ih tailNormal)
+      | blackhole => exact Derives.seqKStop rfl (ih tailNormal)
+
+/-- A second completed normalization neither repeats producer effects nor
+changes answer multiplicity, branch worlds or faults. This is a finite
+derivation equivalence, with no termination premise. Administrative transition
+costs and the reference machine's causal receipt graph are separate observers. -/
+theorem normalized_idempotent {P : Program} (hP : candidates P normHead 1 = [normRule])
+    (σ : Store) (ρ : List (Val Nat)) (computation : Comp) (results : List Result) :
+    Derives P (.eval σ ρ (normalized (normalized computation))) results ↔
+      Derives P (.eval σ ρ (normalized computation)) results := by
+  constructor
+  · intro derived
+    cases derived with
+    | seq first second =>
+        have same := second.deterministic (norm_ready_results hP ρ _ (normalized_okNormal hP first))
+        subst results
+        exact first
+  · intro first
+    exact Derives.seq first (norm_ready_results hP ρ results (normalized_okNormal hP first))
+
+/-- An explicit normalization inside a closed program does not change its
+complete observation under the same reserved normalizer and observer. -/
+theorem observes_normalized_iff (P : Program) (reserved : ∀ rule ∈ P, rule.head ≠ normHead)
+    (computation : Comp) (results : List Result) :
+    Observes P (normalized computation) results ↔ Observes P computation results :=
+  normalized_idempotent (candidates_observed_normHead P reserved) Store.empty [] computation results
+
+/-- The source compiler establishes the reserved-operation condition in
+every binding profile. Explicit repeated preparation preserves its complete
+source observation without choosing a global binding discipline. -/
+theorem source_observes_normalized_iff (p : Profile) (rules : SProgram) (expression : Expr)
+    (results : List Result) :
+    Observes (rules.toCore p) (normalized (expression.toCore p id)) results ↔
+      SourceObserves p rules expression results :=
+  observes_normalized_iff (rules.toCore p) (rules.toCore_reserved p) (expression.toCore p id) results
+
+/-- Actual normalization returns ready values together with a closed refined
+carrier. Opaque code references remain allocated; readiness is not itself a
+license to activate them. Every alternative uses its own resulting store. -/
+theorem normalized_ready_and_retained {P : Program} (hP : candidates P normHead 1 = [normRule])
+    {store : Store} {env : List (Val Nat)} {computation : Comp} {fuel : Nat}
+    {results : List Result}
+    (ran : run P fuel (.eval store env (normalized computation)) = some results)
+    (closed : store.referencesClosed)
+    (captured : EnvReferencesSatisfy (fun i => i < store.cells.length) env) :
+    ∀ result ∈ results, ∀ value, result.1 = .ok value →
+      IsNormal value ∧ store.cells.length ≤ result.2.cells.length ∧
+        result.2.referencesClosed ∧
+        value.referencesSatisfy (fun i => i < result.2.cells.length) := by
+  have normal := normalized_okNormal hP (run_sound P fuel _ _ ran)
+  have retained := run_eval_referencesClosed ran closed captured
+  intro result member value same
+  have current := retained result member
+  refine ⟨normal result member value same, current.1, current.2.1, ?_⟩
+  have references := current.2.2
+  simpa only [same, Outcome.referencesSatisfy] using references
 
 /-! ## Strict primitives -/
 

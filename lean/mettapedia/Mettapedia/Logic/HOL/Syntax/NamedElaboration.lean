@@ -459,7 +459,7 @@ def identityY : NamedTerm AtomBase BinderName ConstantName :=
 def identityIntrinsic : Term Constant [] (.arr individual individual) :=
   .lam (.var .vz)
 
-def identityAlpha : Alpha emptyNames emptyNames identityX identityY := by
+theorem identityAlpha : Alpha emptyNames emptyNames identityX identityY := by
   apply Alpha.lam
   apply Alpha.var (type := individual) (intrinsicVar := Var.vz)
   · rfl

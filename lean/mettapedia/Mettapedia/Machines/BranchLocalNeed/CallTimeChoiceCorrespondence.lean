@@ -42,6 +42,12 @@ theorem MemoRel.mono {φ φ' : List CellId} (hp : φ <+: φ') {m : Memo} {k : Ca
   | evaluating o => exact .evaluating o
   | done hv => exact .done (hv.mono hp)
 
+theorem MemoRel.done_value {φ : List CellId} {value : Val Nat} {cache : Cache MVal Empty}
+    (related : MemoRel φ (.done value) cache) :
+    ∃ represented, cache = .value represented ∧ ValRel φ value represented := by
+  cases related with
+  | done valueRelated => exact ⟨_, rfl, valueRelated⟩
+
 /-- A spec cell and a machine cell record: same code, related environment and cache. -/
 structure SuspRel (φ : List CellId) (s : Suspension)
     (rec : CellRecord (Comp × MEnv) MVal Empty) : Prop where
@@ -125,16 +131,63 @@ theorem Corr.trace {φ : List CellId} {σ : Store} {w : MWorld} (h : Corr φ σ 
   slot := h.slot
   events := by simp [recorded, World.record, Store.emit, h.events]
 
-/-- A machine cell named by `φ` is in the heap with a slot below the counter. -/
-theorem Corr.mem_slot {φ : List CellId} {σ : Store} {w : MWorld} (h : Corr φ σ w)
-    {ℓ : Nat} {c : CellId} (hc : φ[ℓ]? = some c) : c.slot < w.nextCell := by
+/-- Every name in the map resolves in this world to its corresponding source
+cell. A matching session or slot number alone cannot replace this lookup. -/
+theorem Corr.lookup_named {φ : List CellId} {σ : Store} {w : MWorld} (h : Corr φ σ w)
+    {ℓ : Nat} {c : CellId} (hc : φ[ℓ]? = some c) :
+    ∃ s rec, σ.cells[ℓ]? = some s ∧ w.heap.lookup c = some rec ∧ SuspRel φ s rec := by
   have hlt : ℓ < σ.cells.length := by
     rw [← h.length]; exact (List.getElem?_eq_some_iff.mp hc).1
   obtain ⟨s, hs⟩ : ∃ s, σ.cells[ℓ]? = some s := ⟨σ.cells[ℓ], List.getElem?_eq_getElem hlt⟩
-  obtain ⟨c', rec, hc', hl, _⟩ := h.cells ℓ s hs
+  obtain ⟨c', rec, hc', hl, related⟩ := h.cells ℓ s hs
   rw [hc] at hc'
   cases hc'
-  exact h.slot c rec hl
+  exact ⟨s, rec, hs, hl, related⟩
+
+/-- A machine cell named by `φ` is in the heap with a slot below the counter. -/
+theorem Corr.mem_slot {φ : List CellId} {σ : Store} {w : MWorld} (h : Corr φ σ w)
+    {ℓ : Nat} {c : CellId} (hc : φ[ℓ]? = some c) : c.slot < w.nextCell := by
+  obtain ⟨_, rec, _, lookup, _⟩ := h.lookup_named hc
+  exact h.slot c rec lookup
+
+/-- Returned values keep their live references in the corresponding refined
+world. This proves presence, without granting code-activation authority. -/
+theorem Corr.value_references_live {φ : List CellId} {σ : Store} {w : MWorld}
+    (world : Corr φ σ w) {value : Val Nat} {represented : MVal}
+    (related : ValRel φ value represented) :
+    represented.referencesSatisfy (fun c => ∃ rec, w.heap.lookup c = some rec) := by
+  apply related.referencesSatisfy
+  intro c member
+  obtain ⟨index, bound, same⟩ := List.getElem_of_mem member
+  obtain ⟨_, rec, _, lookup, _⟩ := world.lookup_named
+    (List.getElem?_eq_some_iff.mpr ⟨bound, same⟩)
+  exact ⟨rec, lookup⟩
+
+/-- An older carrier missing a mapped field cannot witness the same result's
+representation, even when the value still contains the original identifier. -/
+theorem Corr.missing_named {φ : List CellId} {σ : Store} {w : MWorld}
+    {index : Nat} {cell : CellId} (named : φ[index]? = some cell)
+    (missing : w.heap.lookup cell = none) : ¬ Corr φ σ w := by
+  intro world
+  obtain ⟨_, _, _, lookup, _⟩ := world.lookup_named named
+  rw [missing] at lookup
+  cases lookup
+
+/-- A completed source cache is represented by a completed value cache in
+this world. Restoring an earlier suspended cache violates the correspondence. -/
+theorem Corr.done_cache {φ : List CellId} {σ : Store} {w : MWorld}
+    (world : Corr φ σ w) {index : Nat} {cell : CellId} {source : Suspension}
+    {value : Val Nat} (named : φ[index]? = some cell)
+    (lookup : σ.cells[index]? = some source) (done : source.memo = .done value) :
+    ∃ rec represented, w.heap.lookup cell = some rec ∧
+      rec.cache = .value represented ∧ ValRel φ value represented := by
+  obtain ⟨original, rec, originalLookup, targetLookup, related⟩ := world.lookup_named named
+  rw [lookup] at originalLookup
+  cases originalLookup
+  have memo := related.memo
+  rw [done] at memo
+  obtain ⟨represented, same, valueRelated⟩ := memo.done_value
+  exact ⟨rec, represented, targetLookup, same, valueRelated⟩
 
 /-- The cell a fresh allocation would use is not named by `φ`. -/
 theorem Corr.fresh_not_mem {φ : List CellId} {σ : Store} {w : MWorld} (h : Corr φ σ w)

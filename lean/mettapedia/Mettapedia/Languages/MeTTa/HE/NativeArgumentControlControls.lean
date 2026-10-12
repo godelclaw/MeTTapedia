@@ -697,6 +697,52 @@ theorem incomplete_capture_cannot_accept_even_an_issued_reply :
 theorem independent_equal_payload_reply_survives_the_first :
     (deliverChecked remaining world capture second returnedEffect).1 = .ok (resumeWait, ⟨19, []⟩) := rfl
 
+/-- Two independently issued copies of the same payload retain their separate
+consumer endpoints through either delivery order and unrelated world writes. -/
+theorem independent_replies_survive_unrelated_world_writes :
+    ∃ finalFirst finalSecond,
+      (deliverChecked remaining (world.update 1 (some 99)) capture second returnedEffect).1 =
+        .ok (resumeWait, finalFirst) ∧
+      (deliverChecked ⟨19, [firstRow]⟩ (world.update 2 (some 88)) capture first returnedEffect).1 =
+        .ok (resumeWait, finalSecond) ∧
+      finalFirst.identity = finalSecond.identity ∧ finalFirst.rows.Perm finalSecond.rows ∧
+      BindingPublication.applyWrites (BindingPublication.applyWrites world.current [(1, 99)])
+        [(2, 88)] =
+          BindingPublication.applyWrites (BindingPublication.applyWrites world.current [(2, 88)])
+            [(1, 99)] ∧
+      ∀ survivor, IssuedReturn.Authenticated finalFirst survivor ↔
+        IssuedReturn.Authenticated finalSecond survivor := by
+  apply independent_replies_with_binding_publication [(1, 99)] [(2, 88)]
+    (registry := registry) (live := world)
+    (capture := capture) (other := capture) (handle := first) (second := second)
+    (reply := returnedEffect) (secondReply := returnedEffect)
+  · exact valid_effect_reply_retains_resumption_and_consumes_one_owner.1
+  · rfl
+  · exact Ne.symm equal_payloads_have_independent_issued_authority.2.1
+  · simp [capture, CapturedReadView.consult, CapturedReadView.admit]
+  · simp [capture, CapturedReadView.consult, CapturedReadView.admit]
+  · simp
+
+/-- Support disjointness is sufficient, but harmless writes to consulted keys
+can also pass the exact revision guard. The retained capture is unchanged. -/
+theorem benign_write_to_consulted_key_keeps_admission :
+    let observed : Capture Nat (Option Nat) :=
+      {capture with view := (CapturedReadView.admit world).consult world 1}
+    ¬ List.Disjoint observed.view.consulted (([(1, 3)] : List (Nat × Nat)).map Prod.fst) ∧
+      (deliverChecked remaining (world.update 1 (some 3)) observed second returnedEffect).1 =
+        .ok (resumeWait, ⟨19, []⟩) := by
+  refine ⟨?_, rfl⟩
+  simp [CapturedReadView.consult, CapturedReadView.admit]
+
+/-- Distinct authority alone does not permit reordering a write which changes
+the other consumer's consulted absence. The sibling row still exists. -/
+theorem independent_authority_does_not_override_changed_dependencies :
+    IssuedReturn.Authenticated remaining second ∧
+      (deliverChecked remaining (world.update 0 (some 7)) capture second returnedEffect).1 =
+        .error .staleDependencies := by
+  refine ⟨?_, rfl⟩
+  simp [IssuedReturn.Authenticated, remaining, second, secondRow]
+
 theorem cancellation_retains_all_paid_data_and_sibling_authority :
     (cancel registry capture first).1 = some (remaining, capture) ∧
       IssuedReturn.Authenticated remaining second ∧

@@ -53,7 +53,7 @@ private abbrev number (value : Nat) : Atom := encoded (.natural value)
 
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_match_normalized.metta"
+    "../../../../../../../../metta/gslt/lib/gslt_match_normalized.metta"
     sha256 "6d8b1e52cd08995c939516a78323655d0ba6412e63fea50dbd6856097d9a754a"
 
 def program : Program := RuleExecutionProgram.program.append source.program

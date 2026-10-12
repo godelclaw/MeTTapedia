@@ -19,9 +19,12 @@ of the first for the same claim.
 
 Checkers, soundness and exactness are those of `KernelAuthority`. Sizes are lengths
 of code words, as for Mathlib's `Computability.Encoding`, and polynomial bounds use
-`Polynomial ℕ`, as `TM2ComputableInPolyTime` does. A running time is a time
-function stated next to its checker, in the style of Nipkow et al.: one unit per
-call plus the times of the calls it makes. The definitions here use only its bounds.
+`Polynomial ℕ`, as `TM2ComputableInPolyTime` does. The time fields in this
+module are declared cost accounts: the definitions use their polynomial bounds,
+without connecting them to executions. `ProofSystemExecution` supplies the stronger
+finite-stack realization of a certificate translation, using Mathlib's actual
+`TM2ComputableInPolyTime` execution judgment. A declared account alone does not
+establish Cook--Reckhow polynomial-time computability.
 
 Elaboration relates the two ends of the explicitness spectrum. A computing checker
 accepts a certificate exactly when an elaborator turns it into a certificate that an
@@ -31,9 +34,9 @@ writes the elaborated certificate out, its running time is at least that
 certificate's size, so checking by computation does at least the work of reading an
 explicit certificate.
 
-The controls certify evenness. Binary certificates p-simulate unary ones, and the
-converse fails because a translation would have to write certificates exponentially
-longer than its input. A checker with empty certificates computes the witness, and
+The controls certify evenness. Binary certificates size-simulate unary ones with
+a polynomial declared translation-time account. The converse fails because a
+translation would have to write certificates exponentially longer than its input. A checker with empty certificates computes the witness, and
 elaborates into the binary checker.
 -/
 
@@ -212,8 +215,8 @@ def PolynomiallyBounded (checker : SizedChecker Claim Certificate) (Meaning : Cl
 
 end SizedChecker
 
-/-- A sized checker together with its running time, a time function stated next to the
-checker. -/
+/-- A sized checker together with a declared time account. Operational realization
+of that account is a separate obligation. -/
 structure TimedChecker (Claim : Type uClaim) (Certificate : Type uCertificate)
     extends SizedChecker Claim Certificate where
   time : Claim → Certificate → ℕ
@@ -222,12 +225,13 @@ namespace TimedChecker
 
 variable {Claim : Type uClaim} {Certificate : Type uCertificate}
 
-/-- The checker runs in time polynomial in the size of its input. -/
+/-- The declared time account is polynomial in the size of the input. This
+property alone does not connect the account to execution of the checker. -/
 def PolynomialTime (checker : TimedChecker Claim Certificate) : Prop :=
   PolyBoundedBy (fun input : Claim × Certificate => checker.time input.1 input.2)
     checker.toSizedChecker.inputSize
 
-/-- The checker runs in time linear in the size of its input. -/
+/-- The declared time account is linear in the size of the input. -/
 def LinearTime (checker : TimedChecker Claim Certificate) : Prop :=
   ∃ factor offset : ℕ, ∀ claim certificate,
     checker.time claim certificate ≤ factor * checker.toSizedChecker.inputSize (claim, certificate) + offset
@@ -239,9 +243,11 @@ theorem LinearTime.polynomialTime {checker : TimedChecker Claim Certificate}
 
 end TimedChecker
 
-/-! ## Proof systems in the sense of Cook and Reckhow -/
+/-! ## Exact checkers with declared polynomial time accounts -/
 
-/-- A proof system for a meaning: an exact checker running in polynomial time. -/
+/-- An exact checker with a polynomial declared time account. To obtain a proof
+system with an operational polynomial-time guarantee, the checker computation must
+additionally be realized under that account. -/
 structure ProofSystem (Claim : Type uClaim) (Certificate : Type uCertificate)
     (Meaning : Claim → Prop) extends TimedChecker Claim Certificate where
   authority : toChecker.Authority Meaning
@@ -384,8 +390,10 @@ structure SizeSimulation {Certificate₁ : Type uCertificate} {Certificate₂ : 
     (fun input : Claim × Certificate₂ => target.certificateSize (translate input.1 input.2))
     source.inputSize
 
-/-- A p-simulation in the sense of Cook and Reckhow: the translation's own running time,
-given by its time function, is polynomial in the size of the source input. -/
+/-- A size simulation with a polynomial declared translation-time account. The
+account is independent of `translate`; this structure alone does not establish
+Cook--Reckhow polynomial-time computability. `OperationalPSimulation` in
+`ProofSystemExecution` connects the translation to an actual finite-stack run. -/
 structure PSimulation {Certificate₁ : Type uCertificate} {Certificate₂ : Type uExplicit}
     (target : SizedChecker Claim Certificate₁) (source : SizedChecker Claim Certificate₂)
     extends SizeSimulation target source where

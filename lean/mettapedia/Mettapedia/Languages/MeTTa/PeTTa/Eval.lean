@@ -140,7 +140,7 @@ def run (program : Program) : Nat → Configuration → Outcome
   | fuel, configuration =>
       match configuration.control, configuration.frames with
       | .returned answers, [] => .complete configuration.state answers configuration.input configuration.output
-      | .fault fault, _ => .fault fault
+      | .fault fault, _ => .fault fault configuration
       | _, _ =>
           match fuel with
           | 0 => .exhausted configuration
@@ -930,10 +930,12 @@ theorem completed_run_iff_derivation (program : Program) (source : Configuration
   · exact derivation_has_run
 
 /-- Primitive faults have their own derivations; they are distinct from a
-completed empty answer list and from running out of fuel. -/
+completed empty answer list and from running out of fuel. Both sides keep the
+configuration in which the fault occurred. -/
 theorem fault_run_iff_derivation (program : Program) (source : Configuration)
-    (reason : Fault) :
-    (∃ fuel, run program fuel source = .fault reason) ↔ Runs program source (.fault reason) := by
+    (reason : Fault) (faulted : Configuration) :
+    (∃ fuel, run program fuel source = .fault reason faulted) ↔
+      Runs program source (.fault reason faulted) := by
   constructor
   · rintro ⟨fuel, computed⟩
     exact run_has_derivation program fuel source _ (by simp) computed

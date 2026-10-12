@@ -15,6 +15,10 @@ captured-read validation for profiles which explicitly capture a read view.
 It consumes one issued authority only when a reply
 fits the complete saved configuration and all consulted dependencies remain
 current. Native owner discovery and effect execution remain separate contracts.
+Independent issued replies commute at their captured consumer endpoints and
+remaining authority when world changes preserve the other consumer's consulted
+support. Physical registry order, scan cost and external-effect order are
+separate observations.
 -/
 
 set_option autoImplicit false
@@ -423,6 +427,18 @@ theorem accepted_keeps_other_authority {registry next : Registry}
   exact IssuedReturn.releaseIssued_keeps_other registry handle other next cleared
     (IssuedReturn.releaseIssued registry handle).2 (Prod.ext released rfl) different
 
+/-- Exact accepted controller and registry results depend on the consulted
+world support. This does not identify the complete validation receipts of
+refused attempts in two worlds. -/
+theorem deliverChecked_world_iff (registry : Registry)
+    (left right : RevisionEnvironment Key Revision) (capture : Capture Key Revision)
+    (handle : Handle) (reply : Reply) (after : Configuration) (next : Registry)
+    (agrees : RevisionEnvironment.AgreesOn capture.view.consulted.toFinset left right) :
+    (deliverChecked registry left capture handle reply).1 = .ok (after, next) ↔
+      (deliverChecked registry right capture handle reply).1 = .ok (after, next) := by
+  rw [deliverChecked_iff, deliverChecked_iff,
+    CapturedReadView.canPublish_iff_of_agreesOn capture.view left right agrees]
+
 /-- A world edit outside the consulted support changes neither admission nor
 the complete reply's independent controller meaning. -/
 theorem accepts_unrelated_update_iff (registry : Registry)
@@ -481,6 +497,84 @@ theorem independent_reply_survives {registry next : Registry}
     (IssuedReturn.releaseIssued_exists_iff next second).mpr retained
   exact ⟨remaining, (deliverChecked_iff _ _ _ _ _ _ _).mpr
     ⟨fits, current, body, cleared, released⟩⟩
+
+/-- Construct both delivery orders from independently admitted, distinct issued
+rows. Each consumer retains its exact endpoint; remaining authority agrees
+with multiplicity. Changed worlds must preserve the other consumer's complete
+consulted support, including absence reads. This does not equate those worlds
+or license reordering their external effects. -/
+theorem independent_replies_commute {registry next otherNext : Registry}
+    {live afterFirstWorld afterSecondWorld : RevisionEnvironment Key Revision}
+    {capture other : Capture Key Revision} {handle second : Handle}
+    {reply secondReply : Reply} {after otherAfter : Configuration}
+    (firstAccepted : (deliverChecked registry live capture handle reply).1 = .ok (after, next))
+    (secondAccepted : (deliverChecked registry live other second secondReply).1 =
+      .ok (otherAfter, otherNext))
+    (different : second.row ≠ handle.row)
+    (otherStable : RevisionEnvironment.AgreesOn other.view.consulted.toFinset afterFirstWorld live)
+    (firstStable : RevisionEnvironment.AgreesOn capture.view.consulted.toFinset afterSecondWorld live) :
+    ∃ finalFirst finalSecond,
+      (deliverChecked next afterFirstWorld other second secondReply).1 = .ok (otherAfter, finalFirst) ∧
+      (deliverChecked otherNext afterSecondWorld capture handle reply).1 = .ok (after, finalSecond) ∧
+      finalFirst.identity = finalSecond.identity ∧ finalFirst.rows.Perm finalSecond.rows ∧
+      ∀ survivor, IssuedReturn.Authenticated finalFirst survivor ↔
+        IssuedReturn.Authenticated finalSecond survivor := by
+  obtain ⟨finalFirst, secondAfter⟩ :=
+    independent_reply_survives firstAccepted secondAccepted different
+  obtain ⟨finalSecond, firstAfter⟩ :=
+    independent_reply_survives secondAccepted firstAccepted (Ne.symm different)
+  obtain ⟨clearedFirst, releasedFirst⟩ :=
+    ((deliverChecked_iff _ _ _ _ _ _ _).mp firstAccepted).2.2.2
+  obtain ⟨clearedSecond, releasedSecond⟩ :=
+    ((deliverChecked_iff _ _ _ _ _ _ _).mp secondAccepted).2.2.2
+  obtain ⟨clearedAfterFirst, releasedAfterFirst⟩ :=
+    ((deliverChecked_iff _ _ _ _ _ _ _).mp secondAfter).2.2.2
+  obtain ⟨clearedAfterSecond, releasedAfterSecond⟩ :=
+    ((deliverChecked_iff _ _ _ _ _ _ _).mp firstAfter).2.2.2
+  obtain ⟨identity, rows⟩ := IssuedReturn.releaseIssued_commute registry next otherNext
+    finalFirst finalSecond handle second clearedFirst clearedSecond clearedAfterFirst clearedAfterSecond
+    releasedFirst releasedSecond releasedAfterFirst releasedAfterSecond
+  refine ⟨finalFirst, finalSecond, ?_, ?_, identity, rows, ?_⟩
+  · exact (deliverChecked_world_iff _ _ _ _ _ _ _ _ otherStable).mpr secondAfter
+  · exact (deliverChecked_world_iff _ _ _ _ _ _ _ _ firstStable).mpr firstAfter
+  · exact IssuedReturn.authentication_of_rows_perm finalFirst finalSecond identity rows
+
+/-- Independently admitted issued replies join the existing binding-publication
+algorithm. Disjoint write sets make the final binding maps agree; each write
+set must also avoid the other capture's consulted reads. Complete controller
+endpoints and remaining issued authority are retained in both orders. Other
+world metadata and ordered external traces need their own compatibility laws. -/
+theorem independent_replies_with_binding_publication {Value : Type} [DecidableEq Value]
+    {registry next otherNext : Registry}
+    {live : RevisionEnvironment Key (Option Value)}
+    {capture other : Capture Key (Option Value)} {handle second : Handle}
+    {reply secondReply : Reply} {after otherAfter : Configuration}
+    (firstWrites secondWrites : List (Key × Value))
+    (firstAccepted : (deliverChecked registry live capture handle reply).1 = .ok (after, next))
+    (secondAccepted : (deliverChecked registry live other second secondReply).1 =
+      .ok (otherAfter, otherNext))
+    (different : second.row ≠ handle.row)
+    (otherReads : List.Disjoint other.view.consulted (firstWrites.map Prod.fst))
+    (firstReads : List.Disjoint capture.view.consulted (secondWrites.map Prod.fst))
+    (writes : List.Disjoint (firstWrites.map Prod.fst) (secondWrites.map Prod.fst)) :
+    ∃ finalFirst finalSecond,
+      (deliverChecked next ⟨BindingPublication.applyWrites live.current firstWrites⟩
+        other second secondReply).1 = .ok (otherAfter, finalFirst) ∧
+      (deliverChecked otherNext ⟨BindingPublication.applyWrites live.current secondWrites⟩
+        capture handle reply).1 = .ok (after, finalSecond) ∧
+      finalFirst.identity = finalSecond.identity ∧ finalFirst.rows.Perm finalSecond.rows ∧
+      BindingPublication.applyWrites (BindingPublication.applyWrites live.current firstWrites)
+        secondWrites =
+          BindingPublication.applyWrites (BindingPublication.applyWrites live.current secondWrites)
+            firstWrites ∧
+      ∀ survivor, IssuedReturn.Authenticated finalFirst survivor ↔
+        IssuedReturn.Authenticated finalSecond survivor := by
+  obtain ⟨finalFirst, finalSecond, acceptedSecond, acceptedFirst, identity, rows, authority⟩ :=
+    independent_replies_commute firstAccepted secondAccepted different
+      (RevisionEnvironment.agreesOn_applyWrites live firstWrites other.view.consulted otherReads)
+      (RevisionEnvironment.agreesOn_applyWrites live secondWrites capture.view.consulted firstReads)
+  exact ⟨finalFirst, finalSecond, acceptedSecond, acceptedFirst, identity, rows,
+    BindingPublication.applyWrites_commute live.current firstWrites secondWrites writes, authority⟩
 
 /-- Cancellation only retires the issued permission. It neither evaluates the
 saved controller nor alters its captured world, answer prefix or work account. -/

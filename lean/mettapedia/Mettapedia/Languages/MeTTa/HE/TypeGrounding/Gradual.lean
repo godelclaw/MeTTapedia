@@ -663,6 +663,7 @@ theorem metta_consistent_nested_atom_not_agt :
         intro atom member
         simp [number] at member
         rcases member with rfl | rfl <;> exact .symbol (by decide))
+    rw [consistent_pair_iff]
     rintro ⟨static, leftTop, rightTop⟩
     rcases leftTop with ⟨equal, _⟩ | leftConcrete
     · simp [listOf, Atom.atomType] at equal

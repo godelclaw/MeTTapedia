@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.WellSorted
+import Mettapedia.GSLT.Poly.CollectionIndexedEquiv
 import Mathlib.Data.List.OfFn
 import Mathlib.Data.PFunctor.Univariate.Basic
 import Mathlib.Data.W.Basic
@@ -18,6 +19,9 @@ namespace Mettapedia.GSLT.Poly.CollectionBridge
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.Poly.BindingLanguage hiding toPattern
+open Mettapedia.GSLT.Poly.CollectionIndexed
+open Mettapedia.GSLT.Poly.CollectionIndexedEquiv
 
 def atomURule : GrammarRule :=
   { label := "U", category := "A", params := [], syntaxPattern := [] }
@@ -281,19 +285,101 @@ theorem vecToPattern_injective {left right : WType vecBranch}
                   subst childrenEqual
                   rfl
 
-/-- Closed object patterns at the base sort are the W-trees of the list polynomial. -/
+theorem vecLanguage_fragment : ∀ rule ∈ vecLanguage.terms, FragmentRule rule := by
+  intro rule member
+  simp only [vecLanguage, atomURule, atomWRule, vecRule, List.mem_cons, List.mem_nil_iff,
+    or_false] at member
+  rcases member with rfl | rfl | rfl
+  · intro parameter member
+    simp at member
+  · intro parameter member
+    simp at member
+  · intro parameter member
+    simp only [List.mem_singleton] at member
+    subst member
+    simp [bindingDecl?, baseCollection?]
+
+theorem vecLanguage_labels : (vecLanguage.terms.map (·.label)).Nodup := by
+  decide
+
+theorem vecLanguage_uniqueBare : UniqueBare vecLanguage := by
+  intro rule₁ rule₂ kind element₁ element₂ mem₁ mem₂ _category bare₁ bare₂
+  simp only [vecLanguage, atomURule, atomWRule, vecRule, List.mem_cons, List.mem_nil_iff,
+    or_false] at mem₁ mem₂
+  rcases mem₁ with rfl | rfl | rfl
+  · simp [bareCollection?] at bare₁
+  · simp [bareCollection?] at bare₁
+  · rcases mem₂ with rfl | rfl | rfl
+    · simp [bareCollection?] at bare₂
+    · simp [bareCollection?] at bare₂
+    · rfl
+
+theorem vecLanguage_vecOnly : VecOnly vecLanguage := by
+  intro rule member parameter parameterMember kind element shape
+  simp only [vecLanguage, atomURule, atomWRule, vecRule, List.mem_cons, List.mem_nil_iff,
+    or_false] at member
+  rcases member with rfl | rfl | rfl
+  · simp at parameterMember
+  · simp at parameterMember
+  · simp only [List.mem_singleton] at parameterMember
+    subst parameterMember
+    simp [baseCollection?] at shape
+    exact shape.1.symm
+
+/-- Indexed trees of the ordered-collection language. -/
+noncomputable def indexedVecEquiv :
+    Tree vecLanguage ([], "A") ≃ ClosedObject vecLanguage "A" :=
+  closedIndexedEquiv vecLanguage_fragment vecLanguage_labels vecLanguage_uniqueBare "A"
+
+theorem toPattern_indexedVec (object : ClosedObject vecLanguage "A") :
+    toPattern (indexedVecEquiv.symm object) = object.1 :=
+  congrArg Subtype.val (indexedVecEquiv.right_inv object)
+
+/-- The list-polynomial tree whose print is the indexed tree. -/
+noncomputable def wRecover (tree : Tree vecLanguage ([], "A")) : WType vecBranch :=
+  Classical.choose
+    (vec_exists_of_size (sizeOf (toPattern tree) + 1) (toPattern tree) (Nat.lt_succ_self _)
+      (.base "A") (toPattern_hasType tree) rfl (toPattern_isObject tree))
+
+theorem wRecover_spec (tree : Tree vecLanguage ([], "A")) :
+    vecToPattern (wRecover tree) = toPattern tree :=
+  Classical.choose_spec
+    (vec_exists_of_size (sizeOf (toPattern tree) + 1) (toPattern tree) (Nat.lt_succ_self _)
+      (.base "A") (toPattern_hasType tree) rfl (toPattern_isObject tree))
+
+/-- List-polynomial trees are the indexed trees of this language. -/
+noncomputable def wTypeTreeEquiv : WType vecBranch ≃ Tree vecLanguage ([], "A") where
+  toFun tree :=
+    indexedVecEquiv.symm ⟨vecToPattern tree, vecToPattern_hasType tree, vecToPattern_isObject tree⟩
+  invFun := wRecover
+  left_inv tree := by
+    have printed :=
+      wRecover_spec
+        (indexedVecEquiv.symm ⟨vecToPattern tree, vecToPattern_hasType tree, vecToPattern_isObject tree⟩)
+    have back :=
+      toPattern_indexedVec ⟨vecToPattern tree, vecToPattern_hasType tree, vecToPattern_isObject tree⟩
+    exact vecToPattern_injective (printed.trans back)
+  right_inv tree := by
+    have sameObject :
+        (⟨vecToPattern (wRecover tree), vecToPattern_hasType (wRecover tree),
+            vecToPattern_isObject (wRecover tree)⟩ : ClosedObject vecLanguage "A") =
+          ⟨toPattern tree, toPattern_hasType tree, toPattern_isObject tree⟩ :=
+      Subtype.ext (wRecover_spec tree)
+    exact (congrArg indexedVecEquiv.symm sameObject).trans (indexedVecEquiv.left_inv tree)
+
+/-- With only vectors, the pattern quotient is already the indexed tree. -/
+noncomputable def vecLanguageIndexed :
+    Quotient (patternSetoid (language := vecLanguage) "A") ≃ Tree vecLanguage ([], "A") :=
+  vecQuotientEquiv vecLanguage_fragment vecLanguage_labels vecLanguage_uniqueBare
+    vecLanguage_vecOnly "A"
+
+/-- Closed object patterns at the base sort are the W-trees of the list polynomial.
+The W-trees are the indexed trees, and those are the closed patterns. -/
 noncomputable def vecClosedEquiv :
     WType vecBranch ≃
       {pattern : Pattern //
         HasType vecLanguage FreeTypeContext.empty [] pattern (.base "A") ∧
           isObjectPattern pattern = true} :=
-  Equiv.ofBijective
-    (fun tree => ⟨vecToPattern tree, vecToPattern_hasType tree, vecToPattern_isObject tree⟩)
-    ⟨fun left right same => vecToPattern_injective (congrArg Subtype.val same),
-      fun pattern => by
-        obtain ⟨tree, printed⟩ :=
-          vec_exists_of_size (sizeOf pattern.1 + 1) pattern.1 (Nat.lt_succ_self _)
-            (.base "A") pattern.2.1 rfl pattern.2.2
-        exact ⟨tree, Subtype.ext printed⟩⟩
+  wTypeTreeEquiv.trans indexedVecEquiv
 
 end Mettapedia.GSLT.Poly.CollectionBridge

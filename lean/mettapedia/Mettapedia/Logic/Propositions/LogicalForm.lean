@@ -27,6 +27,12 @@ This module fixes one such shape and makes the leaf type a parameter.
   (`Form.holds_map`).
 * A form over pairs of leaves is the same thing as a pair of forms of one
   shape: the two projections together are injective (`Form.unzip_injective`).
+* With names that may denote nothing, read negatively, the internal negation of a
+  predication (the complementary predicate) and its external negation agree
+  exactly when the name denotes (`Form.internal_iff_external_iff_isSome`); over an
+  empty domain every universal claim holds and no existential one does, and a
+  universal claim carries an existential one exactly on an inhabited domain
+  (`subalternation_iff_nonempty`).
 -/
 
 set_option autoImplicit false
@@ -181,5 +187,137 @@ theorem unzip_injective : Function.Injective (unzip (ν := ν) (π := π) (ν' :
     rw [ihLeft (Prod.ext firstLeft secondLeft), ihRight (Prod.ext firstRight secondRight)]
 
 end Form
+
+/-! ## Names that may fail to denote, and empty domains
+
+`Form.Holds` reads predication through a relation between predicate leaves and name
+leaves.  When a name may stand for nothing, the reading has to say what a
+predication of such a name means.  The negative reading (`denotingApplies`) lets a
+predicate apply only to what a name denotes, so a predication of a name that denotes
+nothing fails: Russell's analysis of denoting phrases ("On Denoting", 1905), the
+negative free logics, and the Indian logicians' rule that a reason is unestablished
+when its subject is unreal (Dharmakīrti, *Nyāyabindu* III.67).
+
+Under that reading a predication has two negations.  The external one,
+`neg (pred P n)`, says that it is not the case that `n` is `P`; the internal one
+predicates the complementary predicate, `pred (complement P) n`, that `n` is
+non-`P`.  They agree exactly when the name denotes
+(`internal_iff_external_iff_isSome`).  On a name that denotes nothing neither the
+predicate nor its complement applies, while both external negations hold
+(`nondenoting_neither`).
+
+Over an empty domain the quantifiers part in the same way: every universal claim and
+its contrary hold, and no existential claim does (`empty_domain_universals`,
+`empty_domain_existentials`); a universal claim carries the existential one, as in
+the traditional square of opposition, exactly when the domain is inhabited
+(`subalternation_iff_nonempty`). -/
+
+namespace Form
+
+universe w
+
+variable {ν : Type u} {π : Type v} {Obj : Type w}
+
+/-- Predication read negatively: a predicate applies to what the name denotes, and a
+predication of a name that denotes nothing fails. -/
+def denotingApplies (denote : ν → Option Obj) (appliesTo : π → Obj → Prop)
+    (predicate : π) (subject : ν) : Prop :=
+  ∃ x, denote subject = some x ∧ appliesTo predicate x
+
+variable (denote : ν → Option Obj) (appliesTo : π → Obj → Prop) (same : ν → ν → Prop)
+  (complement : π → π)
+
+/-- **Internal and external negation agree exactly when the name denotes.** -/
+theorem internal_iff_external_iff_isSome
+    (complement_applies : ∀ predicate x,
+      appliesTo (complement predicate) x ↔ ¬ appliesTo predicate x)
+    (predicate : π) (subject : ν) :
+    (Holds (denotingApplies denote appliesTo) same (pred (complement predicate) subject) ↔
+        Holds (denotingApplies denote appliesTo) same (neg (pred predicate subject))) ↔
+      (denote subject).isSome := by
+  simp only [Holds, denotingApplies]
+  cases denote subject with
+  | none => simp
+  | some x => simp [complement_applies]
+
+/-- **On a name that denotes nothing, neither the predicate nor its complement
+applies, and both external negations hold.** -/
+theorem nondenoting_neither {subject : ν} (nothing : denote subject = none) (predicate : π) :
+    ¬ Holds (denotingApplies denote appliesTo) same (pred predicate subject) ∧
+      ¬ Holds (denotingApplies denote appliesTo) same (pred (complement predicate) subject) ∧
+      Holds (denotingApplies denote appliesTo) same (neg (pred predicate subject)) ∧
+      Holds (denotingApplies denote appliesTo) same
+        (neg (pred (complement predicate) subject)) := by
+  simp [Holds, denotingApplies, nothing]
+
+end Form
+
+/-- **A universal claim carries an existential one exactly on an inhabited
+domain.** -/
+theorem subalternation_iff_nonempty (α : Sort*) :
+    (∀ property : α → Prop, (∀ x, property x) → ∃ x, property x) ↔ Nonempty α :=
+  ⟨fun carries => (carries (fun _ => True) fun _ => trivial).elim fun x _ => ⟨x⟩,
+    fun ⟨x⟩ _ all => ⟨x, all x⟩⟩
+
+/-- Over an empty domain every universal claim and its contrary hold. -/
+theorem empty_domain_universals {α : Sort*} [IsEmpty α] (property : α → Prop) :
+    (∀ x, property x) ∧ ∀ x, ¬ property x :=
+  ⟨fun x => isEmptyElim x, fun x => isEmptyElim x⟩
+
+/-- Over an empty domain no existential claim holds. -/
+theorem empty_domain_existentials {α : Sort*} [IsEmpty α] (property : α → Prop) :
+    (¬ ∃ x, property x) ∧ ¬ ∃ x, ¬ property x :=
+  ⟨fun ⟨x, _⟩ => isEmptyElim x, fun ⟨x, _⟩ => isEmptyElim x⟩
+
+/-- Over an inhabited domain a universal claim and its contrary exclude each
+other. -/
+theorem universal_contraries_exclusive {α : Sort*} [Nonempty α] (property : α → Prop) :
+    ¬ ((∀ x, property x) ∧ ∀ x, ¬ property x) := by
+  rintro ⟨all, none⟩
+  obtain ⟨x⟩ := ‹Nonempty α›
+  exact none x (all x)
+
+namespace DenotationControl
+
+/-- Two names: `socrates` denotes the one object, `pegasus` denotes nothing. -/
+inductive Name
+  | socrates
+  | pegasus
+
+def denote : Name → Option Unit
+  | .socrates => some ()
+  | .pegasus => none
+
+/-- One predicate, `wise`, applying to the object; `unwise` is its complement. -/
+def appliesTo : Bool → Unit → Prop
+  | true, _ => True
+  | false, _ => False
+
+def complement : Bool → Bool := not
+
+theorem complement_applies (predicate : Bool) (x : Unit) :
+    appliesTo (complement predicate) x ↔ ¬ appliesTo predicate x := by
+  cases predicate <;> simp [appliesTo, complement]
+
+/-- Positive control: for `socrates` the two negations of "unwise" agree. -/
+theorem socrates_negations_agree :
+    Form.Holds (Form.denotingApplies denote appliesTo) (fun _ _ => True)
+        (Form.pred (complement false) Name.socrates) ↔
+      Form.Holds (Form.denotingApplies denote appliesTo) (fun _ _ => True)
+        (Form.neg (Form.pred false Name.socrates)) :=
+  (Form.internal_iff_external_iff_isSome denote appliesTo _ complement complement_applies
+    false Name.socrates).mpr rfl
+
+/-- Negative control: for `pegasus` they come apart: "Pegasus is not wise" is true
+externally, and "Pegasus is unwise" is not. -/
+theorem pegasus_negations_differ :
+    ¬ (Form.Holds (Form.denotingApplies denote appliesTo) (fun _ _ => True)
+          (Form.pred (complement true) Name.pegasus) ↔
+        Form.Holds (Form.denotingApplies denote appliesTo) (fun _ _ => True)
+          (Form.neg (Form.pred true Name.pegasus))) := by
+  rw [Form.internal_iff_external_iff_isSome denote appliesTo _ complement complement_applies]
+  simp [denote]
+
+end DenotationControl
 
 end Mettapedia.Logic.Propositions
