@@ -358,6 +358,26 @@ python3 lean/pettaclaw/check_observed_strategy.py \
   --suite event-pump --output-dir build/event-pump
 ```
 
+## Operator control through the channel service
+
+`ChannelOperatorControl.lean` composes the channel service's own send latch,
+the cognition latch its command responder writes, and the supervisor's pause
+marker. The service answers `/stop` and `/start` at once from its own latch,
+so the operator can be told "Stopped" while the agent keeps calling the
+provider (`stopped_reply_while_thinking`, unbounded while the responder is
+down), or "Started" while the sibling tool's pause keeps it down
+(`started_reply_while_paused`). With one latch that cognition and the
+supervisor read, replies equal the committed authority
+(`reply_matches_authority`) and a stopped latch admits no new provider call
+(`stopped_means_no_new_calls`). Among several agents, a bare command in a
+group reaches every agent (`bare_command_reaches_every_agent`) and a shared
+command file names them all alike (`shared_name_misnames`); addressed group
+commands and per-instance names fix both.
+
+```sh
+lean lean/pettaclaw/ChannelOperatorControl.lean
+```
+
 ## Response timing and periodic work
 
 `ResponseTiming.lean` separates the existing local service bound from provider
