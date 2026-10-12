@@ -44,6 +44,11 @@ Proposed composition, results:
 * `stopped_means_no_new_calls`: once the latch is stopped, no provider call is
   admitted until a start.
 
+The implemented repair keeps both latches and changes what the operator is
+told: the reply is the responder's answer after it set the cognition latch, and
+`/start` clears the agent's own pause. `implemented_replies_follow_effect`,
+`implemented_no_false_stop` and `implemented_start_resumes` check it.
+
 A provider call already in flight when the stop is committed completes; the
 model admits each call atomically. Time, credentials and Telegram delivery are
 abstracted.
@@ -294,6 +299,89 @@ theorem stopped_means_no_new_calls (s : Fixed) (es : List FEv)
     obtain ⟨hc, hl⟩ := ih (stepF s e) hstep.2 hrest
     exact ⟨hc.trans hstep.1, hl⟩
 
+
+/-! ## The implemented repair
+
+The deployment keeps both latches but changes what the operator is told. The
+service still sets its send latch at once and forwards the command, but the
+reply is the responder's answer, computed after it set the cognition latch;
+`/start` also clears the agent's own pause marker. If the responder does not
+answer before the deadline, the reply is a notice that claims nothing. -/
+
+inductive Reply where
+  | stopped | started | noAnswerYet
+  deriving DecidableEq, Repr
+
+structure Impl where
+  svc : Latch
+  cog : Latch
+  paused : Bool
+  responderUp : Bool
+  pending : List Latch
+  /-- The last reply sent to the operator. -/
+  reply : Option Reply
+  calls : Nat
+  deriving DecidableEq, Repr
+
+inductive IEv where
+  | opStop | opStart | deliver | deadline
+  | responderDown | responderUp | siblingPause | think
+  deriving DecidableEq, Repr
+
+def Impl.thinks (s : Impl) : Bool := decide (s.cog = .running) && !s.paused
+
+def stepI (s : Impl) : IEv → Impl
+  | .opStop => { s with svc := .stopped, pending := s.pending ++ [.stopped], reply := none }
+  | .opStart => { s with svc := .running, pending := s.pending ++ [.running], reply := none }
+  | .deliver =>
+      match s.pending with
+      | [] => s
+      | l :: rest =>
+          if s.responderUp then
+            match l with
+            | .stopped => { s with cog := .stopped, pending := rest, reply := some .stopped }
+            | .running => { s with cog := .running, paused := false, pending := rest, reply := some .started }
+          else s
+  | .deadline => if s.reply = none then { s with reply := some .noAnswerYet } else s
+  | .responderDown => { s with responderUp := false }
+  | .responderUp => { s with responderUp := true }
+  | .siblingPause => { s with paused := true }
+  | .think => if s.thinks then { s with calls := s.calls + 1 } else s
+
+def runI (s : Impl) : List IEv → Impl
+  | [] => s
+  | e :: es => runI (stepI s e) es
+
+/-- A "Stopped" reply is sent only together with the stopped cognition latch,
+and a "Started" reply only when the agent can think. -/
+theorem implemented_replies_follow_effect (s : Impl) :
+    ((stepI s .deliver).reply = some .stopped → (stepI s .deliver).reply ≠ s.reply →
+      (stepI s .deliver).cog = .stopped) ∧
+    ((stepI s .deliver).reply = some .started → (stepI s .deliver).reply ≠ s.reply →
+      (stepI s .deliver).thinks = true) := by
+  simp only [stepI]
+  split
+  · exact ⟨fun _ h => absurd rfl h, fun _ h => absurd rfl h⟩
+  · split
+    · split <;> simp [Impl.thinks]
+    · exact ⟨fun _ h => absurd rfl h, fun _ h => absurd rfl h⟩
+
+def i0 : Impl :=
+  { svc := .running, cog := .running, paused := false, responderUp := true,
+    pending := [], reply := none, calls := 0 }
+
+/-- The deployed counterexample, replayed: with the responder down the agent
+still thinks, but the operator is told only that there is no answer yet. -/
+theorem implemented_no_false_stop :
+    (runI i0 [.responderDown, .opStop, .think, .deadline]).reply = some .noAnswerYet ∧
+    (runI i0 [.responderDown, .opStop, .think, .deadline]).calls = 1 := by decide
+
+/-- After a sibling's pause, `/start` is answered "Started" only once the
+agent can think again. -/
+theorem implemented_start_resumes :
+    (runI i0 [.siblingPause, .opStart, .deliver]).reply = some .started ∧
+    (runI i0 [.siblingPause, .opStart, .deliver]).thinks = true := by decide
+
 end ChannelOperatorControl
 
 #print axioms ChannelOperatorControl.stopped_reply_while_thinking
@@ -306,3 +394,6 @@ end ChannelOperatorControl
 #print axioms ChannelOperatorControl.godel_replies_as_lila
 #print axioms ChannelOperatorControl.reply_matches_authority
 #print axioms ChannelOperatorControl.stopped_means_no_new_calls
+#print axioms ChannelOperatorControl.implemented_replies_follow_effect
+#print axioms ChannelOperatorControl.implemented_no_false_stop
+#print axioms ChannelOperatorControl.implemented_start_resumes

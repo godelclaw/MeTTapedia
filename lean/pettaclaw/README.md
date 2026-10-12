@@ -372,7 +372,10 @@ supervisor read, replies equal the committed authority
 (`stopped_means_no_new_calls`). Among several agents, a bare command in a
 group reaches every agent (`bare_command_reaches_every_agent`) and a shared
 command file names them all alike (`shared_name_misnames`); addressed group
-commands and per-instance names fix both.
+commands and per-instance names fix both. The deployed repair keeps both latches
+but replies with the responder's answer after the cognition latch is set, and
+`/start` clears the agent's own pause (`implemented_replies_follow_effect`,
+`implemented_no_false_stop`, `implemented_start_resumes`).
 
 ```sh
 lean lean/pettaclaw/ChannelOperatorControl.lean
