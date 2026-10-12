@@ -516,8 +516,10 @@ Three files analyze memory designs from agent-loop code rather than papers:
   for conflicts can hold only trivial chains.
   `deduction_conflicts_with_premise`, `analogy_conflicts_with_premise` and
   `master_flags_consistent_has` are the upstream instances.
-- `premise_evicted_by_own_conclusions`: with three objects the resolver evicts
-  a premise that its own valid conclusions outscore on attention.
+- `premise_evicted_by_own_conclusions`: with four objects the resolver evicts
+  a premise that its own valid conclusions outscore on attention; with three,
+  `3 · 0.3` falls below `0.9` in floating point and losers are only penalized
+  (`three_objects_only_penalize`).
   `resolution_ignores_evidence`: the better-supported item can lose.
 - `product_le_cond` (S): `s_AB · s_BC ≤ P(C | A)` when
   `P(C | A ∧ B) ≥ P(C | B)`; `product_unsound` without it.

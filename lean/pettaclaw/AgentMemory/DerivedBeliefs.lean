@@ -16,7 +16,7 @@ noisy-OR aggregation; the other builds PLN atoms with simple truth values and
 applies PLN deduction and induction. A contradiction detector reports a
 subject and relation with several objects. Each report is resolved by
 attention: the item with the highest `sti + utility / 2` wins, the others are
-penalized, and with three or more objects they are evicted. On the live
+penalized, and with four or more objects they are evicted. On the live
 branch only `implies` and `is-a` count as exclusive, and deduction is applied
 separately to each of them. Derived items record their direct parents but are
 never re-checked against them.
@@ -28,9 +28,11 @@ Results:
   conflict at `a`. `deduction_conflicts_with_premise` is this case for `is-a`
   on the live branch, and `master_flags_consistent_has` shows the master
   branch reporting three compatible `has` facts.
-* `premise_evicted_by_own_conclusions`: with three objects the resolver evicts
-  every loser. Two valid conclusions of a premise outscore it on attention, and
-  the premise itself is evicted.
+* `premise_evicted_by_own_conclusions`: with four objects the resolver evicts
+  every loser. Three valid conclusions of a premise outscore it on attention,
+  and the premise itself is evicted. `three_objects_only_penalize`: three
+  objects are not enough, because the severity `3 · 0.3` is below `0.9` in
+  floating point.
 * `resolution_ignores_evidence`: the resolver ranks by attention, so the item
   with more evidence can lose.
 * `product_le_cond` and `product_unsound`: the deduction strength
@@ -148,9 +150,10 @@ def score (x : Contender) : ℕ := 2 * x.sti + x.util
 /-- The winner: an item of maximal score, the first one on ties. -/
 def winner (g : List Contender) : Option Contender := g.argmax score
 
-/-- Severity is `0.3` per distinct object; at `0.9`, three objects, the losers
-are evicted instead of penalized. -/
-def evicts (objects : ℕ) : Bool := 3 ≤ objects
+/-- Severity is `len(objects) * 0.3`, and the losers are evicted instead of
+penalized when it reaches `0.9`. In binary floating point `3 * 0.3` is
+`0.8999999999999999`, so eviction starts at four objects. -/
+def evicts (objects : ℕ) : Bool := 4 ≤ objects
 
 /-- The items the resolver evicts from a group. -/
 def evicted (g : List Contender) (objects : ℕ) : List Contender :=
@@ -160,18 +163,23 @@ def evicted (g : List Contender) (objects : ℕ) : List Contender :=
     | none => []
   else []
 
-/-- Premises `p implies q` (STI 1), `q implies r` and `q implies s` (STI 10)
-share the store with three unrelated items of lower STI, so all three premises
-are in the inference focus (the upper half by STI). Deduction yields
-`p implies r` and `p implies s` with initial STI `0.64 · (1 + 10) / 2 + 0.5 = 4.02`.
-The group at `(p, implies)` has the three objects `q, r, s`, and the resolver
-evicts the premise. -/
+/-- Premises `p implies q` (STI 1) and `q implies r`, `q implies s`,
+`q implies t` (STI 10) share the store with five unrelated items of lower STI,
+so all four premises are in the inference focus (the upper half by STI).
+Deduction yields `p implies r`, `p implies s` and `p implies t`, each with
+initial STI `0.64 · (1 + 10) / 2 + 0.5 = 4.02`. The group at `(p, implies)`
+has the four objects `q, r, s, t`, and the resolver evicts the premise. -/
 theorem premise_evicted_by_own_conclusions :
     let premise : Contender := ⟨1, 100, 0, 5⟩
     let conclusion1 : Contender := ⟨4, 402, 0, 3⟩
     let conclusion2 : Contender := ⟨5, 402, 0, 3⟩
-    premise ∈ evicted [premise, conclusion1, conclusion2] 3 := by
+    let conclusion3 : Contender := ⟨6, 402, 0, 3⟩
+    premise ∈ evicted [premise, conclusion1, conclusion2, conclusion3] 4 := by
   decide
+
+/-- With three objects the losers are only penalized: nothing is evicted. -/
+theorem three_objects_only_penalize (g : List Contender) : evicted g 3 = [] := by
+  simp [evicted, evicts]
 
 /-- The resolver ranks by attention: an item with confidence `0.9` loses to an
 item with confidence `0.1` and slightly more attention. -/
