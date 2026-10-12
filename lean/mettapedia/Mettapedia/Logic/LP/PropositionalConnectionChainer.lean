@@ -704,21 +704,21 @@ def topKCollectProofsAll (score : ProofObj α → Nat) (clauses : ConnCNF α)
     (fuel topK : Nat) : List (ProofObj α) :=
   topKProofsByScore score (collectProofsAll clauses fuel) topK
 
-/-- Contract-level output object mirroring PeTTa Chapter-13 bundle shape. -/
-structure Ch13Bundle (α : Type u) where
+/-- Collected connection proofs together with their score-selected projection. -/
+structure ProofCollectionBundle (α : Type u) where
   proofs : List (ProofObj α)
   topKProofs : List (ProofObj α)
 
-/-- Root-wise bundle endpoint (PeTTa `op_leancop_ch13_bundle` contract). -/
-def ch13Bundle (score : ProofObj α → Nat) (clauses : ConnCNF α)
-    (fuel topK : Nat) : Ch13Bundle α :=
+/-- Bundle of fuel-bounded root-wise proof collection and its top-k projection. -/
+def rootProofBundle (score : ProofObj α → Nat) (clauses : ConnCNF α)
+    (fuel topK : Nat) : ProofCollectionBundle α :=
   { proofs := collectProofs clauses fuel
   , topKProofs := topKCollectProofs score clauses fuel topK
   }
 
-/-- Branch-complete bundle endpoint (PeTTa `op_leancop_ch13_bundle_all` contract). -/
-def ch13BundleAll (score : ProofObj α → Nat) (clauses : ConnCNF α)
-    (fuel topK : Nat) : Ch13Bundle α :=
+/-- Bundle of fuel-bounded branch-complete proof collection and its top-k projection. -/
+def branchProofBundle (score : ProofObj α → Nat) (clauses : ConnCNF α)
+    (fuel topK : Nat) : ProofCollectionBundle α :=
   { proofs := collectProofsAll clauses fuel
   , topKProofs := topKCollectProofsAll score clauses fuel topK
   }
@@ -801,34 +801,34 @@ theorem length_topKCollectProofsAll_le
   exact length_topKProofsByScore_le score (collectProofsAll clauses fuel) topK
 
 /-- Contract parity: bundle proofs field is exactly root-wise proof collection. -/
-theorem ch13Bundle_proofs_eq_collectProofs
+theorem rootProofBundle_proofs_eq_collectProofs
     (score : ProofObj α → Nat) (clauses : ConnCNF α) (fuel topK : Nat) :
-    (ch13Bundle score clauses fuel topK).proofs = collectProofs clauses fuel := rfl
+    (rootProofBundle score clauses fuel topK).proofs = collectProofs clauses fuel := rfl
 
 /-- Contract parity: bundle topK field is exactly root-wise topK projection. -/
-theorem ch13Bundle_topK_eq_topKCollectProofs
+theorem rootProofBundle_topK_eq_topKCollectProofs
     (score : ProofObj α → Nat) (clauses : ConnCNF α) (fuel topK : Nat) :
-    (ch13Bundle score clauses fuel topK).topKProofs =
+    (rootProofBundle score clauses fuel topK).topKProofs =
       topKCollectProofs score clauses fuel topK := rfl
 
 /-- Contract parity: branch-complete bundle proofs field matches `collectProofsAll`. -/
-theorem ch13BundleAll_proofs_eq_collectProofsAll
+theorem branchProofBundle_proofs_eq_collectProofsAll
     (score : ProofObj α → Nat) (clauses : ConnCNF α) (fuel topK : Nat) :
-    (ch13BundleAll score clauses fuel topK).proofs = collectProofsAll clauses fuel := rfl
+    (branchProofBundle score clauses fuel topK).proofs = collectProofsAll clauses fuel := rfl
 
 /-- Contract parity: branch-complete bundle topK field matches `topKCollectProofsAll`. -/
-theorem ch13BundleAll_topK_eq_topKCollectProofsAll
+theorem branchProofBundle_topK_eq_topKCollectProofsAll
     (score : ProofObj α → Nat) (clauses : ConnCNF α) (fuel topK : Nat) :
-    (ch13BundleAll score clauses fuel topK).topKProofs =
+    (branchProofBundle score clauses fuel topK).topKProofs =
       topKCollectProofsAll score clauses fuel topK := rfl
 
 /-- Bundle-level topK membership always comes from bundle-level branch-complete proofs. -/
-theorem mem_ch13BundleAll_topK_implies_mem_ch13BundleAll_proofs
+theorem mem_branchProofBundle_topK_implies_mem_branchProofBundle_proofs
     (score : ProofObj α → Nat) {clauses : ConnCNF α} {fuel topK : Nat}
     {p : ProofObj α}
-    (h : p ∈ (ch13BundleAll score clauses fuel topK).topKProofs) :
-    p ∈ (ch13BundleAll score clauses fuel topK).proofs := by
-  simpa [ch13BundleAll] using
+    (h : p ∈ (branchProofBundle score clauses fuel topK).topKProofs) :
+    p ∈ (branchProofBundle score clauses fuel topK).proofs := by
+  simpa [branchProofBundle] using
     (mem_topKCollectProofsAll_implies_mem_collectProofsAll
       (score := score) (clauses := clauses) (fuel := fuel) (topK := topK) (p := p) h)
 

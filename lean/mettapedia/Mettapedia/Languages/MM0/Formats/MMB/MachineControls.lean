@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MM0.Formats.MMB.Machine
+import Mettapedia.Languages.MM0.Formats.MMB.MachineCost
 
 /-!
 # Controls for the MMB proof machine
@@ -63,5 +63,86 @@ theorem lastFirst_checked :
 theorem hypothesesFirst_rejected :
     checkAssertion tables hypothesesFirst useFirstHypothesis false = false := by
   decide
+
+/-! ## Execution through the shared machine interface -/
+
+private def initial : State := ⟨[], [], [], [], 0, 0⟩
+
+private def pStore : List Alloc := [⟨.app 0 [], constant 0⟩]
+
+private def pResult : State := ⟨pStore, [.proof 0], [], [], 0, 0⟩
+
+private def axiomCommands : List ProofCmd := [.term 0, .thm 0]
+
+/-- The retained residual is inside the theorem's unification, with the
+    allocation identity and return continuation still present. -/
+private def insideUnification : Config :=
+  .unify pStore .apply ⟨[0], [], [], []⟩ [.term 0]
+    (.theorem ⟨pStore, [], [], [], 0, 0⟩ 0 false) []
+
+theorem stream_result : run tables .assertion initial axiomCommands = some pResult := by
+  decide
+
+theorem pause_inside_unification :
+    ((eventMachine tables .assertion).run 2 (.commands initial axiomCommands)).2 =
+      .exhausted insideUnification := by
+  rfl
+
+theorem resume_inside_unification :
+    ((eventMachine tables .assertion).run 4 insideUnification).2 =
+      .finished (some pResult) := by
+  rfl
+
+theorem split_unification_trace :
+    (eventMachine tables .assertion).run 6 (.commands initial axiomCommands) =
+      (eventMachine tables .assertion).continueRun 4
+        ((eventMachine tables .assertion).run 2 (.commands initial axiomCommands)) :=
+  event_run_add tables .assertion 2 4 _
+
+theorem unification_occurrences :
+    ((eventMachine tables .assertion).run 6 (.commands initial axiomCommands)).1.length = 5 := by
+  rfl
+
+/-- Restarting from the input republishes the prefix; resumption does not. -/
+theorem restart_repeats_occurrences :
+    (((eventMachine tables .assertion).run 2 (.commands initial axiomCommands)).1 ++
+      ((eventMachine tables .assertion).run 6 (.commands initial axiomCommands)).1).length = 7 := by
+  rfl
+
+/-- A theorem opcode cannot be turned into a successful result after it fails. -/
+theorem missing_argument_finished_rejected :
+    ((eventMachine tables .assertion).run 2 (.commands initial [.thm 0])).2 =
+      .finished none := by
+  rfl
+
+/-- A cleared unification stack does not reconstruct the saved continuation. -/
+theorem spliced_unification_rejected :
+    ((eventMachine tables .assertion).run 2
+      (.unify pStore .apply ⟨[], [], [], []⟩ [.term 0]
+        (.theorem ⟨pStore, [], [], [], 0, 0⟩ 0 false) [])).2 = .finished none := by
+  rfl
+
+/-- Repeated references preserve one allocation and execute successfully. -/
+theorem shared_conversion_finishes :
+    ∃ fuel events, (eventMachine tables .assertion).run fuel
+      (.commands initial [.termSave 0, .ref 0, .thm 0, .conv, .refl]) =
+      (events, .finished (run tables .assertion initial
+        [.termSave 0, .ref 0, .thm 0, .conv, .refl])) ∧
+      (run tables .assertion initial [.termSave 0, .ref 0, .thm 0, .conv, .refl]).isSome := by
+  obtain ⟨events, _, finished⟩ := event_run_complete tables .assertion initial
+    [.termSave 0, .ref 0, .thm 0, .conv, .refl]
+  exact ⟨events.length + 1, events, finished, by decide⟩
+
+/-- Structural equality does not grant the allocation identity needed by Refl. -/
+theorem copied_conversion_cannot_finish_success (state : State) :
+    ¬∃ fuel events, (eventMachine tables .assertion).run fuel
+      (.commands initial [.term 0, .term 0, .thm 0, .conv, .refl]) =
+      (events, .finished (some state)) := by
+  rw [event_finished_iff]
+  have rejected : run tables .assertion initial
+      [.term 0, .term 0, .thm 0, .conv, .refl] = none := by decide
+  rw [rejected]
+  intro impossible
+  cases impossible
 
 end Mettapedia.Languages.MM0.Formats.MMB.Controls

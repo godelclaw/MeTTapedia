@@ -84,6 +84,14 @@ def comp : OneHoleContext → OneHoleContext → OneHoleContext
   | substReplacement body outer ih => simp [comp, fill, ih]
   | collection collectionType before outer after rest ih => simp [comp, fill, ih]
 
+@[simp] theorem comp_hole (context : OneHoleContext) :
+    context.comp .hole = context := by
+  induction context <;> simp_all [comp]
+
+theorem comp_assoc (outer middle inner : OneHoleContext) :
+    (outer.comp middle).comp inner = outer.comp (middle.comp inner) := by
+  induction outer <;> simp_all [comp]
+
 end OneHoleContext
 
 /-! ## Zipper derivation and its relational specification -/
@@ -512,6 +520,18 @@ inductive AdmissibleContext (lang : LanguageDef) :
       AuthoredContextFrame lang middle target outer →
       AdmissibleContext lang source middle inner →
       AdmissibleContext lang source target (outer.comp inner)
+
+/-- Composing two licensed paths preserves the authored reduction authority. -/
+theorem AdmissibleContext.compose {lang : LanguageDef} {source middle target : String}
+    {outer inner : OneHoleContext}
+    (outside : AdmissibleContext lang middle target outer)
+    (inside : AdmissibleContext lang source middle inner) :
+    AdmissibleContext lang source target (outer.comp inner) := by
+  induction outside generalizing source inner with
+  | hole => exact inside
+  | comp licensed rest ih =>
+      simpa only [OneHoleContext.comp_assoc] using
+        (AdmissibleContext.comp licensed (ih inside))
 
 /-! ## Executable extraction from authored rules -/
 

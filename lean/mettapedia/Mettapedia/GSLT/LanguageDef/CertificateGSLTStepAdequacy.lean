@@ -88,7 +88,7 @@ private def stepLanguage : LanguageDef :=
     rewrites := [rewriteAB, congruenceF] }
 
 private theorem stepPremisesSupported :
-    LanguageDef.directTraceSupported stepLanguage = true := by
+    languageDirectTraceSupported stepLanguage = true := by
   rfl
 
 private def directStepLanguage : DirectTraceLanguage :=

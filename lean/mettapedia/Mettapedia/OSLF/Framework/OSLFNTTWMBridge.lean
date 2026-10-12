@@ -106,14 +106,15 @@ theorem oslf_atom_ntt_wm_triangle
     _ = e := hAtomEq
 
 /--
-Categorical wrapper: same atom-level endpoint, with an explicit
-WM categorical endpoint contract to align with WM bridge APIs.
+Categorical form of the atom-level endpoint: in every WM hyperdoctrine that
+presents the pattern world model at one of its objects, the encoded atom query
+carries the derived evidence.  The former hypothesis, the categorical endpoint
+contract, held for every hyperdoctrine and was dropped; the presentation is
+what ties the hyperdoctrine to the atom.
 -/
 theorem oslf_atom_ntt_wm_triangle_categorical
     (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat :
-      Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointContract (H := H))
-    {XH : H.Obj} (_φc : H.query XH)
+    {XH : H.Obj} (enc : Pattern → H.query XH) (hpres : H.Presents XH enc)
     (relEnv : MeTTaIL.Engine.RelationEnv)
     (W : State)
     (Ξ : XiPLN (State := State) (Query := Pattern))
@@ -122,10 +123,12 @@ theorem oslf_atom_ntt_wm_triangle_categorical
     (hW : WMJudgment W) :
     MeTTaToNTT.mettaSemE relEnv W Ξ.queryOfAtom (.atom a) p = e
     ∧ (MeTTaToNTT.mettaFormulaToNT relEnv W Ξ.queryOfAtom (.atom a) p X).2 = e
-    ∧ WMQueryJudgment W (Ξ.queryOfAtom a p) e :=
-  oslf_atom_ntt_wm_triangle
+    ∧ WMQueryJudgment W (Ξ.queryOfAtom a p) e
+    ∧ H.evidenceAt W (enc (Ξ.queryOfAtom a p)) = e := by
+  obtain ⟨hSem, hNT, hQ⟩ := oslf_atom_ntt_wm_triangle
     (relEnv := relEnv) (W := W) (Ξ := Ξ)
     (a := a) (p := p) (X := X) (e := e) hDer hW
+  exact ⟨hSem, hNT, hQ, (hpres W _).trans hQ.2.symm⟩
 
 end AtomTriangle
 
@@ -313,8 +316,8 @@ Formula-level unified categorical endpoint:
 
 1. OSLF formula evidence agrees with the NTT evidence component and carries the
    explicit reduction-graph witness transport for `◇`.
-2. The same state/query interface satisfies the WM institution+Beck-Chevalley
-   endpoint statement.
+2. At the same state, the WM hyperdoctrine satisfies Beck-Chevalley at the
+   evidence layer on the given pullback square.
 -/
 theorem oslf_formula_ntt_graph_triangle_categorical
     (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
@@ -334,8 +337,8 @@ theorem oslf_formula_ntt_graph_triangle_categorical
       (queryOfAtom := queryOfAtom) (φf := φf) (Xobj := Xobj) (X := X) (p := p)
       ∧
     EndpointStatement (H := H) pi1 pi2 fcat gcat W φcat := by
-  letI : CategoryTheory.Mono fcat := hmfcat
-  letI : CategoryTheory.Mono pi2 := hmpi2
+  let : CategoryTheory.Mono fcat := hmfcat
+  let : CategoryTheory.Mono pi2 := hmpi2
   constructor
   · exact oslf_formula_ntt_graph_triangle
       (relEnv := relEnv) (W := W) (queryOfAtom := queryOfAtom)

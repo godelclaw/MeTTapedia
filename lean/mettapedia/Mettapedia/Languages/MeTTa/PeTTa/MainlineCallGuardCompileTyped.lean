@@ -149,7 +149,7 @@ theorem typedExtension_contextualPolicy :
 
 /-- The generator's own compatibility record is the complete lawful
 attachment certificate for this PeTTa instance. -/
-def compatibility :
+theorem compatibility :
     Mettapedia.OSLF.Framework.SelectedNativeTypeGuardedSourceIndexedCalculus.Compatibility
       demand supportSeparated guardProfile where
   disjoint := typedExtension_disjoint

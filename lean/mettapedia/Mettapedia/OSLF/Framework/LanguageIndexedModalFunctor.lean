@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mathlib.CategoryTheory.EssentialImage
 import Mathlib.Data.List.MinMax
 import Mathlib.Order.Hom.CompleteLattice
@@ -43,8 +44,8 @@ open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.LangMorphism
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.GSLTQuotientCoherence
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 
 abbrev LanguageEqHom (L₁ L₂ : LanguageDef) := LanguageMorphism L₁ L₂ Eq
 
@@ -412,14 +413,15 @@ namespace OperationalTranslation
 
 /-- Exact diamond change-of-base reconstructs the outgoing back condition.
 Thus the target cannot hide an invented successor at an image state. -/
-def coverOfDiamondCommutation {source target : GSLT.{uTerm}}
+theorem coverOfDiamondCommutation {source target : GSLT.{uTerm}}
     (translation : OperationalTranslation source target)
     (commutes : ∀ predicate : Set target.Term,
       Set.preimage translation.mapTerm (gsltDiamond target predicate) =
         gsltDiamond source (Set.preimage translation.mapTerm predicate)) :
-    StepCover source target translation.mapTerm where
-  mapStep := translation.mapStep
-  liftStep := by
+    StepCover source target translation.mapTerm := by
+  constructor
+  · exact translation.mapStep
+  ·
     intro sourceTerm targetTerm targetStep
     let predicate : Set target.Term := Set.singleton targetTerm
     have targetWitness :
@@ -989,16 +991,8 @@ end EffectiveStructure
 
 namespace Canary
 
-@[reducible] private def discreteUnit : GSLT where
-  Term := Unit
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ impossible
-    exact impossible.elim
-  rewrites_resp_right := by
-    intro _ _ _ impossible _
-    exact impossible.elim
+@[reducible] private def discreteUnit : GSLT :=
+  GSLT.stepFree (Unit)
 
 @[reducible] private def outgoingExtra : GSLT where
   Term := Bool

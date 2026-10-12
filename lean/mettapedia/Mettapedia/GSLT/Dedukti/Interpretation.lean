@@ -334,6 +334,76 @@ theorem Typed.comp {profile : Profile} {first second : Interpretation} {lower mi
     rw [contexts, comp_apply]
     exact image
 
+/-! ## Local obligations and complete declaration coverage -/
+
+/-- Preserving definitions and rules is monotone in an ordinary target theory.
+This uses declared equational conversion, not a priority-sensitive evaluator. -/
+theorem Respects.target_mono {larger : Theory}
+    (respects : interpretation.Respects source target) (extension : target.Extends larger) :
+    interpretation.Respects source larger where
+  body := fun name term declared => (respects.body name term declared).mono extension
+  rule := fun rule member assignment => (respects.rule rule member assignment).mono extension
+
+theorem Typed.target_mono {profile : Profile} {larger : Theory}
+    (typed : interpretation.Typed profile source target) (extension : target.Extends larger) :
+    interpretation.Typed profile source larger where
+  constType := fun name type declared context =>
+    (typed.constType name type declared context).mono
+      ⟨fun _ _ same => same, fun _ member => member⟩ extension
+
+/-- A complete cover of the source definitions and rules reduces verification
+to its fragments. No claim of confluence or conservativity follows from it. -/
+theorem Respects.of_fragments (fragments : List Theory)
+    (bodies : ∀ name term, source.body name = some term →
+      ∃ fragment ∈ fragments, fragment.body name = some term)
+    (rules : ∀ rule, source.rule rule → ∃ fragment ∈ fragments, fragment.rule rule)
+    (checked : ∀ fragment ∈ fragments, interpretation.Respects fragment target) :
+    interpretation.Respects source target where
+  body := fun name term declared => by
+    obtain ⟨fragment, member, found⟩ := bodies name term declared
+    exact (checked fragment member).body name term found
+  rule := fun rule declared assignment => by
+    obtain ⟨fragment, member, found⟩ := rules rule declared
+    exact (checked fragment member).rule rule found assignment
+
+/-- Constant typing glues only with complete coverage of the source types.
+Rule preservation remains the separate `Respects` obligation. -/
+theorem Typed.of_fragments {profile : Profile} (fragments : List Theory)
+    (types : ∀ name type, source.constType name = some type →
+      ∃ fragment ∈ fragments, fragment.constType name = some type)
+    (checked : ∀ fragment ∈ fragments, interpretation.Typed profile fragment target) :
+    interpretation.Typed profile source target where
+  constType := fun name type declared context => by
+    obtain ⟨fragment, member, found⟩ := types name type declared
+    exact (checked fragment member).constType name type found context
+
+/-! ## Returning from the target -/
+
+/-- A verified decoder and a source round trip reflect conversion on encoded
+terms. Merely checking the encoder does not supply these hypotheses. -/
+theorem reflects_conversion_of_return {encoder decoder : Interpretation}
+    (decodes : decoder.Respects target source)
+    (returns : ∀ term, Conv source (decoder.apply (encoder.apply term)) term)
+    {first second : Term}
+    (converted : Conv target (encoder.apply first) (encoder.apply second)) :
+    Conv source first second :=
+  .trans _ _ _ (.symm _ _ (returns first))
+    (.trans _ _ _ (decodes.conv converted) (returns second))
+
+/-- Returning a target inhabitant needs a typing-preserving decoder on that
+inhabitant, not just a syntax round trip on encoder outputs. The result is
+existence of a source proof; it does not identify its proof provenance. -/
+theorem inhabited_of_return {profile : Profile} {encoder decoder : Interpretation}
+    (decodes : decoder.Respects target source)
+    (typedDecoder : decoder.Typed profile target source)
+    {type proof : Term} {sort : Srt}
+    (formed : HasType profile source [] type (.srt sort))
+    (returnsType : Conv source (decoder.apply (encoder.apply type)) type)
+    (inhabitant : HasType profile target [] proof (encoder.apply type)) :
+    ∃ sourceProof, HasType profile source [] sourceProof type := by
+  refine ⟨decoder.apply proof, ?_⟩
+  exact .conv (decodes.hasType typedDecoder inhabitant) returnsType formed
+
 /-! ## An interpretation as a map of theories -/
 
 /-- The action of an interpretation on contexts: holes stay holes. -/
@@ -375,6 +445,15 @@ def contextMap (interpretation : Interpretation) {source target : Theory}
   context := fun context => onContext interpretation.meaning context
   term_resp := fun convertible => respects.conv convertible
   equivariant := fun context filling => Conv.of_eq (interpretation.apply_fill context filling)
+
+/-- The reflected conversion is exactly the existing equation-reflection
+obligation of the context-theory map. This is not operational reflection. -/
+theorem contextMap_reflectsEquations_of_return {encoder decoder : Interpretation}
+    (encodes : encoder.Respects source target) (decodes : decoder.Respects target source)
+    (returns : ∀ term, Conv source (decoder.apply (encoder.apply term)) term) :
+    (encoder.contextMap encodes).ReflectsEquations := by
+  intro origin first second converted
+  exact reflects_conversion_of_return decodes returns converted
 
 end Interpretation
 

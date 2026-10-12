@@ -151,7 +151,7 @@ private theorem denote_disjunction (M : HenkinModel.{u, v, w} Base Const)
   · intro h r _ f g
     exact h.elim f g
 
-private theorem denote_existential (M : HenkinModel.{u, v, w} Base Const)
+theorem denote_existential (M : HenkinModel.{u, v, w} Base Const)
     (ρ : M.Valuation Γ) (σ : Ty Base) (p : Ty.denote M.Carrier (σ ⇒ propTy)) :
     M.denote (existential σ) ρ p = .up (∃ x, M.adm σ x ∧ (p x).down) := by
   apply ULift.ext

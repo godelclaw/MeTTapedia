@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MM0.Presentation.AdmissionCorrespondence
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
 # Native MM0 proof identity and authored checked entries
@@ -23,7 +23,7 @@ namespace Mettapedia.Languages.MM0.Presentation.KernelFormation
 open Kernel ComputationalContext ComputationalTyping ComputationalArguments ComputationalDefinitions ComputationalProof
 open ComputationalAdmission
 open Mettapedia.GSLT.LanguageDef.DeterministicEquations
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 
 def nativeProofSystem (theory : Theory) (context : Context) (hypotheses : List Preterm) :

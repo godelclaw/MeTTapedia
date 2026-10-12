@@ -29,13 +29,13 @@ namespace Mettapedia.CognitiveArchitecture.ForegroundBackgroundGSLTILRouteBridge
 
 open Mettapedia.CognitiveArchitecture.ForegroundBackgroundParallelWave
 open Mettapedia.CognitiveArchitecture.ForegroundBackgroundSemanticRouteBinding
-open Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundNIKArticle
+open Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundCheckedArticle
 open Mettapedia.GSLT.Dynamics.OperatorRealization
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.GSLTIL.FiniteRevisionRouteBridge
 open Mettapedia.GSLT.LanguageDef.GSLTIL.OperationalEquipment
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+open Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 
 noncomputable section
 
@@ -120,7 +120,7 @@ theorem certified_parallel_wave_enters_operational_waist :
     retainedUsefulWitness_projects_two_steps, ?_⟩
   exact finiteRoute_in_reachesTargetSentence retainedUsefulRoute.erase
 
-/-- NIK acceptance and the operational account share the same physically
+/-- SemanticService acceptance and the operational account share the same physically
 bound article.  Hosting does not bypass the route or invent a second execution
 semantics. -/
 theorem nik_hosted_parallel_wave_enters_operational_waist :
@@ -133,7 +133,7 @@ theorem nik_hosted_parallel_wave_enters_operational_waist :
         (OccurrenceId Unit Nat)).map retainedUsefulWitness).length = 2 ∧
       initialWorkspace ∈
         reachesTargetSentence WorkspaceTheory (semanticTarget physicalClaim) :=
-  ⟨useful_route_article_defaultNIK_accepts,
+  ⟨useful_route_article_submissionProfile_accepts,
     certified_parallel_wave_enters_operational_waist⟩
 
 /-! ## Real provenance collision after path projection -/

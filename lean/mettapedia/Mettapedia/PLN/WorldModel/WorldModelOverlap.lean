@@ -123,7 +123,7 @@ theorem inclusionExclusion
 /-- When overlap is zero, inclusion-exclusion recovers additive extraction. -/
 theorem inclusionExclusion_of_zero_overlap
     (L : SubtractiveOverlapLayer State Query Ev)
-    (W₁ W₂ : State) (q : Query) [AddRightCancelMonoid Ev]
+    (W₁ W₂ : State) (q : Query)
     (hzero : L.overlap W₁ W₂ q = 0) :
     L.independent W₁ W₂ q :=
   L.independent_iff_zero_overlap W₁ W₂ q |>.mpr hzero

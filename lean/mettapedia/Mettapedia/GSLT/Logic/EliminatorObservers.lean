@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Logic.ObserverDetermination
 import Mettapedia.GSLT.Logic.ObserverPresheaf
 import Mettapedia.GSLT.Logic.TypedObservationRelation
@@ -243,12 +244,8 @@ theorem Context.all_single {P : ∀ {A B : Ty}, Frame A B → Prop} {A B : Ty} {
 /-! ## The operational theory -/
 
 /-- Closed programs up to syntactic identity; nothing reduces. -/
-def programGSLT : GSLT where
-  Term := Program
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ step => step.elim
-  rewrites_resp_right := fun step _ => step.elim
+def programGSLT : GSLT :=
+  GSLT.stepFree (Program)
 
 theorem programGSLT_inert (source target : Program) : ¬ programGSLT.Step source target :=
   fun step => step

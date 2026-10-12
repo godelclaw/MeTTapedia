@@ -1,7 +1,3 @@
--- LLM primer: Models ALL failure modes from C: merge failure, binder failure.
--- Step relation has 10 constructors. processFrame split into per-frame helpers
--- to avoid cross-branch unfold issues in proofs.
-
 import Mettapedia.Languages.MeTTa.HE.TypedApplyDirect
 import Mettapedia.Languages.MeTTa.HE.OwnershipInvariant
 
@@ -9,6 +5,8 @@ import Mettapedia.Languages.MeTTa.HE.OwnershipInvariant
 # Explicit-Stack Typed Ordinary Application Machine
 
 Matches `TypedApplyDirect.typedApplyDirect` exactly, including failure modes.
+The finite leaf services are explicit; correspondence with native inner
+evaluation, dependent-domain selection and owned runtime frames is separate.
 
 ## Key Results
 

@@ -136,27 +136,27 @@ inductive Firing where
   | drop
 
 /-- A communication, or the code of a dropped quotation. -/
-def bookInstance (Γ : Ctx sig) : Firing → Type
+def dropExecutionInstance (Γ : Ctx sig) : Firing → Type
   | .comm => CommInstance Γ
   | .drop => Term sig Γ Srt.pr
 
 /-- A drop consumes the dropped quotation. -/
-def bookConsume : {site : Firing} → bookInstance Γ site → Multiset (Cls Γ Srt.pr)
+def dropExecutionConsume : {site : Firing} → dropExecutionInstance Γ site → Multiset (Cls Γ Srt.pr)
   | .comm, i => commConsume i
   | .drop, code => cls (drpT (quoT code)) ::ₘ 0
 
 /-- A drop adds the atoms of its code. -/
-def bookProduce : {site : Firing} → bookInstance Γ site → Multiset (Cls Γ Srt.pr)
+def dropExecutionProduce : {site : Firing} → dropExecutionInstance Γ site → Multiset (Cls Γ Srt.pr)
   | .comm, i => commProduce i
   | .drop, code => atoms code
 
 /-- The book profile as a resource system over atom classes. -/
-def bookSystem (Γ : Ctx sig) : System (Cls Γ Srt.pr) where
+def dropExecutionSystem (Γ : Ctx sig) : System (Cls Γ Srt.pr) where
   Site := Firing
-  Instance := bookInstance Γ
-  consume := fun i => bookConsume i
+  Instance := dropExecutionInstance Γ
+  consume := fun i => dropExecutionConsume i
   read := fun _ => 0
-  produce := fun i => bookProduce i
+  produce := fun i => dropExecutionProduce i
 
 /-! ## Each step is one firing on the bags of atoms -/
 
@@ -244,8 +244,8 @@ theorem strict_step_iff (a b : Term sig Γ Srt.pr) :
 
 /-- **A step of the book profile is exactly one communication or one drop on the
 bags of atoms.** -/
-theorem book_step_iff (a b : Term sig Γ Srt.pr) :
-    Steps bookRules a b ↔ (bookSystem Γ).theory.Step (atoms a) (atoms b) := by
+theorem dropExecution_step_iff (a b : Term sig Γ Srt.pr) :
+    Steps dropExecutionRules a b ↔ (dropExecutionSystem Γ).theory.Step (atoms a) (atoms b) := by
   constructor
   · intro step
     rcases steps_inversion (rest := [drop]) (Or.inr rfl) step with
@@ -403,7 +403,7 @@ theorem two_copies_commute :
     ac_rfl
 
 #print axioms strict_step_iff
-#print axioms book_step_iff
+#print axioms dropExecution_step_iff
 #print axioms strict_square
 #print axioms strict_conflict
 #print axioms one_output_two_inputs_conflict

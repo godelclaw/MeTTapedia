@@ -7,6 +7,10 @@ import Mettapedia.Machines.CMemory.Examples
 import Mettapedia.Machines.CMemory.Fractional
 import Mettapedia.Machines.CMemory.Lift
 import Mettapedia.Machines.CMemory.Concurrency
+import Mettapedia.Machines.CMemory.ExecutableStorage
+import Mettapedia.Machines.CMemory.ExecutableStorageControls
+import Mettapedia.Machines.CMemory.ProductiveBlocks
+import Mettapedia.Machines.CMemory.ProductiveBlocksControls
 
 /-!
 # A C memory model on Mettapedia's separation logic

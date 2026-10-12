@@ -450,3 +450,65 @@ example :
   rfl
 
 end Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Reflection
+
+private theorem normalize_list_eq_map (declaration : ReflectivePresentationDecl)
+    (patterns : List Pattern) : normalizeReflectiveList declaration patterns =
+      patterns.map (normalizeReflective declaration) := by
+  induction patterns with
+  | nil => rfl
+  | cons head tail ih => simp only [normalizeReflectiveList, List.map_cons, ih]
+
+theorem finish_normalize_free_names (declaration : ReflectivePresentationDecl)
+    (constructor : String) (arguments : List Pattern) :
+    (finishNormalizeReflectiveApply declaration constructor arguments).freeFvarNames =
+      arguments.flatMap Pattern.freeFvarNames := by
+  unfold finishNormalizeReflectiveApply
+  split
+  · split
+    · split <;> simp only [Pattern.freeFvarNames, List.flatMap_cons,
+        List.flatMap_nil, List.append_nil]
+    · simp only [Pattern.freeFvarNames]
+  · simp only [Pattern.freeFvarNames]
+
+theorem normalize_reflective_free_names (declaration : ReflectivePresentationDecl)
+    (pattern : Pattern) : (normalizeReflective declaration pattern).freeFvarNames =
+      pattern.freeFvarNames := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => rfl
+  | hfvar name => rfl
+  | happly constructor arguments ih =>
+      simp only [normalizeReflective, finish_normalize_free_names, normalize_list_eq_map,
+        Pattern.freeFvarNames, List.flatMap_map]
+      exact List.flatMap_congr (fun pattern member => ih pattern member)
+  | hlambda binder body ih => simpa only [normalizeReflective, Pattern.freeFvarNames] using ih
+  | hmultiLambda arity binders body ih => simpa only [normalizeReflective, Pattern.freeFvarNames] using ih
+  | hsubst body replacement ihBody ihReplacement =>
+      simp only [normalizeReflective, Pattern.freeFvarNames, ihBody, ihReplacement]
+  | hcollection kind elements rest ih =>
+      simp only [normalizeReflective, normalize_list_eq_map, Pattern.freeFvarNames, List.flatMap_map]
+      exact congrArg (· ++ rest.toList) (List.flatMap_congr (fun pattern member => ih pattern member))
+
+theorem normalize_replacement_free_names (declaration : ReflectivePresentationDecl)
+    (replacement : Pattern) :
+    (normalizeReflectiveReplacement declaration replacement).freeFvarNames =
+      replacement.freeFvarNames := by
+  unfold normalizeReflectiveReplacement
+  split
+  · split
+    · simp only [Pattern.freeFvarNames, List.flatMap_cons, List.flatMap_nil,
+        List.append_nil, normalize_reflective_free_names]
+    · exact normalize_reflective_free_names declaration _
+  · exact normalize_reflective_free_names declaration _
+
+#print axioms Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finish_normalize_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.normalize_reflective_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.normalize_replacement_free_names
+
+end Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution

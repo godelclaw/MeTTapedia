@@ -32,7 +32,7 @@ open scoped ProgramQuotation
 def resolverSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/mmu.metta"
-    sha256 "6d826f18b5d5f1a014f0e32204d6f2b0e1ca501efd43d650f7c0e315e74b110c"
+    sha256 "1ad2a077bf4cb7b2bb96a7bd1aaa07ce7be3196f81e5e619af15832515be01e0"
 
 def program : Program := TextualExecution.program.append resolverSource.program
 
@@ -639,7 +639,7 @@ private theorem lookup_body_returns (state : State) (entries : List Binding) (ke
           (boolean (decide (first.key = key))) _ _ _
         · apply native_variable_call_returns program bound state state "==" ["stored", "name"] _
             (by decide) (by decide) _ (by decide)
-          simp [StdLib.apply, bound, outer, lookupEnvironment, applySubst, Subst.lookup, beq_eq_decide]
+          simp [bound, outer, lookupEnvironment, applySubst, Subst.lookup, beq_eq_decide]
         · by_cases same : first.key = key
           · simp only [same, decide_true, boolean, lookup, if_pos] at ⊢
             simpa [bound, applySubst, Subst.lookup, optionValue] using
@@ -722,7 +722,7 @@ private theorem cons_body_returns (state : State) (first : Atom) (rest : List At
       (.expression (first :: rest)) _
     · apply native_variable_call_returns program bound state state "cons" ["item", "rest"] _
         (by decide) (by decide) _ (by decide)
-      simp [StdLib.apply, bound, bindings, consEnvironment, applySubst, Subst.lookup]
+      simp [bound, bindings, consEnvironment, applySubst, Subst.lookup]
     · simp [SpaceSemantics.matchValue, matchAtom, wrapped, bound, bindings, consEnvironment, Subst.lookup]
     · simpa [wrapped, listValue, applySubst, Subst.lookup] using
         unary_constructor_returns program wrapped state "MM0:L" "items" (by decide) (by decide)
@@ -804,7 +804,7 @@ private theorem bindVariable_body_returns (state : State) (entries : List Bindin
     · simpa [bindings, bindVariableEnvironment, applySubst, Subst.lookup] using
         variable_returns program bindings state "name"
     · exact grounded_returns program bindings state (.string "_")
-    · simp [StdLib.apply, nameValue, beq_eq_decide]
+    · simp [nameValue, beq_eq_decide]
     · decide
   · by_cases anonymous : name = "_"
     · simp only [anonymous, decide_true, boolean, bindVariable_anonymous]

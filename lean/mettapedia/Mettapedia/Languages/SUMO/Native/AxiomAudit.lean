@@ -4,7 +4,7 @@ import Mettapedia.Languages.SUMO.Native
 # Axiom audit for the native SUMO authority
 
 This file records the trusted-assumption surface of the semantic, deductive,
-checking, proof-search, and NIK authority theorems.  It is intentionally kept
+checking, proof-search, and SemanticService authority theorems.  It is intentionally kept
 separate from the public umbrella so ordinary builds do not print the audit.
 -/
 
@@ -26,8 +26,8 @@ separate from the public umbrella so ordinary builds do not print the audit.
 #print axioms Mettapedia.Languages.SUMO.Native.Certificate.check_complete
 #print axioms Mettapedia.Languages.SUMO.Native.Certificate.infer_complete
 #print axioms Mettapedia.Languages.SUMO.Native.ProofSearch.derivable_iff_reaches_empty
-#print axioms Mettapedia.Languages.SUMO.Native.NIKAuthority.checker_authority
-#print axioms Mettapedia.Languages.SUMO.Native.NIKAuthority.entailmentChecker_authority
+#print axioms Mettapedia.Languages.SUMO.Native.CheckerAuthority.checker_authority
+#print axioms Mettapedia.Languages.SUMO.Native.CheckerAuthority.entailmentChecker_authority
 #print axioms Mettapedia.Languages.SUMO.Native.SignatureInference.domainConsequences_sound
 #print axioms Mettapedia.Languages.SUMO.Native.SignatureInference.expandedAssumptions_sound
 #print axioms Mettapedia.Languages.SUMO.Native.SignatureInference.checker_authority

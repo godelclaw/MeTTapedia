@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldSelection
 
 /-!
 # Policy-relative reflection for typed proof-world routes
@@ -13,7 +13,7 @@ This is the observer-relative reflection boundary.  It lets a forward route
 which forgets proof identity remain a valid native realization for length,
 multiplicity, or another invariant it actually preserves.  The same route is
 ineligible for a source-history policy separated by one of its collisions.
-NIK may therefore compare exact candidates using supplied executable policy
+SemanticService may therefore compare exact candidates using supplied executable policy
 runners without imposing global injectivity as a universal gate.
 
 The fibrewise characterization is a specification theorem.  Runtime admission
@@ -30,7 +30,7 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.GSLTIL.EvidenceWorlds
 open Mettapedia.GSLT.LanguageDef.GSLTIL.TypedEvidenceRoutes
 open Mettapedia.GSLT.LanguageDef.GSLTIL.TypedEvidenceRoutes.TypedEvidenceRoute
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCapabilitySelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCapabilitySelection
 
 variable {sourcePresentation middlePresentation targetPresentation :
   ValidatedLanguageDef}
@@ -56,11 +56,11 @@ abbrev RoutePolicyRealization
 
 namespace RoutePolicyRealization
 
-/-- Install retained route-policy runners directly into NIK's ordinary
+/-- Install retained route-policy runners directly into SemanticService's ordinary
 policy-catalog interface.  The unit index represents this one route; native
 comparison with other routes remains the responsibility of the surrounding
 recognized family. -/
-def toNIKCatalog
+def toCapabilityCatalog
     {route : TypedEvidenceRoute source target}
     {command : source.profile.Command}
     {family : PolicyFamily (SourceHistory source command)}
@@ -75,28 +75,28 @@ def toNIKCatalog
     intro weaker stronger related policy supported
     exact supported
 
-@[simp] theorem toNIKCatalog_readout
+@[simp] theorem toCapabilityCatalog_readout
     {route : TypedEvidenceRoute source target}
     {command : source.profile.Command}
     {family : PolicyFamily (SourceHistory source command)}
     (realization : RoutePolicyRealization route command family)
     (history : SourceHistory source command) :
-    (realization.toNIKCatalog.readout () history) =
+    (realization.toCapabilityCatalog.readout () history) =
       (route.atCommand command).mapHistory history :=
   rfl
 
-/-- The NIK catalog obtained from a retained realization factors onto the
+/-- The SemanticService catalog obtained from a retained realization factors onto the
 canonical answer vector for any exact subset request. -/
-theorem toNIKCatalog_requestedVector_factors
+theorem toCapabilityCatalog_requestedVector_factors
     {route : TypedEvidenceRoute source target}
     {command : source.profile.Command}
     {family : PolicyFamily (SourceHistory source command)}
     (realization : RoutePolicyRealization route command family)
     (required : Set family.Policy) :
     NonFactorization.Factors
-      (realization.toNIKCatalog.readout ())
-      (realization.toNIKCatalog.requestedFamily required).vector := by
-  apply realization.toNIKCatalog.requestedVector_factors
+      (realization.toCapabilityCatalog.readout ())
+      (realization.toCapabilityCatalog.requestedFamily required).vector := by
+  apply realization.toCapabilityCatalog.requestedVector_factors
   intro policy member
   trivial
 
@@ -188,7 +188,7 @@ theorem identity_supports_every_family
 namespace Canary
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldPrograms.SignatureEvidenceInterpretation.Canary
-open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldNIKSelection.Canary
+open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldSelection.Canary
 
 abbrev RichHistory := List (richProfile.World ())
 
@@ -261,8 +261,8 @@ end Canary
 
 #print axioms supportsSourcePolicies_iff_vectorFactors
 #print axioms supportsSourcePolicies_iff_compatible
-#print axioms RoutePolicyRealization.toNIKCatalog
-#print axioms RoutePolicyRealization.toNIKCatalog_requestedVector_factors
+#print axioms RoutePolicyRealization.toCapabilityCatalog
+#print axioms RoutePolicyRealization.toCapabilityCatalog_requestedVector_factors
 #print axioms reflectsWorlds_supports_every_family
 #print axioms prefix_supports_of_composite_supports
 #print axioms identityPolicyRealization

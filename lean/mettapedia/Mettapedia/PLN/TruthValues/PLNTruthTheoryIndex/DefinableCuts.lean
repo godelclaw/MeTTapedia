@@ -2342,7 +2342,7 @@ structure DefinableCutTightnessProfile where
 
 /-- Compact proof-carrying handle for the current definable-cut tightness
 interface. -/
-def definableCutTightnessProfile : DefinableCutTightnessProfile where
+theorem definableCutTightnessProfile : DefinableCutTightnessProfile where
   genericLowerEndpoint := ExtensionalDefinableCut.lower_eq_one_iff_provable
   genericWidthCollapse := ExtensionalDefinableCut.width_eq_zero_iff_decides
   certifiedFragmentOrderTight := ExtensionalDefinableCut.fragmentOrderTight

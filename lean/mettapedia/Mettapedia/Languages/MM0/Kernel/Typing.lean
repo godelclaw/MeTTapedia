@@ -20,9 +20,20 @@ structure TermDecl where
   arguments : Context
   resultSort : Nat
   dependencies : Finset Nat
+  deriving DecidableEq
 
 abbrev TermSignature := Nat → Option TermDecl
 abbrev ExpressionType := Context × Nat
+
+namespace TermDecl
+
+/-- Only global sort indices move; formal positions and dependencies stay local. -/
+def relocate? (sorts : Nat → Option Nat) (declaration : TermDecl) : Option TermDecl := do
+  let arguments ← declaration.arguments.relocateSorts? sorts
+  let result ← sorts declaration.resultSort
+  pure ⟨arguments, result, declaration.dependencies⟩
+
+end TermDecl
 
 namespace Preterm
 
@@ -159,6 +170,38 @@ inductive FitsBinder (signature : TermSignature) (context : Context) : Preterm �
   | regular {expression : Preterm} {sort : Nat} {dependencies : Finset Nat} :
       HasType signature context expression [] sort →
       FitsBinder signature context expression (.regular sort dependencies)
+
+/-- Typing an application spine consumes exactly a prefix of the function's
+formal context. Each supplied argument fits its own formal, including bound
+slots; no declaration or saturation assumption is hidden in this inversion. -/
+theorem HasType.applyArgs_iff (signature : TermSignature) (context : Context)
+    (function : Preterm) (arguments : List Preterm) (remaining : Context) (sort : Nat) :
+    HasType signature context (applyArgs function arguments) remaining sort ↔
+      ∃ consumed, HasType signature context function (consumed ++ remaining) sort ∧
+        List.Forall₂ (FitsBinder signature context) arguments consumed := by
+  induction arguments generalizing function with
+  | nil =>
+      constructor
+      · intro typing
+        exact ⟨[], typing, .nil⟩
+      · rintro ⟨consumed, typing, fits⟩
+        cases fits
+        exact typing
+  | cons argument arguments ih =>
+      rw [applyArgs, ih]
+      constructor
+      · rintro ⟨consumed, typing, fits⟩
+        cases typing with
+        | bound functionTyped lookup =>
+            exact ⟨_ :: consumed, functionTyped, .cons (.bound lookup) fits⟩
+        | regular functionTyped argumentTyped =>
+            exact ⟨_ :: consumed, functionTyped, .cons (.regular argumentTyped) fits⟩
+      · rintro ⟨consumed, typing, fits⟩
+        cases fits with
+        | cons first rest =>
+            cases first with
+            | bound lookup => exact ⟨_, .bound typing lookup, rest⟩
+            | regular argumentTyped => exact ⟨_, .regular typing argumentTyped, rest⟩
 
 def checkBinder (signature : TermSignature) (context : Context) (expression : Preterm) : Binder → Bool
   | .bound sort => decide (boundSort? context expression = some sort)

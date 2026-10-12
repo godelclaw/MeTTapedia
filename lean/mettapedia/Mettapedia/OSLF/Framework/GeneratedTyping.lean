@@ -190,10 +190,10 @@ We prove this correspondence by showing there's a natural embedding between
 the two typing judgments. -/
 
 /-- The process sort for rhoCalc -/
-def rhoProc : "Proc" ∈ rhoCalc.types := by decide
+theorem rhoProc : "Proc" ∈ rhoCalc.types := by decide
 
 /-- The name sort for rhoCalc -/
-def rhoName : "Name" ∈ rhoCalc.types := by decide
+theorem rhoName : "Name" ∈ rhoCalc.types := by decide
 
 /-- PZero is in rhoCalc's grammar -/
 theorem rhoCalc_has_PZero :

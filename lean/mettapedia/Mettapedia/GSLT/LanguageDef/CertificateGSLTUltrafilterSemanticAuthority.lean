@@ -14,7 +14,7 @@ Coordinatewise rule soundness therefore lifts to `UltraTrue` rule soundness at
 any selected ultrafilter.
 
 The resulting `SemanticPresentation` is consumed by the ordinary heterogeneous
-NIK authority generator.  The checker and certificate language do not inspect
+SemanticService authority generator.  The checker and certificate language do not inspect
 the ultrafilter; only the independently supplied meaning face changes.  A
 selected perspective is thus semantic authority data, not an operational
 heuristic and not a definition of derivability.
@@ -193,7 +193,7 @@ structure PerspectivePresentation (Index : Type uIndex) where
 namespace PerspectivePresentation
 
 /-- Select one ultrafilter perspective and obtain a semantic presentation
-accepted by the heterogeneous NIK authority generator. -/
+accepted by the heterogeneous SemanticService authority generator. -/
 def select {Index : Type uIndex} (presentation : PerspectivePresentation Index)
     (view : Ultrafilter Index) : SemanticPresentation where
   object := presentation.object

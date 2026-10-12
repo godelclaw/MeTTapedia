@@ -1,5 +1,5 @@
 import Mettapedia.UniversalAI.IncrementalCompressionBridge
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilityNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilitySelection
 
 /-!
 # Incremental-compression guidance for candidate optimization selection
@@ -12,7 +12,7 @@ This module makes that boundary explicit.  A caller supplies a trace projection
 from one exact source occurrence to a binary execution trace.  A genuine
 `CompressionStep` for that trace gives the compiled face a strictly smaller
 two-part code than the ordinary face.  The resulting cost policy is applied
-only to the semantic maximal frontier already constructed by candidate's NIK
+only to the semantic maximal frontier already constructed by candidate's SemanticService
 optimization theory.
 
 The operational consequences are deliberately conservative:
@@ -34,12 +34,12 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates
 namespace IncrementalCompressionOptimizationSelection
 
 open KolmogorovComplexity
-open Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission
-open Mettapedia.GSLT.LanguageDef.MaximalNativeCalculus
+open Mettapedia.GSLT.LanguageDef.OptimizationAdmission
+open Mettapedia.GSLT.LanguageDef.CapabilitySelection
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilityNIKSelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKProfitabilityFrontierSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilitySelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.ProfitabilityFrontierSelection
 
 universe uSource
 
@@ -280,7 +280,7 @@ theorem compressionSelection_current_iff
     (compressionSelection eligible guidance model receipt).chosen =
         Face.compiled ∧
       ((Prepared.optimized
-          (family := nikFamily spec) (dependencies := keyDependencies Source)
+          (family := calculusReplayFamily spec) (dependencies := keyDependencies Source)
           (revision := candidate.key) (candidate := candidate)
           eligible.authority eligible.shape).Current currentKey ↔
         candidate.key = currentKey) :=
@@ -314,7 +314,7 @@ def finiteDescriptionLengthModel {Source : Type}
       finiteCompressionStep.residual.length
 
 abbrev metamathEligible :=
-  NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.eligible
+  NativeTypedOptimizationCapabilitySelection.MetamathCanary.eligible
 
 def metamathGuidance : CompressionGuidance finiteCompressionAlgorithm
     (fourBitTrace (Source :=
@@ -346,7 +346,7 @@ theorem finite_compression_selects_exact_compiled_face :
       (targetObject MetamathOperationRecordFusion.spec
         MetamathOperationRecordFusion.candidate).Meaning
         (finiteMetamathSelection.operation.run
-          NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input) := by
+          NativeTypedOptimizationCapabilitySelection.MetamathCanary.input) := by
   constructor
   · rfl
   · apply compressionSelection_operation_preserves metamathEligible
@@ -358,11 +358,11 @@ theorem finite_compression_selects_exact_compiled_face :
 dispatch source plan untouched when native authority is absent. -/
 theorem finite_compression_without_authority_is_source :
     prepareWithGuidance
-        NativeTypedOptimizationNIKBridge.DispatchCanary.spec
+        NativeTypedOptimizationBridge.DispatchCanary.spec
         fourBitTrace
-        NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source
+        NativeTypedOptimizationBridge.DispatchCanary.candidate.source
         (some (finiteGuidance
-          NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source))
+          NativeTypedOptimizationBridge.DispatchCanary.candidate.source))
         none = .source :=
   rfl
 

@@ -116,7 +116,7 @@ def InterfaceSat (x : ∀ i, C.Space i) (edge : C.Interface) : Prop :=
 
 /-- **Joint completion is consistency of the interface theory.** -/
 theorem jointCompletion_iff_consistent :
-    Nonempty C.JointCompletion ↔ Completion.Consistent C.InterfaceSat Set.univ := by
+    Nonempty C.JointCompletion ↔ Mettapedia.Logic.TheoryModel.Consistent C.InterfaceSat Set.univ := by
   constructor
   · rintro ⟨x⟩
     exact ⟨x.1, fun edge _ => x.2 edge.2.2⟩
@@ -128,7 +128,7 @@ own exactly when its one-sentence theory is consistent**, given a local
 completion of every component and decidable equality of components. -/
 theorem edgeCompatible_iff_consistent [DecidableEq Index] (default : ∀ i, C.Space i)
     {i j : Index} (different : i ≠ j) (edge : C.Edge i j) :
-    C.EdgeCompatible edge ↔ Completion.Consistent C.InterfaceSat {⟨i, j, edge⟩} := by
+    C.EdgeCompatible edge ↔ Mettapedia.Logic.TheoryModel.Consistent C.InterfaceSat {⟨i, j, edge⟩} := by
   constructor
   · rintro ⟨a, b, compatible⟩
     refine ⟨Function.update (Function.update default i a) j b, fun sentence member => ?_⟩

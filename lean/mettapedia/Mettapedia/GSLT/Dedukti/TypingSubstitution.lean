@@ -367,6 +367,24 @@ theorem HasType.weaken_many {profile : Profile} (closedBodies : theory.ClosedBod
 
 /-! ## Substitution -/
 
+/-- Closed images of declared constants can be checked at the empty context.
+The existing weakening theorem supplies every context required by a typed
+interpretation. Rule preservation is a separate obligation. -/
+theorem Interpretation.Typed.of_closed_constants {profile : Profile}
+    {interpretation : Interpretation} {source target : Theory}
+    (sourceTypes : source.ClosedTypes) (targetBodies : target.ClosedBodies)
+    (targetTypes : target.ClosedTypes)
+    (constants : ∀ name type, source.constType name = some type →
+      HasType profile target [] (interpretation.meaning name) (interpretation.apply type)) :
+    interpretation.Typed profile source target where
+  constType := fun name type declared context => by
+    have closedType : Closed (interpretation.apply type) :=
+      interpretation.apply_wellScoped (sourceTypes name type declared)
+    have image := (constants name type declared).weaken_many targetBodies targetTypes
+      (context.map interpretation.apply)
+    rw [List.append_nil, (interpretation.closed name).lift, closedType.lift] at image
+    exact image
+
 /-- Substitute for a variable in the entries in front of it: each under the
 entries behind it. -/
 def substCtx (argument : Term) : Ctx → Ctx

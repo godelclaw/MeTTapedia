@@ -247,7 +247,7 @@ structure PeTTaTruthFunctionAuditProfile where
         (Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.capConf 0.5)
 
 /-- PeTTa truth-function confidence audit profile. -/
-def pettaTruthFunctionAuditProfile : PeTTaTruthFunctionAuditProfile where
+theorem pettaTruthFunctionAuditProfile : PeTTaTruthFunctionAuditProfile where
   inductionConfidenceWeightMin :=
     petta_induction_confidence_is_weight_min
   abductionConfidenceWeightMin :=
@@ -320,7 +320,7 @@ structure ConfidenceFormulaAuditProfile where
 /-- Confidence formula audit: `_unfold` facts are kept as bookkeeping, while
 the real corroborating facts are the buggy-formula canary, reconstruction
 necessity, and Walley width-complement forcing. -/
-def confidenceFormulaAuditProfile : ConfidenceFormulaAuditProfile where
+theorem confidenceFormulaAuditProfile : ConfidenceFormulaAuditProfile where
   minConfidenceCorrectIsUnfold :=
     minConfidenceCorrect_unfold
   combineConfidenceCorrectIsUnfold :=

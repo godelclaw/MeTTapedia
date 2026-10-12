@@ -42,21 +42,21 @@ goal is the rule's conclusion at them, and the children prove its premises. -/
 theorem check_node_iff {Query : Type} (evaluate : Query → Option Pattern) {r : FORule}
     (member : r ∈ rules) (args : List Pattern) (children : List (CompactProof Query))
     (goal : Pattern) :
-    check formMM0 evaluate goal (.node ⟨⟨r.id⟩, args⟩ children) = true ↔
+    check kernelCalculus evaluate goal (.node ⟨⟨r.id⟩, args⟩ children) = true ↔
       args.length = r.vars.length ∧ (∀ a ∈ args, argumentValidAt 0 a = true) ∧
         goal = r.instConclusion args ∧
-          checkChildren formMM0 evaluate (r.instPremises args) children = true := by
+          checkChildren kernelCalculus evaluate (r.instPremises args) children = true := by
   have key : ∀ premises conclusion,
-      instantiateRule? formMM0 ⟨⟨r.id⟩, args⟩ = some (premises, conclusion) ↔
+      instantiateRule? kernelCalculus ⟨⟨r.id⟩, args⟩ = some (premises, conclusion) ↔
         args.length = r.vars.length ∧ (∀ a ∈ args, argumentValidAt 0 a = true) ∧
           premises = r.instPremises args ∧ conclusion = r.instConclusion args :=
     fun premises conclusion => instantiateRule?_eq_some_iff_application.trans
-      (ruleApplication_iff formMM0 rules presents.package r member (presents.lookup member)
+      (ruleApplication_iff kernelCalculus rules presents.package r member (presents.lookup member)
         args premises conclusion)
   simp only [check]
   constructor
   · intro accepted
-    cases application : instantiateRule? formMM0 ⟨⟨r.id⟩, args⟩ with
+    cases application : instantiateRule? kernelCalculus ⟨⟨r.id⟩, args⟩ with
     | none => simp [application] at accepted
     | some result =>
         obtain ⟨premises, conclusion⟩ := result
@@ -69,7 +69,7 @@ theorem check_node_iff {Query : Type} (evaluate : Query → Option Pattern) {r :
 
 theorem check_computed_iff {Query : Type} (evaluate : Query → Option Pattern) (query : Query)
     (goal : Pattern) :
-    check formMM0 evaluate goal (.computed query) = true ↔ evaluate query = some goal := by
+    check kernelCalculus evaluate goal (.computed query) = true ↔ evaluate query = some goal := by
   simp [check]
 
 /-! ## Translation -/
@@ -149,7 +149,7 @@ variable {T}
 
 theorem hypothesisChain_accepted : ∀ (index : Nat) (hypotheses : List Preterm) {expression : Preterm},
     hypotheses[index]? = some expression →
-      check formMM0 (family T).evaluate (hypothesisJ expression hypotheses)
+      check kernelCalculus (family T).evaluate (hypothesisJ expression hypotheses)
         (hypothesisChain T index hypotheses) = true
   | _, [], _, found => by simp at found
   | 0, first :: rest, expression, found => by
@@ -171,7 +171,7 @@ theorem hypothesisChain_accepted : ∀ (index : Nat) (hypotheses : List Preterm)
         exact hypothesisChain_accepted index rest found
 
 theorem hypothesisChain_sound : ∀ (index : Nat) (hypotheses : List Preterm) {expression : Preterm},
-    check formMM0 (family T).evaluate (hypothesisJ expression hypotheses)
+    check kernelCalculus (family T).evaluate (hypothesisJ expression hypotheses)
         (hypothesisChain T index hypotheses) = true →
       hypotheses[index]? = some expression
   | _, [], _, accepted => by
@@ -203,11 +203,11 @@ theorem accepted_of_checks {context : Context} {hypotheses : List Preterm}
     (checked : ProofWitness.Checks T.termSignature T.definitionSignature T.theoremSignature
       context hypotheses witness expression) :
     ∃ needed, ∀ fuel, needed ≤ fuel →
-      check formMM0 (family T).evaluate (derivesJ context hypotheses expression)
+      check kernelCalculus (family T).evaluate (derivesJ context hypotheses expression)
         (translate T fuel context hypotheses witness) = true := by
   induction checked using ProofWitness.Checks.rec
       (motive_2 := fun children expressions _ => ∃ needed, ∀ fuel, needed ≤ fuel →
-        check formMM0 (family T).evaluate (allJ context hypotheses expressions)
+        check kernelCalculus (family T).evaluate (allJ context hypotheses expressions)
           (translateAll T fuel context hypotheses children expressions) = true) with
   | hyp found =>
       refine ⟨0, fun fuel _ => ?_⟩
@@ -290,7 +290,7 @@ mutual
 
 theorem checks_of_accepted {fuel : Nat} {context : Context} {hypotheses : List Preterm} :
     ∀ (witness : ProofWitness) {expression : Preterm},
-      check formMM0 (family T).evaluate (derivesJ context hypotheses expression)
+      check kernelCalculus (family T).evaluate (derivesJ context hypotheses expression)
           (translate T fuel context hypotheses witness) = true →
         ProofWitness.Checks T.termSignature T.definitionSignature T.theoremSignature
           context hypotheses witness expression
@@ -337,7 +337,7 @@ theorem checks_of_accepted {fuel : Nat} {context : Context} {hypotheses : List P
 
 theorem checksList_of_accepted {fuel : Nat} {context : Context} {hypotheses : List Preterm} :
     ∀ (children : List ProofWitness) {expressions : List Preterm},
-      check formMM0 (family T).evaluate (allJ context hypotheses expressions)
+      check kernelCalculus (family T).evaluate (allJ context hypotheses expressions)
           (translateAll T fuel context hypotheses children expressions) = true →
         ProofWitness.ChecksList T.termSignature T.definitionSignature T.theoremSignature
           context hypotheses children expressions
@@ -372,7 +372,7 @@ theorem checks_iff_accepted (context : Context) (hypotheses : List Preterm)
     (witness : ProofWitness) (expression : Preterm) :
     ProofWitness.Checks T.termSignature T.definitionSignature T.theoremSignature
         context hypotheses witness expression ↔
-      ∃ fuel, check formMM0 (family T).evaluate (derivesJ context hypotheses expression)
+      ∃ fuel, check kernelCalculus (family T).evaluate (derivesJ context hypotheses expression)
         (translate T fuel context hypotheses witness) = true := by
   constructor
   · intro checked
@@ -386,7 +386,7 @@ theorem proof_eq_some_iff_accepted (context : Context) (hypotheses : List Preter
     (witness : ProofWitness) (expression : Preterm) :
     ProofWitness.proof? T.termSignature T.definitionSignature T.theoremSignature
         context hypotheses witness = some expression ↔
-      ∃ fuel, check formMM0 (family T).evaluate (derivesJ context hypotheses expression)
+      ∃ fuel, check kernelCalculus (family T).evaluate (derivesJ context hypotheses expression)
         (translate T fuel context hypotheses witness) = true :=
   (ProofWitness.proof_eq_some_iff _ _ _ _ _ _ _).trans
     (checks_iff_accepted context hypotheses witness expression)

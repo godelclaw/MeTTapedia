@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.OperationalRealization
 import Mettapedia.GSLT.Dynamics.ObservationDiscipline
 
@@ -92,7 +93,7 @@ theorem collect_events_append {system : GSLT.{uTerm}}
 
 namespace Canary
 
-@[reducible] def system : GSLT := GSLT.discrete Bool
+@[reducible] def system : GSLT := GSLT.stepFree Bool
 
 def provenance : GSLTObservation system where
   collection :=

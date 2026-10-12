@@ -365,7 +365,7 @@ def unit : FreeDocumentElaboration PUnit where
 /-- The canonical flat document elaboration: generators elaborate to their
 ordered list, with concatenation as payload composition. -/
 def orderedList (Generator : Type*) : FreeDocumentElaboration (List Generator) where
-  generators := discrete Generator
+  generators := GSLT.stepFree Generator
   elaboration :=
     { elaborate := some
       equation := by

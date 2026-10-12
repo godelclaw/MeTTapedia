@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Distinction.Probabilistic.LogicalDistance
 import Mettapedia.GSLT.Distinction.Probabilistic.System
 import Mettapedia.GSLT.Core.Composition
@@ -141,15 +142,11 @@ end Classes
 
 /-- The discrete GSLT of the states, as a reducible definition: its terms are
 the states, its equations are equality, and it has no rewrites.  It is
-`GSLT.discrete` (`stateGSLT_eq_discrete`). -/
-abbrev stateGSLT (S : Type*) : GSLT where
-  Term := S
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+`GSLT.stepFree` (`stateGSLT_eq_stepFree`). -/
+abbrev stateGSLT (S : Type*) : GSLT :=
+  GSLT.stepFree (S)
 
-theorem stateGSLT_eq_discrete (S : Type*) : stateGSLT S = GSLT.discrete S := rfl
+theorem stateGSLT_eq_stepFree (S : Type*) : stateGSLT S = GSLT.stepFree S := rfl
 
 variable (P : LabelledMarkovChain ℝ A Atom S)
 

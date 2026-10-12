@@ -154,7 +154,7 @@ private theorem ordinary_not_atom {type : CoreType}
     Atom.atomType]
 
 /-- The authored semantic core is sound for the independent HE type-matching
-relation.  The output bindings are existential because NIK preserves the
+relation.  The output bindings are existential because SemanticService preserves the
 guest judgment rather than imposing one binding representation. -/
 theorem CoreConsistency.toTypeMatchRel
     {actual expected : CoreType} {edge : CoreEdge}

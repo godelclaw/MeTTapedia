@@ -198,6 +198,184 @@ end
   cases right
   simp [sourceVarSame, Ty.same_eq_true_iff]
 
+/-- Sharing may avoid a repeated structural walk, but never changes the
+comparison of independently allocated values. The shortcut requires the
+comparator's reflexivity proof. -/
+@[inline] def sharedComparison {α : Type} (comparison : α → α → Bool)
+    (reflexive : ∀ value, comparison value value = true) (left right : α) : Bool :=
+  withPtrEq left right (fun _ => comparison left right)
+    (by intro equal; cases equal; exact reflexive left)
+
+@[simp] theorem sharedComparison_eq {α : Type} (comparison : α → α → Bool)
+    (reflexive : ∀ value, comparison value value = true) (left right : α) :
+    sharedComparison comparison reflexive left right = comparison left right := rfl
+
+@[simp] theorem sharedComparison_ty_eq_true_iff
+    (reflexive : ∀ value, Ty.same value value = true) (left right : Ty) :
+    sharedComparison Ty.same reflexive left right = true ↔ left = right :=
+  Ty.same_eq_true_iff left right
+
+@[simp] theorem sharedComparison_constant_eq_true_iff
+    (reflexive : ∀ value, Const.same value value = true) (left right : Const) :
+    sharedComparison Const.same reflexive left right = true ↔ left = right :=
+  Const.same_eq_true_iff left right
+
+@[simp] theorem sharedComparison_operator_eq_true_iff
+    (reflexive : ∀ value, TypeOp.same value value = true) (left right : TypeOp) :
+    sharedComparison TypeOp.same reflexive left right = true ↔ left = right :=
+  TypeOp.same_eq_true_iff left right
+
+/-- A recursive comparison retains its own equality proof. This permits a
+sharing shortcut at every provenance node without changing the reference
+comparison or trusting a name-only comparison. -/
+@[inline] private def sharedCertified {α : Type} (comparison : α → α → Bool)
+    (reflexive : ∀ value, comparison value value = true) (left right : α)
+    (fallback : Unit → {value : Bool // value = comparison left right}) :
+    {value : Bool // value = comparison left right} :=
+  ⟨withPtrEq left right (fun _ => (fallback ()).val) (by
+      intro equal
+      rw [(fallback ()).property, equal]
+      exact reflexive right),
+    (fallback ()).property⟩
+
+mutual
+  private def Ty.sharedSame (left right : Ty) : {value : Bool // value = Ty.same left right} :=
+    sharedCertified Ty.same (fun value => (Ty.same_eq_true_iff value value).mpr rfl)
+      left right fun _ =>
+      match left, right with
+      | .var l, .var r => ⟨decide (l = r), by simp only [Ty.same]⟩
+      | .op lop largs, .op rop rargs =>
+          ⟨(TypeOp.sharedSame lop rop).val && (Ty.sharedListSame largs rargs).val, by
+            rw [(TypeOp.sharedSame lop rop).property, (Ty.sharedListSame largs rargs).property]
+            simp only [Ty.same]⟩
+      | .var _, .op _ _ | .op _ _, .var _ => ⟨false, by simp only [Ty.same]⟩
+  termination_by sizeOf left
+
+  private def Ty.sharedListSame (left right : List Ty) :
+      {value : Bool // value = Ty.listSame left right} :=
+    match left, right with
+    | [], [] => ⟨true, by simp only [Ty.listSame]⟩
+    | l :: ls, r :: rs =>
+        ⟨(Ty.sharedSame l r).val && (Ty.sharedListSame ls rs).val, by
+          rw [(Ty.sharedSame l r).property, (Ty.sharedListSame ls rs).property]
+          simp only [Ty.listSame]⟩
+    | [], _ :: _ | _ :: _, [] => ⟨false, by simp only [Ty.listSame]⟩
+  termination_by sizeOf left
+
+  private def TypeOp.sharedSame (left right : TypeOp) :
+      {value : Bool // value = TypeOp.same left right} :=
+    sharedCertified TypeOp.same (fun value => (TypeOp.same_eq_true_iff value value).mpr rfl)
+      left right fun _ =>
+      match left, right with
+      | .mk lname lbody, .mk rname rbody =>
+          ⟨decide (lname = rname) && (TypeOpProvenance.sharedSame lbody rbody).val, by
+            rw [(TypeOpProvenance.sharedSame lbody rbody).property]
+            simp only [TypeOp.same]⟩
+  termination_by sizeOf left
+
+  private def TypeOpProvenance.sharedSame (left right : TypeOpProvenance) :
+      {value : Bool // value = TypeOpProvenance.same left right} :=
+    sharedCertified TypeOpProvenance.same
+      (fun value => (TypeOpProvenance.same_eq_true_iff value value).mpr rfl) left right fun _ =>
+      match left, right with
+      | .undefined, .undefined => ⟨true, by simp only [TypeOpProvenance.same]⟩
+      | .defined lp lv, .defined rp rv =>
+          ⟨(SourceTerm.sharedSame lp rp).val && decide (lv = rv), by
+            rw [(SourceTerm.sharedSame lp rp).property]
+            simp only [TypeOpProvenance.same]⟩
+      | .undefined, .defined _ _ | .defined _ _, .undefined => ⟨false, by simp only [TypeOpProvenance.same]⟩
+  termination_by sizeOf left
+
+  private def Const.sharedSame (left right : Const) :
+      {value : Bool // value = Const.same left right} :=
+    sharedCertified Const.same (fun value => (Const.same_eq_true_iff value value).mpr rfl)
+      left right fun _ =>
+      match left, right with
+      | .mk lname lbody, .mk rname rbody =>
+          ⟨decide (lname = rname) && (ConstProvenance.sharedSame lbody rbody).val, by
+            rw [(ConstProvenance.sharedSame lbody rbody).property]
+            simp only [Const.same]⟩
+  termination_by sizeOf left
+
+  private def ConstProvenance.sharedSame (left right : ConstProvenance) :
+      {value : Bool // value = ConstProvenance.same left right} :=
+    sharedCertified ConstProvenance.same
+      (fun value => (ConstProvenance.same_eq_true_iff value value).mpr rfl) left right fun _ =>
+      match left, right with
+      | .undefined, .undefined => ⟨true, by simp only [ConstProvenance.same]⟩
+      | .defined ld, .defined rd =>
+          ⟨(SourceTerm.sharedSame ld rd).val, by
+            simpa only [ConstProvenance.same] using (SourceTerm.sharedSame ld rd).property⟩
+      | .abstraction lo, .abstraction ro | .representation lo, .representation ro =>
+          ⟨(TypeOp.sharedSame lo ro).val, by
+            simpa only [ConstProvenance.same] using (TypeOp.sharedSame lo ro).property⟩
+      | .undefined, .defined _ | .undefined, .abstraction _ | .undefined, .representation _
+      | .defined _, .undefined | .defined _, .abstraction _ | .defined _, .representation _
+      | .abstraction _, .undefined | .abstraction _, .defined _ | .abstraction _, .representation _
+      | .representation _, .undefined | .representation _, .defined _ | .representation _, .abstraction _ =>
+          ⟨false, by simp only [ConstProvenance.same]⟩
+  termination_by sizeOf left
+
+  private def SourceTerm.sharedSame (left right : SourceTerm) :
+      {value : Bool // value = SourceTerm.same left right} :=
+    sharedCertified SourceTerm.same (fun value => (SourceTerm.same_eq_true_iff value value).mpr rfl)
+      left right fun _ =>
+      match left, right with
+      | .const lc lt, .const rc rt =>
+          ⟨(Const.sharedSame lc rc).val && (Ty.sharedSame lt rt).val, by
+            rw [(Const.sharedSame lc rc).property, (Ty.sharedSame lt rt).property]
+            simp only [SourceTerm.same]⟩
+      | .var ln lt, .var rn rt =>
+          ⟨decide (ln = rn) && (Ty.sharedSame lt rt).val, by
+            rw [(Ty.sharedSame lt rt).property]
+            simp only [SourceTerm.same]⟩
+      | .app lf la, .app rf ra =>
+          ⟨(SourceTerm.sharedSame lf rf).val && (SourceTerm.sharedSame la ra).val, by
+            rw [(SourceTerm.sharedSame lf rf).property, (SourceTerm.sharedSame la ra).property]
+            simp only [SourceTerm.same]⟩
+      | .abs ln lt lb, .abs rn rt rb =>
+          ⟨decide (ln = rn) && (Ty.sharedSame lt rt).val && (SourceTerm.sharedSame lb rb).val, by
+            rw [(Ty.sharedSame lt rt).property, (SourceTerm.sharedSame lb rb).property]
+            simp only [SourceTerm.same]⟩
+      | .const _ _, .var _ _ | .const _ _, .app _ _ | .const _ _, .abs _ _ _
+      | .var _ _, .const _ _ | .var _ _, .app _ _ | .var _ _, .abs _ _ _
+      | .app _ _, .const _ _ | .app _ _, .var _ _ | .app _ _, .abs _ _ _
+      | .abs _ _ _, .const _ _ | .abs _ _ _, .var _ _ | .abs _ _ _, .app _ _ =>
+          ⟨false, by simp only [SourceTerm.same]⟩
+  termination_by sizeOf left
+end
+
+private def Ty.sharedComparison (left right : Ty) : Bool := (Ty.sharedSame left right).val
+private def TypeOp.sharedComparison (left right : TypeOp) : Bool := (TypeOp.sharedSame left right).val
+private def Const.sharedComparison (left right : Const) : Bool := (Const.sharedSame left right).val
+private def SourceTerm.sharedComparison (left right : SourceTerm) : Bool :=
+  (SourceTerm.sharedSame left right).val
+
+@[csimp] private theorem Ty.same_eq_sharedComparison : Ty.same = Ty.sharedComparison := by
+  funext left right
+  exact (Ty.sharedSame left right).property.symm
+
+@[csimp] private theorem TypeOp.same_eq_sharedComparison : TypeOp.same = TypeOp.sharedComparison := by
+  funext left right
+  exact (TypeOp.sharedSame left right).property.symm
+
+@[csimp] private theorem Const.same_eq_sharedComparison : Const.same = Const.sharedComparison := by
+  funext left right
+  exact (Const.sharedSame left right).property.symm
+
+@[csimp] private theorem SourceTerm.same_eq_sharedComparison :
+    SourceTerm.same = SourceTerm.sharedComparison := by
+  funext left right
+  exact (SourceTerm.sharedSame left right).property.symm
+
+private def sourceVarSharedSame (left right : Var Ty) : Bool :=
+  decide (left.name = right.name) && (Ty.sharedSame left.ty right.ty).val
+
+@[csimp] private theorem sourceVarSame_eq_sharedComparison :
+    sourceVarSame = sourceVarSharedSame := by
+  funext left right
+  simp only [sourceVarSame, sourceVarSharedSame, (Ty.sharedSame left.ty right.ty).property]
+
 namespace Name
 
 /-- The global OpenTheory name with the given component. -/
@@ -351,13 +529,17 @@ theorem inferType_toDB (binders : List SourceVar) (term : SourceTerm) :
 /-- Structural equality of canonical syntax, including symbol provenance. -/
 def same : DBTerm → DBTerm → Bool
   | .const leftConst leftTy, .const rightConst rightTy =>
-      Const.same leftConst rightConst && Ty.same leftTy rightTy
+      sharedComparison Const.same (fun constant =>
+        (Const.same_eq_true_iff constant constant).mpr rfl) leftConst rightConst &&
+        sharedComparison Ty.same (fun type => (Ty.same_eq_true_iff type type).mpr rfl)
+          leftTy rightTy
   | .free leftVar, .free rightVar => sourceVarSame leftVar rightVar
   | .bound leftIndex, .bound rightIndex => leftIndex == rightIndex
   | .app leftFunction leftArgument, .app rightFunction rightArgument =>
       same leftFunction rightFunction && same leftArgument rightArgument
   | .abs leftTy leftBody, .abs rightTy rightBody =>
-      Ty.same leftTy rightTy && same leftBody rightBody
+      sharedComparison Ty.same (fun type => (Ty.same_eq_true_iff type type).mpr rfl)
+        leftTy rightTy && same leftBody rightBody
   | _, _ => false
 termination_by left _ => sizeOf left
 

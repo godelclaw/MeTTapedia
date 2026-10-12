@@ -2,7 +2,7 @@ import Mathlib.CategoryTheory.PathCategory.Basic
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthority
 
 /-!
-# Free binding-presentation routes and their generated NIK authorities
+# Free binding-presentation routes and their generated SemanticService authorities
 
 A binding-aware semantic embedding is one authored translation event.  Two
 sequences of such events can have the same endpoints and even induce the same
@@ -11,7 +11,7 @@ appropriate source category is therefore the free path category on the quiver
 of binding-aware semantic presentations, not a quotient that identifies
 routes through their composite action.
 
-Every generating embedding already induces an exact heterogeneous NIK
+Every generating embedding already induces an exact heterogeneous SemanticService
 authority translation.  The universal property of the path category extends
 that generator action uniquely to a functor.  Consequently arbitrary authored
 routes preserve checker results, proof scope, and independently supplied
@@ -26,7 +26,7 @@ open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthority
 
@@ -57,7 +57,7 @@ def generatorAuthority : BindingPresentation ⥤q CertifiedTheory where
   obj presentation := generatedAuthority presentation.semantic
   map embedding := BindingSemanticEmbedding.map embedding
 
-/-- Universal NIK generation on occurrence-bearing binding-translation
+/-- Universal SemanticService generation on occurrence-bearing binding-translation
 routes.  `Paths.lift` supplies identity, composition, and uniqueness from the
 generator action. -/
 def generationFunctor :

@@ -5,7 +5,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostIterationPolicyCoroll
 # The reflective-rho instance of the candidate cost-layer iteration boundary
 
 The generic candidate cost-layer iteration interface is independent of any concrete language.
-This annex instantiates its cache, information-order, NIK-admission,
+This annex instantiates its cache, information-order, SemanticService-admission,
 implementation-key, and displayed-transport boundaries with the reflective
 rho calculus.
 
@@ -164,11 +164,11 @@ theorem rhoCostLayerIteration_compact_collision_forces_decode_failure
 
 end Mettapedia.GSLT.LanguageDef.Cost.Elaboration
 
-namespace Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+namespace Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -221,14 +221,14 @@ theorem rhoCostLayerIteration_nik_policy_key_boundary
         (identityKeyAdmission dependencies revision
           (singlePolicyRequest policy True))⟩
 
-end Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+end Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
 
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -279,10 +279,10 @@ end Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyTransport
 
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 /-- The rho compact value is an admitted hot observation, while the same
 global key has no exact replay decoder. -/
@@ -317,6 +317,6 @@ end Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyTransport
 #print axioms Mettapedia.GSLT.LanguageDef.Cost.Elaboration.rhoCostLayerIteration_no_exact_compact_replay
 #print axioms Mettapedia.GSLT.LanguageDef.Cost.Elaboration.rhoCostLayerIteration_provenance_strictlyRefines_compact
 #print axioms Mettapedia.GSLT.LanguageDef.Cost.Elaboration.rhoCostLayerIteration_compact_collision_forces_decode_failure
-#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission.rhoCostLayerIteration_nik_policy_key_boundary
+#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission.rhoCostLayerIteration_nik_policy_key_boundary
 #print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract.rhoCostLayerIteration_compact_hot_key_but_not_exact_receipt
 #print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyTransport.rho_compact_policy_admission_without_exact_replay

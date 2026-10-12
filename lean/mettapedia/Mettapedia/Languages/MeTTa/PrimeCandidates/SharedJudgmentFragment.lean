@@ -47,8 +47,8 @@ structure Assembly where
   reconstructMatch : PolarizedNeedMatchedIndex.Request → NativeWireData.Wire →
     Option (Tower.Tm 0 × Tower.Tm 0)
   produceHOL : ∀ gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort,
-    UniformListChartNIKService.ReplayRequest gamma →
-      Option (UniformListChartNIKService.intrinsicProofSystem gamma).ProofObject
+    UniformListChartService.ReplayRequest gamma →
+      Option (UniformListChartService.intrinsicProofSystem gamma).ProofObject
   View : ContextViews.Scope → Type
   observe : ∀ scope, ContextViews.State scope → View scope
   compactResume : View .producer → View .resumed
@@ -134,7 +134,7 @@ def MatchCoverage (assembly : Assembly) : Prop :=
 
 def RepresentationAdmitted (assembly : Assembly)
     (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-    (claim : UniformListChartNIKService.SourceClaim gamma) : Prop :=
+    (claim : UniformListChartService.SourceClaim gamma) : Prop :=
   ∃ (conclusion : Tower.Tm gamma.length) (assumptions : List (Tower.Tm gamma.length)),
     FormationSensitiveHOLInterface.represent FormationSensitiveHOLUniformList.signature claim.2 =
       some conclusion ∧
@@ -153,7 +153,7 @@ claim binding and native representation formation are additional obligations;
 the derivation inside the output subtype does not discharge either one. -/
 def HOLReplayQualified (assembly : Assembly) : Prop :=
   (∀ gamma request, (assembly.produceHOL gamma request).isSome = true ↔
-    UniformListChartNIKService.replayAccepted gamma request = true) ∧
+    UniformListChartService.replayAccepted gamma request = true) ∧
   (∀ gamma request proof, assembly.produceHOL gamma request = some proof →
     proof.1 = request.claim ∧ RepresentationAdmitted assembly gamma request.claim)
 
@@ -267,22 +267,22 @@ theorem reconstructed_checked_target
 theorem produced_hol_admission
     (qualified : HOLReplayQualified assembly) {gamma request proof}
     (produced : assembly.produceHOL gamma request = some proof) :
-    (UniformListChartNIKService.intrinsicKernel gamma).decide request.claim proof = true ∧
+    (UniformListChartService.intrinsicKernel gamma).decide request.claim proof = true ∧
     Mettapedia.Logic.HOL.ExtDerivation Mettapedia.Logic.HOL.UniformListInduction.Symbol
       request.claim.1 request.claim.2 ∧
     RepresentationAdmitted assembly gamma request.claim := by
   obtain ⟨binding, represented⟩ := qualified.2 _ _ _ produced
-  have accepted := (UniformListChartNIKService.intrinsicKernel gamma).correct _ _ |>.mpr binding
-  exact ⟨accepted, UniformListChartNIKService.native_acceptance_derivation _ _ _ accepted,
+  have accepted := (UniformListChartService.intrinsicKernel gamma).correct _ _ |>.mpr binding
+  exact ⟨accepted, UniformListChartService.native_acceptance_derivation _ _ _ accepted,
     represented⟩
 
 theorem produced_hol_exact_claim
     (qualified : HOLReplayQualified assembly) {gamma request proof}
     (produced : assembly.produceHOL gamma request = some proof)
-    (claim : UniformListChartNIKService.SourceClaim gamma) :
-    (UniformListChartNIKService.intrinsicKernel gamma).decide claim proof = true ↔
+    (claim : UniformListChartService.SourceClaim gamma) :
+    (UniformListChartService.intrinsicKernel gamma).decide claim proof = true ↔
       claim = request.claim := by
-  rw [(UniformListChartNIKService.intrinsicKernel gamma).correct]
+  rw [(UniformListChartService.intrinsicKernel gamma).correct]
   change proof.1 = claim ↔ claim = request.claim
   rw [(qualified.2 _ _ _ produced).1]
   exact eq_comm
@@ -361,7 +361,7 @@ def common : Assembly where
   declarations := HOLNativeRelatorCompatibility.signature
   execution := ImplementationStudy.Native.implementation
   reconstructMatch := MatchedIndexDependentTransport.reconstruct?
-  produceHOL := UniformListChartNIKService.produce?
+  produceHOL := UniformListChartService.produce?
   View := ContextViews.Readout
   observe := ContextViews.readout
   compactResume := ContextViews.resumeReadout
@@ -394,12 +394,12 @@ theorem common_match_coverage : MatchCoverage common := by
       (transport.source, transport.proposition)) accepted⟩
 
 theorem common_hol_replay : HOLReplayQualified common := by
-  refine ⟨UniformListChartNIKService.produce_isSome_iff, ?_⟩
+  refine ⟨UniformListChartService.produce_isSome_iff, ?_⟩
   intro gamma request proof produced
   obtain ⟨_, _, represented, assumptions, conclusionFormed, premisesFormed⟩ :=
     HOLNativeRelatorCompatibility.produced_source_admission_and_common_formation
       gamma request proof produced
-  exact ⟨UniformListChartNIKService.produce_binds_request gamma request proof produced,
+  exact ⟨UniformListChartService.produce_binds_request gamma request proof produced,
     FormationSensitiveHOLUniformList.rawMapLength, FormationSensitiveHOLUniformList.rawTheory,
     represented, assumptions, conclusionFormed, premisesFormed⟩
 
@@ -493,8 +493,8 @@ def decliningHOL : Assembly := { common with produceHOL := fun _ _ => none }
 
 theorem declining_hol_not_qualified : ¬ HOLReplayQualified decliningHOL := by
   intro qualified
-  have impossible := (qualified.1 [] (UniformListChartNIKService.actualRequest [])).mpr
-    (UniformListChartNIKService.actual_replay_accepted [])
+  have impossible := (qualified.1 [] (UniformListChartService.actualRequest [])).mpr
+    (UniformListChartService.actual_replay_accepted [])
   cases impossible
 
 def answerOnly : Assembly where
@@ -584,17 +584,17 @@ theorem altered_match_output_rejected :
       PolarizedNeedMatchedIndex.Examples.changed_output_rejected)
 
 theorem actual_hol_admitted_and_represented :
-    (UniformListChartNIKService.intrinsicKernel []).decide
-      (UniformListChartNIKService.mapLengthClaim [])
-      (UniformListChartNIKService.actualNativeProof []) = true ∧
+    (UniformListChartService.intrinsicKernel []).decide
+      (UniformListChartService.mapLengthClaim [])
+      (UniformListChartService.actualNativeProof []) = true ∧
     Mettapedia.Logic.HOL.ExtDerivation Mettapedia.Logic.HOL.UniformListInduction.Symbol
-      (UniformListChartNIKService.mapLengthClaim []).1
-      (UniformListChartNIKService.mapLengthClaim []).2 ∧
-    RepresentationAdmitted common [] (UniformListChartNIKService.mapLengthClaim []) :=
+      (UniformListChartService.mapLengthClaim []).1
+      (UniformListChartService.mapLengthClaim []).2 ∧
+    RepresentationAdmitted common [] (UniformListChartService.mapLengthClaim []) :=
   produced_hol_admission common_hol_replay
-    (gamma := []) (request := UniformListChartNIKService.actualRequest [])
-    (proof := UniformListChartNIKService.actualNativeProof [])
-    (UniformListChartNIKService.actual_produced [])
+    (gamma := []) (request := UniformListChartService.actualRequest [])
+    (proof := UniformListChartService.actualNativeProof [])
+    (UniformListChartService.actual_produced [])
 
 #print axioms match_acceptance_iff
 #print axioms match_rejects_invalid
@@ -631,6 +631,6 @@ theorem actual_hol_admitted_and_represented :
   (PolarizedNeedMatchedIndex.admittedWire PolarizedNeedMatchedIndex.Examples.canonical)).isSome
 #eval (common.reconstructMatch PolarizedNeedMatchedIndex.Examples.canonical.request
   (PolarizedNeedMatchedIndex.admittedWire PolarizedNeedMatchedIndex.Examples.changedOutput)).isSome
-#eval (common.produceHOL [] (UniformListChartNIKService.actualRequest [])).isSome
+#eval (common.produceHOL [] (UniformListChartService.actualRequest [])).isSome
 
 end Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentFragment

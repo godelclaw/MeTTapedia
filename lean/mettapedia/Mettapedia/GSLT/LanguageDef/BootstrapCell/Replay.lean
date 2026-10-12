@@ -3,7 +3,7 @@ import Mettapedia.GSLT.LanguageDef.InferenceChecker
 /-!
 # Goal-directed replay of raw certificates
 
-A raw NIK certificate is a finite tree of rule instances.  It records no
+A raw SemanticService certificate is a finite tree of rule instances.  It records no
 conclusions: replay computes each node's ordered premises and its conclusion
 from the rule instance alone, compares that conclusion with the requested
 goal, and continues into the children against the computed premises.
@@ -24,7 +24,7 @@ equality and the local rule-application map.
 
 None of these uses `Classical.choice`.  The generic inference checker is the
 instance whose goals are patterns and whose local map is rule instantiation
-in a validated calculus (`nikSignature`): `checkRaw_eq_replay` identifies the
+in a validated calculus (`calculusReplaySignature`): `checkRaw_eq_replay` identifies the
 two checkers and `derivationEquiv` identifies the two derivation families.
 -/
 
@@ -303,13 +303,13 @@ end ReplaySignature
 
 /-- Replay for a validated calculus: goals are patterns and the local map is
 rule instantiation. -/
-abbrev nikSignature (definition : ValidatedCalculusLanguageDef) : ReplaySignature.{0} where
+abbrev calculusReplaySignature (definition : ValidatedCalculusLanguageDef) : ReplaySignature.{0} where
   Goal := Pattern
   decEq := inferInstance
   step := instantiateRule? definition
 
-@[simp] theorem nikSignature_step (definition : ValidatedCalculusLanguageDef) :
-    (nikSignature definition).step = instantiateRule? definition := rfl
+@[simp] theorem calculusReplaySignature_step (definition : ValidatedCalculusLanguageDef) :
+    (calculusReplaySignature definition).step = instantiateRule? definition := rfl
 
 mutual
 
@@ -317,9 +317,9 @@ mutual
 theorem checkRaw_eq_replay (definition : ValidatedCalculusLanguageDef) :
     (goal : Pattern) → (certificate : RawProof) →
       checkRaw definition goal certificate =
-        (nikSignature definition).replay goal certificate
+        (calculusReplaySignature definition).replay goal certificate
   | goal, .node label children => by
-      rw [ReplaySignature.replay_node, checkRaw, nikSignature_step]
+      rw [ReplaySignature.replay_node, checkRaw, calculusReplaySignature_step]
       cases instantiateRule? definition label with
       | none => rfl
       | some result =>
@@ -331,7 +331,7 @@ theorem checkRaw_eq_replay (definition : ValidatedCalculusLanguageDef) :
 theorem checkRawChildren_eq_replayAll (definition : ValidatedCalculusLanguageDef) :
     (goals : List Pattern) → (children : List RawProof) →
       checkRawChildren definition goals children =
-        (nikSignature definition).replayAll goals children
+        (calculusReplaySignature definition).replayAll goals children
   | [], [] => by rw [checkRawChildren, ReplaySignature.replayAll_nil_nil]
   | [], _ :: _ => by rw [ReplaySignature.replayAll_nil_cons]; simp [checkRawChildren]
   | _ :: _, [] => by rw [ReplaySignature.replayAll_cons_nil]; simp [checkRawChildren]
@@ -347,7 +347,7 @@ mutual
 /-- Read a derivation of the generic checker as a replay derivation. -/
 def toDeriv {definition : ValidatedCalculusLanguageDef} :
     {goal : Pattern} → Derivation definition goal →
-      (nikSignature definition).Deriv goal
+      (calculusReplaySignature definition).Deriv goal
   | _, .byRule label application children =>
       .byStep label (instantiateRule?_eq_some_iff_application.mpr application)
         (toDerivList children)
@@ -355,7 +355,7 @@ def toDeriv {definition : ValidatedCalculusLanguageDef} :
 /-- Pointwise reading for ordered children. -/
 def toDerivList {definition : ValidatedCalculusLanguageDef} :
     {goals : List Pattern} → DerivationList definition goals →
-      (nikSignature definition).DerivList goals
+      (calculusReplaySignature definition).DerivList goals
   | _, .nil => .nil
   | _, .cons head tail => .cons (toDeriv head) (toDerivList tail)
 
@@ -365,7 +365,7 @@ mutual
 
 /-- Read a replay derivation as a derivation of the generic checker. -/
 def ofDeriv {definition : ValidatedCalculusLanguageDef} :
-    {goal : Pattern} → (nikSignature definition).Deriv goal →
+    {goal : Pattern} → (calculusReplaySignature definition).Deriv goal →
       Derivation definition goal
   | _, .byStep label step children =>
       .byRule label (instantiateRule?_eq_some_iff_application.mp step)
@@ -373,7 +373,7 @@ def ofDeriv {definition : ValidatedCalculusLanguageDef} :
 
 /-- Pointwise reading for ordered children. -/
 def ofDerivList {definition : ValidatedCalculusLanguageDef} :
-    {goals : List Pattern} → (nikSignature definition).DerivList goals →
+    {goals : List Pattern} → (calculusReplaySignature definition).DerivList goals →
       DerivationList definition goals
   | _, .nil => .nil
   | _, .cons head tail => .cons (ofDeriv head) (ofDerivList tail)
@@ -400,13 +400,13 @@ end
 mutual
 
 theorem toDeriv_ofDeriv {definition : ValidatedCalculusLanguageDef} :
-    {goal : Pattern} → (derivation : (nikSignature definition).Deriv goal) →
+    {goal : Pattern} → (derivation : (calculusReplaySignature definition).Deriv goal) →
       toDeriv (ofDeriv derivation) = derivation
   | _, .byStep label step children => by
       rw [ofDeriv, toDeriv, toDerivList_ofDerivList children]
 
 theorem toDerivList_ofDerivList {definition : ValidatedCalculusLanguageDef} :
-    {goals : List Pattern} → (derivations : (nikSignature definition).DerivList goals) →
+    {goals : List Pattern} → (derivations : (calculusReplaySignature definition).DerivList goals) →
       toDerivList (ofDerivList derivations) = derivations
   | _, .nil => by rw [ofDerivList, toDerivList]
   | _, .cons head tail => by
@@ -417,7 +417,7 @@ end
 /-- The derivations of the generic checker and the replay derivations of its
 signature are the same family. -/
 def derivationEquiv (definition : ValidatedCalculusLanguageDef) (goal : Pattern) :
-    Derivation definition goal ≃ (nikSignature definition).Deriv goal where
+    Derivation definition goal ≃ (calculusReplaySignature definition).Deriv goal where
   toFun := toDeriv
   invFun := ofDeriv
   left_inv := ofDeriv_toDeriv

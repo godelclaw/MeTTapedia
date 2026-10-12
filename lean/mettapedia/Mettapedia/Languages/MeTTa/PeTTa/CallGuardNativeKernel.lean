@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT
 
 /-!
@@ -43,7 +43,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.CallGuardNativeKernel
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
 open Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT
@@ -260,7 +260,7 @@ def callGuardGSLT : GSLT where
 
 def stepDecision : EffectiveStructure.StepDecision callGuardGSLT where
   decideStep := fun (source target : Machine) => decide (MachineStep source target)
-  correct := fun (source target : Machine) => decide_eq_true_iff
+  correct := fun (_source _target : Machine) => decide_eq_true_iff
 
 /-- The NTT generated from the call-guard GSLT recognizes exactly the selected
 typed-call successor. -/
@@ -350,7 +350,7 @@ def boundaryProofSystem : NativeProofSystem Claim where
 
 def boundaryKernel : NativeProofKernel boundaryProofSystem where
   decide := fun (claim : Claim) (article : BoundaryArticle) => decide (article.Valid claim)
-  correct := fun (claim : Claim) (article : BoundaryArticle) => decide_eq_true_iff
+  correct := fun (_claim : Claim) (_article : BoundaryArticle) => decide_eq_true_iff
 
 def boundaryFamily : AuthorityFamily AuthorityKind where
   Claim := fun _ => Claim

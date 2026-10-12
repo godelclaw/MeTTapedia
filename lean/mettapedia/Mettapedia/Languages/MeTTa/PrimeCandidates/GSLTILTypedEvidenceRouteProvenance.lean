@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicyComposition
-import Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
+import Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 
 /-!
 # Provenance-retaining reached histories for typed evidence routes
@@ -18,7 +18,7 @@ route reflects complete source histories; a checked collapsing route proves
 that policy-image adequacy does not imply provenance adequacy.
 
 Provenance transports constructionally through route composition and is
-coherent under reassociation.  Thus NIK may use the smaller propositional
+coherent under reassociation.  Thus SemanticService may use the smaller propositional
 image for a policy-relative native realization while requiring the stronger
 carrier for replay or provenance-sensitive caching.
 -/
@@ -32,8 +32,8 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.GSLTIL.EvidenceWorlds
 open Mettapedia.GSLT.LanguageDef.GSLTIL.TypedEvidenceRoutes
 open Mettapedia.GSLT.LanguageDef.GSLTIL.TypedEvidenceRoutes.TypedEvidenceRoute
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicySelection
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicyComposition
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicyComposition.RoutePolicyRealization
@@ -218,7 +218,7 @@ theorem identity_supports_provenance_replay
           ReachedHistory (TypedEvidenceRoute.id profile) command) :=
   ⟨identityReplayRealization profile command⟩
 
-/-- Retain identity's executable provenance runner at one NIK dependency
+/-- Retain identity's executable provenance runner at one SemanticService dependency
 revision.  The admission stores the runner; activation does not replay a
 checker. -/
 def identityReplayAdmissionAt
@@ -368,7 +368,7 @@ namespace Canary
 
 open ProvenancedReachedHistory
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldPrograms.SignatureEvidenceInterpretation.Canary
-open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldNIKSelection.Canary
+open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldSelection.Canary
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicySelection.Canary
 
 abbrev CollapseProvenance :=
@@ -413,7 +413,7 @@ theorem collapse_refuses_provenance_replay :
     collapse_forgets_provenance ()
   exact sourceSingletonHistories_distinct
 
-/-- The refusal reaches NIK's revision-indexed admission boundary: no
+/-- The refusal reaches SemanticService's revision-indexed admission boundary: no
 dependency revision can turn the collapsed reached key into an exact
 provenance capability. -/
 theorem collapse_has_no_provenance_admission

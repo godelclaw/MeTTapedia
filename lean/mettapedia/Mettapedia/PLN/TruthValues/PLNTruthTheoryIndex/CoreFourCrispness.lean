@@ -257,7 +257,7 @@ structure CrispnessCollapseProfile where
 to point semantics; singleton credal sets collapse; disagreement and
 incomparability force interval semantics; lower-prevision precision is exactly
 zero imprecision, equivalently additivity. -/
-def crispnessCollapseProfile : CrispnessCollapseProfile where
+theorem crispnessCollapseProfile : CrispnessCollapseProfile where
   thetaSingletonCollapse :=
     thetaSingleton_collapses_to_point
   thetaSubsingletonLowerEqUpper := by

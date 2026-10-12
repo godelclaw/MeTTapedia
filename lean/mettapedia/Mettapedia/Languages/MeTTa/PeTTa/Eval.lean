@@ -1060,6 +1060,25 @@ theorem completed_result_unique (program : Program) (firstFuel secondFuel : Nat)
   rw [Nat.add_comm secondFuel firstFuel] at right
   exact Outcome.complete.inj (left.symm.trans right)
 
+/-- A completed path characterizes every completed run from the same source,
+including all answer occurrences, store contents and I/O observations. -/
+theorem path_completed_iff (program : Program) (source : Configuration)
+    (expected : State) (expectedAnswers expectedInput expectedOutput : List Atom)
+    (computed : (theory program).MultiStep source
+      (finished expected expectedAnswers expectedInput expectedOutput))
+    (after : State) (answers input output : List Atom) :
+    (∃ fuel, run program fuel source = .complete after answers input output) ↔
+      after = expected ∧ answers = expectedAnswers ∧
+        input = expectedInput ∧ output = expectedOutput := by
+  obtain ⟨enough, completed⟩ := path_has_sufficient_fuel program source expected
+    expectedAnswers expectedInput expectedOutput computed
+  constructor
+  · rintro ⟨fuel, result⟩
+    exact completed_result_unique program fuel enough source after expected
+      answers input output expectedAnswers expectedInput expectedOutput result completed
+  · rintro ⟨rfl, rfl, rfl, rfl⟩
+    exact ⟨enough, completed⟩
+
 /-- Caller frames are suspended beneath the current computation. -/
 def withFrames (configuration : Configuration) (caller : List Frame) : Configuration :=
   { configuration with frames := configuration.frames ++ caller }
@@ -1340,6 +1359,30 @@ theorem pure_returns_has_sufficient_fuel (program : Program) (bindings : MORK.Su
     ∃ fuel, run program fuel { state := before, control := .evaluate bindings expression } =
       .complete after [value] [] [] :=
   path_has_sufficient_fuel program _ after [value] [] [] computed
+
+/-- A proved single-answer computation characterizes every completed run,
+including its store and I/O observations. The target instruction budget is
+independent of the compositional derivation. -/
+theorem pure_returns_completed_iff (program : Program) (bindings : MORK.Subst)
+    (before expected : State) (expression value : Atom)
+    (computed : PureReturns program bindings before expression expected value)
+    (after : State) (answers input output : List Atom) :
+    (∃ fuel, run program fuel { state := before, control := .evaluate bindings expression } =
+      .complete after answers input output) ↔
+      after = expected ∧ answers = [value] ∧ input = [] ∧ output = [] := by
+  exact path_completed_iff program _ expected [value] [] [] computed after answers input output
+
+/-- The same exact observation law for the independent operational judgment. -/
+theorem pure_returns_derivation_iff (program : Program) (bindings : MORK.Subst)
+    (before expected : State) (expression value : Atom)
+    (computed : PureReturns program bindings before expression expected value)
+    (after : State) (answers input output : List Atom) :
+    Runs program { state := before, control := .evaluate bindings expression }
+      (.complete after answers input output) ↔
+      after = expected ∧ answers = [value] ∧ input = [] ∧ output = [] := by
+  rw [← completed_run_iff_derivation]
+  exact pure_returns_completed_iff program bindings before expected expression value
+    computed after answers input output
 
 theorem clauses_use_only_the_named_equations (program : Program) (head : String)
     (values : List Atom) :
@@ -2409,3 +2452,356 @@ theorem nullary_capture_io_returns (program : SpaceSemantics.Program) (first sec
 
 
 end Mettapedia.Languages.MeTTa.PeTTa.Eval.InputOutput
+
+
+/-! ## Captured authored calls and ordered program fragments -/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
+open SpaceSemantics (Program)
+open Effects (State)
+
+def passiveArgument : Atom → Bool
+  | .var _ | .symbol _ | .grounded _ => true
+  | .expression _ => false
+
+def argumentCaptureCost (program : Program) (head : String) : Nat → Nat → Nat
+  | _, 0 => 0
+  | index, count + 1 =>
+      (if argumentIsRaw program head index then 3 else 4) +
+        argumentCaptureCost program head (index + 1) count
+
+private theorem passive_argument_step (program : Program) (caller : Subst)
+    (state : State) (frames : List Frame) (argument : Atom)
+    (passive : passiveArgument argument = true) :
+    step program {state, control := .evaluate caller argument, frames} =
+      some {state, control := .returned [applySubst caller argument], frames} := by
+  cases argument <;> simp_all [passiveArgument, step, applySubst]
+
+theorem captured_arguments_stage (program : Program) (caller : Subst)
+    (state : State) (head : String) (arguments values : List Atom)
+    (index fuel : Nat) (frames : List Frame)
+    (admitted : ∀ offset argument, arguments[offset]? = some argument →
+      argumentIsRaw program head (index + offset) = true ∨ passiveArgument argument = true) :
+    run program (fuel + argumentCaptureCost program head index arguments.length)
+      {state, control := .arguments caller (.function head) arguments values index, frames} =
+    run program fuel
+      {state, control := .arguments caller (.function head) [] (values ++ arguments.map (applySubst caller)) (index + arguments.length), frames := List.replicate arguments.length (.sequence [] []) ++ frames} := by
+  induction arguments generalizing values index frames with
+  | nil => simp [argumentCaptureCost]
+  | cons argument arguments ih =>
+      have first := admitted 0 argument (by simp)
+      have tailAdmitted : ∀ offset value, arguments[offset]? = some value →
+          argumentIsRaw program head ((index + 1) + offset) = true ∨ passiveArgument value = true := by
+        intro offset value member
+        have next := admitted (offset + 1) value (by simpa using member)
+        simpa [Nat.add_assoc, Nat.add_comm 1] using next
+      have next := ih (values ++ [applySubst caller argument]) (index + 1)
+        (.sequence [] [] :: frames) tailAdmitted
+      have frameEquality :
+          List.replicate arguments.length (.sequence [] []) ++ .sequence [] [] :: frames =
+            List.replicate (arguments.length + 1) (.sequence [] []) ++ frames := by
+        rw [List.replicate_add, List.replicate_one, List.append_assoc]
+        rfl
+      cases raw : argumentIsRaw program head index with
+      | true =>
+          simp only [List.length_cons, argumentCaptureCost, raw, ↓reduceIte]
+          rw [show fuel + (3 + argumentCaptureCost program head (index + 1) arguments.length) =
+            ((fuel + argumentCaptureCost program head (index + 1) arguments.length) + 2) + 1 by omega]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .arguments caller (.function head) (argument :: arguments) values index, frames} =
+            some {state, control := .returned [applySubst caller argument], frames := .argument caller (.function head) arguments values index :: frames} by simp [step, raw])]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .returned [applySubst caller argument], frames := .argument caller (.function head) arguments values index :: frames} =
+            some {state, control := .sequence [.arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1)] [], frames} by simp [step])]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .sequence [.arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1)] [], frames} =
+            some {state, control := .arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1), frames := .sequence [] [] :: frames} by rfl)]
+          simpa only [List.map_cons, List.length_cons, List.append_assoc, List.singleton_append,
+            Nat.add_assoc, Nat.add_right_comm index 1, frameEquality] using next
+      | false =>
+          have passive : passiveArgument argument = true := by simpa [raw] using first
+          simp only [List.length_cons, argumentCaptureCost, raw, Bool.false_eq_true, ↓reduceIte]
+          rw [show fuel + (4 + argumentCaptureCost program head (index + 1) arguments.length) =
+            (((fuel + argumentCaptureCost program head (index + 1) arguments.length) + 2) + 1) + 1 by omega]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .arguments caller (.function head) (argument :: arguments) values index, frames} =
+            some {state, control := .evaluate caller argument, frames := .argument caller (.function head) arguments values index :: frames} by simp [step, raw])]
+          rw [run_succ_of_step program _ _ _ (passive_argument_step program caller state _ argument passive)]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .returned [applySubst caller argument], frames := .argument caller (.function head) arguments values index :: frames} =
+            some {state, control := .sequence [.arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1)] [], frames} by simp [step])]
+          rw [run_succ_of_step program _ _ _ (show step program
+            {state, control := .sequence [.arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1)] [], frames} =
+            some {state, control := .arguments caller (.function head) arguments (values ++ [applySubst caller argument]) (index + 1), frames := .sequence [] [] :: frames} by rfl)]
+          simpa only [List.map_cons, List.length_cons, List.append_assoc, List.singleton_append,
+            Nat.add_assoc, Nat.add_right_comm index 1, frameEquality] using next
+
+
+private theorem captured_call_stage (program : Program) (caller : Subst)
+    (state : State) (head : String) (arguments : List Atom) (fuel : Nat)
+    (dispatch : (ioHead head || StdLib.known head ||
+      program.equations.any (·.head == head)) = true)
+    (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"])
+    (admitted : ∀ offset argument, arguments[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true) :
+    run program (fuel + argumentCaptureCost program head 0 arguments.length + 1)
+      {state, control := .evaluate caller (.expression (.symbol head :: arguments))} =
+    run program fuel
+      {state, control := .arguments caller (.function head) [] (arguments.map (applySubst caller)) arguments.length, frames := List.replicate arguments.length (.sequence [] [])} := by
+  have entered : step program
+      {state, control := .evaluate caller (.expression (.symbol head :: arguments))} =
+      some {state, control := .arguments caller (.function head) arguments [] 0} := by
+    simp at ordinary
+    rcases ordinary with ⟨notLet, notLetStar, notCase, notIf, notCollapse⟩
+    simp only [step]
+    split <;> simp_all <;> grind
+  rw [run_succ_of_step program _ _ _ entered]
+  simpa using captured_arguments_stage program caller state head arguments [] 0 fuel []
+    (by simpa using admitted)
+
+theorem captured_call_run_eq (program : Program) (first second : Subst)
+    (state : State) (head : String) (one two : List Atom) (fuel : Nat)
+    (dispatch : (ioHead head || StdLib.known head ||
+      program.equations.any (·.head == head)) = true)
+    (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"])
+    (firstAdmitted : ∀ offset argument, one[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true)
+    (secondAdmitted : ∀ offset argument, two[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true)
+    (captured : one.map (applySubst first) = two.map (applySubst second)) :
+    run program (fuel + argumentCaptureCost program head 0 one.length + 2)
+      {state, control := .evaluate first (.expression (.symbol head :: one))} =
+    run program (fuel + argumentCaptureCost program head 0 two.length + 2)
+      {state, control := .evaluate second (.expression (.symbol head :: two))} := by
+  have lengthEqual : one.length = two.length := by
+    have sizes := congrArg List.length captured
+    simpa using sizes
+  rw [show fuel + argumentCaptureCost program head 0 one.length + 2 =
+    (fuel + 1) + argumentCaptureCost program head 0 one.length + 1 by omega]
+  rw [show fuel + argumentCaptureCost program head 0 two.length + 2 =
+    (fuel + 1) + argumentCaptureCost program head 0 two.length + 1 by omega]
+  rw [captured_call_stage program first state head one _ dispatch ordinary firstAdmitted,
+    captured_call_stage program second state head two _ dispatch ordinary secondAdmitted]
+  simp only [run, step, captured, lengthEqual]
+  split
+  · rfl
+  · rename_i absent
+    split at absent
+    · split at absent <;> cases absent
+    · split at absent
+      · split at absent <;> cases absent
+      · cases absent
+
+theorem captured_call_returns (program : Program) (first second : Subst)
+    (before after : State) (head : String) (one two : List Atom) (answer : Atom)
+    (dispatch : (ioHead head || StdLib.known head ||
+      program.equations.any (·.head == head)) = true)
+    (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"])
+    (firstAdmitted : ∀ offset argument, one[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true)
+    (secondAdmitted : ∀ offset argument, two[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true)
+    (captured : one.map (applySubst first) = two.map (applySubst second))
+    (returned : PureReturns program first before
+      (.expression (.symbol head :: one)) after answer) :
+    PureReturns program second before (.expression (.symbol head :: two)) after answer := by
+  obtain ⟨fuel, completed⟩ := pure_returns_has_sufficient_fuel program first before after _ _ returned
+  have enough := completed_run_more_fuel program fuel
+    (argumentCaptureCost program head 0 one.length + 2) _ after [answer] [] [] completed
+  rw [show fuel + (argumentCaptureCost program head 0 one.length + 2) =
+    fuel + argumentCaptureCost program head 0 one.length + 2 by omega,
+    captured_call_run_eq program first second before head one two fuel
+      dispatch ordinary firstAdmitted secondAdmitted captured] at enough
+  exact completed_run_has_path program _ _ after [answer] [] [] enough
+
+
+private theorem variable_capture_admitted (program : Program) (head : String) (names : List String) :
+    ∀ offset argument, (names.map Atom.var)[offset]? = some argument →
+      argumentIsRaw program head offset = true ∨ passiveArgument argument = true := by
+  intro offset argument selected
+  simp only [List.getElem?_map] at selected
+  cases value : names[offset]? with
+  | none => simp [value] at selected
+  | some name =>
+      simp [value] at selected
+      subst argument
+      exact Or.inr rfl
+
+theorem captured_call_in_extension {allowed : String → Bool} {first second : Program}
+    (closed : ProgramClosed allowed first) (agreement : ProgramAgreementOn allowed first second)
+    (caller capturedCaller : Subst) (before after : State) (head : String)
+    (arguments : List Atom) (names : List String) (answer : Atom)
+    (supported : allowed head = true) (notEval : head ≠ "eval")
+    (dispatch : (ioHead head || StdLib.known head ||
+      first.equations.any (·.head == head)) = true)
+    (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"])
+    (admitted : ∀ offset argument, arguments[offset]? = some argument →
+      argumentIsRaw first head offset = true ∨ passiveArgument argument = true)
+    (captured : arguments.map (applySubst caller) = (names.map Atom.var).map (applySubst capturedCaller))
+    (returned : PureReturns first caller before (.expression (.symbol head :: arguments)) after answer) :
+    PureReturns second caller before (.expression (.symbol head :: arguments)) after answer := by
+  have aliasReturned := captured_call_returns first caller capturedCaller before after head arguments
+    (names.map Atom.var) answer dispatch ordinary admitted
+    (variable_capture_admitted first head names) captured returned
+  have within : codeWithin allowed (.expression (.symbol head :: names.map Atom.var)) = true := by
+    simp [codeWithin, expressionHeadWithin, atomsWithin_eq_all, notEval, supported]
+  have transported : PureReturns second capturedCaller before
+      (.expression (.symbol head :: names.map Atom.var)) after answer :=
+    path_of_closed_agreement closed agreement ⟨within, rfl⟩ aliasReturned
+  have targetDispatch : (ioHead head || StdLib.known head ||
+      second.equations.any (·.head == head)) = true := by
+    rw [← agreement.dispatch head supported]
+    exact dispatch
+  have targetAdmitted : ∀ offset argument, arguments[offset]? = some argument →
+      argumentIsRaw second head offset = true ∨ passiveArgument argument = true := by
+    intro offset argument selected
+    rw [← agreement.demand head offset supported]
+    exact admitted offset argument selected
+  exact captured_call_returns second capturedCaller caller before after head (names.map Atom.var)
+    arguments answer targetDispatch ordinary (variable_capture_admitted second head names)
+    targetAdmitted captured.symm transported
+
+#print axioms captured_arguments_stage
+#print axioms captured_call_run_eq
+#print axioms captured_call_returns
+#print axioms captured_call_in_extension
+
+end Mettapedia.Languages.MeTTa.PeTTa.Eval
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program Equation)
+
+/-- Only literal arrow declarations participate in authored argument demand. -/
+def retainedCallDeclaration (allowed : String → Bool) : Atom → Bool
+  | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: _)] => allowed name
+  | _ => false
+
+private theorem named_equations_after_retention (allowed : String → Bool)
+    (head : String) (supported : allowed head = true) (rows : List Equation) :
+    (rows.filter (fun equation => allowed equation.head)).filter (fun equation => equation.head == head) =
+      rows.filter (fun equation => equation.head == head) := by
+  induction rows with
+  | nil => rfl
+  | cons equation rows ih =>
+      by_cases same : equation.head = head
+      · simp [same, supported, ih]
+      · cases admitted : allowed equation.head <;>
+          simp [same, admitted, ih]
+
+private theorem raw_declarations_after_retention (allowed : String → Bool)
+    (head : String) (supported : allowed head = true) (index : Nat) (rows : List Atom) :
+    (rows.filter (retainedCallDeclaration allowed)).any (fun declaration =>
+      match declaration with
+      | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)] =>
+          name == head && types[index]?.any formalArgumentIsRaw
+      | _ => false) =
+    rows.any (fun declaration =>
+      match declaration with
+      | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)] =>
+          name == head && types[index]?.any formalArgumentIsRaw
+      | _ => false) := by
+  let raw : Atom → Bool := fun declaration =>
+    match declaration with
+    | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)] =>
+        name == head && types[index]?.any formalArgumentIsRaw
+    | _ => false
+  have retained (declaration : Atom) :
+      (retainedCallDeclaration allowed declaration && raw declaration) = raw declaration := by
+    unfold retainedCallDeclaration raw
+    split
+    · rename_i name types
+      by_cases same : name = head
+      · simp [same, supported]
+      · simp [same]
+    · simp_all
+  change (rows.filter (retainedCallDeclaration allowed)).any raw = rows.any raw
+  induction rows with
+  | nil => rfl
+  | cons declaration rows ih =>
+      have kept := retained declaration
+      cases admitted : retainedCallDeclaration allowed declaration <;>
+        simp_all [List.any_cons]
+
+/-- Ordered agreement of the actual retained equations and call declarations
+earns dispatch, argument demand and every selected body. Unrelated rows may
+be relocated or replaced; duplicate retained rows remain ordered occurrences. -/
+theorem programAgreementOn_of_retained_rows (allowed : String → Bool) (first second : Program)
+    (equations : first.equations.filter (fun equation => allowed equation.head) =
+      second.equations.filter (fun equation => allowed equation.head))
+    (declarations : first.declarations.filter (retainedCallDeclaration allowed) =
+      second.declarations.filter (retainedCallDeclaration allowed)) :
+    ProgramAgreementOn allowed first second := by
+  have named (head : String) (supported : allowed head = true) :
+      first.equations.filter (fun equation => equation.head == head) =
+        second.equations.filter (fun equation => equation.head == head) := by
+    have selected := congrArg
+      (fun rows : List Equation => rows.filter (fun equation => equation.head == head)) equations
+    simpa only [named_equations_after_retention allowed head supported] using selected
+  constructor
+  · intro head supported
+    have selected := named head supported
+    have inspected := congrArg (fun rows : List Equation => rows.any (·.head == head)) selected
+    simpa only [List.any_filter, Bool.and_self] using inspected
+  · intro head index supported
+    by_cases native : StdLib.known head = true
+    · simp only [argumentIsRaw, native, ↓reduceIte]
+    · have notNative : StdLib.known head = false := Bool.eq_false_iff.mpr native
+      simp only [argumentIsRaw, notNative, Bool.false_eq_true, ↓reduceIte]
+      have inspected := congrArg (fun rows : List Atom => rows.any fun declaration =>
+          match declaration with
+          | .expression [.symbol ":", .symbol name, .expression (.symbol "->" :: types)] =>
+              name == head && types[index]?.any formalArgumentIsRaw
+          | _ => false) declarations
+      simp only [raw_declarations_after_retention allowed head supported index] at inspected
+      convert inspected using 1 <;> congr 1
+  · intro head values supported
+    rw [clauses_use_only_the_named_equations first head values,
+      clauses_use_only_the_named_equations second head values, named head supported]
+
+#print axioms programAgreementOn_of_retained_rows
+
+namespace RetainedRowsControls
+
+private def owner (head : String) : Bool := head == "owned"
+private def row (head : String) (value : Int) : Equation :=
+  ⟨head, [], .grounded (.int value)⟩
+private def declaration (head domain : String) : Atom :=
+  .expression [.symbol ":", .symbol head, .expression [.symbol "->", .symbol domain, .symbol "%Undefined%"]]
+private def first : Program :=
+  { equations := [row "owned" 1, row "unrelated" 7, row "owned" 2]
+    declarations := [declaration "owned" "Atom", declaration "unrelated" "Number"] }
+private def relocated : Program :=
+  { equations := [row "another" 19, row "owned" 1, row "owned" 2, row "unrelated" 23]
+    declarations := [declaration "unrelated" "Atom", declaration "owned" "Atom"] }
+
+/-- Unrelated rows change and move; both owned occurrences retain their order. -/
+theorem relocation_preserves_owned_calls : ProgramAgreementOn owner first relocated := by
+  apply programAgreementOn_of_retained_rows
+  · rfl
+  · rfl
+
+/-- Matching head inventories alone do not justify rearranging duplicate clauses. -/
+theorem reversing_owned_occurrences_changes_clauses :
+    clauses first "owned" [] ≠
+      clauses { first with equations := [row "owned" 2, row "owned" 1] } "owned" [] := by
+  simp [clauses, first, row, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues]
+
+/-- Equation preservation does not excuse a changed raw-argument declaration. -/
+theorem replacing_raw_domain_changes_demand :
+    argumentIsRaw first "owned" 0 = true ∧
+      argumentIsRaw { first with declarations := [declaration "owned" "Number"] } "owned" 0 = false := by
+  decide +kernel
+
+#print axioms relocation_preserves_owned_calls
+#print axioms reversing_owned_occurrences_changes_clauses
+#print axioms replacing_raw_domain_changes_demand
+
+end RetainedRowsControls
+
+end Mettapedia.Languages.MeTTa.PeTTa.Eval

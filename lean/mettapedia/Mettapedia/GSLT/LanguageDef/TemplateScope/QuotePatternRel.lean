@@ -32,9 +32,10 @@ def codeMapHoles (env : REnv X) (envI : IEnv X) : Nm (Slot X) → Nm (BId X)
       else .src (.code y o)
   | .inst ρ n => .inst ρ (codeMapHoles env envI n)
 
-/-- Two pieces of sealed code are the same quotation. -/
+/-- Two pieces of sealed code are the same quotation, written in a form rooted
+at a scope owner. -/
 def codeQ (c₁ : Tm S (Slot X)) (c₂ : Tm S (BId X)) : Prop :=
-  ∃ s : Src S X, c₁ = codeOf s ∧ c₂ = codeI s
+  ∃ (R : Owner) (s : Src S X), scopeOwner R ∧ c₁ = codeOf R s ∧ c₂ = codeI R s
 
 /-- A name that belongs to the code: a binder, or a free parameter. -/
 def codeOwned (n : Nm (Slot X)) : Prop :=
@@ -239,12 +240,16 @@ private theorem append_bound {a b : List (X × Owner)}
   · exact ha p hp
   · exact hb p hp
 
+/- The root of the form whose code is elaborated: the holes of its sealed
+quotations are the root's head slots. -/
+variable (R : Owner)
+
 /-- A free parameter of elaborated code is a binder or a free parameter of
 that code, never a hole. -/
 theorem mem_freeParams_codeAt (holes : Option (X → Owner)) (penv senv : List (X × Owner))
     (pos : Owner) (hpenv : ∀ p ∈ penv, codeBound p.2 = true)
     (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
-    ∀ (s : Src S X) (n : Nm (Slot X)), n ∈ freeParams (codeAt holes penv senv pos s) →
+    ∀ (s : Src S X) (n : Nm (Slot X)), n ∈ freeParams (codeAt R holes penv senv pos s) →
       codeOwned n
   | .sym _, _, h => by simp [codeAt, freeParams] at h
   | .fn _, _, h => by simp [codeAt, freeParams] at h
@@ -327,7 +332,7 @@ theorem mem_freeParams_codeAt (holes : Option (X → Owner)) (penv senv : List (
 /-- A free store name of code elaborated as a pattern is a hole: the
 surrounding scope's slot of a spelling written in the code. -/
 theorem mem_freeNames_codeAt (env : REnv X) (penv senv : List (X × Owner)) (pos : Owner) :
-    ∀ (s : Src S X) (n : Nm (Slot X)), n ∈ freeNames (codeAt (some env) penv senv pos s) →
+    ∀ (s : Src S X) (n : Nm (Slot X)), n ∈ freeNames (codeAt R (some env) penv senv pos s) →
       ∃ y, y ∈ Src.names s ∧ n = .src (env y, y)
   | .sym _, _, h => by simp [codeAt, freeNames] at h
   | .fn _, _, h => by simp [codeAt, freeNames] at h
@@ -413,8 +418,8 @@ private theorem paramOcc_codeIAt (env : REnv X) (envI : IEnv X)
     (hpenv : ∀ p ∈ penv, codeBound p.2 = true)
     (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
     ∀ s : Src S X,
-      paramOcc (codeIAt (some envI) penv senv pos s) =
-        (paramOcc (codeAt (some env) penv senv pos s)).map (codeMapHoles env envI)
+      paramOcc (codeIAt R (some envI) penv senv pos s) =
+        (paramOcc (codeAt R (some env) penv senv pos s)).map (codeMapHoles env envI)
   | .sym _ => rfl
   | .fn _ => rfl
   | .sv y => by
@@ -452,7 +457,7 @@ private theorem paramOcc_codeIAt (env : REnv X) (envI : IEnv X)
         (fun a (ha : a ≠ .src (codeBinder pos, z)) =>
           codeMapHoles_ne_owned
             (show codeOwned (.src (codeBinder pos, z)) from Or.inl (codeBound_binder pos)) ha)
-        (paramOcc (codeAt (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b))).symm
+        (paramOcc (codeAt R (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b))).symm
   | .form z b => by
       simp only [codeAt, codeIAt, paramOcc]
       have hpenv' : ∀ p ∈ (z, codeBinder pos) :: penv, codeBound p.2 = true := by
@@ -472,7 +477,7 @@ private theorem paramOcc_codeIAt (env : REnv X) (envI : IEnv X)
         (fun a (ha : a ≠ .src (codeBinder pos, z)) =>
           codeMapHoles_ne_owned
             (show codeOwned (.src (codeBinder pos, z)) from Or.inl (codeBound_binder pos)) ha)
-        (paramOcc (codeAt (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b))).symm
+        (paramOcc (codeAt R (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b))).symm
   | .app f a => by
       simp only [codeAt, codeIAt, paramOcc, paramOcc_codeIAt env envI penv senv (pos ++ [0])
         hpenv hsenv f, paramOcc_codeIAt env envI penv senv (pos ++ [1]) hpenv hsenv a,
@@ -502,15 +507,16 @@ private theorem paramOcc_codeIAt (env : REnv X) (envI : IEnv X)
   | .new _ b =>
       paramOcc_codeIAt env envI penv senv (pos ++ [0]) hpenv hsenv b
 
-private theorem codeRel_foldBind {f : Nm (Slot X) → Nm (BId X)}
+private theorem codeRel_foldBind {Q : Tm S (Slot X) → Tm S (BId X) → Prop}
+    {f : Nm (Slot X) → Nm (BId X)}
     {L : Nm (Slot X) → Prop} {t₁ : Tm S (Slot X)} {t₂ : Tm S (BId X)}
     (ps : List (Nm (Slot X)))
     (hsep : ∀ p ∈ ps, ∀ y ∈ freeParams t₁, y ≠ p → f y ≠ f p)
     (hL : ∀ p ∈ ps, L p)
     (h : CodeRel (R₁ := fun (_ : Slot X) => True) (R₂ := fun (_ : BId X) => True)
-      codeQ L f t₁ t₂) :
+      Q L f t₁ t₂) :
     CodeRel (R₁ := fun (_ : Slot X) => True) (R₂ := fun (_ : BId X) => True)
-      codeQ L f
+      Q L f
       (ps.foldr (fun p acc => .lam p [] acc) t₁)
       ((ps.map f).foldr (fun p acc => .lam p [] acc) t₂) := by
   induction ps with
@@ -528,16 +534,17 @@ private theorem codeRel_foldBind {f : Nm (Slot X) → Nm (BId X)}
       · exact ih (fun q hq => hsep q (List.mem_cons_of_mem _ hq))
           (fun q hq => hL q (List.mem_cons_of_mem _ hq))
 
-private theorem codeRel_codeAt (env : REnv X) (envI : IEnv X)
+private theorem codeRel_codeAt (hR : scopeOwner R) {Q : Tm S (Slot X) → Tm S (BId X) → Prop}
+    (hQ : ∀ s, Q (codeOf R s) (codeI R s)) (env : REnv X) (envI : IEnv X)
     (hB : ∀ y, codeBound (env y) = false) (hF : ∀ y, env y ≠ codeFreeParam)
     (penv senv : List (X × Owner)) (pos : Owner)
     (hpenv : ∀ p ∈ penv, codeBound p.2 = true)
     (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
     ∀ s : Src S X,
       CodeRel (R₁ := fun (_ : Slot X) => True) (R₂ := fun (_ : BId X) => True)
-        codeQ (fun _ => True) (codeMapHoles env envI)
-        (codeAt (some env) penv senv pos s)
-        (codeIAt (some envI) penv senv pos s)
+        Q (fun _ => True) (codeMapHoles env envI)
+        (codeAt R (some env) penv senv pos s)
+        (codeIAt R (some envI) penv senv pos s)
   | .sym s => by
       simp [codeAt, codeIAt]
       exact .sym s
@@ -575,7 +582,7 @@ private theorem codeRel_codeAt (env : REnv X) (envI : IEnv X)
         · exact codeBound_binder pos
         · exact hpenv p hp
       refine .lam ?hx trivial ?hr₁ ?hr₂ ?hown ?hpar
-        (codeRel_codeAt env envI hB hF ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+        (codeRel_codeAt hR hQ env envI hB hF ((z, codeBinder pos) :: penv) senv (pos ++ [0])
           hpenv' hsenv b)
       · exact codeMapHoles_owned (Or.inl (codeBound_binder pos))
       · intro s hs; cases hs
@@ -594,7 +601,7 @@ private theorem codeRel_codeAt (env : REnv X) (envI : IEnv X)
         · exact codeBound_binder pos
         · exact hpenv p hp
       refine .lam ?_ trivial ?_ ?_ ?_ ?_
-        (codeRel_codeAt env envI hB hF ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+        (codeRel_codeAt hR hQ env envI hB hF ((z, codeBinder pos) :: penv) senv (pos ++ [0])
           hpenv' hsenv b)
       · exact codeMapHoles_owned (Or.inl (codeBound_binder pos))
       · intro s hs; cases hs
@@ -607,63 +614,64 @@ private theorem codeRel_codeAt (env : REnv X) (envI : IEnv X)
   | .app f a => by
       simp only [codeAt, codeIAt]
       exact .app
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [0]) hpenv hsenv f)
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [1]) hpenv hsenv a)
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [0]) hpenv hsenv f)
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [1]) hpenv hsenv a)
   | .quote c => by
       simp only [codeAt, codeIAt]
-      exact .quote ⟨c, rfl, rfl⟩
+      exact .quote (hQ c)
   | .pquote c => by
       simp only [codeAt, codeIAt]
-      exact .pquote (codeRel_codeAt env envI hB hF [] [] []
+      exact .pquote (codeRel_codeAt hR hQ env envI hB hF [] [] []
         (by intro _ h; cases h) (by intro _ h; cases h) c)
   | .letS p w b _ => by
       simp only [codeAt, codeIAt]
       have hsenv' := append_bound (svBinds_bound (pos ++ [0]) p) hsenv
       exact .letP
-        (codeRel_codeAt env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0])
+        (codeRel_codeAt hR hQ env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0])
           hpenv hsenv' p)
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [1]) hpenv hsenv w)
-        (codeRel_codeAt env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2])
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [1]) hpenv hsenv w)
+        (codeRel_codeAt hR hQ env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2])
           hpenv hsenv' b)
   | .unify p w b => by
       simp only [codeAt, codeIAt]
       have hsenv' := append_bound (svBinds_bound (pos ++ [0]) p) hsenv
       exact .letP
-        (codeRel_codeAt env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0])
+        (codeRel_codeAt hR hQ env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0])
           hpenv hsenv' p)
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [1]) hpenv hsenv w)
-        (codeRel_codeAt env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2])
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [1]) hpenv hsenv w)
+        (codeRel_codeAt hR hQ env envI hB hF penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2])
           hpenv hsenv' b)
   | .alt t₁ t₂ => by
       simp only [codeAt, codeIAt]
       exact .alt
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [0]) hpenv hsenv t₁)
-        (codeRel_codeAt env envI hB hF penv senv (pos ++ [1]) hpenv hsenv t₂)
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [0]) hpenv hsenv t₁)
+        (codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [1]) hpenv hsenv t₂)
   | .new _ b => by
       simp only [codeAt, codeIAt]
-      exact codeRel_codeAt env envI hB hF penv senv (pos ++ [0]) hpenv hsenv b
+      exact codeRel_codeAt hR hQ env envI hB hF penv senv (pos ++ [0]) hpenv hsenv b
 
 /-- The two elaborations of a pattern quotation are the same code. Holes are
 the surrounding scope's slots. Every other name is a binder or a parameter
 of the code, sent across by one map, and sealing binds the parameters. -/
-theorem codeRel_pattern (env : REnv X) (envI : IEnv X)
+theorem codeRel_pattern (hR : scopeOwner R) {Q : Tm S (Slot X) → Tm S (BId X) → Prop}
+    (hQ : ∀ s, Q (codeOf R s) (codeI R s)) (env : REnv X) (envI : IEnv X)
     (hB : ∀ y, codeBound (env y) = false) (hF : ∀ y, env y ≠ codeFreeParam)
     (c : Src S X) :
     CodeRel (R₁ := fun (_ : Slot X) => True) (R₂ := fun (_ : BId X) => True)
-      codeQ (fun _ => True) (codeMapHoles env envI)
-      (sealParams (codeAt (some env) [] [] [] c))
-      (sealParams (codeIAt (some envI) [] [] [] c)) := by
-  have hrel := codeRel_codeAt env envI hB hF [] [] [] (by intro _ h; cases h)
+      Q (fun _ => True) (codeMapHoles env envI)
+      (sealParams (codeAt R (some env) [] [] [] c))
+      (sealParams (codeIAt R (some envI) [] [] [] c)) := by
+  have hrel := codeRel_codeAt R hR hQ env envI hB hF [] [] [] (by intro _ h; cases h)
     (by intro _ h; cases h) c
-  have hocc := paramOcc_codeIAt env envI [] [] [] (by intro _ h; cases h)
+  have hocc := paramOcc_codeIAt R env envI [] [] [] (by intro _ h; cases h)
     (by intro _ h; cases h) c
   unfold sealParams
   rw [hocc]
-  refine codeRel_foldBind (paramOcc (codeAt (some env) [] [] [] c)) ?hsep ?hL hrel
+  refine codeRel_foldBind (paramOcc (codeAt R (some env) [] [] [] c)) ?hsep ?hL hrel
   · intro p hp _ _ hne
     rw [paramOcc_eq_freeParams] at hp
     exact codeMapHoles_ne_owned
-      (mem_freeParams_codeAt (some env) [] [] [] (by intro _ h; cases h)
+      (mem_freeParams_codeAt R (some env) [] [] [] (by intro _ h; cases h)
         (by intro _ h; cases h) c p hp) hne
   · intro _ _; trivial
 

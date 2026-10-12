@@ -26,6 +26,7 @@ observation interfaces do not become silent errors in an ordinary dialect.
 -/
 
 set_option autoImplicit false
+set_option Elab.async false
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeEquationNeed
 
@@ -393,27 +394,48 @@ def coreValues (program : Program) (term : Atom) (requested allowance : Nat) : L
     | .value value => some value
     | _ => none
 
+/-- Receipt erasure realizes the whole authored breadth-first run: ordered
+emissions, occurrence traces and the complete residual frontier. -/
+theorem execute_erases (program : Program) (term : Atom) (requested allowance : Nat) :
+    (execute program term requested allowance).mapNodes
+        NeedInferenceControl.Erasure.eraseOccurrence =
+      executeCore program term requested allowance := by
+  simpa [execute, executeCore, occurrenceSystem,
+    Mettapedia.GSLT.Core.InferenceControl.Snapshot.mapNodes,
+    Mettapedia.GSLT.Core.InferenceControl.Snapshot.initial,
+    Mettapedia.GSLT.Core.BranchingTemporal.Snapshot.mapNodes,
+    Mettapedia.GSLT.Core.BranchingTemporal.initial,
+    NeedInferenceControl.Erasure.eraseOccurrence, WorkOccurrence.root] using
+    NeedInferenceControl.Erasure.demanded_breadthFirst_run_erases
+      (specification program) (Mettapedia.GSLT.Core.DemandExecution.atLeast requested) allowance
+      (Mettapedia.GSLT.Core.InferenceControl.Snapshot.initial
+        (Controller.fixed Scheduler.breadthFirst) [WorkOccurrence.root (initial term)])
+
+/-- Receipt erasure neither invents nor hides unfinished work. -/
+theorem execute_frontier_closed_iff (program : Program) (term : Atom)
+    (requested allowance : Nat) :
+    (executeCore program term requested allowance).search.frontier = [] ↔
+      (execute program term requested allowance).search.frontier = [] := by
+  have frontier := congrArg (fun state => state.search.frontier)
+    (execute_erases program term requested allowance)
+  change ((execute program term requested allowance).search.frontier.map
+    NeedInferenceControl.Erasure.eraseOccurrence) =
+      (executeCore program term requested allowance).search.frontier at frontier
+  rw [← frontier]
+  simp
+
+
 /-- Answers may be checked on the smaller realization without reducing the
 causal receipt DAG. The proof preserves the original observation budget. -/
 theorem values_eq_coreValues (program : Program) (term : Atom)
     (requested allowance : Nat) :
     values program term requested allowance = coreValues program term requested allowance := by
-  have realized := NeedInferenceControl.Erasure.demanded_breadthFirst_run_erases
-    (specification program) (Mettapedia.GSLT.Core.DemandExecution.atLeast requested) allowance
-    (Mettapedia.GSLT.Core.InferenceControl.Snapshot.initial
-      (Controller.fixed Scheduler.breadthFirst) [WorkOccurrence.root (initial term)])
-  have observed := congrArg (fun state => state.search.events.filterMap fun event =>
-    match event.value.1 with
-    | .value value => some value
-    | _ => none) realized
-  simpa [values, execute, coreValues, executeCore, occurrenceSystem,
-    Mettapedia.GSLT.Core.InferenceControl.Snapshot.mapNodes,
-    Mettapedia.GSLT.Core.InferenceControl.Snapshot.initial,
+  unfold values coreValues
+  rw [← execute_erases program term requested allowance]
+  simp only [Mettapedia.GSLT.Core.InferenceControl.Snapshot.mapNodes,
     Mettapedia.GSLT.Core.BranchingTemporal.Snapshot.mapNodes,
     Mettapedia.GSLT.Core.BranchingTemporal.Emission.mapOrigin,
-    Mettapedia.GSLT.Core.BranchingTemporal.initial,
-    NeedInferenceControl.Erasure.eraseOccurrence, WorkOccurrence.root,
-    List.filterMap_map, Function.comp_def] using observed
+    List.filterMap_map, Function.comp_def]
 
 namespace Controls
 
@@ -431,10 +453,16 @@ def program : Program := coin ++ [twice,
   ⟨"trees", [], call "S" [call "trees"]⟩,
   ⟨"trees", [], .symbol "Z"⟩]
 
-example : (values program (call "twice" [call "coin"]) 4 400).length = 2 := by decide +kernel
+example : (values program (call "twice" [call "coin"]) 4 400).length = 2 := by
+  rw [values_eq_coreValues]
+  decide +kernel
 example : values program (call "twice" [call "coin"]) 4 400 =
-    [call "Pair" [integer 0, integer 0], call "Pair" [integer 1, integer 1]] := by decide +kernel
-example : (values program (call "Pair" [call "coin", call "coin"]) 4 400).length = 4 := by decide +kernel
+    [call "Pair" [integer 0, integer 0], call "Pair" [integer 1, integer 1]] := by
+  rw [values_eq_coreValues]
+  decide +kernel
+example : (values program (call "Pair" [call "coin", call "coin"]) 4 400).length = 4 := by
+  rw [values_eq_coreValues]
+  decide +kernel
 
 private abbrev CoreState := Mettapedia.GSLT.Core.DemandExecution.State
   (WorkOccurrence (NeedExecution.CoreMachine Origin Local Resume Rule Atom Empty String Empty))
@@ -584,7 +612,9 @@ theorem recursive_integers_seven :
     (checkpoint_observation integerQuery 3000 integerRun integerRun.checked)).trans
     (by decide +kernel)
 
-example : (values program (call "trees") 7 3000).length = 7 := by decide +kernel
+example : (values program (call "trees") 7 3000).length = 7 := by
+  rw [values_eq_coreValues]
+  decide +kernel
 
 /-- A non-tail return adds ten after recursive answer production. -/
 theorem recursive_addition_seven :
@@ -592,6 +622,58 @@ theorem recursive_addition_seven :
       (List.range 7).map (fun n => integer (Int.ofNat n + 10)) := by
   exact (checkpoint_observation additionQuery 3000 additionRun additionRun.checked).trans
     (by decide +kernel)
+
+/-- Two physical authored equations, with their arithmetic left unevaluated. -/
+def argumentChoiceEquations : Program :=
+  [⟨"region-pick", [], call "+" [integer 2, integer 3]⟩,
+   ⟨"region-pick", [], call "+" [integer 4, integer 5]⟩]
+
+def sharedArgumentProgram : Program := argumentChoiceEquations ++
+  [⟨"region-shared-argument", ["x"], call "Pair" [.var "x", .var "x"]⟩]
+
+def independentArgumentsProgram : Program := argumentChoiceEquations ++
+  [⟨"region-independent-arguments", ["x", "y"], call "Pair" [.var "x", .var "y"]⟩]
+
+def sharedArgumentQuery : Atom :=
+  call "region-shared-argument" [call "region-pick"]
+
+def independentArgumentsQuery : Atom :=
+  call "region-independent-arguments" [call "region-pick", call "region-pick"]
+
+/-- One allocated argument is used twice; the two coherent occurrences remain. -/
+theorem shared_argument_equations_answers :
+    values sharedArgumentProgram sharedArgumentQuery 3 400 =
+      [call "Pair" [integer 5, integer 5], call "Pair" [integer 9, integer 9]] := by
+  rw [values_eq_coreValues]
+  decide +kernel
+
+/-- Identical source syntax at distinct argument positions allocates distinct choices. -/
+theorem independent_argument_equations_answers :
+    values independentArgumentsProgram independentArgumentsQuery 5 400 =
+      [call "Pair" [integer 5, integer 5], call "Pair" [integer 5, integer 9],
+       call "Pair" [integer 9, integer 5], call "Pair" [integer 9, integer 9]] := by
+  rw [values_eq_coreValues]
+  decide +kernel
+
+/-- The shared answer check exhausts the rich source's complete frontier. -/
+theorem shared_argument_equations_closed :
+    (execute sharedArgumentProgram sharedArgumentQuery 3 400).search.frontier = [] := by
+  apply (execute_frontier_closed_iff _ _ _ _).mp
+  decide +kernel
+
+/-- The independent answers leave no pending branch in the rich source. -/
+theorem independent_argument_equations_closed :
+    (execute independentArgumentsProgram independentArgumentsQuery 5 400).search.frontier = [] := by
+  apply (execute_frontier_closed_iff _ _ _ _).mp
+  decide +kernel
+
+/-- Coherent printed pairs alone cannot equate shared and independently supplied arguments. -/
+theorem shared_and_independent_argument_answers_differ :
+    values sharedArgumentProgram sharedArgumentQuery 3 400 ≠
+      values independentArgumentsProgram independentArgumentsQuery 5 400 := by
+  rw [shared_argument_equations_answers, independent_argument_equations_answers]
+  decide
+
 
 end Controls
 

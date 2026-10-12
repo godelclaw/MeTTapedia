@@ -1,6 +1,6 @@
-import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
-import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityNIKAuthority
-import Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
+import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityAuthority
+import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 /-!
 # Equational Boolean authority inside the atomless first-order theory
@@ -26,23 +26,23 @@ open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanProfileExtension
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanTermProfileBridge
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision.Canary
-open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityNIKAuthority.Canary
+open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityAuthority.Canary
 
 universe u
 
 private abbrev equationalTheory :=
-  Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityNIKAuthority.theory
+  Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityAuthority.theory
 
 private abbrev equationalContract :=
-  Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityNIKAuthority.contract
+  Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityAuthority.contract
 
 private abbrev firstOrderTheory :=
-  Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority.theory
+  Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority.theory
 
 private abbrev firstOrderContract :=
-  Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority.contract
+  Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority.contract
 
 /-! ## Universal closure -/
 
@@ -103,18 +103,18 @@ def equationSentence {arity : Nat} (equation : Equation (Fin arity)) :
 
 theorem equationSentence_coldMeaning_iff_validInCantor
     {arity : Nat} (equation : Equation (Fin arity)) :
-    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority.ColdMeaning
+    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority.ColdMeaning
         (equationSentence equation) <->
       ValidIn CantorAlgebra equation := by
   simpa [equationSentence,
-    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority.ColdMeaning,
+    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority.ColdMeaning,
     ValidIn, Satisfies] using
     (satisfies_universalClosure_iff
       (B := CantorAlgebra) (.equation equation))
 
 theorem equationSentence_coldMeaning_iff_boolValid
     {arity : Nat} (equation : Equation (Fin arity)) :
-    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority.ColdMeaning
+    Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority.ColdMeaning
         (equationSentence equation) <->
       BoolValid equation :=
   (equationSentence_coldMeaning_iff_validInCantor equation).trans

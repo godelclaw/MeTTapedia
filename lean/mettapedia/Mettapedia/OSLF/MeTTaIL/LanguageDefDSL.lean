@@ -109,6 +109,8 @@ scoped syntax "-" num : langDefPattern
 scoped syntax "eval(" langDefPattern "," langDefPattern ")" : langDefPattern
 scoped syntax "(" "eval" ident langDefPattern ")" : langDefPattern
 scoped syntax "(" "eval" langDefPattern langDefPattern ")" : langDefPattern
+scoped syntax "(" "subst" langDefPattern langDefPattern ")" : langDefPattern
+scoped syntax "subst" langDefPattern langDefPattern : langDefPattern
 scoped syntax str "(" langDefPattern,* ")" : langDefPattern
 scoped syntax ident "(" langDefPattern,* ")" : langDefPattern
 scoped syntax ident langDefPattern+ : langDefPattern
@@ -261,7 +263,8 @@ private def mkTermList : List (TSyntax `term) → MacroM (TSyntax `term)
       let xs' ← mkTermList xs
       `($x :: $xs')
 
-private partial def expandTypeExpr : TSyntax `langDefTypeExpr → MacroM (TSyntax `term)
+/-- Expand the shared type syntax for declaration quotations. -/
+partial def expandTypeExpr : TSyntax `langDefTypeExpr → MacroM (TSyntax `term)
   | `(langDefTypeExpr| $atom:langDefTypeAtom) => expandTypeAtom atom
   | `(langDefTypeExpr| $dom:langDefTypeAtom -> $cod:langDefTypeExpr) => do
       let dom' ← expandTypeAtom dom
@@ -524,6 +527,16 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
   | `(langDefPattern| ($inner:langDefPattern)) => do
       let inner' ← expandPatternInfo inner
       pure (mkExpandedPattern inner'.term s!"({inner'.sourceText})")
+  | `(langDefPattern| (subst $body:langDefPattern $repl:langDefPattern))
+  | `(langDefPattern| subst $body:langDefPattern $repl:langDefPattern) => do
+      let body' ← expandPatternInfo body
+      let repl' ← expandPatternInfo repl
+      let bodyTerm := body'.term
+      let replTerm := repl'.term
+      -- Upstream applies an authored abstraction. The older `.subst` node
+      -- eliminates an implicit de Bruijn level and has a different scope.
+      let term ← `(Pattern.eval $bodyTerm $replTerm)
+      pure (mkExpandedPattern term s!"(subst {body'.sourceText} {repl'.sourceText})")
   | `(langDefPattern| eval($scope:langDefPattern, $repl:langDefPattern)) => do
       let scope' ← expandPatternInfo scope
       let repl' ← expandPatternInfo repl
@@ -659,10 +672,12 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
 
 end
 
-private partial def expandPattern (stx : TSyntax `langDefPattern) : MacroM (TSyntax `term) := do
+/-- Expand the shared pattern syntax without resolving declaration scope. -/
+partial def expandPattern (stx : TSyntax `langDefPattern) : MacroM (TSyntax `term) := do
   return (← expandPatternInfo stx).term
 
-private def expandTypeBinding : TSyntax `langDefTypeBinding → MacroM (TSyntax `term)
+/-- Expand one named type binding through the shared type grammar. -/
+def expandTypeBinding : TSyntax `langDefTypeBinding → MacroM (TSyntax `term)
   | `(langDefTypeBinding| $nm:ident:$ty:langDefTypeExpr) => do
       let ty' ← expandTypeExpr ty
       `(($(mkStrTerm nm.getId.toString), $ty'))
@@ -870,7 +885,7 @@ private def expandRewriteDecl (stx : TSyntax `langDefRewriteDecl) : MacroM (TSyn
   | _ =>
       Macro.throwErrorAt raw "unsupported rewrite declaration"
 
-macro
+scoped macro
   "languageDef!" "{"
   "name" ":" langName:term
   "types" "{" typeDecls:langDefTypeDecl* "}"

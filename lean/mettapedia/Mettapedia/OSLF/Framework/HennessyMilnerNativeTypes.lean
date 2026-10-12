@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Logic.HennessyMilnerAdequacy
+import Mettapedia.GSLT.Logic.HennessyMilnerTransport
 import Mettapedia.GSLT.Logic.HigherOrderHML
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 
@@ -28,7 +29,7 @@ open Mettapedia.GSLT.HennessyMilner
 open Mettapedia.OSLF.Framework
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 
-universe uAtom uLabel uInterface uState
+universe uAtom uLabel uAtom' uLabel' uInterface uState
 
 variable {S : GSLT} (M : System.{uAtom, uLabel} S)
 
@@ -54,6 +55,17 @@ theorem satisfies_formulaNativeType_iff
     (gsltOSLF S).satisfies (S := ()) term (formulaNativeType M formula).pred ↔
       M.sat formula term :=
   Iff.rfl
+
+/-- A checked operational cover transports the formula-generated native
+types exactly. This concerns the declared atoms and interactions, not every
+predicate in the ambient native-type frame. -/
+theorem systemCover_formulaNativeType_iff {T : GSLT}
+    {N : System.{uAtom', uLabel'} T} (cover : SystemCover M N)
+    (formula : Formula M.Atom M.Label) (term : S.Term) :
+    (gsltOSLF T).satisfies (S := ()) (cover.mapTerm term)
+        (formulaNativeType N (formula.map cover.mapAtom cover.mapLabel)).pred ↔
+      (gsltOSLF S).satisfies (S := ()) term (formulaNativeType M formula).pred :=
+  cover.sat_map formula term
 
 /-- Hennessy--Milner adequacy stated directly through the generated OSLF
 native types. -/
@@ -155,6 +167,17 @@ theorem satisfies_positiveFormulaNativeType_iff
       M.psat formula term :=
   Iff.rfl
 
+/-- The same implementation boundary is exact for the positive fragment. -/
+theorem systemCover_positiveFormulaNativeType_iff {T : GSLT}
+    {N : System.{uAtom', uLabel'} T} (cover : SystemCover M N)
+    (formula : PosFormula M.Atom M.Label) (term : S.Term) :
+    (gsltOSLF T).satisfies (S := ()) (cover.mapTerm term)
+        (positiveFormulaNativeType N
+          (formula.map cover.mapAtom cover.mapLabel)).pred ↔
+      (gsltOSLF S).satisfies (S := ()) term
+        (positiveFormulaNativeType M formula).pred :=
+  cover.psat_map formula term
+
 /-- Positive generated native predicates recover the simulation preorder
 under finite behavioral covers, without changing the authored equations. -/
 theorem positiveFormulaNativeTypes_preorder_iff_similar_of_behavioral_cover
@@ -230,6 +253,8 @@ theorem bisimilar_not_equiv_not_allNativeTypes_equivalent
 #print axioms satisfies_formulaNativeType_iff
 #print axioms formulaNativeTypes_equivalent_iff_bisimilar
 #print axioms satisfies_positiveFormulaNativeType_iff
+#print axioms systemCover_formulaNativeType_iff
+#print axioms systemCover_positiveFormulaNativeType_iff
 #print axioms positiveFormulaNativeTypes_preorder_iff_similar
 #print axioms allNativeTypes_equivalent_iff_equiv
 #print axioms bisimilar_not_equiv_not_allNativeTypes_equivalent

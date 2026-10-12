@@ -2,6 +2,7 @@ import Mettapedia.GSLT.Dynamics.UnfoldingTraversal
 import Mathlib.Algebra.Order.Group.Multiset
 import Mathlib.Data.Multiset.Basic
 import Mathlib.Data.List.Dedup
+import Mathlib.Tactic.Ring
 
 /-!
 # The proof-carrying collapse algebra
@@ -366,5 +367,81 @@ theorem fold_demandTake {Ans : Type} (A : CollapseAlgebra Ans R Result)
     (k : Nat) (t : Unfold Ans) :
     foldStream A (demandTake k t) = foldStream A ((preOrder t).take k) := by
   rw [demandTake_eq_take]
+
+/-! ## Summaries of every suffix
+
+The collapse of a stream is a right fold, so it is computed from the collapse
+of its tail by one `combine`.  The summaries of all suffixes of a stream
+therefore come from a single pass with one `combine` per element
+(`suffixFolds_cons`), and they agree with folding every suffix separately
+(`suffixFolds_eq`).  Folding every suffix separately instead emits every
+element of every suffix: the triangular number of the stream's length
+(`two_mul_sum_length_tails`).  The reuse needs no certificate; certificates
+license chunking, reordering, deduplication and early stopping.
+
+A tabled chain is the leading instance: the answer table of each node is the
+next node's table with one answer in front.  Sharing the suffix gives every
+table's summary in linear work, while delivering every table's answers
+separately is quadratic.  Enumerating every table still costs that quadratic
+delivery count; only consumers that read summaries or one root avoid it. -/
+
+/-- The collapse of every suffix, longest first, each obtained from the next
+shorter one by a single `combine`. -/
+def suffixFolds (A : CollapseAlgebra O R Result) : List O → List R
+  | [] => [A.zero]
+  | o :: rest => A.combine (A.emit o) ((suffixFolds A rest).headD A.zero) :: suffixFolds A rest
+
+/-- One `combine` per element: each new summary reuses the previous one. -/
+theorem suffixFolds_cons (A : CollapseAlgebra O R Result) (o : O) (rest : List O) :
+    suffixFolds A (o :: rest) =
+      A.combine (A.emit o) ((suffixFolds A rest).headD A.zero) :: suffixFolds A rest :=
+  rfl
+
+/-- The first element of the mapped suffixes is the image of the stream. -/
+theorem headD_map_tails {α β : Type} (f : List α → β) (default : β) (l : List α) :
+    (l.tails.map f).headD default = f l := by
+  cases l <;> rfl
+
+/-- **Shared summaries are exact.**  The single pass computes the collapse of
+every suffix. -/
+theorem suffixFolds_eq (A : CollapseAlgebra O R Result) (l : List O) :
+    suffixFolds A l = l.tails.map (foldStream A) := by
+  induction l with
+  | nil => rfl
+  | cons o rest ih =>
+      rw [suffixFolds_cons, ih, headD_map_tails]
+      rfl
+
+/-- A list has one suffix more than it has elements. -/
+theorem length_tails_eq {α : Type} (l : List α) : l.tails.length = l.length + 1 := by
+  induction l with
+  | nil => rfl
+  | cons a rest ih => simp [List.tails, ih]
+
+/-- There is one summary per suffix, the empty suffix included. -/
+theorem length_suffixFolds (A : CollapseAlgebra O R Result) (l : List O) :
+    (suffixFolds A l).length = l.length + 1 := by
+  rw [suffixFolds_eq, List.length_map, length_tails_eq]
+
+/-- **The separate cost.**  Folding every suffix separately emits the
+triangular number of elements. -/
+theorem two_mul_sum_length_tails {α : Type} (l : List α) :
+    2 * (l.tails.map List.length).sum = l.length * (l.length + 1) := by
+  induction l with
+  | nil => rfl
+  | cons a rest ih =>
+      have step : ((a :: rest).tails.map List.length).sum =
+          (rest.length + 1) + (rest.tails.map List.length).sum := by
+        simp [List.tails]
+      rw [step, Nat.mul_add, ih, List.length_cons]
+      ring
+
+/-- The count algebra shares summaries: three answers give the counts of all
+four suffixes from three additions, while refolding every suffix emits six
+answers. -/
+theorem count_suffixFolds :
+    suffixFolds (CountAlg Nat Unit) [⟨1, 1, ()⟩, ⟨2, 1, ()⟩, ⟨3, 1, ()⟩] = [3, 2, 1, 0] ∧
+      ([(⟨1, 1, ()⟩ : Obs Nat Unit), ⟨2, 1, ()⟩, ⟨3, 1, ()⟩].tails.map List.length).sum = 6 := by
+  constructor <;> rfl
 
 end Mettapedia.GSLT.Dynamics.Collapse

@@ -611,7 +611,7 @@ theorem consistent_unknown (t : Ty) :
     Consistent t .unknown ∧ Consistent .unknown t :=
   ⟨.unknownR t, .unknownL t⟩
 
-/-! ### The executable checker (NIK mode 1: direct decision, no certificate) -/
+/-! ### The executable checker (SemanticService mode 1: direct decision, no certificate) -/
 
 mutual
 
@@ -1859,7 +1859,7 @@ def EvidenceConflict.valid : EvidenceConflict → Bool
   | .shape actual expected => !(consistent? actual expected)
   | .cardinality actual demand => !(modeFits (.grade actual) demand)
 
-/-- The NIK outcome algebra used at the evidence boundary.  Exhaustion is
+/-- The SemanticService outcome algebra used at the evidence boundary.  Exhaustion is
 separate from both ignorance and a witnessed refutation. -/
 inductive EvidenceOutcome where
   | established

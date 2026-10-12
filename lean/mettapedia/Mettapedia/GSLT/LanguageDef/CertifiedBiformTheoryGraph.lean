@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary
 import Mettapedia.GSLT.LanguageDef.BiformTheoryGraph
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Certified biform theories over the theory graph
 
@@ -28,8 +30,8 @@ namespace Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraph
 
 open CategoryTheory
 open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 universe uSignature uHom uSentence uTerm uCertificate
 

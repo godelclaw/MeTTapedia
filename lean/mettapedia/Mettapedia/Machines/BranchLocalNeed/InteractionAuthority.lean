@@ -9,9 +9,9 @@ event is therefore an exact list occurrence: its index and `getElem?` proof
 retain duplicate alternatives even when two successors are equal.
 
 This module exposes that existing machine relation as an interaction
-presentation and hence as a NIK authority.  It does not introduce a second
+presentation and hence as a SemanticService authority.  It does not introduce a second
 evaluator.  Since a reference machine contains an extensional heap function,
-executable NIK replay is parameterized by an exact endpoint identity.  A
+executable SemanticService replay is parameterized by an exact endpoint identity.  A
 concrete serialized realization must supply canonical state packets or
 another injective decidable key; an unproved digest is not sufficient.
 -/
@@ -96,7 +96,7 @@ abbrev MachineIdentity
   ExactEndpointIdentity.{uIdentity}
     (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
 
-/-- Local NIK authority for one exact reference-machine occurrence. -/
+/-- Local SemanticService authority for one exact reference-machine occurrence. -/
 def nikStepAuthority {AuthorityId : Type uAuthority}
     (authorityId : AuthorityId)
     (identity : MachineIdentity.{uIdentity} Origin Local Resume Rule Value
@@ -118,7 +118,7 @@ theorem nikStepAuthority_complete {AuthorityId : Type uAuthority}
     exact stepAuthorityByIdentity_complete authorityId identity
       (machinePresentation_complete spec)
 
-/-- Free finite-trace NIK closure of the exact occurrence authority. -/
+/-- Free finite-trace SemanticService closure of the exact occurrence authority. -/
 def nikFiniteTraceAuthority {AuthorityId : Type uAuthority}
     (authorityId : AuthorityId)
     (identity : MachineIdentity.{uIdentity} Origin Local Resume Rule Value

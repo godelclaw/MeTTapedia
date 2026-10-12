@@ -2020,7 +2020,7 @@ theorem language_step_iff_compileLanguageStep
 
 /-- Empty authored equations make the compiler language's exact reduction
 compatible with its generated equation theory. -/
-def languageReductionLaws :
+theorem languageReductionLaws :
     Mettapedia.GSLT.LanguageDef.TotalGSLT.ReductionRespectsEquationsUsing
       relationEnv language :=
   Mettapedia.GSLT.LanguageDef.TotalGSLT.ReductionRespectsEquationsUsing.of_equation_free

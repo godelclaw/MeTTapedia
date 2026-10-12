@@ -39,7 +39,7 @@ It is raw substitution data; its formation is an independent obligation. -/
 inductive Request (n : Nat) where
   | matching (expected : PolarizedNeedMatchedIndex.Request) (input : NativeWireData.Wire)
   | hol (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-      (replay : UniformListChartNIKService.ReplayRequest gamma)
+      (replay : UniformListChartService.ReplayRequest gamma)
       (environment : Sub Tower.Head gamma.length n)
 
 inductive Status where
@@ -56,10 +56,10 @@ inductive Response : Request n → Type where
   | matched {expected input} (source proposition : Tower.Tm 0) :
       Response (.matching expected input)
   | holProof {gamma replay environment}
-      (proof : (UniformListChartNIKService.intrinsicProofSystem gamma).ProofObject)
+      (proof : (UniformListChartService.intrinsicProofSystem gamma).ProofObject)
       (represented : Tower.Tm gamma.length) : Response (.hol gamma replay environment)
   | representationFailure {gamma replay environment}
-      (proof : (UniformListChartNIKService.intrinsicProofSystem gamma).ProofObject) :
+      (proof : (UniformListChartService.intrinsicProofSystem gamma).ProofObject) :
       Response (.hol gamma replay environment)
 
 namespace Response
@@ -213,7 +213,7 @@ theorem hol_admitted
     (crossing : Invocation assembly (Request.hol (n := n) gamma replay environment)
       (.holProof proof represented)) :
     proof.1 = replay.claim ∧
-    (UniformListChartNIKService.intrinsicKernel gamma).decide replay.claim proof = true ∧
+    (UniformListChartService.intrinsicKernel gamma).decide replay.claim proof = true ∧
     Mettapedia.Logic.HOL.ExtDerivation Mettapedia.Logic.HOL.UniformListInduction.Symbol
       replay.claim.1 replay.claim.2 ∧
     FormationSensitiveHOLInterface.represent FormationSensitiveHOLUniformList.signature
@@ -236,7 +236,7 @@ theorem hol_submitted_replay_checked
     (qualified : specification.Satisfies assembly) {gamma replay environment proof represented}
     (crossing : Invocation assembly (Request.hol (n := n) gamma replay environment)
       (.holProof proof represented)) :
-    UniformListChartNIKService.replayAccepted gamma replay = true := by
+    UniformListChartService.replayAccepted gamma replay = true := by
   cases crossing with
   | holSuccess returned _ =>
       have replayQualified : HOLReplayQualified assembly :=
@@ -274,7 +274,7 @@ universe w
 by the constructorwise native judgment, not by decoding its bytes or reading
 the already intrinsic proof object's conclusion as its definition. -/
 theorem response_denotes (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
-    {gamma : HOL.Ctx BaseSort} {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {gamma : HOL.Ctx BaseSort} {replay : UniformListChartService.ReplayRequest gamma}
     {environment : Sub Tower.Head gamma.length n} {proof represented}
     (crossing : Invocation assembly (.hol gamma replay environment)
       (.holProof proof represented)) :
@@ -286,7 +286,7 @@ theorem response_denotes (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
 submitted native substitution. The semantic counterpart of that substitution
 is established from its actual components, including higher-order values. -/
 theorem payload_denotes (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
-    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartService.ReplayRequest gamma}
     {substitution : Sub Tower.Head gamma.length delta.length}
     (environment : model.Valuation delta → model.Valuation gamma)
     (components : ∀ {type} (index : HOL.Var gamma type),
@@ -310,7 +310,7 @@ theorem payload_denotes (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
 value. This needs interpretation of the actual request substitution, but no
 truth assumption: uniqueness of meaning and validity remain distinct. -/
 theorem payload_meaning_unique (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
-    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartService.ReplayRequest gamma}
     {substitution : Sub Tower.Head gamma.length delta.length}
     (environment : model.Valuation delta → model.Valuation gamma)
     (components : ∀ {type} (index : HOL.Var gamma type),
@@ -331,7 +331,7 @@ same ones that will open the actual continuation binder. -/
 theorem payload_model_sound (qualified : specification.Satisfies assembly)
     (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
     (respects : model.FunctionsRespectEqv)
-    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {gamma delta : HOL.Ctx BaseSort} {replay : UniformListChartService.ReplayRequest gamma}
     {substitution : Sub Tower.Head gamma.length delta.length}
     (environment : model.Valuation delta → model.Valuation gamma)
     (components : ∀ {type} (index : HOL.Var gamma type),
@@ -386,10 +386,10 @@ theorem matching_success_iff
 theorem hol_success_iff
     (qualified : specification.Satisfies assembly)
     (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length n) :
     (invoke assembly (.hol gamma replay environment)).status = .success ↔
-      UniformListChartNIKService.replayAccepted gamma replay = true := by
+      UniformListChartService.replayAccepted gamma replay = true := by
   have replayQualified : HOLReplayQualified assembly :=
     qualified .holReplay (by simp [specification])
   have exactness := replayQualified.1 gamma replay
@@ -488,7 +488,7 @@ def matchingSource (expected : PolarizedNeedMatchedIndex.Request)
 
 def holSource
     (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length 2) : Source 2 :=
   ⟨.hol gamma replay environment, nativeContinuation⟩
 
@@ -592,7 +592,7 @@ def canonicalTransport : MatchedIndexDependentTransport.Transport :=
   ⟨PolarizedNeedMatchedIndex.Examples.canonical, PolarizedNeedMatchedIndex.Examples.b⟩
 
 def actualHOLSource : Source 2 :=
-  holSource [] (UniformListChartNIKService.actualRequest []) Fin.elim0
+  holSource [] (UniformListChartService.actualRequest []) Fin.elim0
 
 def alteredOutputSource : Source 2 :=
   matchingSource PolarizedNeedMatchedIndex.Examples.canonical.request
@@ -603,15 +603,15 @@ def alteredIndexSource : Source 2 :=
     (PolarizedNeedMatchedIndex.admittedWire PolarizedNeedMatchedIndex.Examples.canonical)
 
 def malformedHOLSource : Source 2 :=
-  holSource [] { UniformListChartNIKService.actualRequest [] with
+  holSource [] { UniformListChartService.actualRequest [] with
     stepProof := Mettapedia.Logic.HOL.UniformListInductionChart.malformedCertificate [] } Fin.elim0
 
 def alteredPremisesHOLSource : Source 2 :=
-  holSource [] { UniformListChartNIKService.actualRequest [] with
+  holSource [] { UniformListChartService.actualRequest [] with
     stepPremises := Mettapedia.Logic.HOL.UniformListInductionChart.alteredStepAssumptions [] } Fin.elim0
 
 def changedClaimHOLSource : Source 2 :=
-  holSource [] { UniformListChartNIKService.actualRequest [] with
+  holSource [] { UniformListChartService.actualRequest [] with
     claim := (Mettapedia.Logic.HOL.UniformListInduction.equations,
       Mettapedia.Logic.HOL.UniformListInduction.mapLength) } Fin.elim0
 
@@ -626,9 +626,9 @@ theorem canonical_matching_crossing :
 
 theorem actual_hol_crossing :
     Invocation common actualHOLSource.request
-      (.holProof (UniformListChartNIKService.actualNativeProof [])
+      (.holProof (UniformListChartService.actualNativeProof [])
         FormationSensitiveHOLUniformList.rawMapLength) :=
-  .holSuccess (UniformListChartNIKService.actual_produced [])
+  .holSuccess (UniformListChartService.actual_produced [])
     (FormationSensitiveHOLUniformList.mapLength_represented [])
 
 theorem canonical_matching_program :
@@ -704,8 +704,8 @@ theorem actual_hol_workload (state : Bool) (branch : BranchTrace) :
 
 theorem actual_hol_source_derivation :
     Mettapedia.Logic.HOL.ExtDerivation Mettapedia.Logic.HOL.UniformListInduction.Symbol
-      (UniformListChartNIKService.actualRequest []).claim.1
-      (UniformListChartNIKService.actualRequest []).claim.2 :=
+      (UniformListChartService.actualRequest []).claim.1
+      (UniformListChartService.actualRequest []).claim.2 :=
   (hol_admitted common_qualified actual_hol_crossing).2.2.1
 
 /-- The actual response retains a closed native formula with a true standard
@@ -715,7 +715,7 @@ source proof. This concerns the retained formula, not an interpretation of
 the surrounding mixed native context or its identity proofs. -/
 theorem actual_hol_retained_model_boundary :
     invoke common actualHOLSource.request =
-      .holProof (UniformListChartNIKService.actualNativeProof [])
+      .holProof (UniformListChartService.actualNativeProof [])
         FormationSensitiveHOLUniformList.rawMapLength ∧
     NativeHOLFragmentDenotation.Denotes
       Mettapedia.Logic.HOL.UniformListInduction.StandardListModel.model
@@ -771,15 +771,15 @@ theorem altered_index_declines :
 
 theorem malformed_hol_declines :
     invoke common malformedHOLSource.request = .declined malformedHOLSource.request :=
-  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartNIKService.malformed_leaf_rejected []))
+  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartService.malformed_leaf_rejected []))
 
 theorem altered_hol_premises_decline :
     invoke common alteredPremisesHOLSource.request = .declined alteredPremisesHOLSource.request :=
-  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartNIKService.altered_local_premise_rejected []))
+  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartService.altered_local_premise_rejected []))
 
 theorem changed_hol_claim_declines :
     invoke common changedClaimHOLSource.request = .declined changedClaimHOLSource.request :=
-  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartNIKService.missing_induction_request_rejected []))
+  (invoke_iff _ _ _).mpr (.holDecline (UniformListChartService.missing_induction_request_rejected []))
 
 theorem declined_sources_do_not_run :
     continuationProgram common alteredOutputSource (invoke common alteredOutputSource.request) = none ∧

@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.Dynamics.ObserverRelativeControlTransport
 import Mettapedia.GSLT.LanguageDef.BiformTheory
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Observer-relative control along biform routes
 
@@ -24,7 +26,7 @@ open Mettapedia.GSLT.Dynamics
 open Mettapedia.GSLT.Dynamics.ObserverRelativeControlTransport
 open Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown
 open Mettapedia.GSLT.LanguageDef.BiformTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.ProofRelevant
 
 universe uSignature uHom uSentence uTerm

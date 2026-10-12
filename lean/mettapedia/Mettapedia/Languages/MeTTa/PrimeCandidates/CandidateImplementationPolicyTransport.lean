@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 
 /-!
@@ -22,14 +22,14 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateImplementationPolicyTransport
 
 open Mettapedia.GSLT.Core
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.MaximalNativeCalculus
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCapabilitySelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCurrentSelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.CapabilitySelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCapabilitySelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCurrentSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 
 universe u uObservation uSourceState uTargetState uPolicy uResult uReadout
@@ -194,8 +194,8 @@ def pullbackMaximalPolicySelection
     (model : AdmittedExecutionModel dependencies revision source target)
     (request : PolicyCapabilityRequest catalog nativeRequest)
     (selection :
-      request.toCapabilityRequest.restrictedFamily.MaximalNativeCalculusPrinciple) :
-    (pullbackPolicyRequest model request).toCapabilityRequest.restrictedFamily.MaximalNativeCalculusPrinciple :=
+      request.toCapabilityRequest.restrictedFamily.MaximalLicensedSelection) :
+    (pullbackPolicyRequest model request).toCapabilityRequest.restrictedFamily.MaximalLicensedSelection :=
   PolicyCapabilityRequest.pullbackMaximalSelection (traceMap model) request
     selection
 
@@ -204,8 +204,8 @@ fibre law; no priority order is added. -/
 def pullbackStrongestPolicySelection
     (model : AdmittedExecutionModel dependencies revision source target)
     (request : PolicyCapabilityRequest catalog nativeRequest)
-    (selection : request.toCapabilityRequest.StrongestNativeCalculusPrinciple) :
-    (pullbackPolicyRequest model request).toCapabilityRequest.StrongestNativeCalculusPrinciple :=
+    (selection : request.toCapabilityRequest.GreatestLicensedSelection) :
+    (pullbackPolicyRequest model request).toCapabilityRequest.GreatestLicensedSelection :=
   PolicyCapabilityRequest.pullbackStrongestSelection (traceMap model) request
     selection
 
@@ -214,7 +214,7 @@ def pullbackStrongestPolicySelection
     (model : AdmittedExecutionModel dependencies revision source target)
     (request : PolicyCapabilityRequest catalog nativeRequest)
     (selection :
-      request.toCapabilityRequest.restrictedFamily.MaximalNativeCalculusPrinciple)
+      request.toCapabilityRequest.restrictedFamily.MaximalLicensedSelection)
     (policy : (pullbackPolicyRequest model request).requestedFamily.Policy)
     (encoded : catalog.Key selection.1) :
     ((pullbackPolicyRequest model request).maximalRealization
@@ -228,7 +228,7 @@ policy runner. -/
 @[simp] theorem pullbackStrongestPolicySelection_run
     (model : AdmittedExecutionModel dependencies revision source target)
     (request : PolicyCapabilityRequest catalog nativeRequest)
-    (selection : request.toCapabilityRequest.StrongestNativeCalculusPrinciple)
+    (selection : request.toCapabilityRequest.GreatestLicensedSelection)
     (policy : (pullbackPolicyRequest model request).requestedFamily.Policy)
     (encoded : catalog.Key selection.1) :
     ((pullbackPolicyRequest model request).strongestRealization

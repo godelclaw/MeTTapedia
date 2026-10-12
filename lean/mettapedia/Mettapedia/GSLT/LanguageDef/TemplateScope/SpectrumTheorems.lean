@@ -62,6 +62,10 @@ theorem ownRule_tension (R : OwnRule S X) (hmod : R.Modular) : ¬ R.RelationalCl
 
 variable [DecidableEq X]
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 /-- Rule M's ownership. -/
 def ownRuleM : OwnRule S X := fun body E => ((Src.direct body).filter fun y => decide (y ∉ E)).dedup
 
@@ -73,9 +77,9 @@ def ownRuleEC (sh : List X) : OwnRule S X :=
 explicit rule of its crossing set where there is one. -/
 theorem elabMS_lam_own (E : List X) (env : REnv X) (pos : Owner) (z : X) (xs : Option (List X))
     (b : Src S X) :
-    elabMS E env pos (.lam z xs b) =
+    elabMS R E env pos (.lam z xs b) =
       .lam (parName z) ((crossOwn xs (Src.uses b) (ownRuleM b E)).map fun y => (pos ++ [0], y))
-        (elabMS (crossOwn xs (Src.uses b) (ownRuleM b E) ++ Src.direct b ++ E)
+        (elabMS R (crossOwn xs (Src.uses b) (ownRuleM b E) ++ Src.direct b ++ E)
           (env.update (crossOwn xs (Src.uses b) (ownRuleM b E)) (pos ++ [0])) (pos ++ [0]) b) :=
   rfl
 
@@ -88,9 +92,9 @@ theorem crossOwn_lam (sh : List X) (b : Src S X) (E dflt : List X) :
 uses without a crossing set, `ownRuleEC` of its crossing set otherwise. -/
 theorem elabEC_lam_own (env : REnv X) (pos : Owner) (z : X) (xs : Option (List X))
     (b : Src S X) :
-    elabEC env pos (.lam z xs b) =
+    elabEC R env pos (.lam z xs b) =
       .lam (parName z) ((crossOwn xs (Src.uses b) (Src.uses b).dedup).map fun y => (pos ++ [0], y))
-        (elabEC (env.update (crossOwn xs (Src.uses b) (Src.uses b).dedup) (pos ++ [0]))
+        (elabEC R (env.update (crossOwn xs (Src.uses b) (Src.uses b).dedup) (pos ++ [0]))
           (pos ++ [0]) b) := rfl
 
 /-- Rule M is relational without annotation: an outsider writing the same
@@ -224,7 +228,7 @@ theorem mem_freeEC {y : X} : ∀ {t : Src S X},
 Agreement on every store name of the code is more than that, and it is enough. -/
 theorem codeAt_env (env₁ env₂ : REnv X) (penv senv : List (X × Owner)) (pos : Owner) :
     ∀ s : Src S X, (∀ y ∈ Src.codeSvs s, env₁ y = env₂ y) →
-      codeAt (some env₁) penv senv pos s = codeAt (some env₂) penv senv pos s
+      codeAt R (some env₁) penv senv pos s = codeAt R (some env₂) penv senv pos s
   | .sym _, _ => rfl
   | .fn _, _ => rfl
   | .par _, _ => rfl
@@ -281,7 +285,7 @@ theorem codeAt_env (env₁ env₂ : REnv X) (penv senv : List (X × Owner)) (pos
 /-- **Explicit capture is modular.**  Elaboration reads the environment only
 at the names the text shares with its context. -/
 theorem elabEC_congr : ∀ (t : Src S X) (env env' : REnv X) (pos : Owner),
-    (∀ y ∈ freeEC t, env y = env' y) → elabEC env pos t = elabEC env' pos t
+    (∀ y ∈ freeEC t, env y = env' y) → elabEC R env pos t = elabEC R env' pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv y, env, env', _, h => by
@@ -311,7 +315,7 @@ theorem elabEC_congr : ∀ (t : Src S X) (env env' : REnv X) (pos : Owner),
   | .quote _, _, _, _, _ => rfl
   | .pquote c, env, env', _, h => by
       simp only [freeEC] at h
-      have hc := codeAt_env env env' [] [] [] c h
+      have hc := codeAt_env R env env' [] [] [] c h
       simp only [elabEC, hc]
   | .letS p w b xs, env, env', pos, h => by
       simp only [freeEC, List.mem_append, List.mem_filter, decide_eq_true_eq] at h
@@ -372,8 +376,8 @@ theorem elabEC_congr : ∀ (t : Src S X) (env env' : REnv X) (pos : Owner),
 
 /-- A closure with no crossing set elaborates identically in every context. -/
 theorem elabEC_closed_lam (z : X) (b : Src S X) (env env' : REnv X) (pos : Owner) :
-    elabEC env pos (.lam z none b) = elabEC env' pos (.lam z none b) :=
-  elabEC_congr _ env env' pos (by simp [freeEC])
+    elabEC R env pos (.lam z none b) = elabEC R env' pos (.lam z none b) :=
+  elabEC_congr R _ env env' pos (by simp [freeEC])
 
 /-- The spellings a lexical-fresh term resolves in its context, with the
 crossing names `cr` in force: those not bound by one of its own `let`
@@ -399,7 +403,7 @@ def freeLF : List X → Src S X → List X
 /-- **Lexical fresh is modular.**  Elaboration reads the environment only at
 the names the text does not bind itself. -/
 theorem elabLF_congr : ∀ (t : Src S X) (env env' : REnv X) (cr : List X) (pos : Owner),
-    (∀ y ∈ freeLF cr t, env y = env' y) → elabLF env cr pos t = elabLF env' cr pos t
+    (∀ y ∈ freeLF cr t, env y = env' y) → elabLF R env cr pos t = elabLF R env' cr pos t
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv y, env, env', _, _, h => by
@@ -424,7 +428,7 @@ theorem elabLF_congr : ∀ (t : Src S X) (env env' : REnv X) (cr : List X) (pos 
   | .quote _, _, _, _, _, _ => rfl
   | .pquote c, env, env', _, _, h => by
       simp only [freeLF] at h
-      have hc := codeAt_env env env' [] [] [] c h
+      have hc := codeAt_env R env env' [] [] [] c h
       simp only [elabLF, hc]
   | .letS p w b xs, env, env', cr, pos, h => by
       simp only [freeLF, List.mem_append, List.mem_filter, decide_eq_true_eq] at h
@@ -615,7 +619,16 @@ theorem step_grows (d : Disc) (prog : S → Option (Tm S X)) {r : Runner S X}
   | letP p w b =>
       simp only [step] at hL
       cases hl : letLam? p w with
-      | some f => rw [hl] at hL; exact hr _ _ _ _ hL x hx
+      | some f =>
+          rw [hl] at hL
+          simp only at hL
+          cases hf : σ f with
+          | none => rw [hf] at hL; exact hr _ _ _ _ hL x hx
+          | some _ =>
+              rw [hf] at hL
+              injection hL with hL
+              subst hL
+              cases hx
       | none =>
           rw [hl] at hL
           simp only at hL
@@ -638,7 +651,15 @@ theorem step_grows (d : Disc) (prog : S → Option (Tm S X)) {r : Runner S X}
               rw [hg] at hM₁
               simp only at hM₁
               cases p with
-              | var f => exact h₁.trans (hr _ _ _ _ hM₁ x hx₁)
+              | var f =>
+                  simp only at hM₁
+                  cases hf : r₁.2 f with
+                  | none => rw [hf] at hM₁; exact h₁.trans (hr _ _ _ _ hM₁ x hx₁)
+                  | some _ =>
+                      rw [hf] at hM₁
+                      injection hM₁ with hM₁
+                      subst hM₁
+                      cases hx₁
               | _ =>
                   injection hM₁ with hM₁
                   subst hM₁

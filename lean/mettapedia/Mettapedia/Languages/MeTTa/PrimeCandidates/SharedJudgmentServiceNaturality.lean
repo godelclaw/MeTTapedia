@@ -65,7 +65,7 @@ inductive SupportedArgument : {n : Nat} → Operation n → Tower.Tm n → Prop 
   | wire {n : Nat} (expected : PolarizedNeedMatchedIndex.Request) (input : NativeWireData.Wire) :
       SupportedArgument (.matching expected) (NativeWireData.encode (n := n) input)
   | hol {n : Nat} (gamma : HOL.Ctx HOL.UniformListInduction.BaseSort)
-      (replay : UniformListChartNIKService.ReplayRequest gamma)
+      (replay : UniformListChartService.ReplayRequest gamma)
       (environment : Sub Tower.Head gamma.length (n + 1)) (argument : Tower.Tm n) :
       SupportedArgument (.hol gamma replay environment) argument
 
@@ -365,17 +365,17 @@ theorem lifted_argument_not_captured :
     liftedSquare ≠ (.lam (.app (.var 1) (.app (.var 1) (.var 0))) : Tower.Tm 2) := by decide
 
 def liftedRequest : Request 2 :=
-  .hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) (fun _ => liftedSquare)
+  .hol [mapping] (UniformListChartService.actualRequest [mapping]) (fun _ => liftedSquare)
 
 def liftedResponse : Response liftedRequest :=
-  .holProof (UniformListChartNIKService.actualNativeProof [mapping]) rawMapLength
+  .holProof (UniformListChartService.actualNativeProof [mapping]) rawMapLength
 
 theorem actual_invocation :
     invocation? common holOperation functionSquare =
-      some ⟨Request.hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) squareSubstitution,
-        Response.holProof (UniformListChartNIKService.actualNativeProof [mapping]) rawMapLength⟩ :=
+      some ⟨Request.hol [mapping] (UniformListChartService.actualRequest [mapping]) squareSubstitution,
+        Response.holProof (UniformListChartService.actualNativeProof [mapping]) rawMapLength⟩ :=
   (invocation_iff _ _ _ _ _).mpr ⟨hol_submission,
-    .holSuccess (UniformListChartNIKService.actual_produced [mapping])
+    .holSuccess (UniformListChartService.actual_produced [mapping])
       (mapLength_represented [mapping])⟩
 
 /-- The complete indexed request/response crosses from native scope one to
@@ -401,8 +401,8 @@ theorem lifted_environment_and_result_admitted :
         (subst weakenTarget holPayload) (.const `HOLUniformList.prop) := by
   have result := reindexed_callback_admitted common_qualified weakenTarget
     extendedContext_formed weakenTarget_typed (.hol _ _ _ _) functionSquare_admitted
-    (request := .hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) squareSubstitution)
-    (response := .holProof (UniformListChartNIKService.actualNativeProof [mapping]) rawMapLength)
+    (request := .hol [mapping] (UniformListChartService.actualRequest [mapping]) squareSubstitution)
+    (response := .holProof (UniformListChartService.actualNativeProof [mapping]) rawMapLength)
     (value := holPayload) (type := .const `HOLUniformList.prop)
     substituted_request_admitted actual_invocation rfl
   refine ⟨result.2.2.1, ?_, result.2.2.2.2⟩

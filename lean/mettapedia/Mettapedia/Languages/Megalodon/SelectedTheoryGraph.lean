@@ -2,7 +2,7 @@ import Mettapedia.GSLT.LanguageDef.CertificateTransportGraph
 import Mettapedia.Languages.Megalodon.SignatureEmbedding
 
 /-!
-# Megalodon selected environments in the NIK theory graph
+# Megalodon selected environments in the SemanticService theory graph
 
 Qualified heterogeneous signature embeddings supply the authored edges of the
 selected Megalodon theory graph.  A retained path records whether transport
@@ -19,7 +19,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.Megalodon.SelectedTheoryGraph
 
 open Mettapedia.GSLT.LanguageDef.CertificateTransportGraph
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.Ultrainfinite
 open Mettapedia.Languages.Megalodon.MathdataKernel
 open Mettapedia.Languages.Megalodon.SelectedTheoryProfile
@@ -28,7 +28,7 @@ open Mettapedia.Languages.Megalodon.SignatureEmbedding
 /-! ## The selected-environment graph -/
 
 /-- The existing selected theory and exact native authority, packaged as one
-NIK theory graph. -/
+SemanticService theory graph. -/
 def graph : Graph Environment where
   theory := SelectedTheoryProfile.theory
   contract := SelectedTheoryProfile.contract

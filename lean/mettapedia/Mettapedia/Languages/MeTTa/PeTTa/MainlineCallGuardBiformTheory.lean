@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.BiformTheory
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardMatchMachinePass
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The call-guard compiler as a biform theory
 
@@ -36,7 +38,7 @@ open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT

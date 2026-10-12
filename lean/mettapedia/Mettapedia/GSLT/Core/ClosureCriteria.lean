@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.Core.NonFactorization
 
@@ -549,12 +550,8 @@ def vocabularyInvariant {theory : GSLT} {driver : HostedDriver theory}
 
 end HostedLanguageAudit
 
-@[reducible] private def inertTheory : GSLT where
-  Term := Nat
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by simp
-  rewrites_resp_right := by simp
+@[reducible] private def inertTheory : GSLT :=
+  GSLT.stepFree (Nat)
 
 @[reducible] private def statelessDriver : HostedDriver inertTheory where
   State := Unit

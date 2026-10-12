@@ -4,6 +4,8 @@ import Mettapedia.Logic.HOL.FullDomainInstitution
 import Mettapedia.Logic.HOL.StandardAxiomProperties
 import Mettapedia.Logic.HOL.Semantics.KripkeHenkinCountermodel
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Full-domain HOL models in the theory graph
 
@@ -26,7 +28,7 @@ namespace Mettapedia.GSLT.LanguageDef.HOLFullDomainTheory
 open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
 open Mettapedia.Logic Mettapedia.Logic.HOL
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe u
 

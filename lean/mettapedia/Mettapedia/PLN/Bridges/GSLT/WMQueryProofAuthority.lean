@@ -1,9 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.CompletenessSpectrum
-import Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+import Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 import Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 
 /-!
-# Occurrence-exact WM query evidence as a CertificateGSLT/NIK authority
+# Occurrence-exact WM query evidence as a CertificateGSLT/SemanticService authority
 
 World-model state construction, query extraction, and semantic inference are
 different judgment families.  This module gives the first two a small exact
@@ -27,7 +27,7 @@ open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.CompletenessSpectrum
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+open Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.Framework.EvidenceSemantics
@@ -229,7 +229,7 @@ theorem exactObservationChecker_authority
       simpa [exactObservationChecker, ObservationMeaning] using meaningful⟩
 
 /-- Compose exact revision replay with an independently justified observation
-checker.  This is the query authority waist used by NIK. -/
+checker.  This is the query authority waist used by SemanticService. -/
 def replayChecker
     {State : Type uState} {Query : Type uQuery}
     {Observation : Type uObservation} {ObservationCertificate : Type uCertificate}
@@ -315,9 +315,9 @@ theorem accepted_implies_WMQueryJudgment
       observationAuthority) claim certificate accepted
   exact ⟨meaning.1.toWMJudgmentMulti.toWMJudgment, meaning.2⟩
 
-/-! ## NIK and CertificateGSLT authorities for the same judgment -/
+/-! ## SemanticService and CertificateGSLT authorities for the same judgment -/
 
-/-- Occurrence-exact WM queries as one ordinary NIK authority fibre. -/
+/-- Occurrence-exact WM queries as one ordinary SemanticService authority fibre. -/
 def family
     {State : Type uState} {Query : Type uQuery}
     {Observation : Type uObservation} {ObservationCertificate : Type uCertificate}

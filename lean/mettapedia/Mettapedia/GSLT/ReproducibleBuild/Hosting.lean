@@ -23,7 +23,7 @@ namespace Mettapedia.GSLT.ReproducibleBuild.Hosting
 
 open Mettapedia.GSLT.Core.ReproducibleBuild
 open Mettapedia.GSLT.LanguageDef.GSLTHosting
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 
 universe uDeclared uObserved
 
@@ -254,7 +254,7 @@ end ProofRelevantHosting
 namespace Canary
 
 open Mettapedia.GSLT.LanguageDef.GSLTHosting.FusionCanary
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement.FusionCanary
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement.FusionCanary
 
 /-- The existing fusion is valid result-level hosting while its actual forward
 map collapses two distinct proof-relevant execution histories. -/

@@ -1,4 +1,4 @@
-import Mettapedia.Languages.TPTP.NIKAuthority
+import Mettapedia.Languages.TPTP.CheckerAuthority
 
 /-!
 # Whole-problem authority for TPTP derivations
@@ -21,9 +21,9 @@ objective only after a separate reverse theorem is supplied.
 namespace Mettapedia.Languages.TPTP.ProblemAuthority
 
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKGSLT
+open Mettapedia.GSLT.LanguageDef.CheckerGSLT
 open Mettapedia.Languages.TPTP.StatusSemantics
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.Languages.TPTP.CheckerAuthority
 
 universe uProblem uFormula uLeafCertificate uRuleCertificate
   uGlobalCertificate uModel
@@ -84,13 +84,13 @@ abbrev Evidence :=
 /-- The exact scope for which the composed evidence format is complete. -/
 def Certified (submission : Submission Problem Formula) : Prop :=
   leaves.Certified submission.leafClaim /\
-    NIKAuthority.Certified rules submission.derivation /\
+    CheckerAuthority.Certified rules submission.derivation /\
       global.Certified submission
 
 /-- The independently projected meanings of all three authorities. -/
 def ComponentMeaning (submission : Submission Problem Formula) : Prop :=
   leaves.Meaning submission.leafClaim /\
-    NIKAuthority.Meaning rules submission.derivation /\
+    CheckerAuthority.Meaning rules submission.derivation /\
       global.Meaning submission
 
 /-- A fail-closed checker for all three evidence components. -/
@@ -98,7 +98,7 @@ def checker [DecidableEq Formula] :
     Checker (Submission Problem Formula) (Evidence rules leaves global) where
   check submission evidence :=
     (leaves.checker.check submission.leafClaim evidence.1 &&
-      (NIKAuthority.proofChecker rules).check
+      (CheckerAuthority.proofChecker rules).check
         submission.derivation evidence.2.1) &&
       global.checker.check submission evidence.2.2
 
@@ -107,13 +107,13 @@ theorem checker_sound [DecidableEq Formula] :
   intro submission evidence accepted
   have parts :
       (leaves.checker.check submission.leafClaim evidence.1 = true /\
-        (NIKAuthority.proofChecker rules).check
+        (CheckerAuthority.proofChecker rules).check
           submission.derivation evidence.2.1 = true) /\
         global.checker.check submission evidence.2.2 = true := by
     simpa only [checker, Bool.and_eq_true] using accepted
   exact
     ⟨leaves.projection.authority.sound _ _ parts.1.1,
-      (NIKAuthority.proofChecker_authority rules).sound _ _ parts.1.2,
+      (CheckerAuthority.proofChecker_authority rules).sound _ _ parts.1.2,
       global.projection.authority.sound _ _ parts.2⟩
 
 theorem checker_complete [DecidableEq Formula] :
@@ -124,7 +124,7 @@ theorem checker_complete [DecidableEq Formula] :
   obtain ⟨leafEvidence, leafAccepted⟩ :=
     leaves.projection.authority.complete _ leafCertified
   obtain ⟨localEvidence, localAccepted⟩ :=
-    (NIKAuthority.proofChecker_authority rules).complete _ localCertified
+    (CheckerAuthority.proofChecker_authority rules).complete _ localCertified
   obtain ⟨globalEvidence, globalAccepted⟩ :=
     global.projection.authority.complete _ globalCertified
   exact
@@ -144,7 +144,7 @@ theorem certified_implies_componentMeaning
   rintro ⟨leafCertified, localCertified, globalCertified⟩
   exact
     ⟨leaves.projection.project _ leafCertified,
-      NIKAuthority.certified_implies_meaning rules _ localCertified,
+      CheckerAuthority.certified_implies_meaning rules _ localCertified,
       global.projection.project _ globalCertified⟩
 
 /-! ## Whole-problem objectives and the exact completeness gate -/
@@ -155,7 +155,7 @@ structure ObjectiveBridge where
   Objective : Submission Problem Formula -> Prop
   discharge : forall submission,
     leaves.Meaning submission.leafClaim ->
-    NIKAuthority.Meaning rules submission.derivation ->
+    CheckerAuthority.Meaning rules submission.derivation ->
     global.Meaning submission ->
     Objective submission
 
@@ -196,7 +196,7 @@ theorem semanticAuthority [DecidableEq Formula]
     exact (checker_authority rules leaves global).complete _
       (complete submission meaningful)
 
-/-- The composed fail-closed NIK is itself an ordinary checker GSLT. -/
+/-- The composed fail-closed SemanticService is itself an ordinary checker GSLT. -/
 def theory [DecidableEq Formula] : Mettapedia.GSLT.GSLT :=
   Atomic.theory (checker rules leaves global)
 
@@ -380,7 +380,7 @@ theorem discharge
     (rules : RuleAuthorityFamily Formula modelSemantics.commonStatusMeaning)
     (submission : Submission (List Formula) Formula)
     (source : InitialMatches submission.leafClaim)
-    (localMeaning : NIKAuthority.Meaning rules submission.derivation)
+    (localMeaning : CheckerAuthority.Meaning rules submission.derivation)
     (global : AllTheoremNodes submission) :
     Objective modelSemantics submission := by
   intro model problemSatisfied
@@ -412,7 +412,7 @@ end TheoremDAG
 namespace Canary
 
 open StatusSemantics.Canary
-open NIKAuthority.Canary
+open CheckerAuthority.Canary
 
 def validSubmission : Submission (List Bool) Bool where
   problem := [true]

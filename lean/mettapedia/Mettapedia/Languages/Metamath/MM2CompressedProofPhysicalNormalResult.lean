@@ -850,7 +850,7 @@ structure PhysicalCanonicalNormalResultStep
   resultListNodup : (physicalNormalResult context).Nodup
   resultMorkNodup : MorkSupportNodup (physicalNormalResult context)
 
-def physical_canonical_normal_result_step
+theorem physical_canonical_normal_result_step
     (context : NormalResultContext)
     (morkNodup : MorkSupportNodup (normalToRejoinSlice context)) :
     PhysicalCanonicalNormalResultStep context := by

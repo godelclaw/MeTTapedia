@@ -142,7 +142,7 @@ private theorem later_general_intent :
       FiniteFeatureExperiment.conceptAt,
       FiniteFeatureExperiment.implicationAt_refl]
   · simp only [FiniteFeatureExperiment.interpretationAt,
-      FiniteFeatureExperiment.conceptAt, Set.mem_setOf_eq,
+      FiniteFeatureExperiment.conceptAt, Set.mem_ofPred_eq,
       Set.mem_singleton_iff, Bool.true_eq_false, iff_false]
     exact growthCanary_later_not_false_implies_true
 
@@ -333,7 +333,7 @@ private theorem duplicate_later_general_intent :
       FiniteFeatureExperiment.conceptAt,
       FiniteFeatureExperiment.implicationAt_refl]
   · simp only [FiniteFeatureExperiment.interpretationAt,
-      FiniteFeatureExperiment.conceptAt, Set.mem_setOf_eq,
+      FiniteFeatureExperiment.conceptAt, Set.mem_ofPred_eq,
       Set.mem_singleton_iff, Bool.true_eq_false, iff_false]
     exact duplicate_later_not_general_implies_specific
 

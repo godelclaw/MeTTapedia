@@ -237,43 +237,43 @@ noncomputable abbrev pln_guarded_leakyHigherOrderPlannerShadow :=
 
 /-! ## Chapter-7 Distributional / Kyburg Endpoints -/
 
-abbrev ch7_strengthWith_eq_beta_posterior_meanENN :=
+abbrev strengthWith_eq_beta_posterior_meanENN :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.strengthWith_eq_beta_posterior_meanENN
 
-abbrev ch7_evidence_encodes_beta_parameters :=
+abbrev evidence_encodes_beta_parameters :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.evidence_encodes_beta_parameters
 
-abbrev ch7_hplus_is_bayesian_update :=
+abbrev hplus_is_bayesian_update :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.hplus_is_bayesian_update
 
-abbrev ch7_evidence_aggregation_is_conjugate_update :=
+abbrev evidence_aggregation_is_conjugate_update :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.evidence_aggregation_is_conjugate_update
 
-abbrev ch7_pln_is_bayes_optimal_for_exchangeable :=
+abbrev pln_is_bayes_optimal_for_exchangeable :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.pln_is_bayes_optimal_for_exchangeable
 
-abbrev ch7_kyburg_flattening :=
+abbrev kyburg_flattening :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.kyburg_flattening
 
-abbrev ch7_expectation_consistency :=
+abbrev expectation_consistency :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.expectation_consistency
 
-abbrev ch7_kyburg_no_advantage :=
+abbrev kyburg_no_advantage :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.kyburg_no_advantage
 
-abbrev ch7_flatten_is_monad_multiplication :=
+abbrev flatten_is_monad_multiplication :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.flatten_is_monad_multiplication
 
-abbrev ch7_flatten_associativity :=
+abbrev flatten_associativity :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.flatten_associativity
 
-abbrev ch7_flatten_associativity_kernel :=
+abbrev flatten_associativity_kernel :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.flatten_associativity_kernel
 
-abbrev ch7_kyburg_no_advantage_via_monad :=
+abbrev kyburg_no_advantage_via_monad :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.kyburg_no_advantage_via_monad
 
-abbrev ch7_deFinetti_flatten_apply_singleton :=
+abbrev deFinetti_flatten_apply_singleton :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.deFinetti_flatten_apply_singleton
 
 noncomputable abbrev deFinetti_bernoulliMixtureKyburgPrefixPrevision :=
@@ -1176,11 +1176,11 @@ abbrev deFinetti_posteriorBernoulliMixture_conditionedTail_processCarrier_iff_ze
 abbrev deFinetti_not_posteriorBernoulliMixture_conditionedTail_processCarrier_of_interiorMixingMass :=
   @Mettapedia.ProbabilityTheory.Exchangeability.DeFinettiProjectiveCredalBridge.not_posteriorBernoulliMixture_conditionedTail_processCarrier_of_interiorMixingMass
 
-abbrev ch7_worked_example_strength_uniform_3_1 :=
-  Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.chapter7_worked_example_strength_uniform_3_1
+abbrev uniformPrior_strength_threePositive_oneNegative :=
+  Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.uniformPrior_strength_threePositive_oneNegative
 
-abbrev ch7_distributional_kyburg_bridge_available :=
-  Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.chapter7_distributional_kyburg_bridge_available
+abbrev evidenceAggregation_and_kyburgFlattening :=
+  Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction.evidenceAggregation_and_kyburgFlattening
 
 /-! ## Arbitrary-Domain Quantifier Semantics Endpoints -/
 
@@ -3403,16 +3403,16 @@ abbrev advancedWeightedNormalGammaPrior :=
 abbrev advancedGaussianMixtureState :=
   Mettapedia.PLN.Bridges.ProbabilityTheory.GaussianMixtureState
 
-abbrev ch7_weightedGaussianStatistic :=
+abbrev weightedGaussianStatistic :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.WeightedNormalGammaAdapter.weightedGaussianStatistic
 
-abbrev ch7_hardLabelWeightedAggregate_eq_gaussianFilter :=
+abbrev hardLabelWeightedAggregate_eq_gaussianFilter :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.WeightedNormalGammaAdapter.indicatorGaussianStatistic_aggregate_eq_ofDiscrete_filter
 
-abbrev ch7_hardLabelWeightedPosterior_eq_gaussianFilter :=
+abbrev hardLabelWeightedPosterior_eq_gaussianFilter :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.WeightedNormalGammaAdapter.indicatorGaussianStatistic_posterior_eq_gaussian_filter
 
-abbrev ch7_gaussianEM_unit_mStep_eq_gaussian :=
+abbrev gaussianEM_unit_mStep_eq_gaussian :=
   @Mettapedia.PLN.Bridges.ProbabilityTheory.PLNGaussianEM.GaussianMixtureState.mStepPosterior_unit_eq_gaussian
 
 /-! ## PLN↔NARS Rule Correspondence canonical aliases -/
@@ -3449,68 +3449,68 @@ abbrev plnToNARSTV :=
 
 /-! ## Chapter-13 Inference-Control Core Endpoints -/
 
-noncomputable abbrev ch13ScorePooled :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.ch13ScorePooled
+noncomputable abbrev pooledSelectorScore :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.pooledSelectorScore
 
-noncomputable abbrev ch13ScoreTwoStage :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.ch13ScoreTwoStage
+noncomputable abbrev twoStageSelectorScore :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.twoStageSelectorScore
 
-abbrev ch13_selector_default_ranking_iff :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.ch13_selector_default_ranking_iff
+abbrev selector_default_ranking_iff :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.selector_default_ranking_iff
 
-abbrev ch13_stable_pooled_of_twoStage :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.ch13_stable_pooled_of_twoStage
+abbrev stable_pooled_of_twoStage :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.stable_pooled_of_twoStage
 
-abbrev ch13_inferenceControl_end_to_end :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.ch13_inferenceControl_end_to_end
+abbrev inferenceControl_end_to_end :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.inferenceControl_end_to_end
 
-noncomputable abbrev ch13_greedyPick? :=
+noncomputable abbrev greedyPick? :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.greedyPick?
 
-noncomputable abbrev ch13_greedySelect :=
+noncomputable abbrev greedySelect :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.greedySelect
 
-abbrev ch13_greedySelect_chain_of_le_card :=
+abbrev greedySelect_chain_of_le_card :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.greedySelect_chain_of_le_card
 
-abbrev ch13_inferenceControl_end_to_end_algorithmic :=
-  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.ch13_inferenceControl_end_to_end_algorithmic
+abbrev inferenceControl_end_to_end_algorithmic :=
+  @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.inferenceControl_end_to_end_algorithmic
 
-noncomputable abbrev ch13_forwardStep :=
+noncomputable abbrev forwardStep :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.forwardStep
 
-noncomputable abbrev ch13_forwardSearch :=
+noncomputable abbrev forwardSearch :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.forwardSearch
 
-noncomputable abbrev ch13_backwardStep :=
+noncomputable abbrev backwardStep :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.backwardStep
 
-noncomputable abbrev ch13_backwardSearch :=
+noncomputable abbrev backwardSearch :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.backwardSearch
 
-noncomputable abbrev ch13_boundedSearch :=
+noncomputable abbrev boundedSearch :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.boundedSearch
 
-abbrev ch13_forwardSearch_chain_of_le_card :=
+abbrev forwardSearch_chain_of_le_card :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.forwardSearch_chain_of_le_card
 
-abbrev ch13_forwardSearch_one_minus_exp_bound_of_le_card :=
+abbrev forwardSearch_one_minus_exp_bound_of_le_card :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.forwardSearch_one_minus_exp_bound_of_le_card
 
-abbrev ch13_boundedSearch_eq_forwardSearch_of_card_le_topK :=
+abbrev boundedSearch_eq_forwardSearch_of_card_le_topK :=
   @Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer.boundedSearch_eq_forwardSearch_of_card_le_topK
 
-abbrev ch13_bool_end_to_end_algorithmic :=
-  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.ch13_bool_end_to_end_algorithmic
+abbrev bool_end_to_end_algorithmic :=
+  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.bool_end_to_end_algorithmic
 
-abbrev ch13_bool_coverage_exact_one :=
-  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.ch13_bool_coverage_exact_one
+abbrev bool_coverage_exact_one :=
+  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.bool_coverage_exact_one
 
-abbrev ch13_fin3_end_to_end_algorithmic_topK2 :=
-  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.ch13_fin3_end_to_end_algorithmic_topK2
+abbrev fin3_end_to_end_algorithmic_topK2 :=
+  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.fin3_end_to_end_algorithmic_topK2
 
-abbrev ch13_fin3_coverage_exact_two :=
-  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.ch13_fin3_coverage_exact_two
+abbrev fin3_coverage_exact_two :=
+  Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples.fin3_coverage_exact_two
 
 /-! ## Canonical rule-strength names -/
 
@@ -5735,7 +5735,7 @@ def end_to_end_quantale_selector_rewrite_query_threshold_finalBundle_of_interval
 
 /-- Chapter-8 style threshold acceptance on the target side:
 OSLF threshold-atom truth after WM rewrite + quantale/coherence transport. -/
-def ch8ThresholdAccepted
+def thresholdAccepted
     {State Srt : Type*} {Query : Srt → Type*}
     [EvidenceClass.EvidenceType State]
     [PLNWorldModel.WorldModelSigma State Srt Query]
@@ -5757,7 +5757,7 @@ def ch8ThresholdAccepted
     (.atom a0) (m.mapTerm p)
 
 /-- Any final-bundle witness gives Chapter-8 threshold acceptance directly. -/
-theorem ch8_thresholdAccepted_of_finalBundle
+theorem thresholdAccepted_of_finalBundle
     {State Srt : Type*} {Query : Srt → Type*}
     [EvidenceClass.EvidenceType State]
     [PLNWorldModel.WorldModelSigma State Srt Query]
@@ -5778,15 +5778,15 @@ theorem ch8_thresholdAccepted_of_finalBundle
         (State := State) (Srt := Srt) (Query := Query)
         (i := i) (R := R) (m := m) (ctx := ctx)
         W₁ W₂ queryOfAtom₁ queryOfAtom₂ a0 p coord tau H) :
-    ch8ThresholdAccepted
+    thresholdAccepted
       (State := State) (Srt := Srt) (Query := Query)
       (i := i) (R := R) (m := m) (ctx := ctx)
       W₂ queryOfAtom₂ a0 p coord tau := by
-  simpa [ch8ThresholdAccepted] using bundle.truth_transport ()
+  simpa [thresholdAccepted] using bundle.truth_transport ()
 
 /-- Single Chapter-8 one-call endpoint:
 WM rewrite + OSLF transport + threshold acceptance as one theorem. -/
-theorem ch8_wm_rewrite_oslf_threshold_acceptance_of_interval
+theorem wm_rewrite_oslf_threshold_acceptance_of_interval
     {State Srt : Type*} {Query : Srt → Type*}
     [EvidenceClass.EvidenceType State]
     [PLNWorldModel.WorldModelSigma State Srt Query]
@@ -5812,11 +5812,11 @@ theorem ch8_wm_rewrite_oslf_threshold_acceptance_of_interval
       PLNWMOSLFBridgeITVTyped.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₁ queryOfAtom₁ a0 p')
     (H : Finset (Unit × Unit)) :
-    ch8ThresholdAccepted
+    thresholdAccepted
       (State := State) (Srt := Srt) (Query := Query)
       (i := i) (R := R) (m := m) (ctx := ctx)
       W₂ queryOfAtom₂ a0 p coord tau := by
-  exact ch8_thresholdAccepted_of_finalBundle
+  exact thresholdAccepted_of_finalBundle
     (State := State) (Srt := Srt) (Query := Query)
     (i := i) (R := R) (m := m) (ctx := ctx)
     (W₁ := W₁) (W₂ := W₂)
@@ -5839,7 +5839,7 @@ rewrite→OSLF→threshold acceptance.
 The selector output `G` is mapped into the hypercube witness carrier via
 `selectorWitness`, making the composition explicit while keeping the two
 semantic layers modular. -/
-theorem ch9_selector_rewrite_threshold_end_to_end_of_interval
+theorem selector_rewrite_threshold_end_to_end_of_interval
     {Goal Fact Bin : Type*} [Fintype Fact] [DecidableEq Fact]
     (A : Mettapedia.PLN.InferenceControl.PremiseSelection.PriorNBAssumptionChecklist Goal Fact Bin)
     (η : Fact → ℝ)
@@ -5849,11 +5849,11 @@ theorem ch9_selector_rewrite_threshold_end_to_end_of_interval
     (δ : Fact → ℝ) (ε : ℝ)
     (hTwoStage :
       Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.BayesOptimalRanking η
-        (ch13ScoreTwoStage globalPrior localPrior likelihood g))
+        (twoStageSelectorScore globalPrior localPrior likelihood g))
     (hbound : ∀ x, |δ x| ≤ ε)
     (hmargin : ∀ x y, η x < η y →
-      ch13ScorePooled globalPrior localPrior likelihood g y
-        - ch13ScorePooled globalPrior localPrior likelihood g x > 2 * ε)
+      pooledSelectorScore globalPrior localPrior likelihood g y
+        - pooledSelectorScore globalPrior localPrior likelihood g x > 2 * ε)
     (htie : ∀ x y, η x = η y → δ x = δ y)
     (D : Finset Fact)
     {State Srt : Type*} {Query : Srt → Type*}
@@ -5889,23 +5889,23 @@ theorem ch9_selector_rewrite_threshold_end_to_end_of_interval
             ∧ (Mettapedia.PLN.InferenceControl.PremiseSelection.selectorDefaults_halfGate Goal Fact).gate g' f' ≤ 1)
       ∧ Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.BayesOptimalRanking η
           (Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.perturbedScore
-            (ch13ScorePooled globalPrior localPrior likelihood g) δ)
+            (pooledSelectorScore globalPrior localPrior likelihood g) δ)
       ∧ (1 - Real.exp (-1)) * (Nat.min A.topK D.card : ℝ) ≤
           Mettapedia.PLN.InferenceControl.PremiseSelection.dependencyCoverage D G)
-      ∧ ch8ThresholdAccepted
+      ∧ thresholdAccepted
           (State := State) (Srt := Srt) (Query := Query)
           (i := i) (R := R) (m := m) (ctx := ctx)
           W₂ queryOfAtom₂ a0 p coord tau := by
   intro G
   refine ⟨?_, ?_⟩
   · simpa [G] using
-      (ch13_inferenceControl_end_to_end_algorithmic
+      (inferenceControl_end_to_end_algorithmic
         (A := A) (η := η)
         (globalPrior := globalPrior) (localPrior := localPrior)
         (likelihood := likelihood) (g := g)
         hLocal (δ := δ) (ε := ε) hTwoStage hbound hmargin htie
         (D := D))
-  · exact ch8_wm_rewrite_oslf_threshold_acceptance_of_interval
+  · exact wm_rewrite_oslf_threshold_acceptance_of_interval
       (State := State) (Srt := Srt) (Query := Query)
       (i := i) (R := R) (m := m) (ctx := ctx)
       (r := r) (W₁ := W₁) (W₂ := W₂)

@@ -185,7 +185,7 @@ theorem run_callSpine (prog : S → Option (Tm S X)) {F : S} {E : Tm S X}
                     (π ++ [0]) σ (by omega), bindOpt_some_singleton]
                   simp only
                   rw [run_val .static prog m _ σ (hargs a (by simp)), bindOpt_some_singleton]
-                  simp only [activate, renameOwn_nil]
+                  simp only [activate, renameOwn_nil, sealRen_nil]
                   rw [hdrop]
                   exact run_val .static prog m _ σ hL
               | cons o os => simp [dropArgs] at hdrop

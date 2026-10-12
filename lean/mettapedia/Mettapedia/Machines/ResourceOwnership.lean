@@ -69,6 +69,16 @@ variable [DecidableEq Address]
 def rootAddresses (roots : Roots Owner Address) : Finset Address :=
   roots.image Prod.snd
 
+theorem rootAddresses_subset_iff_validRoots (heap : Heap Address Value)
+    (roots : Roots Owner Address) :
+    rootAddresses roots ⊆ heap.allocated ↔ ValidRoots heap roots := by
+  constructor
+  · intro included pair member
+    exact included (Finset.mem_image.mpr ⟨pair, member, rfl⟩)
+  · intro valid address member
+    obtain ⟨pair, present, rfl⟩ := Finset.mem_image.mp member
+    exact valid pair present
+
 /-- Interpret the finite heap in the existing graph reachability semantics. -/
 def Heap.toStore (h : Heap Address Value) (roots : Roots Owner Address) :
     Store Address where
@@ -597,6 +607,83 @@ def observe (heap : Heap Address Value) (paths : List (Address × List Address))
     List (Option (Address × Cell Address Value)) :=
   paths.map fun query => walk heap query.1 query.2
 
+/-- Check retention against the supplied complete reference graph. The starts
+may name continuation cells or borrowed services. Duplicate starts are one
+storage obligation; their ordered observations remain separate.
+
+The checker neither discovers runtime edges nor grants operation authority.
+Mutable services require a separate read/transition contract. -/
+def retentionCheck (heap : Heap Address Value) (roots : Roots Owner Address)
+    (captured : List Address) : Bool :=
+  decide (rootAddresses roots ⊆ heap.allocated) &&
+    decide (captured.toFinset ⊆ census heap roots)
+
+/-- Computed coverage is checked against inductive graph liveness, including
+transitive dependencies rather than only the captured top cells. -/
+theorem retentionCheck_iff (heap : Heap Address Value) (roots : Roots Owner Address)
+    (captured : List Address) :
+    retentionCheck heap roots captured = true ↔
+      ValidRoots heap roots ∧ ∀ start ∈ captured, Live heap roots start := by
+  simp only [retentionCheck, Bool.and_eq_true, decide_eq_true_eq]
+  constructor
+  · rintro ⟨allocated, covered⟩
+    have valid := (rootAddresses_subset_iff_validRoots heap roots).mp allocated
+    refine ⟨valid, ?_⟩
+    intro start member
+    exact (mem_census_iff_live heap roots valid start).mp
+      (covered (List.mem_toFinset.mpr member))
+  · rintro ⟨valid, live⟩
+    refine ⟨(rootAddresses_subset_iff_validRoots heap roots).mpr valid, ?_⟩
+    intro start member
+    exact (mem_census_iff_live heap roots valid start).mpr
+      (live start (List.mem_toFinset.mp member))
+
+theorem retentionCheck_congr_rootAddresses (heap : Heap Address Value)
+    (roots more : Roots Owner Address)
+    (same : rootAddresses roots = rootAddresses more) (captured : List Address) :
+    retentionCheck heap roots captured = retentionCheck heap more captured := by
+  unfold retentionCheck
+  rw [same, census_congr_rootAddresses heap roots more same]
+
+/-- Every dependency reached from a checked capture is retained. Cycles and
+shared descendants need no per-owner duplication. -/
+theorem retentionCheck_protects_descendants (heap : Heap Address Value)
+    (roots : Roots Owner Address) (captured : List Address)
+    (checked : retentionCheck heap roots captured = true)
+    {start destination : Address} (member : start ∈ captured)
+    (dependency : Live heap ({((), start)} : Roots Unit Address) destination) :
+    Live heap roots destination := by
+  have retained := (retentionCheck_iff heap roots captured).mp checked
+  induction dependency with
+  | root hr =>
+    have same := hr.2
+    simp only [rootAddresses, Finset.image_singleton, Finset.mem_singleton] at same
+    simpa only [same] using retained.2 start member
+  | step _ edge ih => exact .step ih edge
+
+theorem retentionCheck_preserves_descendant_cell (heap : Heap Address Value)
+    (roots : Roots Owner Address) (captured : List Address)
+    (checked : retentionCheck heap roots captured = true)
+    {start destination : Address} (member : start ∈ captured)
+    (dependency : Live heap ({((), start)} : Roots Unit Address) destination) :
+    (collect heap roots).lookup destination = heap.lookup destination :=
+  lookup_collect_of_live heap roots
+    (retentionCheck_protects_descendants heap roots captured checked member dependency)
+
+/-- Exact complete path observations survive collection, including failed
+reads, repetitions and emission order. The captured list is a coverage
+boundary; it is not an answer-occurrence quotient. -/
+theorem retentionCheck_preserves_paths (heap : Heap Address Value)
+    (roots : Roots Owner Address) (captured : List Address)
+    (checked : retentionCheck heap roots captured = true)
+    (paths : List (Address × List Address))
+    (covered : ∀ query ∈ paths, query.1 ∈ captured) :
+    observe (collect heap roots) paths = observe heap paths := by
+  have retained := (retentionCheck_iff heap roots captured).mp checked
+  apply List.map_congr_left
+  intro query member
+  exact walk_collect heap roots (retained.2 query.1 (covered query member)) query.2
+
 def read [DecidableEq Owner] (region : Region Owner Address Value)
     (view : View Owner Address) : Option (List (Option (Address × Cell Address Value))) :=
   if view.stamp = region.stamp then some (observe region.heap view.paths) else none
@@ -731,6 +818,20 @@ theorem Relocation.valid_roots {source : Heap Address Value}
   obtain ⟨original, present, rfl⟩ := Finset.mem_image.mp member
   exact (copy.allocated_iff original.2).mpr (valid original present)
 
+omit [DecidableEq Address] in
+/-- Copying cannot repair an invalid source root, even when the destination
+contains additional allocations. -/
+theorem Relocation.valid_roots_iff {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (roots : Roots Owner Address) :
+    ValidRoots destination (copy.roots roots) ↔ ValidRoots source roots := by
+  constructor
+  · intro valid pair member
+    apply (copy.allocated_iff pair.2).mp
+    exact valid (pair.1, copy.address pair.2)
+      (Finset.mem_image.mpr ⟨pair, member, rfl⟩)
+  · exact copy.valid_roots roots
+
 private theorem Relocation.root_forward {source : Heap Address Value}
     {destination : Heap DestinationAddress DestinationValue}
     (copy : Relocation source destination) (roots : Roots Owner Address) (a : Address)
@@ -806,6 +907,33 @@ theorem Relocation.census_eq {source : Heap Address Value}
     census destination (copy.roots roots) = (census source roots).image copy.address := by
   rw [census_eq_footprint _ _ (copy.valid_roots roots valid), census_eq_footprint _ _ valid,
     copy.footprint_eq]
+
+/-- The executable capture check preserves acceptance and refusal through
+complete cell relocation. Address injectivity reflects each captured start;
+unrelated destination storage supplies no missing source dependency. This
+transports retention, without issuing operation or registry authority. -/
+theorem Relocation.retentionCheck_eq {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (roots : Roots Owner Address)
+    (captured : List Address) :
+    RequestBorrow.retentionCheck destination (copy.roots roots)
+        (captured.map copy.address) =
+      RequestBorrow.retentionCheck source roots captured := by
+  rw [Bool.eq_iff_iff, RequestBorrow.retentionCheck_iff,
+    RequestBorrow.retentionCheck_iff]
+  constructor
+  · rintro ⟨valid, retained⟩
+    refine ⟨(copy.valid_roots_iff roots).mp valid, ?_⟩
+    intro start member
+    have moved := retained (copy.address start)
+      (List.mem_map.mpr ⟨start, member, rfl⟩)
+    obtain ⟨original, live, same⟩ := (copy.live_iff roots _).mp moved
+    exact copy.injective same ▸ live
+  · rintro ⟨valid, retained⟩
+    refine ⟨copy.valid_roots roots valid, ?_⟩
+    intro start member
+    obtain ⟨original, present, rfl⟩ := List.mem_map.mp member
+    exact (copy.live_iff roots _).mpr ⟨original, retained original present, rfl⟩
 
 /-- Path interpretation uses destination lookup, rather than continuing to
 borrow cells from the source heap. Ordered reference paths remain ordered. -/
@@ -908,6 +1036,32 @@ theorem Relocation.observe_paths_eq {source : Heap Address Value}
   apply List.map_congr_left
   intro query _
   exact copy.walk_eq query.1 query.2
+
+/-- A checked complete capture may be copied and read from the collected
+destination. The exact ordered readout is transported, including repeated
+paths and failed reads; no subsequent source lookup is used. -/
+theorem Relocation.retentionCheck_preserves_collected_paths
+    {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (roots : Roots Owner Address)
+    (captured : List Address)
+    (checked : RequestBorrow.retentionCheck source roots captured = true)
+    (paths : List (Address × List Address))
+    (covered : ∀ query ∈ paths, query.1 ∈ captured) :
+    RequestBorrow.observe (collect destination (copy.roots roots))
+        (RequestBorrow.relocatePaths copy.address paths) =
+      (RequestBorrow.observe source paths).map (Option.map fun pair =>
+        (copy.address pair.1, pair.2.relocate copy.address copy.payload)) := by
+  have moved : RequestBorrow.retentionCheck destination (copy.roots roots)
+      (captured.map copy.address) = true := by
+    rw [copy.retentionCheck_eq roots captured]
+    exact checked
+  rw [RequestBorrow.retentionCheck_preserves_paths destination (copy.roots roots)
+    (captured.map copy.address) moved _ (by
+      intro query member
+      obtain ⟨original, present, rfl⟩ := List.mem_map.mp member
+      exact List.mem_map.mpr ⟨original.1, covered original present, rfl⟩)]
+  exact copy.observe_paths_eq paths
 
 namespace RequestBorrow
 
@@ -1447,6 +1601,1221 @@ theorem reset_separates_lifetime_from_currency
 
 end PinnedReset
 
+namespace AcquiredUse
+
+/-! An enrolled resource separates handle currency from admitted uses.  Each
+holder and use below is an exact issued identity, not a printed integer.  The
+operations model the atomic registry boundary; they return an extracted
+payload for finalization after that boundary.  Enclosing contexts, foreign
+dependencies, memory ordering and the native realization remain separate
+obligations.  In particular, a lifetime use does not authorize mutation.
+-/
+
+universe uHolder uUse uResource
+
+variable {Holder : Type uHolder} {Use : Type uUse} {Resource : Type uResource}
+variable [DecidableEq Holder] [DecidableEq Use]
+
+inductive Mode where
+  | lifetime
+  | exclusive
+  deriving DecidableEq, Repr
+
+structure State (Holder : Type uHolder) (Use : Type uUse) (Resource : Type uResource) where
+  current : Bool
+  holders : Finset Holder
+  uses : Finset Use
+  exclusive : Option Use
+  resource : Option Resource
+  deriving DecidableEq
+
+structure Result (Holder : Type uHolder) (Use : Type uUse) (Resource : Type uResource) where
+  next : State Holder Use Resource
+  retired : Option Resource
+  deriving DecidableEq
+
+/-- The retained payload exists exactly while its slot or an admitted use
+needs it.  Exclusive admission is tied to one actual use receipt. -/
+structure WellFormed (state : State Holder Use Resource) : Prop where
+  retained : state.resource.isSome = true ↔ state.current = true ∨ state.uses.Nonempty
+  exclusive_issued : ∀ use, state.exclusive = some use → use ∈ state.uses
+
+def initial (holder : Holder) (resource : Resource) : State Holder Use Resource :=
+  ⟨true, {holder}, ∅, none, some resource⟩
+
+omit [DecidableEq Holder] [DecidableEq Use] in
+theorem initial_wellFormed (holder : Holder) (resource : Resource) :
+    WellFormed (initial (Use := Use) holder resource) := by
+  constructor
+  · simp [initial]
+  · simp [initial]
+
+/-- Extraction clears the payload before a finalizer can reenter. -/
+def extract (state : State Holder Use Resource) : Result Holder Use Resource :=
+  if state.current = false ∧ state.uses = ∅ then
+    ⟨{ state with resource := none }, state.resource⟩
+  else ⟨state, none⟩
+
+def detach (state : State Holder Use Resource) : Result Holder Use Resource :=
+  extract { state with current := false }
+
+def copyHolder (source destination : Holder) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if source ∈ state.holders ∧ destination ∉ state.holders then
+    some ⟨{ state with holders := insert destination state.holders }, none⟩
+  else none
+
+def releaseHolder (holder : Holder) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if holder ∈ state.holders then
+    let next := { state with holders := state.holders.erase holder }
+    some (if next.holders = ∅ then detach next else ⟨next, none⟩)
+  else none
+
+def acquire (limit : Nat) (mode : Mode) (holder : Holder) (use : Use)
+    (state : State Holder Use Resource) : Option (Result Holder Use Resource) :=
+  if state.current = true ∧ holder ∈ state.holders ∧ use ∉ state.uses ∧
+      state.uses.card < limit ∧ (mode = .lifetime ∨ state.exclusive = none) then
+    some ⟨{ state with
+      uses := insert use state.uses
+      exclusive := if mode = .exclusive then some use else state.exclusive }, none⟩
+  else none
+
+def releaseUse (use : Use) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if use ∈ state.uses then
+    some (extract { state with
+      uses := state.uses.erase use
+      exclusive := if state.exclusive = some use then none else state.exclusive })
+  else none
+
+def moveUse (source destination : Use) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if source ∈ state.uses ∧ destination ∉ state.uses then
+    some ⟨{ state with
+      uses := insert destination (state.uses.erase source)
+      exclusive := if state.exclusive = some source then some destination else state.exclusive },
+      none⟩
+  else none
+
+/-- Relinquish an admitted exclusive claim while keeping its exact memory
+receipt. A caller freezes its return before this atomic boundary. -/
+def demoteUse (use : Use) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if use ∈ state.uses ∧ state.exclusive = some use then
+    some ⟨{ state with exclusive := none }, none⟩
+  else none
+
+/-- A held receipt may issue a bounded lifetime edge, including after logical
+close. This does not acquire another operation or renew registry currency. -/
+def forkLifetime (limit : Nat) (source destination : Use) (state : State Holder Use Resource) :
+    Option (Result Holder Use Resource) :=
+  if source ∈ state.uses ∧ destination ∉ state.uses ∧ state.uses.card < limit then
+    some ⟨{ state with uses := insert destination state.uses }, none⟩
+  else none
+
+/-- Existing admitted work may hold a detached payload.  The result supplies
+memory access only; mutation needs the distinct exclusive receipt. -/
+def readUse (use : Use) (state : State Holder Use Resource) : Option Resource :=
+  if use ∈ state.uses then state.resource else none
+
+def mayMutate (use : Use) (state : State Holder Use Resource) : Prop :=
+  use ∈ state.uses ∧ state.exclusive = some use
+
+instance instDecidableMayMutate (use : Use) (state : State Holder Use Resource) :
+    Decidable (mayMutate use state) :=
+  inferInstanceAs (Decidable (use ∈ state.uses ∧ state.exclusive = some use))
+
+/-- New operations require both a current slot and its exact owning holder. -/
+def readHolder (holder : Holder) (state : State Holder Use Resource) : Option Resource :=
+  if state.current = true ∧ holder ∈ state.holders then state.resource else none
+
+omit [DecidableEq Holder] in
+theorem extract_current (state : State Holder Use Resource) :
+    (extract state).next.current = state.current := by
+  unfold extract
+  split <;> rfl
+
+omit [DecidableEq Holder] in
+theorem extract_uses (state : State Holder Use Resource) :
+    (extract state).next.uses = state.uses := by
+  unfold extract
+  split <;> rfl
+
+omit [DecidableEq Holder] in
+theorem extract_exclusive (state : State Holder Use Resource) :
+    (extract state).next.exclusive = state.exclusive := by
+  unfold extract
+  split <;> rfl
+
+omit [DecidableEq Holder] in
+theorem extract_wellFormed (state : State Holder Use Resource)
+    (retained : state.current = true ∨ state.uses.Nonempty → state.resource.isSome = true)
+    (exclusive : ∀ use, state.exclusive = some use → use ∈ state.uses) :
+    WellFormed (extract state).next := by
+  unfold extract
+  split
+  · rename_i idle
+    constructor
+    · simp [idle.1, idle.2]
+    · exact exclusive
+  · rename_i busy
+    have needed : state.current = true ∨ state.uses.Nonempty := by
+      cases currency : state.current with
+      | true => exact Or.inl rfl
+      | false =>
+        right
+        apply Finset.nonempty_iff_ne_empty.mpr
+        intro empty
+        exact busy ⟨currency, empty⟩
+    exact ⟨⟨fun _ => needed, fun _ => retained needed⟩, exclusive⟩
+
+omit [DecidableEq Holder] in
+theorem detach_wellFormed (state : State Holder Use Resource)
+    (valid : WellFormed state) : WellFormed (detach state).next := by
+  apply extract_wellFormed
+  · rintro (openSlot | active)
+    · cases openSlot
+    · exact valid.retained.mpr (Or.inr active)
+  · exact valid.exclusive_issued
+
+omit [DecidableEq Holder] in
+theorem detach_revokes (state : State Holder Use Resource) :
+    (detach state).next.current = false := extract_current _
+
+theorem detached_acquire_refused (limit : Nat) (mode : Mode) (holder : Holder)
+    (use : Use) (state : State Holder Use Resource) :
+    acquire limit mode holder use (detach state).next = none := by
+  simp [acquire, detach_revokes]
+
+theorem detached_holder_refused (holder : Holder) (state : State Holder Use Resource) :
+    readHolder holder (detach state).next = none := by
+  simp [readHolder, detach_revokes]
+
+omit [DecidableEq Holder] in
+/-- Detachment with an admitted use extracts no payload and preserves every
+issued use, including its exclusive operation authorization. -/
+theorem detach_with_use (state : State Holder Use Resource) {use : Use}
+    (issued : use ∈ state.uses) :
+    detach state = ⟨{ state with current := false }, none⟩ := by
+  have nonempty : state.uses ≠ ∅ := Finset.ne_empty_of_mem issued
+  simp [detach, extract, nonempty]
+
+omit [DecidableEq Holder] in
+theorem detached_read_preserved (state : State Holder Use Resource) {use : Use}
+    (issued : use ∈ state.uses) :
+    readUse use (detach state).next = state.resource := by
+  rw [detach_with_use state issued]
+  simp [readUse, issued]
+
+omit [DecidableEq Holder] in
+theorem detached_mutation_iff (state : State Holder Use Resource) (use : Use) :
+    mayMutate use (detach state).next ↔ mayMutate use state := by
+  simp only [mayMutate, detach, extract_uses, extract_exclusive]
+
+omit [DecidableEq Holder] in
+theorem unknown_use_refused (state : State Holder Use Resource) (use : Use)
+    (unknown : use ∉ state.uses) : releaseUse use state = none ∧ readUse use state = none := by
+  simp [releaseUse, readUse, unknown]
+
+theorem wrong_holder_refused (limit : Nat) (mode : Mode) (state : State Holder Use Resource)
+    (holder : Holder) (use : Use) (unknown : holder ∉ state.holders) :
+    acquire limit mode holder use state = none := by
+  simp [acquire, unknown]
+
+theorem full_use_count_refused (limit : Nat) (mode : Mode) (state : State Holder Use Resource)
+    (holder : Holder) (use : Use) (full : limit ≤ state.uses.card) :
+    acquire limit mode holder use state = none := by
+  simp [acquire, Nat.not_lt.mpr full]
+
+theorem exclusive_competitor_refused (limit : Nat) (state : State Holder Use Resource)
+    (holder : Holder) (use active : Use) (exclusive : state.exclusive = some active) :
+    acquire limit .exclusive holder use state = none := by
+  simp [acquire, exclusive]
+
+omit [DecidableEq Holder] [DecidableEq Use] in
+theorem mutation_unique (state : State Holder Use Resource) {left right : Use}
+    (first : mayMutate left state) (second : mayMutate right state) : left = right := by
+  exact Option.some.inj (first.2.symm.trans second.2)
+
+theorem acquire_wellFormed (limit : Nat) (mode : Mode) (holder : Holder) (use : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : acquire limit mode holder use state = some result) :
+    WellFormed result.next := by
+  unfold acquire at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    constructor
+    · exact ⟨fun _ => Or.inl admitted.1, fun _ => valid.retained.mpr (Or.inl admitted.1)⟩
+    · intro other exclusive
+      by_cases modeExclusive : mode = .exclusive
+      · simp only [modeExclusive, if_true] at exclusive
+        cases Option.some.inj exclusive
+        exact Finset.mem_insert_self _ _
+      · simp only [modeExclusive, if_false] at exclusive
+        exact Finset.mem_insert_of_mem (valid.exclusive_issued other exclusive)
+  · cases accepted
+
+theorem acquire_count (limit : Nat) (mode : Mode) (holder : Holder) (use : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : acquire limit mode holder use state = some result) :
+    result.next.uses.card = state.uses.card + 1 ∧ result.next.uses.card ≤ limit := by
+  unfold acquire at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    constructor
+    · exact Finset.card_insert_of_notMem admitted.2.2.1
+    · calc
+        (insert use state.uses).card = state.uses.card + 1 :=
+          Finset.card_insert_of_notMem admitted.2.2.1
+        _ ≤ limit := Nat.succ_le_of_lt admitted.2.2.2.1
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem releaseUse_wellFormed (use : Use) {state : State Holder Use Resource}
+    {result : Result Holder Use Resource} (valid : WellFormed state)
+    (accepted : releaseUse use state = some result) : WellFormed result.next := by
+  unfold releaseUse at accepted
+  split at accepted
+  · rename_i issued
+    cases Option.some.inj accepted
+    apply extract_wellFormed
+    · rintro (openSlot | active)
+      · exact valid.retained.mpr (Or.inl openSlot)
+      · obtain ⟨other, present⟩ := active
+        exact valid.retained.mpr (Or.inr ⟨other, (Finset.mem_erase.mp present).2⟩)
+    · intro other exclusive
+      by_cases held : state.exclusive = some use
+      · simp [held] at exclusive
+      · simp only [held, if_false] at exclusive
+        apply Finset.mem_erase.mpr
+        refine ⟨?_, valid.exclusive_issued other exclusive⟩
+        intro same
+        apply held
+        simpa [same] using exclusive
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem releaseUse_count (use : Use) {state : State Holder Use Resource}
+    {result : Result Holder Use Resource} (accepted : releaseUse use state = some result) :
+    result.next.uses.card = state.uses.card - 1 := by
+  unfold releaseUse at accepted
+  split at accepted
+  · rename_i issued
+    cases Option.some.inj accepted
+    rw [extract_uses, Finset.card_erase_of_mem issued]
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem last_use_extracts (state : State Holder Use Resource) (use : Use)
+    (valid : WellFormed state) (closed : state.current = false) (last : state.uses = {use}) :
+    releaseUse use state = some ⟨{ state with uses := ∅, exclusive := none, resource := none },
+      state.resource⟩ := by
+  have exclusive : state.exclusive = some use ∨ state.exclusive = none := by
+    cases held : state.exclusive with
+    | none => exact Or.inr rfl
+    | some other =>
+      have issued := valid.exclusive_issued other held
+      rw [last, Finset.mem_singleton] at issued
+      exact Or.inl (congrArg some issued)
+  rcases exclusive with held | empty
+  · simp [releaseUse, extract, closed, last, held]
+  · simp [releaseUse, extract, closed, last, empty]
+
+omit [DecidableEq Use] in
+theorem copyHolder_wellFormed (source destination : Holder)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : copyHolder source destination state = some result) :
+    WellFormed result.next := by
+  unfold copyHolder at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    exact ⟨valid.retained, valid.exclusive_issued⟩
+  · cases accepted
+
+theorem releaseHolder_wellFormed (holder : Holder)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : releaseHolder holder state = some result) :
+    WellFormed result.next := by
+  unfold releaseHolder at accepted
+  split at accepted
+  · dsimp only at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact detach_wellFormed _ ⟨valid.retained, valid.exclusive_issued⟩
+    · cases Option.some.inj accepted
+      exact ⟨valid.retained, valid.exclusive_issued⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem moveUse_wellFormed (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : moveUse source destination state = some result) :
+    WellFormed result.next := by
+  unfold moveUse at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    constructor
+    · exact ⟨fun _ => Or.inr ⟨destination, Finset.mem_insert_self _ _⟩,
+        fun _ => valid.retained.mpr (Or.inr ⟨source, admitted.1⟩)⟩
+    · intro other exclusive
+      by_cases held : state.exclusive = some source
+      · simp only [held, if_true] at exclusive
+        cases Option.some.inj exclusive
+        exact Finset.mem_insert_self _ _
+      · simp only [held, if_false] at exclusive
+        apply Finset.mem_insert_of_mem
+        apply Finset.mem_erase.mpr
+        refine ⟨?_, valid.exclusive_issued other exclusive⟩
+        intro same
+        apply held
+        simpa [same] using exclusive
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem moveUse_count (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : moveUse source destination state = some result) :
+    result.next.uses.card = state.uses.card := by
+  unfold moveUse at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    have fresh : destination ∉ state.uses.erase source := by
+      intro present
+      exact admitted.2 (Finset.mem_erase.mp present).2
+    change (insert destination (state.uses.erase source)).card = state.uses.card
+    rw [Finset.card_insert_of_notMem fresh, Finset.card_erase_of_mem admitted.1]
+    have positive : 0 < state.uses.card := Finset.card_pos.mpr ⟨source, admitted.1⟩
+    omega
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem moveUse_keeps_currency (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : moveUse source destination state = some result) :
+    result.next.current = state.current ∧ result.next.resource = state.resource := by
+  unfold moveUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    exact ⟨rfl, rfl⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem demoteUse_wellFormed (use : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : demoteUse use state = some result) :
+    WellFormed result.next := by
+  unfold demoteUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    exact ⟨valid.retained, by simp⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem demoteUse_keeps_memory (use : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) :
+    result.next.current = state.current ∧ result.next.resource = state.resource ∧
+      result.next.uses = state.uses ∧ result.retired = none := by
+  unfold demoteUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    exact ⟨rfl, rfl, rfl, rfl⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem demoteUse_removes_mutation (use : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) (other : Use) :
+    ¬ mayMutate other result.next := by
+  unfold demoteUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    simp [mayMutate]
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem demoteUse_nonexclusive_refused (use : Use) (state : State Holder Use Resource)
+    (unlicensed : state.exclusive ≠ some use) : demoteUse use state = none := by
+  simp [demoteUse, unlicensed]
+
+omit [DecidableEq Holder] in
+theorem demoteUse_read_preserved (use other : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) :
+    readUse other result.next = readUse other state := by
+  obtain ⟨_, resource, uses, _⟩ := demoteUse_keeps_memory use accepted
+  simp only [readUse, uses, resource]
+
+theorem demoteUse_permits_next_exclusive (limit : Nat) (use other : Use) (holder : Holder)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) (current : state.current = true)
+    (owned : holder ∈ state.holders) (fresh : other ∉ state.uses) (capacity : state.uses.card < limit) :
+    acquire limit .exclusive holder other result.next =
+      some ⟨{ result.next with
+        uses := insert other result.next.uses,
+        exclusive := some other }, none⟩ := by
+  unfold demoteUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    simp [acquire, current, owned, fresh, capacity]
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_wellFormed (limit : Nat) (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : forkLifetime limit source destination state = some result) :
+    WellFormed result.next := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    constructor
+    · exact ⟨fun _ => Or.inr (Finset.insert_nonempty _ _),
+        fun _ => valid.retained.mpr (Or.inr ⟨source, admitted.1⟩)⟩
+    · intro other exclusive
+      exact Finset.mem_insert_of_mem (valid.exclusive_issued other exclusive)
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_count (limit : Nat) (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result) :
+    result.next.uses.card = state.uses.card + 1 ∧ result.next.uses.card ≤ limit := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    change (insert destination state.uses).card = state.uses.card + 1 ∧
+      (insert destination state.uses).card ≤ limit
+    rw [Finset.card_insert_of_notMem admitted.2.1]
+    exact ⟨rfl, Nat.succ_le_of_lt admitted.2.2⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_keeps_currency (limit : Nat) (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result) :
+    result.next.current = state.current ∧ result.next.resource = state.resource ∧
+      result.next.exclusive = state.exclusive ∧ result.retired = none := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    exact ⟨rfl, rfl, rfl, rfl⟩
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_same_payload (limit : Nat) (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result) :
+    readUse destination result.next = readUse source state := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    simp [readUse, admitted.1]
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_lifetime_only (limit : Nat) (source destination : Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : forkLifetime limit source destination state = some result) :
+    ¬ mayMutate destination result.next := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    intro permission
+    exact admitted.2.1 (valid.exclusive_issued destination permission.2)
+  · cases accepted
+
+theorem forkLifetime_closed_refuses_admission (limit : Nat) (source destination other : Use)
+    (mode : Mode) (holder : Holder)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result)
+    (closed : state.current = false) :
+    readHolder holder result.next = none ∧
+      acquire limit mode holder other result.next = none := by
+  have currency := (forkLifetime_keeps_currency limit source destination accepted).1.trans closed
+  simp [readHolder, acquire, currency]
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_unknown_source_refused (limit : Nat) (source destination : Use)
+    (state : State Holder Use Resource) (unknown : source ∉ state.uses) :
+    forkLifetime limit source destination state = none := by
+  simp [forkLifetime, unknown]
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_nonempty_destination_refused (limit : Nat) (source destination : Use)
+    (state : State Holder Use Resource) (occupied : destination ∈ state.uses) :
+    forkLifetime limit source destination state = none := by
+  simp [forkLifetime, occupied]
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_full_count_refused (limit : Nat) (source destination : Use)
+    (state : State Holder Use Resource) (full : limit ≤ state.uses.card) :
+    forkLifetime limit source destination state = none := by
+  simp [forkLifetime, Nat.not_lt.mpr full]
+
+theorem last_holder_keeps_use (state : State Holder Use Resource) (holder : Holder)
+    (use : Use) (last : state.holders = {holder}) (issued : use ∈ state.uses) :
+    releaseHolder holder state =
+      some ⟨{ state with current := false, holders := ∅ }, none⟩ := by
+  have nonempty : state.uses ≠ ∅ := Finset.ne_empty_of_mem issued
+  simp [releaseHolder, last, detach, extract, nonempty]
+
+inductive Action (Holder : Type uHolder) (Use : Type uUse) where
+  | copyHolder (source destination : Holder)
+  | releaseHolder (holder : Holder)
+  | acquire (mode : Mode) (holder : Holder) (use : Use)
+  | releaseUse (use : Use)
+  | moveUse (source destination : Use)
+  | demoteUse (use : Use)
+  | forkLifetime (source destination : Use)
+  | close
+  deriving DecidableEq, Repr
+
+def step (limit : Nat) (state : State Holder Use Resource) :
+    Action Holder Use → Option (Result Holder Use Resource)
+  | .copyHolder source destination => copyHolder source destination state
+  | .releaseHolder holder => releaseHolder holder state
+  | .acquire mode holder use => acquire limit mode holder use state
+  | .releaseUse use => releaseUse use state
+  | .moveUse source destination => moveUse source destination state
+  | .demoteUse use => demoteUse use state
+  | .forkLifetime source destination => forkLifetime limit source destination state
+  | .close => if state.current = true then some (detach state) else none
+
+theorem step_wellFormed (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (valid : WellFormed state) (accepted : step limit state action = some result) :
+    WellFormed result.next := by
+  cases action with
+  | copyHolder source destination => exact copyHolder_wellFormed source destination valid accepted
+  | releaseHolder holder => exact releaseHolder_wellFormed holder valid accepted
+  | acquire mode holder use => exact acquire_wellFormed limit mode holder use valid accepted
+  | releaseUse use => exact releaseUse_wellFormed use valid accepted
+  | moveUse source destination => exact moveUse_wellFormed source destination valid accepted
+  | demoteUse use => exact demoteUse_wellFormed use valid accepted
+  | forkLifetime source destination => exact forkLifetime_wellFormed limit source destination valid accepted
+  | close =>
+    simp only [step] at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact detach_wellFormed state valid
+    · cases accepted
+
+/-- Each operation either retains the same payload or extracts it once.
+No transition constructs a replacement payload or revives a closed owner. -/
+def ResourceTransition (state : State Holder Use Resource) (result : Result Holder Use Resource) :
+    Prop :=
+  (result.next.resource = state.resource ∧ result.retired = none) ∨
+    (result.next.resource = none ∧ result.retired = state.resource)
+
+omit [DecidableEq Holder] in
+theorem extract_resourceTransition (state : State Holder Use Resource) :
+    ResourceTransition state (extract state) := by
+  unfold extract
+  split
+  · exact Or.inr ⟨rfl, rfl⟩
+  · exact Or.inl ⟨rfl, rfl⟩
+
+theorem step_resourceTransition (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : step limit state action = some result) : ResourceTransition state result := by
+  cases action with
+  | copyHolder source destination =>
+    change copyHolder source destination state = some result at accepted
+    unfold copyHolder at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl ⟨rfl, rfl⟩
+    · cases accepted
+  | releaseHolder holder =>
+    change releaseHolder holder state = some result at accepted
+    unfold releaseHolder at accepted
+    split at accepted
+    · dsimp only at accepted
+      split at accepted
+      · cases Option.some.inj accepted
+        exact extract_resourceTransition _
+      · cases Option.some.inj accepted
+        exact Or.inl ⟨rfl, rfl⟩
+    · cases accepted
+  | acquire mode holder use =>
+    change acquire limit mode holder use state = some result at accepted
+    unfold acquire at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl ⟨rfl, rfl⟩
+    · cases accepted
+  | releaseUse use =>
+    change releaseUse use state = some result at accepted
+    unfold releaseUse at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact extract_resourceTransition _
+    · cases accepted
+  | moveUse source destination =>
+    change moveUse source destination state = some result at accepted
+    unfold moveUse at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl ⟨rfl, rfl⟩
+    · cases accepted
+  | demoteUse use =>
+    change demoteUse use state = some result at accepted
+    obtain ⟨_, resource, _, retired⟩ := demoteUse_keeps_memory use accepted
+    exact Or.inl ⟨resource, retired⟩
+  | forkLifetime source destination =>
+    change forkLifetime limit source destination state = some result at accepted
+    obtain ⟨_, resource, _, retired⟩ := forkLifetime_keeps_currency limit source destination accepted
+    exact Or.inl ⟨resource, retired⟩
+  | close =>
+    simp only [step] at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact extract_resourceTransition _
+    · cases accepted
+
+theorem extracted_resource_absent (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource} {payload : Resource}
+    (accepted : step limit state action = some result) (extracted : result.retired = some payload) :
+    state.resource = some payload ∧ result.next.resource = none := by
+  rcases step_resourceTransition limit action accepted with kept | retired
+  · simp [kept.2] at extracted
+  · exact ⟨retired.2.symm.trans extracted, retired.1⟩
+
+theorem absent_resource_preserved (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (absent : state.resource = none) (accepted : step limit state action = some result) :
+    result.next.resource = none ∧ result.retired = none := by
+  rcases step_resourceTransition limit action accepted with kept | retired
+  · exact ⟨kept.1.trans absent, kept.2⟩
+  · exact ⟨retired.1, retired.2.trans absent⟩
+
+theorem step_currency (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : step limit state action = some result) :
+    result.next.current = state.current ∨ result.next.current = false := by
+  cases action with
+  | copyHolder source destination =>
+    change copyHolder source destination state = some result at accepted
+    unfold copyHolder at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl rfl
+    · cases accepted
+  | releaseHolder holder =>
+    change releaseHolder holder state = some result at accepted
+    unfold releaseHolder at accepted
+    split at accepted
+    · dsimp only at accepted
+      split at accepted
+      · cases Option.some.inj accepted
+        exact Or.inr (detach_revokes _)
+      · cases Option.some.inj accepted
+        exact Or.inl rfl
+    · cases accepted
+  | acquire mode holder use =>
+    change acquire limit mode holder use state = some result at accepted
+    unfold acquire at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl rfl
+    · cases accepted
+  | releaseUse use =>
+    change releaseUse use state = some result at accepted
+    unfold releaseUse at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inl (extract_current _)
+    · cases accepted
+  | moveUse source destination =>
+    change moveUse source destination state = some result at accepted
+    exact Or.inl (moveUse_keeps_currency source destination accepted).1
+  | demoteUse use =>
+    change demoteUse use state = some result at accepted
+    exact Or.inl (demoteUse_keeps_memory use accepted).1
+  | forkLifetime source destination =>
+    change forkLifetime limit source destination state = some result at accepted
+    exact Or.inl (forkLifetime_keeps_currency limit source destination accepted).1
+  | close =>
+    simp only [step] at accepted
+    split at accepted
+    · cases Option.some.inj accepted
+      exact Or.inr (detach_revokes _)
+    · cases accepted
+
+theorem step_closed (limit : Nat) (action : Action Holder Use)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (closed : state.current = false) (accepted : step limit state action = some result) :
+    result.next.current = false := by
+  rcases step_currency limit action accepted with same | revoked
+  · exact same.trans closed
+  · exact revoked
+
+/-- A refused request keeps the complete unaccepted suffix.  The count is
+accepted registry transitions, separate from provider work and elapsed cost. -/
+structure Execution (Holder : Type uHolder) (Use : Type uUse) (Resource : Type uResource) where
+  final : State Holder Use Resource
+  retired : List Resource
+  remaining : List (Action Holder Use)
+  accepted : Nat
+
+def run (limit : Nat) (state : State Holder Use Resource) :
+    List (Action Holder Use) → Execution Holder Use Resource
+  | [] => ⟨state, [], [], 0⟩
+  | action :: tail =>
+    match step limit state action with
+    | none => ⟨state, [], action :: tail, 0⟩
+    | some result =>
+      let rest := run limit result.next tail
+      ⟨rest.final, result.retired.toList ++ rest.retired, rest.remaining, rest.accepted + 1⟩
+
+theorem run_wellFormed (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) (valid : WellFormed state) :
+    WellFormed (run limit state actions).final := by
+  induction actions generalizing state with
+  | nil => exact valid
+  | cons action tail ih =>
+    cases accepted : step limit state action with
+    | none => simpa only [run, accepted] using valid
+    | some result =>
+      simpa only [run, accepted] using
+        ih result.next (step_wellFormed limit action valid accepted)
+
+theorem run_absent (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) (absent : state.resource = none) :
+    (run limit state actions).final.resource = none ∧
+      (run limit state actions).retired = [] := by
+  induction actions generalizing state with
+  | nil => exact ⟨absent, rfl⟩
+  | cons action tail ih =>
+    cases accepted : step limit state action with
+    | none => simpa only [run, accepted] using And.intro absent (rfl : ([] : List Resource) = [])
+    | some result =>
+      obtain ⟨nextAbsent, noExtraction⟩ := absent_resource_preserved limit action absent accepted
+      obtain ⟨finalAbsent, noLaterExtraction⟩ := ih result.next nextAbsent
+      simpa only [run, accepted, noExtraction, Option.toList_none, List.nil_append] using
+        And.intro finalAbsent noLaterExtraction
+
+/-- Extraction is exact across a finite accepted prefix, including a run
+stopped by refusal. A later action cannot extract or replace that payload. -/
+theorem run_resource (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) :
+    ((run limit state actions).final.resource = state.resource ∧
+      (run limit state actions).retired = []) ∨
+    ((run limit state actions).final.resource = none ∧
+      (run limit state actions).retired = state.resource.toList) := by
+  induction actions generalizing state with
+  | nil => exact Or.inl ⟨rfl, rfl⟩
+  | cons action tail ih =>
+    cases accepted : step limit state action with
+    | none => simp [run, accepted]
+    | some result =>
+      rcases step_resourceTransition limit action accepted with kept | extracted
+      · rcases ih result.next with laterKept | laterExtracted
+        · left
+          simp only [run, accepted, kept.2, Option.toList_none, List.nil_append]
+          exact ⟨laterKept.1.trans kept.1, laterKept.2⟩
+        · right
+          simp only [run, accepted, kept.2, Option.toList_none, List.nil_append]
+          exact ⟨laterExtracted.1, laterExtracted.2.trans (congrArg Option.toList kept.1)⟩
+      · obtain ⟨finalAbsent, noLaterExtraction⟩ := run_absent limit tail result.next extracted.1
+        right
+        simp only [run, accepted, extracted.2, noLaterExtraction, List.append_nil]
+        exact ⟨finalAbsent, trivial⟩
+
+theorem run_extracts_at_most_once (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) : (run limit state actions).retired.length ≤ 1 := by
+  rcases run_resource limit actions state with kept | extracted
+  · simp [kept.2]
+  · rw [extracted.2]
+    cases state.resource <;> simp
+
+theorem run_closed (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) (closed : state.current = false) :
+    (run limit state actions).final.current = false := by
+  induction actions generalizing state with
+  | nil => exact closed
+  | cons action tail ih =>
+    cases accepted : step limit state action with
+    | none => simpa only [run, accepted] using closed
+    | some result =>
+      simpa only [run, accepted] using ih result.next (step_closed limit action closed accepted)
+
+theorem run_complete_residual (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) :
+    (run limit state actions).remaining = actions.drop (run limit state actions).accepted ∧
+      (run limit state actions).accepted ≤ actions.length := by
+  induction actions generalizing state with
+  | nil => exact ⟨rfl, Nat.le_refl _⟩
+  | cons action tail ih =>
+    cases accepted : step limit state action with
+    | none => simp [run, accepted]
+    | some result =>
+      obtain ⟨suffix, count⟩ := ih result.next
+      simp only [run, accepted, List.drop_succ_cons, List.length_cons]
+      exact ⟨suffix, Nat.add_le_add_right count 1⟩
+
+theorem run_stopped_at_refusal (limit : Nat) (actions : List (Action Holder Use))
+    (state : State Holder Use Resource) (action : Action Holder Use) (tail : List (Action Holder Use))
+    (stopped : (run limit state actions).remaining = action :: tail) :
+    step limit (run limit state actions).final action = none := by
+  induction actions generalizing state with
+  | nil => cases stopped
+  | cons first rest ih =>
+    cases accepted : step limit state first with
+    | none =>
+      simp only [run, accepted, List.cons.injEq] at stopped
+      have refused : step limit state action = none := stopped.1 ▸ accepted
+      simpa only [run, accepted] using refused
+    | some result =>
+      have suffix : (run limit result.next rest).remaining = action :: tail := by
+        simpa only [run, accepted] using stopped
+      simpa only [run, accepted] using ih result.next suffix
+
+/-- The registry slot and each admitted use are distinct strong edges to the
+same payload graph. Holder aliases do not give a closed slot a new edge. -/
+def roots (state : State Holder Use Resource) (address : Resource → Address) :
+    Roots (Unit ⊕ Use) Address :=
+  match state.resource with
+  | none => ∅
+  | some payload =>
+    (if state.current = true then {(Sum.inl (), address payload)} else ∅) ∪
+      state.uses.image (fun use => (Sum.inr use, address payload))
+
+omit [DecidableEq Holder] in
+theorem use_rooted (state : State Holder Use Resource) (address : Resource → Address)
+    {payload : Resource} {use : Use} (retained : state.resource = some payload)
+    (issued : use ∈ state.uses) : (Sum.inr use, address payload) ∈ roots state address := by
+  simp only [roots, retained]
+  apply Finset.mem_union_right
+  exact Finset.mem_image.mpr ⟨use, issued, rfl⟩
+
+omit [DecidableEq Holder] in
+theorem rooted_address (state : State Holder Use Resource) (address : Resource → Address)
+    {payload : Resource} (retained : state.resource = some payload)
+    {pair : (Unit ⊕ Use) × Address} (present : pair ∈ roots state address) :
+    pair.2 = address payload := by
+  simp only [roots, retained, Finset.mem_union] at present
+  rcases present with slot | use
+  · split at slot
+    · exact congrArg Prod.snd (Finset.mem_singleton.mp slot)
+    · simp at slot
+  · obtain ⟨use, _, rfl⟩ := Finset.mem_image.mp use
+    rfl
+
+omit [DecidableEq Holder] in
+theorem rootAddresses_of_use (state : State Holder Use Resource) (address : Resource → Address)
+    {payload : Resource} {use : Use} (retained : state.resource = some payload)
+    (issued : use ∈ state.uses) : rootAddresses (roots state address) = {address payload} := by
+  ext location
+  constructor
+  · intro member
+    obtain ⟨pair, present, rfl⟩ := Finset.mem_image.mp member
+    exact Finset.mem_singleton.mpr (rooted_address state address retained present)
+  · intro member
+    rw [Finset.mem_singleton] at member
+    subst location
+    exact Finset.mem_image.mpr ⟨(Sum.inr use, address payload),
+      use_rooted state address retained issued, rfl⟩
+
+omit [DecidableEq Holder] in
+theorem validRoots (state : State Holder Use Resource) (address : Resource → Address)
+    (heap : Heap Address Value) {payload : Resource} (retained : state.resource = some payload)
+    (allocated : address payload ∈ heap.allocated) : ValidRoots heap (roots state address) := by
+  intro pair present
+  rw [rooted_address state address retained present]
+  exact allocated
+
+omit [DecidableEq Holder] in
+theorem demoteUse_keeps_roots (use : Use) (address : Resource → Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) :
+    roots result.next address = roots state address := by
+  obtain ⟨currency, payload, uses, _⟩ := demoteUse_keeps_memory use accepted
+  simp only [roots, currency, payload, uses]
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_keeps_rootAddresses (limit : Nat) (source destination : Use)
+    (address : Resource → Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result) :
+    rootAddresses (roots result.next address) = rootAddresses (roots state address) := by
+  unfold forkLifetime at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    cases retained : state.resource with
+    | none => simp [roots, retained]
+    | some payload =>
+      rw [rootAddresses_of_use state address retained admitted.1]
+      exact rootAddresses_of_use { state with
+        resource := some payload,
+        uses := insert destination state.uses } address rfl (Finset.mem_insert_self _ _)
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem demoteUse_keeps_retentionCheck (use : Use) (address : Resource → Address)
+    (heap : Heap Address Value) (captured : List Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : demoteUse use state = some result) :
+    RequestBorrow.retentionCheck heap (roots result.next address) captured =
+      RequestBorrow.retentionCheck heap (roots state address) captured := by
+  rw [demoteUse_keeps_roots use address accepted]
+
+omit [DecidableEq Holder] in
+theorem forkLifetime_keeps_retentionCheck (limit : Nat) (source destination : Use)
+    (address : Resource → Address) (heap : Heap Address Value) (captured : List Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result) :
+    RequestBorrow.retentionCheck heap (roots result.next address) captured =
+      RequestBorrow.retentionCheck heap (roots state address) captured :=
+  RequestBorrow.retentionCheck_congr_rootAddresses heap _ _
+    (forkLifetime_keeps_rootAddresses limit source destination address accepted) captured
+
+omit [DecidableEq Holder] in
+theorem detach_keeps_rootAddresses (state : State Holder Use Resource)
+    (address : Resource → Address) {use : Use} (issued : use ∈ state.uses) :
+    rootAddresses (roots (detach state).next address) = rootAddresses (roots state address) := by
+  rw [detach_with_use state issued]
+  cases retained : state.resource with
+  | none => simp [roots, retained]
+  | some payload =>
+    rw [rootAddresses_of_use state address retained issued]
+    exact rootAddresses_of_use { state with current := false, resource := some payload }
+      address rfl issued
+
+omit [DecidableEq Holder] in
+theorem detach_keeps_live (state : State Holder Use Resource) (address : Resource → Address)
+    (heap : Heap Address Value) {use : Use} (issued : use ∈ state.uses) (location : Address) :
+    Live heap (roots (detach state).next address) location ↔
+      Live heap (roots state address) location :=
+  live_congr_rootAddresses heap _ _ (detach_keeps_rootAddresses state address issued) location
+
+omit [DecidableEq Holder] in
+/-- Extra roots may belong to other owners. Detachment preserves all complete
+path results, including failures and repeated occurrences, while a use lives. -/
+theorem detach_keeps_observations (state : State Holder Use Resource)
+    (address : Resource → Address) (heap : Heap Address Value)
+    (outside : Roots (Unit ⊕ Use) Address) {use : Use} (issued : use ∈ state.uses)
+    (paths : List (Address × List Address))
+    (live : ∀ path ∈ paths, Live heap (roots state address ∪ outside) path.1) :
+    RequestBorrow.observe (collect heap (roots (detach state).next address ∪ outside)) paths =
+      RequestBorrow.observe heap paths := by
+  have same : rootAddresses (roots (detach state).next address ∪ outside) =
+      rootAddresses (roots state address ∪ outside) := by
+    simp only [rootAddresses, Finset.image_union]
+    rw [show (roots (detach state).next address).image Prod.snd =
+        (roots state address).image Prod.snd from detach_keeps_rootAddresses state address issued]
+  unfold RequestBorrow.observe
+  apply List.map_congr_left
+  intro path member
+  exact walk_collect heap _ ((live_congr_rootAddresses heap _ _ same path.1).mpr
+    (live path member)) path.2
+
+omit [DecidableEq Holder] in
+theorem moveUse_keeps_rootAddresses (source destination : Use)
+    (address : Resource → Address) {state : State Holder Use Resource}
+    {result : Result Holder Use Resource} (accepted : moveUse source destination state = some result) :
+    rootAddresses (roots result.next address) = rootAddresses (roots state address) := by
+  unfold moveUse at accepted
+  split at accepted
+  · rename_i admitted
+    cases Option.some.inj accepted
+    cases retained : state.resource with
+    | none => simp [roots, retained]
+    | some payload =>
+      rw [rootAddresses_of_use state address retained admitted.1]
+      exact rootAddresses_of_use { state with
+        uses := insert destination (state.uses.erase source)
+        exclusive := if state.exclusive = some source then some destination else state.exclusive
+        resource := some payload } address rfl (Finset.mem_insert_self _ _)
+  · cases accepted
+
+omit [DecidableEq Holder] in
+/-- A fork creates a distinct owning edge, but adds no new reachable address.
+All ordered observations of the existing graph survive, including failures. -/
+theorem forkLifetime_keeps_observations (limit : Nat) (source destination : Use)
+    (address : Resource → Address) (heap : Heap Address Value)
+    (outside : Roots (Unit ⊕ Use) Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (accepted : forkLifetime limit source destination state = some result)
+    (paths : List (Address × List Address))
+    (live : ∀ path ∈ paths, Live heap (roots state address ∪ outside) path.1) :
+    RequestBorrow.observe (collect heap (roots result.next address ∪ outside)) paths =
+      RequestBorrow.observe heap paths := by
+  have same : rootAddresses (roots result.next address ∪ outside) =
+      rootAddresses (roots state address ∪ outside) := by
+    simp only [rootAddresses, Finset.image_union]
+    rw [show (roots result.next address).image Prod.snd = (roots state address).image Prod.snd
+      from forkLifetime_keeps_rootAddresses limit source destination address accepted]
+  unfold RequestBorrow.observe
+  apply List.map_congr_left
+  intro path member
+  exact walk_collect heap _ ((live_congr_rootAddresses heap _ _ same path.1).mpr
+    (live path member)) path.2
+
+omit [DecidableEq Holder] in
+theorem releaseUse_keeps_other_roots (use other : Use) (address : Resource → Address)
+    {state : State Holder Use Resource} {result : Result Holder Use Resource}
+    (different : other ≠ use) (issued : other ∈ state.uses)
+    (accepted : releaseUse use state = some result) :
+    other ∈ result.next.uses ∧ result.retired = none ∧
+      rootAddresses (roots result.next address) = rootAddresses (roots state address) := by
+  unfold releaseUse at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    have still : other ∈ state.uses.erase use := Finset.mem_erase.mpr ⟨different, issued⟩
+    have nonempty : state.uses.erase use ≠ ∅ := Finset.ne_empty_of_mem still
+    simp only [extract, nonempty, and_false, if_false]
+    refine ⟨still, trivial, ?_⟩
+    cases retained : state.resource with
+    | none => simp [roots, retained]
+    | some payload =>
+      rw [rootAddresses_of_use state address retained issued]
+      exact rootAddresses_of_use { state with
+        uses := state.uses.erase use
+        exclusive := if state.exclusive = some use then none else state.exclusive
+        resource := some payload } address rfl still
+  · cases accepted
+
+omit [DecidableEq Holder] in
+theorem absent_roots (state : State Holder Use Resource) (address : Resource → Address)
+    (absent : state.resource = none) : roots state address = ∅ := by
+  simp [roots, absent]
+
+omit [DecidableEq Holder] in
+/-- After the last detached use, this owner retains no part of the graph.
+Other owners are preserved by ordinary rooted collection. -/
+theorem last_use_collects_only_outside (state : State Holder Use Resource) (use : Use)
+    (address : Resource → Address) (heap : Heap Address Value)
+    (outside : Roots (Unit ⊕ Use) Address) (valid : WellFormed state)
+    (closed : state.current = false) (last : state.uses = {use})
+    {result : Result Holder Use Resource} (accepted : releaseUse use state = some result)
+    (location : Address) :
+    (collect heap (roots result.next address ∪ outside)).lookup location =
+      (collect heap outside).lookup location := by
+  rw [last_use_extracts state use valid closed last] at accepted
+  cases Option.some.inj accepted
+  rw [absent_roots _ address rfl, Finset.empty_union]
+
+omit [DecidableEq Holder] in
+theorem last_use_reclaims (state : State Holder Use Resource) (use : Use)
+    (address : Resource → Address) (heap : Heap Address Value)
+    (valid : WellFormed state) (closed : state.current = false) (last : state.uses = {use})
+    {result : Result Holder Use Resource} (accepted : releaseUse use state = some result)
+    (location : Address) : (collect heap (roots result.next address)).lookup location = none := by
+  have same := last_use_collects_only_outside state use address heap ∅ valid closed last accepted
+    location
+  simp only [Finset.union_empty] at same
+  rw [same]
+  exact lookup_collect_of_not_live heap ∅ (not_live_empty heap location)
+
+namespace Examples
+
+def admitted : State Nat Nat Nat := ⟨true, {0}, {7}, some 7, some 42⟩
+
+theorem acquisition_reaches_admitted :
+    acquire 2 .exclusive 0 7 (initial (Use := Nat) 0 42) = some ⟨admitted, none⟩ := by decide
+
+theorem close_retains_admitted_and_refuses_new :
+    readUse 7 (detach admitted).next = some 42 ∧
+      mayMutate 7 (detach admitted).next ∧
+      readHolder 0 (detach admitted).next = none ∧
+      acquire 2 .exclusive 0 8 (detach admitted).next = none := by decide
+
+theorem lifetime_is_not_exclusive_permission :
+    let state : State Nat Nat Nat := ⟨true, {0}, {7}, none, some 42⟩
+    readUse 7 state = some 42 ∧ ¬ mayMutate 7 state := by decide
+
+theorem returned_lifetime_allows_next_exclusive_operation :
+    let execution := run 3 admitted [.demoteUse 7, .acquire .exclusive 0 8]
+    readUse 7 execution.final = some 42 ∧ ¬ mayMutate 7 execution.final ∧
+      mayMutate 8 execution.final ∧ execution.accepted = 2 ∧ execution.retired = [] := by decide
+
+theorem closed_fork_retains_memory_without_new_authority :
+    let execution := run 3 admitted [.close, .forkLifetime 7 9, .demoteUse 7, .releaseUse 7]
+    readUse 9 execution.final = some 42 ∧ ¬ mayMutate 9 execution.final ∧
+      readHolder 0 execution.final = none ∧
+      acquire 3 .exclusive 0 8 execution.final = none ∧
+      execution.accepted = 4 ∧ execution.retired = [] := by decide
+
+theorem final_fork_release_extracts_once :
+    let execution := run 3 admitted
+      [.close, .forkLifetime 7 9, .demoteUse 7, .releaseUse 7, .releaseUse 9]
+    execution.final.resource = none ∧ execution.retired = [42] ∧
+      execution.accepted = 5 ∧ execution.remaining = [] := by decide
+
+theorem invalid_forks_and_nonexclusive_demotion_refuse :
+    let lifetime : State Nat Nat Nat := ⟨false, {0}, {7}, none, some 42⟩
+    forkLifetime 3 8 9 admitted = none ∧
+      forkLifetime 3 7 7 admitted = none ∧
+      forkLifetime 1 7 9 admitted = none ∧ demoteUse 7 lifetime = none := by decide
+
+theorem retained_return_does_not_retry_refused_admission :
+    let execution := run 3 admitted
+      [.close, .forkLifetime 7 9, .demoteUse 7, .acquire .exclusive 0 8, .releaseUse 7]
+    execution.accepted = 3 ∧ execution.remaining = [.acquire .exclusive 0 8, .releaseUse 7] ∧
+      readUse 7 execution.final = some 42 ∧ readUse 9 execution.final = some 42 ∧
+      execution.retired = [] := by decide
+
+theorem unknown_receipt_and_wrong_holder_refuse :
+    releaseUse 8 admitted = none ∧ readUse 8 admitted = none ∧
+      acquire 2 .lifetime 1 8 admitted = none := by decide
+
+theorem full_count_and_exclusive_competitor_refuse :
+    acquire 1 .lifetime 0 8 admitted = none ∧
+      acquire 2 .exclusive 0 8 admitted = none := by decide
+
+theorem current_move_transfers_exclusive_permission :
+    moveUse 7 8 admitted = some ⟨⟨true, {0}, {8}, some 8, some 42⟩, none⟩ ∧
+      releaseUse 7 (⟨true, {0}, {8}, some 8, some 42⟩ : State Nat Nat Nat) = none := by decide
+
+theorem closed_move_cannot_revive_currency :
+    moveUse 7 8 (detach admitted).next =
+      some ⟨⟨false, {0}, {8}, some 8, some 42⟩, none⟩ ∧
+      acquire 2 .exclusive 0 9 (⟨false, {0}, {8}, some 8, some 42⟩ : State Nat Nat Nat) = none := by
+  decide
+
+theorem last_holder_preserves_use_until_final_release :
+    let state : State Nat Nat Nat := ⟨false, ∅, {7}, some 7, some 42⟩
+    releaseHolder 0 admitted = some ⟨state, none⟩ ∧
+      readUse 7 state = some 42 ∧
+      releaseUse 7 state = some ⟨⟨false, ∅, ∅, none, none⟩, some 42⟩ := by decide
+
+theorem two_uses_survive_first_release_and_extract_once :
+    let actions : List (Action Nat Nat) := [.acquire .exclusive 0 7, .acquire .lifetime 0 8,
+      .close, .releaseUse 7, .moveUse 8 9, .releaseUse 9]
+    let execution := run 2 (initial (Use := Nat) 0 42) actions
+    execution.final = ⟨false, {0}, ∅, none, none⟩ ∧
+      execution.retired = [42] ∧ execution.remaining = [] ∧ execution.accepted = 6 := by decide
+
+/-- A refused close keeps itself and everything following it. -/
+theorem reentrant_close_retains_complete_pending_suffix :
+    let actions : List (Action Nat Nat) := [.close, .close, .acquire .lifetime 0 7]
+    let execution := run 2 (initial (Use := Nat) 0 42) actions
+    execution.final = ⟨false, {0}, ∅, none, none⟩ ∧ execution.retired = [42] ∧
+      execution.remaining = [.close, .acquire .lifetime 0 7] ∧ execution.accepted = 1 := by decide
+
+theorem acquisition_and_close_order_are_observably_distinct :
+    let initial : State Nat Nat Nat := AcquiredUse.initial 0 42
+    let first := run 2 initial [.acquire .exclusive 0 7, .close]
+    let second := run 2 initial [.close, .acquire .exclusive 0 7]
+    readUse 7 first.final = some 42 ∧ readUse 7 second.final = none ∧
+      first.accepted = 2 ∧ second.accepted = 1 ∧
+      second.remaining = [.acquire .exclusive 0 7] := by decide
+
+end Examples
+
+end AcquiredUse
+
 section RelocationLifecycle
 
 universe uDestinationValue
@@ -1745,6 +3114,85 @@ def cyclicHeap : Heap (Fin 3) Nat where
 
 def siblingRoots : Roots Nat (Fin 3) := {(0, 0), (1, 2)}
 
+def cyclicUse : AcquiredUse.State Nat Nat (Fin 3) := ⟨true, {0}, {7}, some 7, some 0⟩
+
+theorem captured_cycle_retention_check :
+    RequestBorrow.retentionCheck cyclicHeap
+      (AcquiredUse.roots (AcquiredUse.detach cyclicUse).next id)
+      [0, 0, 1, 2] = true := by decide
+
+theorem captured_cycle_retention_preserves_paths :
+    RequestBorrow.observe (collect cyclicHeap
+      (AcquiredUse.roots (AcquiredUse.detach cyclicUse).next id))
+      [(0, [1, 2]), (0, [1, 2]), (0, [0])] =
+      RequestBorrow.observe cyclicHeap [(0, [1, 2]), (0, [1, 2]), (0, [0])] := by
+  apply RequestBorrow.retentionCheck_preserves_paths _ _ [0, 0, 1, 2]
+    captured_cycle_retention_check
+  intro query member
+  simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+  rcases member with rfl | rfl | rfl <;> simp
+
+/-- Retaining a reachable tail alone cannot protect the capturing controller. -/
+theorem tail_only_retention_check_refused :
+    RequestBorrow.retentionCheck cyclicHeap ({(1, 2)} : Roots Nat (Fin 3)) [0] = false :=
+  by decide
+
+theorem tail_only_pin_changes_captured_observation :
+    RequestBorrow.observe (collect cyclicHeap ({(1, 2)} : Roots Nat (Fin 3)))
+      [(0, [1, 2])] ≠ RequestBorrow.observe cyclicHeap [(0, [1, 2])] := by
+  have missing : ¬ Live cyclicHeap ({(1, 2)} : Roots Nat (Fin 3)) 0 := by
+    have valid : ValidRoots cyclicHeap ({(1, 2)} : Roots Nat (Fin 3)) := by
+      intro pair _
+      exact Finset.mem_univ _
+    have absent : (0 : Fin 3) ∉ census cyclicHeap ({(1, 2)} : Roots Nat (Fin 3)) :=
+      by decide
+    exact fun live => absent
+      ((mem_census_iff_live cyclicHeap _ valid 0).mpr live)
+  have gone := lookup_collect_of_not_live cyclicHeap _ missing
+  have retired : RequestBorrow.observe
+      (collect cyclicHeap ({(1, 2)} : Roots Nat (Fin 3))) [(0, [1, 2])] = [none] := by
+    simp only [RequestBorrow.observe, List.map_cons, List.map_nil, walk, gone,
+      Option.bind_none]
+  have original : RequestBorrow.observe cyclicHeap [(0, [1, 2])] =
+      [some (2, cyclicCell 2)] := by decide
+  rw [retired, original]
+  simp
+
+/-- A held use protects the entire cycle, with duplicate observations and a
+failed path retained in their original order. -/
+theorem acquired_use_keeps_complete_cyclic_observations :
+    RequestBorrow.observe (collect cyclicHeap
+      (AcquiredUse.roots (AcquiredUse.detach cyclicUse).next id))
+      [(0, [1, 2]), (0, [1, 2]), (0, [0])] =
+      [some (2, cyclicCell 2), some (2, cyclicCell 2), none] := by
+  have preserved := AcquiredUse.detach_keeps_observations cyclicUse id cyclicHeap ∅
+    (use := 7) (by decide) [(0, [1, 2]), (0, [1, 2]), (0, [0])] (by
+      intro path member
+      have start : path.1 = 0 := by
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+        rcases member with rfl | rfl | rfl <;> rfl
+      rw [start]
+      apply live_of_root cyclicHeap _ (owner := Sum.inr 7)
+      · exact Finset.mem_union_left ∅ (AcquiredUse.use_rooted cyclicUse id rfl (by decide))
+      · exact Finset.mem_univ 0)
+  simp only [Finset.union_empty] at preserved
+  rw [preserved]
+  decide
+
+theorem acquired_use_final_release_reclaims_cycle (location : Fin 3) :
+    let released : AcquiredUse.Result Nat Nat (Fin 3) :=
+      ⟨⟨false, {0}, ∅, none, none⟩, some 0⟩
+    (collect cyclicHeap (AcquiredUse.roots released.next id)).lookup location = none := by
+  apply AcquiredUse.last_use_reclaims (AcquiredUse.detach cyclicUse).next 7 id cyclicHeap
+  · apply AcquiredUse.detach_wellFormed
+    constructor
+    · decide
+    · intro use issued
+      simpa only [cyclicUse, Option.some.injEq, Finset.mem_singleton] using issued.symm
+  · exact AcquiredUse.detach_revokes cyclicUse
+  · rfl
+  · decide
+
 /-- Two equal requested paths remain two observations after detachment. -/
 theorem pinned_reset_keeps_cyclic_observations :
     RequestBorrow.observe (collect cyclicHeap
@@ -1827,6 +3275,25 @@ def shiftedCopy : Relocation cyclicHeap copiedHeap where
     change a.val + 1 = b.val + 1 at values
     omega
   lookup_eq := by decide +kernel
+
+/-- The nonidentity copy retains every captured cyclic dependency; the extra
+destination allocation is not needed to obtain acceptance. -/
+theorem copied_retention_accepts_complete_capture :
+    RequestBorrow.retentionCheck copiedHeap
+      (shiftedCopy.roots (AcquiredUse.roots (AcquiredUse.detach cyclicUse).next id))
+      ([0, 0, 1, 2].map relocationAddress) = true := by
+  exact (shiftedCopy.retentionCheck_eq
+    (AcquiredUse.roots (AcquiredUse.detach cyclicUse).next id) [0, 0, 1, 2]).trans
+    captured_cycle_retention_check
+
+/-- A larger copied heap does not turn a tail-only pin into a valid capture
+of its missing controller. -/
+theorem copied_retention_refuses_tail_only_pin :
+    RequestBorrow.retentionCheck copiedHeap
+      (shiftedCopy.roots ({(1, 2)} : Roots Nat (Fin 3)))
+      ([0].map relocationAddress) = false := by
+  exact (shiftedCopy.retentionCheck_eq ({(1, 2)} : Roots Nat (Fin 3)) [0]).trans
+    tail_only_retention_check_refused
 
 /-- The extra destination cell is outside the copied footprint, while
 every cyclic descendant is retained and counted once. -/

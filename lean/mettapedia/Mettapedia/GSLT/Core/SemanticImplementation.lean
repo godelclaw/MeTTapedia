@@ -448,6 +448,75 @@ theorem semanticStep_iff_exists_implementationStep
   · rintro ⟨next, step, equivalent⟩
     exact theory.rewrites_resp_right (implementation.sound step) equivalent
 
+/-! ## Observation contracts on an independently justified implementation -/
+
+/-- Observe a small host machine through its encoding. Its transitions are
+the supplied host transitions, not a transition relation fabricated from the
+abstract observation table. -/
+def observedSystem {theory : GSLT}
+    (implementation : OperationalImplementation.{0, 0} theory)
+    (observed : ObservedGSLT.{uAtom} theory) :
+    System.{uAtom, 0} implementation.asGSLT where
+  Atom := observed.Atom
+  observes atom state := observed.observes atom (implementation.encode state)
+  observes_resp := by
+    intro atom first second equal
+    cases equal
+    exact Iff.rfl
+  Label := Unit
+  act _ := implementation.step
+  act_resp_left := by
+    intro label first second target equal step
+    cases equal
+    exact ⟨target, step, rfl⟩
+  act_resp_right := by
+    intro label source target target' step equal
+    cases equal
+    exact step
+
+/-- Soundness and outgoing completeness supply the modal cover. The only
+additional obligation is that the selected abstract observations respect
+the authored equations. -/
+def observedCover {theory : GSLT}
+    (implementation : OperationalImplementation.{0, 0} theory)
+    (observed : ObservedGSLT.{uAtom} theory)
+    (response : ∀ (atom : observed.Atom) {first second : theory.Term},
+      theory.Equiv first second →
+        (observed.observes atom first ↔ observed.observes atom second)) :
+    SystemCover (implementation.observedSystem observed)
+      (System.ofObserved observed response) where
+  mapTerm := implementation.encode
+  mapAtom := _root_.id
+  mapLabel := _root_.id
+  mapEquiv := implementation.semanticCover.mapEquiv
+  observes_iff := fun _ _ => Iff.rfl
+  mapAct := implementation.sound
+  liftAct := implementation.complete
+
+/-- Every formula about the declared host observations and interactions has
+the same truth value at its encoded abstract state. This is a software-level
+realization contract, not evidence that an arbitrary material implements it. -/
+theorem observedSystem_sat_iff {theory : GSLT}
+    (implementation : OperationalImplementation.{0, 0} theory)
+    (observed : ObservedGSLT.{uAtom} theory)
+    (response : ∀ (atom : observed.Atom) {first second : theory.Term},
+      theory.Equiv first second →
+        (observed.observes atom first ↔ observed.observes atom second))
+    (formula : Formula observed.Atom Unit) (state : implementation.State) :
+    (System.ofObserved observed response).sat formula (implementation.encode state) ↔
+      (implementation.observedSystem observed).sat formula state := by
+  have same := (implementation.observedCover observed response).sat_map formula state
+  change (System.ofObserved observed response).sat
+    (Formula.map _root_.id _root_.id formula) (implementation.encode state) ↔
+      (implementation.observedSystem observed).sat formula state at same
+  have identityMap :
+      Formula.map _root_.id _root_.id formula = formula :=
+    Mettapedia.GSLT.HennessyMilner.Formula.map_id formula
+  exact (Iff.of_eq (congrArg
+    (fun mapped : Formula observed.Atom Unit =>
+      (System.ofObserved observed response).sat mapped (implementation.encode state))
+    identityMap.symm)).trans same
+
 /-! ## Positive and negative controls -/
 
 namespace Canary
@@ -539,6 +608,8 @@ end OperationalImplementation
 #print axioms EquationClassEscapingStep.not_semanticCoveredTranslation
 #print axioms OperationalImplementation.semanticCover
 #print axioms OperationalImplementation.semanticStep_iff_exists_implementationStep
+#print axioms OperationalImplementation.observedCover
+#print axioms OperationalImplementation.observedSystem_sat_iff
 #print axioms OperationalImplementation.Canary.positive_step_maps
 #print axioms OperationalImplementation.Canary.no_semantic_cover_with_some_encoding
 

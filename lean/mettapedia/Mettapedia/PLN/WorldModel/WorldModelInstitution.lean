@@ -10,8 +10,13 @@ This module adds a conservative institution-style layer over `WorldModelSigma`:
 - models = WM states (fixed `State` carrier),
 - satisfaction value = extracted evidence (and derived scalar views).
 
-The core institution law here is an explicit satisfaction condition under
-query transport.
+The institution law (`SatisfactionAlong`, the field `WMInstitution.sat_condition`)
+relates the two world models a bundle assigns to the ends of a signature
+morphism: the evidence of a sentence under the source world model is the
+evidence of its translation under the target world model, at the same state.
+The world model reindexed from the target is one construction that satisfies it
+(`satisfactionAlong_reindex`); signatures read through morphisms into one common
+signature give a whole institution (`WMInstitution.overTop`).
 -/
 
 namespace Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
@@ -70,7 +75,7 @@ def comp {sig1 sig2 sig3 : WMSignature}
 variable {State : Type x} [EvidenceType State]
 
 /-- Reindex a typed WM instance along a signature/query transport map. -/
-def reindexWorldModelSigma
+@[instance_reducible] def reindexWorldModelSigma
     {sig1 sig2 : WMSignature}
     (sigma : WMSigMorphism sig1 sig2)
     [WorldModelSigma State sig2.Srt sig2.Query] :
@@ -110,7 +115,27 @@ noncomputable def satConfidence
     (kappa : ℝ≥0∞) (W : State) (phi : Sentence sig) : ℝ≥0∞ :=
   BinaryEvidence.toConfidence kappa (satEvidence (State := State) sig W phi)
 
-/-- Satisfaction condition (evidence level) under signature/query transport. -/
+/-- **The satisfaction condition along one signature morphism.** The evidence
+of every sentence under the source world model is the evidence of its
+translation under the target world model, at every state. -/
+def SatisfactionAlong {sig1 sig2 : WMSignature} (sigma : WMSigMorphism sig1 sig2)
+    (wm1 : WorldModelSigma State sig1.Srt sig1.Query)
+    (wm2 : WorldModelSigma State sig2.Srt sig2.Query) : Prop :=
+  ∀ (W : State) (phi : Sentence sig1),
+    @satEvidence State _ sig1 wm1 W phi = @satEvidence State _ sig2 wm2 W (mapSentence sigma phi)
+
+/-- The satisfaction condition is equivalent to its strength-free profile form:
+the source profile of every state is the precomposed target profile. -/
+theorem satisfactionAlong_iff_profile {sig1 sig2 : WMSignature} (sigma : WMSigMorphism sig1 sig2)
+    (wm1 : WorldModelSigma State sig1.Srt sig1.Query)
+    (wm2 : WorldModelSigma State sig2.Srt sig2.Query) :
+    SatisfactionAlong sigma wm1 wm2 ↔
+      ∀ W : State, (fun phi => @satEvidence State _ sig1 wm1 W phi) =
+        fun phi => @satEvidence State _ sig2 wm2 W (mapSentence sigma phi) :=
+  ⟨fun h W => funext (h W), fun h W phi => congrFun (h W) phi⟩
+
+/-- The reindexed world model evidence, at the same state: the defining
+equation of `reindexWorldModelSigma`. -/
 theorem satisfactionCondition_evidence
     {sig1 sig2 : WMSignature}
     (sigma : WMSigMorphism sig1 sig2)
@@ -164,6 +189,13 @@ theorem satisfactionCondition_confidence
     congrArg (BinaryEvidence.toConfidence kappa)
       (satisfactionCondition_evidence (State := State) (sigma := sigma) W phi)
 
+/-- **Positive.** The world model reindexed from the target satisfies the
+satisfaction condition along the morphism it was reindexed by. -/
+theorem satisfactionAlong_reindex {sig1 sig2 : WMSignature} (sigma : WMSigMorphism sig1 sig2)
+    (wm : WorldModelSigma State sig2.Srt sig2.Query) :
+    SatisfactionAlong sigma (@reindexWorldModelSigma State _ sig1 sig2 sigma wm) wm :=
+  fun _ _ => rfl
+
 /-- Institution bundle over WM signatures with explicit satisfaction condition. -/
 structure WMInstitution where
   /-- State carrier and evidence algebra. -/
@@ -186,44 +218,98 @@ structure WMInstitution where
   /-- WM semantics at each signature. -/
   worldModel :
     ∀ sig, WorldModelSigma State (sigData sig).Srt (sigData sig).Query
-  /-- BinaryEvidence-valued satisfaction condition. -/
+  /-- The satisfaction condition: along every morphism, the evidence of a
+  sentence under the source world model is the evidence of its translation
+  under the target world model.  This field formerly compared the target world
+  model with its own reindexing, which holds for every choice of world models;
+  it now relates the two world models the bundle assigns. -/
   sat_condition :
-    ∀ {sig1 sig2} (h : Hom sig1 sig2) (W : State)
-      (phi : Sentence (sigData sig1)),
-      letI : EvidenceType State := instEvidenceType
-      letI : WorldModelSigma State (sigData sig2).Srt (sigData sig2).Query :=
-        worldModel sig2
-      letI : WorldModelSigma State (sigData sig1).Srt (sigData sig1).Query :=
-        reindexWorldModelSigma (State := State) (mapHom h)
-      satEvidence (State := State) (sigData sig1) W phi =
-        satEvidence (State := State) (sigData sig2) W ((mapSentence (mapHom h)) phi)
+    ∀ {sig1 sig2} (h : Hom sig1 sig2),
+      SatisfactionAlong (mapHom h) (worldModel sig1) (worldModel sig2)
 
 attribute [instance] WMInstitution.instEvidenceType
 
 namespace WMInstitution
 
-/-- Strength-level satisfaction transport derived from institution evidence law. -/
+/-- Strength-level satisfaction transport derived from the institution's
+evidence law, between the two world models the bundle assigns. -/
 theorem sat_condition_strength
     (I : WMInstitution)
     {sig1 sig2 : I.Sig}
     (h : I.Hom sig1 sig2) (W : I.State)
     (phi : Sentence (I.sigData sig1)) :
-    letI : WorldModelSigma I.State (I.sigData sig2).Srt (I.sigData sig2).Query :=
-      I.worldModel sig2
-    letI : WorldModelSigma I.State (I.sigData sig1).Srt (I.sigData sig1).Query :=
-      reindexWorldModelSigma (State := I.State) (I.mapHom h)
-    satStrength (State := I.State) (I.sigData sig1) W phi =
-      satStrength (State := I.State) (I.sigData sig2) W
-        ((mapSentence (I.mapHom h)) phi) := by
-  simpa [satStrength] using
-    congrArg BinaryEvidence.toStrength (I.sat_condition h W phi)
+    @satStrength I.State _ (I.sigData sig1) (I.worldModel sig1) W phi =
+      @satStrength I.State _ (I.sigData sig2) (I.worldModel sig2) W
+        (mapSentence (I.mapHom h) phi) :=
+  congrArg BinaryEvidence.toStrength (I.sat_condition h W phi)
+
+/-- Context-sensitive strength transport between the bundle's world models. -/
+theorem sat_condition_strengthWith
+    (I : WMInstitution)
+    {sig1 sig2 : I.Sig}
+    (h : I.Hom sig1 sig2) (ctx : BinaryContext) (W : I.State)
+    (phi : Sentence (I.sigData sig1)) :
+    @satStrengthWith I.State _ (I.sigData sig1) (I.worldModel sig1) ctx W phi =
+      @satStrengthWith I.State _ (I.sigData sig2) (I.worldModel sig2) ctx W
+        (mapSentence (I.mapHom h) phi) :=
+  congrArg (BinaryEvidence.strengthWith ctx) (I.sat_condition h W phi)
+
+/-- Confidence transport between the bundle's world models. -/
+theorem sat_condition_confidence
+    (I : WMInstitution)
+    {sig1 sig2 : I.Sig}
+    (h : I.Hom sig1 sig2) (kappa : ℝ≥0∞) (W : I.State)
+    (phi : Sentence (I.sigData sig1)) :
+    @satConfidence I.State _ (I.sigData sig1) (I.worldModel sig1) kappa W phi =
+      @satConfidence I.State _ (I.sigData sig2) (I.worldModel sig2) kappa W
+        (mapSentence (I.mapHom h) phi) :=
+  congrArg (BinaryEvidence.toConfidence kappa) (I.sat_condition h W phi)
+
+/-! ### A natural instance: signatures over one common signature -/
+
+/-- Morphisms between signatures that both translate into a common signature
+`top`: signature morphisms that commute with the translations into `top`. -/
+def OverTopHom (top : WMSignature) {ι : Type} (sigOf : ι → WMSignature)
+    (toTop : ∀ i, WMSigMorphism (sigOf i) top) (i j : ι) : Type :=
+  {h : WMSigMorphism (sigOf i) (sigOf j) //
+    ∀ phi, mapSentence (toTop j) (mapSentence h phi) = mapSentence (toTop i) phi}
+
+/-- **The institution of signatures over a common signature.** Each signature
+reads one world model at `top` through its translation into `top`; the
+satisfaction condition holds because the morphisms commute with the
+translations, not by definition. -/
+def overTop (State : Type) [EvidenceType State] (top : WMSignature)
+    (wm : WorldModelSigma State top.Srt top.Query) {ι : Type} (sigOf : ι → WMSignature)
+    (toTop : ∀ i, WMSigMorphism (sigOf i) top) : WMInstitution where
+  State := State
+  instEvidenceType := inferInstance
+  Sig := ι
+  sigData := sigOf
+  Hom := OverTopHom top sigOf toTop
+  id i := ⟨PLNWorldModelInstitution.id (sigOf i), fun phi => by rw [mapSentence_id]⟩
+  comp h k := ⟨PLNWorldModelInstitution.comp h.1 k.1, fun phi => by
+    rw [mapSentence_comp, k.2, h.2]⟩
+  mapHom h := h.1
+  worldModel i := @reindexWorldModelSigma State _ (sigOf i) top (toTop i) wm
+  sat_condition h W phi := (congrArg (fun q => @satEvidence State _ top wm W q) (h.2 phi)).symm
+
+/-- The evidence of `overTop` at a signature is the common world model's
+evidence for the translated sentence. -/
+theorem overTop_evidence (State : Type) [EvidenceType State] (top : WMSignature)
+    (wm : WorldModelSigma State top.Srt top.Query) {ι : Type} (sigOf : ι → WMSignature)
+    (toTop : ∀ i, WMSigMorphism (sigOf i) top) (i : ι) (W : State) (phi : Sentence (sigOf i)) :
+    @satEvidence State _ (sigOf i) ((overTop State top wm sigOf toTop).worldModel i) W phi =
+      @satEvidence State _ top wm W (mapSentence (toTop i) phi) :=
+  rfl
 
 end WMInstitution
 
 /-! ## Profile Natural Transformation View
 
-The institution's satisfaction condition is the naturality square for
-evidence extraction viewed as a natural transformation.
+The satisfaction condition of the reindexed world model is the naturality
+square for evidence extraction viewed as a natural transformation; for an
+institution bundle the same square relates its two assigned world models
+(`WMInstitution.sat_condition_profile`).
 
 For each signature `sig`, define the **evidence profile** of a state:
 
@@ -273,6 +359,14 @@ theorem satisfactionCondition_is_naturality
       profilePrecomp sigma (evidenceProfile (State := State) sig2 W) := by
   funext phi
   exact satisfactionCondition_evidence (State := State) sigma W phi
+
+/-- **The institution law in profile form**: the source world model's profile
+is the target world model's profile precomposed with the translation. -/
+theorem WMInstitution.sat_condition_profile (I : WMInstitution) {sig1 sig2 : I.Sig}
+    (h : I.Hom sig1 sig2) (W : I.State) :
+    @evidenceProfile I.State _ (I.sigData sig1) (I.worldModel sig1) W =
+      profilePrecomp (I.mapHom h) (@evidenceProfile I.State _ (I.sigData sig2) (I.worldModel sig2) W) :=
+  funext (I.sat_condition h W)
 
 /-- Profile precomposition is functorial: identity. -/
 theorem profilePrecomp_id (sig : WMSignature)

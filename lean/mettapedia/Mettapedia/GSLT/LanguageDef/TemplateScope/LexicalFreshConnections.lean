@@ -310,14 +310,18 @@ theorem matchSteps_length_le [DecidableEq S] : ∀ (p t : Tm S (BId X)) (s : Ste
       split at h <;> cases h
       exact Nat.zero_le _
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 /-- **`unify` is matching in the model**: under lexical fresh it elaborates to
 the same `let` node as a pattern whose names are all in force: the pattern is
 matched against the value, refining slots in scope. -/
 theorem unify_is_matching (cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner)
     (p w b : Src S X) :
-    elabLFId cr env pv fr pos (.unify p w b) =
-      .letP (elabLFId cr env pv fr (pos ++ [0]) p) (elabLFId cr env pv fr (pos ++ [1]) w)
-        (elabLFId cr env pv fr (pos ++ [2]) b) := rfl
+    elabLFId R cr env pv fr pos (.unify p w b) =
+      .letP (elabLFId R cr env pv fr (pos ++ [0]) p) (elabLFId R cr env pv fr (pos ++ [1]) w)
+        (elabLFId R cr env pv fr (pos ++ [2]) b) := rfl
 
 /-! ## Freshness: a pattern's slot is apart from its context -/
 
@@ -353,14 +357,16 @@ theorem slotKeys_sealParams (t : Tm S (BId X)) : slotKeys (sealParams t) = slotK
   unfold slotKeys sealParams
   rw [vars_foldBind]
 
-/-- A root head slot: the query cell a sealed hole denotes. -/
+/-- A root head slot: the cell of the form's root `R` that a sealed hole of the
+form denotes (the query's cell when `R = []`). -/
 def rootHead (k : SlotId X) : Prop :=
-  k.frame = [] ∧ k.site = [] ∧ k.intro = .head
+  k.frame = R ∧ k.site = R ∧ k.intro = .head
 
-/-- Every slot sealed code mentions is a root head slot, at any
-quotation-relative position. A binder of the code is not a slot. -/
+/-- Every slot sealed code written in a form rooted at `R` mentions is a root
+head slot of `R`, at any quotation-relative position. A binder of the code is
+not a slot. -/
 theorem slotKeys_codeIAt (penv senv : List (X × Owner)) (pos : Owner) :
-    ∀ c : Src S X, ∀ k ∈ slotKeys (codeIAt none penv senv pos c), rootHead k
+    ∀ c : Src S X, ∀ k ∈ slotKeys (codeIAt R none penv senv pos c), rootHead R k
   | .sym _, _, h => by simp [codeIAt, slotKeys, Tm.vars] at h
   | .fn _, _, h => by simp [codeIAt, slotKeys, Tm.vars] at h
   | .sv y, k, h => by
@@ -391,11 +397,11 @@ theorem slotKeys_codeIAt (penv senv : List (X × Owner)) (pos : Owner) :
           simp only [Tm.vars] at h
           cases h
   | .lam z _ b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt none ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R none ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b k h'
   | .form z b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt none ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R none ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b k h'
   | .app f a, k, h => by
@@ -404,12 +410,12 @@ theorem slotKeys_codeIAt (penv senv : List (X × Owner)) (pos : Owner) :
       · exact slotKeys_codeIAt penv senv (pos ++ [0]) f k (by simpa [slotKeys] using h)
       · exact slotKeys_codeIAt penv senv (pos ++ [1]) a k (by simpa [slotKeys] using h)
   | .quote c, k, h => by
-      have hseal : k ∈ slotKeys (sealParams (codeIAt none [] [] [] c)) := by
+      have hseal : k ∈ slotKeys (sealParams (codeIAt R none [] [] [] c)) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       rw [slotKeys_sealParams] at hseal
       exact slotKeys_codeIAt [] [] [] c k hseal
   | .pquote c, k, h => by
-      have h' : k ∈ slotKeys (codeIAt none [] [] [] c) := by
+      have h' : k ∈ slotKeys (codeIAt R none [] [] [] c) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt [] [] [] c k h'
   | .letS p w b _, k, h => by
@@ -434,21 +440,21 @@ theorem slotKeys_codeIAt (penv senv : List (X × Owner)) (pos : Owner) :
       · exact slotKeys_codeIAt penv senv (pos ++ [0]) t₁ k (by simpa [slotKeys] using h)
       · exact slotKeys_codeIAt penv senv (pos ++ [1]) t₂ k (by simpa [slotKeys] using h)
   | .new _ b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt none penv senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R none penv senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt penv senv (pos ++ [0]) b k h'
 
 /-- Every slot sealed code mentions is a root head slot. -/
 theorem slotKeys_codeI (c : Src S X) :
-    ∀ k ∈ slotKeys (codeI c : Tm S (BId X)), rootHead k := by
+    ∀ k ∈ slotKeys (codeI R c : Tm S (BId X)), rootHead R k := by
   intro k hk
   rw [codeI, slotKeys_sealParams] at hk
-  exact slotKeys_codeIAt [] [] [] c k hk
+  exact slotKeys_codeIAt R [] [] [] c k hk
 
 /-- A pattern quotation's holes are the surrounding environment's slots. -/
 theorem slotKeys_codeIAt_env (env : IEnv X) (penv senv : List (X × Owner)) (pos : Owner) :
-    ∀ (c : Src S X) (k : SlotId X), k ∈ slotKeys (codeIAt (some env) penv senv pos c) →
-      (∃ y, env y = k) ∨ rootHead k
+    ∀ (c : Src S X) (k : SlotId X), k ∈ slotKeys (codeIAt R (some env) penv senv pos c) →
+      (∃ y, env y = k) ∨ rootHead R k
   | .sym _, _, h => by simp [codeIAt, slotKeys, Tm.vars] at h
   | .fn _, _, h => by simp [codeIAt, slotKeys, Tm.vars] at h
   | .sv y, k, h => by
@@ -478,11 +484,11 @@ theorem slotKeys_codeIAt_env (env : IEnv X) (penv senv : List (X × Owner)) (pos
           simp only [Tm.vars] at h
           cases h
   | .lam z _ b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt_env env ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b k h'
   | .form z b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R (some env) ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt_env env ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b k h'
   | .app f a, k, h => by
@@ -491,12 +497,12 @@ theorem slotKeys_codeIAt_env (env : IEnv X) (penv senv : List (X × Owner)) (pos
       · exact slotKeys_codeIAt_env env penv senv (pos ++ [0]) f k (by simpa [slotKeys] using h)
       · exact slotKeys_codeIAt_env env penv senv (pos ++ [1]) a k (by simpa [slotKeys] using h)
   | .quote c, k, h => by
-      have hseal : k ∈ slotKeys (sealParams (codeIAt none [] [] [] c)) := by
+      have hseal : k ∈ slotKeys (sealParams (codeIAt R none [] [] [] c)) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       rw [slotKeys_sealParams] at hseal
-      exact Or.inr (slotKeys_codeIAt [] [] [] c k hseal)
+      exact Or.inr (slotKeys_codeIAt R [] [] [] c k hseal)
   | .pquote c, k, h => by
-      have h' : k ∈ slotKeys (codeIAt (some env) [] [] [] c) := by
+      have h' : k ∈ slotKeys (codeIAt R (some env) [] [] [] c) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt_env env [] [] [] c k h'
   | .letS p w b _, k, h => by
@@ -521,7 +527,7 @@ theorem slotKeys_codeIAt_env (env : IEnv X) (penv senv : List (X × Owner)) (pos
       · exact slotKeys_codeIAt_env env penv senv (pos ++ [0]) t₁ k (by simpa [slotKeys] using h)
       · exact slotKeys_codeIAt_env env penv senv (pos ++ [1]) t₂ k (by simpa [slotKeys] using h)
   | .new _ b, k, h => by
-      have h' : k ∈ slotKeys (codeIAt (some env) penv senv (pos ++ [0]) b) := by
+      have h' : k ∈ slotKeys (codeIAt R (some env) penv senv (pos ++ [0]) b) := by
         simpa [codeIAt, slotKeys, Tm.vars] using h
       exact slotKeys_codeIAt_env env penv senv (pos ++ [0]) b k h'
 
@@ -531,8 +537,8 @@ theorem prefix_of_append {pos q : Owner} {i : ℕ} (h : (pos ++ [i]) <+: q) : po
 /-- **Every slot an elaborated term mentions is its environment's, or was
 introduced inside it** (its site extends the term's position). -/
 theorem elabLFId_keys : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner),
-    ∀ k ∈ slotKeys (elabLFId cr env pv fr pos t),
-      (∃ y, env y = k) ∨ pos <+: k.site ∨ rootHead k
+    ∀ k ∈ slotKeys (elabLFId R cr env pv fr pos t),
+      (∃ y, env y = k) ∨ pos <+: k.site ∨ rootHead R k
   | .sym _, _, _, _, _, _, k, h => by simp [elabLFId, slotKeys, Tm.vars] at h
   | .fn _, _, _, _, _, _, k, h => by simp [elabLFId, slotKeys, Tm.vars] at h
   | .sv y, _, env, _, _, _, k, h => by
@@ -542,10 +548,10 @@ theorem elabLFId_keys : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : X �
   | .par _, _, _, _, _, _, k, h => by simp [elabLFId, slotKeys, Tm.vars] at h
   | .quote c, _, _, _, _, _, k, h => by
       simp only [elabLFId, slotKeys, Tm.vars] at h
-      exact Or.inr (Or.inr (slotKeys_codeI c k (by simpa [slotKeys] using h)))
+      exact Or.inr (Or.inr (slotKeys_codeI R c k (by simpa [slotKeys] using h)))
   | .lam z xs b, cr, env, pv, fr, pos, k, h => by
       simp only [elabLFId] at h
-      have h' : k ∈ slotKeys (elabLFId (crossIn xs (crossOwn xs (Src.uses b) []) cr)
+      have h' : k ∈ slotKeys (elabLFId R (crossIn xs (crossOwn xs (Src.uses b) []) cr)
           (env.set (crossOwn xs (Src.uses b) []) fun y => ⟨y, pos ++ [0], pos ++ [0], .head⟩)
           (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b) := by
         simpa [slotKeys, Tm.vars] using h
@@ -570,17 +576,17 @@ theorem elabLFId_keys : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : X �
         · exact Or.inr (Or.inl (prefix_of_append hp))
         · exact Or.inr (Or.inr hr)
   | .pquote c, _, env, _, _, _, k, h => by
-      have h' : k ∈ slotKeys (codeIAt (some env) [] [] [] c) := by
-        have hs : k ∈ slotKeys (sealParams (codeIAt (some env) [] [] [] c)) := by
+      have h' : k ∈ slotKeys (codeIAt R (some env) [] [] [] c) := by
+        have hs : k ∈ slotKeys (sealParams (codeIAt R (some env) [] [] [] c)) := by
           simpa [elabLFId, slotKeys, Tm.vars] using h
         rwa [slotKeys_sealParams] at hs
-      rcases slotKeys_codeIAt_env env [] [] [] c k h' with hy | hr
+      rcases slotKeys_codeIAt_env R env [] [] [] c k h' with hy | hr
       · exact Or.inl hy
       · exact Or.inr (Or.inr hr)
   | .letS p w b xs, cr, env, pv, fr, pos, k, h => by
       simp only [elabLFId, slotKeys, Tm.vars, List.filterMap_append, List.mem_append] at h
       have hset : ∀ y, (env.set (lfIntro xs p cr) fun y => ⟨y, fr, pos, .pat⟩) y = k →
-          (∃ y, env y = k) ∨ pos <+: k.site ∨ rootHead k := by
+          (∃ y, env y = k) ∨ pos <+: k.site ∨ rootHead R k := by
         intro y hy
         by_cases hyo : y ∈ lfIntro xs p cr
         · rw [IEnv.set_of_mem hyo] at hy
@@ -640,7 +646,7 @@ theorem elabLFId_keys : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : X �
       · exact Or.inr (Or.inr hr)
   | .form z b, cr, env, pv, _, pos, k, h => by
       simp only [elabLFId] at h
-      have h' : k ∈ slotKeys (elabLFId cr (env.set [] (fun y => ⟨y, pos ++ [0], pos ++ [0], .head⟩))
+      have h' : k ∈ slotKeys (elabLFId R cr (env.set [] (fun y => ⟨y, pos ++ [0], pos ++ [0], .head⟩))
           (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b) := by
         simpa [slotKeys, Tm.vars] using h
       rcases elabLFId_keys b _ _ _ _ _ k h' with ⟨y, hy⟩ | hp | hr
@@ -654,10 +660,10 @@ slot a `let` at `P` introduces does not occur in the elaboration of its value,
 unless the environment already held it. -/
 theorem let_slot_fresh_in_value (cr : List X) (env : IEnv X) (pv : X → Owner) (fr P : Owner)
     (w : Src S X) {k : SlotId X} (hk : k.site = P) (henv : ∀ y, env y ≠ k)
-    (hnot : ¬ rootHead k) :
-    k ∉ slotKeys (elabLFId cr env pv fr (P ++ [1]) w) := by
+    (hnot : ¬ rootHead R k) :
+    k ∉ slotKeys (elabLFId R cr env pv fr (P ++ [1]) w) := by
   intro h
-  rcases elabLFId_keys w cr env pv fr _ k h with ⟨y, hy⟩ | hp | hr
+  rcases elabLFId_keys R w cr env pv fr _ k h with ⟨y, hy⟩ | hp | hr
   · exact henv y hy
   · rw [hk] at hp
     have := hp.length_le
@@ -766,7 +772,7 @@ theorem unify_nonground_no_answer :
 lambda of row H1 is the code of the source lambda, although the two
 elaborate differently. -/
 theorem quotation_forgets_new :
-    (codeI holeT : TI) = codeI (lm .z (sv .hole)) ∧
+    (codeI [] holeT : TI) = codeI [] (lm .z (sv .hole)) ∧
       elabLFFormAt ([] : Owner) holeT ≠ elabLFFormAt [] (lm .z (sv .hole)) := by
   constructor <;> decide +kernel
 

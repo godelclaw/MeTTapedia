@@ -31,7 +31,7 @@ open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionCheckService
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionEvidenceSynthesis
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionProblemAuthority
 open Mettapedia.Languages.TPTP
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.Languages.TPTP.CheckerAuthority
 open Mettapedia.Languages.TPTP.StatusSemantics
 open Mettapedia.Languages.TPTP.GroundCNFAuthority
 

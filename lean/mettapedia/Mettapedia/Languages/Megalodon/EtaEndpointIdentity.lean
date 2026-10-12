@@ -5,7 +5,7 @@ import Mettapedia.Languages.Megalodon.EtaConversionKernel
 # Megalodon eta conversion versus endpoint identity
 
 Eta conversion is semantic evidence relating two structurally different
-terms.  NIK must check that evidence without redefining endpoint identity as
+terms.  SemanticService must check that evidence without redefining endpoint identity as
 conversion equivalence.  This module records both facts for the exact
 Megalodon eta document.
 -/

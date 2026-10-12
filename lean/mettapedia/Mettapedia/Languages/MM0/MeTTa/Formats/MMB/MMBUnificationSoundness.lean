@@ -26,14 +26,6 @@ structure SlotsSubstitute (store : List Alloc) (substitution : Substitution)
       Soundness.decode store position = some image ∧
       Preterm.Substitutes substitution source image
 
-theorem substitution_application (substitution : Substitution) (source image : Preterm)
-    (sources images : List Preterm) (head : Preterm.Substitutes substitution source image)
-    (children : List.Forall₂ (Preterm.Substitutes substitution) sources images) :
-    Preterm.Substitutes substitution (Preterm.applyArgs source sources) (Preterm.applyArgs image images) := by
-  induction children generalizing source image with
-  | nil => exact head
-  | cons child _ ih => exact ih _ _ (.app head child)
-
 theorem SlotsSubstitute.reserve (store : List Alloc) (substitution : Substitution)
     (slots : List (Option Preterm)) (heap : List (Nat × Bool))
     (matching : SlotsSubstitute store substitution slots heap) (position : Nat) :
@@ -436,7 +428,7 @@ theorem decodeExpr_unifies (signature : TermSignature) (context : Context)
                           have equalImages : values = images := Option.some.inj (valuesRead.symm.trans imageRead)
                           subst values
                           exact ⟨Preterm.applyArgs (.term term) images, parentRead,
-                            substitution_application substitution (.term term) (.term term) sources images (.term term) substituted,
+                            Preterm.Substitutes.applyArgs substitution (.term term) (.term term) sources images (.term term) substituted,
                             afterStack, afterSlots, afterMain, afterHyps, afterDummies⟩
           | termSave term =>
               cases countRead : arity term with
@@ -474,7 +466,7 @@ theorem decodeExpr_unifies (signature : TermSignature) (context : Context)
                           have equalImages : values = images := Option.some.inj (valuesRead.symm.trans imageRead)
                           subst values
                           have parentSubstitution : Preterm.Substitutes substitution body (Preterm.applyArgs (.term term) images) :=
-                            substitution_application substitution (.term term) (.term term) sources images (.term term) substituted
+                            Preterm.Substitutes.applyArgs substitution (.term term) (.term term) sources images (.term term) substituted
                           obtain ⟨extraSlots, _, slotsRead, _, _⟩ :=
                             Soundness.decodeExprs_source_order arity arguments fuel count reserved next (commandsBefore ++ rest) rest sources children
                           have reservation : next.slots[sourceBefore.slots.length]? = some none := by

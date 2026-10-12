@@ -20,7 +20,7 @@ realization.
 
 The construction is deliberately independent of Prime syntax.  A Prime
 instance chooses intrinsically typed contextual terms as its artifacts; a
-different NIK-hosted language may choose its own maximal native calculus.
+different SemanticService-hosted language may choose its own maximal native calculus.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.InferenceCheckedNativeWaist

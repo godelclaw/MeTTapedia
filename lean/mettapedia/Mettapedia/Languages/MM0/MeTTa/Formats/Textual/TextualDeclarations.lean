@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MM0.MeTTa.Formats.Textual.TextualProjection
+import Mettapedia.Languages.MM0.Kernel.VacuousDummies
 
 /-!
 # Structural MM0 declaration projection
@@ -10,6 +11,10 @@ the retained kernel performs typing and declaration admission separately.
 
 These laws describe data projection. Execution correspondence for the
 authored MeTTa adapter is a separate obligation.
+
+A definition body enters in canonical form: its dummies are exactly those its
+expression uses, in declared order (`Kernel.Definition.Body.canonical`). A
+vacuous dummy changes no unfolding (`Kernel.Definition.unfold?_canonical`).
 -/
 
 set_option autoImplicit false
@@ -822,15 +827,54 @@ def projectDefinitionBody (sorts : List SortEntry) (sortLimit : Nat)
       let dummies ← projectDummies (sorts.take sortLimit) source.dummies
       let _context ← TextualProjection.projectContext (sorts.take sortLimit) (signature.binders ++ source.dummies)
       let body ← projectExpression declarations termLimit (signature.binders ++ source.dummies) expression
-      pure (some ⟨dummies, body⟩)
+      let canonical ← (⟨dummies, body⟩ : Kernel.Definition.Body).canonical signature.binders.length
+      pure (some canonical)
 
+/-- Renumbering a scoped expression keeps it scoped in the canonical context. -/
+theorem renumber_scoped {arity binderCount termLimit : Nat} {mask : List Bool} :
+    ∀ {expression renumbered : Preterm}, Scoped binderCount termLimit expression →
+      Kernel.Preterm.renumber arity mask expression = some renumbered →
+        Scoped (arity + mask.count true) termLimit renumbered
+  | .var index, renumbered, _, renumbering => by
+      simp only [Kernel.Preterm.renumber] at renumbering
+      split at renumbering
+      · simp only [Option.some.injEq] at renumbering
+        subst renumbered
+        simp only [Scoped]
+        omega
+      · split at renumbering
+        · rename_i kept
+          simp only [Option.some.injEq] at renumbering
+          subst renumbered
+          have before := Kernel.count_take_lt_count mask (index - arity) kept
+          simp only [Scoped]
+          omega
+        · simp at renumbering
+  | .term index, renumbered, inScope, renumbering => by
+      simp only [Kernel.Preterm.renumber, Option.some.injEq] at renumbering
+      subst renumbered
+      exact inScope
+  | .app function argument, renumbered, inScope, renumbering => by
+      simp only [Kernel.Preterm.renumber] at renumbering
+      obtain ⟨function', functionRenumbered, afterFunction⟩ := Option.bind_eq_some_iff.mp renumbering
+      obtain ⟨argument', argumentRenumbered, output⟩ := Option.bind_eq_some_iff.mp afterFunction
+      simp only [Option.pure_def, Option.some.injEq] at output
+      subst renumbered
+      exact ⟨renumber_scoped inScope.1 functionRenumbered, renumber_scoped inScope.2 argumentRenumbered⟩
+
+/-- The projected body is the canonical form of the body written against all source
+dummies. That full body lives in the full projected context; its canonical form lives in
+the public context followed by the dummies it uses. -/
 theorem projectDefinitionBody_context {sorts : List SortEntry} {sortLimit : Nat}
     {declarations : List SourceDeclaration} {termLimit : Nat} {signature : SourceTermSignature}
     {declaration : TermDecl} (publicProjected : projectTermSignature sorts sortLimit signature = some declaration)
     {source : DefinitionSource} {body : Kernel.Definition.Body}
     (bodyProjected : projectDefinitionBody sorts sortLimit declarations termLimit signature source = some (some body)) :
-    TextualProjection.projectContext (sorts.take sortLimit) (signature.binders ++ source.dummies) =
-      some (Kernel.Definition.Body.context declaration body) ∧
+    ∃ full : Kernel.Definition.Body,
+      TextualProjection.projectContext (sorts.take sortLimit) (signature.binders ++ source.dummies) =
+        some (Kernel.Definition.Body.context declaration full) ∧
+      Scoped (Kernel.Definition.Body.context declaration full).length termLimit full.expression ∧
+      full.canonical declaration.arguments.length = some body ∧
       Scoped (Kernel.Definition.Body.context declaration body).length termLimit body.expression := by
   unfold projectDefinitionBody at bodyProjected
   split at bodyProjected
@@ -838,18 +882,36 @@ theorem projectDefinitionBody_context {sorts : List SortEntry} {sortLimit : Nat}
   · rename_i expression hasBody
     obtain ⟨dummies, dummiesProjected, afterDummies⟩ := Option.bind_eq_some_iff.mp bodyProjected
     obtain ⟨context, contextProjected, afterContext⟩ := Option.bind_eq_some_iff.mp afterDummies
-    obtain ⟨projectedExpression, expressionProjected, output⟩ := Option.bind_eq_some_iff.mp afterContext
-    have same : (⟨dummies, projectedExpression⟩ : Kernel.Definition.Body) = body := by simpa using output
+    obtain ⟨projectedExpression, expressionProjected, afterExpression⟩ :=
+      Option.bind_eq_some_iff.mp afterContext
+    obtain ⟨canonical, canonicalized, output⟩ := Option.bind_eq_some_iff.mp afterExpression
+    have same : canonical = body := by simpa using output
     subst body
     have aligned := definition_context_alignment publicProjected dummiesProjected contextProjected
     have fullLength := TextualProjection.projectContext_length contextProjected
+    have dummyCount := projectDummies_length dummiesProjected
+    have arity : declaration.arguments.length = signature.binders.length := by
+      have total := congrArg List.length aligned
+      simp only [List.length_append, List.length_map, fullLength, dummyCount] at total
+      omega
     have scopedExpression := projectExpression_scoped declarations termLimit (signature.binders ++ source.dummies)
       expression projectedExpression expressionProjected
-    constructor
+    obtain ⟨dummiesEq, renumbered⟩ :=
+      (Kernel.Definition.Body.canonical_eq_some_iff _ _ _).mp canonicalized
+    refine ⟨⟨dummies, projectedExpression⟩, ?_, ?_, ?_, ?_⟩
     · simpa [Kernel.Definition.Body.context, aligned] using contextProjected
     · change Scoped (declaration.arguments ++ dummies.map Binder.bound).length termLimit projectedExpression
       rw [← aligned, fullLength]
       exact scopedExpression
+    · rw [arity]
+      exact canonicalized
+    · have usageLength := Kernel.Definition.Body.usage_length signature.binders.length
+        (⟨dummies, projectedExpression⟩ : Kernel.Definition.Body)
+      have kept := Kernel.selectBy_length _ dummies usageLength
+      change Scoped (declaration.arguments ++ canonical.dummies.map Binder.bound).length termLimit
+        canonical.expression
+      rw [List.length_append, List.length_map, dummiesEq, kept, arity]
+      exact renumber_scoped scopedExpression renumbered
 
 /-! ## Existing specification entries, preserving the two dense namespaces -/
 
@@ -1076,6 +1138,7 @@ private def anonymousRegular : SourceBinder := ⟨false, none, ⟨"set", []⟩�
 private def boundX : SourceBinder := ⟨true, some "x", ⟨"set", []⟩⟩
 private def regularU : SourceBinder := ⟨false, some "u", ⟨"set", ["x"]⟩⟩
 private def dummyY : SourceBinder := ⟨true, some "y", ⟨"set", []⟩⟩
+private def dummyZ : SourceBinder := ⟨true, some "z", ⟨"set", []⟩⟩
 private def publicBinders : List SourceBinder := [anonymousRegular, boundX, regularU]
 private def publicSignature : SourceTermSignature := ⟨publicBinders, ⟨"set", ["x"]⟩⟩
 
@@ -1131,6 +1194,20 @@ theorem definition_body_uses_public_then_dummy_context :
     projectDeclaration sorts 2 declarations 2 1 (.term definedEntry) =
       some (.definition 2 ⟨[.regular 0 ∅, .bound 0, .regular 0 {1}], 0, {1}⟩
         (some ⟨[0], .app (.app (.term 0) (.var 3)) (.var 1)⟩)) := by
+  decide +kernel
+
+/-- An unused dummy is dropped wherever it is declared; the used dummy follows the public
+binders either way. -/
+theorem unused_definition_dummies_are_dropped :
+    projectDefinitionBody sorts 2 declarations 2 publicSignature ⟨[dummyY, dummyZ], some dummyBody⟩ =
+        some (some ⟨[0], .app (.app (.term 0) (.var 3)) (.var 1)⟩) ∧
+      projectDefinitionBody sorts 2 declarations 2 publicSignature ⟨[dummyZ, dummyY], some dummyBody⟩ =
+        some (some ⟨[0], .app (.app (.term 0) (.var 3)) (.var 1)⟩) := by
+  decide +kernel
+
+/-- A used dummy is kept: the same body without its dummy is refused. -/
+theorem used_definition_dummy_is_required :
+    projectDefinitionBody sorts 2 declarations 2 publicSignature ⟨[], some dummyBody⟩ = none := by
   decide +kernel
 
 theorem definition_context_has_one_extra_bound_slot :

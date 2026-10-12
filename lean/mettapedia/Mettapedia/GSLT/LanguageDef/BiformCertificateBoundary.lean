@@ -2,6 +2,8 @@ import Mettapedia.GSLT.LanguageDef.BiformTheory
 import Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
 import Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The certificate boundary of a biform theory
 
@@ -10,7 +12,7 @@ native closed theory, and a proof calculus supplies the native proof fibre of
 that theorem.  Neither manufactures an executable checker.  This module adds
 exactly that: a certificate boundary is an independent checker proved
 fibrewise equivalent to the native calculus, which is the fourth of the four
-NIK service faces, the external certificate boundary, and nothing more.
+SemanticService service faces, the external certificate boundary, and nothing more.
 
 Certified biform theories and their routes form a category.  A route
 transports the biform theory and its certificates together; certificate
@@ -26,7 +28,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary
 
 open CategoryTheory
 open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 
 universe uSignature uHom uSentence uTerm uCertificate
@@ -58,7 +60,7 @@ theorem eventMeaningProofFibre_nonempty
 
 /-! ## Adding an exact certificate boundary -/
 
-/-- A biform theory becomes proof-carrying at the NIK boundary only after an
+/-- A biform theory becomes proof-carrying at the SemanticService boundary only after an
 independent checker is proved fibrewise equivalent to its native calculus. -/
 structure CertificateBoundary
     (theory : BiformTheory.{uSignature, uHom, uSentence, uTerm} institution)
@@ -143,8 +145,8 @@ namespace Mettapedia.GSLT.LanguageDef.CertifiedBiformTheory
 
 open CategoryTheory
 open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary
 
 universe uSignature uHom uSentence uTerm uCertificate

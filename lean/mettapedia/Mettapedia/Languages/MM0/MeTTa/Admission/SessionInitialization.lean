@@ -209,7 +209,7 @@ private theorem new_space_returns (bindings : Subst) (before : State) :
       (before.allocate []).2 (handleValue (before.allocate []).1) := by
   apply native_variable_call_returns program bindings before (before.allocate []).2
     "new-space" [] _ (by decide) (by decide) _ (by decide)
-  simp [StdLib.apply]
+  simp
 
 private theorem put_cell_returns (bindings : Subst) (before : State)
     (name : String) (expression value : Atom)

@@ -1,6 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.StagedScopedReflective.Presentation
 import Mettapedia.Languages.MeTTa.RuntimeSpec
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.GSLT.LanguageDef.LF.PureCorrespondence
 import Mettapedia.GSLT.Dynamics.WeightCost
 import Mettapedia.PLN.Evidence.BinEvNat
@@ -468,7 +468,7 @@ theorem pettaSuccessInterface_negative :
 /-! ### Fast correct-by-construction Pattern typing
 
 This is the named composite between a native MeTTa typing calculus and the
-certificate-free NIK decision interface.  Its scope is deliberately exact:
+certificate-free SemanticService decision interface.  Its scope is deliberately exact:
 direct annotations, the unknown top type, bare-symbol typing, and structural
 expression typing from PeTTa's live `MeTTaType` calculus.  It is not presented
 as a decision procedure for the recursive arrow fragment.
@@ -596,7 +596,7 @@ theorem FastTypedPattern.toUnknown {claim : PatternTypingClaim}
       Mettapedia.Languages.MeTTa.PeTTa.undefinedType⟩ :=
   ⟨FastPatternTyping.undefined⟩
 
-/-- Publication through NIK is available from the carried derivation, while
+/-- Publication through SemanticService is available from the carried derivation, while
 the language judgment follows directly from calculus soundness. -/
 theorem fast_pattern_typing_correct_by_construction
     {claim : PatternTypingClaim} (typed : FastTypedPattern claim) :
@@ -606,7 +606,7 @@ theorem fast_pattern_typing_correct_by_construction
   ⟨typed.derivation.language_sound,
     (fastPatternTypingKernel.correct claim).mpr typed.derivation⟩
 
-/-- The NIK publication boundary is exact for the native fragment. -/
+/-- The SemanticService publication boundary is exact for the native fragment. -/
 theorem fastPatternTyping_authority :
     fastPatternTypingKernel.toChecker.Authority FastPatternTyping :=
   fastPatternTypingKernel.authority
@@ -657,7 +657,7 @@ namespace DirectPatternTypingWitness
 /-- The deliberately too-rich two-tag format for the selected direct
 judgment.  It is used only as a negative exact-parity canary. -/
 def taggedProofSystem (direct : DirectPatternTypingWitness) :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.NativeProofSystem
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.NativeProofSystem
       PatternTypingClaim where
   ProofObject := Bool
   Judges := fun _ claim => direct.Meaning claim
@@ -694,7 +694,7 @@ below. -/
 
 namespace FastPatternParity
 
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-- The canonical native proof system for the proposition-valued fast typing
 judgment.  It deliberately retains no proof tag. -/
@@ -774,11 +774,11 @@ kernel, positive and negative claims, and the proof-tag counterexample are all
 required together. -/
 structure NativeAuthorityParityWitness
     (direct : DirectPatternTypingWitness) where
-  guest : Mettapedia.GSLT.LanguageDef.NIKMetalogic.NativeProofSystem
+  guest : Mettapedia.GSLT.LanguageDef.SemanticEvidence.NativeProofSystem
     PatternTypingClaim
-  nativeKernel : Mettapedia.GSLT.LanguageDef.NIKMetalogic.NativeProofKernel
+  nativeKernel : Mettapedia.GSLT.LanguageDef.SemanticEvidence.NativeProofKernel
     guest
-  parity : Mettapedia.GSLT.LanguageDef.NIKMetalogic.CertificateEquivalence
+  parity : Mettapedia.GSLT.LanguageDef.SemanticEvidence.CertificateEquivalence
     direct.kernel.toChecker guest
   computes_directly : ∀ claim proof,
     nativeKernel.decide claim proof = direct.kernel.decide claim
@@ -789,7 +789,7 @@ structure NativeAuthorityParityWitness
   fibres_subsingleton : ∀ claim, Subsingleton (guest.ProofFibre claim)
   tagged_format_not_exact :
     ¬ Nonempty
-      (Mettapedia.GSLT.LanguageDef.NIKMetalogic.CertificateEquivalence
+      (Mettapedia.GSLT.LanguageDef.SemanticEvidence.CertificateEquivalence
         direct.kernel.toChecker direct.taggedProofSystem)
 
 /-- Concrete authority-from-birth witness for the direct Pattern fragment. -/
@@ -846,10 +846,10 @@ the same square every hosted guest owes.  The generic interface below states
 the proof-fibre contract; each realization establishes parity only for its
 own declared judgment and fragment. -/
 
-/-- The guest proof system is the generic NIK proof-object boundary, not a
+/-- The guest proof system is the generic SemanticService proof-object boundary, not a
 second native-theory-specific definition. -/
 abbrev GuestKernelSpec (Claim : Type uNativeClaim) :=
-  Mettapedia.GSLT.LanguageDef.NIKMetalogic.NativeProofSystem.{
+  Mettapedia.GSLT.LanguageDef.SemanticEvidence.NativeProofSystem.{
     uNativeClaim, uNativeProof} Claim
 
 /-- Primary parity preserves the entire accepted/native proof fibre.  This is
@@ -857,17 +857,17 @@ strictly stronger than decode-only parity and rules out ignored proof tags. -/
 abbrev KernelParity {Claim : Type uNativeClaim}
     {Certificate : Type uNativeCertificate}
     (checker : Checker Claim Certificate) (guest : GuestKernelSpec Claim) :=
-  Mettapedia.GSLT.LanguageDef.NIKMetalogic.CertificateEquivalence checker guest
+  Mettapedia.GSLT.LanguageDef.SemanticEvidence.CertificateEquivalence checker guest
 
 /-- A computing realization checks native proof objects directly. -/
 abbrev ComputingRealization {Claim : Type uNativeClaim}
     (guest : GuestKernelSpec Claim) :=
-  Mettapedia.GSLT.LanguageDef.NIKMetalogic.NativeProofKernel guest
+  Mettapedia.GSLT.LanguageDef.SemanticEvidence.NativeProofKernel guest
 
-/-- A decided relation is shared with the generic NIK metalogic.  The native
+/-- A decided relation is shared with the generic SemanticService metalogic.  The native
 theory's conversion relation owes an instance of this exact interface. -/
 abbrev DecidedRelation {α : Type} (R : α → α → Prop) :=
-  Mettapedia.GSLT.LanguageDef.NIKMetalogic.DecidedRelation α R
+  Mettapedia.GSLT.LanguageDef.SemanticEvidence.DecidedRelation α R
 
 /-! ## §10 The assembled candidate -/
 
@@ -897,9 +897,9 @@ fibre are equivalent through the native proof fibre.  This is the precise
 parity square; it does not identify the two certificate languages. -/
 def primaryToNativeKernel
     (theory : AssembledNativeTheory) (claim : PatternTypingClaim) :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.AcceptedCertificateFibre
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.AcceptedCertificateFibre
         theory.audit.directTyping.kernel.toChecker claim ≃
-      Mettapedia.GSLT.LanguageDef.NIKMetalogic.AcceptedCertificateFibre
+      Mettapedia.GSLT.LanguageDef.SemanticEvidence.AcceptedCertificateFibre
         theory.audit.authorityParity.nativeKernel.toChecker claim :=
   (theory.audit.authorityParity.parity.fibreEquiv claim).trans
     (theory.audit.authorityParity.nativeKernel.certificateEquivalence.fibreEquiv

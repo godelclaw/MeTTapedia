@@ -25,6 +25,27 @@ This is, in spirit, a Lean port and extension of the **FOET** (formal ontology o
 ethical theories) semantic core, with the Gewirth lane following the
 Fuenmayor-Benzmüller Isabelle/HOL formalization.
 
+## Recipient participation and care development
+
+`RecipientCenteredCare.lean` separates care scope, recipient authority,
+received decisions, available choices and recipient-indexed acceptance.
+Its repair bridge retains the exact change occurrence and reuses
+`Cybernetics.StructurePreservingRepair`. Authorized preference revision
+preserves presence and revision capacity; a matching endpoint without an
+actual recipient decision, a helper-signed decision, erasure and stale
+approvals fail the declared conditions. Authentication in the worked control
+uses identity tags and local versions, not a cryptographic implementation.
+
+`CareScopeDynamics.lean` constructs relational reachability as Mathlib's
+`ClosureOperator` and proves finite stabilization of actual iterative scope
+expansion. Connected instances converge from nonempty seeds to universal
+scope. A reciprocally linked disconnected instance instead reaches a proper
+absorbing scope and supports a coherent intention plan. These comparisons
+expose the developmental premises a two-attractor conjecture needs; they
+do not identify scope membership, task completion or preference acceptance
+with phenomenal wellbeing. Recipient choices and care intensities remain
+separate from any scalar score.
+
 ## Origin and Attribution
 
 The Gewirth lane is a **direct port** into Lean 4 of the Isabelle/HOL

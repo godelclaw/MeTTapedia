@@ -72,7 +72,7 @@ private def genLanguage : LanguageDef :=
     rewrites := [rewriteAB] }
 
 private theorem genPremisesSupported :
-    LanguageDef.directTraceSupported genLanguage = true := by
+    languageDirectTraceSupported genLanguage = true := by
   rfl
 
 private def genTraceLanguage : DirectTraceLanguage :=

@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.InitialModalSchema
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
 # What isolates Pure: internalization of the hypothetical judgment
@@ -36,7 +36,7 @@ namespace Mettapedia.OSLF.Framework.PureInternalization
 
 open Mettapedia.OSLF.Framework.InitialModalSchema
 open Mettapedia.Logic
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.OSLF.Formula
 

@@ -80,6 +80,67 @@ def trace (event : {source target : Object} → Step source target → Event)
   | .refl _ => []
   | .cons step rest => event step :: trace event rest
 
+/-- An event is a checked edge only when the actual validator produces its
+stated target at this source. The event itself remains part of the evidence. -/
+abbrev CheckedEvent (check : Object → Event → Option Object) (source target : Object) :=
+  { event : Event // check source event = some target }
+
+/-- Sequential validation describes exactly the routes carrying the supplied
+ordered events. Every later event is checked at the preceding actual target. -/
+theorem foldlM_iff_checked_route (check : Object → Event → Option Object)
+    (source target : Object) (events : List Event) :
+    events.foldlM (init := source) check = some target ↔
+      ∃ route : Route (CheckedEvent check) source target,
+        trace (fun edge => edge.val) route = events := by
+  induction events generalizing source target with
+  | nil =>
+      constructor
+      · intro accepted
+        simp only [List.foldlM_nil, Option.pure_def, Option.some.injEq] at accepted
+        subst target
+        exact ⟨.refl source, rfl⟩
+      · rintro ⟨route, empty⟩
+        cases route with
+        | refl => rfl
+        | cons edge rest => simp [trace] at empty
+  | cons event events ih =>
+      constructor
+      · intro accepted
+        cases checked : check source event with
+        | none => simp [List.foldlM_cons, checked] at accepted
+        | some middle =>
+            have continued : events.foldlM (init := middle) check = some target := by
+              simpa only [List.foldlM_cons, checked, Option.bind_eq_bind, Option.bind_some] using accepted
+            obtain ⟨rest, same⟩ := (ih middle target).mp continued
+            exact ⟨.cons ⟨event, checked⟩ rest, by simp only [trace, same]⟩
+      · rintro ⟨route, same⟩
+        cases route with
+        | refl => simp [trace] at same
+        | @cons _ middle _ edge rest =>
+            have parts := List.cons.inj same
+            have continued := (ih middle target).mpr ⟨rest, parts.2⟩
+            simpa only [List.foldlM_cons, ← parts.1, edge.property,
+              Option.bind_eq_bind, Option.bind_some] using continued
+
+namespace Controls
+
+private def successorCheck (source event : Nat) : Option Nat :=
+  if event = source + 1 then some event else none
+
+theorem checked_events_compose :
+    ∃ route : Route (CheckedEvent successorCheck) 0 3,
+      trace (fun edge => edge.val) route = [1, 2, 3] :=
+  (foldlM_iff_checked_route successorCheck 0 3 [1, 2, 3]).mp (by decide +kernel)
+
+/-- A future endpoint cannot substitute for the actual preceding endpoint. -/
+theorem wrong_preceding_event_refused :
+    ¬ ∃ route : Route (CheckedEvent successorCheck) 0 3,
+      trace (fun edge => edge.val) route = [2, 3] := by
+  rw [← foldlM_iff_checked_route]
+  decide +kernel
+
+end Controls
+
 /-- Transport of endpoints does not change the event record. -/
 theorem trace_heq
     (event : {source target : Object} → Step source target → Event)
@@ -171,3 +232,6 @@ theorem trace_receipt_injective
 end Mettapedia.GSLT.Ultrainfinite.Route
 
 #print axioms Mettapedia.GSLT.Ultrainfinite.Route.trace_receipt_injective
+#print axioms Mettapedia.GSLT.Ultrainfinite.Route.foldlM_iff_checked_route
+#print axioms Mettapedia.GSLT.Ultrainfinite.Route.Controls.checked_events_compose
+#print axioms Mettapedia.GSLT.Ultrainfinite.Route.Controls.wrong_preceding_event_refused

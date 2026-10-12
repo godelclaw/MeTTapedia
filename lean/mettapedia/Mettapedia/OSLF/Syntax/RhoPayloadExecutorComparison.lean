@@ -555,7 +555,7 @@ theorem rhoStepWithDrop_simulation {free : FreeSortContext} {bound : List String
     (sourceTyped : ProcWellSorted rhoReflectivePresentation free bound source)
     (step : RhoCombinedInterpretedStep.RhoStepWithDrop source target)
     {s₀ : Term sig [] Srt.pr} (hs : tProc (Env.empty []) source = some s₀) :
-    ∃ t₀, tProc (Env.empty []) target = some t₀ ∧ Steps bookRules s₀ t₀ := by
+    ∃ t₀, tProc (Env.empty []) target = some t₀ ∧ Steps dropExecutionRules s₀ t₀ := by
   obtain ⟨fuel, step⟩ := step
   refine simulation rhoCalcWithDrop [drop] ?_ (fun _ code => steps_drop code)
     fuel sourceTyped step s₀ hs
@@ -1661,10 +1661,10 @@ theorem sc_first {a a' : Pattern} (rest : List Pattern) (h : StructuralCongruenc
 profile from the translation of an admitted closed process is a step of the
 authored COMM/ParCong/Drop executor from a structurally congruent
 rearrangement, and its reduct translates into the target class. -/
-theorem book_reflection {free : FreeSortContext} {P : Pattern}
+theorem dropExecution_reflection {free : FreeSortContext} {P : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] P)
     {s₀ : Term sig [] Srt.pr} (hs : tProc (Env.empty []) P = some s₀)
-    {u : Term sig [] Srt.pr} (step : Steps bookRules s₀ u) :
+    {u : Term sig [] Srt.pr} (step : Steps dropExecutionRules s₀ u) :
     ∃ P₁ P', StructuralCongruence P P₁ ∧ RhoCombinedInterpretedStep.RhoStepWithDrop P₁ P' ∧
       ∃ t, tProc (Env.empty []) P' = some t ∧ cls t = cls u := by
   rcases steps_inversion (rest := [drop]) (.inr rfl) step with
@@ -1789,9 +1789,9 @@ theorem control_free_drop :
       tProc (Env.empty []) freeDrop = some (drpT (quoT nilT)) ∧
       (∀ target, ¬ RhoStep freeDrop target) ∧
       (∀ target, ¬ Steps strictRules (drpT (quoT (nilT : Term sig [] Srt.pr))) target) ∧
-      Steps bookRules (drpT (quoT (nilT : Term sig [] Srt.pr))) nilT :=
+      Steps dropExecutionRules (drpT (quoT (nilT : Term sig [] Srt.pr))) nilT :=
   ⟨rfl, rfl, no_freeDrop_step, fun target => drop_inert_strict nilT target,
-    drop_runs_book nilT⟩
+    drop_runs_dropExecution nilT⟩
 
 end Controls
 
@@ -1802,6 +1802,6 @@ end Controls
 #print axioms control_free_drop
 #print axioms closed_admitted_translates
 #print axioms strict_reflection
-#print axioms book_reflection
+#print axioms dropExecution_reflection
 
 end Mettapedia.OSLF.Binding.RhoPayloadPresentation

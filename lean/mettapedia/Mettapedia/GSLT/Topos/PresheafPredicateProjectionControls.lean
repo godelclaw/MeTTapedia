@@ -16,7 +16,7 @@ category for generated dependent syntax.
 
 namespace Mettapedia.GSLT.Topos.PredicateProjectionControls
 
-open CategoryTheory CategoryTheory.Functor Opposite
+open _root_.CategoryTheory _root_.CategoryTheory.Functor Opposite
 
 set_option autoImplicit false
 

@@ -78,7 +78,7 @@ theorem FuzzyCapacity.countingCapacity_ge_nat_div_iff_card_ge_of_card_eq
         ((FuzzyCapacity.countingCapacity (U := U) A : unitInterval) : ℝ) ↔
       k ≤ A.ncard := by
   classical
-  haveI : Fintype A := Set.Finite.fintype (Set.toFinite A)
+  have : Fintype A := Set.Finite.fintype (Set.toFinite A)
   have hUposNat : 0 < Fintype.card U := by
     simpa [hCard] using hNpos
   have hNposR : 0 < (N : ℝ) := by
@@ -231,8 +231,8 @@ noncomputable def predicateFuzzyForAllCountingCardinalityThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       have hNearEq :
           nearOneFraction params
               (predicateCrispProfile
@@ -620,7 +620,7 @@ theorem FuzzyCapacity.nat_div_le_one_sub_countingCapacity_iff_card_add_le_of_car
         1 - ((FuzzyCapacity.countingCapacity (U := U) A : unitInterval) : ℝ) ↔
       A.ncard + k ≤ N := by
   classical
-  haveI : Fintype A := Set.Finite.fintype (Set.toFinite A)
+  have : Fintype A := Set.Finite.fintype (Set.toFinite A)
   have hUposNat : 0 < Fintype.card U := by
     simpa [hCard] using hNpos
   have hNposR : 0 < (N : ℝ) := by
@@ -716,8 +716,8 @@ noncomputable def predicateFuzzyThereExistsCountingCardinalityThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       have hNearEq :
           nearZeroFraction params
               (predicateCrispProfile
@@ -949,7 +949,7 @@ noncomputable def predicateFuzzyForAllCountingExistsExactThresholdCut
         (Base := Base) (Const := WithParams Const) σ p (hp0 ρ i))
     hObj hMeasurable hε0 1 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsFormula_iff_one_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 σ p)
@@ -1454,7 +1454,7 @@ noncomputable def predicateFuzzyThereExistsCountingExistsExactThresholdCut
         (Base := Base) (Const := WithParams Const) σ p (hp0 ρ i))
     hObj hMeasurable hε0 1 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsFormula_iff_one_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 σ p)
@@ -1759,7 +1759,7 @@ noncomputable def predicateFuzzyForAllCountingUniversalExactThresholdCut
         (Base := Base) (Const := WithParams Const) σ p (hp0 ρ i))
     hObj hMeasurable hε0 N N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateForAllFormula_iff_card_le_ncard_extension_of_card_eq
           (Base := Base) (Const := WithParams Const) M.1 σ p N (hCardEq M))
@@ -2062,7 +2062,7 @@ noncomputable def predicateFuzzyThereExistsCountingUniversalExactThresholdCut
         (Base := Base) (Const := WithParams Const) σ p (hp0 ρ i))
     hObj hMeasurable hε0 N N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateForAllFormula_iff_card_le_ncard_extension_of_card_eq
           (Base := Base) (Const := WithParams Const) M.1 σ p N (hCardEq M))
@@ -2367,7 +2367,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastTwoBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable hε0 2 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -2678,7 +2678,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastNBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
     hObj hMeasurable hε0 k N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -2719,7 +2719,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastNBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
     hObj hMeasurable hε0 k N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -2774,7 +2774,7 @@ theorem predicateFuzzyForAllCountingAtLeastNBaseCut_width_eq_zero_iff_decides
           (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
       hObj hMeasurable hε0 k N hNpos hPCL hCardEq
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
             (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -2830,7 +2830,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastNBaseCut_width_eq_zero_iff_decid
           (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
       hObj hMeasurable hε0 k N hNpos hPCL hCardEq
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
             (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -2871,7 +2871,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable hε0 2 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -3179,7 +3179,7 @@ noncomputable def predicateFuzzyForAllCountingAtLeastThreeBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable hε0 3 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastThreeBaseFormula_iff_three_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -3487,7 +3487,7 @@ noncomputable def predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable hε0 3 N hNpos hPCL hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastThreeBaseFormula_iff_three_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)

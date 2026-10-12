@@ -1,5 +1,6 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.Computability.ComputationalTrinityCrown
-import Mettapedia.Languages.Megalodon.NIKNativeProof
+import Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 import Mathlib.CategoryTheory.Discrete.Basic
 
 /-!
@@ -25,15 +26,15 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.Megalodon.ComputationalTrinityAuthority
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.GSLT
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Computability.ComputationalTrinity
 open Mettapedia.Computability.FragmentwiseComputationalTrinity
 open Mettapedia.Computability.ComputationalTrinityCrown
-open Mettapedia.Languages.Megalodon.NIKNativeProof
+open Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 open Mettapedia.Languages.Megalodon.MathdataKernel
 
 abbrev Context := CategoryTheory.Discrete Unit
@@ -100,7 +101,7 @@ def definitionFragment : Constraint claimFace where
 
 /-- Identity interpretation of the explicit discrete claim presentation. -/
 def claimMaterial : MaterialPresentation claimFace where
-  presentation := GSLT.discrete Claim
+  presentation := GSLT.stepFree Claim
   realize := CategoryTheory.CategoryStruct.id claimFace
   equation_sound := by
     intro context left right equivalent
@@ -109,7 +110,7 @@ def claimMaterial : MaterialPresentation claimFace where
 /-- Identity interpretation of the explicit submitted-occurrence
 presentation. -/
 def submissionMaterial : MaterialPresentation submissionFace where
-  presentation := GSLT.discrete Submission
+  presentation := GSLT.stepFree Submission
   realize := CategoryTheory.CategoryStruct.id submissionFace
   equation_sound := by
     intro context left right equivalent
@@ -299,7 +300,7 @@ def claimEquiv : Claim ≃ WrappedClaim where
 /-- The wrapper changes syntax while preserving and reflecting both authored
 equations and primitive steps of the discrete presentation. -/
 def claimPresentationIso : StructuralIsomorphism
-    (GSLT.discrete Claim) (GSLT.discrete WrappedClaim) where
+    (GSLT.stepFree Claim) (GSLT.stepFree WrappedClaim) where
   termEquiv := claimEquiv
   equiv_iff := by
     intro left right

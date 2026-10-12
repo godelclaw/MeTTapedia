@@ -16,8 +16,8 @@ set_option autoImplicit false
 
 namespace Mettapedia.OSLF.Binding.RepresentedReductionTheory
 
-open CategoryTheory
-open CategoryTheory.Limits
+open _root_.CategoryTheory
+open _root_.CategoryTheory.Limits
 open Mettapedia.GSLT.Meredith
 open Mettapedia.OSLF.Binding.StableRewriteRelationBoundary
 

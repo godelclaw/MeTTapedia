@@ -1,79 +1,23 @@
 import Mettapedia.Languages.MeTTa.HE.ExecutableBoundary
 
 /-!
-# HE Evaluator Correctness
+# HE recursive evaluator model correspondence
 
-Soundness and exactness of the 6 mutual evaluation functions in `Eval.lean`
-against the declarative spec in `EvalSpec.lean`.
+The six fuel-indexed functions in `Eval.lean` are sound for the judgments in
+`EvalSpec.lean`. A synchronous relation also characterizes their results at
+every fuel value. The exported certification boundary joins a declarative
+judgment with stable eventual execution; the coarse judgment alone does not
+characterize that execution.
 
-## Why This Matters
+`EvalSpec` still uses computable matching and typing leaves as premises. It is
+separate from the executable-independent `Spec.Eval` judgments. These model
+proofs do not establish general refinement of the native HE interpreter,
+CeTTa, PeTTa or Prime. Native bindings, control, effects and the differences
+between evaluation profiles require their own representation and trace laws.
 
-A verified evaluator with a spec-implementation biconditional is the
-fundamental unit of trustworthy language infrastructure. Soundness says
-the runtime doesn't lie; completeness says the spec doesn't miss anything.
-Together they give a **portable certificate**: the biconditional can be
-translated to MM0, Metamath, or any future MeTTa dialect's proof system,
-because it characterizes the evaluator's behavior *exactly* — no more,
-no less.
-
-For MeTTa specifically, multiple implementations exist (HE, PeTTa, CeTTa,
-MeTTaIL). The coarse declarative spec in `EvalSpec.lean` is shared, while
-implementation-facing refinements can sit above it when a runtime exposes
-behavior the coarse semantics intentionally abstracts over. This is how you get
-a verified language *ecosystem*, not just a verified implementation: one
-canonical semantics, plus precise executable refinement layers where needed.
-
-This is a concrete step toward the QED manifesto's vision: a global library
-of formally verified computational semantics, where trust is established
-once in the proof and carried everywhere by the certificate.
-
-The public theorem we want is deliberately user-facing and portable. In HE,
-the coarse declarative judgment is broader than stable executable behavior, so
-the exported theorem interface lives in `ExecutableBoundary.lean` rather than forcing
-the evaluator to coincide with the coarse spec directly. The private sync model
-in this file is not the final public story; it is the internal exact bridge
-that makes the refined public story provable.
-
-This mirrors the successful mm-lean4 architecture. There, the public boundary
-is not the internal operational witness but an acceptance/spec biconditional.
-Likewise here, the long-term target is not "Sync is exact" but "public
-implementation-refined HE certification iff executable stable reachability".
-The private bridge exists to make that public theorem honest and maintainable.
-
-One important design lesson from this development is that not every useful
-proof invariant belongs in the pure public spec. Evaluator-relative notions
-such as fuel-indexed filtered soundness live here in `Correctness.lean`
-because they mention the evaluator's computed result sets. That is not a
-weakness; it is good abstraction hygiene. Pure spec stays pure, executable
-invariants stay attached to the executable proof layer, and the public
-certification biconditional composes them at the right boundary.
-
-## Architecture
-
-**Layer 1 — Soundness** (proved):
-- Combined `AllSound fuel` (6-way conjunction) by `Nat.rec` on fuel
-- Individual theorems: evaluator membership → `EvalSpec` derivation
-
-**Layer 2 — Private exactness** (proved):
-- Fuel-synchronous mirror (`*Sync` inductives) that tracks the evaluator
-  step-for-step
-- `allEvalToSync` / `allSyncToEval` by `Nat.rec`: evaluator ↔ sync at each fuel
-- Per-function `*_exact_at` biconditionals
-
-**Layer 3 — Public reachability soundness** (proved):
-- `∃ fuel, r ∈ evaluator ... fuel → EvalSpec ... r`
-- coarse-spec soundness remains available at the shared declarative boundary
-
-**Layer 4 — Executable refinement boundary** (proved):
-- `ExecutableBoundary.EvalAtomStablyReaches`
-- `ExecutableBoundary.EvalAtomCertified`
-- theorem interface: refined HE certification iff stable eventual evaluator reach
-
-**Layer 5 — Counterexample-guided boundary control** (proved):
-- coarse `EvalSpec.EvalAtom` does not imply certification
-- one-shot filtered witnesses do not imply certification
-- the refined executable layer is therefore additive, not a rewrite of
-  `EvalSpec.lean`
+Argument computation uses the interpreter's `(Ok (arguments ...))` success
+protocol. Its shape and arbitrary raw-data preservation laws are derived in
+`ArgumentResultCorrectness`.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE
@@ -84,6 +28,18 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 
 private lemma mem_singleton_eq {α : Type*} {a b : α} (h : a ∈ [b]) : a = b := by
   simp [List.mem_cons] at h; exact h
+
+/-- Split the executable singleton wrapper into the two source outcomes. -/
+private theorem tupleSingleton_map (results : ResultSet) :
+    results.map tupleSingleton = results.flatMap fun (value, selected) =>
+      if isEmptyOrError value then [(value, selected)]
+      else [(.expression [value], selected)] := by
+  induction results with
+  | nil => rfl
+  | cons result rest ih =>
+      rcases result with ⟨value, selected⟩
+      cases ordinary : isEmptyOrError value <;>
+        simp [tupleSingleton, ordinary, ih]
 
 private theorem eqMatch_sound
     (space : Space) (dispatch : GroundedDispatch) (atom type_ : Atom) (b : Bindings)
@@ -229,10 +185,24 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
     -- interpretTuple
     case interpTuple_step =>
       intro space dispatch atom b r hr
-      simp only [interpretTuple] at hr
+      simp only [interpretTuple, tupleSingleton_map] at hr
       match atom with
       | .expression [single] =>
-        exact InterpretTuple.singleton single b r (ih_eval _ _ _ _ _ _ hr)
+        simp only [List.mem_flatMap] at hr
+        obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
+        split at hr2
+        · rename_i h_err
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+          subst r
+          exact InterpretTuple.singleton_error single b (headR, headB)
+            (ih_eval _ _ _ _ _ _ h_head_mem) h_err
+        · rename_i h_err_ne
+          have h_ok : isEmptyOrError headR = false := by
+            cases h : isEmptyOrError headR <;> simp_all
+          simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+          subst r
+          exact InterpretTuple.singleton single b (headR, headB)
+            (ih_eval _ _ _ _ _ _ h_head_mem) h_ok
       | .expression (hd :: hd2 :: rest) =>
         simp only [List.mem_flatMap] at hr
         obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
@@ -266,7 +236,10 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
               (headR, headB) (tailR, tailB) (by simp)
               (ih_eval _ _ _ _ _ _ h_head_mem) h_err_false
               (ih_tuple _ _ _ _ _ h_tail_mem) h_terr_false
-      | .expression [] => simp at hr
+      | .expression [] =>
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
+        subst r
+        exact InterpretTuple.nil b
       | .symbol _ => simp at hr
       | .var _ => simp at hr
       | .grounded _ => simp at hr
@@ -309,13 +282,13 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
               (ih_eval _ _ _ _ _ _ h_head_mem) h_head_ok
               (ih_args _ _ _ _ _ _ h_tail_mem) h_terr
           · rename_i h_terr_ne
-            have h_terr_false : isEmptyOrError tailR = false := by
-              cases h : isEmptyOrError tailR <;> simp_all
+            have h_args_success : argumentsSucceeded tailR = true := by
+              cases h : argumentsSucceeded tailR <;> simp_all
             subst hr3
             exact InterpretArgs.cons_ok arg remArgs t remTypes b
               (headR, headB) (tailR, tailB)
               (ih_eval _ _ _ _ _ _ h_head_mem) h_head_ok
-              (ih_args _ _ _ _ _ _ h_tail_mem) h_terr_false
+              (ih_args _ _ _ _ _ _ h_tail_mem) h_args_success
       | [], _ :: _ => simp [interpretArgs] at hr
       | _ :: _, [] => simp [interpretArgs] at hr
     -- interpretFunction
@@ -348,13 +321,13 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                 (ih_eval _ _ _ _ _ _ h_head_mem) h_err_false
                 (ih_args _ _ _ _ _ _ h_tail_mem) h_terr
             · rename_i h_terr_ne
-              have h_terr_false : isEmptyOrError tailR = false := by
-                cases h : isEmptyOrError tailR <;> simp_all
+              have h_args_success : argumentsSucceeded tailR = true := by
+                cases h : argumentsSucceeded tailR <;> simp_all
               obtain ⟨rfl, rfl⟩ := hr3
               exact InterpretFunction.head_ok_tail_ok _ opType retType b
                 op args argTypes (headR, headB) (tailR, tailB) rfl h_argt
                 (ih_eval _ _ _ _ _ _ h_head_mem) h_err_false
-                (ih_args _ _ _ _ _ _ h_tail_mem) h_terr_false
+                (ih_args _ _ _ _ _ _ h_tail_mem) h_args_success
           | none => simp only [h_argt, List.not_mem_nil] at hr2
       | .symbol _ => simp [interpretFunction] at hr
       | .var _ => simp [interpretFunction] at hr
@@ -809,6 +782,7 @@ private theorem allSound : ∀ fuel, AllSound fuel := by
                 (tupleR, tupleB) r h_exists
                 (ih_tuple _ _ _ _ _ h_tuple_mem)
                 (ih_call _ _ _ _ _ _ hr3)
+                (by simp [Atom.unit])
           · -- allResults empty, hasNonFunc = true → !hasNonFunc is false → []
             rename_i h_empty
             simp at hr
@@ -1146,7 +1120,7 @@ private inductive InterpretFunctionSync (space : Space) (dispatch : GroundedDisp
       (h_head : EvalAtomSync space dispatch n op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgsSync space dispatch n args argTypes headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretFunctionSync space dispatch (n + 1) atom opType b tailResult
   | head_ok_tail_ok (n : Nat) (atom opType : Atom) (b : Bindings)
       (op : Atom) (args argTypes : List Atom) (headResult tailResult : ResultPair)
@@ -1155,15 +1129,15 @@ private inductive InterpretFunctionSync (space : Space) (dispatch : GroundedDisp
       (h_head : EvalAtomSync space dispatch n op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgsSync space dispatch n args argTypes headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretFunctionSync space dispatch (n + 1) atom opType b
-        (.expression (headResult.1 :: atomElements tailResult.1), tailResult.2)
+        (.expression (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Private synchronous model for `interpretArgs`. -/
 private inductive InterpretArgsSync (space : Space) (dispatch : GroundedDispatch) :
     Nat → List Atom → List Atom → Bindings → ResultPair → Prop where
   | nil (n : Nat) (b : Bindings) :
-      InterpretArgsSync space dispatch (n + 1) [] [] b (Atom.unit, b)
+      InterpretArgsSync space dispatch (n + 1) [] [] b (argumentPacket [], b)
   | head_changed_error (n : Nat) (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult : ResultPair)
       (h_head : EvalAtomSync space dispatch n a t b headResult)
@@ -1175,22 +1149,29 @@ private inductive InterpretArgsSync (space : Space) (dispatch : GroundedDispatch
       (h_head : EvalAtomSync space dispatch n a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgsSync space dispatch n as ts headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretArgsSync space dispatch (n + 1) (a :: as) (t :: ts) b tailResult
   | cons_ok (n : Nat) (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult tailResult : ResultPair)
       (h_head : EvalAtomSync space dispatch n a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgsSync space dispatch n as ts headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretArgsSync space dispatch (n + 1) (a :: as) (t :: ts) b
-        (.expression (headResult.1 :: atomElements tailResult.1), tailResult.2)
+        (argumentPacket (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Private synchronous model for `interpretTuple`. -/
 private inductive InterpretTupleSync (space : Space) (dispatch : GroundedDispatch) :
     Nat → Atom → Bindings → ResultPair → Prop where
+  | nil (n : Nat) (b : Bindings) :
+      InterpretTupleSync space dispatch (n + 1) Atom.unit b (Atom.unit, b)
   | singleton (n : Nat) (a : Atom) (b : Bindings) (r : ResultPair)
-      (h_eval : EvalAtomSync space dispatch n a Atom.undefinedType b r) :
+      (h_eval : EvalAtomSync space dispatch n a Atom.undefinedType b r)
+      (h_ok : isEmptyOrError r.1 = false) :
+      InterpretTupleSync space dispatch (n + 1) (.expression [a]) b (.expression [r.1], r.2)
+  | singleton_error (n : Nat) (a : Atom) (b : Bindings) (r : ResultPair)
+      (h_eval : EvalAtomSync space dispatch n a Atom.undefinedType b r)
+      (h_error : isEmptyOrError r.1 = true) :
       InterpretTupleSync space dispatch (n + 1) (.expression [a]) b r
   | head_error (n : Nat) (hd : Atom) (tl : List Atom) (b : Bindings)
       (headResult : ResultPair)
@@ -1429,7 +1410,7 @@ This keeps the proof load below the harder `evalAtom`/`interpretExpression` fron
     (args types : List Atom) (b : Bindings) (n : Nat) :
     interpretArgs space dispatch args types b (n + 1) =
       match args, types with
-      | [], [] => [(Atom.unit, b)]
+      | [], [] => [(argumentPacket [], b)]
       | arg :: remainingArgs, t :: remainingTypes =>
         let headResults := evalAtom space dispatch arg t b n
         headResults.flatMap fun (headR, headB) =>
@@ -1438,16 +1419,19 @@ This keeps the proof load below the harder `evalAtom`/`interpretExpression` fron
             let tailResults :=
               interpretArgs space dispatch remainingArgs remainingTypes headB n
             tailResults.map fun (tailR, tailB) =>
-              if isEmptyOrError tailR then (tailR, tailB)
-              else (.expression (headR :: atomElements tailR), tailB)
+              if argumentsSucceeded tailR = false then (tailR, tailB)
+              else (argumentPacket (headR :: argumentValues tailR), tailB)
       | _, _ => [] := rfl
 
 @[simp] private theorem interpretTuple_succ (space : Space) (dispatch : GroundedDispatch)
     (atom : Atom) (b : Bindings) (n : Nat) :
     interpretTuple space dispatch atom b (n + 1) =
       match atom with
+      | .expression [] => [(Atom.unit, b)]
       | .expression [single] =>
-        evalAtom space dispatch single Atom.undefinedType b n
+        (evalAtom space dispatch single Atom.undefinedType b n).flatMap fun (value, selected) =>
+          if isEmptyOrError value then [(value, selected)]
+          else [(.expression [value], selected)]
       | .expression (hd :: hd2 :: rest) =>
         let headResults := evalAtom space dispatch hd Atom.undefinedType b n
         headResults.flatMap fun (headR, headB) =>
@@ -1458,7 +1442,9 @@ This keeps the proof load below the harder `evalAtom`/`interpretExpression` fron
             tailResults.map fun (tailR, tailB) =>
               if isEmptyOrError tailR then (tailR, tailB)
               else (.expression (headR :: atomElements tailR), tailB)
-      | _ => [] := rfl
+      | _ => [] := by
+  simp only [interpretTuple, tupleSingleton_map]
+  rfl
 
 @[simp] private theorem interpretFunction_succ (space : Space) (dispatch : GroundedDispatch)
     (atom opType : Atom) (b : Bindings) (n : Nat) :
@@ -1473,8 +1459,8 @@ This keeps the proof load below the harder `evalAtom`/`interpretExpression` fron
             | some argTypes =>
               let tailResults := interpretArgs space dispatch args argTypes headB n
               tailResults.map fun (tailR, tailB) =>
-                if isEmptyOrError tailR then (tailR, tailB)
-                else (.expression (headR :: atomElements tailR), tailB)
+                if argumentsSucceeded tailR = false then (tailR, tailB)
+                else (.expression (headR :: argumentValues tailR), tailB)
             | none => []
       | _ => [] := rfl
 
@@ -1533,13 +1519,13 @@ private theorem interpretArgs_eval_to_sync
                 (h_eval n arg t b (headR, headB) h_head_mem) h_head_ok
                 (ih remArgs remTypes headB (tailR, tailB) h_tail_mem) h_terr
             · rename_i h_terr_ne
-              have h_terr_false : isEmptyOrError tailR = false := by
-                cases h : isEmptyOrError tailR <;> simp_all
+              have h_args_success : argumentsSucceeded tailR = true := by
+                cases h : argumentsSucceeded tailR <;> simp_all
               subst hr3
               exact InterpretArgsSync.cons_ok n arg remArgs t remTypes b
                 (headR, headB) (tailR, tailB)
                 (h_eval n arg t b (headR, headB) h_head_mem) h_head_ok
-                (ih remArgs remTypes headB (tailR, tailB) h_tail_mem) h_terr_false
+                (ih remArgs remTypes headB (tailR, tailB) h_tail_mem) h_args_success
       | [], _ :: _ =>
           simp [interpretArgs_succ] at hr
       | _ :: _, [] =>
@@ -1562,8 +1548,21 @@ private theorem interpretTuple_eval_to_sync
       intro atom b r hr
       match atom with
       | .expression [single] =>
-          exact InterpretTupleSync.singleton n single b r
-            (h_eval n single Atom.undefinedType b r (by simpa [interpretTuple_succ] using hr))
+          simp only [interpretTuple_succ, List.mem_flatMap] at hr
+          obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
+          split at hr2
+          · rename_i h_err
+            simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+            subst r
+            exact InterpretTupleSync.singleton_error n single b (headR, headB)
+              (h_eval n single Atom.undefinedType b (headR, headB) h_head_mem) h_err
+          · rename_i h_err_ne
+            have h_ok : isEmptyOrError headR = false := by
+              cases h : isEmptyOrError headR <;> simp_all
+            simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+            subst r
+            exact InterpretTupleSync.singleton n single b (headR, headB)
+              (h_eval n single Atom.undefinedType b (headR, headB) h_head_mem) h_ok
       | .expression (hd :: hd2 :: rest) =>
           simp only [interpretTuple_succ, List.mem_flatMap] at hr
           obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
@@ -1595,7 +1594,9 @@ private theorem interpretTuple_eval_to_sync
                 (h_eval n hd Atom.undefinedType b (headR, headB) h_head_mem) h_err_false
                 (ih (.expression (hd2 :: rest)) headB (tailR, tailB) h_tail_mem) h_terr_false
       | .expression [] =>
-          simp [interpretTuple_succ] at hr
+          simp only [interpretTuple_succ, List.mem_cons, List.not_mem_nil, or_false] at hr
+          subst r
+          exact InterpretTupleSync.nil n b
       | .symbol _ =>
           simp [interpretTuple_succ] at hr
       | .var _ =>
@@ -1646,14 +1647,14 @@ private theorem interpretFunction_eval_to_sync
                     (interpretArgs_eval_to_sync space dispatch h_eval n args argTypes headB
                       (tailR, tailB) h_tail_mem) h_terr
                 · rename_i h_terr_ne
-                  have h_terr_false : isEmptyOrError tailR = false := by
-                    cases h : isEmptyOrError tailR <;> simp_all
+                  have h_args_success : argumentsSucceeded tailR = true := by
+                    cases h : argumentsSucceeded tailR <;> simp_all
                   obtain ⟨rfl, rfl⟩ := hr3
                   exact InterpretFunctionSync.head_ok_tail_ok n (.expression (op :: args)) opType b
                     op args argTypes (headR, headB) (tailR, tailB) rfl h_argt
                     (h_eval n op opType b (headR, headB) h_head_mem) h_err_false
                     (interpretArgs_eval_to_sync space dispatch h_eval n args argTypes headB
-                      (tailR, tailB) h_tail_mem) h_terr_false
+                      (tailR, tailB) h_tail_mem) h_args_success
             | none =>
                 simp only [h_argt, List.not_mem_nil] at hr2
       | .symbol _ =>
@@ -1873,8 +1874,15 @@ private theorem interpretTuple_sync_to_eval_step
       r ∈ interpretTuple space dispatch atom b (n + 1) := by
   intro atom b r h
   cases h with
-  | singleton _ a b r h_eval =>
-      simpa [interpretTuple_succ] using ih.evalAtom a Atom.undefinedType b r h_eval
+  | nil _ b => simp [interpretTuple_succ, Atom.unit]
+  | singleton _ a b r h_eval h_ok =>
+      simp only [interpretTuple_succ, List.mem_flatMap]
+      refine ⟨r, ih.evalAtom a Atom.undefinedType b r h_eval, ?_⟩
+      simp [h_ok]
+  | singleton_error _ a b r h_eval h_error =>
+      simp only [interpretTuple_succ, List.mem_flatMap]
+      refine ⟨r, ih.evalAtom a Atom.undefinedType b r h_eval, ?_⟩
+      simp [h_error]
   | head_error _ hd tl b headResult h_tl_nonempty h_head h_err =>
       cases tl with
       | nil =>
@@ -2772,13 +2780,13 @@ private theorem interpretArgs_eval_to_sync_step
             (ih.evalAtom _ _ _ _ h_head_mem) h_head_ok
             (ih.interpretArgs _ _ _ _ h_tail_mem) h_terr
         · rename_i h_terr_ne
-          have h_terr_false : isEmptyOrError tailR = false := by
-            cases h : isEmptyOrError tailR <;> simp_all
+          have h_args_success : argumentsSucceeded tailR = true := by
+            cases h : argumentsSucceeded tailR <;> simp_all
           subst hr3
           exact InterpretArgsSync.cons_ok n arg remArgs t remTypes b
             (headR, headB) (tailR, tailB)
             (ih.evalAtom _ _ _ _ h_head_mem) h_head_ok
-            (ih.interpretArgs _ _ _ _ h_tail_mem) h_terr_false
+            (ih.interpretArgs _ _ _ _ h_tail_mem) h_args_success
   | [], _ :: _ =>
       simp [interpretArgs_succ] at hr
   | _ :: _, [] =>
@@ -2793,8 +2801,21 @@ private theorem interpretTuple_eval_to_sync_step
   intro atom b r hr
   match atom with
   | .expression [single] =>
-      exact InterpretTupleSync.singleton n single b r
-        (ih.evalAtom single Atom.undefinedType b r (by simpa [interpretTuple_succ] using hr))
+      simp only [interpretTuple_succ, List.mem_flatMap] at hr
+      obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
+      split at hr2
+      · rename_i h_err
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+        subst r
+        exact InterpretTupleSync.singleton_error n single b (headR, headB)
+          (ih.evalAtom single Atom.undefinedType b (headR, headB) h_head_mem) h_err
+      · rename_i h_err_ne
+        have h_ok : isEmptyOrError headR = false := by
+          cases h : isEmptyOrError headR <;> simp_all
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at hr2
+        subst r
+        exact InterpretTupleSync.singleton n single b (headR, headB)
+          (ih.evalAtom single Atom.undefinedType b (headR, headB) h_head_mem) h_ok
   | .expression (hd :: hd2 :: rest) =>
       simp only [interpretTuple_succ, List.mem_flatMap] at hr
       obtain ⟨⟨headR, headB⟩, h_head_mem, hr2⟩ := hr
@@ -2826,7 +2847,9 @@ private theorem interpretTuple_eval_to_sync_step
             (ih.evalAtom _ _ _ _ h_head_mem) h_err_false
             (ih.interpretTuple _ _ _ h_tail_mem) h_terr_false
   | .expression [] =>
-      simp [interpretTuple_succ] at hr
+      simp only [interpretTuple_succ, List.mem_cons, List.not_mem_nil, or_false] at hr
+      subst r
+      exact InterpretTupleSync.nil n b
   | .symbol _ =>
       simp [interpretTuple_succ] at hr
   | .var _ =>
@@ -2868,13 +2891,13 @@ private theorem interpretFunction_eval_to_sync_step
                 (ih.evalAtom _ _ _ _ h_head_mem) h_err_false
                 (ih.interpretArgs _ _ _ _ h_tail_mem) h_terr
             · rename_i h_terr_ne
-              have h_terr_false : isEmptyOrError tailR = false := by
-                cases h : isEmptyOrError tailR <;> simp_all
+              have h_args_success : argumentsSucceeded tailR = true := by
+                cases h : argumentsSucceeded tailR <;> simp_all
               obtain ⟨rfl, rfl⟩ := hr3
               exact InterpretFunctionSync.head_ok_tail_ok n (.expression (op :: args)) opType b
                 op args argTypes (headR, headB) (tailR, tailB) rfl h_argt
                 (ih.evalAtom _ _ _ _ h_head_mem) h_err_false
-                (ih.interpretArgs _ _ _ _ h_tail_mem) h_terr_false
+                (ih.interpretArgs _ _ _ _ h_tail_mem) h_args_success
         | none =>
             simp only [h_argt, List.not_mem_nil] at hr2
   | .symbol _ =>
@@ -3734,7 +3757,8 @@ private inductive InterpretExpressionAligned (space : Space) (dispatch : Grounde
                           | .expression (op :: _) => op | _ => atom),
                         isFunctionType t = false ∨ t = Atom.undefinedType)
       (h_tuple : InterpretTupleAligned space dispatch atom b tupleResult)
-      (h_call : MettaCallAligned space dispatch tupleResult.1 type_ tupleResult.2 callResult) :
+      (h_call : MettaCallAligned space dispatch tupleResult.1 type_ tupleResult.2 callResult)
+      (h_nonempty : atom ≠ Atom.unit) :
       InterpretExpressionAligned space dispatch atom type_ b callResult
   | op_type_error (atom type_ : Atom) (b : Bindings) (op : Atom) (args : List Atom)
       (errAtom failedType : Atom)
@@ -3764,7 +3788,7 @@ private inductive InterpretFunctionAligned (space : Space) (dispatch : GroundedD
       (h_head : EvalAtomAligned space dispatch op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgsAligned space dispatch args argTypes headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretFunctionAligned space dispatch atom opType retType b tailResult
   | head_ok_tail_ok (atom opType retType : Atom) (b : Bindings)
       (op : Atom) (args argTypes : List Atom) (headResult tailResult : ResultPair)
@@ -3773,14 +3797,14 @@ private inductive InterpretFunctionAligned (space : Space) (dispatch : GroundedD
       (h_head : EvalAtomAligned space dispatch op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgsAligned space dispatch args argTypes headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretFunctionAligned space dispatch atom opType retType b
-        (.expression (headResult.1 :: atomElements tailResult.1), tailResult.2)
+        (.expression (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 private inductive InterpretArgsAligned (space : Space) (dispatch : GroundedDispatch) :
     List Atom → List Atom → Bindings → ResultPair → Prop where
   | nil (b : Bindings) :
-      InterpretArgsAligned space dispatch [] [] b (Atom.unit, b)
+      InterpretArgsAligned space dispatch [] [] b (argumentPacket [], b)
   | head_changed_error (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult : ResultPair)
       (h_head : EvalAtomAligned space dispatch a t b headResult)
@@ -3792,21 +3816,28 @@ private inductive InterpretArgsAligned (space : Space) (dispatch : GroundedDispa
       (h_head : EvalAtomAligned space dispatch a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgsAligned space dispatch as ts headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretArgsAligned space dispatch (a :: as) (t :: ts) b tailResult
   | cons_ok (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult tailResult : ResultPair)
       (h_head : EvalAtomAligned space dispatch a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgsAligned space dispatch as ts headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretArgsAligned space dispatch (a :: as) (t :: ts) b
-        (.expression (headResult.1 :: atomElements tailResult.1), tailResult.2)
+        (argumentPacket (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 private inductive InterpretTupleAligned (space : Space) (dispatch : GroundedDispatch) :
     Atom → Bindings → ResultPair → Prop where
+  | nil (b : Bindings) :
+      InterpretTupleAligned space dispatch Atom.unit b (Atom.unit, b)
   | singleton (a : Atom) (b : Bindings) (r : ResultPair)
-      (h_eval : EvalAtomAligned space dispatch a Atom.undefinedType b r) :
+      (h_eval : EvalAtomAligned space dispatch a Atom.undefinedType b r)
+      (h_ok : isEmptyOrError r.1 = false) :
+      InterpretTupleAligned space dispatch (.expression [a]) b (.expression [r.1], r.2)
+  | singleton_error (a : Atom) (b : Bindings) (r : ResultPair)
+      (h_eval : EvalAtomAligned space dispatch a Atom.undefinedType b r)
+      (h_error : isEmptyOrError r.1 = true) :
       InterpretTupleAligned space dispatch (.expression [a]) b r
   | head_error (hd : Atom) (tl : List Atom) (b : Bindings)
       (headResult : ResultPair)
@@ -4091,11 +4122,8 @@ private theorem evalAtomFiltered_reaches_complete_of_interpretExpression_complet
 
 /-! ### Eventual aligned reachability for the simple trio
 
-These lemmas are the council-approved replacement for the earlier failed
-monotonicity detour. Instead of proving that evaluator results persist by a
-global monotonicity theorem, we prove a stronger completeness shape directly:
-once an aligned derivation becomes reachable, it remains reachable at every
-larger fuel. This gives sibling subcalls a common subfuel by construction. -/
+An aligned derivation is reachable at every sufficiently large fuel. The
+threshold permits sibling subcalls to be evaluated at a common subfuel. -/
 
 private theorem interpretArgsAligned_eventually_to_sync_of_evalAtom_eventually
     (space : Space) (dispatch : GroundedDispatch)
@@ -4175,14 +4203,30 @@ private theorem interpretTupleAligned_eventually_to_sync_of_evalAtom_eventually
       ∃ fuel0, ∀ fuel, fuel ≥ fuel0 →
         InterpretTupleSync space dispatch fuel atom b r := by
     match h with
-    | .singleton a b r h_eval =>
+    | .nil b =>
+        refine ⟨1, ?_⟩
+        intro fuel hfuel
+        cases fuel with
+        | zero => cases hfuel
+        | succ n => exact InterpretTupleSync.nil n b
+    | .singleton a b r h_eval h_ok =>
         obtain ⟨fuel0, h_eval_eventual⟩ := h_eval_eventual a Atom.undefinedType b r h_eval
         refine ⟨fuel0 + 1, ?_⟩
         intro fuel hfuel
         cases fuel with
         | zero => cases hfuel
         | succ n =>
-            exact InterpretTupleSync.singleton n a b r (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel))
+            exact InterpretTupleSync.singleton n a b r
+              (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel)) h_ok
+    | .singleton_error a b r h_eval h_error =>
+        obtain ⟨fuel0, h_eval_eventual⟩ := h_eval_eventual a Atom.undefinedType b r h_eval
+        refine ⟨fuel0 + 1, ?_⟩
+        intro fuel hfuel
+        cases fuel with
+        | zero => cases hfuel
+        | succ n =>
+            exact InterpretTupleSync.singleton_error n a b r
+              (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel)) h_error
     | .head_error hd tl b headResult h_tl_nonempty h_head h_err =>
         obtain ⟨fuel0, h_head_eventual⟩ := h_eval_eventual hd Atom.undefinedType b headResult h_head
         refine ⟨fuel0 + 1, ?_⟩
@@ -4492,12 +4536,13 @@ private theorem interpretExpressionAligned_eventually_to_sync_of_evalAtom_eventu
             interpResult callResult succs h_shape h_op_type h_is_func h_check h_check_b
             (h_interp_eventual n hn_interp)
             (by simpa [h_ret, beq_iff_eq] using h_call_eventual n hn_call)
-  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call =>
+  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call h_nonempty =>
       obtain ⟨fuelTuple, h_tuple_eventual⟩ := h_tuple_eventual atom b tupleResult h_tuple
       obtain ⟨fuelCall, h_call_eventual⟩ := h_call_eventual tupleResult.1 type_ tupleResult.2 callResult h_call
       have h_shape_ex : ∃ op args, atom = .expression (op :: args) := by
         cases h_tuple with
-        | singleton a b r h_eval =>
+        | nil => exact (h_nonempty rfl).elim
+        | singleton a b r h_eval _ | singleton_error a b r h_eval _ =>
             exact ⟨a, [], rfl⟩
         | head_error hd tl b headResult h_tl_nonempty h_head h_err =>
             exact ⟨hd, tl, rfl⟩
@@ -4767,14 +4812,15 @@ private theorem interpretExpressionAligned_eventually_to_sync
             interpResult callResult succs h_shape h_op_type h_is_func h_check h_check_b
             (h_interp_eventual n hn_interp)
             (by simpa [h_ret, beq_iff_eq] using h_call_eventual n hn_call)
-  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call =>
+  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call h_nonempty =>
       obtain ⟨fuelTuple, h_tuple_eventual⟩ :=
         interpretTupleAligned_eventually_to_sync space dispatch h_tuple
       obtain ⟨fuelCall, h_call_eventual⟩ :=
         mettaCallAligned_eventually_to_sync space dispatch h_call
       have h_shape_ex : ∃ op args, atom = .expression (op :: args) := by
         cases h_tuple with
-        | singleton a b r h_eval =>
+        | nil => exact (h_nonempty rfl).elim
+        | singleton a b r h_eval _ | singleton_error a b r h_eval _ =>
             exact ⟨a, [], rfl⟩
         | head_error hd tl b headResult h_tl_nonempty h_head h_err =>
             exact ⟨hd, tl, rfl⟩
@@ -4970,7 +5016,13 @@ private theorem interpretTupleAligned_eventually_to_sync
     ∃ fuel0, ∀ fuel, fuel ≥ fuel0 →
       InterpretTupleSync space dispatch fuel atom b r := by
   match h with
-  | .singleton a b r h_eval =>
+  | .nil b =>
+      refine ⟨1, ?_⟩
+      intro fuel hfuel
+      cases fuel with
+      | zero => cases hfuel
+      | succ n => exact InterpretTupleSync.nil n b
+  | .singleton a b r h_eval h_ok =>
       obtain ⟨fuel0, h_eval_eventual⟩ :=
         evalAtomAligned_eventually_to_sync space dispatch h_eval
       refine ⟨fuel0 + 1, ?_⟩
@@ -4979,7 +5031,17 @@ private theorem interpretTupleAligned_eventually_to_sync
       | zero => cases hfuel
       | succ n =>
           exact InterpretTupleSync.singleton n a b r
-            (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel))
+            (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel)) h_ok
+  | .singleton_error a b r h_eval h_error =>
+      obtain ⟨fuel0, h_eval_eventual⟩ :=
+        evalAtomAligned_eventually_to_sync space dispatch h_eval
+      refine ⟨fuel0 + 1, ?_⟩
+      intro fuel hfuel
+      cases fuel with
+      | zero => cases hfuel
+      | succ n =>
+          exact InterpretTupleSync.singleton_error n a b r
+            (h_eval_eventual n (Nat.succ_le_succ_iff.mp hfuel)) h_error
   | .head_error hd tl b headResult h_tl_nonempty h_head h_err =>
       obtain ⟨fuel0, h_head_eventual⟩ :=
         evalAtomAligned_eventually_to_sync space dispatch h_head
@@ -5335,11 +5397,11 @@ private theorem interpretExpressionAligned_to_InterpretExpression
         h_shape h_op_type h_is_func succs h_check h_check_b h_ret
         (interpretFunctionAligned_to_InterpretFunction space dispatch h_interp)
         (mettaCallAligned_to_MettaCall space dispatch h_call)
-  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call =>
+  | .tuple_path atom type_ b tupleResult callResult h_has_non_func h_tuple h_call h_nonempty =>
       exact .tuple_path atom type_ b tupleResult callResult
         h_has_non_func
         (interpretTupleAligned_to_InterpretTuple space dispatch h_tuple)
-        (mettaCallAligned_to_MettaCall space dispatch h_call)
+        (mettaCallAligned_to_MettaCall space dispatch h_call) h_nonempty
   | .op_type_error atom type_ b op args errAtom failedType h_shape
       h_all_fail_eventual h_no_non_func h_failed_type h_failed_func h_check_fail_eventual =>
       obtain ⟨fuelAll, h_all_fail_eventual⟩ := h_all_fail_eventual
@@ -5403,8 +5465,11 @@ private theorem interpretTupleAligned_to_InterpretTuple
     (h : InterpretTupleAligned space dispatch atom b r) :
     InterpretTuple space dispatch atom b r := by
   match h with
-  | .singleton a b r h_eval =>
-      exact .singleton a b r (evalAtomAligned_to_EvalAtom space dispatch h_eval)
+  | .nil b => exact .nil b
+  | .singleton a b r h_eval h_ok =>
+      exact .singleton a b r (evalAtomAligned_to_EvalAtom space dispatch h_eval) h_ok
+  | .singleton_error a b r h_eval h_error =>
+      exact .singleton_error a b r (evalAtomAligned_to_EvalAtom space dispatch h_eval) h_error
   | .head_error hd tl b headResult h_tl_nonempty h_head h_err =>
       exact .head_error hd tl b headResult h_tl_nonempty
         (evalAtomAligned_to_EvalAtom space dispatch h_head) h_err

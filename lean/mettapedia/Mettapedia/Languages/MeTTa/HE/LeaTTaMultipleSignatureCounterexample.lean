@@ -205,14 +205,14 @@ private theorem aRaw :
 private theorem interpretedArguments :
     InterpretArgsRel multiSignatureSpace noHostDispatch []
       [.symbol "a"] [.symbol "A"] Bindings.empty
-      (.expression [.symbol "a"], Bindings.empty) := by
+      (argumentPacket [.symbol "a"], Bindings.empty) := by
   apply InterpretArgsRel.success
       (.symbol "a") [] (.symbol "A") [] Bindings.empty
-      (.symbol "a", Bindings.empty) (Atom.unit, Bindings.empty)
+      (.symbol "a", Bindings.empty) (argumentPacket [], Bindings.empty)
   · exact aRaw
   · exact Or.inr rfl
   · exact InterpretArgsRel.nil Bindings.empty
-  · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty, Atom.unit]
+  · exact ⟨[], rfl⟩
 
 private theorem interpretedFunction :
     InterpretFunctionRel multiSignatureSpace noHostDispatch []
@@ -223,13 +223,13 @@ private theorem interpretedFunction :
       (.symbol "RA")
       [.symbol "a"] [.symbol "A"] Bindings.empty
       (.symbol "f", Bindings.empty)
-      (.expression [.symbol "a"], Bindings.empty)
+      (argumentPacket [.symbol "a"], Bindings.empty)
   · rfl
   · rfl
   · exact fRaw
   · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]
   · exact interpretedArguments
-  · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]
+  · exact ⟨[.symbol "a"], rfl⟩
 
 private theorem applicationNoEquation :
     CallRel multiSignatureSpace noHostDispatch []

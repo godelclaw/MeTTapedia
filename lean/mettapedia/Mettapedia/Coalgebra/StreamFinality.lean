@@ -27,6 +27,8 @@ universe uLabel uSource uTarget uThird
 
 /-! ## Coalgebras and their morphisms -/
 
+-- The subject namespace and the standard structure name intentionally agree.
+set_option linter.dupNamespace false in
 /-- A deterministic stream coalgebra with one visible label and one successor
 state. -/
 structure Coalgebra (Label : Type uLabel) where

@@ -37,8 +37,8 @@ open Mettapedia.Logic.HOL.Embedding
 open Mettapedia.GSLT
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open NativeHOLTraceRecursiveExtensionalCompilerSemantics
-open NativeHOLRecursiveProofNIKQualification
-open NativeHOLRecursiveProofNIKQualification.Controls
+open NativeHOLRecursiveProofQualification
+open NativeHOLRecursiveProofQualification.Controls
 open NativeHOLProofQualifiedOperationalCospan
 open NativeHOLRecursiveProofOperationalObservation
 open IntrinsicNativeListMapComputation
@@ -146,7 +146,7 @@ private theorem accepted_properties (a : ZFSet.{u}) (request : ClosedClaim)
   subst code
   exact ⟨typed, denotes⟩
 
-/-- NIK acceptance constructs the complete connected evidence object for the
+/-- SemanticService acceptance constructs the complete connected evidence object for the
 submitted proof itself. -/
 def ofAccepted (a : ZFSet.{u}) (request : ClosedClaim)
     (proof : IntrinsicProof)
@@ -280,7 +280,7 @@ namespace MapFusion
 open NativeHOLProofQualifiedOperationalCospan.MapFusionPrograms
 
 /-- The operational reading of the map-fusion theorem.  The theorem requested
-from NIK, the compiler output, and the program endpoints must all agree. -/
+from SemanticService, the compiler output, and the program endpoints must all agree. -/
 def specification {n : Nat} (level : LevelExpr Nat) :
     OperationalSpecification (reduction level n) :=
   fun claim native left right =>
@@ -290,7 +290,7 @@ def specification {n : Nat} (level : LevelExpr Nat) :
         left = programs.unfused ∧ right = programs.fused
 
 /-- The earlier map-fusion qualifier entails the general compiler-evidence
-qualifier.  Its NIK check fixes the requested claim, and determinism of the
+qualifier.  Its SemanticService check fixes the requested claim, and determinism of the
 compiler fixes the native witness. -/
 theorem qualification_of_retained {n : Nat} {a : ZFSet.{u}}
     (level : LevelExpr Nat) (proof : IntrinsicProof)

@@ -595,6 +595,17 @@ theorem encode_typeDropAt? (cutoff : Nat) (body : Tm) :
         Term.Fields.dropAt?, Term.binderCount, ← bodyHypothesis,
         Option.map_eq_bind, Option.bind_assoc]
 
+/-- Successful removal of an unused type binder yields the exact shift
+witness used by the proof-relevant type-level eta rule. -/
+theorem typeShift_of_typeDropAt?_eq_some (cutoff : Nat) {body result : Tm}
+    (hypothesis : Tm.typeDropAt? cutoff body = some result) :
+    Tm.typeShift cutoff 1 result = body := by
+  apply encode_injective
+  rw [encode_typeShift]
+  apply Term.lift_of_dropAt?_eq_some
+  rw [← encode_typeDropAt?]
+  simp [hypothesis]
+
 /-! ## Sorted support -/
 
 def depthOf (typeDepth termDepth : Nat) : VarSort → Nat

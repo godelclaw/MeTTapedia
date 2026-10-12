@@ -59,7 +59,7 @@ theorem CalculusExact.iff
 
 /-- Exact replay for derivations plus calculus soundness gives an exact
 derivational authority that projects soundly to the model meaning. -/
-def derivationalProjection
+theorem derivationalProjection
     {Claim : Type uClaim} {Certificate : Type uCertificate}
     {checker : Checker Claim Certificate}
     {Derivable Meaning : Claim -> Prop}
@@ -185,7 +185,7 @@ theorem semanticAuthority :
 
 /-- The derivational view remains available when proof structure rather than
 only semantic truth is the desired observation. -/
-def derivationalAuthorityProjection :
+theorem derivationalAuthorityProjection :
     authority.checker.AuthorityProjection
       authority.Derivable authority.Meaning :=
   derivationalProjection authority.replay authority.calculus.sound
@@ -244,7 +244,7 @@ namespace ExactCertificateGSLTFamily
 variable {Kind : Type uKind} (family : ExactCertificateGSLTFamily Kind)
 
 /-- Exact per-kind CertificateGSLT admissions assemble into the generic dependent
-NIK authority family. -/
+SemanticService authority family. -/
 def toAuthorityFamily : AuthorityFamily Kind where
   Claim := family.Claim
   Certificate := fun _ => WireArticle

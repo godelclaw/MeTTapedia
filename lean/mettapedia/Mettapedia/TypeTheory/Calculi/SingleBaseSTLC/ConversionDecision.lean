@@ -1,6 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.Normalization
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.NormalForms
-import Mettapedia.GSLT.LanguageDef.NIKServiceFamily
+import Mettapedia.GSLT.LanguageDef.SemanticServiceFamily
 
 /-!
 # Exact conversion comparison and native simple-fragment services
@@ -30,7 +30,7 @@ namespace Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.ConversionDecision
 open Mettapedia.TypeTheory.Calculi.SingleBaseSTLC Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.IntrinsicSTT
 open Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.Normalization
 open Mettapedia.GSLT.LanguageDef
-open NIKMetalogic MaximalNativeCalculus KernelAuthority
+open SemanticEvidence CapabilitySelection KernelAuthority
 
 variable {Γ Δ : List Ty} {A : Ty}
 
@@ -124,7 +124,7 @@ def decisionKernel (Γ : List Ty) (A : Ty) :
   decide pair := decideConversion pair.1 pair.2
   correct pair := decideConversion_correct pair.1 pair.2
 
-def decisionService (Γ : List Ty) (A : Ty) : NIK.Service.{0, 0} (conversionTarget Γ A) :=
+def decisionService (Γ : List Ty) (A : Ty) : SemanticService.Service.{0, 0} (conversionTarget Γ A) :=
   .directDecision (decisionKernel Γ A)
 
 def normalizationOperation (Γ : List Ty) (A : Ty) :
@@ -136,7 +136,7 @@ def normalizationOperation (Γ : List Ty) (A : Ty) :
     exact .refl _
 
 def normalizationService (Γ : List Ty) (A : Ty) :
-    NIK.Service.{0, 0} (conversionTarget Γ A) :=
+    SemanticService.Service.{0, 0} (conversionTarget Γ A) :=
   .nativeOperation (conversionTarget Γ A) (normalizationOperation Γ A)
 
 theorem normalizationOperation_meaning_iff (pair : (conversionTarget Γ A).Carrier) :
@@ -151,8 +151,8 @@ theorem normalizationOperation_meaning_iff (pair : (conversionTarget Γ A).Carri
 theorem native_faces :
     (decisionService Γ A).face = .directDecision ∧
     (normalizationService Γ A).face = .nativeOperation ∧
-    NIK.Service.hasExternalCertificateBoundary (decisionService Γ A) = false ∧
-    NIK.Service.hasExternalCertificateBoundary (normalizationService Γ A) = false :=
+    SemanticService.Service.hasExternalCertificateBoundary (decisionService Γ A) = false ∧
+    SemanticService.Service.hasExternalCertificateBoundary (normalizationService Γ A) = false :=
   ⟨rfl, rfl, rfl, rfl⟩
 
 open Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.ErasureBoundary in

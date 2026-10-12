@@ -92,7 +92,7 @@ theorem context_formed {context : Tower.Ctx n} {code : Code n} {type : Tower.Tm 
 intrinsic HOL proof object is not returned as a dependent native inhabitant. -/
 theorem hol_payload_type
     {gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort}
-    {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {replay : UniformListChartService.ReplayRequest gamma}
     {environment : Sub Tower.Head gamma.length n}
     (response : Response (.hol gamma replay environment)) (payload actualType : Tower.Tm n)
     (_crossing : Invocation assembly (.hol gamma replay environment) response)
@@ -124,7 +124,7 @@ theorem matching_payload_type
 
 theorem hol_request {context : Tower.Ctx n}
     {gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort}
-    {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {replay : UniformListChartService.ReplayRequest gamma}
     {environment : Sub Tower.Head gamma.length n} {universeHead : Tower.Head}
     (admitted : EnvironmentAdmitted assembly context (.hol gamma replay environment))
     (formed : FormationSensitive.Typing assembly.rules context
@@ -331,7 +331,7 @@ private theorem matching_request_admitted :
     (.sort Tower.zero) (Examples.matching_returned 2)
 
 private theorem hol_request_admitted
-    (replay : UniformListChartNIKService.ReplayRequest []) :
+    (replay : UniformListChartService.ReplayRequest []) :
     Admission common matchingContext (.request (.hol [] replay Fin.elim0))
       (.const `HOLUniformList.prop) :=
   Admission.hol_request ⟨matching_context_formed, fun index => Fin.elim0 index⟩
@@ -364,7 +364,7 @@ private theorem pair_body_admitted :
   · simpa only [inst0, subst, holContext, Ctx.lookup_snoc_zero, rename] using
       (FormationSensitive.Typing.var (R := common.rules) (Γ := holContext) 0)
 
-private theorem two_requests_admitted (replay : UniformListChartNIKService.ReplayRequest []) :
+private theorem two_requests_admitted (replay : UniformListChartService.ReplayRequest []) :
     Admission common context
       (.sequence (.request (Examples.matchingRequest 2))
         (.sequence (.request (.hol [] replay Fin.elim0))
@@ -381,13 +381,13 @@ private theorem two_requests_admitted (replay : UniformListChartNIKService.Repla
 by the shared program module, retaining both returned native variables. -/
 theorem matching_then_hol_admitted :
     Admission common context Examples.matchingThenHOL (pairType 2) :=
-  two_requests_admitted (UniformListChartNIKService.actualRequest [])
+  two_requests_admitted (UniformListChartService.actualRequest [])
 
 /-- Admission of a request does not claim that its submitted proof succeeds.
 This source has the same continuation type but a declined second request. -/
 theorem matching_then_changed_hol_admitted :
     Admission common context Examples.matchingThenChangedHOL (pairType 2) :=
-  two_requests_admitted { UniformListChartNIKService.actualRequest [] with
+  two_requests_admitted { UniformListChartService.actualRequest [] with
     claim := (Mettapedia.Logic.HOL.UniformListInduction.equations,
       Mettapedia.Logic.HOL.UniformListInduction.mapLength) }
 
@@ -436,7 +436,7 @@ theorem nested_admitted : Admission common context matchingThenHOLIdentity neste
       (.sorts Tower.zero (.max Tower.zero Tower.zero)))
     (.sort (.max Tower.zero (.max Tower.zero Tower.zero))) matching_request_admitted
   apply Admission.sequenceSigma (hol_identity_type_formed matchingContext)
-    (.sort (.max Tower.zero Tower.zero)) (hol_request_admitted (UniformListChartNIKService.actualRequest []))
+    (.sort (.max Tower.zero Tower.zero)) (hol_request_admitted (UniformListChartService.actualRequest []))
   refine .native ⟨hol_context_formed, .returnValue (.reflIntro ?_)⟩
   simpa only [holContext, Ctx.lookup_snoc_zero, rename] using
     (FormationSensitive.Typing.var (R := common.rules) (Γ := holContext) 0)

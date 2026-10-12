@@ -20,8 +20,8 @@ namespace Mettapedia.GSLT.LanguageDef.CArray1ListConstructionHosting
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.Ultrainfinite
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 open Mettapedia.GSLT.LanguageDef.GSLTHosting
 open Mettapedia.GSLT.LanguageDef.CArray0SequenceHosting
 

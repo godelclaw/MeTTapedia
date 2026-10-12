@@ -651,6 +651,25 @@ def isErrorAtom : Atom → Bool
 def isEmptyOrError (a : Atom) : Bool :=
   isEmptyAtom a || isErrorAtom a
 
+/-- A successful singleton tuple retains its expression wrapper. Failures
+propagate without becoming successful tuple values; bindings are unchanged. -/
+def tupleSingleton (r : ResultPair) : ResultPair :=
+  if isEmptyOrError r.1 then r else (.expression [r.1], r.2)
+
+@[simp] theorem tupleSingleton_bindings (r : ResultPair) :
+    (tupleSingleton r).2 = r.2 := by
+  unfold tupleSingleton
+  split <;> rfl
+
+@[simp] theorem tupleSingleton_success (r : ResultPair)
+    (h : isEmptyOrError r.1 = false) :
+    tupleSingleton r = (.expression [r.1], r.2) := by
+  simp [tupleSingleton, h]
+
+@[simp] theorem tupleSingleton_failure (r : ResultPair)
+    (h : isEmptyOrError r.1 = true) : tupleSingleton r = r := by
+  simp [tupleSingleton, h]
+
 /-! ## Convenience Constructors (for tests) -/
 
 /-- Shorthand for symbol atom. -/

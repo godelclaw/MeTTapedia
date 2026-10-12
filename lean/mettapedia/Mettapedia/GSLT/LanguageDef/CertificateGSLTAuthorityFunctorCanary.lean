@@ -22,7 +22,7 @@ open CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
 

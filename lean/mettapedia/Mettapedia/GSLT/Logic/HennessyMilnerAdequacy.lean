@@ -78,6 +78,17 @@ def Formula.conjList {Atom : Type uAtom} {Label : Type uLabel} :
   | [] => .top
   | formula :: formulas => .conj formula (Formula.conjList formulas)
 
+/-- A finite labeled experiment followed by its postcondition. -/
+def Formula.after {Atom : Type uAtom} {Label : Type uLabel}
+    (labels : List Label) (postcondition : Formula Atom Label) : Formula Atom Label :=
+  labels.foldr Formula.dia postcondition
+
+theorem Formula.after_append {Atom : Type uAtom} {Label : Type uLabel}
+    (first second : List Label) (postcondition : Formula Atom Label) :
+    Formula.after (first ++ second) postcondition =
+      Formula.after first (Formula.after second postcondition) := by
+  simp [Formula.after, List.foldr_append]
+
 /-- Negation-free formulas: truth, falsity, atoms, conjunction, disjunction,
 diamond. -/
 inductive PosFormula (Atom : Type uAtom) (Label : Type uLabel) :
@@ -106,6 +117,20 @@ def sat : Formula M.Atom M.Label → S.Term → Prop
   | .conj left right, term => sat left term ∧ sat right term
   | .neg inner, term => ¬ sat inner term
   | .dia label inner, term => ∃ target, M.act label term target ∧ sat inner target
+
+/-- Exact execution of a finite experiment in a deterministic realization.
+The action law is checked independently by each system instance. -/
+theorem sat_after_deterministic (step : S.Term → M.Label → S.Term)
+    (actions : ∀ label source target, M.act label source target ↔ step source label = target)
+    (labels : List M.Label) (postcondition : Formula M.Atom M.Label) (source : S.Term) :
+    M.sat (Formula.after labels postcondition) source ↔
+      M.sat postcondition (labels.foldl step source) := by
+  induction labels generalizing source with
+  | nil => rfl
+  | cons label labels inductionHypothesis =>
+      change (∃ target, M.act label source target ∧
+        M.sat (Formula.after labels postcondition) target) ↔ _
+      simpa [actions] using inductionHypothesis (step source label)
 
 theorem sat_conjList (formulas : List (Formula M.Atom M.Label)) (term : S.Term) :
     M.sat (Formula.conjList formulas) term ↔

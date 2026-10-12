@@ -355,6 +355,18 @@ def empty :
   roots := []
   nextSerial := 0
 
+/-- Emitted effects in chronological order, retaining repeated occurrences.
+Administrative receipts remain in the graph but are not source emissions. -/
+def effects
+    (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect) : List Effect :=
+  graph.nodes.reverse.filterMap fun node =>
+    match node.payload with
+    | .effect effect => some effect
+    | _ => none
+
+@[simp] theorem effects_empty :
+    (empty : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect).effects = [] := rfl
+
 def append
     (graph :
       ReceiptGraph Origin Rule Value StableFault RetryableFault Effect)
@@ -371,6 +383,14 @@ def append
       roots := [id]
       nextSerial := graph.nextSerial + 1 },
     id )
+
+@[simp] theorem effects_append
+    (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect)
+    (path : WorldPath)
+    (payload : ReceiptPayload Origin Rule Value StableFault RetryableFault Effect) :
+    (graph.append path payload).1.effects = graph.effects ++
+      (match payload with | .effect effect => [effect] | _ => []) := by
+  cases payload <;> simp [effects, append]
 
 @[simp] theorem append_roots
     (graph :
@@ -538,6 +558,18 @@ def allocate?
       let advanced := { world with heap := heap, nextCell := world.nextCell + 1 }
       let recorded := advanced.record (.allocate cell origin)
       some (recorded.1, cell)
+
+theorem allocate?_effects
+    {world next : World Origin Rule Value StableFault RetryableFault Effect}
+    {origin : Origin} {generation : Nat} {cell : CellId}
+    (allocated : world.allocate? origin generation = some (next, cell)) :
+    next.receipts.effects = world.receipts.effects := by
+  unfold allocate? at allocated
+  dsimp only at allocated
+  split at allocated
+  · contradiction
+  · cases allocated
+    simp [record]
 
 theorem fork_preserves_heap
     (world : World Origin Rule Value StableFault RetryableFault Effect)

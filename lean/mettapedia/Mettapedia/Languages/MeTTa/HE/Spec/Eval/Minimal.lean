@@ -508,9 +508,9 @@ private theorem probe_leaf_full :
     · simp [Atom.undefinedType, Atom.expressionType]
     · exact .success probeMember probeArrow Atom.undefinedType (.symbol "leaf")
         Atom.undefinedType [] [] Bindings.empty (.symbol "leaf", Bindings.empty)
-        (Atom.unit, Bindings.empty) rfl rfl headEval
+        (argumentPacket [], Bindings.empty) rfl rfl headEval
         (by simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]) (.nil _)
-        (by simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty, Atom.unit])
+        ⟨[], rfl⟩
     · exact .groundedSuccess probeMember Atom.undefinedType (.symbol "leaf") []
         Bindings.empty [(probeValue, Bindings.empty)] (probeValue, Bindings.empty)
         (probeValue, Bindings.empty) Bindings.empty (probeValue, Bindings.empty)

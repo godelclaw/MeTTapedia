@@ -757,7 +757,7 @@ theorem permits_iff (boundary : DemandBoundary.{uRight})
     (held : Finset boundary.Right) (operation : Operation) :
     boundary.Permits held operation ↔
       boundary.required operation ⊆ held := by
-  letI := boundary.decEq
+  let := boundary.decEq
   simp [Permits, permits]
 
 /-- Attenuation is fail-closed: it returns precisely the requested subset or
@@ -772,7 +772,7 @@ theorem restrict_some_subset (boundary : DemandBoundary.{uRight})
     {current requested granted : Finset boundary.Right}
     (restricted : boundary.restrict? current requested = some granted) :
     granted ⊆ current := by
-  letI := boundary.decEq
+  let := boundary.decEq
   unfold restrict? at restricted
   split at restricted <;> simp_all
 
@@ -780,7 +780,7 @@ theorem restrict_some_eq_requested (boundary : DemandBoundary.{uRight})
     {current requested granted : Finset boundary.Right}
     (restricted : boundary.restrict? current requested = some granted) :
     granted = requested := by
-  letI := boundary.decEq
+  let := boundary.decEq
   unfold restrict? at restricted
   split at restricted <;> simp_all
 
@@ -788,7 +788,7 @@ theorem restrict_escalation_fails (boundary : DemandBoundary.{uRight})
     {current requested : Finset boundary.Right}
     (escalates : ¬ requested ⊆ current) :
     boundary.restrict? current requested = none := by
-  letI := boundary.decEq
+  let := boundary.decEq
   simp [restrict?, escalates]
 
 /-- Apply a demand boundary to a separately chosen operator vocabulary. -/
@@ -802,7 +802,7 @@ theorem publicOperators_mono_rights (boundary : DemandBoundary.{uRight})
     (included : smaller ⊆ larger) :
     boundary.publicOperators operators smaller ⊆
       boundary.publicOperators operators larger := by
-  letI := boundary.decEq
+  let := boundary.decEq
   intro operation member
   simp only [publicOperators, Finset.mem_filter] at member ⊢
   refine ⟨member.1, ?_⟩
@@ -819,7 +819,7 @@ theorem publicOperators_mono_vocabulary
     (included : smaller ⊆ larger) :
     boundary.publicOperators smaller held ⊆
       boundary.publicOperators larger held := by
-  letI := boundary.decEq
+  let := boundary.decEq
   intro operation member
   simp only [publicOperators, Finset.mem_filter] at member ⊢
   exact ⟨included member.1, member.2⟩
@@ -853,6 +853,8 @@ def standardDemandBoundary : DemandBoundary where
 
 /-! ## Exact guest-outcome decompositions -/
 
+-- Value and fault carriers keep independent universe levels in the sum.
+set_option linter.checkUnivs false in
 /-- A language chooses its Need outcome algebra by giving an exact
 decomposition, not merely a one-way classifier. -/
 structure OutcomeAlgebra (GuestOutcome : Type uGuest) where
@@ -932,7 +934,7 @@ theorem evaluating_to_suspended_is_retry
   cases evidence
   rfl
 
-def retryStepInAll :
+theorem retryStepInAll :
     (fragmentTheory (Origin := Nat) (Value := Nat) (StableFault := Nat)
       allNeedOperators Nat 0).Step (.evaluating 7) (.suspended 7) :=
   ⟨⟨⟨.retry 0 7 99, by simp [allNeedOperators]⟩, .retry 7 99⟩⟩
@@ -958,7 +960,7 @@ theorem no_identity_translation_all_to_pure :
       translation.mapTerm = id := by
   rintro ⟨translation, identityMap⟩
   have mapped := translation.mapStep retryStepInAll
-  simp only [identityMap, id_eq] at mapped
+  simp only [identityMap] at mapped
   exact retryStepNotInPure mapped
 
 def inspectRights : Finset StandardRight := {.inspect}

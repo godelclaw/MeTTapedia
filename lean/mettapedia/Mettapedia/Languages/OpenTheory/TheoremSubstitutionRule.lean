@@ -22,6 +22,10 @@ structure TypeCorrectTermSubstitution where
 
 namespace TypeCorrectTermSubstitution
 
+/-- A type-only substitution has no term-map typing obligations. -/
+abbrev ofTypes (types : TypeSubst) : TypeCorrectTermSubstitution :=
+  ⟨⟨types, []⟩, by simp [TermSubst.TypeCorrect]⟩
+
 /-- Apply an admitted substitution to one checked canonical term. -/
 def apply (substitution : TypeCorrectTermSubstitution)
     (term : CanonicalTerm) : CanonicalTerm :=

@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Dynamics.ProofRelevantNeedProfile
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
 # Native proof flow for revisioned occurrence sources
@@ -7,7 +7,7 @@ import Mettapedia.GSLT.LanguageDef.NIKMetalogic
 The inputs are an occurrence source and its selected keying policy. No
 operational host, candidate language, or source-specific cause vocabulary is
 required. The construction reuses the revisioned occurrence GSLT and its
-elaboration, and admits its sound steps into NIK's proof-relevant clone.
+elaboration, and admits its sound steps into SemanticService's proof-relevant clone.
 
 The positive flow and exact publication laws retain the complete answer bag
 and accepted proof fibre. Terminal answers reject invented continuations,
@@ -23,7 +23,7 @@ variable {Space : Type uSpace} {Request : Type uRequest}
 
 open Mettapedia.GSLT.Dynamics.OccurrenceSemantics
 open Mettapedia.GSLT.Dynamics.ProofRelevantNeed
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-- A Need judgment states both the live operational term and the complete bag
 it denotes.  Keeping the bag in the claim makes preservation non-vacuous. -/

@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Algebra.Group.Nat.Defs
 import Mathlib.Computability.Halting
@@ -1244,18 +1245,10 @@ theorem accepted_certificates_have_unbounded_depth (bound : Nat) :
 /-! ## Equations and rewrites are independent checking obligations -/
 
 /-- A GSLT whose two terms are equated although it has no rewrite edges. -/
-def equationOnlyGSLT : GSLT where
-  Term := Bool
-  equations :=
+def equationOnlyGSLT : GSLT :=
+  GSLT.equationOnly Bool
     { r := fun _ _ => True
       iseqv := ⟨fun _ => trivial, fun _ => trivial, fun _ _ => trivial⟩ }
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
 
 theorem equationOnlyGSLT_false_true_equivalent :
     equationOnlyGSLT.Equiv false true :=

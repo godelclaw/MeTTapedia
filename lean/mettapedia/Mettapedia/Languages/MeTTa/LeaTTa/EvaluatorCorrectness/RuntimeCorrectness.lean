@@ -3349,9 +3349,8 @@ theorem interpretFuel_eval_notReducible_of_no_candidates_eq
       ([(notReducibleA, b)], st) := by
   have hstep := interpretStack1_eval_notReducible_of_no_candidates_eq
     env st fuel [] x b op args hinst hcall hembed hNotVarHead hnone
-  simp [interpretFuel, hstep, finItem, isFinal, finalPair, instantiate_notReducibleA,
-    notReducibleA_ne_empty]
-  simp only [List.filter_cons, List.filter_nil, isFinal, Bool.true_eq, if_true,
+  simp [interpretFuel, hstep, finItem, isFinal]
+  simp only [List.filter_cons, List.filter_nil, isFinal, if_true,
     List.map_cons, List.map_nil, finalPair, instantiate_notReducibleA]
   rfl
 
@@ -3390,9 +3389,8 @@ theorem interpretFuel_eval_symbol_notReducible_of_no_candidates_eq
       ([(notReducibleA, b)], st) := by
   have hstep := interpretStack1_eval_symbol_notReducible_of_no_candidates_eq
     env st fuel [] x b op hinst hembed hnone
-  simp [interpretFuel, hstep, finItem, isFinal, finalPair, instantiate_notReducibleA,
-    notReducibleA_ne_empty]
-  simp only [List.filter_cons, List.filter_nil, isFinal, Bool.true_eq, if_true,
+  simp [interpretFuel, hstep, finItem, isFinal]
+  simp only [List.filter_cons, List.filter_nil, isFinal, if_true,
     List.map_cons, List.map_nil, finalPair, instantiate_notReducibleA]
   rfl
 
@@ -3431,9 +3429,8 @@ theorem interpretFuel_eval_ground_notReducible_of_no_candidates_eq
       ([(notReducibleA, b)], st) := by
   have hstep := interpretStack1_eval_ground_notReducible_of_no_candidates_eq
     env st fuel [] x b g hinst hembed hnone
-  simp [interpretFuel, hstep, finItem, isFinal, finalPair, instantiate_notReducibleA,
-    notReducibleA_ne_empty]
-  simp only [List.filter_cons, List.filter_nil, isFinal, Bool.true_eq, if_true,
+  simp [interpretFuel, hstep, finItem, isFinal]
+  simp only [List.filter_cons, List.filter_nil, isFinal, if_true,
     List.map_cons, List.map_nil, finalPair, instantiate_notReducibleA]
   rfl
 
@@ -3467,9 +3464,8 @@ theorem interpretFuel_eval_var_notReducible_eq
       ([(notReducibleA, b)], st) := by
   have hstep := interpretStack1_eval_var_notReducible_eq
     env st fuel [] x b v hinst hembed
-  simp [interpretFuel, hstep, finItem, isFinal, finalPair, instantiate_notReducibleA,
-    notReducibleA_ne_empty]
-  simp only [List.filter_cons, List.filter_nil, isFinal, Bool.true_eq, if_true,
+  simp [interpretFuel, hstep, finItem, isFinal]
+  simp only [List.filter_cons, List.filter_nil, isFinal, if_true,
     List.map_cons, List.map_nil, finalPair, instantiate_notReducibleA]
   rfl
 
@@ -4482,7 +4478,7 @@ structure ApplicationPlanCorresponds
 exact raw empty/compatibility selection.  The equality is supplied explicitly:
 for nonempty incoming theories it is generally false, so this conversion can
 never silently erase the seeded-scan distinction. -/
-def SelectedApplicationExecutionPlan.toApplicationPlanCorresponds
+theorem SelectedApplicationExecutionPlan.toApplicationPlanCorresponds
     {env : MinEnv} {world : World} {incoming : Bindings}
     {op : String} {args : List Atom}
     (plan : SelectedApplicationExecutionPlan env world incoming op args)
@@ -4499,7 +4495,7 @@ def SelectedApplicationExecutionPlan.toApplicationPlanCorresponds
 shared application pipeline consumes.  The raw scan remains part of
 `ExactApplicationPolicy`; this constructor supplies only the live expected
 scan, operator-head cast, and public seed equation. -/
-def ApplicationPlanCorresponds.ofSelected
+theorem ApplicationPlanCorresponds.ofSelected
     {env : MinEnv} {world : World} {op : String} {args : List Atom}
     {incoming : Bindings} {selected : SelectedFunctionType}
     {hSelected : selectFunctionType env world (.sym op) args = .selected selected}
@@ -4522,7 +4518,7 @@ def ApplicationPlanCorresponds.ofSelected
     exact ⟨headBindings, hHead, hSeed⟩
 
 /-- Build tuple-fallback plan evidence from the exact live expected scan. -/
-def ApplicationPlanCorresponds.ofUntypedTuple
+theorem ApplicationPlanCorresponds.ofUntypedTuple
     {env : MinEnv} {world : World} {op : String} {args : List Atom}
     {incoming : Bindings}
     {hScan : selectFunctionType env world (.sym op) args = .exhausted [] true}

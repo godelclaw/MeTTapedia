@@ -214,7 +214,7 @@ theorem refusal_does_not_mint_parallel_true :
         false false true) :=
   ⟨fun combination => Empty.elim combination.authorization⟩
 
-private def refusingConstructionResultFalse {result : Bool} :
+private theorem refusingConstructionResultFalse {result : Bool} :
     WitnessCollector.CapabilityCollection collector chronological parallel
       refuseAll result → result = false
   | .history events collected => by

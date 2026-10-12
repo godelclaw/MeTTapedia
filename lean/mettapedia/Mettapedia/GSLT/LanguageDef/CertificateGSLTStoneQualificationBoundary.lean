@@ -22,7 +22,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneQualificationBoundary
 
-open Mettapedia.GSLT.LanguageDef.NIKDerivabilitySemanticQualification
+open Mettapedia.GSLT.LanguageDef.DerivabilitySemanticQualification
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTDerivabilityQualification
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneGunkSemanticAuthority
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneUltraBasisBridge

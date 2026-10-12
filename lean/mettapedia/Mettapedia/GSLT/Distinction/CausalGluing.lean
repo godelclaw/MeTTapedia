@@ -285,7 +285,9 @@ end Occurrences
 
 section Traces
 
-variable {Id : Type}
+universe uId
+
+variable {Id : Type uId}
 
 /-- One swap of two adjacent independent occurrences. -/
 inductive Swap (independent : Id → Id → Prop) : List Id → List Id → Prop

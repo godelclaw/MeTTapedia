@@ -1,10 +1,12 @@
-import Mettapedia.GSLT.LanguageDef.NIKTheoryTranslationExt
+import Mettapedia.GSLT.LanguageDef.TheoryTranslationExt
+
+open Mettapedia.Logic.Consequence
 
 /-!
-# Closed Pi-institution theories as native NIK fibres
+# Closed Pi-institution theories as native SemanticService fibres
 
 A closed theory in a Pi-institution already has the semantic information
-needed for a one-fibre NIK theory family: its sentences are claims and its
+needed for a one-fibre SemanticService theory family: its sentences are claims and its
 closed theorem set is both scope and meaning.  A proof calculus for the
 institution then supplies a native evidence discipline whose theorem-image law
 is inherited exactly.
@@ -22,8 +24,8 @@ namespace Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
 
 open CategoryTheory
 open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 universe uSignature uHom uSentence
 
@@ -35,7 +37,7 @@ variable {Signature : Type uSignature}
 
 /-- The singleton signature carrier of one closed theory.  The selected
 native signature remains visible in the type parameter, while irrelevant
-ambient signatures are not added to the NIK object. -/
+ambient signatures are not added to the SemanticService object. -/
 inductive SelectedSignature (signature : Signature) : Type uSignature where
   | selected : SelectedSignature signature
 
@@ -46,7 +48,7 @@ instance (signature : Signature) :
     cases second
     rfl
 
-/-- A closed Pi-institution theory viewed as one heterogeneous NIK theory
+/-- A closed Pi-institution theory viewed as one heterogeneous SemanticService theory
 fibre.  No checker or certificate format is selected. -/
 def theoryFamily (logical : PiInstitution.TheoryObject institution) :
     TheoryFamily.{uSignature, 0, uSentence} Unit where
@@ -93,10 +95,10 @@ theorem proofFibre_nonempty_iff_scope
       (discipline.scope_iff_proof () formula).mp inScope
     exact ⟨⟨proof, proves⟩⟩
 
-/-! ## Closed-theory routes induce semantic NIK routes -/
+/-! ## Closed-theory routes induce semantic routes -/
 
 /-- A little-theory morphism induces a heterogeneous semantic route between
-the corresponding one-fibre NIK theories. -/
+the corresponding one-fibre SemanticService theories. -/
 def theoryTranslation
     {source target : PiInstitution.TheoryObject institution}
     (translation : PiInstitution.TheoryHom source target) :
@@ -114,11 +116,11 @@ def theoryTranslation
     exact translation.preserves theoremhood
 
 /-- The one-fibre construction sends the identity little-theory route to the
-identity NIK semantic route. -/
+identity SemanticService semantic route. -/
 theorem theoryTranslation_identity
     (logical : PiInstitution.TheoryObject institution) :
     theoryTranslation (PiInstitution.TheoryHom.identity logical) =
-      NIKHeterogeneousTheory.TheoryTranslation.identity
+      HeterogeneousTheory.TheoryTranslation.identity
         (theoryFamily logical) := by
   apply CertifiedTheoryCategory.TheoryTranslation.ext_data
   · intro kind
@@ -138,7 +140,7 @@ theorem theoryTranslation_comp
     (earlier : PiInstitution.TheoryHom first middle)
     (later : PiInstitution.TheoryHom middle last) :
     theoryTranslation (PiInstitution.TheoryHom.comp earlier later) =
-      NIKHeterogeneousTheory.TheoryTranslation.comp
+      HeterogeneousTheory.TheoryTranslation.comp
         (theoryTranslation earlier) (theoryTranslation later) := by
   apply CertifiedTheoryCategory.TheoryTranslation.ext_data
   · intro kind
@@ -153,7 +155,7 @@ theorem theoryTranslation_comp
         later.mapSignature formula)
 
 /-- Closed little theories and their native translations form a genuine
-semantic subgraph of the heterogeneous NIK theory category.  No checker or
+semantic subgraph of the heterogeneous SemanticService theory category.  No checker or
 certificate representation is selected by this functor. -/
 def closedTheoryFunctor :
     PiInstitution.TheoryObject institution ⥤

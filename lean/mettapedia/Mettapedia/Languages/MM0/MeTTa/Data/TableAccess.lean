@@ -177,7 +177,7 @@ theorem table_body_returns (state : State) (handle : Handle) (entries : List Ato
     · apply match_collapse_returns program (tableEnvironment handle index) state state "space" _ _
         (indexedQuery entries index)
       simp [tableEnvironment, environment, applySubst, applySubst.applySubstList,
-        Subst.lookup, StdLib.apply, allocated, Store.indexedQuery]
+        Subst.lookup, allocated, Store.indexedQuery]
     · simp [SpaceSemantics.matchValue, matchAtom, tableEnvironment, environment, Subst.lookup]
     · exact found_body_returns state handle index (indexedQuery entries index)
 
@@ -399,9 +399,9 @@ theorem publish_body_returns (before after : State) (handle : Handle) (index : N
         apply native_function_arguments_return program bound before after "add-atom" _ 2
           (Effects.boolean true) (by decide) (by decide)
         simpa [bound, publishBound, applySubst, applySubst.applySubstList, Subst.lookup,
-          StdLib.apply, Store.row, inserted] using
+          Store.row, inserted] using
           (show StdLib.apply before "add-atom" [handleValue handle, Store.row (index, value)] =
-              .ok (after, [Effects.boolean true]) by simp [StdLib.apply, inserted])
+              .ok (after, [Effects.boolean true]) by simp [inserted])
     · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, done, bound,
         publishBound, publishEnvironment]
     · simpa [done, bound, publishBound, publishEnvironment, tableValue, applySubst, Subst.lookup] using

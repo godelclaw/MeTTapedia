@@ -15,9 +15,9 @@ Maturity boundary: this is a fully connected qualification proof of concept
 for the selected 62-rule semantic-softtype profile.  The parser/theorem seam is
 intended to survive replacement, but the JSON envelope, flat node/child
 arrays, numeric widths, FNV rule fingerprints, and bounded applicative rule
-fragment are not claimed to be an endgame-optimal or universal NIK format.
+fragment are not claimed to be an endgame-optimal or universal SemanticService format.
 In particular, this module qualifies a custom M0GC artifact, not official MM0
-MMB bytes and not a terminal NIK host.
+MMB bytes and not a terminal SemanticService host.
 -/
 
 set_option autoImplicit false

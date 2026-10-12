@@ -1,12 +1,12 @@
 import Mettapedia.UniversalAlgebra.Instances.MonoidConservativeExtension
-import Mettapedia.UniversalAlgebra.NIK.ConsequenceInvariance
-import Mettapedia.UniversalAlgebra.NIK.Simulation
+import Mettapedia.UniversalAlgebra.SemanticService.ConsequenceInvariance
+import Mettapedia.UniversalAlgebra.SemanticService.Simulation
 
 /-!
 # Monoid controls for consequence and authority invariance
 
 The monoid system and its extension by the already-derived equation
-`(1 * x) * 1 = x` have the same models, semantic consequences, NIK theorem
+`(1 * x) * 1 = x` have the same models, semantic consequences, SemanticService theorem
 scope, and extensionally accepted claims.  Their source data nevertheless have
 different numbers of equation occurrences.
 
@@ -33,27 +33,27 @@ theorem derivedExtension_sameEntailment (equation : Equation signature) :
     Entails derivedExtension equation ↔ Entails equationSystem equation :=
   entails_iff_of_sameConsequences derivedExtension_sameConsequences equation
 
-/-- The redundant extension preserves the NIK theorem scope. -/
-theorem derivedExtension_sameNIKScope (equation : Equation signature) :
-    (NIK.theory derivedExtension).Scope () equation ↔
-      (NIK.theory equationSystem).Scope () equation :=
-  NIK.theory_scope_iff_of_sameConsequences
+/-- The redundant extension preserves the SemanticService theorem scope. -/
+theorem derivedExtension_sameCertifiedScope (equation : Equation signature) :
+    (SemanticService.theory derivedExtension).Scope () equation ↔
+      (SemanticService.theory equationSystem).Scope () equation :=
+  SemanticService.theory_scope_iff_of_sameConsequences
     derivedExtension_sameConsequences equation
 
-/-- The redundant extension preserves the existence of accepted NIK
+/-- The redundant extension preserves the existence of accepted SemanticService
 certificates for every equation. -/
 theorem derivedExtension_sameAcceptedClaims (equation : Equation signature) :
-    NIK.HasAcceptedCertificate derivedExtension equation ↔
-      NIK.HasAcceptedCertificate equationSystem equation :=
-  (NIK.sameConsequences_iff_acceptedClaims.mp
+    SemanticService.HasAcceptedCertificate derivedExtension equation ↔
+      SemanticService.HasAcceptedCertificate equationSystem equation :=
+  (SemanticService.sameConsequences_iff_acceptedClaims.mp
     derivedExtension_sameConsequences) equation
 
 /-- The equivalent systems mutually simulate one another in the conservative
 semantic-translation preorder. -/
 theorem derivedExtension_mutuallyConservativelySimulates :
     Mettapedia.Logic.TheorySimulation.MutuallyConservativelySimulates
-      (NIK.theoryObject derivedExtension) (NIK.theoryObject equationSystem) :=
-  NIK.mutuallyConservativelySimulates_of_sameConsequences
+      (SemanticService.theoryObject derivedExtension) (SemanticService.theoryObject equationSystem) :=
+  SemanticService.mutuallyConservativelySimulates_of_sameConsequences
     derivedExtension_sameConsequences
 
 /-- Positive representation canary: the source equation-occurrence counts are
@@ -66,10 +66,10 @@ theorem derivedExtension_occurrenceCount_differs :
 extensional accepted-claim set. -/
 theorem collapsingExtension_not_sameAcceptedClaims :
     ¬ ∀ equation,
-      NIK.HasAcceptedCertificate collapsingExtension equation ↔
-        NIK.HasAcceptedCertificate equationSystem equation := by
+      SemanticService.HasAcceptedCertificate collapsingExtension equation ↔
+        SemanticService.HasAcceptedCertificate equationSystem equation := by
   intro acceptedClaims
   exact collapsingExtension_not_sameConsequences
-    (NIK.sameConsequences_iff_acceptedClaims.mpr acceptedClaims)
+    (SemanticService.sameConsequences_iff_acceptedClaims.mpr acceptedClaims)
 
 end Mettapedia.UniversalAlgebra.Monoid

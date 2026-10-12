@@ -59,8 +59,8 @@ noncomputable def predicateFuzzyForAllCrispEndpointGeOneCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hNonempty M
+      let := hObj M
+      let := hNonempty M
       constructor
       · intro hModels
         have hHolds :
@@ -128,7 +128,7 @@ noncomputable def predicateFuzzyForAllCrispEndpointPositiveThresholdCut
     (by
       intro M
       classical
-      letI := hObj M
+      let := hObj M
       by_cases hHolds :
           fuzzyForAllHolds params
             (predicateCrispProfile
@@ -349,7 +349,7 @@ noncomputable def predicateFuzzyForAllCrispEndpointNonpositiveThresholdTautology
     (by
       intro M
       classical
-      letI := hObj M
+      let := hObj M
       by_cases hHolds :
           fuzzyForAllHolds params
             (predicateCrispProfile
@@ -408,8 +408,8 @@ noncomputable def predicateFuzzyExistsScoreGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := hObj M
-      letI := hNonempty M
+      let := hObj M
+      let := hNonempty M
       constructor
       · intro hModels
         have hHolds :
@@ -480,8 +480,8 @@ noncomputable def predicateFuzzyThereExistsCrispEndpointGeOneCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hNonempty M
+      let := hObj M
+      let := hNonempty M
       constructor
       · intro hModels
         have hHolds :
@@ -550,7 +550,7 @@ noncomputable def predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut
     (by
       intro M
       classical
-      letI := hObj M
+      let := hObj M
       by_cases hHolds :
           fuzzyThereExistsHolds params
             (predicateCrispProfile
@@ -768,7 +768,7 @@ noncomputable def predicateFuzzyThereExistsCrispEndpointNonpositiveThresholdTaut
     (by
       intro M
       classical
-      letI := hObj M
+      let := hObj M
       by_cases hHolds :
           fuzzyThereExistsHolds params
             (predicateCrispProfile

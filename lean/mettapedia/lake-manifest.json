@@ -140,6 +140,15 @@
     {
       "type": "path",
       "scope": "",
+      "name": "PolyFun",
+      "manifestFile": "lake-manifest.json",
+      "inherited": false,
+      "dir": "../externals/PolyFun",
+      "configFile": "lakefile.toml"
+    },
+    {
+      "type": "path",
+      "scope": "",
       "name": "ordered_semigroups",
       "manifestFile": "lake-manifest.json",
       "inherited": false,
@@ -313,6 +322,15 @@
       "inputRev": "main",
       "inherited": true,
       "configFile": "lakefile.lean"
+    },
+    {
+      "type": "path",
+      "scope": "leanprover",
+      "name": "cslib",
+      "manifestFile": "lake-manifest.json",
+      "inherited": true,
+      "dir": "../externals/cslib",
+      "configFile": "lakefile.toml"
     }
   ],
   "name": "Mettapedia",

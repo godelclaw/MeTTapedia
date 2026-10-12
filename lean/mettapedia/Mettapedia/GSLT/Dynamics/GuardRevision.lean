@@ -1,7 +1,7 @@
 import Mettapedia.TypeTheory.ObserverErasure
 import Mettapedia.GSLT.Dynamics.GuardedWork
 import Mettapedia.GSLT.Core.SearchStreamProductivity
-import Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
+import Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 
 /-!
 # Reusing a hoisted guard across world revisions
@@ -13,10 +13,10 @@ stream of candidate batches (`streamPrefix_hoist_guard`).
 
 The hoisted result computed at one revision of the world may be reused at
 another exactly when the revision cannot change the guard.  Revisions and the
-dependencies selected for reuse are NIK's `DependencySystem`.  A guard retained
+dependencies selected for reuse are SemanticService's `DependencySystem`.  A guard retained
 at one revision is the one-policy family `guardPolicy`; its live meaning at a
 revision is the guard computed there (`liveGuard`), and the claim that the
-selected dependencies account for every change of the guard is NIK's
+selected dependencies account for every change of the guard is SemanticService's
 `DependenciesAdequate` for that family.  Under adequacy, a revision with the
 same selected dependencies (`SameDependencies`) keeps the cached hoisted result
 equal to the eager result of the revised world, for every finite prefix of a
@@ -42,9 +42,9 @@ open Mettapedia.GSLT.Core.NonFactorization
 open Mettapedia.GSLT.Core.SearchStreamProductivity
 open Mettapedia.GSLT.Dynamics.GuardedWork
 open Mettapedia.GSLT.Dynamics.ContextualCandidateValuation
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission.PolicyFamilyAdmittedAt
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission.PolicyFamilyAdmittedAt
 
 universe uRevision uDependency uDependencyValue uC uA
 

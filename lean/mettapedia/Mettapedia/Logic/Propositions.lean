@@ -6,6 +6,7 @@ import Mettapedia.Logic.Propositions.Scrutability
 import Mettapedia.Logic.Propositions.ScenarioSpaces
 import Mettapedia.Logic.Propositions.Totality
 import Mettapedia.Logic.Propositions.InformationStates
+import Mettapedia.Logic.Propositions.ComponentBases
 import Mettapedia.Logic.Propositions.EvidenceStates
 import Mettapedia.Logic.Propositions.ObserverViews
 import Mettapedia.Logic.Propositions.Verification
@@ -43,6 +44,10 @@ a base.
   that's-all truth as the condition under which it settles everything.
 * `InformationStates`: sets of open scenarios as a world model; scrutability
   is what the state of the base settles.
+* `ComponentBases`: separately named physical, phenomenal and indexical
+  statement sets; component-preserving refinement, information-state
+  intersection and the provenance lost by joining. No global PQI adequacy
+  or physical realization is assumed by the decomposition.
 * `EvidenceStates`: bags of observed scenarios as a PLN world model; evidence
   is a function of the sense of a sentence, and a state settles a sentence
   exactly when there is no evidence against it.

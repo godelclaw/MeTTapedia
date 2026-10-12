@@ -1187,6 +1187,26 @@ theorem releaseIssued_selected (registry : Registry Address Provider)
   · simpa only [← selected] using
       extractByLast_permutation index registry.rows pair.1 pair.2 extraction
 
+/-- A release exists exactly when the independently specified issued authority
+is present. Physical row extraction does not add an admission assumption. -/
+theorem releaseIssued_exists_iff (registry : Registry Address Provider)
+    (handle : Handle Address Provider) :
+    (∃ next cleared, (releaseIssued registry handle).1 = some (next, cleared)) ↔
+      Authenticated registry handle := by
+  constructor
+  · rintro ⟨next, cleared, released⟩
+    apply (lookup_authenticates registry handle).mp
+    intro missing
+    rw [releaseIssued_refused registry handle missing] at released
+    cases released
+  · intro authorized
+    have present := (lookup_authenticates registry handle).mpr authorized
+    cases found : (lookup registry handle).1 with
+    | none => exact (present found).elim
+    | some index =>
+      obtain ⟨remaining, released, _⟩ := releaseIssued_selected registry handle index found
+      exact ⟨_, _, congrArg Prod.fst released⟩
+
 theorem releaseIssued_keeps_other (registry : Registry Address Provider)
     (handle survivor : Handle Address Provider)
     (next : Registry Address Provider) (cleared : Handle Address Provider)

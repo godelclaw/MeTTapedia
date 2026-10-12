@@ -153,7 +153,16 @@ theorem step_refines (d : Disc) (prog : S → Option (Tm S X)) {r : Runner S X}
   | letP p w b =>
       simp only [step] at hL
       cases hl : letLam? p w with
-      | some f => rw [hl] at hL; exact hr _ _ _ _ hL x hx
+      | some f =>
+          rw [hl] at hL
+          simp only at hL
+          cases hf : σ f with
+          | none => rw [hf] at hL; exact hr _ _ _ _ hL x hx
+          | some _ =>
+              rw [hf] at hL
+              injection hL with hL
+              subst hL
+              cases hx
       | none =>
           rw [hl] at hL
           simp only at hL
@@ -183,8 +192,17 @@ theorem step_refines (d : Disc) (prog : S → Option (Tm S X)) {r : Runner S X}
               simp only at hM₁
               cases p with
               | var f =>
-                  obtain ⟨s₃, h₃⟩ := hr _ _ _ _ hM₁ x hx₁
-                  exact ⟨s₁ ++ s₃, refineRun_trans h₁ h₃⟩
+                  simp only at hM₁
+                  cases hf : r₁.2 f with
+                  | none =>
+                      rw [hf] at hM₁
+                      obtain ⟨s₃, h₃⟩ := hr _ _ _ _ hM₁ x hx₁
+                      exact ⟨s₁ ++ s₃, refineRun_trans h₁ h₃⟩
+                  | some _ =>
+                      rw [hf] at hM₁
+                      injection hM₁ with hM₁
+                      subst hM₁
+                      cases hx₁
               | _ =>
                   injection hM₁ with hM₁
                   subst hM₁

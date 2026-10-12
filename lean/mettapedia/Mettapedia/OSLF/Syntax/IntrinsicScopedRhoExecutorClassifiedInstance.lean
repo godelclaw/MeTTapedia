@@ -36,14 +36,14 @@ theorem strict_simulation {free : FreeSortContext} {bound : List String}
   exact ⟨final, reads, (extension_iff_steps _ _ _).mpr fires⟩
 
 /-- The same classification covers the authored book executor with its actual Drop rule. -/
-theorem book_simulation {free : FreeSortContext} {bound : List String}
+theorem dropExecution_simulation {free : FreeSortContext} {bound : List String}
     {source target : Pattern}
     (sourceTyped : ProcWellSorted rhoReflectivePresentation free bound source)
     (step : RhoCombinedInterpretedStep.RhoStepWithDrop source target)
     {initial : Term sig [] Srt.pr}
     (translated : tProc (Env.empty []) source = some initial) :
     ∃ final, tProc (Env.empty []) target = some final ∧
-      ExtendedReduction bookLocalRules equations initial final := by
+      ExtendedReduction dropExecutionLocalRules equations initial final := by
   obtain ⟨final, reads, fires⟩ := rhoStepWithDrop_simulation sourceTyped step translated
   exact ⟨final, reads, (extension_iff_steps _ _ _).mpr fires⟩
 
@@ -62,16 +62,16 @@ theorem strict_reflection {free : FreeSortContext} {source : Pattern}
     ((extension_iff_steps _ _ _).mp step)
 
 /-- Book reflection retains exactly the established authored-source admission boundary. -/
-theorem book_reflection {free : FreeSortContext} {source : Pattern}
+theorem dropExecution_reflection {free : FreeSortContext} {source : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] source)
     {initial : Term sig [] Srt.pr}
     (translated : tProc (Env.empty []) source = some initial)
     {final : Term sig [] Srt.pr}
-    (step : ExtendedReduction bookLocalRules equations initial final) :
+    (step : ExtendedReduction dropExecutionLocalRules equations initial final) :
     ∃ rearranged target, StructuralCongruence source rearranged ∧
       RhoCombinedInterpretedStep.RhoStepWithDrop rearranged target ∧
         ∃ output, tProc (Env.empty []) target = some output ∧ cls output = cls final :=
-  RhoPayloadPresentation.book_reflection typed translated
+  RhoPayloadPresentation.dropExecution_reflection typed translated
     ((extension_iff_steps _ _ _).mp step)
 
 end Mettapedia.OSLF.Binding.IntrinsicScopedRhoExecutorClassifiedInstance

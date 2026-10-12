@@ -30,21 +30,21 @@ section LiteratureCanaries
 variable {U : Type*} [Fintype U]
 
 /-- Ch.11 canary: existential quantifier is the De Morgan dual of universal quantifier. -/
-theorem canary_ch11_exists_deMorgan
+theorem canary_exists_deMorgan
     (S : SatisfyingSet U) (μ : WeightFunction U BinaryEvidence) :
     thereExistsEval S μ = BinaryEvidence.compl (forAllEval (SatisfyingSet.neg S) μ) := by
   simp [thereExistsEval_deMorgan]
 
 /-- Ch.11 quantifier-exchange canary (primary De Morgan form). -/
-theorem canary_ch11_quantifier_exchange
+theorem canary_quantifier_exchange
     (S : SatisfyingSet U) (μ : WeightFunction U BinaryEvidence) :
     thereExistsEval S μ = BinaryEvidence.compl (forAllEval (SatisfyingSet.neg S) μ) :=
-  canary_ch11_exists_deMorgan S μ
+  canary_exists_deMorgan S μ
 
 /-- Ch.11 canary (extensional view): existential generalization.
 
 `F(c) ≤ ∃x.F(x)` for any witness `c`. -/
-theorem canary_ch11_existential_generalization_ext
+theorem canary_existential_generalization_ext
     (S : SatisfyingSet U) (c : U) :
     S.pred c ≤ thereExistsEvalExt S := by
   unfold thereExistsEvalExt
@@ -53,7 +53,7 @@ theorem canary_ch11_existential_generalization_ext
 /-- Ch.11 canary (extensional view): universal specification.
 
 `∀x.F(x) ≤ F(c)` for any instance `c`. -/
-theorem canary_ch11_universal_specification_ext
+theorem canary_universal_specification_ext
     (S : SatisfyingSet U) (c : U) :
     forAllEvalExt S ≤ S.pred c := by
   unfold forAllEvalExt
@@ -62,14 +62,14 @@ theorem canary_ch11_universal_specification_ext
 /-- Ch.11 rule-family canary bundle (core extensional path).
 
 Packages existential generalization + universal specification + exchange in one theorem. -/
-theorem canary_ch11_rule_family_end_to_end_ext
+theorem canary_rule_family_end_to_end_ext
     (S : SatisfyingSet U) (μ : WeightFunction U BinaryEvidence) (c : U) :
     (thereExistsEval S μ = BinaryEvidence.compl (forAllEval (SatisfyingSet.neg S) μ)) ∧
       (S.pred c ≤ thereExistsEvalExt S) ∧
       (forAllEvalExt S ≤ S.pred c) := by
-  refine ⟨canary_ch11_quantifier_exchange S μ, ?_, ?_⟩
-  · exact canary_ch11_existential_generalization_ext S c
-  · exact canary_ch11_universal_specification_ext S c
+  refine ⟨canary_quantifier_exchange S μ, ?_, ?_⟩
+  · exact canary_existential_generalization_ext S c
+  · exact canary_universal_specification_ext S c
 
 /-- Nonempty-domain extensional ordering canary: `∀ ≤ ∃`. -/
 theorem canary_extensional_forall_le_exists
@@ -176,7 +176,7 @@ theorem canary_fixture_fin2_const_ext :
     rw [hset, sSup_singleton]
 
 /-- Ch.11 regression canary: extensional `∀` and `∃` are not equivalent on mixed evidence. -/
-theorem canary_ch11_non_equivalence_extensional_bool_mixed :
+theorem canary_non_equivalence_extensional_bool_mixed :
     forAllEvalExt boolFixtureMixed ≠ thereExistsEvalExt boolFixtureMixed := by
   intro hEq
   have h0 : (⟨0, 0⟩ : BinaryEvidence) = (⟨1, 1⟩ : BinaryEvidence) := by
@@ -188,13 +188,13 @@ theorem canary_ch11_non_equivalence_extensional_bool_mixed :
 
 /-- Ch.11 regression canary in the ITV layer (Walley semantics):
 quantifier non-equivalence persists after BinaryEvidence→ITV mapping. -/
-theorem canary_ch11_non_equivalence_itv_walley_bool_mixed
+theorem canary_non_equivalence_itv_walley_bool_mixed
     (s : ℝ) (hs : 0 < s) :
     forAllEvalExt boolFixtureMixed ≠ thereExistsEvalExt boolFixtureMixed ∧
       (ITV.fromWalleyIDMPredictive (forAllEvalExt boolFixtureMixed) s hs).credibility <
         (ITV.fromWalleyIDMPredictive (thereExistsEvalExt boolFixtureMixed) s hs).credibility := by
   constructor
-  · exact canary_ch11_non_equivalence_extensional_bool_mixed
+  · exact canary_non_equivalence_extensional_bool_mixed
   · rw [canary_fixture_bool_mixed_forall_ext, canary_fixture_bool_mixed_exists_ext]
     have hs2 : 0 < (2 : ℝ) + s := by linarith
     have hpos : 0 < (2 : ℝ) / ((2 : ℝ) + s) := by

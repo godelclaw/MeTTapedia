@@ -367,7 +367,7 @@ theorem ruleApplication_mem_leastHerbrandModel {lang : ILLang} {p q : ILPat}
   -- Build membership directly in T_P_LP then use the fixpoint equation.
   have hmem : encodeReduces p q ∈
       T_P_LP (languageDefToLPKB lang) (leastHerbrandModel (languageDefToLPKB lang)) := by
-    simp only [T_P_LP, Set.mem_union, Set.mem_setOf_eq]
+    simp only [T_P_LP, Set.mem_union, Set.mem_ofPred_eq]
     exact Or.inr ⟨rewriteRuleToLPClause r, bindingsToGrounding bs, hc_mem, hhead, hbody⟩
   rwa [leastHerbrandModel_fixpoint] at hmem
 

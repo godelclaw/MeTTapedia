@@ -253,7 +253,7 @@ theorem greedySelect_one_minus_exp_bound_of_le_card (D : Finset Fact) {k : Nat}
 
 /-! ## Chapter-13 algorithmic end-to-end theorem -/
 
-theorem ch13_inferenceControl_end_to_end_algorithmic
+theorem inferenceControl_end_to_end_algorithmic
     {Goal Bin : Type*}
     (A : PriorNBAssumptionChecklist Goal Fact Bin)
     (η : Fact → ℝ)
@@ -262,11 +262,11 @@ theorem ch13_inferenceControl_end_to_end_algorithmic
     (hLocal : A.localExchangeabilityInBin)
     (δ : Fact → ℝ) (ε : ℝ)
     (hTwoStage :
-      BayesOptimalRanking η (ch13ScoreTwoStage globalPrior localPrior likelihood g))
+      BayesOptimalRanking η (twoStageSelectorScore globalPrior localPrior likelihood g))
     (hbound : ∀ x, |δ x| ≤ ε)
     (hmargin : ∀ x y, η x < η y →
-      ch13ScorePooled globalPrior localPrior likelihood g y
-        - ch13ScorePooled globalPrior localPrior likelihood g x > 2 * ε)
+      pooledSelectorScore globalPrior localPrior likelihood g y
+        - pooledSelectorScore globalPrior localPrior likelihood g x > 2 * ε)
     (htie : ∀ x y, η x = η y → δ x = δ y)
     (D : Finset Fact) :
     let G := greedySelect D A.topK
@@ -275,14 +275,14 @@ theorem ch13_inferenceControl_end_to_end_algorithmic
           0 ≤ (selectorDefaults_halfGate Goal Fact).gate g' f'
             ∧ (selectorDefaults_halfGate Goal Fact).gate g' f' ≤ 1)
       ∧ BayesOptimalRanking η
-          (perturbedScore (ch13ScorePooled globalPrior localPrior likelihood g) δ)
+          (perturbedScore (pooledSelectorScore globalPrior localPrior likelihood g) δ)
       ∧ (1 - Real.exp (-1)) * (Nat.min A.topK D.card : ℝ) ≤ dependencyCoverage D G := by
   intro G
   have hGreedy : GreedyChain D A.topK G := by
     simpa [G] using
       (greedySelect_chain_of_le_card (D := D) (k := A.topK) A.topK_le_pool)
   simpa [G] using
-    (ch13_inferenceControl_end_to_end
+    (inferenceControl_end_to_end
       (A := A) (η := η)
       (globalPrior := globalPrior) (localPrior := localPrior)
       (likelihood := likelihood) (g := g)

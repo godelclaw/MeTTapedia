@@ -1,4 +1,5 @@
 import Mettapedia.Logic.HOL.Syntax.ConstMap
+import Mettapedia.Logic.HOL.Syntax.TypeSubstitution
 
 /-!
 # Composition of closed constant interpretations
@@ -76,5 +77,51 @@ theorem substConst_constant_images
     {context : Ctx Base} {type : Ty Base} (term : Term Const context type) :
     substConst (fun constant => .const (constants constant)) term = mapConst constants term := by
   induction term <;> simp_all only [substConst, mapConst, weakenCtx_const]
+
+section TypeInstantiation
+
+universe u' v' w'
+
+variable {Base' : Type u'} {InstConst : Ty Base' → Type v'}
+  {InstExpanded : Ty Base' → Type w'}
+
+/-- Retyping a closed replacement and weakening it commute, including when
+a base type is replaced by a compound function type. -/
+@[simp] theorem mapTypes_weakenCtx
+    (substitution : Base → Ty Base')
+    (symbols : ∀ {type}, Const type → InstConst (Ty.substitute substitution type))
+    (context : Ctx Base) {type : Ty Base} (term : ClosedTerm Const type) :
+    mapTypes substitution symbols (weakenCtx context term) =
+      weakenCtx (context.map (Ty.substitute substitution))
+        (mapTypes substitution symbols term) := by
+  induction context with
+  | nil => rfl
+  | cons head tail ih =>
+      simp only [weakenCtx_cons, mapTypes_weaken, ih]
+      rfl
+
+/-- Type instantiation commutes with closed-term constant interpretation
+when the actual symbol images commute. Neither the type map nor the symbol
+maps need to be injective. -/
+theorem mapTypes_substConst
+    (substitution : Base → Ty Base')
+    (sourceSymbols : ∀ {type}, Const type → InstConst (Ty.substitute substitution type))
+    (targetSymbols : ∀ {type}, Const' type → InstExpanded (Ty.substitute substitution type))
+    (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    (instantiatedImages : ∀ {type}, InstConst type → ClosedTerm InstExpanded type)
+    (commutes : ∀ {type} (constant : Const type),
+      instantiatedImages (sourceSymbols constant) =
+        mapTypes substitution targetSymbols (images constant))
+    {context : Ctx Base} {type : Ty Base} (term : Term Const context type) :
+    mapTypes substitution targetSymbols (substConst images term) =
+      substConst instantiatedImages (mapTypes substitution sourceSymbols term) := by
+  induction term with
+  | const constant =>
+      simp only [mapTypes, substConst, mapTypes_weakenCtx]
+      rw [commutes]
+  | _ =>
+      simp_all only [mapTypes, substConst] <;> rfl
+
+end TypeInstantiation
 
 end Mettapedia.Logic.HOL

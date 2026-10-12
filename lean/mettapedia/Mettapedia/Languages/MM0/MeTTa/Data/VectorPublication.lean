@@ -54,7 +54,7 @@ private theorem incremented_vector_returns (state : State) (handle : Handle) (si
       (grounded_returns program bindings state (.int 1)) _ (by decide)
     · simpa [bindings, environment, applySubst, Subst.lookup] using
         variable_returns program bindings state "size"
-    · simp [StdLib.apply, natural, Int.natCast_add]
+    · simp [natural, Int.natCast_add]
   apply data_call_returns program bindings state state "MM0:Vector" _ _
     vector_is_data_constructor _ (by decide)
   have last := evaluated_argument_returns program bindings state state state .data
@@ -80,7 +80,7 @@ theorem publication_body_returns (before after : State) (handle : Handle) (size 
   · apply call_returns program bindings before after "add-atom" _ _ (by decide) _ (by decide)
     have insertedPath := native_function_arguments_return program bindings before after "add-atom"
       [handleValue handle, row (size, value)] 2 (boolean true) (by decide) (by decide)
-      (by simp [StdLib.apply, inserted])
+      (by simp [inserted])
     have last := raw_argument_answers program bindings before after "add-atom"
       (.expression [.var "size", .var "value"]) [] [handleValue handle] 1 [boolean true]
       (by decide) (by simpa [bindings, environment, row, applySubst, applySubst.applySubstList,

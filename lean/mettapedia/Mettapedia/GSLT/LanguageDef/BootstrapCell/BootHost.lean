@@ -5,7 +5,7 @@ import Mettapedia.Logic.HOL.ReplayCore
 /-!
 # `BootHost`: certificates as the initial algebra, replay as the unique fold
 
-Hosts of NIK's raw certificates are algebras of the polynomial endofunctor
+Hosts of SemanticService's raw certificates are algebras of the polynomial endofunctor
 `F X = Unit × RuleInstance × List X`, the category
 `ListNodeAlgebra Unit RuleInstance`.  A raw certificate records no
 conclusions, which is why the conclusion component is `Unit`.
@@ -270,10 +270,10 @@ theorem fold_replayHost (certificate : RawProof) :
 /-- For a validated calculus, the unique fold out of the certificate host is
 the generic inference checker. -/
 theorem checkRawFold_unique (definition : ValidatedCalculusLanguageDef)
-    (fold : rawProofHost ⟶ replayHost (nikSignature definition)) (certificate : RawProof)
+    (fold : rawProofHost ⟶ replayHost (calculusReplaySignature definition)) (certificate : RawProof)
     (goal : Pattern) :
     fold.toFun certificate goal = checkRaw definition goal certificate := by
-  rw [replayFold_unique (nikSignature definition) fold, replayFold_apply,
+  rw [replayFold_unique (calculusReplaySignature definition) fold, replayFold_apply,
     checkRaw_eq_replay]
 
 /-! ## Controls: non-well-founded hosts -/

@@ -1,30 +1,17 @@
--- LLM primer: This formalizes interpret_function_args (eval.c:8440-8529).
--- `prefix` is a Lean keyword → field named `evArgs`.
--- Three paths: base (idx=nargs), fast (trivial domain), eval (evaluate+recurse).
--- Termination on (origArgs.length - idx).
---
--- Models ALL failure modes from C:
--- 1. mergeEnv can fail → skip result (C: bindings_builder_merge_or_clone, line 8498)
--- 2. extendBinder can fail → skip result (C: bind_domain_binder_builder, line 8506)
--- 3. isEmptyOrError && changed → error short-circuit (C: line 8498)
--- Failed results produce [] (skipped), matching C's `continue`.
-
 import Mettapedia.Languages.MeTTa.HE.NondeterminismCarrier
 
 /-!
 # Direct Recursive Typed Ordinary Application
 
-Formalizes `interpret_function_args` (eval.c:8440-8529) including all
-failure modes: merge failure, binder extension failure, error short-circuit.
+Models the prefix traversal of ordinary typed application with explicit
+argument services. It retains selected values and environments, skips failed
+binding merges or binder extensions, and propagates changed argument errors.
 
-## C Seam Mapping
-
-| Lean | C (eval.c) |
-|------|-----------|
-| `mergeEnv` returning `none` | `bindings_builder_merge_or_clone` returning false (line 8498) |
-| `extendBinder` returning `none` | `bind_domain_binder_builder` returning false (line 8506) |
-| `flatMap` returning `[]` | C's `continue` (skip result) |
-| Error short-circuit | `atom_is_empty_or_error && !atom_eq` (line 8498) |
+The operational pattern occurs in CeTTa's `interpret_function_args_frame_step`.
+This component alone does not prove native refinement: the native frame also
+selects dialect policies, instantiates dependent domains, observes Need cells,
+and retains asynchronous evaluator continuations. The supplied finite leaf
+services and pre-resolved domain list are the boundary of this model.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE
@@ -66,16 +53,9 @@ end TypedApplyState
 
 /-! ## Direct Recursive Evaluation -/
 
-/-- Direct recursive typed ordinary application.
-
-    Parameters model the exact C interfaces:
-    - `eval1 boundArg argType env` → result list (C: metta_eval_bind_typed_on_stack)
-    - `applyEnv env atom` → substituted atom (C: bindings_apply)
-    - `mergeEnv currentEnv evalResultEnv` → merged env or failure
-      (C: bindings_builder_merge_or_clone, returns false on failure)
-    - `extendBinder env argType argVal` → extended env or failure
-      (C: bind_domain_binder_builder, returns false on failure)
-    - `isTrivial argType` → true if type is Atom or similar (C: atom_is_symbol_id) -/
+/-- Direct recursive typed argument application. Leaf evaluation, substitution,
+binding merge, binder extension and raw-domain selection are explicit services.
+Native realization and recursive service control need separate correspondence. -/
 def typedApplyDirect
     (eval1 : Atom → Atom → Bindings → ResultList)
     (applyEnv : Bindings → Atom → Atom)
@@ -95,9 +75,8 @@ def typedApplyDirect
     let boundArg := applyEnv st.env origArg
     if isTrivial argType || origArg.isVariable then
       -- FAST PATH: skip evaluation
-      -- C: bind_domain_binder_builder can fail (line 8466)
       match extendBinder st.env argType boundArg with
-      | none => []  -- binder extension failed → no results (C: return)
+      | none => []
       | some env' =>
         typedApplyDirect eval1 applyEnv mergeEnv extendBinder isTrivial
           { st with idx := st.idx + 1, evArgs := st.evArgs ++ [boundArg], env := env' }
@@ -106,7 +85,6 @@ def typedApplyDirect
       let argResults := eval1 boundArg argType st.env
       argResults.flatMap fun (argVal, evalEnv) =>
         -- Step 1: merge eval result env with current env
-        -- C: bindings_builder_merge_or_clone (line 8498)
         match mergeEnv st.env evalEnv with
         | none => []  -- merge failed → skip result (C: continue)
         | some mergedEnv =>

@@ -204,7 +204,7 @@ theorem ExtensionalDefinableCut.lower_eq_one_iff_forall_ge
         (models_of_provable_of_functionsRespectEqv
           (Base := Base) (Const := Const) hProv M.1 M.2.1 M.2.2)
   · intro hAll
-    letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+    let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
       nonempty_extensionalTheoryModel_of_consistent_classical
         (Base := Base) (Const := Const) (T := T)
         enum henum hCons hT0 hEM
@@ -244,7 +244,7 @@ theorem ExtensionalDefinableCut.upper_eq_zero_iff_forall_not_ge
           (Base := Base) (Const := Const) hProvNot M.1 M.2.1 M.2.2)
     exact hNotModels ((C.represents_ge M).mpr hGe)
   · intro hAll
-    letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+    let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
       nonempty_extensionalTheoryModel_of_consistent_classical
         (Base := Base) (Const := Const) (T := T)
         enum henum hCons hT0 hEM

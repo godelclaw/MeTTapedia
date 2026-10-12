@@ -4,7 +4,7 @@ import Mathlib.Data.List.GetD
 # A selected proof-term core of Isabelle/Pure
 
 This module isolates the natural-deduction proof-term fragment needed before
-embedding a finite NIK metatheory in Isabelle/Pure.  It is deliberately named
+embedding a finite SemanticService metatheory in Isabelle/Pure.  It is deliberately named
 `IsabellePureMetaCore` to distinguish it from the existing unlevelled
 dependent typed-hole language under `LanguageDef/Pure/`.
 

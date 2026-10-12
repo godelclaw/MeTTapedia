@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.GraphTheory.ReflectiveBetaBubble
 import Mettapedia.GSLT.Logic.ObserverDetermination
 
@@ -81,12 +82,8 @@ theorem relEquiv_iff_of_inert {S : GSLT.{uS}} {rules : ContextualRules.{uContext
 /-! ## The calculus -/
 
 /-- λ-terms with syntactic equations and no reduction. -/
-abbrev syntacticLambdaGSLT : GSLT where
-  Term := LambdaTerm
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev syntacticLambdaGSLT : GSLT :=
+  GSLT.stepFree (LambdaTerm)
 
 /-- Church truth, `λx y. x`. -/
 def churchTrue : LambdaTerm := .lam (.lam (.var 1))

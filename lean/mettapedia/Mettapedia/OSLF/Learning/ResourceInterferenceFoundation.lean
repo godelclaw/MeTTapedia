@@ -1,0 +1,58 @@
+import Mettapedia.GSLT.Causality.ComplementaryAssay
+import Mettapedia.GSLT.Causality.FundedAssayCompletion
+import Mettapedia.GSLT.Causality.PaidProbeCampaign
+import Mettapedia.GSLT.Weighting.ConfiguredFundingControls
+import Mettapedia.GSLT.Weighting.ConfiguredFundingRates
+import Mettapedia.GSLT.Weighting.WeightTheory
+import Mettapedia.Languages.ProcessCalculi.PiCalculus.Bridges.RhoScopedAllocation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.ActivationPathConservation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.Conservation
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.Erasure
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.Located
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.Step
+import Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourcePredation
+import Mettapedia.Logic.ModalNuUnfoldings
+import Mettapedia.OSLF.Framework.AssayRevisionControls
+import Mettapedia.OSLF.Framework.AssayRevisionMetric
+import Mettapedia.OSLF.Learning.ResourceInterferenceControls
+import Mettapedia.OSLF.Framework.FiniteAssayLearner
+import Mettapedia.OSLF.Framework.FundedInstrumentQuestionAdmission
+import Mettapedia.OSLF.Framework.FundedNuAssayControls
+import Mettapedia.OSLF.Framework.FundedNuBudgetSeparation
+import Mettapedia.OSLF.Framework.GeneratedScope
+import Mettapedia.OSLF.Framework.InstrumentQuestionAdmission
+import Mettapedia.OSLF.Framework.InstrumentShapeTests
+import Mettapedia.OSLF.Framework.InstrumentTestDecision
+import Mettapedia.OSLF.Framework.InstrumentTestExecution
+import Mettapedia.OSLF.Framework.LogicalMetric
+import Mettapedia.OSLF.Framework.NuInfiniteUnfoldingControls
+import Mettapedia.OSLF.Framework.NuRevisionMetric
+import Mettapedia.OSLF.Framework.RhoScopeWhereFundedComparison
+import Mettapedia.OSLF.Framework.RhoScopeWhereNativeReceipts
+import Mettapedia.OSLF.Framework.RhoScopedFundedInspection
+import Mettapedia.OSLF.Framework.RhoScopedInstrumentAdmission
+import Mettapedia.OSLF.Framework.RhoScopedInstrumentProperBase
+import Mettapedia.OSLF.Framework.RhoScopedReactionAssayReceipts
+import Mettapedia.OSLF.Framework.SortedCommutativeFullObserverSeparation
+import Mettapedia.OSLF.Framework.SortedTypedInstrumentKitModalComparison
+import Mettapedia.OSLF.Framework.SortedTypedStructuralObservations
+import Mettapedia.OSLF.Framework.StructuralInspectionAssays
+import Mettapedia.OSLF.Syntax.RhoPayloadConstruction
+import Mettapedia.OSLF.Syntax.RhoPayloadPresentation
+import Mettapedia.OSLF.Syntax.RhoScopedChannelSeparation
+import Mettapedia.OSLF.Syntax.RhoScopedFiniteReactions
+import Mettapedia.OSLF.Syntax.RhoScopedNativeAbsence
+import Mettapedia.OSLF.Syntax.RhoScopedReactionReadout
+import Mettapedia.OSLF.Syntax.ScopedBindingContexts
+import Mettapedia.Documentation.SourceLedgers.FindingMindLearning
+
+open Mettapedia.OSLF.Framework
+
+/-!
+# Source inventory and operational resource interference
+
+This aggregate imports the complete source-reference interface and the checked
+resource-receipt package. Chapter inventory coverage does not extend any cited
+proof beyond its stated assumptions or identify the admitted frame with all
+internalized cost-rho contexts.
+-/

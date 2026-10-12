@@ -2,7 +2,7 @@ import Mettapedia.GSLT.LanguageDef.InferencePatternSharing
 import Mettapedia.GSLT.LanguageDef.InferenceCettaWireFormat
 
 /-!
-# Exact shared-Pattern carrier for NIK proof DAGs
+# Exact shared-Pattern carrier for SemanticService proof DAGs
 
 Version 2 of the physical `GProofDAG` carrier factors repeated Pattern
 subtrees into one chronological table.  Rule arguments and the submitted

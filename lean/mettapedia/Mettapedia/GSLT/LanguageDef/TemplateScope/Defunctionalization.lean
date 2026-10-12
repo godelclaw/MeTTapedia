@@ -20,6 +20,9 @@ of lambdas:
 * `let` treats a closure as the source treats a lambda: one written in place
   is substituted at the same path, and an evaluated one is a function value,
   substituted for a variable pattern and never stored in the ground store.
+  Both substitutions happen only while the pattern's name is unbound in the
+  store; on a name that already holds a value the `let` gives no answer, as in
+  the source.
 Everything else is the model's evaluator.
 
 ## Main results
@@ -51,6 +54,17 @@ holds for nested lambdas whose inner rules get smaller ranks.  The target term
 must also be `good`: no free name of the query is a spelling a rule owns.
 `defun_needs_good` shows the hypothesis is needed: without it the source
 captures and the two programs answer differently.
+
+## Sealed code
+
+An activation renames the frame's own names inside the sealed code of its body
+(`activate`).  A closure's rule body is shared by every closure of its
+constructor, so the activation of an enclosing rule cannot reach the sealed code
+of an inner rule.  Sealed code therefore names no spelling a rule owns: `good`
+asks it of the target's sealed code and `WF` of the rules' bodies; then no
+activation renames sealed code, on either side.  `defun_needs_sealed` shows the
+condition is needed: an inner lambda whose sealed code names the outer lambda's
+own name is renamed per call in the source and not in the machine.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.TemplateScope
@@ -170,11 +184,12 @@ def letClo? : Tm S X → Tm S X → Option (Nm X)
   | .var f, w => if (T.clo? w).isSome then some f else none
   | _, _ => none
 
-/-- Terms whose free names and parameters carry no rank: what the machine
-evaluates. -/
+/-- Terms whose free names and parameters carry no rank, and whose sealed code
+names no spelling a rule owns: what the machine evaluates. -/
 def good (t : Tm S X) : Bool :=
   (freeNames t).all (fun n => (T.nameRank n).isNone) &&
-    (freeParams t).all fun p => (T.paramRank p).isNone
+    (freeParams t).all (fun p => (T.paramRank p).isNone) &&
+    (sealedVars t).all fun n => (T.nameRank n).isNone
 
 variable [DecidableEq S]
 
@@ -202,13 +217,14 @@ def rel : Tm S X → Tm S X → Bool
 
 /-- A well-formed table: a rule's own names and parameter have its rank, and
 its body is first-order and closed except for its own names, parameters and
-lambda parameter. -/
+lambda parameter, and its sealed code names no spelling a rule owns. -/
 structure WF : Prop where
   own_rank : ∀ κ r, T.rule κ = some r → ∀ y ∈ r.own, T.ownerRank y = some (T.rank κ)
   x_rank : ∀ κ r, T.rule κ = some r → T.paramRank r.x = some (T.rank κ)
   body_lamFree : ∀ κ r, T.rule κ = some r → r.body.lamFree = true
   body_names : ∀ κ r, T.rule κ = some r → ∀ n ∈ freeNames r.body, ownKey r.own n = true
   body_params : ∀ κ r, T.rule κ = some r → ∀ p ∈ freeParams r.body, p ∈ r.params ∨ p = r.x
+  body_sealed : ∀ κ r, T.rule κ = some r → ∀ n ∈ sealedVars r.body, T.nameRank n = none
 
 /-- Related substitutions. -/
 def SubRel (θ θ' : Sub S X) : Prop := ∀ n, OptRel (fun a b => T.rel a b = true) (θ n) (θ' n)
@@ -216,8 +232,10 @@ def SubRel (θ θ' : Sub S X) : Prop := ∀ n, OptRel (fun a b => T.rel a b = tr
 /-- A substitution whose values carry no rank. -/
 def GoodSub (θ : Sub S X) : Prop := ∀ n v, θ n = some v → T.good v = true
 
-/-- Stores whose values relate to themselves (no closure symbol). -/
-def StoreOK (σ : GStore S X) : Prop := ∀ n g, σ n = some g → T.rel g.toTm g.toTm = true
+/-- Stores whose values relate to themselves (no closure symbol) and are good: their
+sealed code names no spelling a rule owns. -/
+def StoreOK (σ : GStore S X) : Prop :=
+  ∀ n g, σ n = some g → T.rel g.toTm g.toTm = true ∧ T.good g.toTm = true
 
 /-- Related results: related terms, identical stores, a good target term and
 a sound store. -/
@@ -250,7 +268,10 @@ def stepD (T : CloTable S X) (prog : S → Option (Tm S X)) (rec : Runner S X) :
             | none => some [(.app r₁.1 r₂.1, r₂.2)]
       | .letP p w b =>
           match T.letClo? p w with
-          | some f => rec π σ (subst (Sub.single f w) Sub.none b)
+          | some f =>
+              match σ f with
+              | none => rec π σ (subst (Sub.single f w) Sub.none b)
+              | some _ => some []
           | none =>
               bindOpt (rec (π ++ [0]) σ w) fun r₁ =>
                 match T.ground? (act r₁.2 r₁.1) with
@@ -260,7 +281,10 @@ def stepD (T : CloTable S X) (prog : S → Option (Tm S X)) (rec : Runner S X) :
                     | none => some []
                 | none =>
                     match p with
-                    | .var f => rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+                    | .var f =>
+                        match r₁.2 f with
+                        | none => rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+                        | some _ => some []
                     | _ => some []
       | .alt t₁ t₂ =>
           match rec (π ++ [0]) σ t₁, rec (π ++ [1]) σ t₂ with
@@ -628,6 +652,84 @@ theorem mem_freeParams_subst : ∀ (t : Tm S X) (θ φ : Sub S X) (q : Nm X),
         · exact Or.inr (Or.inr h)
 
 omit [DecidableEq S] in
+/-- Where the names of the sealed code of a substituted term come from:
+substitution never enters sealed code, so they are the term's own, or those of
+an inserted value. -/
+theorem mem_sealedVars_subst : ∀ (t : Tm S X) (θ φ : Sub S X) (m : Nm X),
+    m ∈ sealedVars (subst θ φ t) →
+      m ∈ sealedVars t ∨ (∃ n w, θ n = some w ∧ m ∈ sealedVars w) ∨
+        ∃ p w, φ p = some w ∧ m ∈ sealedVars w
+  | .sym _, _, _, _, h | .fn _, _, _, _, h => by simp [subst, sealedVars] at h
+  | .quote _, _, _, _, h => Or.inl h
+  | .ctx _ _, _, _, _, h => Or.inl h
+  | .var n, θ, _, m, h => by
+      cases hn : θ n with
+      | none => simp [subst, hn, sealedVars] at h
+      | some w =>
+          simp only [subst, hn, Option.getD_some] at h
+          exact Or.inr (Or.inl ⟨n, w, hn, h⟩)
+  | .pvar x, _, φ, m, h => by
+      cases hx : φ x with
+      | none => simp [subst, hx, sealedVars] at h
+      | some w =>
+          simp only [subst, hx, Option.getD_some] at h
+          exact Or.inr (Or.inr ⟨x, w, hx, h⟩)
+  | .lam x own b, θ, φ, m, h => by
+      simp only [subst, sealedVars] at h ⊢
+      rcases mem_sealedVars_subst b _ _ m h with hb | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
+      · exact Or.inl hb
+      · refine Or.inr (Or.inl ⟨n, w, ?_, hw⟩)
+        unfold Sub.hideOwn at hn
+        split at hn
+        · cases hn
+        · exact hn
+      · refine Or.inr (Or.inr ⟨p, w, ?_, hw⟩)
+        unfold Sub.hideParam at hp
+        split at hp
+        · cases hp
+        · exact hp
+  | .app f a, θ, φ, m, h => by
+      simp only [subst, sealedVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · rcases mem_sealedVars_subst f θ φ m h with h | h | h
+        · exact Or.inl (Or.inl h)
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+      · rcases mem_sealedVars_subst a θ φ m h with h | h | h
+        · exact Or.inl (Or.inr h)
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+  | .pquote c, θ, φ, m, h => by
+      simp only [subst, sealedVars] at h ⊢
+      exact mem_sealedVars_subst c θ φ m h
+  | .letP p w b, θ, φ, m, h => by
+      simp only [subst, sealedVars, List.mem_append] at h ⊢
+      rcases h with (h | h) | h
+      · rcases mem_sealedVars_subst p θ φ m h with h | h | h
+        · exact Or.inl (Or.inl (Or.inl h))
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+      · rcases mem_sealedVars_subst w θ φ m h with h | h | h
+        · exact Or.inl (Or.inl (Or.inr h))
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+      · rcases mem_sealedVars_subst b θ φ m h with h | h | h
+        · exact Or.inl (Or.inr h)
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+  | .alt t₁ t₂, θ, φ, m, h => by
+      simp only [subst, sealedVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · rcases mem_sealedVars_subst t₁ θ φ m h with h | h | h
+        · exact Or.inl (Or.inl h)
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+      · rcases mem_sealedVars_subst t₂ θ φ m h with h | h | h
+        · exact Or.inl (Or.inr h)
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr h)
+
+omit [DecidableEq S] in
 /-- **Dropping commutes with substitution** (on a rule instance).  Substituting
 under the rule's binders into its instance equals instantiating the rule with
 the substituted arguments, provided the rule body is first-order and closed
@@ -743,8 +845,8 @@ theorem hasClo_of_clo? {t : Tm S X} {c : S × List (Tm S X) × ApplyRule S X}
 omit [DecidableEq S] in
 theorem good_iff {t : Tm S X} :
     T.good t = true ↔ (∀ n ∈ freeNames t, T.nameRank n = none) ∧
-      ∀ p ∈ freeParams t, T.paramRank p = none := by
-  simp [good, List.all_eq_true]
+      (∀ p ∈ freeParams t, T.paramRank p = none) ∧ ∀ n ∈ sealedVars t, T.nameRank n = none := by
+  simp [good, List.all_eq_true, and_assoc]
 
 omit [DecidableEq S] in
 theorem argsOK_iff {κ : S} {vs : List (Tm S X)} :
@@ -971,37 +1073,44 @@ theorem toGVal?_eq_ground? {s t : Tm S X} (h : T.rel s t = true) : s.toGVal? = T
 omit [DecidableEq S] in
 theorem good_app {f a : Tm S X} :
     T.good (.app f a) = true ↔ T.good f = true ∧ T.good a = true := by
-  simp only [good_iff, freeNames, freeParams, List.mem_append]
+  simp only [good_iff, freeNames, freeParams, sealedVars, List.mem_append]
   constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨⟨fun n hn => h1 n (Or.inl hn), fun p hp => h2 p (Or.inl hp)⟩,
-      ⟨fun n hn => h1 n (Or.inr hn), fun p hp => h2 p (Or.inr hp)⟩⟩
-  · rintro ⟨⟨h1, h2⟩, ⟨h3, h4⟩⟩
-    exact ⟨fun n hn => hn.elim (h1 n) (h3 n), fun p hp => hp.elim (h2 p) (h4 p)⟩
+  · rintro ⟨h1, h2, h3⟩
+    exact ⟨⟨fun n hn => h1 n (Or.inl hn), fun p hp => h2 p (Or.inl hp),
+        fun n hn => h3 n (Or.inl hn)⟩,
+      ⟨fun n hn => h1 n (Or.inr hn), fun p hp => h2 p (Or.inr hp), fun n hn => h3 n (Or.inr hn)⟩⟩
+  · rintro ⟨⟨h1, h2, h3⟩, ⟨h4, h5, h6⟩⟩
+    exact ⟨fun n hn => hn.elim (h1 n) (h4 n), fun p hp => hp.elim (h2 p) (h5 p),
+      fun n hn => hn.elim (h3 n) (h6 n)⟩
 
 omit [DecidableEq S] in
 theorem good_letP {p w b : Tm S X} :
     T.good (.letP p w b) = true ↔ T.good p = true ∧ T.good w = true ∧ T.good b = true := by
-  simp only [good_iff, freeNames, freeParams, List.mem_append]
+  simp only [good_iff, freeNames, freeParams, sealedVars, List.mem_append]
   constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨⟨fun n hn => h1 n (Or.inl (Or.inl hn)), fun q hq => h2 q (Or.inl (Or.inl hq))⟩,
-      ⟨fun n hn => h1 n (Or.inl (Or.inr hn)), fun q hq => h2 q (Or.inl (Or.inr hq))⟩,
-      ⟨fun n hn => h1 n (Or.inr hn), fun q hq => h2 q (Or.inr hq)⟩⟩
-  · rintro ⟨⟨h1, h2⟩, ⟨h3, h4⟩, ⟨h5, h6⟩⟩
-    exact ⟨fun n hn => hn.elim (fun h => h.elim (h1 n) (h3 n)) (h5 n),
-      fun q hq => hq.elim (fun h => h.elim (h2 q) (h4 q)) (h6 q)⟩
+  · rintro ⟨h1, h2, h3⟩
+    exact ⟨⟨fun n hn => h1 n (Or.inl (Or.inl hn)), fun q hq => h2 q (Or.inl (Or.inl hq)),
+        fun n hn => h3 n (Or.inl (Or.inl hn))⟩,
+      ⟨fun n hn => h1 n (Or.inl (Or.inr hn)), fun q hq => h2 q (Or.inl (Or.inr hq)),
+        fun n hn => h3 n (Or.inl (Or.inr hn))⟩,
+      ⟨fun n hn => h1 n (Or.inr hn), fun q hq => h2 q (Or.inr hq), fun n hn => h3 n (Or.inr hn)⟩⟩
+  · rintro ⟨⟨h1, h2, h3⟩, ⟨h4, h5, h6⟩, ⟨h7, h8, h9⟩⟩
+    exact ⟨fun n hn => hn.elim (fun h => h.elim (h1 n) (h4 n)) (h7 n),
+      fun q hq => hq.elim (fun h => h.elim (h2 q) (h5 q)) (h8 q),
+      fun n hn => hn.elim (fun h => h.elim (h3 n) (h6 n)) (h9 n)⟩
 
 omit [DecidableEq S] in
 theorem good_alt {t₁ t₂ : Tm S X} :
     T.good (.alt t₁ t₂) = true ↔ T.good t₁ = true ∧ T.good t₂ = true := by
-  simp only [good_iff, freeNames, freeParams, List.mem_append]
+  simp only [good_iff, freeNames, freeParams, sealedVars, List.mem_append]
   constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨⟨fun n hn => h1 n (Or.inl hn), fun p hp => h2 p (Or.inl hp)⟩,
-      ⟨fun n hn => h1 n (Or.inr hn), fun p hp => h2 p (Or.inr hp)⟩⟩
-  · rintro ⟨⟨h1, h2⟩, ⟨h3, h4⟩⟩
-    exact ⟨fun n hn => hn.elim (h1 n) (h3 n), fun p hp => hp.elim (h2 p) (h4 p)⟩
+  · rintro ⟨h1, h2, h3⟩
+    exact ⟨⟨fun n hn => h1 n (Or.inl hn), fun p hp => h2 p (Or.inl hp),
+        fun n hn => h3 n (Or.inl hn)⟩,
+      ⟨fun n hn => h1 n (Or.inr hn), fun p hp => h2 p (Or.inr hp), fun n hn => h3 n (Or.inr hn)⟩⟩
+  · rintro ⟨⟨h1, h2, h3⟩, ⟨h4, h5, h6⟩⟩
+    exact ⟨fun n hn => hn.elim (h1 n) (h4 n), fun p hp => hp.elim (h2 p) (h5 p),
+      fun n hn => hn.elim (h3 n) (h6 n)⟩
 
 omit [DecidableEq S] in
 theorem goodSub_hideOwn {θ : Sub S X} (h : T.GoodSub θ) (own : List X) :
@@ -1052,8 +1161,8 @@ theorem argsOK_subst {κ : S} {vs : List (Tm S X)} {θ φ : Sub S X} (h : T.args
     · simp [((T.good_iff).1 (hφ p w hp')).1 m hw, rankOK]
   · rcases mem_freeParams_subst v θ φ q hq with ⟨hq', -⟩ | ⟨n, w, hn', hw⟩ | ⟨p, w, hp', hw⟩
     · exact hp q hq'
-    · simp [((T.good_iff).1 (hθ n w hn')).2 q hw, rankOK]
-    · simp [((T.good_iff).1 (hφ p w hp')).2 q hw, rankOK]
+    · simp [((T.good_iff).1 (hθ n w hn')).2.1 q hw, rankOK]
+    · simp [((T.good_iff).1 (hφ p w hp')).2.1 q hw, rankOK]
 
 /-- **Substitution preserves the closure relation.**  For related substitutions
 whose target values carry no rank, substituting into related terms gives related
@@ -1293,8 +1402,9 @@ theorem matchT_rel : ∀ (p p' t : Tm S X) (σ : GStore S X), T.rel p p' = true 
 /-- Matching a related pattern against a value that relates to itself keeps the
 store sound. -/
 theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
-    T.rel p p' = true → T.StoreOK σ → T.rel t t = true → matchT σ p t = some σ' → T.StoreOK σ'
-  | .var n, t, σ, σ', _, _, hσ, ht, hm => by
+    T.rel p p' = true → T.StoreOK σ → T.rel t t = true → T.good t = true →
+      matchT σ p t = some σ' → T.StoreOK σ'
+  | .var n, t, σ, σ', _, _, hσ, ht, hgt, hm => by
       simp only [matchT] at hm
       cases hg : t.toGVal? with
       | none => rw [hg] at hm; cases hm
@@ -1313,7 +1423,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
                 simp only [if_true, Option.some.injEq] at hm'
                 subst hm'
                 rw [toGVal?_toTm hg]
-                exact ht
+                exact ⟨ht, hgt⟩
               · simp only [hmn, if_false] at hm'
                 exact hσ m g' hm'
           | some w =>
@@ -1324,22 +1434,23 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
                 subst hm
                 exact hσ m g' hm'
               · cases hm
-  | .app f a, t, σ, σ', p', hp, hσ, ht, hm => by
+  | .app f a, t, σ, σ', p', hp, hσ, ht, hgt, hm => by
       obtain ⟨f', a', rfl, hf, ha⟩ := (T.rel_app).1 hp
       cases t with
       | app t₁ t₂ =>
           simp only [rel, Bool.and_eq_true] at ht
+          obtain ⟨hg₁, hg₂⟩ := (T.good_app).1 hgt
           simp only [matchT] at hm
           cases h1 : matchT σ f t₁ with
           | none => rw [h1] at hm; cases hm
           | some σ₁ =>
               rw [h1] at hm
-              exact matchT_storeOK a t₂ σ₁ σ' a' ha (matchT_storeOK f t₁ σ σ₁ f' hf hσ ht.1 h1)
-                ht.2 hm
+              exact matchT_storeOK a t₂ σ₁ σ' a' ha
+                (matchT_storeOK f t₁ σ σ₁ f' hf hσ ht.1 hg₁ h1) ht.2 hg₂ hm
       | _ => simp [matchT] at hm
-  | .pquote _, _, _, _, _, hp, _, _, _ => by simp [T.rel_pquote] at hp
-  | .sym s, t, σ, σ', _, _, hσ, _, hm | .fn s, t, σ, σ', _, _, hσ, _, hm
-  | .pvar s, t, σ, σ', _, _, hσ, _, hm => by
+  | .pquote _, _, _, _, _, hp, _, _, _, _ => by simp [T.rel_pquote] at hp
+  | .sym s, t, σ, σ', _, _, hσ, _, _, hm | .fn s, t, σ, σ', _, _, hσ, _, _, hm
+  | .pvar s, t, σ, σ', _, _, hσ, _, _, hm => by
       have e : ∀ q : Tm S X, (∀ n, q ≠ .var n) → (∀ f a, q ≠ .app f a) →
           (∀ c, q ≠ .pquote c) → (∀ c, q ≠ .quote c) →
           matchT σ q t = if q = t then some σ else none := by
@@ -1355,7 +1466,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
         subst hm
         exact hσ
       · cases hm
-  | .quote c, t, σ, σ', _, _, hσ, _, hm => by
+  | .quote c, t, σ, σ', _, _, hσ, _, _, hm => by
       cases t with
       | quote c₂ =>
           simp only [matchT] at hm
@@ -1375,7 +1486,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
             subst hm
             exact hσ
           · cases hm
-  | .ctx ks c, t, σ, σ', _, _, hσ, _, hm => by
+  | .ctx ks c, t, σ, σ', _, _, hσ, _, _, hm => by
       have e : matchT σ (.ctx ks c) t = if Tm.ctx ks c = t then some σ else none := by
         cases t <;> rfl
       rw [e] at hm
@@ -1384,7 +1495,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
         subst hm
         exact hσ
       · cases hm
-  | .lam x own b, t, σ, σ', _, _, hσ, _, hm => by
+  | .lam x own b, t, σ, σ', _, _, hσ, _, _, hm => by
       have e : matchT σ (.lam x own b) t = if Tm.lam x own b = t then some σ else none := by
         cases t <;> rfl
       rw [e] at hm
@@ -1393,7 +1504,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
         subst hm
         exact hσ
       · cases hm
-  | .letP p₁ w b, t, σ, σ', _, _, hσ, _, hm => by
+  | .letP p₁ w b, t, σ, σ', _, _, hσ, _, _, hm => by
       have e : matchT σ (.letP p₁ w b) t = if Tm.letP p₁ w b = t then some σ else none := by
         cases t <;> rfl
       rw [e] at hm
@@ -1402,7 +1513,7 @@ theorem matchT_storeOK : ∀ (p t : Tm S X) (σ σ' : GStore S X) (p' : Tm S X),
         subst hm
         exact hσ
       · cases hm
-  | .alt t₁ t₂, t, σ, σ', _, _, hσ, _, hm => by
+  | .alt t₁ t₂, t, σ, σ', _, _, hσ, _, _, hm => by
       have e : matchT σ (.alt t₁ t₂) t = if Tm.alt t₁ t₂ = t then some σ else none := by
         cases t <;> rfl
       rw [e] at hm
@@ -1418,15 +1529,56 @@ omit [DecidableEq S] in
 theorem good_subst {t : Tm S X} {θ φ : Sub S X} (ht : T.good t = true) (hθ : T.GoodSub θ)
     (hφ : T.GoodSub φ) : T.good (subst θ φ t) = true := by
   rw [good_iff] at ht ⊢
-  refine ⟨fun m hm => ?_, fun q hq => ?_⟩
+  refine ⟨fun m hm => ?_, fun q hq => ?_, fun m hm => ?_⟩
   · rcases mem_freeNames_subst t θ φ m hm with ⟨hm', -⟩ | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
     · exact ht.1 m hm'
     · exact ((T.good_iff).1 (hθ n w hn)).1 m hw
     · exact ((T.good_iff).1 (hφ p w hp)).1 m hw
   · rcases mem_freeParams_subst t θ φ q hq with ⟨hq', -⟩ | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
-    · exact ht.2 q hq'
-    · exact ((T.good_iff).1 (hθ n w hn)).2 q hw
-    · exact ((T.good_iff).1 (hφ p w hp)).2 q hw
+    · exact ht.2.1 q hq'
+    · exact ((T.good_iff).1 (hθ n w hn)).2.1 q hw
+    · exact ((T.good_iff).1 (hφ p w hp)).2.1 q hw
+  · rcases mem_sealedVars_subst t θ φ m hm with hm' | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
+    · exact ht.2.2 m hm'
+    · exact ((T.good_iff).1 (hθ n w hn)).2.2 m hw
+    · exact ((T.good_iff).1 (hφ p w hp)).2.2 m hw
+
+omit [DecidableEq S] in
+/-- A name without a rank is owned by no rule. -/
+theorem ownKey_of_rank_none (hT : T.WF) {κ : S} {r : ApplyRule S X} (hr : T.rule κ = some r)
+    {n : Nm X} (hn : T.nameRank n = none) : ownKey r.own n = false := by
+  cases n with
+  | src y =>
+      simp only [ownKey, List.contains_eq_mem, decide_eq_false_iff_not]
+      intro hy
+      simp [nameRank, hT.own_rank κ r hr y hy] at hn
+  | inst _ _ => rfl
+
+omit [DecidableEq S] in
+/-- **The sealed code of a rule instance names no ranked spelling**, when the
+closure is good: the rule body's sealed code has none (`WF`), and neither have
+the closure's arguments. -/
+theorem sealed_inst (hT : T.WF) {c : Tm S X} {κ : S} {vs : List (Tm S X)} {r : ApplyRule S X}
+    (hc : T.clo? c = some (κ, vs, r)) (hgc : T.good c = true) :
+    ∀ n ∈ sealedVars (r.inst vs), T.nameRank n = none := by
+  obtain ⟨hsp, hr, -⟩ := (T.clo?_eq_some).1 hc
+  have hvs : ∀ v ∈ vs, T.good v = true := fun v hv =>
+    symSpine_args_sub hsp v hv (fun t => T.good t = true) (fun f a h => (T.good_app).1 h) hgc
+  intro n hn
+  unfold ApplyRule.inst at hn
+  rcases mem_sealedVars_subst _ _ _ n hn with hn' | ⟨m, w, hm, -⟩ | ⟨p, w, hp, hw⟩
+  · exact hT.body_sealed κ r hr n hn'
+  · simp [Sub.none] at hm
+  · exact ((T.good_iff).1 (hvs w (paramSub_mem _ _ _ _ hp))).2.2 n hw
+
+omit [DecidableEq S] in
+/-- The activation of a good closure does not rename its rule instance's sealed
+code. -/
+theorem sealRen_inst (hT : T.WF) {c : Tm S X} {κ : S} {vs : List (Tm S X)} {r : ApplyRule S X}
+    (hc : T.clo? c = some (κ, vs, r)) (hgc : T.good c = true) (ρ : Path) :
+    sealRen ρ r.own (r.inst vs) = r.inst vs :=
+  sealRen_eq_self ρ r.own (r.inst vs) fun n hn =>
+    T.ownKey_of_rank_none hT ((T.clo?_eq_some).1 hc).2.1 (T.sealed_inst hT hc hgc n hn)
 
 omit [DecidableEq S] in
 /-- Activating a closure of a good term on a good argument gives a good body:
@@ -1440,8 +1592,8 @@ theorem good_activate (hT : T.WF) {c : Tm S X} {κ : S} {vs : List (Tm S X)} {r 
   have hvs : ∀ v ∈ vs, T.good v = true := fun v hv =>
     symSpine_args_sub hsp v hv (fun t => T.good t = true) (fun f a h => (T.good_app).1 h) hgc
   rw [good_iff]
-  simp only [activate]
-  refine ⟨fun m hm => ?_, fun q hq => ?_⟩
+  simp only [activate, T.sealRen_inst hT hc hgc ρ]
+  refine ⟨fun m hm => ?_, fun q hq => ?_, fun m hm => ?_⟩
   · rcases mem_freeNames_subst _ _ _ m hm with ⟨hm', hθ⟩ | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
     · unfold ApplyRule.inst at hm'
       rcases mem_freeNames_subst _ _ _ m hm' with ⟨hm'', -⟩ | ⟨n, w, hn, -⟩ | ⟨p, w, hp, hw⟩
@@ -1471,7 +1623,7 @@ theorem good_activate (hT : T.WF) {c : Tm S X} {κ : S} {vs : List (Tm S X)} {r 
         · subst hx
           simp [Sub.single] at hφ
       · simp [Sub.none] at hn
-      · exact ((T.good_iff).1 (hvs w (paramSub_mem _ _ _ _ hp))).2 q hw
+      · exact ((T.good_iff).1 (hvs w (paramSub_mem _ _ _ _ hp))).2.1 q hw
     · simp only [renameOwn] at hn
       split at hn
       · simp only [Option.some.injEq] at hn
@@ -1482,8 +1634,71 @@ theorem good_activate (hT : T.WF) {c : Tm S X} {κ : S} {vs : List (Tm S X)} {r 
       split at hp
       · simp only [Option.some.injEq] at hp
         subst hp
-        exact ((T.good_iff).1 ha).2 q hw
+        exact ((T.good_iff).1 ha).2.1 q hw
       · cases hp
+  · rcases mem_sealedVars_subst _ _ _ m hm with hm' | ⟨n, w, hn, hw⟩ | ⟨p, w, hp, hw⟩
+    · exact T.sealed_inst hT hc hgc m hm'
+    · simp only [renameOwn] at hn
+      split at hn
+      · simp only [Option.some.injEq] at hn
+        subst hn
+        simp [sealedVars] at hw
+      · cases hn
+    · simp only [Sub.single] at hp
+      split at hp
+      · simp only [Option.some.injEq] at hp
+        subst hp
+        exact ((T.good_iff).1 ha).2.2 m hw
+      · cases hp
+
+/-- **The source's sealed code names no ranked spelling when the target's does**:
+a related source quotation is the target's, and a source lambda's body is related
+to its rule instance, whose sealed code names none (`sealed_inst`). -/
+theorem rel_sealedVars (hT : T.WF) : ∀ (s t : Tm S X), T.rel s t = true →
+    (∀ n ∈ sealedVars t, T.nameRank n = none) → ∀ n ∈ sealedVars s, T.nameRank n = none
+  | .quote c, t, h, ht, n, hn => by
+      rw [(T.rel_quote).1 h] at ht
+      exact ht n hn
+  | .ctx ks c, t, h, ht, n, hn => by
+      rw [(T.rel_ctx).1 h] at ht
+      exact ht n hn
+  | .sym _, _, _, _, n, hn | .fn _, _, _, _, n, hn | .var _, _, _, _, n, hn
+  | .pvar _, _, _, _, n, hn => by simp [sealedVars] at hn
+  | .pquote _, _, h, _, _, _ => by simp [T.rel_pquote] at h
+  | .app f a, t, h, ht, n, hn => by
+      obtain ⟨f', a', rfl, hf, ha⟩ := (T.rel_app).1 h
+      simp only [sealedVars, List.mem_append] at ht hn
+      rcases hn with hn | hn
+      · exact rel_sealedVars hT f f' hf (fun m hm => ht m (Or.inl hm)) n hn
+      · exact rel_sealedVars hT a a' ha (fun m hm => ht m (Or.inr hm)) n hn
+  | .letP p w b, t, h, ht, n, hn => by
+      obtain ⟨p', w', b', rfl, hp, hw, hb⟩ := (T.rel_letP).1 h
+      simp only [sealedVars, List.mem_append] at ht hn
+      rcases hn with (hn | hn) | hn
+      · exact rel_sealedVars hT p p' hp (fun m hm => ht m (Or.inl (Or.inl hm))) n hn
+      · exact rel_sealedVars hT w w' hw (fun m hm => ht m (Or.inl (Or.inr hm))) n hn
+      · exact rel_sealedVars hT b b' hb (fun m hm => ht m (Or.inr hm)) n hn
+  | .alt t₁ t₂, t, h, ht, n, hn => by
+      obtain ⟨t₁', t₂', rfl, h₁, h₂⟩ := (T.rel_alt).1 h
+      simp only [sealedVars, List.mem_append] at ht hn
+      rcases hn with hn | hn
+      · exact rel_sealedVars hT t₁ t₁' h₁ (fun m hm => ht m (Or.inl hm)) n hn
+      · exact rel_sealedVars hT t₂ t₂' h₂ (fun m hm => ht m (Or.inr hm)) n hn
+  | .lam x own b, t, h, ht, n, hn => by
+      obtain ⟨κ, vs, r, hc, -, -, -, hb⟩ := (T.rel_lam).1 h
+      obtain ⟨hsp, hr, -⟩ := (T.clo?_eq_some).1 hc
+      have hvs : ∀ v ∈ vs, ∀ m ∈ sealedVars v, T.nameRank m = none := fun v hv =>
+        symSpine_args_sub hsp v hv (fun u => ∀ m ∈ sealedVars u, T.nameRank m = none)
+          (fun f a hfa => ⟨fun m hm => hfa m (by simp [sealedVars, hm]),
+            fun m hm => hfa m (by simp [sealedVars, hm])⟩) ht
+      simp only [sealedVars] at hn
+      refine rel_sealedVars hT b (r.inst vs) hb ?_ n hn
+      intro m hm
+      unfold ApplyRule.inst at hm
+      rcases mem_sealedVars_subst _ _ _ m hm with hm' | ⟨k, w, hk, -⟩ | ⟨p, w, hp, hw⟩
+      · exact hT.body_sealed κ r hr m hm'
+      · simp [Sub.none] at hk
+      · exact hvs w (paramSub_mem _ _ _ _ hp) m hw
 
 theorem subRel_none : T.SubRel Sub.none Sub.none := fun _ => trivial
 
@@ -1523,7 +1738,7 @@ theorem goodSub_renameOwn (ρ : Path) (own : List X) : T.GoodSub (renameOwn ρ o
   split at hv
   · simp only [Option.some.injEq] at hv
     subst hv
-    simp [good, freeNames, freeParams, nameRank]
+    simp [good, freeNames, freeParams, sealedVars, nameRank]
   · cases hv
 
 theorem subRel_envSub {σ : GStore S X} (hσ : T.StoreOK σ) : T.SubRel (envSub σ) (envSub σ) := by
@@ -1531,10 +1746,9 @@ theorem subRel_envSub {σ : GStore S X} (hσ : T.StoreOK σ) : T.SubRel (envSub 
   unfold envSub
   cases hn : σ n with
   | none => trivial
-  | some g => exact hσ n g hn
+  | some g => exact (hσ n g hn).1
 
-omit [DecidableEq S] in
-theorem goodSub_envSub (σ : GStore S X) : T.GoodSub (envSub σ) := by
+theorem goodSub_envSub {σ : GStore S X} (hσ : T.StoreOK σ) : T.GoodSub (envSub σ) := by
   intro n v hv
   unfold envSub at hv
   cases hn : σ n with
@@ -1543,14 +1757,14 @@ theorem goodSub_envSub (σ : GStore S X) : T.GoodSub (envSub σ) := by
       rw [hn] at hv
       simp only [Option.map_some, Option.some.injEq] at hv
       subst hv
-      simp [good, GVal.freeNames_toTm, GVal.freeParams_toTm]
+      exact (hσ n g hn).2
 
 theorem storeOK_empty : T.StoreOK (Store.empty : GStore S X) := fun _ _ h => by cases h
 
 /-- The environment action preserves the relation. -/
 theorem rel_act (hT : T.WF) {σ : GStore S X} (hσ : T.StoreOK σ) {s t : Tm S X}
     (h : T.rel s t = true) : T.rel (act σ s) (act σ t) = true :=
-  T.rel_subst hT s t _ _ _ _ h (T.subRel_envSub hσ) T.subRel_none (T.goodSub_envSub σ)
+  T.rel_subst hT s t _ _ _ _ h (T.subRel_envSub hσ) T.subRel_none (T.goodSub_envSub hσ)
     T.goodSub_none
 
 theorem rel_var_right {s : Tm S X} {f : Nm X} (h : T.rel s (.var f) = true) : s = .var f := by
@@ -1684,8 +1898,12 @@ theorem run_defun (T : CloTable S X) (hT : T.WF) (prog prog' : S → Option (Tm 
         | lam x own body =>
             obtain ⟨κ, vs, r, hc₁, -, rfl, rfl, hb⟩ := (T.rel_lam).1 h₁
             simp only [hc₁]
+            have hsrc : sealRen (π ++ [2]) r.own body = body :=
+              sealRen_eq_self _ r.own body fun n hn =>
+                T.ownKey_of_rank_none hT ((T.clo?_eq_some).1 hc₁).2.1
+                  (T.rel_sealedVars hT body (r.inst vs) hb (T.sealed_inst hT hc₁ hg₁) n hn)
             apply ih
-            · simp only [activate]
+            · simp only [activate, hsrc, T.sealRen_inst hT hc₁ hg₁]
               exact T.rel_subst hT body (r.inst vs) _ _ _ _ hb (T.subRel_renameOwn _ _)
                 (T.subRel_single h₂) (T.goodSub_renameOwn _ _) (T.goodSub_single hg₂)
             · exact T.good_activate hT hc₁ hg₁ hg₂ σ₂ _
@@ -1703,11 +1921,17 @@ theorem run_defun (T : CloTable S X) (hT : T.WF) (prog prog' : S → Option (Tm 
         cases hl : T.letClo? p' w' with
         | some f =>
             simp only
-            apply ih
-            · exact T.rel_subst hT b b' _ _ _ _ hb (T.subRel_single hw) T.subRel_none
-                (T.goodSub_single hgw) T.goodSub_none
-            · exact T.good_subst hgb (T.goodSub_single hgw) T.goodSub_none
-            · exact hσ
+            cases hf : σ f with
+            | some _ =>
+                simp only
+                exact List.Forall₂.nil
+            | none =>
+                simp only
+                apply ih
+                · exact T.rel_subst hT b b' _ _ _ _ hb (T.subRel_single hw) T.subRel_none
+                    (T.goodSub_single hgw) T.goodSub_none
+                · exact T.good_subst hgb (T.goodSub_single hgw) T.goodSub_none
+                · exact hσ
         | none =>
             simp only
             refine bindOpt_rel (ih _ σ w w' hw hgw hσ) ?_
@@ -1742,7 +1966,11 @@ theorem run_defun (T : CloTable S X) (hT : T.WF) (prog prog' : S → Option (Tm 
                     have hm' : matchT σ₁ p g.toTm = some σ₂ := by
                       rw [T.matchT_rel p p' g.toTm σ₁ hp (GVal.lamFree_toTm g) hcl]
                       exact hm
-                    exact ih _ σ₂ b b' hb hgb (T.matchT_storeOK p g.toTm σ₁ σ₂ p' hp hσ₁ hrefl hm')
+                    have hgg : T.good g.toTm = true := by
+                      rw [hgt', ← heq]
+                      exact T.good_subst hg₁ (T.goodSub_envSub hσ₁) T.goodSub_none
+                    exact ih _ σ₂ b b' hb hgb
+                      (T.matchT_storeOK p g.toTm σ₁ σ₂ p' hp hσ₁ hrefl hgg hm')
                 | none =>
                     simp only
                     exact List.Forall₂.nil
@@ -1752,11 +1980,17 @@ theorem run_defun (T : CloTable S X) (hT : T.WF) (prog prog' : S → Option (Tm 
                 | var f =>
                     rw [(T.rel_var).1 hp]
                     simp only
-                    apply ih
-                    · exact T.rel_subst hT b b' _ _ _ _ hb (T.subRel_single h₁) T.subRel_none
-                        (T.goodSub_single hg₁) T.goodSub_none
-                    · exact T.good_subst hgb (T.goodSub_single hg₁) T.goodSub_none
-                    · exact hσ₁
+                    cases hf : σ₁ f with
+                    | some _ =>
+                        simp only
+                        exact List.Forall₂.nil
+                    | none =>
+                        simp only
+                        apply ih
+                        · exact T.rel_subst hT b b' _ _ _ _ hb (T.subRel_single h₁) T.subRel_none
+                            (T.goodSub_single hg₁) T.goodSub_none
+                        · exact T.good_subst hgb (T.goodSub_single hg₁) T.goodSub_none
+                        · exact hσ₁
                 | _ =>
                     simp only
                     split
@@ -1944,7 +2178,8 @@ def ruleOK (T : CloTable S X) (κ : S) (r : ApplyRule S X) : Bool :=
   r.own.all (fun y => decide (T.ownerRank y = some (T.rank κ))) &&
     decide (T.paramRank r.x = some (T.rank κ)) && r.body.lamFree &&
     (freeNames r.body).all (ownKey r.own) &&
-    (freeParams r.body).all fun p => decide (p ∈ r.params ∨ p = r.x)
+    (freeParams r.body).all (fun p => decide (p ∈ r.params ∨ p = r.x)) &&
+    (sealedVars r.body).all fun n => (T.nameRank n).isNone
 
 omit [DecidableEq S] in
 /-- A table whose rules pass `ruleOK` is well formed. -/
@@ -1953,13 +2188,16 @@ theorem wf_of_ruleOK (T : CloTable S X) (h : ∀ κ r, T.rule κ = some r → T.
   have e : ∀ κ r, T.rule κ = some r →
       (∀ y ∈ r.own, T.ownerRank y = some (T.rank κ)) ∧ T.paramRank r.x = some (T.rank κ) ∧
         r.body.lamFree = true ∧ (∀ n ∈ freeNames r.body, ownKey r.own n = true) ∧
-        ∀ p ∈ freeParams r.body, p ∈ r.params ∨ p = r.x := by
+        (∀ p ∈ freeParams r.body, p ∈ r.params ∨ p = r.x) ∧
+        ∀ n ∈ sealedVars r.body, T.nameRank n = none := by
     intro κ r hr
     have := h κ r hr
-    simp only [ruleOK, Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq] at this
-    exact ⟨this.1.1.1.1, this.1.1.1.2, this.1.1.2, this.1.2, this.2⟩
+    simp only [ruleOK, Bool.and_eq_true, List.all_eq_true, decide_eq_true_eq,
+      Option.isNone_iff_eq_none] at this
+    exact ⟨this.1.1.1.1.1, this.1.1.1.1.2, this.1.1.1.2, this.1.1.2, this.1.2, this.2⟩
   exact ⟨fun κ r hr => (e κ r hr).1, fun κ r hr => (e κ r hr).2.1, fun κ r hr => (e κ r hr).2.2.1,
-    fun κ r hr => (e κ r hr).2.2.2.1, fun κ r hr => (e κ r hr).2.2.2.2⟩
+    fun κ r hr => (e κ r hr).2.2.2.1, fun κ r hr => (e κ r hr).2.2.2.2.1,
+    fun κ r hr => (e κ r hr).2.2.2.2.2⟩
 
 end CloTable
 
@@ -2167,5 +2405,54 @@ theorem defun_needs_good :
       answers .static noProg 40 srcCap = some [pair (k .n1) (k .n1)] ∧
       answersD tabCap noProg 40 tgtCap = some [pair (k .n1) (sv .w)] := by
   decide
+
+/-! ### Negative: sealed code of an inner lambda names the outer lambda's own name -/
+
+/-- `(lam z (lam w (quote $y)))` owning `$y`: the inner lambda's sealed code names
+the outer lambda's own name. -/
+def Lseal : DT := .lam (.src .z) [.y] (lm .w (.quote (sv .y)))
+
+/-- `(Lseal 1)`. -/
+def srcSeal : DT := ap Lseal (k .n1)
+
+/-- The outer rule owns `$y` and returns the inner closure. -/
+def ruleSealOut : ApplyRule DSy Sp := ⟨[], .src .z, [.y], k .CloIn⟩
+
+/-- The inner rule: the sealed `(quote $y)`. -/
+def ruleSealIn : ApplyRule DSy Sp := ⟨[], .src .w, [], .quote (sv .y)⟩
+
+/-- `(CloOut 1)`. -/
+def tgtSeal : DT := ap (k .CloOut) (k .n1)
+
+def tabSeal : CloTable DSy Sp where
+  rule s := if s = .CloOut then some ruleSealOut else if s = .CloIn then some ruleSealIn else none
+  rank s := if s = .CloOut then 1 else 0
+  ownerRank s := if s = .y then some 1 else none
+  paramRank p := if p = .src .z then some 1 else if p = .src .w then some 0 else none
+
+/-- **Negative: sealed code naming a rule's own spelling breaks the
+simulation.**  The two programs are related, the target is good, and the table
+meets every condition of `WF` but `body_sealed`: the inner rule's sealed `$y` is
+the outer rule's own name.  The call of the outer lambda renames that `$y`
+inside the inner lambda's sealed code, so the source answers the inner lambda
+with the copy of `$y` the call made; the closure's rule body is shared and keeps
+`$y`.  The two results are not related. -/
+theorem defun_needs_sealed :
+    tabSeal.rel srcSeal tgtSeal = true ∧ tabSeal.good tgtSeal = true ∧
+      (∀ κ r, tabSeal.rule κ = some r →
+        (∀ o ∈ r.own, tabSeal.ownerRank o = some (tabSeal.rank κ)) ∧
+          tabSeal.paramRank r.x = some (tabSeal.rank κ) ∧ r.body.lamFree = true ∧
+          (∀ n ∈ freeNames r.body, ownKey r.own n = true) ∧
+          ∀ p ∈ freeParams r.body, p ∈ r.params ∨ p = r.x) ∧
+      ¬ tabSeal.WF ∧
+      answers .static noProg 10 srcSeal = some [lm .w (.quote (.var (.inst [2] (.src .y))))] ∧
+      answersD tabSeal noProg 10 tgtSeal = some [k .CloIn] ∧
+      tabSeal.rel (lm .w (.quote (.var (.inst [2] (.src .y))))) (k .CloIn) = false := by
+  refine ⟨by decide, by decide, ?_, ?_, by decide, by decide, by decide⟩
+  · intro κ r h
+    cases κ <;> simp [tabSeal] at h <;> subst h <;> decide
+  · intro h
+    have := h.body_sealed .CloIn ruleSealIn (by simp [tabSeal]) (.src .y) (by decide)
+    simp [tabSeal, CloTable.nameRank] at this
 
 end Mettapedia.GSLT.LanguageDef.TemplateScope.DefunCorpus

@@ -91,6 +91,20 @@ def comp {first middle last : Theory}
         (earlier.mapObservation (first.query world query))
     rw [later.query_natural, earlier.query_natural]
 
+
+/-- A stage map transports each actual named revision history, including
+its complete chosen final world. -/
+theorem history_map {source target : Theory} (translation : Translation source target)
+    {revisions : List source.Revision} {initial final : source.World}
+    (steps : source.HistoryStep revisions initial final) :
+    target.HistoryStep (revisions.map translation.mapRevision)
+      (translation.mapWorld initial) (translation.mapWorld final) := by
+  induction steps with
+  | nil world => exact .nil _
+  | cons step rest inductionHypothesis =>
+      exact .cons (translation.step_map step) inductionHypothesis
+
+
 end Translation
 
 /-- Exact stage transport additionally lifts every target revision leaving a
@@ -150,6 +164,50 @@ def comp {first middle last : Theory}
     exact ⟨sourceRevision, sourceTarget, sourceStep,
       (congrArg later.mapRevision sourceRevisionEq).trans middleRevisionEq,
       (congrArg later.mapWorld sourceTargetEq).trans middleTargetEq⟩
+
+
+/-- Exact local coverage lifts every actual destination history leaving a
+translated world; the source events and chosen final world are retained. -/
+theorem history_lift {source target : Theory} (translation : ExactTranslation source target)
+    {revisions : List target.Revision} {initial : source.World} {final : target.World}
+    (steps : target.HistoryStep revisions (translation.mapWorld initial) final) :
+    ∃ originalRevisions originalFinal,
+      source.HistoryStep originalRevisions initial originalFinal ∧
+      originalRevisions.map translation.mapRevision = revisions ∧
+      translation.mapWorld originalFinal = final := by
+  generalize world_eq : translation.mapWorld initial = current at steps
+  induction steps generalizing initial with
+  | nil world => exact ⟨[], initial, .nil initial, rfl, world_eq⟩
+  | @cons revision revisions current middle final first rest inductionHypothesis =>
+      have actualFirst : target.Step revision (translation.mapWorld initial) middle := by
+        simpa only [world_eq] using first
+      obtain ⟨originalRevision, originalMiddle, originalFirst, revisionEq, middleEq⟩ :=
+        translation.liftStep actualFirst
+      obtain ⟨originalRevisions, originalFinal, originalRest, revisionsEq, finalEq⟩ :=
+        inductionHypothesis middleEq
+      refine ⟨originalRevision :: originalRevisions, originalFinal,
+        .cons originalFirst originalRest, ?_, finalEq⟩
+      simp only [List.map_cons, revisionEq, revisionsEq]
+
+/-- With distinct worlds and revision names preserved, complete history
+transport preserves and reflects the exact chosen endpoints. -/
+theorem history_iff {source target : Theory} (translation : ExactTranslation source target)
+    (worldInjective : Function.Injective translation.mapWorld)
+    (revisionInjective : Function.Injective translation.mapRevision)
+    (revisions : List source.Revision) (initial final : source.World) :
+    target.HistoryStep (revisions.map translation.mapRevision)
+        (translation.mapWorld initial) (translation.mapWorld final) ↔
+      source.HistoryStep revisions initial final := by
+  constructor
+  · intro steps
+    obtain ⟨originalRevisions, originalFinal, originalSteps, revisionsEq, finalEq⟩ :=
+      translation.history_lift steps
+    have originalRevisionsEq : originalRevisions = revisions :=
+      (List.map_injective_iff.mpr revisionInjective) revisionsEq
+    have originalFinalEq : originalFinal = final := worldInjective finalEq
+    simpa only [originalRevisionsEq, originalFinalEq] using originalSteps
+  · exact translation.toTranslation.history_map
+
 
 end ExactTranslation
 
@@ -214,7 +272,9 @@ def ExactTranslation.toCoveredOperational
 
 /-! ## Categorical stage diagrams -/
 
-/-- Objects of the category of queryable world theories. -/
+set_option linter.checkUnivs false in
+/-- Objects of the category of queryable world theories. The four carrier universes remain independent;
+the containing record or functor sees only their maximum. -/
 structure QueryableTheory where
   theory : Theory.{uWorld, uRevision, uQuery, uObservation}
 
@@ -229,8 +289,10 @@ instance : CategoryTheory.Category QueryableTheory where
   assoc first second third := by
     apply Translation.ext <;> rfl
 
+set_option linter.checkUnivs false in
 /-- The exact-transport category has the same objects but admits only locally
-reflecting revision translations. -/
+reflecting revision translations. The four carrier universes remain independent;
+the containing record or functor sees only their maximum. -/
 structure ExactQueryableTheory where
   theory : Theory.{uWorld, uRevision, uQuery, uObservation}
 
@@ -283,12 +345,16 @@ def toCoveredOperationalFunctor :
     apply CoveredTranslation.ext
     rfl
 
-/-- A growing family of query/revision theories. -/
+set_option linter.checkUnivs false in
+/-- A growing family of query/revision theories. The four carrier universes remain independent;
+the containing record or functor sees only their maximum. -/
 abbrev Diagram (Index : Type uIndex)
     [CategoryTheory.Category.{vIndex} Index] :=
   CategoryTheory.Functor Index QueryableTheory
 
-/-- A diagram all of whose theory-stage maps are exact locally. -/
+set_option linter.checkUnivs false in
+/-- A diagram all of whose theory-stage maps are exact locally. The four carrier universes remain independent;
+the containing record or functor sees only their maximum. -/
 abbrev ExactDiagram (Index : Type uIndex)
     [CategoryTheory.Category.{vIndex} Index] :=
   CategoryTheory.Functor Index ExactQueryableTheory
@@ -332,7 +398,7 @@ theorem query_transport
 
 /-- A named world revision generates a semantic fibre step in the operational
 diagram. -/
-def revisionSemanticStep
+theorem revisionSemanticStep
     {Index : Type uIndex} [CategoryTheory.Category.{vIndex} Index]
     (diagram : Diagram Index)
     (stage : Index)

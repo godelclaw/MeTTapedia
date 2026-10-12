@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.BiformObserverControl
 import Mettapedia.GSLT.LanguageDef.BiformTheoryCanary
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Biform observer-control separation canary
 
@@ -15,7 +17,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.BiformObserverControlCanary
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.Cybernetics
 open Mettapedia.GSLT.Core.ObservationControlContract
 open Mettapedia.GSLT.Core.ObservationIndexedPruning
@@ -24,7 +26,7 @@ open Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.GSLT.LanguageDef.BiformTheoryCanary
 open Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.HenkinInstitution

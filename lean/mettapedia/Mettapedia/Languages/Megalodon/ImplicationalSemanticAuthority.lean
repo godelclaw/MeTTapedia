@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.Languages.Megalodon.ImplicationalKernel
 
 /-!
@@ -8,7 +8,7 @@ The implicational fragment already has two operational presentations: an
 intrinsic proof-term checker and an authored CertificateGSLT compiler.  This
 module adds a third, independently stated face: valuation semantics in `Prop`.
 
-The NIK theory family below deliberately separates:
+The SemanticService theory family below deliberately separates:
 
 * `Scope`: existence of an intrinsic proof accepted by `infer`;
 * `Meaning`: validity under every valuation satisfying the context;
@@ -27,7 +27,7 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Languages.Megalodon.ImplicationalKernel
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
@@ -408,13 +408,13 @@ def theory : TheoryFamily Unit where
     intro _ claim derivable
     exact derivable_sound derivable
 
-/-- Proof-carrying NIK authority for the fragment's intrinsic theorem scope. -/
+/-- Proof-carrying SemanticService authority for the fragment's intrinsic theorem scope. -/
 def contract : AuthorityContract theory where
   Certificate := fun _ => Proof
   checker := fun _ => checker
   scopeAuthority := fun _ => checker_authority
 
-/-- The corresponding ordinary NIK authority family. -/
+/-- The corresponding ordinary SemanticService authority family. -/
 def family : AuthorityFamily Unit :=
   contract.toAuthorityFamily
 
@@ -598,7 +598,7 @@ theorem intrinsic_authored_semantic_sandwich (claim : Claim) :
       (AuthoredCertified claim → Entails claim.context claim.formula) :=
   ⟨intrinsicScope_to_authoredCertified, authoredCertified_to_meaning⟩
 
-/-- NIK-compatible authority projection for arbitrary authored certificates.
+/-- SemanticService-compatible authority projection for arbitrary authored certificates.
 Its exact scope is explicitly `AuthoredCertified`, not silently identified with
 the intrinsic scope of `contract`. -/
 def authoredProjection :

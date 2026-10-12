@@ -1,12 +1,12 @@
 import Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
-import Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 /-!
 # Semantic-basis irrelevance for Boolean identities
 
 The equational language of Boolean algebras cannot distinguish one
 nontrivial Boolean algebra from another.  This module makes that precise at
-the NIK authority boundary:
+the SemanticService authority boundary:
 
 * every selected Boolean algebra supplies an independently defined meaning;
 * the finite truth-table checker is exact for every such meaning;
@@ -28,8 +28,8 @@ namespace Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentitySemanticBasis
 
 open Mettapedia.Foundations.Gunk
 open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe uBasis vBasis
 

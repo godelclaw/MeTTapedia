@@ -1,7 +1,7 @@
 import Mettapedia.UniversalAlgebra.EquationSystemInterpretation
 import Mettapedia.UniversalAlgebra.InterpretabilityOrder
 import Mettapedia.UniversalAlgebra.Instances.MonoidConsequenceInvariance
-import Mettapedia.UniversalAlgebra.NIK.Interpretation
+import Mettapedia.UniversalAlgebra.SemanticService.Interpretation
 
 /-!
 # Interpretation controls for monoid equation systems
@@ -353,11 +353,11 @@ theorem monoid_strictlyBelow_commutative :
   · exact commutative_not_interpretableIn_monoid
 
 /-- The canonical monoid interpretation gives a semantic simulation between
-the corresponding NIK theory objects. -/
-theorem commutativeNIK_semanticallySimulates_monoidNIK :
+the corresponding SemanticService theory objects. -/
+theorem commutativeTheory_semanticallySimulates_monoidTheory :
     Mettapedia.Logic.TheorySimulation.SemanticallySimulates
-      (NIK.theoryObject commutativeEquationSystem)
-      (NIK.theoryObject equationSystem) :=
-  NIK.semanticallySimulates interpretationInCommutative
+      (SemanticService.theoryObject commutativeEquationSystem)
+      (SemanticService.theoryObject equationSystem) :=
+  SemanticService.semanticallySimulates interpretationInCommutative
 
 end Mettapedia.UniversalAlgebra.Monoid

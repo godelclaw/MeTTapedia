@@ -21,7 +21,7 @@ value may itself be a structured continuation or a private write buffer.
 
 namespace Mettapedia.Machines.SnapshotBatch
 
-universe uSnapshot uItem uSeed uId uValue
+universe uSnapshot uItem uSeed uId uValue uOther
 
 /-- A private update may read the whole immutable snapshot, but it receives
 only its own writable value. Seeds are explicit inputs to the pure kernel. -/
@@ -227,6 +227,134 @@ theorem partitioned_eq_run (initial : Id → Value) (parts : List (List Item))
   rw [partitioned_eq_batch,
     kernel.batch_eq_run snapshot seeds initial parts.flatten partitionDisjoint]
   exact kernel.run_perm snapshot seeds initial coverage partitionDisjoint
+
+/-! ## Incremental completion and late preparation -/
+
+/-- Publishing one completed part does not change any remaining private input.
+The shared snapshot and logical seeds stay fixed; writable owners are distinct
+across both parts. No whole-batch completion barrier occurs in this equation. -/
+theorem prepare_after_run (initial : Id → Value) (completed pending : List Item)
+    (disjoint : kernel.Disjoint (completed ++ pending)) :
+    kernel.prepare snapshot seeds (kernel.run snapshot seeds initial completed) pending =
+      kernel.prepare snapshot seeds initial pending := by
+  have separated : List.Disjoint (completed.map kernel.destination)
+      (pending.map kernel.destination) :=
+    List.disjoint_of_nodup_append (by
+      simpa only [Disjoint, List.map_append] using disjoint)
+  unfold prepare
+  apply List.map_congr_left
+  intro item member
+  have outside : kernel.destination item ∉ completed.map kernel.destination := by
+    intro inside
+    exact List.disjoint_left.mp separated inside
+      (List.mem_map.mpr ⟨item, member, rfl⟩)
+  rw [kernel.run_preserves_outside snapshot seeds initial completed _ outside]
+
+/-- Partial installation retains the complete pending writes and the live store.
+It neither reruns the completed part nor reads another owner's changed value. -/
+theorem partial_preparation_exact (initial : Id → Value) (completed pending : List Item)
+    (disjoint : kernel.Disjoint (completed ++ pending)) :
+    (publish initial (kernel.prepare snapshot seeds initial completed),
+      kernel.prepare snapshot seeds
+        (publish initial (kernel.prepare snapshot seeds initial completed)) pending) =
+    (kernel.run snapshot seeds initial completed,
+      kernel.prepare snapshot seeds initial pending) := by
+  have firstDistinct : kernel.Disjoint completed :=
+    (List.nodup_append.mp (by
+      simpa only [Disjoint, List.map_append] using disjoint)).1
+  have first := kernel.batch_eq_run snapshot seeds initial completed firstDistinct
+  change (kernel.batch snapshot seeds initial completed,
+    kernel.prepare snapshot seeds (kernel.batch snapshot seeds initial completed) pending) = _
+  rw [first, kernel.prepare_after_run snapshot seeds initial completed pending disjoint]
+
+/-! ## Transport of complete private results -/
+
+variable {Other : Type uOther}
+
+/-- An observer maps values at each destination; it does not move ownership
+between destinations or change the occurrence identifiers. -/
+theorem map_update (decode : Value → Other) (state : Id → Value)
+    (destination : Id) (value : Value) :
+    (fun location => decode (Function.update state destination value location)) =
+      Function.update (fun location => decode (state location)) destination (decode value) := by
+  funext location
+  by_cases same : location = destination
+  · subst location; simp
+  · simp [Function.update_of_ne same]
+
+/-- Mapping a completed private write commutes with installation of that write.
+No computation callback occurs in this transport. -/
+theorem publish_map (decode : Value → Other) (initial : Id → Value)
+    (writes : List (Id × Value)) :
+    (fun location => decode (publish initial writes location)) =
+      publish (fun location => decode (initial location))
+        (writes.map (fun write => (write.1, decode write.2))) := by
+  induction writes generalizing initial with
+  | nil => rfl
+  | cons write rest ih =>
+      simpa only [publish_cons, List.map_cons, map_update] using
+        ih (Function.update initial write.1 write.2)
+
+omit [DecidableEq Id] in
+/-- A local computation square transports preparation at the actual private
+input. The target kernel is supplied independently of the source kernel. -/
+theorem prepare_map (target : Kernel Snapshot Item Seed Id Other) (decode : Value → Other)
+    (destinations : ∀ item, target.destination item = kernel.destination item)
+    (square : ∀ item seed value,
+      decode (kernel.compute snapshot item seed value) =
+        target.compute snapshot item seed (decode value))
+    (initial : Id → Value) (items : List Item) :
+    (kernel.prepare snapshot seeds initial items).map
+      (fun write => (write.1, decode write.2)) =
+      target.prepare snapshot seeds (fun location => decode (initial location)) items := by
+  simp only [prepare, List.map_map]
+  apply List.map_congr_left
+  intro item _
+  simp only [Function.comp_apply, destinations, square]
+
+/-- The full private store, including unfinished continuations, survives the
+kernel comparison. This is stronger than equality of an aggregate answer bag. -/
+theorem batch_map (target : Kernel Snapshot Item Seed Id Other) (decode : Value → Other)
+    (destinations : ∀ item, target.destination item = kernel.destination item)
+    (square : ∀ item seed value,
+      decode (kernel.compute snapshot item seed value) =
+        target.compute snapshot item seed (decode value))
+    (initial : Id → Value) (items : List Item) :
+    (fun location => decode (kernel.batch snapshot seeds initial items location)) =
+      target.batch snapshot seeds (fun location => decode (initial location)) items := by
+  rw [batch, publish_map]
+  rw [kernel.prepare_map snapshot seeds target decode destinations square]
+  rfl
+
+/-- Repeated occurrences at one destination read its current private value.
+Other destinations neither replace that value nor restart its computation. -/
+theorem run_at_location (kernel : SnapshotBatch.Kernel Snapshot Item Seed Id Value)
+    (snapshot : Snapshot) (seeds : Item → Seed) (state : Id → Value)
+    (items : List Item) (location : Id) :
+    kernel.run snapshot seeds state items location =
+      (items.filter (fun item => decide (kernel.destination item = location))).foldl
+        (fun value item => kernel.compute snapshot item (seeds item) value) (state location) := by
+  induction items generalizing state with
+  | nil => rfl
+  | cons item rest ih =>
+      rw [run_cons, ih]
+      by_cases owns : kernel.destination item = location
+      · simp [owns, step]
+      · have different : location ≠ kernel.destination item := Ne.symm owns
+        simp [owns, step, different]
+
+/-- Preserve each owner's actual command sequence while moving commands of
+different owners between workers. The result is the complete store. -/
+theorem run_eq_of_owner_sequences (kernel : SnapshotBatch.Kernel Snapshot Item Seed Id Value)
+    (snapshot : Snapshot) (seeds : Item → Seed) (state : Id → Value)
+    (first second : List Item)
+    (same : ∀ location,
+      first.filter (fun item => decide (kernel.destination item = location)) =
+        second.filter (fun item => decide (kernel.destination item = location))) :
+    kernel.run snapshot seeds state first = kernel.run snapshot seeds state second := by
+  funext location
+  rw [run_at_location, run_at_location, same location]
+
 
 end Kernel
 

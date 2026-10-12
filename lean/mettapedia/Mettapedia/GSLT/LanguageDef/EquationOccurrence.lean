@@ -92,7 +92,7 @@ namespace DeclaredEquationInstanceWitness
 
 /-- Forget occurrence identity and recover the ordinary proposition-valued
 equation instance. -/
-def erase {base : BasePremiseEvaluator} {language : LanguageDef}
+theorem erase {base : BasePremiseEvaluator} {language : LanguageDef}
     {sourcePattern targetPattern : Pattern} :
     DeclaredEquationInstanceWitness base language sourcePattern targetPattern →
       EquationInstance base language sourcePattern targetPattern
@@ -267,7 +267,7 @@ inductive DerivedGeneratorWitness (language : LanguageDef) :
 namespace DerivedGeneratorWitness
 
 /-- Forget the occurrence data and recover the derived law. -/
-def erase {language : LanguageDef} {left right : Pattern} :
+theorem erase {language : LanguageDef} {left right : Pattern} :
     DerivedGeneratorWitness language left right → DerivedInstance language left right
   | .bagPerm _ _ _ carrier sorted perm => .bagPerm carrier sorted perm
   | .setPerm _ _ _ carrier sorted perm => .setPerm carrier sorted perm
@@ -319,7 +319,7 @@ namespace AuthoredGeneratorWitness
 
 /-- Forget proof-relevant occurrence identity and recover the sole equation
 generator relation. -/
-def erase {base : BasePremiseEvaluator} {language : LanguageDef}
+theorem erase {base : BasePremiseEvaluator} {language : LanguageDef}
     {left right : Pattern} :
     AuthoredGeneratorWitness base language left right →
       EquationContextStep base language left right

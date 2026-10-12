@@ -11,13 +11,23 @@ This module separates three increasingly demanding universe capabilities.
   selected dependent family.
 * A superuniverse embeds, inside one outer universe, every universe produced
   by a selected small family-enclosing operator.
-* A Mahlo reflection profile contains an ordinary subuniverse closed under
-  every internal family operator.
+* A Mahlo reflection profile has, for every internal family operator, an
+  ordinary subuniverse closed on the families drawn from it: the operator
+  sends each such family to a family equivalent to another one drawn from the
+  subuniverse.
 
 The last two are capability interfaces, not new kernel rules and not existence
 claims.  The ambient type hierarchy gives a positive semantic embedding one
-level up.  A finite-code control proves that ordinary universe data alone does
-not imply reflection under arbitrary family operators.
+level up.
+
+Mahlo reflection is distinct from whole-subuniverse closure, which applies the
+operator to the subuniverse itself, taken as one family.  Whole-subuniverse
+closure fails in every universe whose codes grow strictly, so it measures the
+absence of growth rather than the strength of a universe.  Finite-code
+controls separate the notions: ordinary universe data does not give
+whole-subuniverse closure under arbitrary operators, and Mahlo reflection holds
+or fails in one and the same finite universe according to the predicate that
+selects the ordinary subuniverses.
 -/
 
 set_option autoImplicit false
@@ -30,6 +40,8 @@ universe uOuter u
 
 /-! ## Tarski universes and internal families -/
 
+-- The code carrier and the decoded types have independent universe levels.
+set_option linter.checkUnivs false in
 /-- The data common to the universe-closure comparisons: codes and decoding.
 No closure, cumulativity, or self-code property is implicit. -/
 structure SemanticTarskiUniverse where
@@ -82,6 +94,37 @@ def trans
     (left.onFibre index).trans (right.onFibre (left.onBase index))
 
 end InternalFamilyEmbedding
+
+/-- Equivalence of internal families: equivalent index types, and equivalent
+decoded fibres at corresponding indices. -/
+structure InternalFamilyEquiv (left right : outer.InternalFamily) where
+  onBase : outer.El left.1 ≃ outer.El right.1
+  onFibre : ∀ index,
+    outer.El (left.2 index) ≃ outer.El (right.2 (onBase index))
+
+namespace InternalFamilyEquiv
+
+variable {outer : SemanticTarskiUniverse.{uOuter, u}}
+
+/-- Every internal family is equivalent to itself. -/
+def refl (family : outer.InternalFamily) :
+    outer.InternalFamilyEquiv family family where
+  onBase := Equiv.refl _
+  onFibre := fun _ => Equiv.refl _
+
+/-- Equal internal families are equivalent. -/
+def ofEq {left right : outer.InternalFamily} (h : left = right) :
+    outer.InternalFamilyEquiv left right :=
+  h ▸ refl left
+
+/-- An equivalence of internal families is an embedding of internal families. -/
+def toEmbedding {left right : outer.InternalFamily}
+    (equivalence : outer.InternalFamilyEquiv left right) :
+    outer.InternalFamilyEmbedding left right where
+  onBase := equivalence.onBase.toEmbedding
+  onFibre := equivalence.onFibre
+
+end InternalFamilyEquiv
 
 /-- An operator on families represented inside one universe. -/
 abbrev FamilyOperator := outer.InternalFamily → outer.InternalFamily
@@ -169,10 +212,11 @@ def SuperuniverseFor
           (outer.El family.1)
           (fun index => outer.El (family.2 index)))))
 
-/-! ## Mahlo reflection -/
+/-! ## Whole-subuniverse closure -/
 
-/-- A selected operator has a reflected subuniverse when some ordinary
-subuniverse inside the outer universe is closed under that operator. -/
+/-- Some ordinary subuniverse, taken as one internal family, is closed under
+the operator: the operator applied to the whole subuniverse embeds back into
+it. -/
 def HasOperatorClosedSubuniverse
     (outer : SemanticTarskiUniverse.{uOuter, u})
     (IsOrdinarySubuniverse : outer.InternalFamily → Prop)
@@ -181,25 +225,122 @@ def HasOperatorClosedSubuniverse
     IsOrdinarySubuniverse subuniverse ∧
       outer.ClosedUnder operator subuniverse
 
-/-- The structural content of a Mahlo universe: every internal family operator
-has an ordinary subuniverse reflected inside the outer universe and closed
-under that operator.  Which internal families count as ordinary universes is a
-separate, explicit parameter. -/
+/-- **Whole-subuniverse closure.** Every internal family operator has an
+ordinary subuniverse closed under it, the operator being applied to the whole
+subuniverse taken as one family.  This is not Mahlo reflection.  It fails
+whenever codes grow strictly, that is, when every code has a code whose decoded
+type does not embed into its own: the operator replacing the index code by the
+larger code has no closed family, whatever predicate selects the ordinary
+subuniverses (`MahloUniverses.not_wholeSubuniverseClosure_of_strictGrowth`;
+here `Canary.finiteUniverse_not_wholeSubuniverseClosure`).  The powerset is
+such a growth in the universe of `V_κ` for every infinite `κ`.
+This notion was formerly named `MahloReflection`. -/
+structure WholeSubuniverseClosure
+    (outer : SemanticTarskiUniverse.{uOuter, u})
+    (IsOrdinarySubuniverse : outer.InternalFamily → Prop) : Prop where
+  closed : ∀ operator : outer.FamilyOperator,
+    HasOperatorClosedSubuniverse outer IsOrdinarySubuniverse operator
+
+/-! ## Mahlo reflection -/
+
+namespace SemanticTarskiUniverse
+
+/-- A family drawn from a subuniverse `(S, T)`: an index `a` of the
+subuniverse, and for each element of the type decoded at `T a` another index
+of the subuniverse. -/
+abbrev SubuniverseFamily (outer : SemanticTarskiUniverse.{uOuter, u})
+    (subuniverse : outer.InternalFamily) :=
+  Σ index : outer.El subuniverse.1,
+    outer.El (subuniverse.2 index) → outer.El subuniverse.1
+
+/-- The internal family of the outer universe decoded from a family drawn from
+a subuniverse. -/
+def SubuniverseFamily.decode {outer : SemanticTarskiUniverse.{uOuter, u}}
+    {subuniverse : outer.InternalFamily}
+    (family : outer.SubuniverseFamily subuniverse) : outer.InternalFamily :=
+  ⟨subuniverse.2 family.1, fun element => subuniverse.2 (family.2 element)⟩
+
+/-- A subuniverse is closed on its families under an operator when the
+operator sends the decoding of every family drawn from the subuniverse to a
+family equivalent to the decoding of another family drawn from it. -/
+def ClosedOnSubuniverseFamilies (outer : SemanticTarskiUniverse.{uOuter, u})
+    (operator : outer.FamilyOperator) (subuniverse : outer.InternalFamily) :
+    Prop :=
+  ∀ family : outer.SubuniverseFamily subuniverse,
+    ∃ image : outer.SubuniverseFamily subuniverse,
+      Nonempty (outer.InternalFamilyEquiv (operator family.decode) image.decode)
+
+/-- Positive example of closure: every subuniverse is closed on its families
+under the identity operator. -/
+theorem closedOnSubuniverseFamilies_id
+    {outer : SemanticTarskiUniverse.{uOuter, u}}
+    (subuniverse : outer.InternalFamily) :
+    outer.ClosedOnSubuniverseFamilies id subuniverse :=
+  fun family => ⟨family, ⟨InternalFamilyEquiv.refl _⟩⟩
+
+end SemanticTarskiUniverse
+
+/-- The outer universe reflects an operator into an ordinary subuniverse:
+some subuniverse selected by the predicate is closed on its families under
+the operator.  Formerly named `HasOperatorReflectingSubuniverse`. -/
+def ReflectsOperator
+    (outer : SemanticTarskiUniverse.{uOuter, u})
+    (IsOrdinarySubuniverse : outer.InternalFamily → Prop)
+    (operator : outer.FamilyOperator) : Prop :=
+  ∃ subuniverse : outer.InternalFamily,
+    IsOrdinarySubuniverse subuniverse ∧
+      outer.ClosedOnSubuniverseFamilies operator subuniverse
+
+/-- **Mahlo reflection.** Every internal family operator has an ordinary
+subuniverse closed on its families under it: the operator, applied to each
+family drawn from the subuniverse, returns a family equivalent to another
+family drawn from the subuniverse.  Which internal families count as ordinary
+subuniverses is an explicit parameter, and the content of the notion lies in
+that predicate: a predicate admitting an empty subuniverse, one indexed by an
+empty type, makes it trivial, since such a subuniverse has no families
+(`mahloReflection_of_isEmpty`).  With the code families of `V_μ`, `μ < κ`
+inaccessible, as the ordinary subuniverses of the universe of `V_κ`, it holds
+exactly when `κ` is Mahlo (`MahloUniverses.mahloReflection_iff_isMahlo`).
+Formerly named `SubuniverseMahloReflection`. -/
 structure MahloReflection
     (outer : SemanticTarskiUniverse.{uOuter, u})
     (IsOrdinarySubuniverse : outer.InternalFamily → Prop) : Prop where
   reflect : ∀ operator : outer.FamilyOperator,
-    HasOperatorClosedSubuniverse outer IsOrdinarySubuniverse operator
+    ReflectsOperator outer IsOrdinarySubuniverse operator
 
-/-- Mahlo reflection supplies, in particular, a superuniverse-shaped witness
-for every selected next-universe operator. -/
-theorem MahloReflection.hasOperatorClosedSubuniverse
+/-- Mahlo reflection is monotone in the predicate selecting ordinary
+subuniverses. -/
+theorem MahloReflection.mono
+    {outer : SemanticTarskiUniverse.{uOuter, u}}
+    {IsOrdinary IsOrdinary' : outer.InternalFamily → Prop}
+    (mahlo : MahloReflection outer IsOrdinary)
+    (weaken : ∀ family, IsOrdinary family → IsOrdinary' family) :
+    MahloReflection outer IsOrdinary' :=
+  ⟨fun operator => by
+    obtain ⟨subuniverse, ordinary, closed⟩ := mahlo.reflect operator
+    exact ⟨subuniverse, weaken subuniverse ordinary, closed⟩⟩
+
+/-- **A degenerate predicate.** A predicate admitting a subuniverse indexed by
+an empty type gives Mahlo reflection: that subuniverse has no families, so it
+is closed on its families under every operator. -/
+theorem mahloReflection_of_isEmpty
     {outer : SemanticTarskiUniverse.{uOuter, u}}
     {IsOrdinarySubuniverse : outer.InternalFamily → Prop}
-    (mahlo : MahloReflection outer IsOrdinarySubuniverse)
-    (operator : outer.FamilyOperator) :
-    HasOperatorClosedSubuniverse outer IsOrdinarySubuniverse operator :=
-  mahlo.reflect operator
+    (subuniverse : outer.InternalFamily)
+    (ordinary : IsOrdinarySubuniverse subuniverse)
+    (empty : IsEmpty (outer.El subuniverse.1)) :
+    MahloReflection outer IsOrdinarySubuniverse :=
+  ⟨fun _ => ⟨subuniverse, ordinary, fun family => (empty.false family.1).elim⟩⟩
+
+/-- If some code decodes to an empty type, the predicate admitting every
+family gives Mahlo reflection, through the subuniverse indexed by that code.
+A predicate selecting ordinary subuniverses must exclude this subuniverse. -/
+theorem mahloReflection_of_emptyCode
+    {outer : SemanticTarskiUniverse.{uOuter, u}}
+    (empty : outer.Code) (hempty : IsEmpty (outer.El empty)) :
+    MahloReflection outer (fun _ => True) :=
+  mahloReflection_of_isEmpty ⟨empty, fun index => (hempty.false index).elim⟩
+    trivial hempty
 
 /-! ## A positive one-level-up semantic host -/
 
@@ -234,7 +375,7 @@ theorem ambient_embedding_requires_level_shift :
       Nonempty (code ≃ Type u) :=
   no_sameLevel_ambient_selfCode
 
-/-! ## Finite controls: selected closure is not Mahlo reflection -/
+/-! ## Finite controls -/
 
 namespace Canary
 
@@ -281,24 +422,112 @@ theorem successorOperator_not_closed
   simp only [Nat.card_fin] at cardinality
   exact Nat.not_succ_le_self base cardinality
 
-/-- An ordinary finite code universe can support selected closure while still
-failing Mahlo reflection.  Thus ordinary universe structure does not imply the
-arbitrary-operator reflection principle. -/
-theorem finiteUniverse_not_mahlo :
-    ¬ MahloReflection finiteUniverse (fun _ => True) := by
-  intro mahlo
-  rcases mahlo.reflect successorOperator with
+/-- The finite code universe has no whole-subuniverse closure, even with the
+predicate admitting every family: no family is closed under strict base
+growth.  Ordinary universe structure does not give closure of a whole
+subuniverse under arbitrary family operators. -/
+theorem finiteUniverse_not_wholeSubuniverseClosure :
+    ¬ WholeSubuniverseClosure finiteUniverse (fun _ => True) := by
+  intro whole
+  rcases whole.closed successorOperator with
     ⟨subuniverse, _ordinary, closed⟩
   exact successorOperator_not_closed subuniverse closed
+
+/-- Negative example of equivalence: families with one and with two indices
+are not equivalent. -/
+theorem not_internalFamilyEquiv_singleton_one_two :
+    IsEmpty (finiteUniverse.InternalFamilyEquiv
+      (constantSingletonFamily 1) (constantSingletonFamily 2)) :=
+  ⟨fun equivalence => by
+    have sizes := Fintype.card_congr equivalence.onBase
+    change Fintype.card (Fin 1) = Fintype.card (Fin 2) at sizes
+    simp at sizes⟩
+
+/-- With the predicate admitting every family, the finite code universe has
+Mahlo reflection although it has no strength: code `0` decodes to the empty
+type. -/
+theorem finiteUniverse_mahloReflection_trivial :
+    MahloReflection finiteUniverse (fun _ => True) :=
+  mahloReflection_of_emptyCode (outer := finiteUniverse) 0
+    (show IsEmpty (Fin 0) by infer_instance)
+
+/-- The subuniverse of the finite code universe with indices `0, …, n`, each
+decoding to its own size. -/
+def initialSegment (n : Nat) : finiteUniverse.InternalFamily :=
+  ⟨n + 1, fun index => (index : Nat)⟩
+
+/-- The constant operator returning a family with `n + 1` indices. -/
+def constantOperator (n : Nat) : finiteUniverse.FamilyOperator :=
+  fun _ => constantSingletonFamily (n + 1)
+
+/-- Negative example of closure: the segment `0, …, n` is not closed on its
+families under the operator returning a family with `n + 1` indices, since its
+indices decode to types with at most `n` elements. -/
+theorem initialSegment_not_closed (n : Nat) :
+    ¬ finiteUniverse.ClosedOnSubuniverseFamilies (constantOperator n)
+      (initialSegment n) := by
+  intro closed
+  obtain ⟨image, ⟨equivalence⟩⟩ :=
+    closed ⟨(0 : Fin (n + 1)), fun _ => (0 : Fin (n + 1))⟩
+  have sizes := Fintype.card_congr equivalence.onBase
+  change Fintype.card (Fin (n + 1)) = Fintype.card (Fin (image.1 : Nat)) at sizes
+  simp only [Fintype.card_fin] at sizes
+  have below : (image.1 : Nat) < n + 1 := image.1.isLt
+  omega
+
+/-- The initial segments, as a predicate selecting ordinary subuniverses of
+the finite code universe. -/
+def IsInitialSegment (subuniverse : finiteUniverse.InternalFamily) : Prop :=
+  ∃ n, subuniverse = initialSegment n
+
+/-- No initial segment is an empty subuniverse. -/
+theorem IsInitialSegment.nonempty {subuniverse : finiteUniverse.InternalFamily}
+    (segment : IsInitialSegment subuniverse) :
+    Nonempty (finiteUniverse.El subuniverse.1) := by
+  obtain ⟨n, rfl⟩ := segment
+  exact ⟨(0 : Fin (n + 1))⟩
+
+/-- No initial segment is closed on its families under strict base growth:
+the family at the largest index `n` is sent to a family with `n + 1` indices. -/
+theorem initialSegment_not_closed_successorOperator (n : Nat) :
+    ¬ finiteUniverse.ClosedOnSubuniverseFamilies successorOperator
+      (initialSegment n) := by
+  intro closed
+  obtain ⟨image, ⟨equivalence⟩⟩ :=
+    closed ⟨Fin.last n, fun _ => Fin.last n⟩
+  have sizes := Fintype.card_congr equivalence.onBase
+  change Fintype.card (Fin (n + 1)) = Fintype.card (Fin (image.1 : Nat)) at sizes
+  simp only [Fintype.card_fin] at sizes
+  have below : (image.1 : Nat) < n + 1 := image.1.isLt
+  omega
+
+/-- **The predicate decides.** With the initial segments as its ordinary
+subuniverses, the finite code universe has no Mahlo reflection, while the
+predicate admitting every family gives it
+(`finiteUniverse_mahloReflection_trivial`). -/
+theorem finiteUniverse_not_mahloReflection :
+    ¬ MahloReflection finiteUniverse IsInitialSegment := by
+  intro mahlo
+  obtain ⟨_, ⟨n, rfl⟩, closed⟩ := mahlo.reflect successorOperator
+  exact initialSegment_not_closed_successorOperator n closed
 
 end Canary
 
 #print axioms SemanticTarskiUniverse.MonotoneFamilyOperator.iterate_embeds_of_closed
-#print axioms MahloReflection.hasOperatorClosedSubuniverse
+#print axioms SemanticTarskiUniverse.closedOnSubuniverseFamilies_id
+#print axioms MahloReflection.mono
+#print axioms mahloReflection_of_isEmpty
+#print axioms mahloReflection_of_emptyCode
 #print axioms ambient_superuniverseFor
 #print axioms ambient_embedding_requires_level_shift
 #print axioms Canary.identityOperator_all_iterates
 #print axioms Canary.successorOperator_not_closed
-#print axioms Canary.finiteUniverse_not_mahlo
+#print axioms Canary.finiteUniverse_not_wholeSubuniverseClosure
+#print axioms Canary.not_internalFamilyEquiv_singleton_one_two
+#print axioms Canary.finiteUniverse_mahloReflection_trivial
+#print axioms Canary.initialSegment_not_closed
+#print axioms Canary.IsInitialSegment.nonempty
+#print axioms Canary.initialSegment_not_closed_successorOperator
+#print axioms Canary.finiteUniverse_not_mahloReflection
 
 end Mettapedia.TypeTheory.UniverseClosureProfiles

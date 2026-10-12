@@ -37,7 +37,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentQuotientRetai
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation FormationSensitive SharedJudgmentFragment FormationSensitiveContextual
-open Mettapedia.GSLT.LanguageDef KernelAuthority NIKMetalogic
+open Mettapedia.GSLT.LanguageDef KernelAuthority SemanticEvidence
 open SharedJudgmentRetainedSemanticRequirements
 
 universe uIndex uArtifact uEvidence

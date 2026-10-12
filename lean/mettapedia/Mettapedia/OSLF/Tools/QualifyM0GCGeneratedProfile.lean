@@ -11,7 +11,7 @@ layouts, fingerprints, and source/physical rule pairs.
 
 Maturity boundary: this command exercises the fully connected bounded M0GC
 proof of concept.  It does not certify an optimized table organization,
-official MMB compatibility, the compiled C object, or a universal NIK host.
+official MMB compatibility, the compiled C object, or a universal SemanticService host.
 -/
 
 namespace Mettapedia.OSLF.Tools.QualifyM0GCGeneratedProfile

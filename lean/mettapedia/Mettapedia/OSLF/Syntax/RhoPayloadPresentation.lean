@@ -223,7 +223,7 @@ abbrev equations : List (EqAxiom sig metas) :=
 abbrev strictRules : List (Rule sig metas) := [comm, parCong]
 
 /-- The book's profile adds the execution of a dropped quotation. -/
-abbrev bookRules : List (Rule sig metas) := [comm, parCong, drop]
+abbrev dropExecutionRules : List (Rule sig metas) := [comm, parCong, drop]
 
 /-- The strict reflective calculus as an initial substitution-compatible
 operational model. -/
@@ -233,12 +233,12 @@ noncomputable def strictInitial :
 
 /-- The book's profile as an initial substitution-compatible operational
 model. -/
-noncomputable def bookInitial :
-    IsInitial (SubstitutionOperationalModel.presented bookRules equations) :=
-  SubstitutionOperationalModel.presentedIsInitial bookRules equations
+noncomputable def dropExecutionInitial :
+    IsInitial (SubstitutionOperationalModel.presented dropExecutionRules equations) :=
+  SubstitutionOperationalModel.presentedIsInitial dropExecutionRules equations
 
 #print axioms strictInitial
-#print axioms bookInitial
+#print axioms dropExecutionInitial
 
 /-! ## Equation instances -/
 
@@ -459,7 +459,7 @@ theorem parCong_reduces {Γ : Ctx sig} {source target : Term sig Γ Srt.pr}
 
 /-- A dropped quotation in any ambient context. -/
 def dropOccurrence {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
-    Instance bookRules (BindingCloneAlgebra.terms sig) where
+    Instance dropExecutionRules (BindingCloneAlgebra.terms sig) where
   index := ⟨2, by simp⟩
   ambient := Γ
   valuation := continuation (.var .zero)
@@ -468,10 +468,10 @@ def dropOccurrence {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
 
 /-- In the book's profile a dropped quotation runs its code. -/
 theorem drop_reduces {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
-    Reduces bookRules
+    Reduces dropExecutionRules
       (⟨Γ, Srt.pr, drpT (quoT code), code⟩ :
         Judgment (BindingCloneAlgebra.terms sig)) :=
-  reduces_ruleClosed bookRules (dropOccurrence code)
+  reduces_ruleClosed dropExecutionRules (dropOccurrence code)
     (by intro position; nomatch position)
 
 end Firings
@@ -554,7 +554,7 @@ theorem steps_parCong {source target : Term sig Γ Srt.pr} (other : Term sig Γ 
 
 /-- In the book's profile a dropped quotation steps to its code. -/
 theorem steps_drop (code : Term sig Γ Srt.pr) :
-    Steps bookRules (drpT (quoT code)) code :=
+    Steps dropExecutionRules (drpT (quoT code)) code :=
   steps_of_reduces (drop_reduces code)
 
 end Classes
@@ -682,8 +682,8 @@ theorem drop_inert_strict {Γ : Ctx sig} (code target : Term sig Γ Srt.pr) :
   no_strict_step_of_no_output rfl
 
 /-- In the book's profile the same dropped quotation runs its code. -/
-theorem drop_runs_book {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
-    Steps bookRules (drpT (quoT code)) code :=
+theorem drop_runs_dropExecution {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
+    Steps dropExecutionRules (drpT (quoT code)) code :=
   steps_drop code
 
 end ActiveOutputs

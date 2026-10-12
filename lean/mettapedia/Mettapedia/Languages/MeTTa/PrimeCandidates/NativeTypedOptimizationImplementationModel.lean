@@ -1,11 +1,11 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 
 /-!
 # Abstract implementation models for native typed optimizations
 
 Every native typed optimization already determines an ordinary
-observation-preserving NIK refinement.  This module proves that the same
+observation-preserving SemanticService refinement.  This module proves that the same
 refinement supplies the abstract candidate implementation contract: exact raw
 fallback, exact proof-relevant receipts, revision-current hot execution, and
 stale deoptimization.
@@ -22,12 +22,12 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationImpl
 open Mettapedia.GSLT
 open Mettapedia.GSLT.Ultrainfinite
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission.PathSpecialization
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission.PathSpecialization
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 
 abbrev indexedSource {Source : Type}

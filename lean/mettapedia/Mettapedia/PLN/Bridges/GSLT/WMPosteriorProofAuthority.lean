@@ -44,7 +44,7 @@ def posteriorObserve
     (prior : Prior) : Multiset Obs → Query → Prior :=
   model.posterior prior
 
-/-- NIK family for posterior-valued queries.  The checker for the posterior
+/-- SemanticService family for posterior-valued queries.  The checker for the posterior
 component is supplied independently, so this construction does not require
 decidable extensional equality on the posterior carrier. -/
 def posteriorFamily

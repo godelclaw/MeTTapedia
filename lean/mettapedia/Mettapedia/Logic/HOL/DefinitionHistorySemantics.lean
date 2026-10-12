@@ -220,6 +220,196 @@ theorem extendModel_append (first : DefinitionHistory source middle)
         (prior.extendModel (first.extendModel model)).definitionExtension body
       rw [ih]
 
+/-! ## Instantiating a whole dependent declaration history -/
+
+variable {Base' : Type u}
+
+/-- The instantiated signature retains one distinct fresh symbol for each
+entry. Earlier symbols remain available to later defining bodies. -/
+def instanceSignature {source target : Ty Base → Type (max u v)}
+    (history : DefinitionHistory source target) (substitution : Base → Ty Base')
+    (source' : Ty Base' → Type (max u v)) : Ty Base' → Type (max u v) :=
+  match history with
+  | .nil => source'
+  | .add prior type _ =>
+      DefinedConst (prior.instanceSignature substitution source') (Ty.substitute substitution type)
+
+def instanceSymbols {source target : Ty Base → Type (max u v)}
+    (history : DefinitionHistory source target) (substitution : Base → Ty Base')
+    {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type)) :
+    ∀ {type}, target type →
+      history.instanceSignature substitution source' (Ty.substitute substitution type) :=
+  match history with
+  | .nil => symbols
+  | .add prior _ _ => DefinedConst.typeInstance substitution
+      (prior.instanceSymbols substitution symbols)
+
+/-- Instantiate each actual body against the already instantiated preceding
+signature. This constructs the target history, rather than supplying a
+semantic compatibility premise for it. -/
+def instantiate {source target : Ty Base → Type (max u v)}
+    (history : DefinitionHistory source target) (substitution : Base → Ty Base')
+    {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type)) :
+    DefinitionHistory source' (history.instanceSignature substitution source') :=
+  match history with
+  | .nil => .nil
+  | .add prior type body => .add (prior.instantiate substitution symbols)
+      (Ty.substitute substitution type)
+      (mapTypes substitution (prior.instanceSymbols substitution symbols) body)
+
+/-- Instantiation and inheritance agree on every old symbol, including
+symbols that pass through several intervening definitions. -/
+theorem instanceSymbols_embedding (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    {type : Ty Base} (constant : source type) :
+    history.instanceSymbols substitution symbols (history.embedding constant) =
+      (history.instantiate substitution symbols).embedding (symbols constant) := by
+  induction history with
+  | nil => rfl
+  | add prior type body ih => exact congrArg DefinedConst.old ih
+
+/-- Every fresh definition, including its older dependencies, expands to
+the instantiated image of its original body. The compatibility required by
+general constant substitution is proved from the constructed history. -/
+theorem images_instanceSymbols (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    {type : Ty Base} (constant : target type) :
+    (history.instantiate substitution symbols).images
+        (history.instanceSymbols substitution symbols constant) =
+      mapTypes substitution symbols (history.images constant) := by
+  induction history generalizing type with
+  | nil => rfl
+  | add prior type body ih =>
+      cases constant with
+      | old constant => exact ih constant
+      | defined =>
+          change substConst (prior.instantiate substitution symbols).images
+              (mapTypes substitution (prior.instanceSymbols substitution symbols) body) =
+            mapTypes substitution symbols (substConst prior.images body)
+          exact (mapTypes_substConst substitution
+            (prior.instanceSymbols substitution symbols) symbols prior.images
+            (prior.instantiate substitution symbols).images ih body).symm
+
+/-- Dependency expansion and instantiation commute on every open term,
+including arguments substituted beneath binders. -/
+theorem erase_instantiate (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    {context : Ctx Base} {type : Ty Base} (term : Term target context type) :
+    (history.instantiate substitution symbols).erase
+        (mapTypes substitution (history.instanceSymbols substitution symbols) term) =
+      mapTypes substitution symbols (history.erase term) :=
+  (mapTypes_substConst substitution (history.instanceSymbols substitution symbols)
+    symbols history.images (history.instantiate substitution symbols).images
+    (history.images_instanceSymbols substitution symbols) term).symm
+
+/-- Old syntax reaches the same instantiated signature through either
+embedding route, with its bound-variable positions retained. -/
+theorem embed_instantiate (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    {context : Ctx Base} {type : Ty Base} (term : Term source context type) :
+    mapTypes substitution (history.instanceSymbols substitution symbols) (history.embed term) =
+      (history.instantiate substitution symbols).embed (mapTypes substitution symbols term) := by
+  induction term with
+  | const constant =>
+      simp only [embed, mapConst, mapTypes, history.instanceSymbols_embedding]
+  | _ => simp_all only [embed, mapConst, mapTypes] <;> rfl
+
+/-- Extending through the whole instantiated history commutes with the type
+reduct. Equality includes all newly interpreted constants, not just the old
+language. Full domains are needed by this particular type-reduct construction. -/
+theorem extendModel_typeReduct (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    (model : HenkinModel.{u, max u v, w} Base' source') (full : model.FullDomains) :
+    history.extendModel (HenkinModel.standardTypeReduct substitution symbols model) =
+      HenkinModel.standardTypeReduct substitution (history.instanceSymbols substitution symbols)
+        ((history.instantiate substitution symbols).extendModel model) := by
+  induction history with
+  | nil => rfl
+  | add prior type body ih =>
+    change (prior.extendModel (HenkinModel.standardTypeReduct substitution symbols model)).definitionExtension
+      body = _
+    rw [ih]
+    exact HenkinModel.definitionExtension_typeReduct substitution
+      (prior.instanceSymbols substitution symbols)
+      ((prior.instantiate substitution symbols).extendModel model)
+      ((prior.instantiate substitution symbols).fullDomains_iff model |>.mpr full) body
+
+/-- Every sentence in the extended signature has the same truth after
+instantiating its entire definition history. -/
+theorem models_typeReduct (history : DefinitionHistory source target)
+    (substitution : Base → Ty Base') {source' : Ty Base' → Type (max u v)}
+    (symbols : ∀ {type}, source type → source' (Ty.substitute substitution type))
+    (model : HenkinModel.{u, max u v, w} Base' source') (full : model.FullDomains)
+    (sentence : ClosedFormula target) :
+    (history.extendModel (HenkinModel.standardTypeReduct substitution symbols model)).models
+      sentence ↔
+      ((history.instantiate substitution symbols).extendModel model).models
+        (mapTypes substitution (history.instanceSymbols substitution symbols) sentence) := by
+  rw [history.extendModel_typeReduct substitution symbols model full]
+  exact HenkinModel.models_mapTypes substitution (history.instanceSymbols substitution symbols)
+    ((history.instantiate substitution symbols).extendModel model)
+    ((history.instantiate substitution symbols).fullDomains_iff model |>.mpr full) sentence
+
+namespace Controls
+
+abbrev Initial : Ty Unit → Type := fun _ => Empty
+abbrev Parameter : Ty Unit := .base ()
+abbrev First := DefinedConst Initial (Parameter ⇒ Parameter)
+abbrev Second := DefinedConst First (Parameter ⇒ Parameter)
+
+def firstBody : ClosedTerm Initial (Parameter ⇒ Parameter) := .lam (.var .vz)
+
+/-- The second definition uses the retained first declaration twice. -/
+def secondBody : ClosedTerm First (Parameter ⇒ Parameter) :=
+  .lam (.app (.const .defined) (.app (.const .defined) (.var .vz)))
+
+def twoDefinitions : DefinitionHistory Initial Second :=
+  .add (.add .nil _ firstBody) _ secondBody
+
+def repeatedBody : ClosedTerm Initial (Parameter ⇒ Parameter) :=
+  .lam (.app (.lam (.var .vz)) (.app (.lam (.var .vz)) (.var .vz)))
+
+def singleBody : ClosedTerm Initial (Parameter ⇒ Parameter) :=
+  .lam (.app (.lam (.var .vz)) (.var .vz))
+
+theorem expansion_retains_repeated_dependency :
+    twoDefinitions.erase (.const .defined) = repeatedBody := rfl
+
+abbrev FunctionInitial : Ty Unit → Type := fun _ => Empty
+
+def functionInstance : Unit → Ty Unit := fun _ => .prop ⇒ .prop
+
+def initialSymbols : ∀ {type}, Initial type →
+    FunctionInitial (Ty.substitute functionInstance type) := fun constant => nomatch constant
+
+/-- A parameter is replaced by a function type, while the two defining
+applications remain separate beneath the new function-valued binder. -/
+theorem instantiated_expansion_retains_repeated_dependency :
+    (twoDefinitions.instantiate functionInstance initialSymbols).erase
+        (.const (twoDefinitions.instanceSymbols functionInstance initialSymbols
+          (DefinedConst.defined : Second (Parameter ⇒ Parameter)))) =
+      (mapTypes functionInstance initialSymbols repeatedBody :
+        ClosedTerm FunctionInitial ((.prop ⇒ .prop) ⇒ (.prop ⇒ .prop))) := by
+  simpa only [mapTypes, expansion_retains_repeated_dependency] using
+    twoDefinitions.erase_instantiate functionInstance initialSymbols
+      (.const .defined : ClosedTerm Second (Parameter ⇒ Parameter))
+
+/-- Removing one dependency occurrence changes the retained syntax, even
+though both bodies compute the identity function extensionally. -/
+theorem dependency_occurrence_cannot_be_dropped : repeatedBody ≠ singleBody := by
+  intro equal
+  have count : (8 : Nat) = 5 := congrArg Term.nodeCount equal
+  exact (by decide : (8 : Nat) ≠ 5) count
+
+end Controls
+
 end DefinitionHistory
 
 end Mettapedia.Logic.HOL

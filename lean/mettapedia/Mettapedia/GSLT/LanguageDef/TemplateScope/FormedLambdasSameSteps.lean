@@ -88,7 +88,7 @@ theorem sameOut_j15 : run .static noProg 4 [2, 1, 2, 0, 1, 2] ((fun n => if n = 
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j9]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -102,7 +102,7 @@ theorem sameOut_j16 : run .static noProg 5 [2, 1, 2, 0, 1] ((fun n => if n = .in
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j7]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -166,7 +166,7 @@ theorem sameOut_j27 : run .static noProg 5 [2, 1, 2, 1, 2] ((fun n => if n = .in
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j21]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -180,7 +180,7 @@ theorem sameOut_j28 : run .static noProg 6 [2, 1, 2, 1] ((fun n => if n = .inst 
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j19]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -212,7 +212,7 @@ theorem sameOut_j31 : run .static noProg 9 [2, 1] ((fun n => if n = .inst [2] (.
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j4]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -237,7 +237,7 @@ theorem sameOut_j33 : run .static noProg 11 [] (Store.empty) (.app (.lam (.src (
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [sameOut_j1]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]

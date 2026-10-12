@@ -24,8 +24,8 @@ here.
 
 namespace Mettapedia.OSLF.Framework.IndexedModalFunctor
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis

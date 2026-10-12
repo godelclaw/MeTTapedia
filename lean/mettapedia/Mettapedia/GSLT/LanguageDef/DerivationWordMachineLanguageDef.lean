@@ -137,8 +137,11 @@ def liftLeft (left : Pattern) : Pattern :=
         (liftPattern serviceState)
   | other => liftPattern other
 
-/-- Lift one declared semantic transition to the compact record carrier. -/
-def liftRewrite (rewrite : RewriteRule) : RewriteRule :=
+/-- Lift an admitted unannotated transition to the compact record carrier.
+Scoped metadata transport is not implemented: lifting changes occurrence
+paths and premise indices, so an annotated row requires a separate adapter. -/
+def liftRewrite (rewrite : RewriteRule)
+    (_unannotated : rewrite.bindings = none := by first | rfl | assumption) : RewriteRule :=
   let instruction? := sourceInstruction? rewrite.left
   {
     name := "dwm:lift:" ++ rewrite.name
@@ -158,8 +161,48 @@ def liftRewrite (rewrite : RewriteRule) : RewriteRule :=
     right := liftPattern rewrite.right
   }
 
+/-- The raw-row lifting boundary refuses binding metadata instead of erasing
+it or retaining annotations at paths changed by this transformation. -/
+def liftRewrite? (rewrite : RewriteRule) : Option RewriteRule :=
+  if unannotated : rewrite.bindings.isNone then
+    some (liftRewrite rewrite (Option.isNone_iff_eq_none.mp unannotated))
+  else
+    none
+
+@[simp] theorem liftRewrite?_of_unannotated (rewrite : RewriteRule)
+    (unannotated : rewrite.bindings = none) :
+    liftRewrite? rewrite = some (liftRewrite rewrite unannotated) := by
+  simp [liftRewrite?, unannotated]
+
+theorem liftRewrite?_annotated_rejected (rewrite : RewriteRule) (spec : RuleBindingSpec)
+    (annotated : rewrite.bindings = some spec) : liftRewrite? rewrite = none := by
+  simp [liftRewrite?, annotated]
+
+/-- The actual source table uses no scoped binding annotations. -/
+theorem source_transitions_unannotated :
+    DerivationCheckMachineLanguageDef.transitions.all (fun row => row.bindings.isNone) := by
+  decide +kernel
+
+theorem source_transition_has_no_binding_metadata (rewrite : RewriteRule)
+    (membership : rewrite ∈ DerivationCheckMachineLanguageDef.transitions) :
+    rewrite.bindings = none :=
+  Option.isNone_iff_eq_none.mp
+    (List.all_eq_true.mp source_transitions_unannotated rewrite membership)
+
 def liftedTransitions : List RewriteRule :=
-  DerivationCheckMachineLanguageDef.transitions.map liftRewrite
+  DerivationCheckMachineLanguageDef.transitions.filterMap liftRewrite?
+
+/-- Admission retains the exact source occurrence list, including order and
+duplicates; no authored source transition is lost by `filterMap`. -/
+@[simp] theorem liftedTransitions_eq_admitted_map :
+    liftedTransitions = DerivationCheckMachineLanguageDef.transitions.attach.map
+      (fun row => liftRewrite row.val
+        (source_transition_has_no_binding_metadata row.val row.property)) := by
+  rfl
+
+theorem annotated_source_lifting_refused :
+    liftRewrite? CanonicalWire.Canary.annotatedRewrite = none :=
+  liftRewrite?_annotated_rejected _ CanonicalWire.Canary.bindingSpec rfl
 
 /-- A malformed record is an explicit machine outcome rather than a stuck
 term.  A decoder implementation may produce this decision only after checking
@@ -250,8 +293,10 @@ theorem transition_count : transitions.length = 21 := by decide
 
 theorem every_source_transition_is_lifted (rewrite : RewriteRule)
     (membership : rewrite ∈ DerivationCheckMachineLanguageDef.transitions) :
-    liftRewrite rewrite ∈ liftedTransitions := by
-  exact List.mem_map.mpr ⟨rewrite, membership, rfl⟩
+    liftRewrite rewrite (source_transition_has_no_binding_metadata rewrite membership) ∈
+      liftedTransitions := by
+  exact List.mem_filterMap.mpr ⟨rewrite, membership,
+    liftRewrite?_of_unannotated rewrite (source_transition_has_no_binding_metadata rewrite membership)⟩
 
 theorem decode_premise_is_load_bearing :
     (liftRewrite DerivationCheckMachineLanguageDef.inputAcceptTransition).premises.head? =
@@ -301,7 +346,7 @@ private theorem liftPremise_supported (premise : Premise) :
     CanonicalWire.premiseSupported (liftPremise premise) =
       CanonicalWire.premiseSupported premise := by
   cases premise with
-  | freshness => rfl
+  | freshness condition => exact liftPattern_supported condition.term
   | congruence left right =>
       simp only [liftPremise, CanonicalWire.premiseSupported]
       rw [liftPattern_supported left, liftPattern_supported right]
@@ -407,8 +452,10 @@ private theorem sourceInstruction?_supported
 every source transition, not merely for the current finite transition table. -/
 theorem liftRewrite_supported (rewrite : RewriteRule)
     (supported : CanonicalWire.rewriteSupported rewrite) :
-    CanonicalWire.rewriteSupported (liftRewrite rewrite) := by
+    CanonicalWire.rewriteSupported
+      (liftRewrite rewrite (CanonicalWire.rewriteSupported_has_no_binding_metadata rewrite supported)) := by
   simp only [CanonicalWire.rewriteSupported, Bool.and_eq_true] at supported
+  rcases supported with ⟨_unannotated, supported⟩
   have liftedContext :
       (liftContext rewrite.typeContext).all
         CanonicalWire.typeBindingSupported := by
@@ -500,7 +547,10 @@ private theorem transitions_supported :
       CanonicalWire.typeBindingSupported, CanonicalWire.typeExprSupported,
       CanonicalWire.premiseSupported, CanonicalWire.patternSupported,
       CanonicalWire.patternListSupported]
-  · rcases List.mem_map.mp membership with ⟨source, sourceMembership, rfl⟩
+  · rcases List.mem_filterMap.mp membership with ⟨source, sourceMembership, lifted⟩
+    have unannotated := source_transition_has_no_binding_metadata source sourceMembership
+    rw [liftRewrite?_of_unannotated source unannotated] at lifted
+    cases lifted
     exact liftRewrite_supported source
       (List.all_eq_true.mp sourceRewrites source sourceMembership)
 
@@ -527,8 +577,9 @@ private theorem rewrites_validate :
       LanguageDef.validateRewrite language rewrite = [] := by
   intro rewrite membership
   change rewrite ∈ transitions at membership
-  simp only [transitions, liftedTransitions,
-    DerivationCheckMachineLanguageDef.transitions, List.map_cons,
+  simp only [transitions, liftedTransitions_eq_admitted_map,
+    DerivationCheckMachineLanguageDef.transitions, List.attach_cons,
+    List.attach_nil, List.map_cons,
     List.map_nil, List.mem_cons, List.mem_nil_iff, or_false] at membership
   rcases membership with
     rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
@@ -640,7 +691,7 @@ theorem language_validate : language.validate = [] := by
       DerivationCheckMachineLanguageDef.finishRelevanceFaultTransition,
       DerivationCheckMachineLanguageDef.finishRootFaultTransition,
       DerivationCheckMachineLanguageDef.finishVerifiedTransition,
-      transitions, liftedTransitions, liftRewrite, sourceInstruction?,
+      transitions, liftedTransitions_eq_admitted_map, liftRewrite, sourceInstruction?,
       liftContext, liftTypeExpr, liftPremise, liftPattern, liftLeft,
       malformedRecordTransition, a, v, query, run, halted, recordsNil,
       recordsCons, decoded, decodeRejected,
@@ -760,7 +811,7 @@ theorem missingFinishStep_exact :
     rewriteAt, applyRuleUsing, premisesUsing, premiseStepUsing,
     engineBasePremises, premiseStepWithEnv, relationQueryStep,
     builtinRelationTuples, RelationEnv.empty,
-    language, transitions, liftedTransitions,
+    language, transitions, liftedTransitions_eq_admitted_map,
     malformedRecordTransition, liftRewrite,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
@@ -827,7 +878,7 @@ theorem missingFinishDone_irreducible :
     rewriteAt, applyRuleUsing, premisesUsing, premiseStepUsing,
     engineBasePremises, premiseStepWithEnv, relationQueryStep,
     builtinRelationTuples, RelationEnv.empty,
-    language, transitions, liftedTransitions,
+    language, transitions, liftedTransitions_eq_admitted_map,
     malformedRecordTransition, liftRewrite,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule,
     Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRuleUsing,
@@ -876,6 +927,12 @@ theorem missingFinishDone_irreducible :
     Mettapedia.OSLF.MeTTaIL.Match.matchPattern]
 
 #print axioms lifted_transition_count
+#print axioms source_transitions_unannotated
+#print axioms source_transition_has_no_binding_metadata
+#print axioms liftRewrite?_of_unannotated
+#print axioms liftRewrite?_annotated_rejected
+#print axioms liftedTransitions_eq_admitted_map
+#print axioms annotated_source_lifting_refused
 #print axioms transition_count
 #print axioms every_source_transition_is_lifted
 #print axioms decode_premise_is_load_bearing

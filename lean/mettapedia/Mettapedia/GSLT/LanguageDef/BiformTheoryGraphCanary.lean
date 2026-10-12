@@ -2,6 +2,8 @@ import Mettapedia.GSLT.LanguageDef.BiformTheoryGraph
 import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 import Mettapedia.TypeTheory.SimpleDependentInstitutionBridge
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # A simple-to-dependent heterogeneous biform canary
 
@@ -20,11 +22,11 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.BiformTheoryGraphCanary
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.ProofRelevant
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 open Mettapedia.GSLT.LanguageDef.TheoryGraph
 open Mettapedia.GSLT.LanguageDef.BiformTheoryGraph

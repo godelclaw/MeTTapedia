@@ -733,7 +733,10 @@ private theorem apply_premise (query : PremisePlan) (queries : List PremisePlan)
       (PremisePlan.run relations source bindings query).map fun extended =>
         encodeState (.premises queries template extended) := by
   have key := tuples_sourceQuery relations source query.relation query.arguments bindings "extended"
-  unfold PremisePlan.run
+  have sourceRun : PremisePlan.run relations source bindings query =
+      relationQueryStep relations source bindings query.relation (query.arguments.map Pattern.fvar) :=
+    PremisePlan.run_eq_premiseStepUsing relations source (fun _ => []) bindings query
+  rw [sourceRun]
   generalize relationQueryStep relations source bindings query.relation
     (query.arguments.map Pattern.fvar) = results at key ⊢
   simp +decide [

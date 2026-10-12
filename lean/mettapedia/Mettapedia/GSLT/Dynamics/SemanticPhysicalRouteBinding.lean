@@ -18,7 +18,7 @@ decodable physical evidence for:
 An exact `BindingAuthority` may be realized by deterministic recomputation,
 proof-relevant replay, a generated checker, or another independently adequate
 method.  It composes conjunctively with the existing structural parallel
-article authority and enters the same open NIK family.
+article authority and enters the same open SemanticService family.
 -/
 
 set_option autoImplicit false
@@ -441,7 +441,7 @@ def combinedProjection
       (CombinedCertified codec backend) (CombinedMeaning codec backend) :=
   (authorityProjection admission).conjunction binding.projection
 
-/-- Structurally replayed and result-bound articles form one ordinary NIK
+/-- Structurally replayed and result-bound articles form one ordinary SemanticService
 authority fibre, with paired evidence and no privileged evaluator branch. -/
 def family
     (admission : AdmissionAuthority backend)

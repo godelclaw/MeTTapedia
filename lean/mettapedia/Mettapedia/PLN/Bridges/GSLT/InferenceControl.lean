@@ -18,7 +18,7 @@ the cost actually incurred.  This module makes that separation executable:
 * generic GSLT soundness and answer-accounting therefore survive every such
   policy;
 * a locally complete step authority can serialize the resulting controlled
-  run as a finite NIK trace;
+  run as a finite SemanticService trace;
 * on Need's Need machine, the semantic work counter remains an exact clock,
   independently of the predicted cost used by the controller.
 
@@ -202,10 +202,10 @@ theorem run_multistep
           (guidance.controller (Answer := Answer) goal base) fuel snapshot) :=
   Snapshot.run_multistep system _ fuel snapshot live
 
-/-! ## NIK finite-trace closure -/
+/-! ## SemanticService finite-trace closure -/
 
 /-- If the generated control GSLT has a locally complete step authority, every
-live bounded evidence-guided run has an accepted finite NIK trace article.
+live bounded evidence-guided run has an accepted finite SemanticService trace article.
 Evidence guidance discovers the run; the local authority, not the guidance,
 justifies each edge. -/
 theorem exists_accepted_finite_trace

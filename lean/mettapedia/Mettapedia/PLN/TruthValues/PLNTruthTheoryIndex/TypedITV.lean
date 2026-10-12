@@ -264,7 +264,7 @@ structure SufficientStatisticQueryProfile where
 
 /-- Sufficient-statistic query profile for strength, confidence, categorical
 means, and categorical IDM envelopes. -/
-def sufficientStatisticQueryProfile : SufficientStatisticQueryProfile where
+theorem sufficientStatisticQueryProfile : SufficientStatisticQueryProfile where
   binaryWorldStrengthForced := by
     intro State Query instEvidence instWM W₁ W₂ q h
     exact

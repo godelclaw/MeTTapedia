@@ -191,7 +191,7 @@ theorem recursiveDriverCospan_retains_source
     (recursiveDriverCospan first second firstMeaning secondMeaning
       firstDenotes secondDenotes heads interpreted environment property
       accepted).evidence.proof =
-        NativeHOLRecursiveProofNIKQualification.Controls.retainedMapFusionProof := by
+        NativeHOLRecursiveProofQualification.Controls.retainedMapFusionProof := by
   exact recursiveExecutionCospan_retains_source Tower.zero first second
     firstMeaning secondMeaning firstDenotes secondDenotes heads interpreted
     environment property accepted

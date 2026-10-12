@@ -92,6 +92,81 @@ theorem insertion_changes_meaning_of_all :
       allMatches (payloadIs 7) ({(2, 8), (3, 7)} : Multiset Occurrence) = {(3, 7)} := by
   decide
 
+/-- Reading all equal-payload occurrences with no take preserves both
+occurrence identities and the unrelated datum. -/
+theorem complete_read_does_not_consume :
+    commitWithCompleteRead (payloadIs 7) bothSevens 0 duplicates = some duplicates := by
+  decide +kernel
+
+/-- A complete read of the sevens may accompany consumption of another
+occurrence. The read bag and the consumed bag have different roles. -/
+theorem complete_read_and_separate_take :
+    commitWithCompleteRead (payloadIs 7) bothSevens {(2, 8)} duplicates =
+      some bothSevens ∧
+      commitWithCompleteRead (payloadIs 7) bothSevens firstSeven duplicates =
+        some {(1, 7), (2, 8)} := by
+  decide +kernel
+
+/-- The requested take is still available after this insertion, but the
+formerly complete read is no longer complete. -/
+theorem phantom_invalidates_read_with_available_take :
+    commit firstSeven (duplicates + {(3, 7)}) = some {(1, 7), (2, 8), (3, 7)} ∧
+      commitWithCompleteRead (payloadIs 7) bothSevens firstSeven
+        (duplicates + {(3, 7)}) = none := by
+  decide +kernel
+
+/-- A captured absence is a complete read with an empty match bag. It may
+guard a separate take, and a new match invalidates that guard. -/
+theorem absence_guards_a_separate_take :
+    commitWithCompleteRead (payloadIs 9) 0 firstSeven duplicates =
+        some {(1, 7), (2, 8)} ∧
+      commitWithCompleteRead (payloadIs 9) 0 firstSeven
+        (duplicates + {(3, 9)}) = none := by
+  decide +kernel
+
+/-- The private world adds an owner coordinate without identifying either
+of the equal-payload occurrences. -/
+def inPrivateWorld (resource : Occurrence) : ℕ × Occurrence := (41, resource)
+
+theorem inPrivateWorld_injective : Function.Injective inPrivateWorld := by
+  intro left right same
+  exact congrArg Prod.snd same
+
+/-- A nonidentity private-world transport preserves the complete read and
+the independent take, including the exact residual occurrence bag. -/
+theorem private_world_read_take_transport :
+    commitWithCompleteRead (fun resource : ℕ × Occurrence => payloadIs 7 resource.2)
+        (bothSevens.map inPrivateWorld) (firstSeven.map inPrivateWorld)
+        (duplicates.map inPrivateWorld) =
+      some (({(1, 7), (2, 8)} : Multiset Occurrence).map inPrivateWorld) := by
+  rw [commitWithCompleteRead_map inPrivateWorld inPrivateWorld_injective
+    (payloadIs 7) (fun resource : ℕ × Occurrence => payloadIs 7 resource.2) (fun _ => rfl)]
+  decide +kernel
+
+/-- Erasing the occurrence coordinate can turn an unavailable take into an
+available one. Preserving payloads and multiplicity alone is insufficient. -/
+theorem erased_identity_invents_take_authority :
+    commit ({(99, 7)} : Multiset Occurrence) firstSeven = none ∧
+      commit (({(99, 7)} : Multiset Occurrence).map Prod.snd)
+        (firstSeven.map Prod.snd) = some 0 := by
+  decide +kernel
+
+/-- The same erasure can accept a complete-read claim about the wrong
+occurrence even when that read performs no consumption. -/
+theorem erased_identity_invents_complete_read :
+    commitWithCompleteRead (payloadIs 7) {(99, 7)} 0 firstSeven = none ∧
+      commitWithCompleteRead (fun value : ℕ => value == 7)
+        (({(99, 7)} : Multiset Occurrence).map Prod.snd) 0
+        (firstSeven.map Prod.snd) = some {7} := by
+  decide +kernel
+
+/-- An injective identity map does not license changing the grounded
+predicate. Predicate transport is an independent requirement. -/
+theorem changed_predicate_refuses_complete_read :
+    commitWithCompleteRead (payloadIs 7) bothSevens 0 duplicates = some duplicates ∧
+      commitWithCompleteRead (fun _ : Occurrence => false) bothSevens 0 duplicates = none := by
+  decide +kernel
+
 def twoValues : Multiset Occurrence := {(0, 7), (1, 8)}
 
 /-- One shared binding must satisfy every selected match. Two independent

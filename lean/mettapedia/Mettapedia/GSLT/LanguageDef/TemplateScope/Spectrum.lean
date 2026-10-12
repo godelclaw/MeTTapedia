@@ -220,6 +220,19 @@ def codeBound (o : Owner) : Bool :=
   | 9 :: 1 :: _ => true
   | _ => false
 
+/-- A scope owner: not a binder of code, and not the owner of the free
+parameters of code.  The root of a form (`[]` for the query, `[5]` for an
+equation) is one, and so is the owner of every slot a scope declares. -/
+def scopeOwner (o : Owner) : Prop :=
+  codeBound o = false ∧ o ≠ codeFreeParam
+
+/-- A scope owner is not the owner of a name of code. -/
+theorem not_code_of_scopeOwner {o : Owner} (h : scopeOwner o) :
+    ¬ (codeBound o = true ∨ o = codeFreeParam) := by
+  rintro (hb | hf)
+  · exact Bool.false_ne_true (h.1.symm.trans hb)
+  · exact h.2 hf
+
 /-- The most recent binding of a spelling in a quotation, if it has one. -/
 def codeLookup : List (X × Owner) → X → Option Owner
   | [], _ => none
@@ -250,14 +263,15 @@ returned unchanged. -/
 def sealParams (t : Tm S X) : Tm S X :=
   (paramOcc t).foldr (fun p acc => .lam p [] acc) t
 
-/-- Code at a quotation-relative position.  `holes` is the scope environment
-whose slots a free store name denotes, when the code is a pattern; `none`
-seals those names as the query's own slots.  Parameters and store names in
+/-- Code at a quotation-relative position, written in a form rooted at `R`.
+`holes` is the scope environment whose slots a free store name denotes, when
+the code is a pattern; `none` seals those names as the form's head slots
+`(R, y)` (the query's own slots when `R = []`).  Parameters and store names in
 `penv` and `senv` are bound by an enclosing binder of this quotation, most
 recent first, and a use of one is a parameter of the code.  A nested
-quotation is sealed and starts again at the root. -/
-def codeAt (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos : Owner) :
-    Src S X → Tm S (Slot X)
+quotation is sealed and starts again at the root, in the same form. -/
+def codeAt (R : Owner) (holes : Option (X → Owner)) (penv senv : List (X × Owner))
+    (pos : Owner) : Src S X → Tm S (Slot X)
   | .sym s => .sym s
   | .fn F => .fn F
   | .par z =>
@@ -270,36 +284,39 @@ def codeAt (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos :
       | none =>
           match holes with
           | some env => .var (.src (env y, y))
-          | none => .var (.src ([], y))
+          | none => .var (.src (R, y))
   | .lam z _ b =>
       let o := codeBinder pos
-      .lam (.src (o, z)) [] (codeAt holes ((z, o) :: penv) senv (pos ++ [0]) b)
+      .lam (.src (o, z)) [] (codeAt R holes ((z, o) :: penv) senv (pos ++ [0]) b)
   | .form z b =>
       let o := codeBinder pos
-      .lam (.src (o, z)) [] (codeAt holes ((z, o) :: penv) senv (pos ++ [0]) b)
+      .lam (.src (o, z)) [] (codeAt R holes ((z, o) :: penv) senv (pos ++ [0]) b)
   | .app f a =>
-      .app (codeAt holes penv senv (pos ++ [0]) f) (codeAt holes penv senv (pos ++ [1]) a)
-  | .quote c => .quote (sealParams (codeAt none [] [] [] c))
-  | .pquote c => .pquote (codeAt holes [] [] [] c)
+      .app (codeAt R holes penv senv (pos ++ [0]) f) (codeAt R holes penv senv (pos ++ [1]) a)
+  | .quote c => .quote (sealParams (codeAt R none [] [] [] c))
+  | .pquote c => .pquote (codeAt R holes [] [] [] c)
   | .letS p w b _ =>
       let binds := svBinds (pos ++ [0]) p
-      .letP (codeAt holes penv (binds ++ senv) (pos ++ [0]) p)
-        (codeAt holes penv senv (pos ++ [1]) w)
-        (codeAt holes penv (binds ++ senv) (pos ++ [2]) b)
+      .letP (codeAt R holes penv (binds ++ senv) (pos ++ [0]) p)
+        (codeAt R holes penv senv (pos ++ [1]) w)
+        (codeAt R holes penv (binds ++ senv) (pos ++ [2]) b)
   | .unify p w b =>
       let binds := svBinds (pos ++ [0]) p
-      .letP (codeAt holes penv (binds ++ senv) (pos ++ [0]) p)
-        (codeAt holes penv senv (pos ++ [1]) w)
-        (codeAt holes penv (binds ++ senv) (pos ++ [2]) b)
+      .letP (codeAt R holes penv (binds ++ senv) (pos ++ [0]) p)
+        (codeAt R holes penv senv (pos ++ [1]) w)
+        (codeAt R holes penv (binds ++ senv) (pos ++ [2]) b)
   | .alt t₁ t₂ =>
-      .alt (codeAt holes penv senv (pos ++ [0]) t₁) (codeAt holes penv senv (pos ++ [1]) t₂)
-  | .new _ b => codeAt holes penv senv (pos ++ [0]) b
+      .alt (codeAt R holes penv senv (pos ++ [0]) t₁) (codeAt R holes penv senv (pos ++ [1]) t₂)
+  | .new _ b => codeAt R holes penv senv (pos ++ [0]) b
 
-/-- Sealed code.  Binders carry their quotation-relative position.  A free
-parameter of the code, including a store name bound inside it, is bound by a
-lambda of this quotation; a free store name is the query's own slot of that
-spelling.  The code of a `new` block is the code of its body. -/
-def codeOf (s : Src S X) : Tm S (Slot X) := sealParams (codeAt none [] [] [] s)
+/-- Sealed code written in a form rooted at `R`.  Binders carry their
+quotation-relative position.  A free parameter of the code, including a store
+name bound inside it, is bound by a lambda of this quotation; a free store
+name (a hole) is the form's head slot `(R, y)` of that spelling, so a hole of a
+quotation written in an equation belongs to the equation, and a hole of the
+query's own quotation is the query's slot.  The code of a `new` block is the
+code of its body. -/
+def codeOf (R : Owner) (s : Src S X) : Tm S (Slot X) := sealParams (codeAt R none [] [] [] s)
 
 /-- A slot name is a hole unless it is a binder of code. An activation copy
 keeps the hole bit of the name it copies, so a copy of a binder stays a
@@ -359,8 +376,9 @@ def newBlock (o : Owner) (y₀ : X) (ys : List X) (body : Tm S (Slot X)) : Tm S 
 
 /-- `queryWide`: one slot per spelling per authored form; a lambda owns
 nothing and a `let` introduces nothing, unless a crossing set written on it
-says otherwise. -/
-def elabQ (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
+says otherwise.  `R` is the root of the form: a quotation's holes are its
+head slots. -/
+def elabQ (R : Owner) (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .sym s => .sym s
   | .fn F => .fn F
   | .sv y => slotVar env y
@@ -368,29 +386,30 @@ def elabQ (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .lam z xs b =>
       let own := crossOwn xs (Src.uses b) []
       .lam (parName z) (own.map fun y => (pos ++ [0], y))
-        (elabQ (env.update own (pos ++ [0])) (pos ++ [0]) b)
-  | .app f a => .app (elabQ env (pos ++ [0]) f) (elabQ env (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+        (elabQ R (env.update own (pos ++ [0])) (pos ++ [0]) b)
+  | .app f a => .app (elabQ R env (pos ++ [0]) f) (elabQ R env (pos ++ [1]) a)
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       match crossOwn xs (Src.patNames p) [] with
       | [] =>
-          .letP (elabQ env (pos ++ [0]) p) (elabQ env (pos ++ [1]) w) (elabQ env (pos ++ [2]) b)
+          .letP (elabQ R env (pos ++ [0]) p) (elabQ R env (pos ++ [1]) w)
+            (elabQ R env (pos ++ [2]) b)
       | y₀ :: ys =>
           .app
             (.lam (letParam (pos ++ [2]) y₀) ((y₀ :: ys).map fun y => (pos ++ [2], y))
-              (.letP (elabQ (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
+              (.letP (elabQ R (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
                 (.pvar (letParam (pos ++ [2]) y₀))
-                (elabQ (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
-            (elabQ env (pos ++ [1]) w)
+                (elabQ R (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
+            (elabQ R env (pos ++ [1]) w)
   | .unify p w b =>
-      .letP (elabQ env (pos ++ [0]) p) (elabQ env (pos ++ [1]) w) (elabQ env (pos ++ [2]) b)
-  | .alt t₁ t₂ => .alt (elabQ env (pos ++ [0]) t₁) (elabQ env (pos ++ [1]) t₂)
-  | .new [] b => elabQ env (pos ++ [0]) b
+      .letP (elabQ R env (pos ++ [0]) p) (elabQ R env (pos ++ [1]) w) (elabQ R env (pos ++ [2]) b)
+  | .alt t₁ t₂ => .alt (elabQ R env (pos ++ [0]) t₁) (elabQ R env (pos ++ [1]) t₂)
+  | .new [] b => elabQ R env (pos ++ [0]) b
   | .new (y₀ :: ys) b =>
-      newBlock pos y₀ ys (elabQ (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
+      newBlock pos y₀ ys (elabQ R (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
   | .form z b =>
-      formedLam z (elabQ (env.update [] (pos ++ [0])) (pos ++ [0]) b)
+      formedLam z (elabQ R (env.update [] (pos ++ [0])) (pos ++ [0]) b)
 
 /-- Rule M's default for a lambda body: the spellings written directly that
 no enclosing scope quantifies. -/
@@ -401,8 +420,8 @@ def ownRuleMDefault (E : List X) (b : Src S X) : List X :=
 enclosing scopes; a lambda at `pos` owns, by default, its directly written
 spellings not in `E`, as slots of owner `pos ++ [0]`.  Inside it, every
 spelling it owns or writes directly is quantified (`own ++ direct b ++ E`).
-A `let` introduces nothing by default. -/
-def elabMS (E : List X) (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
+A `let` introduces nothing by default.  `R` is the root of the form. -/
+def elabMS (R : Owner) (E : List X) (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .sym s => .sym s
   | .fn F => .fn F
   | .sv y => slotVar env y
@@ -410,37 +429,38 @@ def elabMS (E : List X) (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .lam z xs b =>
       let own := crossOwn xs (Src.uses b) (ownRuleMDefault E b)
       .lam (parName z) (own.map fun y => (pos ++ [0], y))
-        (elabMS (own ++ Src.direct b ++ E) (env.update own (pos ++ [0])) (pos ++ [0]) b)
-  | .app f a => .app (elabMS E env (pos ++ [0]) f) (elabMS E env (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+        (elabMS R (own ++ Src.direct b ++ E) (env.update own (pos ++ [0])) (pos ++ [0]) b)
+  | .app f a => .app (elabMS R E env (pos ++ [0]) f) (elabMS R E env (pos ++ [1]) a)
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       match crossOwn xs (Src.patNames p) [] with
       | [] =>
-          .letP (elabMS E env (pos ++ [0]) p) (elabMS E env (pos ++ [1]) w)
-            (elabMS E env (pos ++ [2]) b)
+          .letP (elabMS R E env (pos ++ [0]) p) (elabMS R E env (pos ++ [1]) w)
+            (elabMS R E env (pos ++ [2]) b)
       | y₀ :: ys =>
           .app
             (.lam (letParam (pos ++ [2]) y₀) ((y₀ :: ys).map fun y => (pos ++ [2], y))
-              (.letP (elabMS ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
+              (.letP (elabMS R ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
                 (.pvar (letParam (pos ++ [2]) y₀))
-                (elabMS ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
-            (elabMS E env (pos ++ [1]) w)
+                (elabMS R ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
+            (elabMS R E env (pos ++ [1]) w)
   | .unify p w b =>
-      .letP (elabMS E env (pos ++ [0]) p) (elabMS E env (pos ++ [1]) w)
-        (elabMS E env (pos ++ [2]) b)
-  | .alt t₁ t₂ => .alt (elabMS E env (pos ++ [0]) t₁) (elabMS E env (pos ++ [1]) t₂)
-  | .new [] b => elabMS E env (pos ++ [0]) b
+      .letP (elabMS R E env (pos ++ [0]) p) (elabMS R E env (pos ++ [1]) w)
+        (elabMS R E env (pos ++ [2]) b)
+  | .alt t₁ t₂ => .alt (elabMS R E env (pos ++ [0]) t₁) (elabMS R E env (pos ++ [1]) t₂)
+  | .new [] b => elabMS R E env (pos ++ [0]) b
   | .new (y₀ :: ys) b =>
       newBlock pos y₀ ys
-        (elabMS ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
+        (elabMS R ((y₀ :: ys) ++ E) (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
   | .form z b =>
-      formedLam z (elabMS E (env.update [] (pos ++ [0])) (pos ++ [0]) b)
+      formedLam z (elabMS R E (env.update [] (pos ++ [0])) (pos ++ [0]) b)
 
 /-- `explicitCapture`: a lambda owns, by default, every spelling its region
 uses (written directly, or shared with it by a nested lambda); its crossing
-set connects names.  A `let` introduces nothing by default. -/
-def elabEC (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
+set connects names.  A `let` introduces nothing by default.  `R` is the root
+of the form. -/
+def elabEC (R : Owner) (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .sym s => .sym s
   | .fn F => .fn F
   | .sv y => slotVar env y
@@ -448,31 +468,31 @@ def elabEC (env : REnv X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .lam z xs b =>
       let own := crossOwn xs (Src.uses b) (Src.uses b).dedup
       .lam (parName z) (own.map fun y => (pos ++ [0], y))
-        (elabEC (env.update own (pos ++ [0])) (pos ++ [0]) b)
-  | .app f a => .app (elabEC env (pos ++ [0]) f) (elabEC env (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+        (elabEC R (env.update own (pos ++ [0])) (pos ++ [0]) b)
+  | .app f a => .app (elabEC R env (pos ++ [0]) f) (elabEC R env (pos ++ [1]) a)
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       match crossOwn xs (Src.patNames p) [] with
       | [] =>
-          .letP (elabEC env (pos ++ [0]) p) (elabEC env (pos ++ [1]) w)
-            (elabEC env (pos ++ [2]) b)
+          .letP (elabEC R env (pos ++ [0]) p) (elabEC R env (pos ++ [1]) w)
+            (elabEC R env (pos ++ [2]) b)
       | y₀ :: ys =>
           .app
             (.lam (letParam (pos ++ [2]) y₀) ((y₀ :: ys).map fun y => (pos ++ [2], y))
-              (.letP (elabEC (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
+              (.letP (elabEC R (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [0]) p)
                 (.pvar (letParam (pos ++ [2]) y₀))
-                (elabEC (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
-            (elabEC env (pos ++ [1]) w)
+                (elabEC R (env.update (y₀ :: ys) (pos ++ [2])) (pos ++ [2]) b)))
+            (elabEC R env (pos ++ [1]) w)
   | .unify p w b =>
-      .letP (elabEC env (pos ++ [0]) p) (elabEC env (pos ++ [1]) w)
-        (elabEC env (pos ++ [2]) b)
-  | .alt t₁ t₂ => .alt (elabEC env (pos ++ [0]) t₁) (elabEC env (pos ++ [1]) t₂)
-  | .new [] b => elabEC env (pos ++ [0]) b
+      .letP (elabEC R env (pos ++ [0]) p) (elabEC R env (pos ++ [1]) w)
+        (elabEC R env (pos ++ [2]) b)
+  | .alt t₁ t₂ => .alt (elabEC R env (pos ++ [0]) t₁) (elabEC R env (pos ++ [1]) t₂)
+  | .new [] b => elabEC R env (pos ++ [0]) b
   | .new (y₀ :: ys) b =>
-      newBlock pos y₀ ys (elabEC (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
+      newBlock pos y₀ ys (elabEC R (env.update (y₀ :: ys) (pos ++ [0])) (pos ++ [0]) b)
   | .form z b =>
-      formedLam z (elabEC (env.update [] (pos ++ [0])) (pos ++ [0]) b)
+      formedLam z (elabEC R (env.update [] (pos ++ [0])) (pos ++ [0]) b)
 
 /-- The names a `let` introduces under lexical fresh: by its crossing set when
 one is written; else its pattern's names that are not in force. -/
@@ -486,8 +506,9 @@ evaluated outside it.  `unify` refines the slots in scope.  A lambda owns
 nothing by default.  A crossing set decides what a lambda owns and which
 pattern names of a `let` stay shared; inside a construct, its crossing names
 are in force (`cr`): no pattern there makes a fresh slot for them, since they
-are shared with the outside instead of owned or fresh. -/
-def elabLF (env : REnv X) (cr : List X) (pos : Owner) : Src S X → Tm S (Slot X)
+are shared with the outside instead of owned or fresh.  `R` is the root of
+the form. -/
+def elabLF (R : Owner) (env : REnv X) (cr : List X) (pos : Owner) : Src S X → Tm S (Slot X)
   | .sym s => .sym s
   | .fn F => .fn F
   | .sv y => slotVar env y
@@ -495,34 +516,34 @@ def elabLF (env : REnv X) (cr : List X) (pos : Owner) : Src S X → Tm S (Slot X
   | .lam z xs b =>
       let own := crossOwn xs (Src.uses b) []
       .lam (parName z) (own.map fun y => (pos ++ [0], y))
-        (elabLF (env.update own (pos ++ [0])) (crossIn xs own cr) (pos ++ [0]) b)
-  | .app f a => .app (elabLF env cr (pos ++ [0]) f) (elabLF env cr (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+        (elabLF R (env.update own (pos ++ [0])) (crossIn xs own cr) (pos ++ [0]) b)
+  | .app f a => .app (elabLF R env cr (pos ++ [0]) f) (elabLF R env cr (pos ++ [1]) a)
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       match lfIntro xs p cr with
       | [] =>
-          .letP (elabLF env (crossIn xs [] cr) (pos ++ [0]) p) (elabLF env cr (pos ++ [1]) w)
-            (elabLF env (crossIn xs [] cr) (pos ++ [2]) b)
+          .letP (elabLF R env (crossIn xs [] cr) (pos ++ [0]) p) (elabLF R env cr (pos ++ [1]) w)
+            (elabLF R env (crossIn xs [] cr) (pos ++ [2]) b)
       | y₀ :: ys =>
           let o := pos ++ [2]
           let env' := env.update (y₀ :: ys) o
           .app
             (.lam (letParam o y₀) ((y₀ :: ys).map fun y => (o, y))
-              (.letP (elabLF env' (crossIn xs (y₀ :: ys) cr) (pos ++ [0]) p)
+              (.letP (elabLF R env' (crossIn xs (y₀ :: ys) cr) (pos ++ [0]) p)
                 (.pvar (letParam o y₀))
-                (elabLF env' (crossIn xs (y₀ :: ys) cr) o b)))
-            (elabLF env cr (pos ++ [1]) w)
+                (elabLF R env' (crossIn xs (y₀ :: ys) cr) o b)))
+            (elabLF R env cr (pos ++ [1]) w)
   | .unify p w b =>
-      .letP (elabLF env cr (pos ++ [0]) p) (elabLF env cr (pos ++ [1]) w)
-        (elabLF env cr (pos ++ [2]) b)
-  | .alt t₁ t₂ => .alt (elabLF env cr (pos ++ [0]) t₁) (elabLF env cr (pos ++ [1]) t₂)
-  | .new [] b => elabLF env cr (pos ++ [0]) b
+      .letP (elabLF R env cr (pos ++ [0]) p) (elabLF R env cr (pos ++ [1]) w)
+        (elabLF R env cr (pos ++ [2]) b)
+  | .alt t₁ t₂ => .alt (elabLF R env cr (pos ++ [0]) t₁) (elabLF R env cr (pos ++ [1]) t₂)
+  | .new [] b => elabLF R env cr (pos ++ [0]) b
   | .new (y₀ :: ys) b =>
-      newBlock pos y₀ ys (elabLF (env.update (y₀ :: ys) (pos ++ [0]))
+      newBlock pos y₀ ys (elabLF R (env.update (y₀ :: ys) (pos ++ [0]))
         (cr.filter fun y => decide (y ∉ y₀ :: ys)) (pos ++ [0]) b)
   | .form z b =>
-      formedLam z (elabLF (env.update [] (pos ++ [0])) cr (pos ++ [0]) b)
+      formedLam z (elabLF R (env.update [] (pos ++ [0])) cr (pos ++ [0]) b)
 
 /-- Per-closure lifetime: each lambda's own slots are bound by the nearest
 enclosing lambda (created once per activation of the scope that creates the
@@ -571,13 +592,14 @@ structure Config where
   readout : Readout
   deriving DecidableEq, Repr
 
-/-- Elaborate an authored form whose root scope is `root`. -/
+/-- Elaborate an authored form whose root scope is `root`.  The holes of the
+form's quotations are the root's slots. -/
 def elabForm (o : Ownership) (root : Owner) (t : Src S X) : Tm S (Slot X) :=
   match o with
-  | .queryWide => elabQ (fun _ => root) root t
-  | .mercury => elabMS (Src.direct t) (fun _ => root) root t
-  | .lexicalFresh => elabLF (fun _ => root) [] root t
-  | .explicitCapture => elabEC (fun _ => root) root t
+  | .queryWide => elabQ root (fun _ => root) root t
+  | .mercury => elabMS root (Src.direct t) (fun _ => root) root t
+  | .lexicalFresh => elabLF root (fun _ => root) [] root t
+  | .explicitCapture => elabEC root (fun _ => root) root t
 
 /-- Elaborate under a configuration: ownership, then the lifetime.  The
 second component lists the slots exported by top-level lambdas under
@@ -602,16 +624,32 @@ def Config.disc (c : Config) : Disc :=
 harmless: a binder whose slot never occurs renames nothing). -/
 def rootSpellings (t : Src S X) : List X := (Src.names t).dedup
 
+/-- The spelling of a slot of the root `root`, if the name is one. -/
+def rootSpelling (root : Owner) : Nm (Slot X) → Option X
+  | .src (o, y) => if o = root then some y else none
+  | .inst _ _ => none
+
+/-- **The spellings of the holes of a form** rooted at `root`: the root's slots
+that sealed code of the elaborated form leaves free (`codeOf root` writes every
+hole at the root). -/
+def holeSpellings (root : Owner) (t : Tm S (Slot X)) : List X :=
+  ((sealedFree t).filterMap (rootSpelling root)).dedup
+
+theorem mem_holeSpellings {root : Owner} {t : Tm S (Slot X)} {y : X}
+    (h : (.src (root, y) : Nm (Slot X)) ∈ sealedFree t) : y ∈ holeSpellings root t :=
+  List.mem_dedup.2 (List.mem_filterMap.2 ⟨_, h, by simp [rootSpelling]⟩)
+
 /-- An equation clause `(= (F) body)`: its root slots are the clause's
-variables, renamed per call by a wrapper activation, together with the
-per-closure slots of the closures the clause creates; `u` names the
-wrapper's unused parameter and `unit` its argument.  Curried clauses
-`(= (F $p₁ … $pₖ) body)` are written as lambdas whose head variables are
-bound by `let`s from the parameters. -/
+variables and the holes of its sealed code, renamed per call by a wrapper
+activation, together with the per-closure slots of the closures the clause
+creates; `u` names the wrapper's unused parameter and `unit` its argument.
+Curried clauses `(= (F $p₁ … $pₖ) body)` are written as lambdas whose head
+variables are bound by `let`s from the parameters. -/
 def clauseOf (c : Config) (root : Owner) (u : X) (unit : S) (body : Src S X) :
     Tm S (Slot X) :=
   .app (.lam (.src (root ++ [9], u))
-      ((rootSpellings body).map (fun y => (root, y)) ++ (elabCfgX c root body).2)
+      ((rootSpellings body ++ holeSpellings root (elabCfg c root body)).map (fun y => (root, y)) ++
+        (elabCfgX c root body).2)
       (elabCfg c root body))
     (.sym unit)
 

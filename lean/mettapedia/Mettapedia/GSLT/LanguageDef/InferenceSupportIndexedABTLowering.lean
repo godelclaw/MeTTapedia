@@ -822,7 +822,7 @@ inductive ABTRuleApplication (definition : ValidatedCalculusLanguageDef)
           conclusion) :
       ABTRuleApplication definition ruleInstance premises conclusion
 
-/-- Every declarative application admitted by NIK has one whole-rule physical
+/-- Every declarative application admitted by SemanticService has one whole-rule physical
 ABT lowering.  No additional uniqueness, coverage, or binding premise is
 trusted at this boundary. -/
 theorem ruleApplication_toABTRuleApplication

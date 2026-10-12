@@ -89,10 +89,286 @@ form. A validated equation-free language with a recursive step premise also
 has a step that the root query misses. Both controls are kernel-checked in
 [`LanguageDef/GSLTILSemanticContracts.lean`](LanguageDef/GSLTILSemanticContracts.lean).
 These are separate obligations from structural maps between LangDefs.
+
+[`LanguageDef/MeTTaILSubtermMatchAutomata.lean`](LanguageDef/MeTTaILSubtermMatchAutomata.lean)
+provides two concrete realizations of first-order subterm matching: a bottom-up
+match-state automaton and top-down position derivatives. Both preserve the
+complete canonical list of rule occurrences, positions and bindings, including
+authored order and duplicate rules. Their structural selectors share constructor
+observations and leave repeated-variable consistency to the canonical matcher.
+The top-down realization uses position registers and a fixed preorder stream;
+partition-and-lift scheduling is a separate optimization. Inspection counters
+cover structural constructor reads; binding checks and candidate dispatches
+remain additional work. Matching a subterm does not authorize a rewrite there:
+context rules, premises, equation closure and effect policy remain separate.
+
+[`LanguageDef/MeTTaILMatchAutomataExecution.lean`](LanguageDef/MeTTaILMatchAutomataExecution.lean)
+composes either matcher's root bindings with the canonical premise evaluator
+and rule instantiator. The ordered reduct list equals canonical contextual
+execution, including recursive premises and duplicate premise witnesses.
+For equation-free presentations, result membership at some finite depth is
+equivalent to the actual `langGSLTUsing` step. Child matches alone grant no
+rewrite permission. The execution controls include a missing guard, duplicate
+guard witnesses, an undeclared context and an explicitly authorized context.
+
+[`LanguageDef/MeTTaILFirstOrderContextualExecution.lean`](LanguageDef/MeTTaILFirstOrderContextualExecution.lean)
+earns first-order syntax closure from the actual authored rows and finite
+provider payloads. Captures, premise extensions and recursive reducts remain
+admitted inputs at every contextual depth. Its profile includes recursive
+congruence and scoped-step premises with empty local telescopes; binding
+annotations and nonempty telescopes require the scoped interpretation.
+
+[`LanguageDef/TopDownMatchDerivativeNormalization.lean`](LanguageDef/TopDownMatchDerivativeNormalization.lean)
+computes connected dependency components, factors their common displacement,
+and interns identical relative obligation vectors. Derivatives are cached per
+control and displacement, then restored through the original ordered instance
+vector. Expansion and execution agree exactly with the unshared derivative
+machine, including offsets and duplicate occurrences. Kernel controls show
+eight cached dispatches where the original machine performs twelve; these
+counts exclude partitioning, normalization, cache lookup and evaluator costs.
+The complete offline state graph is a separate construction.
+
+[`MatchAutomataNormalizedExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/MatchAutomataNormalizedExecution.lean)
+proves execution of the retained MeTTa normalization, expansion, cached
+dispatch and canonical matching entries. Completed and declarative runs return
+the exact ordered canonical matches with unchanged store and empty I/O. The
+entry uses the canonical string-name wire and normalizes residual goals during
+execution; it does not construct the complete offline state graph. Its counters
+measure derivative dispatches, excluding normalization and lookup costs.
+
+The PeTTa adapter
+[`MatchAutomataExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/MatchAutomataExecution.lean)
+proves execution of both retained MeTTa matcher entries: source compilation,
+traversal and seeding, bottom-up states, top-down derivatives and canonical
+binding completion. Each completed execution returns exactly the canonical
+ordered match list and instrumented structural counters, with the store
+unchanged and no I/O. The whole-run judgment has the same characterization.
+These statements use constructor-data inputs and the existing quotation
+boundary; they do not prove textual-reader correctness. The LanguageDef wire
+adapter is a matching projection and does not admit scoped operational rules.
+
+The retained rule-operation extension
+[`RuleInstantiationExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/RuleInstantiationExecution.lean)
+proves actual RHS construction on the full canonical Pattern carrier against
+`Match.applyBindings`. Binder metadata is retained, explicit substitution uses
+the canonical bound-variable operations, and a captured collection rest is
+spliced only when its kind agrees and it is closed. Captured replacements remain
+opaque, missing variables remain visible, and duplicate bindings retain
+first-match priority. Local scoped capture operations separately retain
+dependency and ambient-context metadata, validate occurrence arguments, recover
+actual bodies and refuse conflicting repeated assignments. These operations do
+not admit a declaration site or grant a contextual rewrite. Whole-run laws
+preserve the supplied store and have no I/O.
+
+[`RootRuleExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/RootRuleExecution.lean)
+proves actual ordered root dispatch against the canonical rule frontier.
+Completed observations are equivalent to GSLT steps for admitted first-order,
+equation-free presentations with relation-query premises and a literal finite
+provider. Each premise receives the preceding branch's bindings; surviving
+branches and duplicate witnesses retain canonical order. Duplicate rule
+occurrences remain distinct, and a child match grants no contextual rewrite
+permission. Binding annotations and recursive context premises are refused by
+this root-only compiler. The earlier premise-free entry has its own exact execution laws.
+The `Matched` entries compose both actual matcher strategies with guarded
+dispatch: retained root matches supply their bindings to the physical authored
+rule row without a second left-hand-side match. Completed execution agrees with
+the same canonical ordered frontier and GSLT step relation.
+
+[`ContextualRuleExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/ContextualRuleExecution.lean)
+extends actual source execution to recursive congruence and freshness premises. A recursive
+target is matched relative to its result, then merged with the original seed;
+conflicting bindings refuse the branch. Both matcher strategies compute the
+canonical contextual frontier with exact state and I/O, preserving ordered
+duplicate rule and premise witnesses. Completed reduct membership preserves
+and reflects the actual GSLT step. The current admitted wire remains
+equation-free and first-order with finite literal providers; scoped steps and
+quantified premises require their own source extensions. Freshness follows the
+preceding branch's bindings: a captured free-variable name supplies the name,
+an absent capture retains its authored spelling, and a non-name capture refuses
+the branch. Freshness and relation queries remain in authored order.
+
+[`PremiseOperationsExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/PremiseOperationsExecution.lean)
+connects the shared MeTTa operations to the typed premise machine's lexical
+bindings. Local parameters shadow their outer values, restoration retains body
+outputs at other names, and contextual collection projection checks scope before
+reading a concrete finite collection. Successful empty collections remain
+distinct from missing values, wrong contexts and unresolved rests. The complete
+typed premise-machine execution is realized by `GeneralPremiseExecution`;
+its composition with scoped matching and authorized rule readout is below.
+
+[`GeneralRuleJobExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/GeneralRuleJobExecution.lean)
+joins the original scoped matcher, premise scheduler and receipt projection.
+It covers every original premise task and continuation, finite provider
+queries, lexical quantified bodies and preceding-declaration child searches.
+Unordered matching retains physical choice traces, nonlinear checks and
+residual captures; typed substitution validates every stored capture and
+retains its dependencies. The target protocol runs `gslt:premise:machine-run`
+and reads its ordered results through `gslt:rule:job-finish-root`.
+`observes_receipt_iff_valid` preserves and reflects authorized receipts under
+the original stratification admission check; the completed-list theorem
+preserves order and duplicates, filtering only the original projection's
+refusals. Exact state observations retain unfinished obligations and work.
+This profile uses finite provider snapshots and supplied contextual permissions.
+A single outer driver, effectful providers and general equation-saturated
+execution remain further integrations.
+
+[`ModuleAssemblyExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/ModuleAssemblyExecution.lean)
+proves source execution of complete-row ordered fragment assembly and its
+composition with that contextual entry. The mathematical operation is the
+existing `ModuleAlgebra.NativeAuthoring.assembleRaw`. Explicit coherent-origin
+and structural-view import contracts use the shared checked list union: the
+first identical declaration is retained, while incompatible declarations are
+refused. Declaration identity remains distinct from the ordered occurrences in
+its body. Fragment/local rule addresses relocate bijectively to physical
+assembled rows, retaining repeated payloads. Recursive witnesses can cross
+fragments because execution consults the assembled language. Row encoders are
+explicit and assembly treats their payloads as data; operational admission is
+checked separately. This precedes nullary resolution and whole-language
+validation. It does not establish a byte-level `.module` reader.
+
+[`EquationContextExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/EquationContextExecution.lean)
+checks finite equation witnesses before and after the actual contextual rule
+frontier. A positioned receipt retains the original equation, direction,
+bindings and whole-term endpoints. A reverse edge supplies a predecessor and
+rechecks the original forward equation at that predecessor, then compares its
+target to the current term. This retains information discarded by a forward
+equation. Completed source runs agree exactly with the ordered witnessed
+frontier, and every reported reduct is a step of the original language's GSLT.
+Equation traversal grants no rewrite permission; the separate rule event is
+required. This validates supplied finite paths and does not prove completeness
+of an equation-class search or choose a normalization policy.
+The canonical-route adapter acquires original-oriented receipts from the ordered
+contextual frontier and checks every actual intermediate vertex against the
+admitted syntax profile. Admitted endpoints alone do not admit a route that
+passes through unsupported syntax.
+
+[`RuleTraceExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/RuleTraceExecution.lean)
+proves the actual receipt-driven MeTTa loop. Each receipt selects a physical
+occurrence in the complete current frontier; successful selection re-enters the
+rules on its residual. The output retains consumed ordinals, every ordered
+frontier, the final residual and unread receipts, distinguishing stopping,
+refusal and fuel exhaustion. Stopped source traces correspond in both directions
+to finite GSLT paths on the admitted equation-free first-order provider profile.
+Stopping because receipts are exhausted does not assert normality. Intermediate
+syntax closure follows from the admitted rule and provider payloads, and equal
+residual values do not erase distinct rule or premise-witness occurrences.
+
+[`RelationPremiseExecution.lean`](../Languages/MeTTa/PeTTa/Bridges/MeTTaIL/RelationPremiseExecution.lean)
+proves actual relation-query execution and the ordered premise fold, including
+literal finite tuple matching, relative extensions, seed merging and refusal
+of conflicts. Builtin tuples precede provider tuples, and all surviving
+duplicate witnesses are retained. Its provider projection does not establish
+scoped signatures, modes or revision authority. Authorized contexts require a
+separate source-execution join.
+
 [`LanguageDef/GSLTILStructuralComparison.lean`](LanguageDef/GSLTILStructuralComparison.lean)
 proves that a declaration-preserving map between validated languages can fail
 to preserve bisimilarity when the target adds behavior. Behavioral transport
 therefore needs the coverage conditions used by the indexed operational theory.
+
+Concrete notation changes have a separate typed construction in
+[`LanguageDef/BindingSignatureNotation.lean`](LanguageDef/BindingSignatureNotation.lean).
+A bijection on actual grammar terminals induces inverse maps on the generated
+binding terms, commutes with substitution and yields an equivalence of their
+finite-product context categories. Single and repeated binders are retained.
+Equation quotients and rule firing require their own transport laws.
+
+[`LanguageDef/BindingSignatureEquationPresentation.lean`](LanguageDef/BindingSignatureEquationPresentation.lean)
+places successfully compiled, sorted first-order equation rows in the binding
+clone's quotient context category. The left and right arrows become equal there,
+including after typed substitution. The compiler's scope is premise-free,
+binder-free rows; the surrounding binding syntax remains richer.
+[`LanguageDef/BindingSignatureReificationControls.lean`](LanguageDef/BindingSignatureReificationControls.lean)
+checks actual authored rows, changed terminals, retained binding and rejected
+sort, scope or premise mismatches.
+
+[`LanguageDef/ScopedBindingElaboration.lean`](LanguageDef/ScopedBindingElaboration.lean)
+reads dependency contexts and occurrence addresses from each actual scoped
+rule. Its typed simultaneous substitution agrees with raw context action,
+including constructor binder lifting. The computed variable-spine codec and
+occurrence readback retain the ambient suffix separately. Typed input recovery
+computes a preimage from intrinsic values and derives capture success from
+that recovery, including repeated occurrences and conflicts. Recursive schema
+elaboration joins both actual authored sides at the same physical rule index
+to an existing contextual root instance and event. Ambient instantiation keeps
+the supplied context independently fixed, rather than restricting captures to
+closed bodies. Explicitly permitted binding paths retain their actual slots,
+siblings and endpoint fill equations. General ambient matcher adequacy, authored
+congruence permission translation and conditional operational-presentation
+equivalence require their own joins.
+
+### Definitions as equations of the language
+
+A definition is an authored equation of a `LanguageDef`: no premises, a left
+side that is a constructor applied to distinct metavariables, and a
+first-order right side over them. No second notion of definitional equality
+is introduced; the equality is the language's own equation theory.
+
+[`LanguageDef/DefinitionalEquations.lean`](LanguageDef/DefinitionalEquations.lean)
+and [`LanguageDef/DefinitionalNormalForms.lean`](LanguageDef/DefinitionalNormalForms.lean)
+define unfolding and prove that, for definitions acyclic in authored order,
+two patterns are equal in the equation theory exactly when their full
+unfoldings coincide (`equationEquiv_iff_expand_eq`).
+[`LanguageDef/DefinitionalTyping.lean`](LanguageDef/DefinitionalTyping.lean)
+proves that unfolding preserves typing.
+[`LanguageDef/DefinitionalBaseLanguage.lean`](LanguageDef/DefinitionalBaseLanguage.lean)
+builds the base language, without the defined constructors and without
+equations, and shows that the typed terms of a sort modulo the definitions
+are the typed base terms of that sort (`typedQuotientEquiv`). It uses the
+general fact of
+[`LanguageDef/ConstructorSublanguage.lean`](LanguageDef/ConstructorSublanguage.lean):
+typing in a sublanguage is typing by the kept declarations.
+[`LanguageDef/DefinitionalAdmission.lean`](LanguageDef/DefinitionalAdmission.lean)
+decides exactly whether a language is definitional (`checkDefinitional_iff`).
+
+[`LanguageDef/SortedFirstOrderConversion.lean`](LanguageDef/SortedFirstOrderConversion.lean)
+reads many-sorted inference rules modulo the equation theory: a derivation
+may replace its conclusion by an equal term of the same type. Definitions
+add nothing: a term is derivable modulo the definitions exactly when its
+unfolding is derivable in the base presentation (`derivesModulo_iff_base`).
+[`LanguageDef/SortedFirstOrderConversionCertificates.lean`](LanguageDef/SortedFirstOrderConversionCertificates.lean)
+gives proof trees whose conversion nodes name their target and carry no
+evidence, with an exact checker. The MM0 backend compiles each definition to
+an MM0 definition and each conversion node to an MM0 conversion; see
+`Languages/MM0/Translation/FirstOrderConversion.lean`.
+
+Equations of another shape, such as commutativity, remain equations of
+their language with the equation theory they generate. They are not
+definitions, and the MM0 backend does not admit them. Rewriting modulo
+definitions, bound variables in definitions and dummy variables are not
+covered.
+
+## Checked inference kernels (the native inference kernel, NIK)
+
+From 2026-08-11 to 2026-10-08 this library pursued a *native inference kernel*
+(NIK): supply a formal system as a presentation (syntax, judgments, rules, the
+computations the rules use, admission), and obtain a checker for it that is
+exactly sound and complete for that system's own derivability, realized on one
+shared engine for every such system. Two stages: *formation*, from the
+presentation to certificate-checking semantics adequate in both directions,
+and *realization*, the shared engine with its agreement proved. The modules
+were written under NIK names and renamed to subject names on 2026-10-08; each
+renamed module records its former name and renamed declarations at the end of
+its docstring. The idea is on hold, neither confirmed nor refuted: open are
+whether formation scales to kernels whose binders are functions (Lean,
+Megalodon) and whether one shared engine checks more cheaply than a kernel's
+own checker.
+
+| Subject | Module | Former name |
+|---|---|---|
+| What acceptance means: soundness and certificate completeness as `Checker.Authority`, and the projection to the guest's meaning | [`LanguageDef/KernelAuthority.lean`](LanguageDef/KernelAuthority.lean) | unchanged |
+| The defining statement at one level: an implementation refines the replay of a signature exactly (`ReplayCorrect`); the generic checker is one (`checkRaw_correct`) | [`LanguageDef/BootstrapCell/ReplayCorrect.lean`](LanguageDef/BootstrapCell/ReplayCorrect.lean) | `CoreNIK` |
+| The levelled reflexive cell | [`LanguageDef/BootstrapCell/ReflexiveLayer.lean`](LanguageDef/BootstrapCell/ReflexiveLayer.lean) | part of `CoreNIK` |
+| The generic checker over a `CalculusLanguageDef` | [`LanguageDef/InferenceChecker.lean`](LanguageDef/InferenceChecker.lean) | unchanged |
+| Checking as a GSLT: submitted, accepted, rejected | [`LanguageDef/CheckerGSLT.lean`](LanguageDef/CheckerGSLT.lean) | `NIKGSLT` |
+| Computed leaves as conservative compression; authored computations with contracts | [`LanguageDef/InferenceComputedLeaves.lean`](LanguageDef/InferenceComputedLeaves.lean), [`LanguageDef/AuthoredComputation.lean`](LanguageDef/AuthoredComputation.lean) | unchanged |
+| Semantic evidence: direct kernels and exact proof fibres; consequence relations | [`LanguageDef/SemanticEvidence.lean`](LanguageDef/SemanticEvidence.lean), `Logic/Consequence/PiInstitution.lean` | `NIKMetalogic` |
+| Selection within a finite licensed family | [`LanguageDef/CapabilitySelection.lean`](LanguageDef/CapabilitySelection.lean) | `MaximalNativeCalculus` |
+| Service faces | `UniversalAlgebra/SemanticService/` | `UniversalAlgebra/NIK/` |
+| Guest kernels presented to the checker | `Languages/MM0/Presentation/Calculus.lean` (`kernelCalculus`, formerly `formMM0`), `Languages/Metamath/DatabaseCheckerAuthority.lean` (formerly `DatabaseNIKAuthority`), `Languages/VibeITP/` | |
+
+The rename covered 122 modules; `rg 'Formerly `Mettapedia' Mettapedia` lists
+them all with their old names.
 
 ## Relational and open-system dynamics
 
@@ -113,6 +389,50 @@ This is developed in `Core/LooseRelationEquipment.lean` and used concretely by:
 This layer is intentionally more general than any one guest language or checker.
 Prime DTT and native execution consume it as instances; they do not define its
 relations.
+
+[`Core/ProofRelevantTranslationCategory.lean`](Core/ProofRelevantTranslationCategory.lean)
+also compares full representable probes with evidence-erasing observations.
+Swapping two actual transition occurrences changes a proof-relevant translation
+while leaving its evidence-erased map unchanged; the full Yoneda interface
+separates them. Reconstruction retains the structure selected by that category.
+
+[`Dynamics/ScriptedBackup.lean`](Dynamics/ScriptedBackup.lean) constructs recordings,
+ordinary replay and replay with dormant backup computation. A validated backup
+matches direct execution for every input continuation and preserves its modal
+observations through an actual cover. Its activity along the recorded path is
+table reading; replacing its unused evaluator preserves that path. A separate
+checking protocol computes each successor independently before comparing it to
+the recording. These are abstract operational results with an explicit evaluator
+boundary.
+
+[`Causality/ScriptedExecution.lean`](Causality/ScriptedExecution.lean) places this
+comparison in the existing admissible-context causal hierarchy. Finite contexts
+can supply inputs or replace the evaluator while keeping the table fixed. A
+direct executor and a valid backup agree at every rung for input-only contexts;
+evaluator replacement can separate them at the intervention rung. Forgetting
+component contexts merges behavioral classes, and a concrete separating formula
+cannot be reconstructed from input behavior. In the terms-alone category,
+direct execution embeds by a hosting map. Projection to the represented state
+preserves and reflects transitions but fails static faithfulness, so it is not
+hosting for these raw machine equations.
+
+[`Causality/ContextualRealization.lean`](Causality/ContextualRealization.lean)
+connects the existing intervention maps to equation-class operational covers.
+A commuting square at every state transports saturated modal satisfaction and
+the formula-generated OSLF native types. Coverage of target observations and
+admitted contexts additionally transports equivalence at every causal rung.
+The squares compose, and a context-theory hosting map supplies the required
+operational and equivariance laws at each retained interface. This statement
+does not identify the entire ambient native-type frames.
+
+[`Causality/ScriptedExecutionRecoding.lean`](Causality/ScriptedExecutionRecoding.lean)
+constructs such a realization: a state equivalence conjugates the evaluator,
+recodes every table entry, and conjugates replacement commands. The independent
+backup algorithm commutes with this change, including its activity labels.
+Context composition, table multiplicity, inverse recoding and successive
+recodings are preserved. The Boolean-to-`Fin 2` control retains the separating
+component intervention. Conversely, projecting to displayed state alone cannot
+represent that intervention as a function on displayed states.
 
 ## OSLF interface (how the rest of Mettapedia uses GSLT)
 

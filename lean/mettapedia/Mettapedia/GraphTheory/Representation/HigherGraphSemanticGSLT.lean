@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.SemanticQuery
 import Mettapedia.GraphTheory.Representation.Hypergraph
 import Mettapedia.GraphTheory.Representation.Metagraph
@@ -85,7 +86,7 @@ def hypergraphQueryTranslation (Vertex Edge : Type) [DecidableEq Vertex] :
 discrete Boolean meaning. -/
 def hypergraphAnswerRealization (Vertex Edge : Type) [DecidableEq Vertex] :
     OperationalRealization (Hypergraph.queryTheory Vertex Edge)
-      (GSLT.discrete Bool) :=
+      (GSLT.stepFree Bool) :=
   (OperationalRealization.ofTranslation
       ((hypergraphQueryTranslation Vertex Edge).toOperational)).comp
     (Mettapedia.GSLT.SemanticQuery.answerRealization
@@ -189,7 +190,7 @@ discrete Boolean linkage meaning. -/
 noncomputable def metagraphAnswerRealization
     (Object Label Enrichment : Type) [DecidableEq Object] :
     OperationalRealization (Metagraph.queryTheory Object Label Enrichment)
-      (GSLT.discrete Bool) :=
+      (GSLT.stepFree Bool) :=
   (OperationalRealization.ofTranslation
       ((metagraphQueryTranslation Object Label Enrichment).toOperational)).comp
     (Mettapedia.GSLT.SemanticQuery.answerRealization
@@ -301,7 +302,7 @@ def distinctionAnswerRealization (n : Nat)
     OperationalRealization
       (Mettapedia.GSLT.SemanticQuery.theory
         (@compiledDistinctionObserve n R I))
-      (GSLT.discrete Bool) :=
+      (GSLT.stepFree Bool) :=
   (OperationalRealization.ofTranslation
       ((distinctionCompilationTranslation n R I).toOperational)).comp
     (Mettapedia.GSLT.SemanticQuery.answerRealization

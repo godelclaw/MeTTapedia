@@ -545,7 +545,7 @@ private theorem add_returns (program : SpaceSemantics.Program) (state : Effects.
       (by simp [argumentIsRaw, StdLib.known, StdLib.rawArgument]) rightRun
   exact native_function_arguments_return program [] state state "+"
     [.grounded (.int first), .grounded (.int second)] 2 (.grounded (.int (first + second)))
-      (by decide) (by decide) (by simp [StdLib.apply])
+      (by decide) (by decide) (StdLib.integer_addition state first second)
 
 /-- The independent integer judgment yields an actual machine path for every
 nested integer/addition expression, in any program and private store. -/

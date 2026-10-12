@@ -44,6 +44,27 @@ def encodeList {α : Type u} (encode : α -> Term) : List α -> Term
   | value :: values =>
       .application "LCons" [encode value, encodeList encode values]
 
+/-- The shared physical `None`/`Some` option representation. The element
+encoder determines the payload; absence introduces no payload value. -/
+def encodeOption {α : Type u} (encode : α → Term) : Option α → Term
+  | none => .symbol "None"
+  | some value => .application "Some" [encode value]
+
+@[simp] theorem encodeOption_none {α : Type u} (encode : α → Term) :
+    encodeOption encode none = .symbol "None" := rfl
+
+@[simp] theorem encodeOption_some {α : Type u} (encode : α → Term) (value : α) :
+    encodeOption encode (some value) = .application "Some" [encode value] := rfl
+
+/-- Mapping before encoding is the same physical list as composing the
+element encoder. -/
+@[simp] theorem encodeList_map {α : Type u} {β : Type v}
+    (encode : β → Term) (transform : α → β) (values : List α) :
+    encodeList encode (values.map transform) = encodeList (encode ∘ transform) values := by
+  induction values with
+  | nil => rfl
+  | cons value values ih => simp only [List.map_cons, encodeList, ih, Function.comp_apply]
+
 /-- Fail-closed decoding of the exact `LNil`/`LCons` carrier. -/
 def decodeList {α : Type u} (decode : Term -> Option α) :
     Term -> Option (List α)
@@ -65,6 +86,33 @@ termination_by term => sizeOf term
   | nil => simp [encodeList, decodeList]
   | cons value values inductionHypothesis =>
       simp [encodeList, decodeList, roundTrip, inductionHypothesis]
+
+/-- A verified element decoder gives an exact injective list encoder. -/
+theorem encodeList_injective_of_decode {α : Type u}
+    (decode : Term → Option α) (encode : α → Term)
+    (roundTrip : ∀ value, decode (encode value) = some value) :
+    Function.Injective (encodeList encode) := by
+  intro left right same
+  have decoded := congrArg (decodeList decode) same
+  rw [decodeList_encodeList decode encode roundTrip,
+    decodeList_encodeList decode encode roundTrip] at decoded
+  exact Option.some.inj decoded
+
+/-- List encoding retains order and multiplicity whenever its element
+encoder is injective. No choice of decoder is required. -/
+theorem encodeList_injective {α : Type u} (encode : α → Term)
+    (injective : Function.Injective encode) : Function.Injective (encodeList encode) := by
+  intro left right same
+  induction left generalizing right with
+  | nil => cases right <;> simp_all [encodeList]
+  | cons first rest ih =>
+      cases right with
+      | nil => simp [encodeList] at same
+      | cons other tail =>
+          have arguments := (Term.application.inj same).2
+          have heads := (List.cons.inj arguments).1
+          have tails := (List.cons.inj (List.cons.inj arguments).2).1
+          rw [injective heads, ih tails]
 
 /-- Heterogeneous list correspondence for a physical element encoder whose
 decoder produces a distinct typed representation. -/

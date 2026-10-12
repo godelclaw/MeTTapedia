@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.Distinction.BehaviouralMetric
 import Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarity
 import Mettapedia.Cybernetics.DistinctionCalculus.GradedCongruence
+import Mettapedia.GSLT.Core.StepFree
+import Mettapedia.GSLT.Logic.ProbeDial
 
 /-!
 # Graded congruences over a GSLT are behavioural distances
@@ -516,5 +518,200 @@ theorem contextGraded_toTolerance_similarity (left right : V) :
   rfl
 
 end Deterministic
+
+/-! ## The observational end as a relative equivalence
+
+The same contexts can be read as admissible probes on the static fragment
+instead of as steps.  The relative equivalence of the full class is then
+agreement of every consumer after every context
+(`relEquiv_probe_iff_forall_context`), for any monoid of contexts, finite or
+not.  With finitely many contexts it is the zero kernel of the
+all-continuation tolerance (`relEquiv_probe_iff_continuationTolerance`) and the
+zero set of the logical distance of the context system
+(`relEquiv_probe_iff_logicalDistance_eq_zero`): reading contexts as probes or
+as steps gives one observational end.  Identifications stipulated one by one
+generate only related pairs when each is observationally valid
+(`congGen_le_relEquiv_probe`), with no finiteness assumption; this is the
+soundness obligation discharged for each merge of states.
+
+The controls exhibit a hidden coordinate.  Two states that the consumer cannot
+tell apart under the identity are separated once a revealing context is
+admissible, so a merge licensed by the smaller class is refuted by the larger
+one, and a store that kept only the merged class cannot serve the refined
+observer. -/
+
+section Probes
+
+open Mettapedia.Cybernetics.DistinctionCalculus
+
+universe u v w
+
+variable {C : Type v} {V : Type u}
+
+/-- The contexts of a context monoid as admissible probes on the step-free
+fragment. -/
+def probeRules (M : ContextMonoid C V) : ContextualRules.{v, 0} (GSLT.stepFree V) where
+  Context := C
+  identity := M.unit
+  compose := M.mul
+  plug := M.act
+  plug_identity := M.act_unit
+  plug_compose := M.act_mul
+  plug_resp context := by
+    intro left right equal
+    exact congrArg (M.act context) (show left = right from equal)
+  Rule := Empty
+  fires _ _ _ := False
+  fires_resp_left := fun _ impossible => impossible.elim
+  fires_resp_right := fun impossible _ => impossible.elim
+  fires_step := fun impossible => impossible.elim
+
+/-- An atom asserts that one consumer reads one value. -/
+def probeObservations {J : Type w} (F : ConsumerFamily J V) :
+    ContextualRules.Observations.{w} (GSLT.stepFree V) :=
+  valueObservations (S := GSLT.stepFree V) F.value
+    (fun _ _ _ equal => congrArg _ (show _ = _ from equal))
+
+variable (M : ContextMonoid C V) {J : Type w} (F : ConsumerFamily J V)
+
+/-- **Every consumer under every context.** -/
+theorem relEquiv_probe_iff_forall_context {left right : V} :
+    (⊤ : AdmissibleClass (probeRules M)).RelEquiv (probeObservations F) left right ↔
+      ∀ c j, F.value j (M.act c left) = F.value j (M.act c right) :=
+  ((⊤ : AdmissibleClass (probeRules M)).relEquiv_valueObservations_iff_of_stepFree _ _
+    (GSLT.stepFree_not_step V)).trans
+    ⟨fun agree c => agree c (AdmissibleClass.top_admissible _),
+      fun agree c _ => agree c⟩
+
+/-- **The graded end on finite fragments.** -/
+theorem relEquiv_probe_iff_continuationTolerance [Fintype C] [Fintype J] [Nonempty J]
+    {left right : V} :
+    (⊤ : AdmissibleClass (probeRules M)).RelEquiv (probeObservations F) left right ↔
+      (continuationTolerance M F).Indistinguishable left right :=
+  (relEquiv_probe_iff_forall_context M F).trans
+    (continuationTolerance_indistinguishable_iff M F).symm
+
+/-- **Probes and steps give one observational end.**  The relative equivalence
+of the probes is the zero set of the logical distance of the context system. -/
+theorem relEquiv_probe_iff_logicalDistance_eq_zero [Fintype C] [Fintype J] [Nonempty J]
+    {left right : V} :
+    (⊤ : AdmissibleClass (probeRules M)).RelEquiv (probeObservations F) left right ↔
+      (contextGraded M F).logicalDistance left right = 0 := by
+  rw [relEquiv_probe_iff_continuationTolerance, contextGraded_logicalDistance M F left right]
+  unfold Tolerance.Indistinguishable
+  rw [continuationTolerance_distance]
+  exact Rat.cast_eq_zero.symm
+
+/-- **Soundness of stipulated merges.** -/
+theorem congGen_le_relEquiv_probe (R : V → V → Prop)
+    (valid : ∀ {x y : V}, R x y → ∀ c j, F.value j (M.act c x) = F.value j (M.act c y))
+    {left right : V} (generated : CongGen M R left right) :
+    (⊤ : AdmissibleClass (probeRules M)).RelEquiv (probeObservations F) left right := by
+  let related : Setoid V :=
+    ⟨(⊤ : AdmissibleClass (probeRules M)).RelEquiv (probeObservations F),
+      AdmissibleClass.relEquiv_equivalence _ _⟩
+  exact congGen_le (E := related)
+    (fun stipulated => (relEquiv_probe_iff_forall_context M F).mpr (valid stipulated))
+    (fun c _ _ pair =>
+      AdmissibleClass.relEquiv_closedUnder _ _ (AdmissibleClass.top_admissible _) pair)
+    generated
+
+namespace HiddenCoordinate
+
+/-- A visible coordinate and a hidden one. -/
+abbrev State := Bool × Bool
+
+/-- The single consumer reads the visible coordinate. -/
+def visible : ConsumerFamily Unit State where
+  value _ state := if state.1 then 1 else 0
+  nonneg _ state := by split <;> norm_num
+  le_one _ state := by split <;> norm_num
+
+/-- Contexts that may swap the two coordinates. -/
+def revealing : ContextMonoid Bool State where
+  act swap state := if swap then (state.2, state.1) else state
+  unit := false
+  mul first second := first != second
+  act_unit _ := rfl
+  act_mul first second state := by cases first <;> cases second <;> rfl
+
+/-- Only the identity context. -/
+abbrev quiet : ContextMonoid Unit State := ContextMonoid.trivial State
+
+/-- Under the identity alone the hidden coordinate is invisible. -/
+theorem quiet_identifies :
+    (⊤ : AdmissibleClass (probeRules quiet)).RelEquiv (probeObservations visible)
+      (false, false) (false, true) :=
+  (relEquiv_probe_iff_forall_context quiet visible).mpr fun _ _ => rfl
+
+/-- A revealing context separates the same pair. -/
+theorem revealing_separates :
+    ¬ (⊤ : AdmissibleClass (probeRules revealing)).RelEquiv (probeObservations visible)
+      (false, false) (false, true) := by
+  rw [relEquiv_probe_iff_forall_context]
+  intro agree
+  have swapped := agree true ()
+  norm_num [revealing, visible] at swapped
+
+/-- The graded end gives the same verdict for the revealing contexts. -/
+theorem revealing_separates_graded :
+    ¬ (continuationTolerance revealing visible).Indistinguishable (false, false) (false, true) :=
+  fun indistinguishable =>
+    revealing_separates ((relEquiv_probe_iff_continuationTolerance revealing visible).mpr
+      indistinguishable)
+
+/-- Merging states that share the visible coordinate is sound when only the
+identity acts. -/
+theorem quiet_merge_sound {left right : State} (sameVisible : left.1 = right.1) :
+    (⊤ : AdmissibleClass (probeRules quiet)).RelEquiv (probeObservations visible) left right :=
+  congGen_le_relEquiv_probe quiet visible (fun first second => first.1 = second.1)
+    (fun {x y} stipulated _ _ => by
+      show (if x.1 then (1 : ℚ) else 0) = if y.1 then 1 else 0
+      rw [stipulated])
+    (CongGen.rel sameVisible)
+
+/-- The same stipulation is not observationally valid once swapping is
+admissible: the merge licensed by the identity alone is refuted. -/
+theorem revealing_merge_invalid :
+    ¬ ∀ {x y : State}, x.1 = y.1 →
+        ∀ c j, visible.value j (revealing.act c x) = visible.value j (revealing.act c y) := by
+  intro valid
+  have swapped := valid (x := (false, false)) (y := (false, true)) rfl true ()
+  norm_num [revealing, visible] at swapped
+
+/-- With no probes adjoined, the only admissible context is the identity. -/
+theorem generatedBy_empty_identity {context : (probeRules revealing).Context}
+    (generated : AdmissibleClass.GeneratedBy (rules := probeRules revealing) ∅ context) :
+    context = (probeRules revealing).identity := by
+  induction generated with
+  | identity => rfl
+  | generator member => exact member.elim
+  | compose _ _ outer inner => rw [outer, inner]; rfl
+
+/-- The class with no probes identifies the pair. -/
+theorem unprobed_identifies :
+    (AdmissibleClass.generatedBy (rules := probeRules revealing) ∅).RelEquiv
+      (probeObservations visible) (false, false) (false, true) := by
+  rw [AdmissibleClass.relEquiv_iff_of_stepFree _ _ (GSLT.stepFree_not_step State)]
+  intro context admissible atom
+  have identity := generatedBy_empty_identity admissible
+  subst identity
+  exact Iff.rfl
+
+/-- **Zooming in cannot be served by the merged state.**  Adjoining the
+revealing probe separates the pair that the unprobed class merged. -/
+theorem revealing_probe_separates :
+    ¬ ((AdmissibleClass.generatedBy (rules := probeRules revealing) ∅).dial {true}).RelEquiv
+      (probeObservations visible) (false, false) (false, true) := by
+  apply AdmissibleClass.not_relEquiv_dial_of_not_preserved _ _ (Set.mem_singleton true)
+  rw [AdmissibleClass.relEquiv_iff_of_stepFree _ _ (GSLT.stepFree_not_step State)]
+  intro agree
+  have opened : visible.value () (revealing.act false (revealing.act true (false, true))) = 0 :=
+    (agree false AdmissibleClass.GeneratedBy.identity ((), 0)).mp rfl
+  simp [revealing, visible] at opened
+
+end HiddenCoordinate
+
+end Probes
 
 end Mettapedia.GSLT.Distinction

@@ -125,7 +125,7 @@ theorem canonical_representative_strict_simulation {free : FreeSortContext}
 
 /-- The same representative-level comparison holds in the profile whose
 additional Drop rule is explicitly declared. -/
-theorem canonical_representative_book_simulation {free : FreeSortContext}
+theorem canonical_representative_dropExecution_simulation {free : FreeSortContext}
     (hfree : ∀ x, free x ≠ some rhoReflectivePresentation.processSort)
     {source target : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] source)
@@ -133,8 +133,8 @@ theorem canonical_representative_book_simulation {free : FreeSortContext}
     (step : RhoCombinedInterpretedStep.RhoStepWithDrop
       (Canonical.canonicalize source) target) :
     ∃ s t, tProc (Env.empty []) (Canonical.canonicalize source) = some s ∧
-      tProc (Env.empty []) target = some t ∧ Steps bookRules s t := by
-  exact wholeNameSafe_book_simulation hfree
+      tProc (Env.empty []) target = some t ∧ Steps dropExecutionRules s t := by
+  exact wholeNameSafe_dropExecution_simulation hfree
     (CanonicalTyping.canonicalize_procWellSorted [] typed) safe step
 
 /-- A strict-core step in the target is reflected by a source step after
@@ -156,18 +156,18 @@ theorem canonical_representative_strict_reflection {free : FreeSortContext}
 
 /-- The separately declared Drop profile has the same representative-level
 reflection property. -/
-theorem canonical_representative_book_reflection {free : FreeSortContext}
+theorem canonical_representative_dropExecution_reflection {free : FreeSortContext}
     (hfree : ∀ x, free x ≠ some rhoReflectivePresentation.processSort)
     {source : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] source)
     (safe : canonicalWholeNameSafe source = true) :
     ∃ s, tProc (Env.empty []) (Canonical.canonicalize source) = some s ∧
-      ∀ {u : Term sig [] Srt.pr}, Steps bookRules s u →
+      ∀ {u : Term sig [] Srt.pr}, Steps dropExecutionRules s u →
         ∃ source' target',
           StructuralCongruence (Canonical.canonicalize source) source' ∧
           RhoCombinedInterpretedStep.RhoStepWithDrop source' target' ∧
           ∃ t, tProc (Env.empty []) target' = some t ∧ cls t = cls u := by
-  exact wholeNameSafe_book_reflection hfree
+  exact wholeNameSafe_dropExecution_reflection hfree
     (CanonicalTyping.canonicalize_procWellSorted [] typed) safe
 
 end Mettapedia.OSLF.Binding.RhoPayloadPresentation

@@ -2,6 +2,8 @@ import Mettapedia.GSLT.Logic.Views
 import Mettapedia.Coalgebra.StreamFinality
 import Mettapedia.TypeTheory.MaterialSets.Hypersets.Finality
 import Mathlib.Computability.MyhillNerode
+import Mettapedia.GSLT.Core.StepFree
+import Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarity
 
 /-!
 # What makes a view privileged: a purpose
@@ -378,6 +380,149 @@ theorem wordBehaviour_membership (language : Language Input) (history : List Inp
   wordBehaviour_history _ history
 
 end Histories
+
+/-! ## The privileged view as a relative equivalence
+
+Input words act on states by running them, so input-driven dynamics present a
+step-free GSLT whose contexts are words.  Reading the evaluation through every
+word, its relative equivalence is equality of word behaviours
+(`relEquiv_iff_wordBehaviour_eq`): the coarsest stable view that keeps the
+evaluation and the saturated relative equivalence identify the same points.
+
+For membership in a language this is the Nerode equivalence of left quotients
+(`relEquiv_iff_leftQuotient_eq`).  The observational quotient is then the range
+of left quotients (`classesEquivLeftQuotients`), and a language is regular
+exactly when that quotient is finite (`isRegular_iff_finite_classes`). -/
+
+section RelativeEquivalence
+
+open Mettapedia.GSLT.MinimalEnablingContext
+open Mettapedia.GSLT.AdmissibleContextCongruence
+
+variable {A : Type u} {Input : Type x} {E : Type w}
+
+/-- Input words act on states by running them; composing two word contexts
+runs the inner word first. -/
+def wordRules (step : A → Input → A) : ContextualRules.{x, 0} (GSLT.stepFree A) where
+  Context := List Input
+  identity := []
+  compose outer inner := inner ++ outer
+  plug word state := word.foldl step state
+  plug_identity _ := rfl
+  plug_compose outer inner state := List.foldl_append
+  plug_resp word := by
+    intro left right equal
+    exact congrArg (fun state => word.foldl step state) (show left = right from equal)
+  Rule := Empty
+  fires _ _ _ := False
+  fires_resp_left := fun _ impossible => impossible.elim
+  fires_resp_right := fun impossible _ => impossible.elim
+  fires_step := fun impossible => impossible.elim
+
+/-- The evaluation, read as the single observed value. -/
+def evaluationObservations (evaluation : A → E) :
+    ContextualRules.Observations.{max 0 w} (GSLT.stepFree A) :=
+  valueObservations (S := GSLT.stepFree A) (fun (_ : Unit) => evaluation)
+    (fun _ _ _ equal => congrArg evaluation (show _ = _ from equal))
+
+/-- **The coarsest stable view is the relative equivalence of words.**  Two
+states are related for every word context exactly when their word behaviours
+are equal. -/
+theorem relEquiv_iff_wordBehaviour_eq (step : A → Input → A) (evaluation : A → E) {a b : A} :
+    (⊤ : AdmissibleClass (wordRules step)).RelEquiv (evaluationObservations evaluation) a b ↔
+      wordBehaviour step evaluation a = wordBehaviour step evaluation b := by
+  refine ((⊤ : AdmissibleClass (wordRules step)).relEquiv_valueObservations_iff_of_stepFree
+    (fun (_ : Unit) => evaluation) (fun _ _ _ equal => congrArg evaluation (show _ = _ from equal))
+    (GSLT.stepFree_not_step A)).trans ?_
+  constructor
+  · intro agree
+    funext word
+    exact agree word (AdmissibleClass.top_admissible _) ()
+  · intro equal word _ _
+    exact congrFun equal word
+
+/-- Histories with membership in a language. -/
+abbrev historyObservations (language : Language Input) :=
+  evaluationObservations (A := List Input) (· ∈ language)
+
+/-- **The Nerode equivalence.**  Two histories are related for every word
+context exactly when their left quotients are equal. -/
+theorem relEquiv_iff_leftQuotient_eq (language : Language Input) {first second : List Input} :
+    (⊤ : AdmissibleClass (wordRules (extend (Input := Input)))).RelEquiv
+        (historyObservations language) first second ↔
+      language.leftQuotient first = language.leftQuotient second := by
+  rw [relEquiv_iff_wordBehaviour_eq, wordBehaviour_membership, wordBehaviour_membership]
+  constructor
+  · intro equal
+    exact Language.ext fun word => Iff.of_eq (congrFun equal word)
+  · intro equal
+    rw [equal]
+
+/-- The relative equivalence of histories as a setoid. -/
+def nerodeSetoid (language : Language Input) : Setoid (List Input) where
+  r := (⊤ : AdmissibleClass (wordRules (extend (Input := Input)))).RelEquiv
+    (historyObservations language)
+  iseqv := AdmissibleClass.relEquiv_equivalence _ _
+
+/-- Each observational class names one left quotient. -/
+def classLeftQuotient (language : Language Input) :
+    Quotient (nerodeSetoid language) → Set.range language.leftQuotient :=
+  Quotient.lift (fun history => ⟨language.leftQuotient history, history, rfl⟩)
+    (fun _ _ related => Subtype.ext ((relEquiv_iff_leftQuotient_eq language).mp related))
+
+theorem classLeftQuotient_bijective (language : Language Input) :
+    Function.Bijective (classLeftQuotient language) := by
+  constructor
+  · intro first second equal
+    induction first using Quotient.ind
+    induction second using Quotient.ind
+    exact Quotient.sound
+      ((relEquiv_iff_leftQuotient_eq language).mpr (congrArg Subtype.val equal))
+  · rintro ⟨_, history, rfl⟩
+    exact ⟨Quotient.mk _ history, rfl⟩
+
+/-- **The observational quotient is the range of left quotients.** -/
+noncomputable def classesEquivLeftQuotients (language : Language Input) :
+    Quotient (nerodeSetoid language) ≃ Set.range language.leftQuotient :=
+  Equiv.ofBijective (classLeftQuotient language) (classLeftQuotient_bijective language)
+
+/-- **Myhill–Nerode, observationally.**  A language is regular exactly when its
+observational quotient under word contexts is finite. -/
+theorem isRegular_iff_finite_classes (language : Language Input) :
+    language.IsRegular ↔ Finite (Quotient (nerodeSetoid language)) := by
+  rw [Language.isRegular_iff_finite_range_leftQuotient,
+    (classesEquivLeftQuotients language).finite_iff, Set.finite_coe_iff]
+
+end RelativeEquivalence
+
+namespace EvenLength
+
+open Mettapedia.GSLT.AdmissibleContextCongruence
+
+/-- Words of even length over two letters. -/
+def evenWords : Language Bool := {word | Even word.length}
+
+/-- Histories of equal parity are related. -/
+theorem empty_related_to_pair :
+    (⊤ : AdmissibleClass (wordRules (extend (Input := Bool)))).RelEquiv
+      (historyObservations evenWords) [] [true, true] := by
+  rw [relEquiv_iff_leftQuotient_eq]
+  ext word
+  show Even (([] : List Bool) ++ word).length ↔ Even (([true, true] : List Bool) ++ word).length
+  simp [Nat.even_add]
+
+/-- A history of odd length is separated from the empty history by the empty
+word. -/
+theorem empty_separated_from_single :
+    ¬ (⊤ : AdmissibleClass (wordRules (extend (Input := Bool)))).RelEquiv
+      (historyObservations evenWords) [] [true] := by
+  rw [relEquiv_iff_leftQuotient_eq]
+  intro equal
+  have parity : Even (([] : List Bool) ++ []).length ↔ Even (([true] : List Bool) ++ []).length :=
+    Iff.of_eq (congrArg (fun quotient : Language Bool => ([] : List Bool) ∈ quotient) equal)
+  simp at parity
+
+end EvenLength
 
 /-! ## Finite depth: every finite view is lossy, the tower is not -/
 

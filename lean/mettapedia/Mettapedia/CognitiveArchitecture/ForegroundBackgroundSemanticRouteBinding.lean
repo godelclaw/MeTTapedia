@@ -1,8 +1,8 @@
-import Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundNIKArticle
+import Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundCheckedArticle
 import Mettapedia.GSLT.Dynamics.SemanticPhysicalRouteBinding
 
 /-!
-# Semantic route binding for the foreground/background NIK article
+# Semantic route binding for the foreground/background SemanticService article
 
 This module instantiates the generic semantic--physical route authority on the
 real foreground chaining and background premise-index workload.  The retained
@@ -13,7 +13,7 @@ occurrences.  Physical decoding then independently checks:
 * that the emitted payload is the observation reached by their semantic route.
 
 The resulting authority composes with ordinary structural replay and enters
-the ordinary NIK frontend.  Shifted occurrence identities provide the
+the ordinary SemanticService frontend.  Shifted occurrence identities provide the
 negative discriminator: two valid articles can emit the same observation
 while retaining different physical routes, so a terminal value cannot recover
 execution identity.
@@ -24,14 +24,14 @@ set_option autoImplicit false
 namespace Mettapedia.CognitiveArchitecture.ForegroundBackgroundSemanticRouteBinding
 
 open Mettapedia.CognitiveArchitecture.ForegroundBackgroundParallelWave
-open Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundNIKArticle
+open Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundCheckedArticle
 open Mettapedia.GSLT.Dynamics.EventValuation
 open Mettapedia.GSLT.Dynamics.OperatorRealization
 open Mettapedia.GSLT.Dynamics.ParallelExecutionAuthority
 open Mettapedia.GSLT.Dynamics.SemanticPhysicalRouteBinding
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+open Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 open Mettapedia.Machines
 
 noncomputable section
@@ -284,9 +284,9 @@ theorem useful_finite_route_article_meaning :
     (bound_iff_finiteBound physicalClaim).mp
       useful_route_article_meaning.2⟩
 
-/-- The proof-relevant route article uses the same ordinary statusful NIK
+/-- The proof-relevant route article uses the same ordinary statusful SemanticService
 frontend; no evaluator-specific acceptance branch is introduced. -/
-theorem useful_route_article_defaultNIK_accepts :
+theorem useful_route_article_submissionProfile_accepts :
     workspaceRouteFrontend.run
         (workspaceRouteFrontend.encode usefulRouteSubmission) =
       SubmissionOutcome.accepted
@@ -479,7 +479,7 @@ theorem finite_terminal_observation_does_not_recover_occurrence_route :
 #print axioms workspaceFiniteBindingAuthority
 #print axioms useful_route_article_meaning
 #print axioms useful_finite_route_article_meaning
-#print axioms useful_route_article_defaultNIK_accepts
+#print axioms useful_route_article_submissionProfile_accepts
 #print axioms forged_input_route_article_rejected
 #print axioms forged_output_route_article_rejected
 #print axioms route_binding_does_not_mint_protection

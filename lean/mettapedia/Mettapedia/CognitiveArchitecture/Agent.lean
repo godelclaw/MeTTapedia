@@ -4,6 +4,7 @@ import Mettapedia.CognitiveArchitecture.Agent.ChronologicalWorldModel
 import Mettapedia.CognitiveArchitecture.Agent.MultiAgentFusionNoGo
 import Mettapedia.CognitiveArchitecture.Agent.WorldModelRegimeSeparation
 import Mettapedia.CognitiveArchitecture.Agent.ContextEpoch
+import Mettapedia.CognitiveArchitecture.Agent.ContextAttention
 import Mettapedia.CognitiveArchitecture.Agent.EffectReceiptProjection
 import Mettapedia.CognitiveArchitecture.Agent.EffectBrokerNoninterference
 import Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext
@@ -14,6 +15,7 @@ import Mettapedia.CognitiveArchitecture.Agent.RevisionLineage
 import Mettapedia.CognitiveArchitecture.Agent.ProtectedSelfRevision
 import Mettapedia.CognitiveArchitecture.Agent.PatienthoodWellbeing
 import Mettapedia.CognitiveArchitecture.Agent.WellbeingObserverTransformationBoundary
+import Mettapedia.CognitiveArchitecture.Agent.WellbeingAssessment
 
 /-!
 # General agent-architecture interfaces
@@ -24,4 +26,7 @@ interfaces are architecture-neutral; particular agents are downstream
 instances.  Reproducible event histories use the same weakest-sufficient-view
 boundary without treating a bounded context as the authoritative ledger;
 declared build views connect to that order through a separate bridge.
+Assessment views retain occurrence, assessor, interpretation and quality keys
+alongside their actual typed evidence; restriction and compatible composition
+preserve that provenance without assigning patienthood or experienced wellbeing.
 -/

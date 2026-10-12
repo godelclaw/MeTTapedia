@@ -11,7 +11,7 @@ capabilities it actually supports.  There are two related boundaries.
 At the categorical boundary, a compositional observer is a functor.  The
 kernel relation of the generated-authority functor is therefore a congruence
 on binding-presentation routes.  Quotienting by that relation produces the
-largest categorical erasure through which exact NIK authority generation
+largest categorical erasure through which exact SemanticService authority generation
 factors, and the induced realization is faithful.
 
 At one fixed hom-set, a client can request a still coarser readout.  The
@@ -30,14 +30,14 @@ open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT.Core
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingRouteFunctor
 
 /-! ## The categorical quotient selected by exact generated authority -/
 
 /-- Two authored routes are related exactly when they induce the same exact
-generated NIK authority translation. -/
+generated SemanticService authority translation. -/
 abbrev GeneratedAuthorityRelation :
     HomRel (CategoryTheory.Paths BindingPresentation) :=
   generationFunctor.homRel

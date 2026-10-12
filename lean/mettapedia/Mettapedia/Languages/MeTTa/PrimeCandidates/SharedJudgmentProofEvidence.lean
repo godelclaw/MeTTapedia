@@ -38,7 +38,7 @@ open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation
 open SharedJudgmentFragment SharedJudgmentServices SharedJudgmentServiceInterpretation
-open UniformListChartNIKService
+open UniformListChartService
 
 universe u v w w'
 
@@ -80,14 +80,14 @@ theorem applicationView_accepted (evidence : Evidence Γ) :
   (intrinsicKernel Γ).correct _ _ |>.mpr rfl
 
 def nativeRequest (evidence : Evidence Γ) :
-    NIKServiceInvocation.Request ((HOLControls.raw Γ).toService (HOLControls.qualified Γ)) :=
+    SemanticServiceInvocation.Request ((HOLControls.raw Γ).toService (HOLControls.qualified Γ)) :=
   .nativeProof evidence.request.claim evidence.applicationView
 
 theorem nativeRequest_accepted (evidence : Evidence Γ) :
-    (NIKServiceInvocation.invoke evidence.nativeRequest).acceptedValue =
+    (SemanticServiceInvocation.invoke evidence.nativeRequest).acceptedValue =
       some evidence.request.claim := by
-  simp only [nativeRequest, NIKServiceInvocation.invoke,
-    NIKServiceInvocation.Response.acceptedValue, applicationView_accepted, ↓reduceIte]
+  simp only [nativeRequest, SemanticServiceInvocation.invoke,
+    SemanticServiceInvocation.Response.acceptedValue, applicationView_accepted, ↓reduceIte]
   rfl
 
 end Evidence
@@ -116,11 +116,11 @@ theorem assembly_production_exact (qualified : HOLReplayQualified assembly)
         have present := (qualified.1 Γ request).mpr accepted
         rw [output] at present
         cases present
-      simp only [UniformListChartNIKService.produce?, dif_neg rejected]
+      simp only [UniformListChartService.produce?, dif_neg rejected]
   | some proof =>
       have accepted := (qualified.1 Γ request).mp (by simp only [output, Option.isSome_some])
       have bound := (qualified.2 Γ request proof output).1
-      simp only [UniformListChartNIKService.produce?, dif_pos accepted]
+      simp only [UniformListChartService.produce?, dif_pos accepted]
       exact congrArg some (Subtype.ext bound)
 
 theorem faithful_production (qualified : HOLReplayQualified assembly)

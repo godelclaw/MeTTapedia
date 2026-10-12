@@ -16,7 +16,7 @@ namespace Mettapedia.GSLT.LanguageDef.ModuleAlgebra
 
 open CategoryTheory CategoryTheory.Limits
 
-universe u
+universe u v
 
 variable {Origin Label Body : Type u}
   [DecidableEq Origin] [DecidableEq Label] [DecidableEq Body]
@@ -81,44 +81,84 @@ theorem join_isIdemPushout {p q r : Presentation Origin Label Body} (joined : jo
       (↾(includeLeft joined)) (↾(includeRight joined)) (join_isPushout joined).w :=
   RelativePushout.isIdemPushout_of_isPushout (join_isPushout joined)
 
-/-- The mediator is constructed by a membership test, not postulated. -/
+/-- Payloads may depend on the full declaration, including its binding
+arity. No erased or existentially repackaged payload is used for gluing. -/
+abbrev DependentAssignment (F : Entry Origin Label Body → Type v)
+    (p : Presentation Origin Label Body) := (entry : Member p) → F entry.val
+
+def restrictDependent {F : Entry Origin Label Body → Type v}
+    {p q : Presentation Origin Label Body} (included : p.val ⊆ q.val)
+    (assignment : DependentAssignment F q) : DependentAssignment F p :=
+  fun entry => assignment ⟨entry.val, included entry.property⟩
+
+def glueDependent {F : Entry Origin Label Body → Type v}
+    {p q r : Presentation Origin Label Body} (joined : join p q = some r)
+    (left : DependentAssignment F p) (right : DependentAssignment F q) : DependentAssignment F r :=
+  fun entry => if member : entry.val ∈ p.val then left ⟨entry.val, member⟩
+    else right ⟨entry.val, (Finset.mem_union.mp
+      ((join_eq_some_iff.mp joined).symm ▸ entry.property)).resolve_left member⟩
+
+theorem glueDependent_left {F : Entry Origin Label Body → Type v}
+    {p q r : Presentation Origin Label Body} (joined : join p q = some r)
+    (left : DependentAssignment F p) (right : DependentAssignment F q) (entry : Member p) :
+    glueDependent joined left right (includeLeft joined entry) = left entry := by
+  simp [glueDependent, includeLeft, entry.property]
+
+theorem glueDependent_right {F : Entry Origin Label Body → Type v}
+    {p q r : Presentation Origin Label Body} (joined : join p q = some r)
+    (left : DependentAssignment F p) (right : DependentAssignment F q)
+    (agree : ∀ entry hp hq, left ⟨entry, hp⟩ = right ⟨entry, hq⟩)
+    (entry : Member q) :
+    glueDependent joined left right (includeRight joined entry) = right entry := by
+  by_cases member : entry.val ∈ p.val
+  · simpa [glueDependent, includeRight, member] using agree entry.val member entry.property
+  · simp [glueDependent, includeRight, member]
+
+theorem glueDependent_unique {F : Entry Origin Label Body → Type v}
+    {p q r : Presentation Origin Label Body} (joined : join p q = some r)
+    (left : DependentAssignment F p) (right : DependentAssignment F q)
+    (candidate : DependentAssignment F r)
+    (onLeft : ∀ entry, candidate (includeLeft joined entry) = left entry)
+    (onRight : ∀ entry, candidate (includeRight joined entry) = right entry) :
+    candidate = glueDependent joined left right := by
+  funext entry
+  have member : entry.val ∈ p.val ∪ q.val :=
+    (join_eq_some_iff.mp joined).symm ▸ entry.property
+  rcases Finset.mem_union.mp member with member | member
+  · exact (onLeft ⟨entry.val, member⟩).trans
+      (glueDependent_left joined left right ⟨entry.val, member⟩).symm
+  · have agree : ∀ shared hp hq, left ⟨shared, hp⟩ = right ⟨shared, hq⟩ := by
+      intro shared hp hq
+      exact (onLeft ⟨shared, hp⟩).symm.trans (onRight ⟨shared, hq⟩)
+    exact (onRight ⟨entry.val, member⟩).trans
+      (glueDependent_right joined left right agree ⟨entry.val, member⟩).symm
+
+/-- The ordinary mediator uses the same dependent construction. -/
 def glue {Target : Type u} {p q r : Presentation Origin Label Body}
     (joined : join p q = some r) (left : Member p → Target) (right : Member q → Target)
     (entry : Member r) : Target :=
-  if h : entry.val ∈ p.val then left ⟨entry.val, h⟩
-  else right ⟨entry.val, by
-    have member : entry.val ∈ p.val ∪ q.val := (join_eq_some_iff.mp joined).symm ▸ entry.property
-    exact (Finset.mem_union.mp member).resolve_left h⟩
+  glueDependent (F := fun _ => Target) joined left right entry
 
 theorem glue_left {Target : Type u} {p q r : Presentation Origin Label Body}
     (joined : join p q = some r) (left : Member p → Target) (right : Member q → Target)
     (entry : Member p) : glue joined left right (includeLeft joined entry) = left entry := by
-  simp [glue, includeLeft, entry.property]
+  simp [glue, glueDependent, includeLeft, entry.property]
 
 theorem glue_right {Target : Type u} {p q r : Presentation Origin Label Body}
     (joined : join p q = some r) (left : Member p → Target) (right : Member q → Target)
     (agree : ∀ entry hp hq, left ⟨entry, hp⟩ = right ⟨entry, hq⟩)
     (entry : Member q) : glue joined left right (includeRight joined entry) = right entry := by
   by_cases h : entry.val ∈ p.val
-  · simpa [glue, includeRight, h] using agree entry.val h entry.property
-  · simp [glue, includeRight, h]
+  · simpa [glue, glueDependent, includeRight, h] using agree entry.val h entry.property
+  · simp [glue, glueDependent, includeRight, h]
 
 theorem glue_unique {Target : Type u} {p q r : Presentation Origin Label Body}
     (joined : join p q = some r) (left : Member p → Target) (right : Member q → Target)
     (candidate : Member r → Target)
     (onLeft : ∀ entry, candidate (includeLeft joined entry) = left entry)
     (onRight : ∀ entry, candidate (includeRight joined entry) = right entry) :
-    candidate = glue joined left right := by
-  have agree : ∀ entry hp hq, left ⟨entry, hp⟩ = right ⟨entry, hq⟩ := by
-    intro entry hp hq
-    exact (onLeft ⟨entry, hp⟩).symm.trans (onRight ⟨entry, hq⟩)
-  have equal : (↾candidate) = (↾(glue joined left right)) :=
-    (join_isPushout joined).hom_ext (by
-      ext entry
-      exact (onLeft entry).trans (glue_left joined left right entry).symm) (by
-      ext entry
-      exact (onRight entry).trans (glue_right joined left right agree entry).symm)
-  exact congrArg (fun map => map.hom.toFun) equal
+    candidate = glue joined left right :=
+  glueDependent_unique (F := fun _ => Target) joined left right candidate onLeft onRight
 
 /-- Existence and uniqueness of a map extending both branches. -/
 theorem existsUnique_glue {Target : Type u} {p q r : Presentation Origin Label Body}

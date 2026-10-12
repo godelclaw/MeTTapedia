@@ -111,7 +111,7 @@ theorem routeSensitive_not_in_value_essentialImage :
     simpa [sectionEquivalence, atFalse, atTrue, observationPullback,
       routeSensitiveFamily, routeFibre, falseRouteElement,
       trueRouteElement] using sectionEquivalence
-  letI : Unique (Opposite.unop unitContext).val := by
+  let : Unique (Opposite.unop unitContext).val := by
     change Unique PUnit
     infer_instance
   have unitBoolEquivalence : PUnit ≃ Bool :=

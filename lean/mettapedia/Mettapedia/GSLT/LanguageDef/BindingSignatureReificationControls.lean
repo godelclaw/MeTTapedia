@@ -1,4 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.BindingSignatureReification
+import Mettapedia.GSLT.LanguageDef.BindingSignatureEquationPresentation
+import Mettapedia.GSLT.LanguageDef.BindingSignatureNotation
 
 /-!
 # Controls for closed first-order reification
@@ -140,6 +142,84 @@ theorem typed_lambda_is_outside_the_codec :
     reify? language (.lambda none (.bvar 0))
         (.arrow (.base "Bool") (.base "Bool")) = none := by
   exact ⟨.lambda (.bvar rfl), rfl, by simp [reify?]⟩
+
+/-! ## A compiled authored equation reaches its actual context category -/
+
+open Mettapedia.GSLT.LanguageDef.BindingSyntax.EquationPresentation
+open Mettapedia.GSLT.LanguageDef.BindingSyntax.OpenReification
+open Mettapedia.GSLT.LanguageDef.NamedFreeContext
+
+def boxEquation : Equation where
+  name := "BoxCount"
+  typeContext := [("x", .base "Nat")]
+  premises := []
+  left := .apply "Box" [.fvar "x"]
+  right := box
+
+/-- Reuse the declared constructors, with the equation authored in the
+language itself and no deliberately mistyped rewrite in this fixture. -/
+def equationLanguage : LanguageDef :=
+  { language with rewrites := [], equations := [boxEquation] }
+
+def compiledBox : CompiledRow equationLanguage boxEquation (.base "Result") :=
+  (compile? equationLanguage boxEquation (.base "Result")).get (by decide +kernel)
+
+theorem compiled_equation_is_authored : boxEquation ∈ equationLanguage.equations := by
+  simp [equationLanguage]
+
+theorem compiled_terms_distinct : compiledBox.left ≠ compiledBox.right := by
+  intro same
+  have named := congrArg
+    (namedFirstOrderErase? (names boxEquation.typeContext)) same
+  rw [compiledBox.left_named, compiledBox.right_named] at named
+  cases named
+
+theorem raw_arrows_distinct : compiledBox.leftArrow ≠ compiledBox.rightArrow := by
+  intro same
+  exact compiled_terms_distinct (congrFun same (0 : Fin 1))
+
+/-- A substantive equation identifies two distinct generated arrows. -/
+theorem actual_quotient_identifies_authored_equation :
+    compiledBox.leftArrow ≠ compiledBox.rightArrow ∧
+    compiledBox.contextPresentation.map compiledBox.leftArrow =
+      compiledBox.contextPresentation.map compiledBox.rightArrow :=
+  ⟨raw_arrows_distinct, compiledBox.equation_arrows_equal⟩
+
+theorem equation_wrong_sort_rejected :
+    compile? equationLanguage boxEquation (.base "Nat") = none := by decide +kernel
+
+theorem erased_schema_context_rejected :
+    (compile? equationLanguage {boxEquation with typeContext := []}
+      (.base "Result")).isSome = false := by decide +kernel
+
+theorem side_condition_not_silently_erased :
+    (compile? equationLanguage
+      {boxEquation with premises := [.congruence count count]}
+      (.base "Result")).isSome = false := by decide +kernel
+
+theorem binding_metadata_not_silently_erased :
+    (compile? equationLanguage
+      {boxEquation with bindings := some ⟨[("x", [.base "Nat"])], []⟩}
+      (.base "Result")).isSome = false := by decide +kernel
+
+def proseTokens : String ≃ String := Equiv.swap "count" "number"
+
+theorem concrete_notation_really_changes :
+    (Mettapedia.GSLT.Parsing.GrammarPresentationTransport.mapLanguage
+      proseTokens equationLanguage).terms ≠ equationLanguage.terms := by decide +kernel
+
+/-- This body came from the authored, sorted open equation. The enclosing
+lambda introduces its declared input, rather than erasing its binding. -/
+def boundBox : Term (signatureOf equationLanguage) []
+    (.arrow (.base "Nat") (.base "Result")) :=
+  .op (.lambda (.base "Nat") (.base "Result")) (.cons compiledBox.left .nil)
+
+theorem binding_and_free_schema_survive_notation :
+    Notation.untransport proseTokens (Notation.transport proseTokens boundBox) = boundBox ∧
+    Notation.untransport proseTokens (Notation.transport proseTokens compiledBox.left) =
+      compiledBox.left :=
+  ⟨Notation.untransport_transport proseTokens boundBox,
+    Notation.untransport_transport proseTokens compiledBox.left⟩
 
 private def illShapedBinderRule : GrammarRule where
   label := "IllShapedBinder"

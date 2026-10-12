@@ -4,7 +4,7 @@ import Mettapedia.GSLT.Core.Ultrainfinite
 # Two independent ultrainfinite doctrines
 
 The word "ultrainfinite" has been used for two mathematically different
-structures in the GSLT and NIK programme.
+structures in the GSLT and SemanticService programme.
 
 * A **generative-unbounded ground** is assembled through finite stages.  Each
   stage embeds in the next, genuinely new stage data remains available, and

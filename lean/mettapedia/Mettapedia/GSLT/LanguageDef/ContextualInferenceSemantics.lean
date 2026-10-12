@@ -29,6 +29,8 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.ContextualInference
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 
+-- The world, formula evidence and hole evidence have independently chosen levels.
+set_option linter.checkUnivs false in
 /-- Independent proof-relevant interpretation of formulas and ambient
 context holes at one shared semantic world.  A world may be a valuation, an
 operational activation, or another client-selected environment.  Indexing

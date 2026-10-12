@@ -1,20 +1,20 @@
-import Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 /-!
 # Categories of certified theories and certified translations
 
-`NIKHeterogeneousTheory` defines identity and composition for semantic theory
+`HeterogeneousTheory` defines identity and composition for semantic theory
 translations and exact certified translations.  This module
 closes their category laws, bundles the varying theory families as categorical
 objects, and proves that forgetting certificate transport is a functor.
 
 This is the external-certificate subcategory, not a characterization of every
-NIK service.  Direct decision kernels and meaning-preserving native operations
+SemanticService service.  Direct decision kernels and meaning-preserving native operations
 need no certificate transport; their common service boundary and
-request-local selection live in `Mettapedia.GSLT.LanguageDef.NIK`.
+request-local selection live in `Mettapedia.GSLT.LanguageDef.SemanticService`.
 
 The conservative tagged sum is also shown to satisfy the coproduct universal
-property.  These results characterize the codomain in which a future NIK
+property.  These results characterize the codomain in which a future SemanticService
 generation functor can land; they do not assume that generation is already
 functorial on presentation morphisms.
 
@@ -31,8 +31,8 @@ namespace Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
 open CategoryTheory
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 universe uKind uSignature uClaim uCertificate
 
@@ -47,25 +47,25 @@ variable {A B C D : Type uKind}
     {td : TheoryFamily.{uSignature, uKind, uClaim} D}
 
 theorem identity_comp
-    (f : NIKHeterogeneousTheory.TheoryTranslation ta tb) :
-    NIKHeterogeneousTheory.TheoryTranslation.comp
-        (NIKHeterogeneousTheory.TheoryTranslation.identity ta) f = f :=
+    (f : HeterogeneousTheory.TheoryTranslation ta tb) :
+    HeterogeneousTheory.TheoryTranslation.comp
+        (HeterogeneousTheory.TheoryTranslation.identity ta) f = f :=
   rfl
 
 theorem comp_identity
-    (f : NIKHeterogeneousTheory.TheoryTranslation ta tb) :
-    NIKHeterogeneousTheory.TheoryTranslation.comp f
-        (NIKHeterogeneousTheory.TheoryTranslation.identity tb) = f :=
+    (f : HeterogeneousTheory.TheoryTranslation ta tb) :
+    HeterogeneousTheory.TheoryTranslation.comp f
+        (HeterogeneousTheory.TheoryTranslation.identity tb) = f :=
   rfl
 
 theorem comp_assoc
-    (f : NIKHeterogeneousTheory.TheoryTranslation ta tb)
-    (g : NIKHeterogeneousTheory.TheoryTranslation tb tc)
-    (h : NIKHeterogeneousTheory.TheoryTranslation tc td) :
-    NIKHeterogeneousTheory.TheoryTranslation.comp
-        (NIKHeterogeneousTheory.TheoryTranslation.comp f g) h =
-      NIKHeterogeneousTheory.TheoryTranslation.comp f
-        (NIKHeterogeneousTheory.TheoryTranslation.comp g h) :=
+    (f : HeterogeneousTheory.TheoryTranslation ta tb)
+    (g : HeterogeneousTheory.TheoryTranslation tb tc)
+    (h : HeterogeneousTheory.TheoryTranslation tc td) :
+    HeterogeneousTheory.TheoryTranslation.comp
+        (HeterogeneousTheory.TheoryTranslation.comp f g) h =
+      HeterogeneousTheory.TheoryTranslation.comp f
+        (HeterogeneousTheory.TheoryTranslation.comp g h) :=
   rfl
 
 end TheoryTranslation
@@ -83,44 +83,44 @@ variable {A B C D : Type uKind}
     {cd : AuthorityContract.{uKind, uCertificate, uSignature, uClaim} td}
 
 theorem identity_comp
-    (f : NIKHeterogeneousTheory.CertifiedTranslation ca cb) :
-    NIKHeterogeneousTheory.CertifiedTranslation.comp
-        (NIKHeterogeneousTheory.CertifiedTranslation.identity ca) f = f :=
+    (f : HeterogeneousTheory.CertifiedTranslation ca cb) :
+    HeterogeneousTheory.CertifiedTranslation.comp
+        (HeterogeneousTheory.CertifiedTranslation.identity ca) f = f :=
   rfl
 
 theorem comp_identity
-    (f : NIKHeterogeneousTheory.CertifiedTranslation ca cb) :
-    NIKHeterogeneousTheory.CertifiedTranslation.comp f
-        (NIKHeterogeneousTheory.CertifiedTranslation.identity cb) = f :=
+    (f : HeterogeneousTheory.CertifiedTranslation ca cb) :
+    HeterogeneousTheory.CertifiedTranslation.comp f
+        (HeterogeneousTheory.CertifiedTranslation.identity cb) = f :=
   rfl
 
 theorem comp_assoc
-    (f : NIKHeterogeneousTheory.CertifiedTranslation ca cb)
-    (g : NIKHeterogeneousTheory.CertifiedTranslation cb cc)
-    (h : NIKHeterogeneousTheory.CertifiedTranslation cc cd) :
-    NIKHeterogeneousTheory.CertifiedTranslation.comp
-        (NIKHeterogeneousTheory.CertifiedTranslation.comp f g) h =
-      NIKHeterogeneousTheory.CertifiedTranslation.comp f
-        (NIKHeterogeneousTheory.CertifiedTranslation.comp g h) :=
+    (f : HeterogeneousTheory.CertifiedTranslation ca cb)
+    (g : HeterogeneousTheory.CertifiedTranslation cb cc)
+    (h : HeterogeneousTheory.CertifiedTranslation cc cd) :
+    HeterogeneousTheory.CertifiedTranslation.comp
+        (HeterogeneousTheory.CertifiedTranslation.comp f g) h =
+      HeterogeneousTheory.CertifiedTranslation.comp f
+        (HeterogeneousTheory.CertifiedTranslation.comp g h) :=
   rfl
 
 theorem toTheoryTranslation_identity :
-    (NIKHeterogeneousTheory.CertifiedTranslation.identity ca).toTheoryTranslation =
-      NIKHeterogeneousTheory.TheoryTranslation.identity ta :=
+    (HeterogeneousTheory.CertifiedTranslation.identity ca).toTheoryTranslation =
+      HeterogeneousTheory.TheoryTranslation.identity ta :=
   rfl
 
 theorem toTheoryTranslation_comp
-    (f : NIKHeterogeneousTheory.CertifiedTranslation ca cb)
-    (g : NIKHeterogeneousTheory.CertifiedTranslation cb cc) :
-    (NIKHeterogeneousTheory.CertifiedTranslation.comp f g).toTheoryTranslation =
-      NIKHeterogeneousTheory.TheoryTranslation.comp
+    (f : HeterogeneousTheory.CertifiedTranslation ca cb)
+    (g : HeterogeneousTheory.CertifiedTranslation cb cc) :
+    (HeterogeneousTheory.CertifiedTranslation.comp f g).toTheoryTranslation =
+      HeterogeneousTheory.TheoryTranslation.comp
         f.toTheoryTranslation g.toTheoryTranslation :=
   rfl
 
 /-- Exact authority translations are determined by their transported data;
 the commuting and preservation fields are propositions. -/
 theorem ext_data
-    {f g : NIKHeterogeneousTheory.CertifiedTranslation ca cb}
+    {f g : HeterogeneousTheory.CertifiedTranslation ca cb}
     (kindEqual : forall kind, f.mapKind kind = g.mapKind kind)
     (signatureEqual : forall signature,
       f.mapSignature signature = g.mapSignature signature)
@@ -156,12 +156,16 @@ end CertifiedTranslation
 
 /-! ## Bundled categories and certificate forgetting -/
 
+-- Bundled signature and authority carriers retain independent universes.
+set_option linter.checkUnivs false in
 /-- A heterogeneous semantic theory is an object together with its own kind
 index. -/
 structure TheoryObject where
   Kind : Type uKind
   family : TheoryFamily.{uSignature, uKind, uClaim} Kind
 
+-- Certificate carriers remain independent of the other bundled carriers.
+set_option linter.checkUnivs false in
 /-- An exact authority object adds native certificate fibres to a semantic
 theory object. -/
 structure CertifiedTheory where
@@ -172,10 +176,10 @@ structure CertifiedTheory where
 instance : CategoryTheory.Category
     (TheoryObject.{uKind, uSignature, uClaim}) where
   Hom source target :=
-    NIKHeterogeneousTheory.TheoryTranslation source.family target.family
-  id object := NIKHeterogeneousTheory.TheoryTranslation.identity object.family
+    HeterogeneousTheory.TheoryTranslation source.family target.family
+  id object := HeterogeneousTheory.TheoryTranslation.identity object.family
   comp earlier later :=
-    NIKHeterogeneousTheory.TheoryTranslation.comp earlier later
+    HeterogeneousTheory.TheoryTranslation.comp earlier later
   id_comp := TheoryTranslation.identity_comp
   comp_id := TheoryTranslation.comp_identity
   assoc := TheoryTranslation.comp_assoc
@@ -183,12 +187,12 @@ instance : CategoryTheory.Category
 instance : CategoryTheory.Category
     (CertifiedTheory.{uKind, uSignature, uClaim, uCertificate}) where
   Hom source target :=
-    NIKHeterogeneousTheory.CertifiedTranslation
+    HeterogeneousTheory.CertifiedTranslation
       source.contract target.contract
   id object :=
-    NIKHeterogeneousTheory.CertifiedTranslation.identity object.contract
+    HeterogeneousTheory.CertifiedTranslation.identity object.contract
   comp earlier later :=
-    NIKHeterogeneousTheory.CertifiedTranslation.comp earlier later
+    HeterogeneousTheory.CertifiedTranslation.comp earlier later
   id_comp := CertifiedTranslation.identity_comp
   comp_id := CertifiedTranslation.comp_identity
   assoc := CertifiedTranslation.comp_assoc
@@ -226,7 +230,7 @@ def identity
     ConservativeAuthorityRoute object where
   source := object
   translation :=
-    NIKHeterogeneousTheory.CertifiedTranslation.identity object.contract
+    HeterogeneousTheory.CertifiedTranslation.identity object.contract
   conservative := by
     constructor <;> intro kind claim assumption <;> exact assumption
 
@@ -241,10 +245,10 @@ def postcompose
     ConservativeAuthorityRoute target where
   source := route.source
   translation :=
-    NIKHeterogeneousTheory.CertifiedTranslation.comp
+    HeterogeneousTheory.CertifiedTranslation.comp
       route.translation translation
   conservative :=
-    NIKHeterogeneousTheory.TheoryTranslation.Conservative.comp
+    HeterogeneousTheory.TheoryTranslation.Conservative.comp
       route.translation.toTheoryTranslation
       translation.toTheoryTranslation
       route.conservative conservative
@@ -273,7 +277,7 @@ theorem scope_iff_source
     target.family.Scope (route.translation.mapKind kind)
         (route.translation.mapClaim kind claim) <->
       route.source.family.Scope kind claim :=
-  NIKHeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
+  HeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
     route.translation.toTheoryTranslation route.conservative kind claim
 
 /-- Independently authored meaning is likewise invariant on a conservative
@@ -286,7 +290,7 @@ theorem meaning_iff_source
     target.family.Meaning (route.translation.mapKind kind)
         (route.translation.mapClaim kind claim) <->
       route.source.family.Meaning kind claim :=
-  NIKHeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
+  HeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
     route.translation.toTheoryTranslation route.conservative kind claim
 
 end ConservativeAuthorityRoute
@@ -302,10 +306,10 @@ variable {LeftKind RightKind TargetKind : Type uKind}
 
 /-- Copairing of semantic translations out of the tagged theory sum. -/
 def descTheory
-    (leftMap : NIKHeterogeneousTheory.TheoryTranslation left target)
-    (rightMap : NIKHeterogeneousTheory.TheoryTranslation right target) :
-    NIKHeterogeneousTheory.TheoryTranslation
-      (NIKHeterogeneousTheory.Coproduct.theory left right) target where
+    (leftMap : HeterogeneousTheory.TheoryTranslation left target)
+    (rightMap : HeterogeneousTheory.TheoryTranslation right target) :
+    HeterogeneousTheory.TheoryTranslation
+      (HeterogeneousTheory.Coproduct.theory left right) target where
   mapKind
     | .inl kind => leftMap.mapKind kind
     | .inr kind => rightMap.mapKind kind
@@ -342,12 +346,12 @@ variable
 /-- Copairing of exact authority translations out of the tagged authority
 sum. -/
 def desc
-    (leftMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (leftMap : HeterogeneousTheory.CertifiedTranslation
       leftContract targetContract)
-    (rightMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (rightMap : HeterogeneousTheory.CertifiedTranslation
       rightContract targetContract) :
-    NIKHeterogeneousTheory.CertifiedTranslation
-      (NIKHeterogeneousTheory.Coproduct.contract
+    HeterogeneousTheory.CertifiedTranslation
+      (HeterogeneousTheory.Coproduct.contract
         left right leftContract rightContract)
       targetContract where
   mapKind
@@ -379,45 +383,45 @@ def desc
     | inr kind => exact rightMap.meaning_preserved kind claim meaningful
 
 theorem leftInclusion_desc
-    (leftMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (leftMap : HeterogeneousTheory.CertifiedTranslation
       leftContract targetContract)
-    (rightMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (rightMap : HeterogeneousTheory.CertifiedTranslation
       rightContract targetContract) :
-    NIKHeterogeneousTheory.CertifiedTranslation.comp
-        (NIKHeterogeneousTheory.Coproduct.leftInclusion
+    HeterogeneousTheory.CertifiedTranslation.comp
+        (HeterogeneousTheory.Coproduct.leftInclusion
           left right leftContract rightContract)
         (desc leftMap rightMap) = leftMap :=
   rfl
 
 theorem rightInclusion_desc
-    (leftMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (leftMap : HeterogeneousTheory.CertifiedTranslation
       leftContract targetContract)
-    (rightMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (rightMap : HeterogeneousTheory.CertifiedTranslation
       rightContract targetContract) :
-    NIKHeterogeneousTheory.CertifiedTranslation.comp
-        (NIKHeterogeneousTheory.Coproduct.rightInclusion
+    HeterogeneousTheory.CertifiedTranslation.comp
+        (HeterogeneousTheory.Coproduct.rightInclusion
           left right leftContract rightContract)
         (desc leftMap rightMap) = rightMap :=
   rfl
 
 /-- The mediator out of the tagged authority sum is unique. -/
 theorem desc_unique
-    (candidate : NIKHeterogeneousTheory.CertifiedTranslation
-      (NIKHeterogeneousTheory.Coproduct.contract
+    (candidate : HeterogeneousTheory.CertifiedTranslation
+      (HeterogeneousTheory.Coproduct.contract
         left right leftContract rightContract)
       targetContract)
-    (leftMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (leftMap : HeterogeneousTheory.CertifiedTranslation
       leftContract targetContract)
-    (rightMap : NIKHeterogeneousTheory.CertifiedTranslation
+    (rightMap : HeterogeneousTheory.CertifiedTranslation
       rightContract targetContract)
     (leftTriangle :
-      NIKHeterogeneousTheory.CertifiedTranslation.comp
-          (NIKHeterogeneousTheory.Coproduct.leftInclusion
+      HeterogeneousTheory.CertifiedTranslation.comp
+          (HeterogeneousTheory.Coproduct.leftInclusion
             left right leftContract rightContract)
           candidate = leftMap)
     (rightTriangle :
-      NIKHeterogeneousTheory.CertifiedTranslation.comp
-          (NIKHeterogeneousTheory.Coproduct.rightInclusion
+      HeterogeneousTheory.CertifiedTranslation.comp
+          (HeterogeneousTheory.Coproduct.rightInclusion
             left right leftContract rightContract)
           candidate = rightMap) :
     candidate = desc leftMap rightMap := by
@@ -456,9 +460,9 @@ theorem check_eq
       firstHost}
     {secondContract : AuthorityContract.{uKind, uCertificate, uSignature, uClaim}
       secondHost}
-    (first : NIKHeterogeneousTheory.CertifiedTranslation
+    (first : HeterogeneousTheory.CertifiedTranslation
       guestContract firstContract)
-    (second : NIKHeterogeneousTheory.CertifiedTranslation
+    (second : HeterogeneousTheory.CertifiedTranslation
       guestContract secondContract)
     (kind : GuestKind) (claim : guest.Claim kind)
     (certificate : guestContract.Certificate kind) :
@@ -474,31 +478,31 @@ theorem check_eq
 translated claim is in proof scope.  No direct translation between the hosts
 is required. -/
 theorem scope_iff
-    (first : NIKHeterogeneousTheory.TheoryTranslation guest firstHost)
-    (second : NIKHeterogeneousTheory.TheoryTranslation guest secondHost)
+    (first : HeterogeneousTheory.TheoryTranslation guest firstHost)
+    (second : HeterogeneousTheory.TheoryTranslation guest secondHost)
     (firstConservative : first.Conservative)
     (secondConservative : second.Conservative)
     (kind : GuestKind) (claim : guest.Claim kind) :
     firstHost.Scope (first.mapKind kind) (first.mapClaim kind claim) <->
       secondHost.Scope (second.mapKind kind) (second.mapClaim kind claim) :=
-  (NIKHeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
+  (HeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
       first firstConservative kind claim).trans
-    (NIKHeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
+    (HeterogeneousTheory.TheoryTranslation.scope_iff_of_conservative
       second secondConservative kind claim).symm
 
 /-- Semantic host irrelevance: conservative realizations agree on the
 independently declared meaning of every translated guest claim. -/
 theorem meaning_iff
-    (first : NIKHeterogeneousTheory.TheoryTranslation guest firstHost)
-    (second : NIKHeterogeneousTheory.TheoryTranslation guest secondHost)
+    (first : HeterogeneousTheory.TheoryTranslation guest firstHost)
+    (second : HeterogeneousTheory.TheoryTranslation guest secondHost)
     (firstConservative : first.Conservative)
     (secondConservative : second.Conservative)
     (kind : GuestKind) (claim : guest.Claim kind) :
     firstHost.Meaning (first.mapKind kind) (first.mapClaim kind claim) <->
       secondHost.Meaning (second.mapKind kind) (second.mapClaim kind claim) :=
-  (NIKHeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
+  (HeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
       first firstConservative kind claim).trans
-    (NIKHeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
+    (HeterogeneousTheory.TheoryTranslation.meaning_iff_of_conservative
       second secondConservative kind claim).symm
 
 end HostIrrelevance
@@ -507,30 +511,30 @@ end HostIrrelevance
 
 namespace Canary
 
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory.Canary
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory.Canary
 
 /-- The two coproduct injections semantically agree with their original hosts
 on a concrete true claim. -/
 theorem left_host_meaning_is_unchanged :
-    (NIKHeterogeneousTheory.Coproduct.theory leftTheory rightTheory).Meaning
+    (HeterogeneousTheory.Coproduct.theory leftTheory rightTheory).Meaning
         (.inl .only) true <->
       leftTheory.Meaning .only true :=
   HostIrrelevance.meaning_iff
-    (NIKHeterogeneousTheory.TheoryTranslation.identity leftTheory)
-    (NIKHeterogeneousTheory.Coproduct.leftInclusion
+    (HeterogeneousTheory.TheoryTranslation.identity leftTheory)
+    (HeterogeneousTheory.Coproduct.leftInclusion
       leftTheory rightTheory leftContract rightContract).toTheoryTranslation
     ⟨by intro kind claim inScope; exact inScope,
       by intro kind claim meaningful; exact meaningful⟩
-    (NIKHeterogeneousTheory.Coproduct.leftInclusion_conservative
+    (HeterogeneousTheory.Coproduct.leftInclusion_conservative
       leftTheory rightTheory leftContract rightContract)
     .only true
 
 /-- Host irrelevance is not a license to cross authority tags: a right-kernel
 certificate remains rejected at a left-kernel claim. -/
 theorem semantic_agreement_does_not_erase_authority_tags :
-    NIKHeterogeneousTheory.Canary.pluralContract.toAuthorityFamily.packedChecker.check
+    HeterogeneousTheory.Canary.pluralContract.toAuthorityFamily.packedChecker.check
       ⟨.inl .only, true⟩ ⟨.inr .only, ()⟩ = false :=
-  NIKHeterogeneousTheory.Canary.wrong_kernel_certificate_rejected
+  HeterogeneousTheory.Canary.wrong_kernel_certificate_rejected
 
 end Canary
 

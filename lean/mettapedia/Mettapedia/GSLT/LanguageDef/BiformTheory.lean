@@ -1,10 +1,12 @@
 import Mettapedia.GSLT.Core.ProofRelevantGSLT
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 import Mathlib.CategoryTheory.Functor.FullyFaithful
 import Mathlib.CategoryTheory.Products.Basic
 import Mettapedia.GSLT.Core.ProofRelevantTranslationCategory
 import Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
+
+open Mettapedia.Logic.Consequence
 /-!
 # Proof-relevant biform theories
 
@@ -25,7 +27,7 @@ little-theories graph:
   meaning formula by one commuting law.
 
 The construction deliberately does not turn semantic theoremhood into an
-executable checker. A NIK service needs its own independently qualified
+executable checker. A SemanticService service needs its own independently qualified
 decision, native-proof, native-operation or certificate boundary. It also does not manufacture a
 meaning formula for a multi-step path: composing local meanings requires the
 composition principles of the particular native theory.
@@ -38,7 +40,7 @@ namespace Mettapedia.GSLT.LanguageDef
 open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.ProofRelevant
 
 universe uSignature uHom uSentence uTerm
@@ -175,7 +177,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformTheory
 open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT.ProofRelevant
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe uSignature uHom uSentence uTerm
 
@@ -259,7 +261,7 @@ theorem retainedEvents_map_apply
     (retainedEvents.map route) event = route.operational.mapEvent event :=
   rfl
 
-/-- The semantic NIK view is induced by the logical projection.  It carries
+/-- The semantic view is induced by the logical projection.  It carries
 closed theorem scope and meaning, but no checker or certificate realization. -/
 def semanticTargetFunctor :
     BiformTheory.{uSignature, uHom, uSentence, uTerm} institution ⥤

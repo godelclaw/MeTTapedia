@@ -1170,7 +1170,7 @@ decreasing_by
 
 end
 
-/-! ## Exact public reflection and direct NIK authority -/
+/-! ## Exact public reflection and direct SemanticService authority -/
 
 /-- A successful top-sort check reflects to the independent public judgment. -/
 theorem checkRegularTop_reflects {Γ : Ctx n} (context : RegularCtx Γ)

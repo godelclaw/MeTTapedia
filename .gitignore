@@ -94,6 +94,8 @@ lean/mettapedia/scripts/*
 !lean/mettapedia/scripts/oeis_program_discovery_fixture.py
 !lean/mettapedia/scripts/test_oeis_program_discovery_fixture.py
 !lean/mettapedia/scripts/test_lake_build_scoping.py
+!lean/mettapedia/scripts/export_mm0_module_controls.lean
+!lean/mettapedia/scripts/export_match_automata_controls.lean
 !lean/mettapedia/scripts/test_metamath_mm2_raw_unit.sh
 !lean/mettapedia/scripts/test_metamath_mm2_compressed_unit.sh
 !lean/mettapedia/scripts/test_metamath_mm2_heap_walkers.sh

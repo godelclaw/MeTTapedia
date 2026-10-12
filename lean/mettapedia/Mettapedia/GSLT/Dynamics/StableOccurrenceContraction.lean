@@ -198,6 +198,186 @@ theorem compile_transport_certificate {Row : Type uRow}
   coversSource := sourceToTarget_length mask rows
   stable := compile_sourceToTarget_stable mask rows
 
+/-- Removing only rows outside a projection preserves its complete ordered
+observation, including duplicate values. This supplies the semantic premise
+for retaining an equation index across data-only contraction; the coordinate
+compiler separately supplies each surviving row's new address. -/
+theorem contract_filterMap_of_retained {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (mask : List Bool) (rows : List Row)
+    (lengths : mask.length = rows.length)
+    (retained : ∀ (index : Nat) row, rows[index]? = some row →
+      project row ≠ none → mask[index]? = some true) :
+    (contract mask rows).filterMap project = rows.filterMap project := by
+  induction mask generalizing rows with
+  | nil =>
+      cases rows with
+      | nil => rfl
+      | cons row rows => simp at lengths
+  | cons keep mask ih =>
+      cases rows with
+      | nil => simp at lengths
+      | cons row rows =>
+          have tailLengths : mask.length = rows.length := by simpa using lengths
+          have tailRetained : ∀ (index : Nat) value, rows[index]? = some value →
+              project value ≠ none → mask[index]? = some true := by
+            intro index value found visible
+            simpa using retained (index + 1) value (by simpa using found) visible
+          have tail := ih rows tailLengths tailRetained
+          cases keep with
+          | false =>
+              have erased : project row = none := by
+                by_contra visible
+                have impossible := retained 0 row (by simp) visible
+                simp at impossible
+              simp [contract, erased, tail]
+          | true =>
+              cases projected : project row <;> simp [contract, projected, tail]
+
+example : ((contract [false, true, false, true] [1, 7, 2, 7]).filterMap
+    (fun n : Nat => if n == 7 then some n else none)) = [7, 7] := by decide
+
+/-- Dropping a projected occurrence changes its observation even when an
+equal projected value survives elsewhere. -/
+example : ((contract [false, false, false, true] [1, 7, 2, 7]).filterMap
+    (fun n : Nat => if n == 7 then some n else none)) ≠ [7, 7] := by decide
+
+/-! ## Single-occurrence erasure and projection retention -/
+
+/-- Removing a row outside a projection preserves its exact ordered observation,
+including repeated values. The lookup premise also covers an out-of-range erase. -/
+theorem eraseIdx_filterMap_of_unobserved {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (rows : List Row) (removed : Nat)
+    (unobserved : (rows[removed]?).bind project = none) :
+    (rows.eraseIdx removed).filterMap project = rows.filterMap project := by
+  induction rows generalizing removed with
+  | nil => simp
+  | cons row rows ih =>
+      cases removed with
+      | zero =>
+          have omitted : project row = none := by simpa using unobserved
+          simp [omitted]
+      | succ removed =>
+          simp only [List.getElem?_cons_succ] at unobserved
+          simp [List.eraseIdx_cons_succ, List.filterMap_cons, ih removed unobserved]
+
+/-- The dense coordinate adjustment for an ordered erasure preserves the row at
+every surviving source coordinate, independently of the row's payload. -/
+theorem eraseIdx_coordinate_preserved {Row : Type uRow}
+    (rows : List Row) (removed source : Nat) (survives : source ≠ removed) :
+    (rows.eraseIdx removed)[source - (if removed < source then 1 else 0)]? =
+      rows[source]? := by
+  by_cases later : removed < source
+  · simp only [later, ↓reduceIte]
+    rw [List.getElem?_eraseIdx_of_ge (by omega)]
+    congr 1
+    omega
+  · simp only [later, ↓reduceIte, Nat.sub_zero]
+    exact List.getElem?_eraseIdx_of_lt (by omega)
+
+/-- Unordered erasure fills the removed slot with the last row. Both rows must
+be outside the projection: ignoring only the removed row would allow a visible
+tail to cross other visible rows. -/
+theorem swap_erase_filterMap_of_unobserved {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (before middle : List Row) (removed tail : Row)
+    (removed_unobserved : project removed = none)
+    (tail_unobserved : project tail = none) :
+    (before ++ tail :: middle).filterMap project =
+      (before ++ removed :: (middle ++ [tail])).filterMap project := by
+  simp [removed_unobserved, tail_unobserved]
+
+/-- Repeated visible rows survive an ordered deletion independently. -/
+example : (([7, 0, 7, 9] : List Nat).eraseIdx 1).filterMap
+    (fun n => if n == 0 then none else some n) = [7, 7, 9] := by decide
+
+/-- Moving an unobserved tail does not disturb the intervening observation. -/
+example : (([0, 7, 7] : List Nat).filterMap
+    (fun n => if n == 0 then none else some n)) = [7, 7] := by decide
+
+/-- A visible tail cannot be moved across a different visible occurrence while
+claiming that the ordered projection is unchanged. -/
+example : (([9, 7] : List Nat).filterMap
+    (fun n => if n == 0 then none else some n)) ≠
+    ([0, 7, 9].filterMap (fun n => if n == 0 then none else some n)) := by decide
+
+/-! ## Retaining a projection and its negative exclusion certificate -/
+
+/-- An index observes its selected rows and whether a row can defeat negative
+exclusion. For declaration indexes the latter includes open outer patterns. -/
+def guardedProjection {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (openRow : Row → Bool) (rows : List Row) :
+    List Value × Bool := (rows.filterMap project, rows.any openRow)
+
+/-- A deletion cannot introduce a row defeating an absence certificate. -/
+theorem contract_any_eq_false {Row : Type uRow}
+    (openRow : Row → Bool) (mask : List Bool) (rows : List Row)
+    (closed : rows.any openRow = false) :
+    (contract mask rows).any openRow = false := by
+  induction mask generalizing rows with
+  | nil => simp [contract]
+  | cons keep mask ih =>
+      cases rows with
+      | nil => simp [contract]
+      | cons row rows =>
+          have parts : openRow row = false ∧ rows.any openRow = false := by
+            simpa only [List.any_cons, Bool.or_eq_false_iff] using closed
+          cases keep <;> simp [contract, parts.1, ih rows parts.2]
+
+/-- A stable contraction preserving the selected rows can reuse the complete
+guarded observation when its negative certificate was clear. -/
+theorem contract_guardedProjection_of_retained {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (openRow : Row → Bool)
+    (mask : List Bool) (rows : List Row) (lengths : mask.length = rows.length)
+    (retained : ∀ (index : Nat) row, rows[index]? = some row →
+      project row ≠ none → mask[index]? = some true)
+    (closed : rows.any openRow = false) :
+    guardedProjection project openRow (contract mask rows) =
+      guardedProjection project openRow rows := by
+  exact Prod.ext (contract_filterMap_of_retained project mask rows lengths retained)
+    ((contract_any_eq_false openRow mask rows closed).trans closed.symm)
+
+/-- The same certificate applies to a single ordered erasure. -/
+theorem eraseIdx_guardedProjection_of_unobserved {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (openRow : Row → Bool) (rows : List Row) (removed : Nat)
+    (unobserved : (rows[removed]?).bind project = none)
+    (closed : rows.any openRow = false) :
+    guardedProjection project openRow (rows.eraseIdx removed) =
+      guardedProjection project openRow rows := by
+  have clear : (rows.eraseIdx removed).any openRow = false := by
+    apply List.any_eq_false.mpr
+    intro row included
+    exact List.any_eq_false.mp closed row (List.mem_of_mem_eraseIdx included)
+  exact Prod.ext (eraseIdx_filterMap_of_unobserved project rows removed unobserved)
+    (clear.trans closed.symm)
+
+/-- Swapping the unobserved tail into an unobserved slot also preserves a
+negative certificate, since it merely relocates a surviving row. -/
+theorem swap_erase_guardedProjection_of_unobserved {Row : Type uRow} {Value : Type uTarget}
+    (project : Row → Option Value) (openRow : Row → Bool)
+    (before middle : List Row) (removed tail : Row)
+    (removed_unobserved : project removed = none)
+    (tail_unobserved : project tail = none)
+    (closed : (before ++ removed :: (middle ++ [tail])).any openRow = false) :
+    guardedProjection project openRow (before ++ tail :: middle) =
+      guardedProjection project openRow (before ++ removed :: (middle ++ [tail])) := by
+  have clear : (before ++ tail :: middle).any openRow = false := by
+    simp only [List.any_append, List.any_cons, List.any_nil, Bool.or_false,
+      Bool.or_eq_false_iff] at closed ⊢
+    exact ⟨closed.1, closed.2.2.2, closed.2.2.1⟩
+  exact Prod.ext
+    (swap_erase_filterMap_of_unobserved project before middle removed tail
+      removed_unobserved tail_unobserved) (clear.trans closed.symm)
+
+example : guardedProjection (fun n : Nat => if n == 7 then some n else none)
+    (fun n => n == 0) (contract [true, false, true] [7, 2, 7]) = ([7, 7], false) := by
+  decide
+
+/-- An unchanged selected list is insufficient when deleting the last open row
+changes its accompanying exclusion metadata. -/
+example : guardedProjection (fun n : Nat => if n == 7 then some n else none)
+    (fun n => n == 0) (contract [false, true] [0, 7]) ≠
+    guardedProjection (fun n : Nat => if n == 7 then some n else none)
+      (fun n => n == 0) [0, 7] := by decide
+
 /-- Contraction never increases the number of observed occurrences. -/
 theorem contract_length_le {Row : Type uRow}
     (mask : List Bool) (rows : List Row) :
@@ -273,5 +453,12 @@ example :
 #print axioms compile_transport_certificate
 #print axioms contract_length_le
 #print axioms explicit_target_cells_exact
+#print axioms eraseIdx_filterMap_of_unobserved
+#print axioms eraseIdx_coordinate_preserved
+#print axioms swap_erase_filterMap_of_unobserved
+#print axioms contract_any_eq_false
+#print axioms contract_guardedProjection_of_retained
+#print axioms eraseIdx_guardedProjection_of_unobserved
+#print axioms swap_erase_guardedProjection_of_unobserved
 
 end Mettapedia.GSLT.Dynamics.StableOccurrenceContraction

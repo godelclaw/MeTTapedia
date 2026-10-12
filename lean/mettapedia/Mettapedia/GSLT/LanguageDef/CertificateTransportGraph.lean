@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Core.Ultrainfinite
-import Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView
+import Mettapedia.GSLT.LanguageDef.TheoryProfileView
 
 /-!
 # Proof-relevant certificate-bearing theory-profile graphs
@@ -11,7 +11,7 @@ layer.  Exact checker replay and artifact adequacy then derive the commuting
 execution square.
 
 The graph here is specifically the certificate-transport graph.  It is one
-displayed part of NIK, not NIK's universal operational model; native decision,
+displayed part of SemanticService, not SemanticService's universal operational model; native decision,
 construction, inference, and transformation services may be admitted and
 selected without entering this graph.
 
@@ -25,8 +25,8 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.CertificateTransportGraph
 
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.TheoryProfileView
 open Mettapedia.GSLT.Ultrainfinite
 
 universe uKind uSignature uClaim uCertificate uArtifact
@@ -303,10 +303,10 @@ end RealizedFamily
 
 namespace Canary
 
-open Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView.ExtensionCanary
+open Mettapedia.GSLT.LanguageDef.TheoryProfileView.ExtensionCanary
 
 abbrev Profile :=
-  Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView.ExtensionCanary.Profile
+  Mettapedia.GSLT.LanguageDef.TheoryProfileView.ExtensionCanary.Profile
 
 def graph : Graph Profile where
   theory := ExtensionCanary.theory

@@ -106,7 +106,7 @@ abbrev deFinetti_flatten_apply_singleton :=
 /-- Concrete worked example (Chapter 7):
 with uniform Beta prior `(α₀,β₀)=(1,1)` and observed evidence `(n⁺,n⁻)=(3,1)`,
 the context-aware PLN strength is exactly the corresponding posterior-mean ratio. -/
-theorem chapter7_worked_example_strength_uniform_3_1 :
+theorem uniformPrior_strength_threePositive_oneNegative :
     Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.strengthWith
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
         ({ pos := (3 : ℝ≥0∞), neg := (1 : ℝ≥0∞) } : BinaryEvidence) =
@@ -120,7 +120,7 @@ theorem chapter7_worked_example_strength_uniform_3_1 :
 
 /-- Compact chapter-facing bundle: PLN evidence aggregation + Kyburg flattening
 decision-equivalence are both available as proved endpoints in the core stack. -/
-theorem chapter7_distributional_kyburg_bridge_available :
+theorem evidenceAggregation_and_kyburgFlattening :
     (∀ e₁ e₂ : BinaryEvidence,
       (e₁ + e₂).pos = e₁.pos + e₂.pos ∧ (e₁ + e₂).neg = e₁.neg + e₂.neg) ∧
     (∀ {Θ X : Type*} [MeasurableSpace Θ] [MeasurableSpace X]

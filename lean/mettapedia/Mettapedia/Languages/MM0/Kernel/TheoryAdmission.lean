@@ -255,6 +255,142 @@ theorem run_append (initial : Theory) (first second : List Admission) :
       simp only [List.cons_append, run?]
       cases next : step? initial head <;> simp [ih]
 
+theorem Runs.append {initial middle final : Theory} {first second : List Admission}
+    (left : Runs initial first middle) (right : Runs middle second final) :
+    Runs initial (first ++ second) final := by
+  induction left with
+  | nil => exact right
+  | cons first rest ih => exact .cons first (ih right)
+
+private theorem fresh_tail {Value : Type} {rows : List (Nat × Value)}
+    {index : Nat} {value : Value} {table : List (Nat × Value)}
+    (distinct : ((index, value) :: rows).map Prod.fst |>.Nodup)
+    (fresh : ∀ row ∈ (index, value) :: rows, table.lookup row.1 = none) :
+    ∀ row ∈ rows, ((index, value) :: table).lookup row.1 = none := by
+  obtain ⟨absent, _⟩ := List.nodup_cons.mp (by simpa only [List.map_cons] using distinct)
+  intro row member
+  have different : row.1 ≠ index := fun same =>
+    absent (List.mem_map.mpr ⟨row, member, same⟩)
+  simpa only [List.lookup_cons, beq_eq_false_iff_ne.mpr different, ↓reduceIte] using
+    fresh row (List.mem_cons_of_mem _ member)
+
+/-- A whole sort block is admitted in its supplied order, with freshness
+checked against the preceding table at each insertion. -/
+theorem runs_sort_rows (initial : Theory) (rows : List (Nat × SortInfo))
+    (distinct : (rows.map Prod.fst).Nodup)
+    (fresh : ∀ row ∈ rows, initial.sortSignature row.1 = none) :
+    Runs initial (rows.map fun row => Admission.sort row.1 row.2)
+      { initial with sorts := rows.reverse ++ initial.sorts } := by
+  induction rows generalizing initial with
+  | nil => simpa using Runs.nil initial
+  | cons row rest ih =>
+      rcases row with ⟨index, info⟩
+      let middle := Admission.insert initial (.sort index info)
+      have first : Step initial (.sort index info) middle :=
+        .intro (.sort (fresh (index, info) (by simp)))
+      have nextFresh : ∀ row ∈ rest, middle.sortSignature row.1 = none :=
+        fresh_tail distinct fresh
+      have next := ih middle (List.nodup_cons.mp (by simpa using distinct)).2 nextFresh
+      simpa [middle, Admission.insert, List.reverse_cons, List.append_assoc] using
+        Runs.cons first next
+
+/-- Term declarations use the frozen preceding sort signature. They cannot
+make a missing sort available by inserting a term. -/
+theorem runs_term_rows (initial : Theory) (rows : List (Nat × TermDecl))
+    (distinct : (rows.map Prod.fst).Nodup)
+    (fresh : ∀ row ∈ rows, initial.termSignature row.1 = none)
+    (formed : ∀ row ∈ rows, TermDecl.Admissible initial.sortSignature row.2) :
+    Runs initial (rows.map fun row => Admission.term row.1 row.2)
+      { initial with terms := rows.reverse ++ initial.terms } := by
+  induction rows generalizing initial with
+  | nil => simpa using Runs.nil initial
+  | cons row rest ih =>
+      rcases row with ⟨index, declaration⟩
+      let middle := Admission.insert initial (.term index declaration)
+      have first : Step initial (.term index declaration) middle :=
+        .intro (.term (fresh (index, declaration) (by simp)) (formed (index, declaration) (by simp)))
+      have nextFresh : ∀ row ∈ rest, middle.termSignature row.1 = none :=
+        fresh_tail distinct fresh
+      have next := ih middle (List.nodup_cons.mp (by simpa using distinct)).2 nextFresh
+        (fun row member => formed row (List.mem_cons_of_mem _ member))
+      simpa [middle, Admission.insert, List.reverse_cons, List.append_assoc] using
+        Runs.cons first next
+
+/-- Axiom payloads are checked in the fixed preceding sort and term
+signatures; earlier axioms grant no declaration-formation exemption. -/
+theorem runs_axiom_rows (initial : Theory) (rows : List (Nat × TheoremDecl))
+    (distinct : (rows.map Prod.fst).Nodup)
+    (fresh : ∀ row ∈ rows, initial.theoremSignature row.1 = none)
+    (formed : ∀ row ∈ rows,
+      TheoremDecl.Admissible initial.sortSignature initial.termSignature row.2) :
+    Runs initial (rows.map fun row => Admission.axiomDecl row.1 row.2)
+      { initial with theorems := rows.reverse ++ initial.theorems } := by
+  induction rows generalizing initial with
+  | nil => simpa using Runs.nil initial
+  | cons row rest ih =>
+      rcases row with ⟨index, declaration⟩
+      let middle := Admission.insert initial (.axiomDecl index declaration)
+      have first : Step initial (.axiomDecl index declaration) middle :=
+        .intro (.axiomDecl (fresh (index, declaration) (by simp)) (formed (index, declaration) (by simp)))
+      have nextFresh : ∀ row ∈ rest, middle.theoremSignature row.1 = none :=
+        fresh_tail distinct fresh
+      have next := ih middle (List.nodup_cons.mp (by simpa using distinct)).2 nextFresh
+        (fun row member => formed row (List.mem_cons_of_mem _ member))
+      simpa [middle, Admission.insert, List.reverse_cons, List.append_assoc] using
+        Runs.cons first next
+
+/-- Each body is admissible over the terms declared before it: the given
+table, and then the terms of the earlier rows. -/
+def BodiesAdmissible (sorts : SortSignature) :
+    List (Nat × TermDecl) → List (Nat × TermDecl × Definition.Body) → Prop
+  | _, [] => True
+  | terms, row :: rows =>
+      Definition.AdmissibleBody sorts (fun index => terms.lookup index) row.2.1 row.2.2 ∧
+        BodiesAdmissible sorts ((row.1, row.2.1) :: terms) rows
+
+private theorem lookup_cons_fresh {Value : Type} (table : List (Nat × Value)) {index key : Nat}
+    (value : Value) (different : key ≠ index) (fresh : table.lookup key = none) :
+    ((index, value) :: table).lookup key = none := by
+  simpa only [List.lookup_cons, beq_eq_false_iff_ne.mpr different, ↓reduceIte] using fresh
+
+/-- A block of definitions is admitted in its supplied order. Each body is
+checked against the terms that precede it, earlier definitions of the block
+included; a later definition grants no exemption to an earlier body. -/
+theorem runs_definition_rows (initial : Theory)
+    (rows : List (Nat × TermDecl × Definition.Body))
+    (distinct : (rows.map fun row => row.1).Nodup)
+    (freshTerms : ∀ row ∈ rows, initial.termSignature row.1 = none)
+    (freshBodies : ∀ row ∈ rows, initial.definitionSignature row.1 = none)
+    (formed : ∀ row ∈ rows, TermDecl.Admissible initial.sortSignature row.2.1)
+    (bodies : BodiesAdmissible initial.sortSignature initial.terms rows) :
+    Runs initial (rows.map fun row => Admission.definition row.1 row.2.1 row.2.2)
+      { initial with
+        terms := (rows.map fun row => (row.1, row.2.1)).reverse ++ initial.terms
+        definitions := (rows.map fun row => (row.1, row.2.2)).reverse ++ initial.definitions } := by
+  induction rows generalizing initial with
+  | nil => simpa using Runs.nil initial
+  | cons row rest ih =>
+      rcases row with ⟨index, declaration, body⟩
+      obtain ⟨absent, restDistinct⟩ :=
+        List.nodup_cons.mp (by simpa only [List.map_cons] using distinct)
+      let middle := Admission.insert initial (.definition index declaration body)
+      have first : Step initial (.definition index declaration body) middle :=
+        .intro (.definition (freshTerms (index, declaration, body) (by simp))
+          (freshBodies (index, declaration, body) (by simp))
+          (formed (index, declaration, body) (by simp)) bodies.1)
+      have different : ∀ row ∈ rest, row.1 ≠ index := fun row member same =>
+        absent (List.mem_map.mpr ⟨row, member, same⟩)
+      have nextTerms : ∀ row ∈ rest, middle.termSignature row.1 = none := fun row member =>
+        lookup_cons_fresh _ declaration (different row member)
+          (freshTerms row (List.mem_cons_of_mem _ member))
+      have nextBodies : ∀ row ∈ rest, middle.definitionSignature row.1 = none := fun row member =>
+        lookup_cons_fresh _ body (different row member)
+          (freshBodies row (List.mem_cons_of_mem _ member))
+      have next := ih middle restDistinct nextTerms nextBodies
+        (fun row member => formed row (List.mem_cons_of_mem _ member)) bodies.2
+      simpa [middle, Admission.insert, List.reverse_cons, List.append_assoc] using
+        Runs.cons first next
+
 end Theory
 
 end Mettapedia.Languages.MM0.Kernel

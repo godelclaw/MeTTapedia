@@ -78,8 +78,8 @@ noncomputable def predicateSugenoCalibratedCrispEndpointGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := C.fintype M
-      letI := C.measurable M
+      let := C.fintype M
+      let := C.measurable M
       constructor
       · intro hModels
         have hEq :
@@ -255,9 +255,9 @@ noncomputable def predicateSugenoCountingOneCalibration
         (Base := Base) (Const := WithParams Const) M.1 tau))
   represents_forall := by
     intro M
-    letI := hObj M
-    letI := hNonempty M
-    letI := hMeasurable M
+    let := hObj M
+    let := hNonempty M
+    let := hMeasurable M
     exact
       predicateSugenoScoreInf_counting_eq_one_iff_models_predicateForAllFormula
         (Base := Base) (Const := WithParams Const) M.1 tau p
@@ -303,9 +303,9 @@ noncomputable def predicateSugenoCountingCrispEndpointGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := hObj M
-      letI := hNonempty M
-      letI := hMeasurable M
+      let := hObj M
+      let := hNonempty M
+      let := hMeasurable M
       constructor
       · intro hModels
         have hEq :
@@ -562,8 +562,8 @@ noncomputable def predicateSugenoCountingCardinalityThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       have hScoreEq :
           ((sugenoScoreInf
             (FuzzyCapacity.countingCapacity
@@ -933,7 +933,7 @@ noncomputable def predicateSugenoCountingExistsExactThresholdCut
         (Base := Base) (Const := WithParams Const) tau p (hp0 ρ i))
     hObj hMeasurable 1 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsFormula_iff_one_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 tau p)
@@ -1216,7 +1216,7 @@ noncomputable def predicateSugenoCountingUniversalExactThresholdCut
         (Base := Base) (Const := WithParams Const) tau p (hp0 ρ i))
     hObj hMeasurable N N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateForAllFormula_iff_card_le_ncard_extension_of_card_eq
           (Base := Base) (Const := WithParams Const) M.1 tau p N (hCardEq M))
@@ -1499,7 +1499,7 @@ noncomputable def predicateSugenoCountingAtLeastTwoBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable 2 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -1787,7 +1787,7 @@ noncomputable def predicateSugenoCountingAtLeastThreeBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable 3 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastThreeBaseFormula_iff_three_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)

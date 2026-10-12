@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.Dynamics.ProofRelevantNeedNIK
+import Mettapedia.GSLT.Dynamics.ProofRelevantNeedAuthority
 import Mettapedia.GSLT.Dynamics.ProofRelevantNeedOwnership
 import Mettapedia.Machines.BranchLocalNeed.ReferenceSemantics
 

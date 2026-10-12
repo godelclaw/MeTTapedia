@@ -1,4 +1,7 @@
 import Mettapedia.Machines.Cursor.Scheduling
+import Mettapedia.Machines.CooperativeQueue
+import Mettapedia.Machines.ReadyQueue
+import Mettapedia.Machines.EventPump
 import Mettapedia.GSLT.LanguageDef.NativeControlBoundedCursor
 import Mettapedia.GSLT.Core.SearchStreamProductivity
 
@@ -102,6 +105,186 @@ theorem eventually_done_iff (schedule : Nat → Command Id)
     obtain ⟨horizon, stable⟩ :=
       fair_eventually_done M C charge schedule fair pool id needed spent result completed
     exact ⟨horizon, by simpa using stable 0⟩
+
+/-! ## Concrete queue service, including continuing arrivals -/
+
+/-- The same queue used by the event pump schedules actual retained packets.
+An empty scheduling slot performs no cursor inspection. -/
+def cooperativeSchedule (quantum slots : Nat) (arrivals : Nat → List Id)
+    (queue : List Id) : List (Command Id) :=
+  (CooperativeQueue.services slots arrivals queue).map (fun id => (id, quantum))
+
+theorem cooperative_allocation (quantum slots : Nat) (arrivals : Nat → List Id)
+    (queue : List Id) (id : Id) :
+    allocation id (cooperativeSchedule quantum slots arrivals queue) =
+      (CooperativeQueue.services slots arrivals queue).count id * quantum :=
+  allocation_uniform id quantum _
+
+/-- Arbitrary continuing finite arrivals cannot prevent any finite inspection
+demand of a continuously queued owner, provided each service grants work. -/
+theorem cooperative_allocation_unbounded (quantum : Nat) (positive : 0 < quantum)
+    (arrivals : Nat → List Id) (queue : List Id) (id : Id) (member : id ∈ queue)
+    (demand : Nat) :
+    ∃ slots, demand ≤ allocation id (cooperativeSchedule quantum slots arrivals queue) := by
+  obtain ⟨slots, enough⟩ := CooperativeQueue.unbounded_service demand arrivals queue id member
+  refine ⟨slots, ?_⟩
+  rw [cooperative_allocation]
+  have one : 1 ≤ quantum := positive
+  have scaling := Nat.mul_le_mul_left
+    ((CooperativeQueue.services slots arrivals queue).count id) one
+  exact enough.trans (by simpa using scaling)
+
+/-- Once sufficient service has occurred, the completed observation remains
+exact under every longer queue run: answer, charge and full residual agree.
+This requires local finite completion, not termination of the whole producer. -/
+theorem cooperative_eventually_done (quantum : Nat) (positive : 0 < quantum)
+    (arrivals : Nat → List Id) (queue : List Id) (id : Id) (member : id ∈ queue)
+    (pool : Pool M C Id base) (needed spent : Nat)
+    (result : Finished M (Return := Return) base)
+    (finished : resume M C charge needed (pool id) = (spent, .done result)) :
+    ∃ slots, ∀ extra,
+      execute M C charge (cooperativeSchedule quantum (slots + extra) arrivals queue) pool id =
+        (spent, .done result) := by
+  obtain ⟨slots, enough⟩ :=
+    cooperative_allocation_unbounded quantum positive arrivals queue id member needed
+  refine ⟨slots, fun extra => ?_⟩
+  rw [execute_at]
+  apply resume_done_of_le M C charge (pool id) needed _ spent result finished
+  apply enough.trans
+  simp only [cooperativeSchedule, CooperativeQueue.services_add, List.map_append,
+    allocation_append]
+  exact Nat.le_add_right _ _
+
+/-- Recording infinitely many scheduling turns would still do no computation
+if their inspection quantum were zero. Service and progress are separate. -/
+theorem zero_quantum_preserves_pool (slots : Nat) (arrivals : Nat → List Id)
+    (queue : List Id) (pool : Pool M C Id base) :
+    execute M C charge (cooperativeSchedule 0 slots arrivals queue) pool = pool := by
+  funext id
+  rw [execute_at, cooperative_allocation]
+  simp only [Nat.mul_zero, resume_zero]
+
+/-- An accepted event supplies queue membership; the existing cursor protocol
+then supplies exact resumable work. The driver must actually perform both the
+durable admission and this queue policy. A transient wake alone is insufficient. -/
+theorem accepted_eventually_done (inbox : EventPump.Inbox) (event : EventPump.Event)
+    (accepted : event.owner = inbox.owner ∧ inbox.phase event.serial = none)
+    (quantum : Nat) (positive : 0 < quantum)
+    (arrivals : Nat → List EventPump.Key) (queue : List EventPump.Key)
+    (pool : Pool M C EventPump.Key base) (needed spent : Nat)
+    (result : Finished M (Return := Return) base)
+    (finished : resume M C charge needed (pool inbox.owner) = (spent, .done result)) :
+    ∃ slots, ∀ extra,
+      execute M C charge
+        (cooperativeSchedule quantum (slots + extra) arrivals
+          (EventPump.wakeReady queue (EventPump.record inbox event))) pool inbox.owner =
+        (spent, .done result) := by
+  have queued := EventPump.accepted_event_is_queued inbox event accepted
+  have pending : event ∈ EventPump.pending (EventPump.record inbox event) :=
+    List.mem_filter.mpr ⟨queued.1, by simp [queued.2]⟩
+  have nonempty : EventPump.pending (EventPump.record inbox event) ≠ [] := by
+    intro empty
+    simp [empty] at pending
+  have member := EventPump.ready_owner_is_queued queue (EventPump.record inbox event) nonempty
+  have owner : (EventPump.record inbox event).owner = inbox.owner :=
+    EventPump.step_preserves_owner inbox (.arrival event)
+  rw [owner] at member
+  exact cooperative_eventually_done M C charge quantum positive arrivals _ inbox.owner
+    member pool needed spent result finished
+
+/-- The capacity-bounded ready queue gives a retained packet enough inspection
+allocation after the stated number of completed service slots. -/
+theorem ready_allocation_lower_bound (visits quantum : Nat)
+    (state : ReadyQueue.State) (target : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (valid : ReadyQueue.invariant state)
+    (member : target ∈ state.tasks)
+    (retained : ∀ n,
+      (ReadyQueue.serviceRun n keep offered state).2.tasks.head? = some target →
+      keep n = true) :
+    visits * quantum ≤ allocation target
+      ((ReadyQueue.serviceRun (visits * state.capacity) keep offered state).1.map
+        (fun task => (task, quantum))) := by
+  rw [allocation_uniform]
+  exact Nat.mul_le_mul_right quantum
+    (ReadyQueue.retained_task_gets_repeated_service visits state target keep offered
+      valid member retained)
+
+/-- State-dependent budgets preserve the capacity bound when each target
+visit grants at least the stated number of inspections. The task may retire
+on its final required visit; other owners need no positive budget. This bounds
+completed service slots, not elapsed time or opaque provider-call duration. -/
+theorem ready_variable_observation_before_retirement (visits minimum extra : Nat)
+    (state : ReadyQueue.State) (target : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (valid : ReadyQueue.invariant state)
+    (member : target ∈ state.tasks)
+    (retained : ∀ n,
+      (ReadyQueue.serviceRun (n + 1) keep offered state).1.count target < visits →
+      (ReadyQueue.serviceRun n keep offered state).2.tasks.head? = some target →
+      keep n = true)
+    (commands : List (Command Nat))
+    (aligned : List.Forall₂ (fun task command =>
+      command.1 = task ∧ (task = target → minimum ≤ command.2))
+      (ReadyQueue.serviceRun (visits * state.capacity + extra) keep offered state).1
+      commands)
+    (pool : Pool M C Nat base) (needed spent : Nat)
+    (result : Finished M (Return := Return) base)
+    (finished : resume M C charge needed (pool target) = (spent, .done result))
+    (enough : needed ≤ visits * minimum) :
+    execute M C charge commands pool target = (spent, .done result) := by
+  rw [execute_at]
+  apply resume_done_of_le M C charge (pool target) needed _ spent result finished
+  apply enough.trans
+  apply (Nat.mul_le_mul_right minimum
+    ((ReadyQueue.requested_task_gets_bounded_service visits state target keep offered
+      valid member retained).trans
+      (ReadyQueue.serviceRun_count_mono (Nat.le_add_right _ _) state target keep offered))).trans
+  exact allocation_lower_bound target minimum aligned
+
+/-- A finite observation survives retirement after its requested service.
+No retention is required after the final requested visit. Longer executions
+preserve its exact answer, paid charge and complete provider residual. -/
+theorem ready_observation_before_retirement (visits quantum extra : Nat)
+    (state : ReadyQueue.State) (target : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (valid : ReadyQueue.invariant state)
+    (member : target ∈ state.tasks)
+    (retained : ∀ n,
+      (ReadyQueue.serviceRun (n + 1) keep offered state).1.count target < visits →
+      (ReadyQueue.serviceRun n keep offered state).2.tasks.head? = some target →
+      keep n = true)
+    (pool : Pool M C Nat base) (needed spent : Nat)
+    (result : Finished M (Return := Return) base)
+    (finished : resume M C charge needed (pool target) = (spent, .done result))
+    (enough : needed ≤ visits * quantum) :
+    execute M C charge
+      ((ReadyQueue.serviceRun (visits * state.capacity + extra) keep offered state).1.map
+        (fun task => (task, quantum))) pool target = (spent, .done result) := by
+  apply ready_variable_observation_before_retirement M C charge visits quantum extra
+    state target keep offered valid member retained _ _ pool needed spent result finished enough
+  generalize (ReadyQueue.serviceRun (visits * state.capacity + extra) keep offered state).1 = trace
+  induction trace with
+  | nil => exact .nil
+  | cons task rest ih => exact .cons ⟨rfl, fun _ => Nat.le_refl _⟩ ih
+
+/-- Local finite completion transfers to the actual bounded ready queue.
+Every longer execution preserves the exact answer, paid charge and provider
+residual. The host must execute each slot and its provider calls must return. -/
+theorem ready_observation_within_capacity_bound (visits quantum extra : Nat)
+    (state : ReadyQueue.State) (target : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (valid : ReadyQueue.invariant state)
+    (member : target ∈ state.tasks)
+    (retained : ∀ n,
+      (ReadyQueue.serviceRun n keep offered state).2.tasks.head? = some target →
+      keep n = true)
+    (pool : Pool M C Nat base) (needed spent : Nat)
+    (result : Finished M (Return := Return) base)
+    (finished : resume M C charge needed (pool target) = (spent, .done result))
+    (enough : needed ≤ visits * quantum) :
+    execute M C charge
+      ((ReadyQueue.serviceRun (visits * state.capacity + extra) keep offered state).1.map
+        (fun task => (task, quantum))) pool target = (spent, .done result) := by
+  exact ready_observation_before_retirement M C charge visits quantum extra state target
+    keep offered valid member (fun n _ atHead => retained n atHead)
+    pool needed spent result finished enough
 
 /-! ## A fair policy and an unfair policy -/
 

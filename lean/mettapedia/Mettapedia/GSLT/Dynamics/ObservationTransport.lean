@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.ExecutionPathObservation
 
 /-!
@@ -183,7 +184,7 @@ theorem observe_mapRoute
 
 namespace Canary
 
-abbrev system : GSLT := GSLT.discrete Bool
+abbrev system : GSLT := GSLT.stepFree Bool
 
 /-- Event-count observation has the required transport square along the
 identity translation. -/

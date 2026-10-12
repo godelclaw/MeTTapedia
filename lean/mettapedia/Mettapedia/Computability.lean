@@ -122,3 +122,4 @@ import Mettapedia.Computability.ProbabilisticTMRefined
 import Mettapedia.Computability.ToPartrecCodeEncoding
 import Mettapedia.Computability.HaltingGate
 import Mettapedia.Computability.RegularLanguages
+import Mettapedia.Computability.ElementaryFormalSystems

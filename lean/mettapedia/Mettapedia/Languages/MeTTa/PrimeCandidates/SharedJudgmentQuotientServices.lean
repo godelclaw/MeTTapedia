@@ -104,15 +104,15 @@ theorem required_registry_qualified :
 
 /-- Only the representation's semantic attachment changed. The original
 typed request can therefore be used without a new classifier or decoder. -/
-theorem service_unchanged (face : NIK.Face) :
+theorem service_unchanged (face : SemanticService.Face) :
     registry.serviceAt registry_qualified face =
       SharedJudgmentServiceRegistry.Controls.registry.serviceAt
         SharedJudgmentServiceRegistry.Controls.registry_qualified face := rfl
 
-theorem accepted_native_and_meaning (face : NIK.Face)
-    (request : NIKServiceInvocation.Request (registry.serviceAt registry_qualified face))
-    (input : NIKServiceInvocation.InputAdmission request) {wire : NativeWireData.Wire}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some wire) :
+theorem accepted_native_and_meaning (face : SemanticService.Face)
+    (request : SemanticServiceInvocation.Request (registry.serviceAt registry_qualified face))
+    (input : SemanticServiceInvocation.InputAdmission request) {wire : NativeWireData.Wire}
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some wire) :
     Judgment common.rules NativeMatchedTransportDenotation.parameterContext
         (SharedJudgmentServiceInterpretation.WireControls.parameterPayload wire)
         NativeWireData.dataType ∧
@@ -128,8 +128,8 @@ theorem accepted_native_and_meaning (face : NIK.Face)
 
 /-- Every original request, including the face-specific submitted witness
 or operation source premise, reaches its actual native quotient meaning. -/
-theorem four_calls (face : NIK.Face) :
-    (NIKServiceInvocation.invoke (SharedJudgmentServiceRegistry.Controls.request face)).acceptedValue =
+theorem four_calls (face : SemanticService.Face) :
+    (SemanticServiceInvocation.invoke (SharedJudgmentServiceRegistry.Controls.request face)).acceptedValue =
         some (expected face) ∧
       (data common).term SharedJudgmentServiceInterpretation.WireControls.parameterContext
         (SharedJudgmentServiceInterpretation.WireControls.parameterPayload (expected face))
@@ -143,10 +143,10 @@ theorem four_calls (face : NIK.Face) :
 
 /-- The operation source premise is still required; no target meaning or
 accepted response is inferred merely from a well-formed encoded input. -/
-theorem accepted_substitution (face : NIK.Face)
-    (request : NIKServiceInvocation.Request (registry.serviceAt registry_qualified face))
-    (input : NIKServiceInvocation.InputAdmission request) {wire : NativeWireData.Wire}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some wire)
+theorem accepted_substitution (face : SemanticService.Face)
+    (request : SemanticServiceInvocation.Request (registry.serviceAt registry_qualified face))
+    (input : SemanticServiceInvocation.InputAdmission request) {wire : NativeWireData.Wire}
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some wire)
     {m : Nat} (target : SharedJudgmentInterpretation.Context common m)
     (sigma : Sub Tower.Head 4 m)
     (semantic : (QuotientCwf.cwf common.rules).Sub ((data common).ctx target)
@@ -193,7 +193,7 @@ theorem filled_payload (wire : NativeWireData.Wire) (value : NativeWireDataDenot
   simp only [SharedJudgmentServiceInterpretation.WireControls.parameterPayload, subst,
     NativeWireData.subst_encode, NativeWireDataDenotation.fillParameter, consSub_zero]
 
-theorem four_filled_calls (face : NIK.Face) (value : NativeWireDataDenotation.Value) :
+theorem four_filled_calls (face : SemanticService.Face) (value : NativeWireDataDenotation.Value) :
     (data common).term SharedJudgmentServiceInterpretation.WireControls.commonContext
       (.app (.app (.const NativeWireData.consName) (NativeWireData.encode (expected face)))
         (NativeWireDataDenotation.quote value)) NativeWireData.dataType
@@ -268,7 +268,7 @@ theorem vacuous_source_rejected :
   have inputs := ((required_satisfies_iff _ _).mp qualified).2.2.2.1 .nativeOperation
   have same := inputs.operation_source
   have carriers : Empty = NativeWireData.Wire :=
-    congrArg Mettapedia.GSLT.LanguageDef.NIKMetalogic.AdmissionObject.Carrier same
+    congrArg Mettapedia.GSLT.LanguageDef.SemanticEvidence.AdmissionObject.Carrier same
   exact Empty.elim (cast carriers.symm SharedJudgmentServiceInterpretation.WireControls.actualWire)
 
 /-- A different actual Data term can have a valid quotient meaning without
@@ -315,12 +315,12 @@ theorem changed_payload_rejected :
   simp [SharedJudgmentServiceRegistry.nativeSurface, wrongPayload, changedPayload,
     contract, NativeWireData.encode] at codes
 
-def badProof : NIKServiceInvocation.Request (registry.serviceAt registry_qualified .nativeProof) :=
+def badProof : SemanticServiceInvocation.Request (registry.serviceAt registry_qualified .nativeProof) :=
   .nativeProof SharedJudgmentServiceInterpretation.WireControls.actualWire
     ("other-head", [.natural 7])
 
 def badCertificate :
-    NIKServiceInvocation.Request (registry.serviceAt registry_qualified .certificateBoundary) :=
+    SemanticServiceInvocation.Request (registry.serviceAt registry_qualified .certificateBoundary) :=
   .certificateBoundary SharedJudgmentServiceInterpretation.WireControls.actualWire
     ("other-head", [.natural 7])
 
@@ -328,18 +328,18 @@ def badCertificate :
 meaningful claim. Both checkers still bind the exact submitted claim. -/
 theorem rejected_evidence_meaningful :
     (targets .nativeProof).Meaning SharedJudgmentServiceInterpretation.WireControls.actualWire ∧
-      (NIKServiceInvocation.invoke badProof).acceptedValue = none ∧
-      (NIKServiceInvocation.invoke badCertificate).acceptedValue = none :=
+      (SemanticServiceInvocation.invoke badProof).acceptedValue = none ∧
+      (SemanticServiceInvocation.invoke badCertificate).acceptedValue = none :=
   ⟨SharedJudgmentServiceRegistry.Controls.changed_witness_rejected.2, rfl, rfl⟩
 
 def negativeDecision :
-    NIKServiceInvocation.Request (registry.serviceAt registry_qualified .directDecision) :=
+    SemanticServiceInvocation.Request (registry.serviceAt registry_qualified .directDecision) :=
   .directDecision (.natural 7)
 
 /-- Unlike the failed witness controls, this actual complete decision
 rejects an artifact outside the target predicate. -/
 theorem negative_decision_not_meaningful :
-    (NIKServiceInvocation.invoke negativeDecision).acceptedValue = none ∧
+    (SemanticServiceInvocation.invoke negativeDecision).acceptedValue = none ∧
       ¬ (targets .directDecision).Meaning (.natural 7) := by
   refine ⟨rfl, ?_⟩
   rintro ⟨head, arguments, impossible⟩

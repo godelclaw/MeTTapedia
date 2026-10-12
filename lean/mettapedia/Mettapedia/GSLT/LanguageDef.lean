@@ -67,6 +67,11 @@ import Mettapedia.GSLT.LanguageDef.CompiledPlanOptimizationPipeline
 import Mettapedia.GSLT.LanguageDef.CompiledPlanOpenActivationViewCompilation
 import Mettapedia.GSLT.LanguageDef.CompiledOpenMatcherPlan
 import Mettapedia.GSLT.LanguageDef.MatchDecisionContract
+import Mettapedia.GSLT.LanguageDef.MeTTaILSubtermMatchAutomata
+import Mettapedia.GSLT.LanguageDef.MeTTaILMatchAutomataExecution
+import Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderContextualExecution
+import Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation
+import Mettapedia.GSLT.LanguageDef.TopDownMatchDerivativeNormalization
 import Mettapedia.GSLT.LanguageDef.KeyedEquationSelection
 import Mettapedia.GSLT.LanguageDef.ContextStackEvaluation
 import Mettapedia.GSLT.LanguageDef.MatchDecisionCodeTree
@@ -98,6 +103,7 @@ import Mettapedia.GSLT.LanguageDef.RuntimeProfileExtension
 import Mettapedia.GSLT.LanguageDef.LanguageDefTransformation
 import Mettapedia.GSLT.LanguageDef.BindingSignature
 import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
+import Mettapedia.GSLT.LanguageDef.ScopedBindingElaboration
 import Mettapedia.GSLT.LanguageDef.BindingSignatureControls
 import Mettapedia.GSLT.LanguageDef.BindingSignatureTransport
 import Mettapedia.GSLT.LanguageDef.BindingSignatureReification
@@ -281,6 +287,12 @@ requires those crossings to preserve the common interpretation.  Together
 they prevent a product construction from silently claiming that communicating
 layers are disjoint.
 
+`ScopedBindingElaboration` reads dependency contexts from the original rule
+and constructor scopes from the declaration-derived binding signature. Its
+typed substitution and occurrence readback laws retain the caller's ambient
+context separately. Conditional matching and operational adequacy require
+their own joins; term elaboration does not discard or interpret premises.
+
 Proof calculi use the complete path:
 
 1. atomic judgment and rule declarations form a GSLT;
@@ -301,4 +313,14 @@ chosen here.
 The strict `CertificateGSLT` nucleus is included here.  Stronger certificate-GSLT
 interpretation, cyclic, and ultrainfinite modules have their own imports so
 that this foundational entry point does not silently enlarge its authority.
+
+Checked inference kernels. `KernelAuthority`, `BootstrapCell/ReplayCorrect`,
+`CheckerGSLT`, `InferenceChecker`, `InferenceComputedLeaves`,
+`AuthoredComputation` and `SemanticEvidence` together say what a checker for a
+presented formal system is and when an implementation is one. They were
+developed as the native inference kernel (NIK) and renamed to subject names on
+2026-10-08; the README of `GSLT` has the map.
+`ProofSystems` and `VerificationTiers` add sizes and running times: proof systems
+in the sense of Cook and Reckhow, simulations, elaboration, and the tiers of
+checking ordered by what a checker recomputes.
 -/

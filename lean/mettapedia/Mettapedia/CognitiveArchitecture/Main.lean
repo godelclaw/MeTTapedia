@@ -34,6 +34,14 @@ Connections between modules:
 - **Model Expressiveness**: What each model can express that the other cannot
 - **Missing Value Systems**: Value systems neither model can express
 
+### Consciousness criteria and phenomenal descriptions
+Context-sensitive realization contracts, rooted relational content presentations,
+partial reports and open physical/phenomenal/indexical information bases.
+Independent appraisal coordinates are preserved. Experiential interpretation and
+subject identity require additional premises beyond these mathematical models.
+Evidence-bearing assessment views retain exact provenance and distinguish
+possible outcomes, interpretation-family coverage and complete temporal profiles.
+
 ### Values (NEW)
 Unified value system extending OpenPsi/MicroPsi to handle full scope of human values:
 - **Schwartz's 10 Basic Values** with circular structure
@@ -60,6 +68,7 @@ Unified value system extending OpenPsi/MicroPsi to handle full scope of human va
 -/
 
 import Mettapedia.CognitiveArchitecture.MetaMo.Main
+import Mettapedia.CognitiveArchitecture.Consciousness
 import Mettapedia.CognitiveArchitecture.Agent
 import Mettapedia.CognitiveArchitecture.Agent.Bridges.PLN
 import Mettapedia.CognitiveArchitecture.AttentionEconomy
@@ -82,7 +91,7 @@ import Mettapedia.CognitiveArchitecture.ForegroundBackgroundParallelWave
 import Mettapedia.CognitiveArchitecture.AtomicForegroundBackgroundWave
 import Mettapedia.CognitiveArchitecture.ProtectedMindAgentWave
 import Mettapedia.CognitiveArchitecture.ApproximateProtectedTransitionAdvice
-import Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundNIKArticle
+import Mettapedia.CognitiveArchitecture.ProtectedForegroundBackgroundCheckedArticle
 import Mettapedia.CognitiveArchitecture.ForegroundBackgroundSemanticRouteBinding
 import Mettapedia.CognitiveArchitecture.ForegroundBackgroundGSLTILRouteBridge
 import Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute

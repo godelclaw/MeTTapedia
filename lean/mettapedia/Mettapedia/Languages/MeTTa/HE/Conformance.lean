@@ -468,65 +468,132 @@ theorem mettaCall_equation_rhs_unstable_low_fuel :
 
 private def unstableTopAtom : Atom := .expression [.symbol "q"]
 
+/-- This longer chain remains unresolved at the first successful expression match. -/
+private def unstableTopB : Bindings :=
+  ((emptyB.assign "z#0" (.var "w")).assign "w" (.var "y")).assign "y" (.symbol "a")
+
+/-- Singleton tuple interpretation retains the call expression as the equation LHS. -/
+private def unstableTopSpace : Space := Space.ofList [
+  .expression [.symbol "=", unstableTopAtom, .var "z"]]
+
+private theorem unstableTop_query (n : Nat) :
+    queryEquations unstableTopSpace unstableTopAtom (n + 4) =
+      [(.var "z#0", Bindings.empty)] := by rfl
+private theorem unstableTop_merge (n : Nat) :
+    mergeBindings Bindings.empty unstableTopB (n + 4) = [unstableTopB] := by rfl
+private theorem unstableTop_applied (n : Nat) :
+    unstableTopB.applyFull (.var "z#0") (n + 4) = .symbol "a" := by rfl
+private theorem unstableTop_noLoop : unstableTopB.hasLoop = false := by rfl
+
+private theorem unstableTop_qeval (n : Nat) :
+    evalAtom unstableTopSpace GroundedDispatch.none (.symbol "q") Atom.undefinedType
+      unstableTopB (n + 4) = [(.symbol "q", unstableTopB)] := by rfl
+private theorem unstableTop_aeval (n : Nat) :
+    evalAtom unstableTopSpace GroundedDispatch.none (.symbol "a") Atom.undefinedType
+      unstableTopB (n + 4) = [(.symbol "a", unstableTopB)] := by rfl
+private theorem unstableTop_tuple (n : Nat) :
+    interpretTuple unstableTopSpace GroundedDispatch.none unstableTopAtom unstableTopB (n + 5) =
+      [(unstableTopAtom, unstableTopB)] := by
+  change (evalAtom unstableTopSpace GroundedDispatch.none (.symbol "q") Atom.undefinedType
+    unstableTopB (n + 4)).flatMap (fun (value, selected) =>
+      if isEmptyOrError value then [(value, selected)] else [(.expression [value], selected)]) = _
+  rw [unstableTop_qeval]
+  rfl
+private theorem unstableTop_callback (n : Nat) :
+    mettaCall unstableTopSpace GroundedDispatch.none unstableTopAtom Atom.undefinedType
+      unstableTopB (n + 5) = [(.symbol "a", unstableTopB)] := by
+  change (if (queryEquations unstableTopSpace unstableTopAtom (n + 4)).isEmpty then
+      [(unstableTopAtom, unstableTopB)]
+    else (queryEquations unstableTopSpace unstableTopAtom (n + 4)).flatMap fun (rhs, qb) =>
+      (mergeBindings qb unstableTopB (n + 4)).flatMap fun mb =>
+        if mb.hasLoop then []
+        else evalAtom unstableTopSpace GroundedDispatch.none (mb.applyFull rhs (n + 4))
+          Atom.undefinedType mb (n + 4)) = _
+  rw [unstableTop_query]
+  change (mergeBindings Bindings.empty unstableTopB (n + 4)).flatMap (fun mb =>
+      if mb.hasLoop then []
+      else evalAtom unstableTopSpace GroundedDispatch.none (mb.applyFull (.var "z#0") (n + 4))
+        Atom.undefinedType mb (n + 4)) = _
+  rw [unstableTop_merge]
+  change (if unstableTopB.hasLoop then []
+      else evalAtom unstableTopSpace GroundedDispatch.none
+        (unstableTopB.applyFull (.var "z#0") (n + 4)) Atom.undefinedType unstableTopB (n + 4)) = _
+  rw [unstableTop_noLoop, unstableTop_applied]
+  exact unstableTop_aeval n
+private theorem unstableTop_expression (n : Nat) :
+    interpretExpression unstableTopSpace GroundedDispatch.none unstableTopAtom Atom.undefinedType
+      unstableTopB (n + 6) = [(.symbol "a", unstableTopB)] := by
+  change (let results := (interpretTuple unstableTopSpace GroundedDispatch.none unstableTopAtom
+      unstableTopB (n + 5)).flatMap (fun (r, rb) =>
+        mettaCall unstableTopSpace GroundedDispatch.none r Atom.undefinedType rb (n + 5));
+    if !results.isEmpty then results else []) = _
+  rw [unstableTop_tuple]
+  simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil]
+  rw [unstableTop_callback]
+  rfl
+
 /-- The unstable low-fuel equation-match witness bubbles up to a genuine
     top-level `evalAtom` result. -/
 theorem evalAtom_unstable_top_level_low_fuel_reaches :
-    (.var "z#0", unstableChainB) ∈
-      evalAtom unstableChainSpace noDispatch
-        unstableTopAtom Atom.undefinedType unstableChainB 5 := by
+    (.var "z#0", unstableTopB) ∈
+      evalAtom unstableTopSpace noDispatch
+        unstableTopAtom Atom.undefinedType unstableTopB 6 := by
   decide
 
-/-- From fuel 6 onward, the executable evaluator has stabilized to the final
+/-- From fuel 7 onward, the executable evaluator has stabilized to the final
     fully-substituted result, so the low-fuel top-level witness disappears. -/
-theorem evalAtom_unstable_top_level_stabilized_from_fuel6 (n : Nat) :
-    evalAtom unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB (n + 6) =
-      [(.symbol "a", unstableChainB)] := by
+theorem evalAtom_unstable_top_level_stabilized_from_fuel7 (n : Nat) :
+    evalAtom unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB (n + 7) =
+      [(.symbol "a", unstableTopB)] := by
+  unfold noDispatch
+  unfold evalAtom
+  rw [unstableTop_expression]
   rfl
 
 /-- The coarse public `EvalAtom` spec admits the unstable low-fuel top-level
     result. This is exactly the kind of derivation that should NOT be forced
     into the exported certification boundary. -/
 theorem evalAtom_unstable_top_level_derivation :
-    EvalAtom unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB) := by
-  exact evalAtom_sound unstableChainSpace noDispatch
-    unstableTopAtom Atom.undefinedType unstableChainB 5
-    (.var "z#0", unstableChainB)
+    EvalAtom unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB) := by
+  exact evalAtom_sound unstableTopSpace noDispatch
+    unstableTopAtom Atom.undefinedType unstableTopB 6
+    (.var "z#0", unstableTopB)
     evalAtom_unstable_top_level_low_fuel_reaches
 
 /-- The unstable low-fuel top-level derivation is NOT certified: certification
-    requires stable eventual reachability, but from fuel 6 onward the evaluator
+    requires stable eventual reachability, but from fuel 7 onward the evaluator
     only returns the stabilized symbol result. -/
 theorem evalAtom_unstable_top_level_not_certified :
-    ¬ EvalAtomCertified unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB) := by
+    ¬ EvalAtomCertified unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB) := by
   intro h_cert
   rcases (evalAtomCertified_iff_stably_reaches
-      unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB)).mp h_cert with ⟨fuel0, h_eventual⟩
+      unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB)).mp h_cert with ⟨fuel0, h_eventual⟩
   have h_mem :
-      (.var "z#0", unstableChainB) ∈
-        evalAtom unstableChainSpace noDispatch
-          unstableTopAtom Atom.undefinedType unstableChainB (fuel0 + 6) := by
-    exact h_eventual (fuel0 + 6) (Nat.le_add_right fuel0 6)
-  rw [evalAtom_unstable_top_level_stabilized_from_fuel6 fuel0] at h_mem
+      (.var "z#0", unstableTopB) ∈
+        evalAtom unstableTopSpace noDispatch
+          unstableTopAtom Atom.undefinedType unstableTopB (fuel0 + 7) := by
+    exact h_eventual (fuel0 + 7) (Nat.le_add_right fuel0 7)
+  rw [evalAtom_unstable_top_level_stabilized_from_fuel7 fuel0] at h_mem
   simp at h_mem
 
 /-- The same unstable top-level result still has an honest fuel-indexed
     filtered witness at the low subfuel used by the evaluator. This shows that
     even filtered-at-fuel evidence is weaker than certification. -/
 theorem evalAtom_unstable_top_level_filtered_witness :
-    ∃ n, EvalAtomFilteredAtFuel unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB n
-      (.var "z#0", unstableChainB) := by
-  exact evalAtom_reaches_filtered_sound unstableChainSpace noDispatch
-    unstableTopAtom Atom.undefinedType unstableChainB
-    (.var "z#0", unstableChainB)
-    ⟨4, evalAtom_unstable_top_level_low_fuel_reaches⟩
+    ∃ n, EvalAtomFilteredAtFuel unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB n
+      (.var "z#0", unstableTopB) := by
+  exact evalAtom_reaches_filtered_sound unstableTopSpace noDispatch
+    unstableTopAtom Atom.undefinedType unstableTopB
+    (.var "z#0", unstableTopB)
+    ⟨5, evalAtom_unstable_top_level_low_fuel_reaches⟩
 
 /-- So the global implication `EvalAtom -> EvalAtomCertified` is false.
     This blocks the tempting but wrong plan to prove certification for every
@@ -539,12 +606,12 @@ theorem evalAtom_to_stably_reaches_not_valid :
           EvalAtomStablyReaches space dispatch atom type_ b r) := by
   intro h
   exact evalAtom_unstable_top_level_not_certified <|
-    evalAtomStablyReaches_to_certified unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB)
-      (h unstableChainSpace noDispatch
-        unstableTopAtom Atom.undefinedType unstableChainB
-        (.var "z#0", unstableChainB)
+    evalAtomStablyReaches_to_certified unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB)
+      (h unstableTopSpace noDispatch
+        unstableTopAtom Atom.undefinedType unstableTopB
+        (.var "z#0", unstableTopB)
         evalAtom_unstable_top_level_derivation)
 
 /-- So the global implication `EvalAtom -> EvalAtomCertified` is false.
@@ -558,9 +625,9 @@ theorem evalAtom_to_certified_not_valid :
           EvalAtomCertified space dispatch atom type_ b r) := by
   intro h
   exact evalAtom_unstable_top_level_not_certified <|
-    h unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB)
+    h unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB)
       evalAtom_unstable_top_level_derivation
 
 /-- Even the honest fuel-indexed filtered witness is still not strong enough
@@ -573,12 +640,12 @@ theorem filtered_witness_to_stably_reaches_not_valid :
           EvalAtomStablyReaches space dispatch atom type_ b r) := by
   intro h
   exact evalAtom_unstable_top_level_not_certified <|
-    evalAtomStablyReaches_to_certified unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB)
-      (h unstableChainSpace noDispatch
-        unstableTopAtom Atom.undefinedType unstableChainB
-        (.var "z#0", unstableChainB)
+    evalAtomStablyReaches_to_certified unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB)
+      (h unstableTopSpace noDispatch
+        unstableTopAtom Atom.undefinedType unstableTopB
+        (.var "z#0", unstableTopB)
         evalAtom_unstable_top_level_filtered_witness)
 
 /-- Even the honest fuel-indexed filtered witness is still not strong enough
@@ -591,9 +658,9 @@ theorem filtered_witness_to_certified_not_valid :
           EvalAtomCertified space dispatch atom type_ b r) := by
   intro h
   exact evalAtom_unstable_top_level_not_certified <|
-    h unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableChainB
-      (.var "z#0", unstableChainB)
+    h unstableTopSpace noDispatch
+      unstableTopAtom Atom.undefinedType unstableTopB
+      (.var "z#0", unstableTopB)
       evalAtom_unstable_top_level_filtered_witness
 
 /-! ## 7. MinimalStep derivation witnesses -/
@@ -1031,7 +1098,7 @@ theorem leatta_minimal_unify_bad_arity_eval_message :
   simp [Metta.Minimal.evalAtomMin, Metta.Minimal.interpretAtom,
     Metta.Minimal.interpretFuel, Metta.Minimal.interpretStack1,
     Metta.Minimal.evalOp, Metta.Minimal.atomToStack, Metta.Minimal.isEmbeddedOp,
-    Metta.Minimal.isFinal, Metta.Minimal.finalPair,
+    Metta.Minimal.isFinal,
     Metta.Minimal.MinEnv.ofAtomsGT, Metta.Minimal.extractRules,
     Metta.callGrounded, Metta.GroundingTable.lookup,
     Metta.instantiate, Metta.Minimal.errAtom,

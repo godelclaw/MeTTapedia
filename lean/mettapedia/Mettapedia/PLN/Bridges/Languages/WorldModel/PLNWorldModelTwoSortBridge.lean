@@ -135,12 +135,6 @@ abbrev WMStrengthObligation
   BinaryWorldModel.queryStrength (State := State) (Query := Query) W q₁ ≤
     BinaryWorldModel.queryStrength (State := State) (Query := Query) W q₂
 
-/-- Alias for the unified categorical endpoint contract used by WM wrappers. -/
-abbrev WMCategoricalEndpointContract
-    {State : Type*} [EvidenceType State]
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State) : Prop :=
-  Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointContract (H := H)
-
 /-- Explicit interpretation map from Pure/profile judgments into WM obligations.
 
 `encode` maps quoted `Pattern` terms into WM queries.
@@ -305,38 +299,6 @@ theorem checkedNoValuesDeclKernelBoundary_closedCommonReduct_wmBridge
         I hSig hNone hW huw
     ⟩
 
-/-- Categorical-aligned wrapper:
-same Pure one-step WM obligation transport, with explicit endpoint-interface input. -/
-theorem pureTheoryStep_to_wmStrengthObligation_categorical
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (hbridge : TwoSortClosedTheoryBridge)
-    {W : State} {t u : ScopedTerm 0}
-    (hW : I.side W)
-    (hred : Red t u) :
-    WMStrengthObligation State Query W
-      (I.encode (quoteClosedTm t))
-      (I.encode (quoteClosedTm u)) :=
-  pureTheoryStep_to_wmStrengthObligation I hbridge hW hred
-
-/-- Categorical-aligned default wrapper using the canonical theoremic B -> C1 bridge. -/
-theorem pureTheoryStep_to_wmStrengthObligation_categorical_default
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    {W : State} {t u : ScopedTerm 0}
-    (hW : I.side W)
-    (hred : Red t u) :
-    WMStrengthObligation State Query W
-      (I.encode (quoteClosedTm t))
-      (I.encode (quoteClosedTm u)) :=
-  pureTheoryStep_to_wmStrengthObligation_categorical
-    (I := I) (H := H) (_hcat := _hcat) (_φc := _φc)
-    (hbridge := twoSortClosedTheoryBridge_default) (W := W) (hW := hW) hred
-
 /-- Star closed TwoSortPiSigmaId reduction transports to a WM strength obligation,
 using the same one-step closed bridge via closure lifting. -/
 theorem pureTheoryStepStar_to_wmStrengthObligation
@@ -364,38 +326,6 @@ theorem pureTheoryStepStar_to_wmStrengthObligation_default
       (I.encode (quoteClosedTm t))
       (I.encode (quoteClosedTm u)) :=
   pureTheoryStepStar_to_wmStrengthObligation I twoSortClosedTheoryBridge_default hW hred
-
-/-- Categorical-aligned wrapper:
-same Pure star WM obligation transport, with explicit endpoint-interface input. -/
-theorem pureTheoryStepStar_to_wmStrengthObligation_categorical
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (hbridge : TwoSortClosedTheoryBridge)
-    {W : State} {t u : ScopedTerm 0}
-    (hW : I.side W)
-    (hred : RedStar t u) :
-    WMStrengthObligation State Query W
-      (I.encode (quoteClosedTm t))
-      (I.encode (quoteClosedTm u)) :=
-  pureTheoryStepStar_to_wmStrengthObligation I hbridge hW hred
-
-/-- Categorical-aligned default wrapper using the canonical theoremic B* -> C1* bridge. -/
-theorem pureTheoryStepStar_to_wmStrengthObligation_categorical_default
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    {W : State} {t u : ScopedTerm 0}
-    (hW : I.side W)
-    (hred : RedStar t u) :
-    WMStrengthObligation State Query W
-      (I.encode (quoteClosedTm t))
-      (I.encode (quoteClosedTm u)) :=
-  pureTheoryStepStar_to_wmStrengthObligation_categorical
-    (I := I) (H := H) (_hcat := _hcat) (_φc := _φc)
-    (hbridge := twoSortClosedTheoryBridge_default) (W := W) (hW := hW) hred
 
 /-- Package a closed TwoSortPiSigmaId one-step as a state-indexed WM consequence rule. -/
 def wmConsequenceRuleOn_of_closed_pureTheoryStep
@@ -442,50 +372,6 @@ def wmConsequenceRuleOn_of_closed_pureTheoryStepStar_default
     (hred : RedStar t u) :
     WMConsequenceRuleOn State Query :=
   wmConsequenceRuleOn_of_closed_pureTheoryStepStar I twoSortClosedTheoryBridge_default hred
-
-/-- Categorical-aligned packaging of a closed TwoSortPiSigmaId one-step as a
-state-indexed WM consequence rule. -/
-def wmConsequenceRuleOn_of_closed_pureTheoryStep_categorical
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (hbridge : TwoSortClosedTheoryBridge)
-    {t u : ScopedTerm 0}
-    (hred : Red t u) :
-    WMConsequenceRuleOn State Query where
-  side := I.side
-  premise := I.encode (quoteClosedTm t)
-  conclusion := I.encode (quoteClosedTm u)
-  sound := by
-    intro W hW
-    exact
-      pureTheoryStep_to_wmStrengthObligation_categorical
-        (I := I) (H := H) (_hcat := _hcat) (_φc := _φc)
-        (hbridge := hbridge) (W := W) (hW := hW) hred
-
-/-- Categorical-aligned packaging of a closed TwoSortPiSigmaId star reduction as a
-state-indexed WM consequence rule. -/
-def wmConsequenceRuleOn_of_closed_pureTheoryStepStar_categorical
-    (I : TwoSortJudgmentWMInterface State Query)
-    (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (hbridge : TwoSortClosedTheoryBridge)
-    {t u : ScopedTerm 0}
-    (hred : RedStar t u) :
-    WMConsequenceRuleOn State Query where
-  side := I.side
-  premise := I.encode (quoteClosedTm t)
-  conclusion := I.encode (quoteClosedTm u)
-  sound := by
-    intro W hW
-    exact
-      pureTheoryStepStar_to_wmStrengthObligation_categorical
-        (I := I) (H := H) (_hcat := _hcat) (_φc := _φc)
-        (hbridge := hbridge) (W := W) (hW := hW) hred
-
-/-! ## WM-side regression canaries (consume existing TwoSortPiSigmaId regressions) -/
 
 /-- Canary: the one-nested-binder beta transport theorem from `CoreEmbedding`
 induces a concrete WM obligation witness under the interpretation interface. -/

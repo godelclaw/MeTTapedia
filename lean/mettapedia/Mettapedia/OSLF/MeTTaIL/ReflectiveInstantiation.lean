@@ -371,3 +371,114 @@ theorem instantiate_scoped (declaration : ReflectivePresentationDecl)
 #print axioms instantiate_scoped
 
 end Mettapedia.OSLF.MeTTaIL.ReflectiveInstantiation
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.ReflectiveInstantiation
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Reflection
+open ReflectiveSubstitution
+open Substitution
+
+theorem name_mark_free_within (footprint : List String) (declaration : ReflectivePresentationDecl)
+    (depth : Nat) (replacement name : Pattern)
+    (inserted : ∀ free ∈ replacement.freeFvarNames, free ∈ footprint)
+    (original : ∀ free ∈ name.freeFvarNames, free ∈ footprint) :
+    ∀ free ∈ (ReflectiveInstantiation.nameMark declaration depth replacement name).1.freeFvarNames,
+      free ∈ footprint := by
+  have normalized : ∀ free ∈ (normalizeReflective declaration name).freeFvarNames,
+      free ∈ footprint := by
+    rw [normalize_reflective_free_names]
+    exact original
+  unfold ReflectiveInstantiation.nameMark
+  generalize normalizedEq : normalizeReflective declaration name = result at normalized ⊢
+  cases result <;> try exact normalized
+  rename_i index
+  exact instantiate_bvar_at_free_within footprint depth replacement (.bvar index) inserted normalized
+
+private theorem reflective_list_eq_map (declaration : ReflectivePresentationDecl)
+    (depth : Nat) (replacement : Pattern) (patterns : List Pattern) :
+    ReflectiveInstantiation.instantiateList declaration depth replacement patterns =
+      patterns.map (ReflectiveInstantiation.instantiate declaration depth replacement) := by
+  induction patterns with
+  | nil => rfl
+  | cons head tail ih => simp only [ReflectiveInstantiation.instantiateList, List.map_cons, ih]
+
+theorem reflective_instantiate_free_within (footprint : List String)
+    (declaration : ReflectivePresentationDecl) (depth : Nat) (replacement body : Pattern)
+    (inserted : ∀ free ∈ replacement.freeFvarNames, free ∈ footprint)
+    (original : ∀ free ∈ body.freeFvarNames, free ∈ footprint) :
+    ∀ free ∈ (ReflectiveInstantiation.instantiate declaration depth replacement body).freeFvarNames,
+      free ∈ footprint := by
+  induction body using Pattern.inductionOn generalizing depth with
+  | hbvar index => exact instantiate_bvar_at_free_within footprint depth replacement (.bvar index) inserted original
+  | hfvar name => exact original
+  | happly constructor arguments ih =>
+      have each : ∀ argument ∈ arguments, ∀ free ∈ argument.freeFvarNames, free ∈ footprint := by
+        intro argument member free occurs
+        apply original free
+        simpa only [Pattern.freeFvarNames] using List.mem_flatMap.mpr ⟨argument, member, occurs⟩
+      have listCovered : ∀ pattern ∈
+          ReflectiveInstantiation.instantiateList declaration depth replacement arguments,
+          ∀ free ∈ pattern.freeFvarNames, free ∈ footprint := by
+        rw [reflective_list_eq_map]
+        intro result resultMember free occurs
+        rcases List.mem_map.mp resultMember with ⟨argument, originalMember, rfl⟩
+        exact ih argument originalMember depth (each argument originalMember) free occurs
+      cases arguments with
+      | nil =>
+          intro free occurs
+          simp only [ReflectiveInstantiation.instantiate, ReflectiveInstantiation.instantiateList,
+            Pattern.freeFvarNames, List.flatMap_nil, List.not_mem_nil] at occurs
+      | cons payload rest =>
+          cases rest with
+          | nil =>
+              simp only [ReflectiveInstantiation.instantiate]
+              split
+              · exact name_mark_free_within footprint declaration depth replacement _ inserted original
+              · split
+                · have marked := name_mark_free_within footprint declaration depth replacement payload inserted
+                    (each payload (by simp))
+                  generalize markEq : ReflectiveInstantiation.nameMark declaration depth replacement payload = mark at marked ⊢
+                  rcases mark with ⟨name, matched⟩
+                  dsimp only at marked ⊢
+                  split
+                  · split <;> simpa only [Pattern.freeFvarNames, List.flatMap_cons, List.flatMap_nil,
+                      List.append_nil] using marked
+                  · simpa only [Pattern.freeFvarNames, List.flatMap_cons, List.flatMap_nil,
+                      List.append_nil] using marked
+                · simpa only [Pattern.freeFvarNames, List.flatMap_cons, List.flatMap_nil,
+                    List.append_nil] using ih payload (by simp) depth (each payload (by simp))
+          | cons second more =>
+              intro free occurs
+              simp only [ReflectiveInstantiation.instantiate, Pattern.freeFvarNames, List.mem_flatMap] at occurs
+              rcases occurs with ⟨result, member, occurs⟩
+              exact listCovered result member free occurs
+  | hlambda binder body ih =>
+      simp only [ReflectiveInstantiation.instantiate, Pattern.freeFvarNames] at original ⊢
+      exact ih _ original
+  | hmultiLambda arity binders body ih =>
+      simp only [ReflectiveInstantiation.instantiate, Pattern.freeFvarNames] at original ⊢
+      exact ih _ original
+  | hsubst body value ihBody ihValue =>
+      simp only [ReflectiveInstantiation.instantiate, Pattern.freeFvarNames] at original ⊢
+      intro free occurs
+      rcases List.mem_append.mp occurs with occurs | occurs
+      · exact ihBody _ (fun name member => original name (List.mem_append_left _ member)) free occurs
+      · exact ihValue _ (fun name member => original name (List.mem_append_right _ member)) free occurs
+  | hcollection kind elements rest ih =>
+      simp only [ReflectiveInstantiation.instantiate, reflective_list_eq_map,
+        Pattern.freeFvarNames, List.flatMap_map] at original ⊢
+      intro free occurs
+      rcases List.mem_append.mp occurs with occurs | occurs
+      · rcases List.mem_flatMap.mp occurs with ⟨element, member, occurs⟩
+        exact ih element member depth
+          (fun name present => original name (List.mem_append_left _
+            (List.mem_flatMap.mpr ⟨element, member, present⟩))) free occurs
+      · exact original free (List.mem_append_right _ occurs)
+
+#print axioms Mettapedia.OSLF.MeTTaIL.ReflectiveInstantiation.name_mark_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ReflectiveInstantiation.reflective_instantiate_free_within
+
+end Mettapedia.OSLF.MeTTaIL.ReflectiveInstantiation

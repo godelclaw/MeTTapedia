@@ -2,6 +2,8 @@ import Mettapedia.GSLT.LanguageDef.TheoryGraph
 import Mettapedia.Logic.HOL.TypeDerivedSignatureExamples
 import Mettapedia.Logic.HOL.WitnessedSaturation
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Extensional HOL consequence under type-derived interpretations
 
@@ -17,7 +19,7 @@ namespace Mettapedia.GSLT.LanguageDef.HOLTypeDerivedConsequence
 
 open CategoryTheory
 open Mettapedia.Logic.HOL
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe u
 

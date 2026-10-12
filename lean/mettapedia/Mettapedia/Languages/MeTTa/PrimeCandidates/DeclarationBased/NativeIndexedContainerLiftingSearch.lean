@@ -13,7 +13,7 @@ checker case.
 
 Every container also preserves functional representations.  Exact finite
 search requires the separate `Finitary` capability.  The List and Vector
-containers possess it; the positive natural-number reader does not.  Thus NIK
+containers possess it; the positive natural-number reader does not.  Thus SemanticService
 can select the strongest construction justified by a checked family
 description without treating absence of finitarity as rejection.
 

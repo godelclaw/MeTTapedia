@@ -1,4 +1,6 @@
 import Mettapedia.Languages.Dataflow.Semantics
+import Mettapedia.Machines.ResumableRegion
+import Mettapedia.Machines.OwnedPullDriverCost
 
 /-!
 # Data-driven execution and adequacy
@@ -92,6 +94,30 @@ theorem exists_unavailable_of_evalOperands_none {env : List (CellId × Value)} :
               exact ⟨d, List.mem_cons_of_mem _ member, missing⟩
           | some vs =>
               simp [evalOperands, headValue, tailValues] at failed
+
+/-- Operand evaluation depends only on the bindings it actually names. -/
+theorem evalOperands_eq_of_agreement (left right : List (CellId × Value))
+    (operands : List CellId)
+    (agrees : ∀ cell ∈ operands, lookup left cell = lookup right cell) :
+    evalOperands left operands = evalOperands right operands := by
+  induction operands with
+  | nil => rfl
+  | cons cell cells inductionHypothesis =>
+      have head := agrees cell (by simp)
+      have tail := inductionHypothesis (fun observed member => agrees observed (by simp [member]))
+      simp only [evalOperands, head, tail]
+
+/-- Agreement on the actual operand footprint preserves complete readiness,
+including missing operands and arity rejection. -/
+theorem readyValue_eq_of_agreement (spec : PureOperatorSpec Op Value)
+    (left right : List (CellId × Value)) (instruction : Instruction Op Value)
+    (agrees : ∀ cell ∈ instruction.operands, lookup left cell = lookup right cell) :
+    readyValue spec left instruction = readyValue spec right instruction := by
+  cases instruction with
+  | const _ _ => rfl
+  | apply destination operator operands =>
+      have same := evalOperands_eq_of_agreement left right operands agrees
+      simp only [readyValue, same]
 
 /-! ## States and steps -/
 
@@ -549,5 +575,415 @@ theorem terminal_result_unique {spec : PureOperatorSpec Op Value}
   obtain ⟨w, denotesRight, foundRight⟩ :=
     terminal_result_eq_denote wf runRight terminalRight
   rw [foundLeft, foundRight, Denotes.functional denotesLeft denotesRight]
+
+/-! ## Independent ready firings
+
+Readiness supplies the read dependency: a ready instruction cannot read a
+cell that is still absent. Inserting such a fresh cell therefore preserves
+its already computed operands. Distinct destinations supply the write
+dependency. These facts give a concrete square of operational firings,
+with the same pending instructions and the same value at every cell.
+-/
+
+/-- Adding a previously absent cell cannot change an available operand
+vector. This uses the actual lookup results, not an asserted footprint. -/
+theorem evalOperands_cons_of_none {env : List (CellId × Value)}
+    {cell : CellId} (fresh : lookup env cell = none) (value : Value) :
+    ∀ {operands : List CellId} {values : List Value},
+      evalOperands env operands = some values →
+      evalOperands ((cell, value) :: env) operands = some values := by
+  intro operands
+  induction operands with
+  | nil => intro values ready; exact ready
+  | cons operand rest ih =>
+      intro values ready
+      cases head : lookup env operand with
+      | none => simp [evalOperands, head] at ready
+      | some first =>
+          have different : cell ≠ operand := by
+            intro same
+            subst operand
+            rw [fresh] at head
+            cases head
+          cases tail : evalOperands env rest with
+          | none => simp [evalOperands, head, tail] at ready
+          | some remaining =>
+              simpa only [evalOperands, lookup_cons_of_ne different,
+                head, tail, ih tail] using ready
+
+/-- A ready instruction keeps its value when another instruction fills a
+previously absent cell. -/
+theorem readyValue_cons_of_none {spec : PureOperatorSpec Op Value}
+    {env : List (CellId × Value)} {cell : CellId}
+    (fresh : lookup env cell = none) (value : Value)
+    {instruction : Instruction Op Value} {result : Value}
+    (ready : readyValue spec env instruction = some result) :
+    readyValue spec ((cell, value) :: env) instruction = some result := by
+  cases instruction with
+  | const destination constant => exact ready
+  | apply destination operator operands =>
+      by_cases arity : operands.length = spec.arity operator
+      · cases values : evalOperands env operands with
+        | none => simp [readyValue, arity, values] at ready
+        | some arguments =>
+            simpa only [readyValue, if_pos arity,
+              values, evalOperands_cons_of_none fresh value values] using ready
+      · simp [readyValue, arity] at ready
+
+/-- Two independently ready instructions can fire in either order. The
+intermediate and final pending lists are explicit: neither firing discards
+or reorders the remaining program. Computed association lists may differ
+in insertion order, but all cell observations agree. -/
+theorem ready_pair_diamond (spec : PureOperatorSpec Op Value)
+    (env : List (CellId × Value))
+    (pre middle post : List (Instruction Op Value))
+    (left right : Instruction Op Value) (leftValue rightValue : Value)
+    (distinct : left.dst ≠ right.dst)
+    (leftFresh : lookup env left.dst = none)
+    (rightFresh : lookup env right.dst = none)
+    (leftReady : readyValue spec env left = some leftValue)
+    (rightReady : readyValue spec env right = some rightValue) :
+    Step spec ⟨env, pre ++ left :: (middle ++ right :: post)⟩
+      ⟨(left.dst, leftValue) :: env, pre ++ middle ++ right :: post⟩ ∧
+    Step spec ⟨env, pre ++ left :: (middle ++ right :: post)⟩
+      ⟨(right.dst, rightValue) :: env, pre ++ left :: (middle ++ post)⟩ ∧
+    Step spec ⟨(left.dst, leftValue) :: env, pre ++ middle ++ right :: post⟩
+      ⟨(right.dst, rightValue) :: (left.dst, leftValue) :: env,
+        pre ++ middle ++ post⟩ ∧
+    Step spec ⟨(right.dst, rightValue) :: env, pre ++ left :: (middle ++ post)⟩
+      ⟨(left.dst, leftValue) :: (right.dst, rightValue) :: env,
+        pre ++ middle ++ post⟩ ∧
+    ∀ cell, lookup ((right.dst, rightValue) :: (left.dst, leftValue) :: env) cell =
+      lookup ((left.dst, leftValue) :: (right.dst, rightValue) :: env) cell := by
+  have rightAfter := readyValue_cons_of_none leftFresh leftValue rightReady
+  have leftAfter := readyValue_cons_of_none rightFresh rightValue leftReady
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · simpa only [List.append_assoc] using
+      (Step.fire (pre := pre) (post := middle ++ right :: post) leftReady)
+  · simpa only [List.append_assoc, List.cons_append] using
+      (Step.fire (pre := pre ++ left :: middle) (post := post) rightReady)
+  · exact Step.fire (pre := pre ++ middle) (post := post) rightAfter
+  · simpa only [List.append_assoc] using
+      (Step.fire (pre := pre) (post := middle ++ post) leftAfter)
+  · intro cell
+    by_cases atLeft : left.dst = cell
+    · subst cell
+      rw [lookup_cons_of_ne distinct.symm, lookup_cons_self, lookup_cons_self]
+    · by_cases atRight : right.dst = cell
+      · subst cell
+        rw [lookup_cons_self, lookup_cons_of_ne distinct, lookup_cons_self]
+      · rw [lookup_cons_of_ne atRight, lookup_cons_of_ne atLeft,
+          lookup_cons_of_ne atLeft, lookup_cons_of_ne atRight]
+
+/-- A ready pure computation remains valid while another pending instruction
+fires in an invariant state. Its operands cannot include the still-absent
+destination being filled. This preserves the value; it does not authorize a
+second firing of an instruction that has already left the pending list. -/
+theorem Invariant.ready_preserved_step {spec : PureOperatorSpec Op Value}
+    {p : Program Op Value} {before after : State Op Value}
+    (invariant : Invariant spec p before) (step : Step spec before after)
+    {instruction : Instruction Op Value} {value : Value}
+    (ready : readyValue spec before.computed instruction = some value) :
+    readyValue spec after.computed instruction = some value := by
+  cases step with
+  | @fire computed pre post fired result fires =>
+      exact readyValue_cons_of_none
+        (invariant.pendingNotComputed fired
+          (List.mem_append_right pre (List.mem_cons_self ..))) result ready
+
+/-- An arbitrary scheduling delay preserves an already-ready computation in
+the single-assignment language. The intermediate states use the existing
+reachability invariant, so no fresh noninterference premise is needed for
+each delayed step. -/
+theorem Invariant.ready_preserved_steps {spec : PureOperatorSpec Op Value}
+    {p : Program Op Value} (wf : p.WellFormed spec)
+    {before after : State Op Value} (invariant : Invariant spec p before)
+    (run : Steps spec before after)
+    {instruction : Instruction Op Value} {value : Value}
+    (ready : readyValue spec before.computed instruction = some value) :
+    readyValue spec after.computed instruction = some value := by
+  induction run with
+  | refl => exact ready
+  | tail priorRun step ih =>
+      exact (invariant.steps wf priorRun).ready_preserved_step step ih
+
+/-! ## Executable scheduling through the common resumable machine
+
+The first-ready scheduler skips unavailable instructions and retains them in
+their original order. Its step function implements the existing firing
+relation. Other admitted schedules still use that relation and its independent
+firing laws; this executable policy does not redefine concurrency.
+-/
+
+/-- Select the first available instruction, retaining every unselected one. -/
+def fireReady (spec : PureOperatorSpec Op Value) (env : List (CellId × Value)) :
+    List (Instruction Op Value) → Option (State Op Value)
+  | [] => none
+  | instruction :: rest =>
+      match readyValue spec env instruction with
+      | some value => some ⟨(instruction.dst, value) :: env, rest⟩
+      | none => (fireReady spec env rest).map fun next =>
+          { next with pending := instruction :: next.pending }
+
+/-- Unselected pending instructions can be retained before a firing. -/
+theorem Step.prepend_pending {spec : PureOperatorSpec Op Value}
+    {before after : State Op Value} (step : Step spec before after)
+    (earlier : List (Instruction Op Value)) :
+    Step spec { before with pending := earlier ++ before.pending }
+      { after with pending := earlier ++ after.pending } := by
+  cases step with
+  | @fire computed pre post instruction value ready =>
+      simpa only [List.append_assoc] using
+        (Step.fire (pre := earlier ++ pre) (post := post) ready)
+
+/-- Every successful scheduler transition is an actual source firing. -/
+theorem fireReady_sound (spec : PureOperatorSpec Op Value)
+    (env : List (CellId × Value)) :
+    ∀ (pending : List (Instruction Op Value)) (next : State Op Value),
+      fireReady spec env pending = some next → Step spec ⟨env, pending⟩ next := by
+  intro pending
+  induction pending with
+  | nil => intro next found; simp [fireReady] at found
+  | cons instruction rest ih =>
+      intro next found
+      cases ready : readyValue spec env instruction with
+      | some value =>
+          have same : next = ⟨(instruction.dst, value) :: env, rest⟩ := by
+            simpa [fireReady, ready] using found.symm
+          subst next
+          exact Step.fire (pre := []) ready
+      | none =>
+          cases tail : fireReady spec env rest with
+          | none => simp [fireReady, ready, tail] at found
+          | some nextTail =>
+              have same : next = { nextTail with pending := instruction :: nextTail.pending } := by
+                simpa [fireReady, ready, tail] using found.symm
+              subst next
+              simpa using (ih nextTail tail).prepend_pending [instruction]
+
+/-- Failure to schedule means that every pending instruction is unavailable. -/
+theorem fireReady_none_iff (spec : PureOperatorSpec Op Value)
+    (env : List (CellId × Value)) (pending : List (Instruction Op Value)) :
+    fireReady spec env pending = none ↔
+      ∀ instruction ∈ pending, readyValue spec env instruction = none := by
+  induction pending with
+  | nil => simp [fireReady]
+  | cons instruction rest ih =>
+      cases ready : readyValue spec env instruction <;> simp [fireReady, ready, ih]
+
+/-- A concrete dataflow inhabitant of the shared bounded-resumption interface.
+One transition fires one instruction; this count does not price lookup or the
+operator implementation. A state with no step can still be malformed/stuck. -/
+def readyMachine (spec : PureOperatorSpec Op Value) :
+    Mettapedia.Machines.MachineCore (Program Op Value) where
+  State := State Op Value
+  load := Program.initialState
+  step := fun state => fireReady spec state.computed state.pending
+
+/-- The executable scheduler stops exactly when the source has no firing. -/
+theorem readyMachine_final_iff (spec : PureOperatorSpec Op Value) (state : State Op Value) :
+    (readyMachine spec).step state = none ↔ ¬ ∃ next, Step spec state next := by
+  constructor
+  · intro final ⟨next, step⟩
+    have unavailable := (fireReady_none_iff spec state.computed state.pending).mp final
+    cases step with
+    | @fire computed pre post instruction value ready =>
+        have missing := unavailable instruction
+          (List.mem_append_right pre (List.mem_cons_self ..))
+        rw [ready] at missing
+        cases missing
+  · intro stopped
+    cases result : (readyMachine spec).step state with
+    | none => rfl
+    | some next =>
+        exact False.elim (stopped ⟨next, fireReady_sound spec _ _ next result⟩)
+
+/-- Whole bounded machine executions refine source runs, including their
+complete computed environment and still-pending instructions. -/
+theorem readyMachine_slice_steps (spec : PureOperatorSpec Op Value) (fuel : Nat)
+    (state : State Op Value) :
+    Steps spec state ((readyMachine spec).runSlice fuel state).1 := by
+  suffices lift : ∀ {before after : State Op Value},
+      (readyMachine spec).Steps before after → Steps spec before after from
+    lift ((readyMachine spec).runSlice_steps fuel state)
+  intro before after run
+  induction run with
+  | refl => exact Relation.ReflTransGen.refl
+  | tail _ step ih => exact ih.tail (fireReady_sound spec _ _ _ step)
+
+/-- Every firing removes precisely one pending instruction. -/
+theorem Step.pending_length_add_one {spec : PureOperatorSpec Op Value}
+    {before after : State Op Value} (step : Step spec before after) :
+    after.pending.length + 1 = before.pending.length := by
+  cases step with
+  | fire ready => simp [Nat.add_assoc]
+
+/-- The common slice's paid transitions account for exactly the instructions
+removed from the complete residual. Unavailable scans do not count as firings. -/
+theorem readyMachine_slice_pending (spec : PureOperatorSpec Op Value) (fuel : Nat)
+    (state : State Op Value) :
+    ((readyMachine spec).runSlice fuel state).1.pending.length +
+      ((readyMachine spec).runSlice fuel state).2 = state.pending.length := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      cases advanced : (readyMachine spec).step state with
+      | none => simp [Mettapedia.Machines.MachineCore.runSlice, advanced]
+      | some next =>
+          have removed := (fireReady_sound spec _ _ _ advanced).pending_length_add_one
+          change next.pending.length + 1 = state.pending.length at removed
+          have remaining := ih next
+          simp only [Mettapedia.Machines.MachineCore.runSlice, advanced]
+          omega
+
+/-- Enough firing allowance completes every invariant state of a well-formed
+program. The general final-state interface alone does not imply completion. -/
+theorem readyMachine_slice_terminal {spec : PureOperatorSpec Op Value}
+    {p : Program Op Value} (wf : p.WellFormed spec) {state : State Op Value}
+    (invariant : Invariant spec p state) (fuel : Nat)
+    (enough : state.pending.length ≤ fuel) :
+    ((readyMachine spec).runSlice fuel state).1.pending = [] := by
+  have reachable := readyMachine_slice_steps spec fuel state
+  by_cases early : ((readyMachine spec).runSlice fuel state).2 < fuel
+  · exact terminal_of_no_step wf (invariant.steps wf reachable)
+      ((readyMachine_final_iff spec _).mp
+        ((readyMachine spec).runSlice_under_budget_final fuel state early))
+  · have used := (readyMachine spec).runSlice_used_le fuel state
+    have accounted := readyMachine_slice_pending spec fuel state
+    have empty : ((readyMachine spec).runSlice fuel state).1.pending.length = 0 := by omega
+    exact List.eq_nil_of_length_eq_zero empty
+
+/-- The actual executable policy returns the source denotation within the
+instruction-count allowance, using the existing schedule adequacy theorem. -/
+theorem readyMachine_slice_denotes {spec : PureOperatorSpec Op Value}
+    {p : Program Op Value} (wf : p.WellFormed spec) (fuel : Nat)
+    (enough : p.instructions.length ≤ fuel) :
+    ∃ value, Denotes spec p p.result value ∧
+      lookup ((readyMachine spec).runSlice fuel p.initialState).1.computed p.result = some value :=
+  terminal_result_eq_denote wf (readyMachine_slice_steps spec fuel p.initialState)
+    (readyMachine_slice_terminal wf (Invariant.initial wf) fuel enough)
+
+/-! ## Retained child computations behind ready firings
+
+An admitted pure instruction may be implemented by a child program that takes
+many transitions. The child owns its work and caller frames. The parent still
+observes operands in its declared order, regardless of worker completion order.
+This connects the existing owned driver and snapshot kernel to the readiness
+diamond; it does not apply the finite instruction bound to child execution.
+-/
+
+namespace RetainedChildren
+
+open Mettapedia.Machines
+
+/-- Read only completed invocation roots into a cell environment. Unfinished
+children remain in the pool and cannot supply a provisional internal value. -/
+def completedCells {Event : Type} (slots : List CellId)
+    (pool : CellId → Nat × OwnedPullDriver.State Value Event) : List (CellId × Value) :=
+  slots.filterMap fun cell => (OwnedPullDriver.completedValue (pool cell).2).map
+    (fun value => (cell, value))
+
+/-- Interleaving independent child quanta preserves the whole paid pool and
+the parent's ordered operand readout, including missing or repeated operands. -/
+theorem ordered_join_interleaving {Event : Type}
+    (pool : CellId → Nat × OwnedPullDriver.State Value Event)
+    (first second : List (CellId × Nat)) (slots operands : List CellId)
+    (env : List (CellId × Value))
+    (same : ∀ owner, first.filter (fun item => decide (item.1 = owner)) =
+      second.filter (fun item => decide (item.1 = owner))) :
+    let kernel := OwnedPullDriver.paidKernel CellId Value Event
+    let left := kernel.run () (fun _ => ()) pool first
+    let right := kernel.run () (fun _ => ()) pool second
+    left = right ∧
+      evalOperands (completedCells slots left ++ env) operands =
+        evalOperands (completedCells slots right ++ env) operands := by
+  have equal := OwnedPullDriver.paidKernel_interleaving pool first second same
+  exact ⟨equal, congrArg (fun state =>
+    evalOperands (completedCells slots state ++ env) operands) equal⟩
+
+/-- A finite semantic derivation for each child, combined with independent
+ready destinations, realizes the existing two-firing square. Private worker
+partitioning preserves both paid states; publication performs no child work.
+
+The two readiness premises are the local implementation obligations: the
+child's actual result must implement its parent's instruction. They do not
+assert the scheduling or publication conclusions being proved here. -/
+theorem completed_pair_fires {Event : Type}
+    (spec : PureOperatorSpec Op Value) (env : List (CellId × Value))
+    (pre middle post : List (Instruction Op Value))
+    (left right : Instruction Op Value) (leftValue rightValue : Value)
+    (leftWork rightWork : OwnedPullDriver.Program Value Event)
+    (leftEvents rightEvents : List Event)
+    (leftCalls leftDepth rightCalls rightDepth leftPaid rightPaid leftExtra rightExtra : Nat)
+    (leftRun : OwnedPullDriver.CostedRuns leftWork leftEvents leftValue leftCalls leftDepth)
+    (rightRun : OwnedPullDriver.CostedRuns rightWork rightEvents rightValue rightCalls rightDepth)
+    (distinct : left.dst ≠ right.dst)
+    (leftFresh : lookup env left.dst = none)
+    (rightFresh : lookup env right.dst = none)
+    (leftReady : readyValue spec env left = some leftValue)
+    (rightReady : readyValue spec env right = some rightValue)
+    (pool : CellId → Nat × OwnedPullDriver.State Value Event)
+    (leftInitial : pool left.dst = (leftPaid, ⟨leftWork, []⟩))
+    (rightInitial : pool right.dst = (rightPaid, ⟨rightWork, []⟩))
+    (parts : List (List (CellId × Nat)))
+    (coverage : parts.flatten.Perm
+      [(left.dst, leftEvents.length + 2 * leftCalls + leftExtra),
+       (right.dst, rightEvents.length + 2 * rightCalls + rightExtra)]) :
+    let result := (OwnedPullDriver.paidKernel CellId Value Event).partitioned
+      () (fun _ => ()) pool parts
+    result left.dst =
+      (leftPaid + leftEvents.length + 2 * leftCalls, ⟨.done leftValue, []⟩) ∧
+    result right.dst =
+      (rightPaid + rightEvents.length + 2 * rightCalls, ⟨.done rightValue, []⟩) ∧
+    Steps spec ⟨env, pre ++ left :: (middle ++ right :: post)⟩
+      ⟨completedCells [left.dst, right.dst] result ++ env, pre ++ middle ++ post⟩ ∧
+    ∀ observer, readyValue spec
+        (completedCells [left.dst, right.dst] result ++ env) observer =
+      readyValue spec
+        (completedCells [right.dst, left.dst] result ++ env) observer := by
+  let kernel := OwnedPullDriver.paidKernel CellId Value Event
+  let schedule := [(left.dst, leftEvents.length + 2 * leftCalls + leftExtra),
+    (right.dst, rightEvents.length + 2 * rightCalls + rightExtra)]
+  have unique : kernel.Disjoint schedule := by
+    simp [SnapshotBatch.Kernel.Disjoint, kernel, schedule, OwnedPullDriver.paidKernel, distinct]
+  have whole := kernel.partitioned_eq_run () (fun _ => ()) pool parts schedule coverage unique
+  let result := kernel.partitioned () (fun _ => ()) pool parts
+  have leftResult : result left.dst =
+      (leftPaid + leftEvents.length + 2 * leftCalls, ⟨.done leftValue, []⟩) := by
+    change kernel.partitioned () (fun _ => ()) pool parts left.dst = _
+    rw [whole]
+    have owned := kernel.run_at_owned () (fun _ => ()) pool schedule unique
+      (left.dst, leftEvents.length + 2 * leftCalls + leftExtra) (by simp [schedule])
+    simpa only [kernel, OwnedPullDriver.paidKernel, leftInitial,
+      leftRun.paidSlice leftPaid leftExtra] using owned
+  have rightResult : result right.dst =
+      (rightPaid + rightEvents.length + 2 * rightCalls, ⟨.done rightValue, []⟩) := by
+    change kernel.partitioned () (fun _ => ()) pool parts right.dst = _
+    rw [whole]
+    have owned := kernel.run_at_owned () (fun _ => ()) pool schedule unique
+      (right.dst, rightEvents.length + 2 * rightCalls + rightExtra) (by simp [schedule])
+    simpa only [kernel, OwnedPullDriver.paidKernel, rightInitial,
+      rightRun.paidSlice rightPaid rightExtra] using owned
+  have square := ready_pair_diamond spec env pre middle post left right
+    leftValue rightValue distinct leftFresh rightFresh leftReady rightReady
+  have cells : completedCells [left.dst, right.dst] result =
+      [(left.dst, leftValue), (right.dst, rightValue)] := by
+    simp [completedCells, leftResult, rightResult, OwnedPullDriver.completedValue]
+  have reverseCells : completedCells [right.dst, left.dst] result =
+      [(right.dst, rightValue), (left.dst, leftValue)] := by
+    simp [completedCells, leftResult, rightResult, OwnedPullDriver.completedValue]
+  refine ⟨leftResult, rightResult, ?_, ?_⟩
+  · change Steps spec _ ⟨completedCells [left.dst, right.dst] result ++ env, _⟩
+    rw [cells]
+    exact Relation.ReflTransGen.head square.2.1
+      (Relation.ReflTransGen.single square.2.2.2.1)
+  · intro observer
+    change readyValue spec (completedCells [left.dst, right.dst] result ++ env) observer =
+      readyValue spec (completedCells [right.dst, left.dst] result ++ env) observer
+    rw [cells, reverseCells]
+    exact readyValue_eq_of_agreement spec _ _ observer
+      (fun cell _ => (square.2.2.2.2 cell).symm)
+
+end RetainedChildren
 
 end Mettapedia.Languages.Dataflow

@@ -12,7 +12,7 @@ pair is the actual native dependent application of the represented operation
 and current value, with no independent object interpretation selected for
 that application.
 
-The source proof and semantic section remain explicit. This is not an NIK
+The source proof and semantic section remain explicit. This is not an SemanticService
 admission theorem or a CeTTa runtime correspondence claim.
 -/
 

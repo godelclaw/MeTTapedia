@@ -32,56 +32,58 @@ variable {C : Setting S X₁ X₂}
 
 /-- **A related result pair**, relative to the configuration it came from: an
 extension of the name map along the evaluation, under which the result terms
-are related values and the final stores are related. -/
+are related values, the sealed code of the first result is tracked, and the
+final stores are related. -/
 def Out (C : Setting S X₁ X₂) (π π' : Path) (ν μ : Nm X₁ → Nm X₂) (D : Set (Nm X₁))
     (Res Rc : List (Nm X₂)) (r₁ : Tm S X₁ × GStore S X₁) (r₂ : Tm S X₂ × GStore S X₂) : Prop :=
-  ∃ ν' D', (∀ n ∈ freeNames r₁.1, n ∈ D') ∧ Ext π π' Res ν D ν' D' ∧
+  ∃ ν' D', (∀ n ∈ freeNames r₁.1, n ∈ D') ∧ SealOK C D' r₁.1 ∧ Ext π π' Res ν D ν' D' ∧
     Rel C ν' μ .val [] true r₁.1 r₂.1 ∧ freeParams r₁.1 = [] ∧ CI C ν' D' Rc r₁.2 r₂.2
 
 omit [DecidableEq S] in
 theorem Out.parent {π π' : Path} {i j : ℕ} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)}
     {Res Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (h : Out C (π ++ [i]) (π' ++ [j]) ν μ D Res Rc r₁ r₂) : Out C π π' ν μ D Res Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  exact ⟨ν', D', h1, h2.parent, h3, h4, h5⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  exact ⟨ν', D', h1, hs, h2.parent, h3, h4, h5⟩
 
 omit [DecidableEq S] in
 theorem Out.parent₁ {π π' : Path} {i : ℕ} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)}
     {Res Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (h : Out C (π ++ [i]) π' ν μ D Res Rc r₁ r₂) : Out C π π' ν μ D Res Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  exact ⟨ν', D', h1, h2.parent₁, h3, h4, h5⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  exact ⟨ν', D', h1, hs, h2.parent₁, h3, h4, h5⟩
 
 omit [DecidableEq S] in
 theorem Out.res_mono {π π' : Path} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)}
     {Res Res' Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (h : Out C π π' ν μ D Res Rc r₁ r₂) (hR : ∀ m ∈ Res, m ∈ Res') :
     Out C π π' ν μ D Res' Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  exact ⟨ν', D', h1, h2.res_mono hR, h3, h4, h5⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  exact ⟨ν', D', h1, hs, h2.res_mono hR, h3, h4, h5⟩
 
 omit [DecidableEq S] in
 theorem Out.after {π π' : Path} {ν ν₁ μ : Nm X₁ → Nm X₂} {D D₁ : Set (Nm X₁)}
     {R₁ R₂ Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (hE : Ext π π' R₁ ν D ν₁ D₁) (h : Out C π π' ν₁ μ D₁ R₂ Rc r₁ r₂) :
     Out C π π' ν μ D (R₁ ++ R₂) Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  exact ⟨ν', D', h1, hE.trans h2, h3, h4, h5⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  exact ⟨ν', D', h1, hs, hE.trans h2, h3, h4, h5⟩
 
 omit [DecidableEq S] in
 theorem Out.drop {π π' : Path} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)}
     {Res A Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (h : Out C π π' ν μ D Res (A ++ Rc) r₁ r₂) : Out C π π' ν μ D Res Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  exact ⟨ν', D', h1, h2, h3, h4, h5.drop⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  exact ⟨ν', D', h1, hs, h2, h3, h4, h5.drop⟩
 
 omit [DecidableEq S] in
 /-- A value pair with nothing changed. -/
 theorem Out.value {π π' : Path} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Res Rc : List (Nm X₂)}
     {t₁ : Tm S X₁} {t₂ : Tm S X₂} {σ₁ : GStore S X₁} {σ₂ : GStore S X₂}
-    (hrel : Rel C ν μ .val [] true t₁ t₂) (hfv : ∀ n ∈ freeNames t₁, n ∈ D) (hfp : freeParams t₁ = [])
+    (hrel : Rel C ν μ .val [] true t₁ t₂) (hfv : ∀ n ∈ freeNames t₁, n ∈ D)
+    (hsv : SealOK C D t₁) (hfp : freeParams t₁ = [])
     (hci : CI C ν D Rc σ₁ σ₂) : Out C π π' ν μ D Res Rc (t₁, σ₁) (t₂, σ₂) :=
-  ⟨ν, D, hfv, (Ext.refl π π' [] ν D).res_mono (fun _ h => absurd h (List.not_mem_nil)), hrel,
+  ⟨ν, D, hfv, hsv, (Ext.refl π π' [] ν D).res_mono (fun _ h => absurd h (List.not_mem_nil)), hrel,
     hfp, hci⟩
 
 /-! ## Freshness along a chain of evaluations -/
@@ -166,25 +168,28 @@ theorem freeParams_open {own : List X₁} {ρ : Path} {ℓ : Nm X₁} {v b : Tm 
 
 /-- **A chain of `new` blocks around a lambda** evaluates, on the first side,
 to a lambda related to the second side's lambda, with the same store: each
-block's names become copies whose images are the block's reserved names. -/
+block's names become copies whose images are the block's reserved names.  A
+`new` block owns no hole, so its activation renames nothing inside sealed
+code. -/
 theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ) {ρ : Path} {σ₁ : GStore S X₁}
     {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (Nm X₂)} {w₁ : Tm S X₁} {x₂ : Nm X₂}
     {own₂ : List X₂} {b₂ : Tm S X₂} {L₁ : Result S X₁} {ok : Bool},
     Rel C ν μ k Res ok w₁ (.lam x₂ own₂ b₂) → freeParams w₁ = [] → Res.Nodup →
-    (∀ n ∈ freeNames w₁, OldAt ρ n) →
+    (∀ n ∈ freeNames w₁, OldAt ρ n) → (∀ n ∈ sealedFree w₁, OldAt ρ n) →
     run .static P₁ n ρ σ₁ w₁ = some L₁ →
     ∃ v₁ ν', L₁ = [(v₁, σ₁)] ∧ Rel C ν' μ .val [] true v₁ (.lam x₂ own₂ b₂) ∧
       freeParams v₁ = [] ∧ (∀ n, OldAt ρ n → ν' n = ν n) ∧
-      (∀ n ∈ freeNames v₁, n ∈ freeNames w₁ ∨ (NewAt ρ n ∧ ν' n ∈ Res)) ∧
+      (∀ n ∈ freeNames v₁, n ∈ freeNames w₁ ∨ (NewAt ρ n ∧ ν' n ∈ Res ∧ ¬ holeCopy C n)) ∧
+      (∀ n ∈ sealedFree v₁, n ∈ sealedFree w₁) ∧
       (∀ n ∈ freeNames v₁, ∀ n' ∈ freeNames v₁, NewAt ρ n → NewAt ρ n' → ν' n = ν' n' → n = n')
-  | 0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, h => by cases h
-  | n + 1, ρ, σ₁, ν, μ, k, Res, w₁, x₂, own₂, b₂, L₁, _, hR, hfp, hnd, hold, hrun => by
+  | 0, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, h => by cases h
+  | n + 1, ρ, σ₁, ν, μ, k, Res, w₁, x₂, own₂, b₂, L₁, _, hR, hfp, hnd, hold, hsold, hrun => by
       cases hR with
-      | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd' hpar hbare hseen =>
+      | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd' hpar hbare hseen hsealO hsealK =>
           injection hrun with hrun
           subst hrun
-          refine ⟨_, ν, rfl, .lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd' hpar hbare hseen, hfp,
-            fun _ _ => rfl, fun n hn => Or.inl hn, ?_⟩
+          refine ⟨_, ν, rfl, .lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd' hpar hbare hseen
+            hsealO hsealK, hfp, fun _ _ => rfl, fun n hn => Or.inl hn, fun n hn => hn, ?_⟩
           intro n hn _ _ hnew _ _
           exact absurd (hold n hn) hnew.not_oldAt
       | @newAct _ _ ℓ own b₁ _ νi Rh Rb _ hνi hr hℓ hb hlive hinj =>
@@ -199,7 +204,13 @@ theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ)
                   some [(.lam ℓ own b₁, σ₁)] from rfl, bindOpt_some_singleton,
                 show run .static P₁ (n + 1) (ρ ++ [1]) σ₁ (.lam ℓ [] (.pvar ℓ)) =
                   some [(.lam ℓ [] (.pvar ℓ), σ₁)] from rfl, bindOpt_some_singleton] at hrun
-              simp only [activate] at hrun
+              have hhb : ∀ m ∈ sealedFree b₁, ownKey own m = false := fun m hm =>
+                ownKey_of_holeName (fun s hs => (hr s hs).2) (hb.sealedFree_holeName m hm)
+              have hsr : sealRen (ρ ++ [2]) own b₁ = b₁ := sealRen_eq_self_of_free _ own b₁ hhb
+              simp only [activate, hsr] at hrun
+              have hsb : ∀ m ∈ sealedFree b₁,
+                  m ∈ sealedFree (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ)) : Tm S X₁) :=
+                fun m hm => by simp [sealedFree, hm, hhb m hm]
               have hfpb : freeParams b₁ = [] := by
                 apply List.eq_nil_iff_forall_not_mem.2
                 intro x hx
@@ -214,11 +225,28 @@ theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ)
                   have hw := hold n (mem_freeNames_newAct.2 ⟨hn, ho⟩)
                   subst e
                   exact hw _ (by simp [tags]) (SPre.child ρ 2))
+                (fun n hn m e => by
+                  have hw := hsold n (hsb n hn)
+                  subst e
+                  exact hw _ (by simp [tags]) (SPre.child ρ 2))
               have hfp' : freeParams (subst (renameOwn (ρ ++ [2]) own)
                   (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁) = [] :=
                 freeParams_open (fun x hx => by rw [hfpb] at hx; cases hx) (by simp [freeParams])
+              have hsopen : ∀ m ∈ sealedFree (subst (renameOwn (ρ ++ [2]) own)
+                  (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁), m ∈ sealedFree b₁ := by
+                intro m hm
+                rcases mem_sealedFree_subst b₁ _ _ m hm with h | ⟨m₀, -, w, hw, hmw⟩ | ⟨x, hx, -⟩
+                · exact h
+                · simp only [renameOwn] at hw
+                  split at hw
+                  · injection hw with hw
+                    subst hw
+                    simp [sealedFree] at hmw
+                  · cases hw
+                · rw [hfpb] at hx
+                  cases hx
               have hnd' : Rb.Nodup := (List.nodup_append.1 hnd).2.1
-              obtain ⟨v₁, ν'', hL, hrel, hfpv, hagree, hfv, hinj'⟩ :=
+              obtain ⟨v₁, ν'', hL, hrel, hfpv, hagree, hfv, hsv, hinj'⟩ :=
                 newChain (n + 1) hopen hfp' hnd' (by
                   intro m hm
                   rcases mem_freeNames_open hm with ⟨h1, h2⟩ | ⟨m₀, hm₀, ho, rfl⟩ | ⟨h1, _⟩
@@ -226,31 +254,33 @@ theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ)
                   · cases m₀ with
                     | src s => exact oldAt_inst_self _ s
                     | inst _ _ => simp [ownKey] at ho
-                  · rw [hfpb] at h1; cases h1) hrun
+                  · rw [hfpb] at h1; cases h1)
+                  (fun m hm => (hsold m (hsb m (hsopen m hm))).child 2) hrun
               have hagree' : ∀ n, OldAt ρ n → ν'' n = ν n := by
                 intro m hm
                 rw [hagree m (hm.child 2), openMap_other]
                 rintro m' rfl
                 exact hm _ (by simp [tags]) (SPre.child ρ 2)
-              refine ⟨v₁, ν'', hL, hrel, hfpv, hagree', ?_, ?_⟩
+              refine ⟨v₁, ν'', hL, hrel, hfpv, hagree', ?_, fun m hm => hsb m (hsopen m (hsv m hm)), ?_⟩
               · intro m hm
-                rcases hfv m hm with h | ⟨hnew, hres⟩
+                rcases hfv m hm with h | ⟨hnew, hres, hnh⟩
                 · rcases mem_freeNames_open h with ⟨h1, h2⟩ | ⟨m₀, hm₀, ho, rfl⟩ | ⟨h1, _⟩
                   · exact Or.inl (mem_freeNames_newAct.2 ⟨h1, h2⟩)
                   · cases m₀ with
                     | src s =>
-                        refine Or.inr ⟨newAt_inst 2 s, ?_⟩
-                        rw [hagree _ (oldAt_inst_self _ s), openMap_own ho]
-                        exact List.mem_append_left _ (hlive _ hm₀ ho)
+                        refine Or.inr ⟨newAt_inst 2 s, ?_, ?_⟩
+                        · rw [hagree _ (oldAt_inst_self _ s), openMap_own ho]
+                          exact List.mem_append_left _ (hlive _ hm₀ ho)
+                        · exact (hr s (by simpa [ownKey] using ho)).2
                     | inst _ _ => simp [ownKey] at ho
                   · rw [hfpb] at h1; cases h1
-                · exact Or.inr ⟨hnew.parent, List.mem_append_right _ hres⟩
+                · exact Or.inr ⟨hnew.parent, List.mem_append_right _ hres, hnh⟩
               · -- a new name is a renamed own name, or was made inside
                 have hclass : ∀ m ∈ freeNames v₁, NewAt ρ m →
                     (∃ m₀ ∈ freeNames b₁, ownKey own m₀ = true ∧ m = .inst (ρ ++ [2]) m₀ ∧
                       ν'' m = νi m₀) ∨ (NewAt (ρ ++ [2]) m ∧ ν'' m ∈ Rb) := by
                   intro m hm hnew
-                  rcases hfv m hm with h | hr
+                  rcases hfv m hm with h | ⟨hr', hres', -⟩
                   · rcases mem_freeNames_open h with ⟨h1, h2⟩ | ⟨m₀, hm₀, ho, rfl⟩ | ⟨h1, _⟩
                     · exact absurd (hold m (mem_freeNames_newAct.2 ⟨h1, h2⟩)) hnew.not_oldAt
                     · cases m₀ with
@@ -259,7 +289,7 @@ theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ)
                           rw [hagree _ (oldAt_inst_self _ s), openMap_own ho]
                       | inst _ _ => simp [ownKey] at ho
                     · rw [hfpb] at h1; cases h1
-                  · exact Or.inr hr
+                  · exact Or.inr ⟨hr', hres'⟩
                 intro m hm m' hm' hn hn' he
                 rcases hclass m hm hn with ⟨m₀, hm₀, ho, rfl, e₀⟩ | ⟨hn₂, hr⟩ <;>
                   rcases hclass m' hm' hn' with ⟨m₀', hm₀', ho', rfl, e₀'⟩ | ⟨hn₂', hr'⟩
@@ -275,6 +305,13 @@ theorem newChain [CodeId X₁] {P₁ : S → Option (Tm S X₁)} : ∀ (n : ℕ)
                   exact absurd hr (List.disjoint_of_nodup_append hnd h1)
                 · exact hinj' m hm m' hm' hn₂ hn₂' he
 
+omit [DecidableEq S] [DecidableEq X₁] [DecidableEq X₂] in
+/-- Reading a hole copy depends only on the map's value at the copy. -/
+theorem holeRead_eq_of_eq {ν ν' : Nm X₁ → Nm X₂} {n : Nm X₁} (h : ν' n = ν n) :
+    holeRead C ν' n = holeRead C ν n := by
+  cases n with
+  | src _ => rfl
+  | inst ρ m => simp only [holeRead, h]
 
 omit [DecidableEq S] [DecidableEq X₂] in
 /-- **The configuration after a chain of `new` blocks** evaluated at `π ++ [i]`
@@ -284,27 +321,31 @@ theorem newChain_cfg {ν ν' : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rw R : 
     (hci : CI C ν D (Rw ++ R) σ₁ σ₂) (hF : Fresh π π' ν D (Rw ++ R))
     (hfvw : ∀ m ∈ freeNames w₁, m ∈ D)
     (hagree : ∀ n, OldAt (π ++ [i]) n → ν' n = ν n)
-    (hfvv : ∀ n ∈ freeNames v₁, n ∈ freeNames w₁ ∨ (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw))
+    (hfvv : ∀ n ∈ freeNames v₁, n ∈ freeNames w₁ ∨
+      (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw ∧ ¬ holeCopy C n))
     (hinjv : ∀ n ∈ freeNames v₁, ∀ n' ∈ freeNames v₁, NewAt (π ++ [i]) n →
       NewAt (π ++ [i]) n' → ν' n = ν' n' → n = n') :
     CI C ν' (D ∪ {n | n ∈ freeNames v₁}) R σ₁ σ₂ ∧ Ext π π' Rw ν D ν' (D ∪ {n | n ∈ freeNames v₁}) ∧
       (∀ n ∈ D, ν' n = ν n) ∧
       (∀ n ∈ D ∪ {n | n ∈ freeNames v₁}, n ∈ D ∨ (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw)) := by
   have hold : ∀ n ∈ D, ν' n = ν n := fun n hn => hagree n ((hF.old₁ n hn).child i)
-  have hclass : ∀ n ∈ D ∪ {n | n ∈ freeNames v₁}, n ∈ D ∨ (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw) := by
+  have hclass3 : ∀ n ∈ D ∪ {n | n ∈ freeNames v₁}, n ∈ D ∨
+      (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw ∧ ¬ holeCopy C n) := by
     intro n hn
     rcases hn with hn | hn
     · exact Or.inl hn
     · rcases hfvv n hn with h | h
       · exact Or.inl (hfvw n h)
       · exact Or.inr h
+  have hclass : ∀ n ∈ D ∪ {n | n ∈ freeNames v₁}, n ∈ D ∨ (NewAt (π ++ [i]) n ∧ ν' n ∈ Rw) :=
+    fun n hn => (hclass3 n hn).imp_right fun h => ⟨h.1, h.2.1⟩
   have hfv' : ∀ n ∈ D ∪ {n | n ∈ freeNames v₁}, n ∉ D → n ∈ freeNames v₁ := by
     intro n hn hnD
     rcases hn with hn | hn
     · exact absurd hn hnD
     · exact hn
   have hdj := List.disjoint_of_nodup_append hci.nodup
-  refine ⟨⟨?_, (List.nodup_append.1 hci.nodup).2.1, ?_, ?_, ?_, ?_, ?_⟩, ⟨hold,
+  refine ⟨⟨?_, (List.nodup_append.1 hci.nodup).2.1, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ⟨hold,
     Set.subset_union_left, ?_⟩, hold, hclass⟩
   · intro n hn n' hn' he
     rcases hclass n hn with h1 | ⟨hn1, hr1⟩ <;> rcases hclass n' hn' with h2 | ⟨hn2, hr2⟩
@@ -339,6 +380,17 @@ theorem newChain_cfg {ν ν' : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rw R : 
     · exact hci.okRes _ (List.mem_append_left _ hr1)
   · intro m hm
     exact hci.okRes m (List.mem_append_right _ hm)
+  · intro n hn hc
+    rcases hclass3 n hn with h1 | ⟨_, _, hnh⟩
+    · rw [hold n h1]; exact hci.copyImg n h1 hc
+    · exact absurd hc hnh
+  · intro n hn n' hn' hc hc' he
+    rcases hclass3 n hn with h1 | ⟨_, _, hnh⟩
+    · rcases hclass3 n' hn' with h2 | ⟨_, _, hnh'⟩
+      · rw [holeRead_eq_of_eq (hold n h1), holeRead_eq_of_eq (hold n' h2)] at he
+        exact hci.holeInj n h1 n' h2 hc hc' he
+      · exact absurd hc' hnh'
+    · exact absurd hc hnh
   · intro n hn hnD
     rcases hclass n hn with h1 | ⟨hn1, hr1⟩
     · exact absurd h1 hnD
@@ -347,7 +399,7 @@ theorem newChain_cfg {ν ν' : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rw R : 
 
 /-! ## Reordering reserved names -/
 
-omit [DecidableEq S] [DecidableEq X₁] [DecidableEq X₂] in
+omit [DecidableEq S] [DecidableEq X₂] in
 theorem CI.perm {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {R R' : List (Nm X₂)} {σ₁ : GStore S X₁}
     {σ₂ : GStore S X₂} (h : CI C ν D R σ₁ σ₂) (hp : R.Perm R') : CI C ν D R' σ₁ σ₂ where
   inj := h.inj
@@ -357,6 +409,8 @@ theorem CI.perm {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {R R' : List (Nm 
   ok₁ := h.ok₁
   ok₂ := h.ok₂
   okRes m hm := h.okRes m (hp.mem_iff.2 hm)
+  copyImg := h.copyImg
+  holeInj := h.holeInj
 
 omit [DecidableEq S] [DecidableEq X₁] [DecidableEq X₂] in
 theorem Fresh.perm {π π' : Path} {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {R R' : List (Nm X₂)}
@@ -370,8 +424,8 @@ omit [DecidableEq S] in
 theorem Out.res_newAt {π π' : Path} {ν μ : Nm X₁ → Nm X₂} {D : Set (Nm X₁)}
     {R R' Rc : List (Nm X₂)} {r₁ : Tm S X₁ × GStore S X₁} {r₂ : Tm S X₂ × GStore S X₂}
     (h : Out C π π' ν μ D R Rc r₁ r₂) (hR : ∀ m ∈ R, NewAt π' m) : Out C π π' ν μ D R' Rc r₁ r₂ := by
-  obtain ⟨ν', D', h1, h2, h3, h4, h5⟩ := h
-  refine ⟨ν', D', h1, ⟨h2.agree, h2.sub, fun n hn hnD => ?_⟩, h3, h4, h5⟩
+  obtain ⟨ν', D', h1, hs, h2, h3, h4, h5⟩ := h
+  refine ⟨ν', D', h1, hs, ⟨h2.agree, h2.sub, fun n hn hnD => ?_⟩, h3, h4, h5⟩
   obtain ⟨hp, hi⟩ := h2.new n hn hnD
   rcases hi with hi | hi
   · exact ⟨hp, Or.inl hi⟩
@@ -387,38 +441,50 @@ def SimAt [CodeId X₁] [CodeId X₂] (C : Setting S X₁ X₂) (P₁ : S → Op
   ∀ {π π' : Path} {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} {t₁ : Tm S X₁} {t₂ : Tm S X₂}
     {ν μ : Nm X₁ → Nm X₂} {Res Rc : List (Nm X₂)} {ok : Bool} {D : Set (Nm X₁)} {L₁ : Result S X₁},
     Rel C ν μ .code Res ok t₁ t₂ → freeParams t₁ = [] → (∀ m ∈ freeNames t₁, m ∈ D) →
-    CI C ν D (Res ++ Rc) σ₁ σ₂ → Fresh π π' ν D (Res ++ Rc) →
+    SealOK C D t₁ → CI C ν D (Res ++ Rc) σ₁ σ₂ → Fresh π π' ν D (Res ++ Rc) →
     run .static P₁ n π σ₁ t₁ = some L₁ →
     ∃ L₂, run .static P₂ n π' σ₂ t₂ = some L₂ ∧ List.Forall₂ (Out C π π' ν μ D Res Rc) L₁ L₂
 
 /-! ## Activation and opening on configurations -/
 
 omit [DecidableEq S] [DecidableEq X₂] in
-/-- **The configuration after activating related lambdas** at fresh paths. -/
+/-- **The configuration after activating related lambdas** at fresh paths: the
+copies of the owned names, free or in sealed code, join the tracked names. -/
 theorem activation_ci {ν₂ : Nm X₁ → Nm X₂} {D₂ : Set (Nm X₁)} {Rc : List (Nm X₂)}
     {τ₁ : GStore S X₁} {τ₂ : GStore S X₂} (hci : CI C ν₂ D₂ Rc τ₁ τ₂) {ρ ρ' : Path}
     (hav₁ : ∀ n ∈ D₂, Avoid ρ n) (hav₂ : ∀ n ∈ D₂, Avoid ρ' (ν₂ n)) (havR : ∀ m ∈ Rc, Avoid ρ' m)
     {own₁ : List X₁} {νb : Nm X₁ → Nm X₂} {b₁ : Tm S X₁} {Rb : List (Nm X₂)}
-    (hinj : ∀ n ∈ freeNames b₁, ∀ n' ∈ freeNames b₁, ownKey own₁ n = true →
-      ownKey own₁ n' = true → νb n = νb n' → n = n')
-    (hdisj : ∀ n ∈ freeNames b₁, ownKey own₁ n = true → νb n ∉ Rb) (hnd : Rb.Nodup)
-    {body₁ : Tm S X₁}
-    (hbody : ∀ n ∈ freeNames body₁, n ∈ D₂ ∨ ∃ m ∈ freeNames b₁, ownKey own₁ m = true ∧ n = .inst ρ m) :
-    CI C (openMap ρ own₁ (fun m => .inst ρ' (νb m)) ν₂) (D₂ ∪ {n | n ∈ freeNames body₁})
+    (hinj : ∀ n ∈ freeNames b₁ ++ sealedFree b₁, ∀ n' ∈ freeNames b₁ ++ sealedFree b₁,
+      ownKey own₁ n = true → ownKey own₁ n' = true → νb n = νb n' → n = n')
+    (hdisj : ∀ n ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ n = true → νb n ∉ Rb)
+    (hnd : Rb.Nodup) {E : Set (Nm X₁)}
+    (hbody : ∀ n ∈ E, n ∈ D₂ ∨
+      ∃ m ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ m = true ∧ n = .inst ρ m) :
+    CI C (openMap ρ own₁ (fun m => .inst ρ' (νb m)) ν₂) (D₂ ∪ E)
       (Rb.map (Nm.inst ρ') ++ Rc) τ₁ τ₂ := by
   set ν₃ := openMap ρ own₁ (fun m => .inst ρ' (νb m)) ν₂ with hν₃
   have hold : ∀ n ∈ D₂, ν₃ n = ν₂ n := fun n hn => openMap_other (hav₁ n hn).ne_inst
   have hnew : ∀ m, ownKey own₁ m = true → ν₃ (.inst ρ m) = .inst ρ' (νb m) :=
     fun m ho => openMap_own ho
-  have hclass : ∀ n ∈ D₂ ∪ {n | n ∈ freeNames body₁}, n ∈ D₂ ∨
-      ∃ m ∈ freeNames b₁, ownKey own₁ m = true ∧ n = .inst ρ m := by
+  have hclass : ∀ n ∈ D₂ ∪ E, n ∈ D₂ ∨
+      ∃ m ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ m = true ∧ n = .inst ρ m := by
     intro n hn
     rcases hn with hn | hn
     · exact Or.inl hn
     · exact hbody n hn
   have hnotD : ∀ (n : Nm X₁) (m : Nm X₁), n ∈ D₂ → n ≠ Nm.inst ρ m :=
     fun n m hn => (hav₁ n hn).ne_inst m
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  -- the hole copies in play keep tags apart from `ρ'`
+  have htag : ∀ n ∈ D₂, holeCopy C n → ∃ t k, holeRead C ν₂ n = .inst t k ∧ t ≠ ρ' := by
+    intro n hn hc
+    obtain ⟨t, k, hk⟩ := hci.copyImg n hn hc
+    cases n with
+    | src _ => exact hc.elim
+    | inst ρ₀ m₀ =>
+        refine ⟨t, C.codeMap m₀, by simp [holeRead, hk, tagOr], ?_⟩
+        rintro rfl
+        exact hav₂ _ hn t (by simp [hk, tags]) (List.prefix_refl t)
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro n hn n' hn' he
     rcases hclass n hn with h1 | ⟨m, hm, ho, rfl⟩ <;> rcases hclass n' hn' with h2 | ⟨m', hm', ho', rfl⟩
     · rw [hold n h1, hold n' h2] at he
@@ -472,13 +538,36 @@ theorem activation_ci {ν₂ : Nm X₁ → Nm X₂} {D₂ : Set (Nm X₁)} {Rc :
     · obtain ⟨m', _, rfl⟩ := List.mem_map.1 h
       trivial
     · exact hci.okRes m h
+  · intro n hn hc
+    rcases hclass n hn with h1 | ⟨m, _, ho, rfl⟩
+    · rw [hold n h1]; exact hci.copyImg n h1 hc
+    · exact ⟨ρ', νb m, hnew m ho⟩
+  · intro n hn n' hn' hc hc' he
+    have hnewR : ∀ m, ownKey own₁ m = true → holeRead C ν₃ (.inst ρ m) = .inst ρ' (C.codeMap m) :=
+      fun m ho => by simp only [holeRead, hnew m ho, tagOr]
+    rcases hclass n hn with h1 | ⟨m, -, ho, rfl⟩ <;>
+      rcases hclass n' hn' with h2 | ⟨m', -, ho', rfl⟩
+    · rw [holeRead_eq_of_eq (hold n h1), holeRead_eq_of_eq (hold n' h2)] at he
+      exact hci.holeInj n h1 n' h2 hc hc' he
+    · rw [holeRead_eq_of_eq (hold n h1), hnewR m' ho'] at he
+      obtain ⟨t, k, ht, htne⟩ := htag n h1 hc
+      rw [ht] at he
+      exact absurd (Nm.inst.inj he).1 htne
+    · rw [holeRead_eq_of_eq (hold n' h2), hnewR m ho] at he
+      obtain ⟨t, k, ht, htne⟩ := htag n' h2 hc'
+      rw [ht] at he
+      exact absurd (Nm.inst.inj he).1.symm htne
+    · rw [hnewR m ho, hnewR m' ho'] at he
+      rw [C.codeMap_inj (Nm.inst.inj he).2]
 
 omit [DecidableEq S] [DecidableEq X₂] in
 /-- **The configuration after opening a pending construct** on the first side:
-its names become copies whose images were reserved. -/
+its names become copies whose images were reserved.  The construct owns no
+hole, so no hole copy is made. -/
 theorem open_ci {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rh R : List (Nm X₂)}
     {τ₁ : GStore S X₁} {τ₂ : GStore S X₂} (hci : CI C ν D (Rh ++ R) τ₁ τ₂) {ρ : Path}
-    (hav : ∀ n ∈ D, Avoid ρ n) {own : List X₁} {νi : Nm X₁ → Nm X₂} {E : List (Nm X₁)}
+    (hav : ∀ n ∈ D, Avoid ρ n) {own : List X₁} (hr : ∀ s ∈ own, ¬ C.hole s)
+    {νi : Nm X₁ → Nm X₂} {E : List (Nm X₁)}
     (hlive : ∀ m ∈ E, ownKey own m = true → νi m ∈ Rh)
     (hinj : ∀ m ∈ E, ∀ m' ∈ E, ownKey own m = true → ownKey own m' = true → νi m = νi m' → m = m')
     {body₁ : Tm S X₁}
@@ -493,8 +582,13 @@ theorem open_ci {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rh R : List (Nm 
     rcases hn with hn | hn
     · exact Or.inl hn
     · exact hbody n hn
+  have hnh : ∀ m, ownKey own m = true → ¬ holeCopy C (.inst ρ m) := by
+    intro m ho hc
+    cases m with
+    | src s => exact hr s (by simpa [ownKey] using ho) hc
+    | inst _ _ => simp [ownKey] at ho
   have hdj := List.disjoint_of_nodup_append hci.nodup
-  refine ⟨?_, (List.nodup_append.1 hci.nodup).2.1, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨?_, (List.nodup_append.1 hci.nodup).2.1, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro n hn n' hn' he
     rcases hclass n hn with h1 | ⟨m, hm, ho, rfl⟩ <;> rcases hclass n' hn' with h2 | ⟨m', hm', ho', rfl⟩
     · rw [hold n h1, hold n' h2] at he
@@ -530,6 +624,17 @@ theorem open_ci {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Rh R : List (Nm 
     · rw [hnew m ho]; exact hci.okRes _ (List.mem_append_left _ (hlive m hm ho))
   · intro m hm
     exact hci.okRes m (List.mem_append_right _ hm)
+  · intro n hn hc
+    rcases hclass n hn with h1 | ⟨m, _, ho, rfl⟩
+    · rw [hold n h1]; exact hci.copyImg n h1 hc
+    · exact absurd hc (hnh m ho)
+  · intro n hn n' hn' hc hc' he
+    rcases hclass n hn with h1 | ⟨m, _, ho, rfl⟩
+    · rcases hclass n' hn' with h2 | ⟨m', _, ho', rfl⟩
+      · rw [holeRead_eq_of_eq (hold n h1), holeRead_eq_of_eq (hold n' h2)] at he
+        exact hci.holeInj n h1 n' h2 hc hc' he
+      · exact absurd hc' (hnh m' ho')
+    · exact absurd hc (hnh m ho)
 
 
 /-! ## Small facts used by the cases -/
@@ -541,7 +646,7 @@ theorem src_of_ownKey {Y : Type v} [DecidableEq Y] {own : List Y} {n : Nm Y}
   | src s => exact ⟨s, rfl⟩
   | inst _ _ => simp [ownKey] at h
 
-omit [DecidableEq S] [DecidableEq X₁] [DecidableEq X₂] in
+omit [DecidableEq S] [DecidableEq X₂] in
 theorem CI.with_store {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {R : List (Nm X₂)}
     {σ₁ σ₁' : GStore S X₁} {σ₂ σ₂' : GStore S X₂} (h : CI C ν D R σ₁ σ₂)
     (hs : StoreRel C ν D σ₁' σ₂') : CI C ν D R σ₁' σ₂' where
@@ -552,6 +657,8 @@ theorem CI.with_store {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {R : List (
   ok₁ := h.ok₁
   ok₂ := h.ok₂
   okRes := h.okRes
+  copyImg := h.copyImg
+  holeInj := h.holeInj
 
 omit [DecidableEq S] in
 /-- Free names on the second side of a value pair may occur free. -/
@@ -571,6 +678,44 @@ theorem freeParams_val {ν μ : Nm X₁ → Nm X₂} {k : Kd} {ok : Bool} {u : T
   rw [hfp] at hy
   cases hy
 
+omit [DecidableEq S] [DecidableEq X₂] in
+/-- Substituting a value with tracked sealed code keeps the sealed code tracked. -/
+theorem SealOK.subst_single {D : Set (Nm X₁)} {f : Nm X₁} {v b : Tm S X₁}
+    (hb : SealOK C D b) (hv : SealOK C D v) : SealOK C D (subst (Sub.single f v) Sub.none b) := by
+  intro m hm
+  rcases mem_sealedFree_subst b _ _ m hm with h | ⟨n, -, w, hw, hmw⟩ | ⟨x, -, w, hw, -⟩
+  · exact hb m h
+  · simp only [Sub.single] at hw
+    split at hw
+    · injection hw with hw
+      subst hw
+      exact hv m hmw
+    · cases hw
+  · cases hw
+
+omit [DecidableEq S] [DecidableEq X₂] in
+/-- Applying a store whose values have tracked sealed code keeps the sealed code
+tracked. -/
+theorem SealOK.act {D : Set (Nm X₁)} {t : Tm S X₁} {σ : GStore S X₁} (ht : SealOK C D t)
+    (hσ : ∀ n g, σ n = some g → SealOK C D g.toTm) : SealOK C D (act σ t) := by
+  intro m hm
+  rcases mem_sealedFree_subst t (envSub σ) Sub.none m hm with h | ⟨n, -, w, hw, hmw⟩ | ⟨x, -, w, hw, -⟩
+  · exact ht m h
+  · simp only [envSub, Option.map_eq_some_iff] at hw
+    obtain ⟨g, hg, rfl⟩ := hw
+    exact hσ n g hg m hmw
+  · cases hw
+
+omit [DecidableEq S] [DecidableEq X₂] in
+/-- A tracked name of sealed code is not a copy made at a path that nothing in
+play avoids. -/
+theorem SealOK.ne_inst {D : Set (Nm X₁)} {t : Tm S X₁} (h : SealOK C D t) {ρ : Path}
+    (hav : ∀ n ∈ D, Avoid ρ n) : ∀ n ∈ sealedFree t, ∀ m, n ≠ .inst ρ m := by
+  intro n hn m e
+  rcases h n hn with hD | ⟨s, rfl, -⟩
+  · exact (hav n hD).ne_inst m e
+  · cases e
+
 /-! ## The `let` continuation -/
 
 section LetCont
@@ -578,7 +723,8 @@ section LetCont
 variable {Y : Type v} [DecidableEq Y]
 
 /-- What a `let` does with one value of its right-hand side: match it (ground),
-substitute it for a variable pattern (not ground), or give no answer. -/
+substitute it for a variable pattern whose name is unbound in the store (not
+ground), or give no answer. -/
 def letCont [CodeId Y] (rec : Runner S Y) (π : Path) (p b : Tm S Y) (r₁ : Tm S Y × GStore S Y) :
     Option (Result S Y) :=
   match (act r₁.2 r₁.1).toGVal? with
@@ -588,7 +734,10 @@ def letCont [CodeId Y] (rec : Runner S Y) (π : Path) (p b : Tm S Y) (r₁ : Tm 
       | Option.none => some []
   | Option.none =>
       match p with
-      | .var f => rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+      | .var f =>
+          match r₁.2 f with
+          | Option.none => rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+          | some _ => some []
       | _ => some []
 
 theorem step_letP_none [CodeId Y] {d : Disc} {P : S → Option (Tm S Y)} {rec : Runner S Y} {π : Path}
@@ -597,10 +746,34 @@ theorem step_letP_none [CodeId Y] {d : Disc} {P : S → Option (Tm S Y)} {rec : 
   simp only [step, h]
   rfl
 
+/-- A `let` of a lambda written in place, on a name that is unbound in the
+store, substitutes the lambda for the name in the body. -/
 theorem step_letP_some [CodeId Y] {d : Disc} {P : S → Option (Tm S Y)} {rec : Runner S Y} {π : Path}
-    {σ : GStore S Y} {p w b : Tm S Y} {f : Nm Y} (h : letLam? p w = some f) :
+    {σ : GStore S Y} {p w b : Tm S Y} {f : Nm Y} (h : letLam? p w = some f) (hf : σ f = none) :
     step d P rec π σ (.letP p w b) = rec π σ (subst (Sub.single f w) Sub.none b) := by
-  simp only [step, h]
+  simp only [step, h, hf]
+
+/-- A `let` of a lambda written in place, on a name that already holds a
+value, gives no answer. -/
+theorem step_letP_some_bound [CodeId Y] {d : Disc} {P : S → Option (Tm S Y)} {rec : Runner S Y}
+    {π : Path} {σ : GStore S Y} {p w b : Tm S Y} {f : Nm Y} {g : GVal S Y}
+    (h : letLam? p w = some f) (hf : σ f = some g) :
+    step d P rec π σ (.letP p w b) = some [] := by
+  simp only [step, h, hf]
+
+/-- A value that is not ground, against a pattern that is one name unbound in
+the store: the value is substituted for the name in the body. -/
+theorem letCont_var_unbound [CodeId Y] {rec : Runner S Y} {π : Path} {f : Nm Y} {b v : Tm S Y}
+    {τ : GStore S Y} (hg : (act τ v).toGVal? = none) (hf : τ f = none) :
+    letCont rec π (.var f) b (v, τ) = rec (π ++ [1]) τ (subst (Sub.single f v) Sub.none b) := by
+  simp only [letCont, hg, hf]
+
+/-- A value that is not ground, against a pattern that is one name which
+already holds a value: no answer. -/
+theorem letCont_var_bound [CodeId Y] {rec : Runner S Y} {π : Path} {f : Nm Y} {b v : Tm S Y}
+    {τ : GStore S Y} {g : GVal S Y} (hg : (act τ v).toGVal? = none) (hf : τ f = some g) :
+    letCont rec π (.var f) b (v, τ) = some [] := by
+  simp only [letCont, hg, hf]
 
 omit [DecidableEq S] [DecidableEq Y] in
 theorem letLam?_some {p w : Tm S Y} {f : Nm Y} (h : letLam? p w = some f) :
@@ -689,25 +862,28 @@ theorem sim_chain [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ 
     (hb : Rel C ν μ .code Rb ob b₁ b₂) (hv : Rel C ν μ .val [] true v₁ v₂) (hf₂ : ν f₁ = f₂)
     (hci : CI C ν D (Rb ++ Rc) σ₁ σ₂) (hF : Fresh ρ ρ' ν D (Rb ++ Rc))
     (hf : f₁ ∈ D) (hfvb : ∀ m ∈ freeNames b₁, m ∈ D) (hfvv : ∀ m ∈ freeNames v₁, m ∈ D)
+    (hsvb : SealOK C D b₁) (hsvv : SealOK C D v₁)
     (hfpv : freeParams v₁ = []) (hfpb : freeParams b₁ = [])
     (hrun : run .static P₁ n ρ σ₁ (subst (Sub.single f₁ v₁) Sub.none b₁) = some L₁) :
     ∃ L₂, run .static P₂ n ρ' σ₂ (subst (Sub.single f₂ v₂) Sub.none b₂) = some L₂ ∧
       List.Forall₂ (Out C ρ ρ' ν μ D Rb Rc) L₁ L₂ := by
-  have hsub := subst_var hb hv (fun m hm => hci.ok₁ m (hfvv m hm)) hfpv
+  have hsub := subst_var hb hv (fun m hm => hci.ok₁ m (hfvv m hm)) hfpv (hsvv.ok₁ hci.ok₁)
     (ok₂_of_val hci hv hfvv) (freeParams_val hv hfpv)
     (fun m hm he => hci.inj (hfvb m hm) hf he)
     (fun h => hci.disj f₁ hf (by simp [h]))
   rw [hf₂] at hsub
-  exact ih hsub (freeParams_subst_single hfpv hfpb) (freeNames_subst_single hfvv hfvb) hci hF hrun
+  exact ih hsub (freeParams_subst_single hfpv hfpb) (freeNames_subst_single hfvv hfvb)
+    (hsvb.subst_single hsvv) hci hF hrun
 
 /-- **The simulation of an application**: the function, then the argument,
-then (for a lambda) the activation at fresh paths. -/
+then (for a lambda) the activation at fresh paths, which renames the frame's
+own names inside the sealed code of the body on both sides. -/
 theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n) {π π' : Path} {σ₁ : GStore S X₁}
     {σ₂ : GStore S X₂} {f₁ a₁ : Tm S X₁} {f₂ a₂ : Tm S X₂} {ν μ : Nm X₁ → Nm X₂}
     {Rf Ra Rc : List (Nm X₂)} {okf oka : Bool} {D : Set (Nm X₁)} {L₁ : Result S X₁}
     (hf : Rel C ν μ .code Rf okf f₁ f₂) (ha : Rel C ν μ .code Ra oka a₁ a₂)
     (hfp : freeParams (.app f₁ a₁ : Tm S X₁) = [])
-    (hfv : ∀ m ∈ freeNames (.app f₁ a₁ : Tm S X₁), m ∈ D)
+    (hfv : ∀ m ∈ freeNames (.app f₁ a₁ : Tm S X₁), m ∈ D) (hsv : SealOK C D (.app f₁ a₁))
     (hci : CI C ν D (Rf ++ Ra ++ Rc) σ₁ σ₂) (hF : Fresh π π' ν D (Rf ++ Ra ++ Rc))
     (hrun : step .static P₁ (run .static P₁ n) π σ₁ (.app f₁ a₁) = some L₁) :
     ∃ L₂, step .static P₂ (run .static P₂ n) π' σ₂ (.app f₂ a₂) = some L₂ ∧
@@ -716,50 +892,57 @@ theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
   obtain ⟨hfpf, hfpa⟩ := hfp
   have hfvf : ∀ m ∈ freeNames f₁, m ∈ D := fun m h => hfv m (by simp [freeNames, h])
   have hfva : ∀ m ∈ freeNames a₁, m ∈ D := fun m h => hfv m (by simp [freeNames, h])
+  have hsvf : SealOK C D f₁ := fun m h => hsv m (by simp [sealedFree, h])
+  have hsva : SealOK C D a₁ := fun m h => hsv m (by simp [sealedFree, h])
   simp only [step] at hrun ⊢
   obtain ⟨Lf₁, hLf₁, hb₁⟩ := bindOpt_eq_some hrun
   have hcif : CI C ν D (Rf ++ (Ra ++ Rc)) σ₁ σ₂ := by rw [← List.append_assoc]; exact hci
   have hFf : Fresh π π' ν D (Rf ++ (Ra ++ Rc)) := by rw [← List.append_assoc]; exact hF
-  obtain ⟨Lf₂, hLf₂, hfr⟩ := ih hf hfpf hfvf hcif (hFf.child 0 0) hLf₁
+  obtain ⟨Lf₂, hLf₂, hfr⟩ := ih hf hfpf hfvf hsvf hcif (hFf.child 0 0) hLf₁
   rw [hLf₂]
   have hA₁ : ∀ n ∈ D, Avoid (π ++ [2]) n := fun n hn => (hF.old₁ n hn).avoid_child 2
   have hA₂ : ∀ n ∈ D, Avoid (π' ++ [2]) (ν n) := fun n hn => (hF.old₂ n hn).avoid_child 2
   have hAR : ∀ m ∈ Rf ++ Ra ++ Rc, Avoid (π' ++ [2]) m :=
     fun m hm => (hF.oldRes m hm).avoid_child 2
   refine bindAll_sim ?_ hfr hb₁
-  rintro ⟨u₁, τ₁⟩ ⟨u₁', τ₁'⟩ M₁ ⟨ν₁, D₁, hfv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
-  simp only at hM₁ hfv₁ hrel₁ hfp₁ hci₁ ⊢
+  rintro ⟨u₁, τ₁⟩ ⟨u₁', τ₁'⟩ M₁ ⟨ν₁, D₁, hfv₁, hsv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
+  simp only at hM₁ hfv₁ hsv₁ hrel₁ hfp₁ hci₁ ⊢
   obtain ⟨La₁, hLa₁, hb₂⟩ := bindOpt_eq_some hM₁
-  have hra : Rel C ν₁ μ .code Ra oka a₁ a₂ :=
-    ha.congr (fun m hm => (hE₁.agree m (hfva m hm)).symm) (fun _ _ => rfl)
+  have hra : Rel C ν₁ μ .code Ra oka a₁ a₂ := ha.congr_on hfva hsva hE₁.agree
   have hFa : Fresh (π ++ [1]) (π' ++ [1]) ν₁ D₁ (Ra ++ Rc) :=
     hE₁.fresh_sibling (by decide) (by decide) hFf
-  obtain ⟨La₂, hLa₂, harel⟩ := ih hra hfpa (fun m hm => hE₁.sub (hfva m hm)) hci₁ hFa hLa₁
+  obtain ⟨La₂, hLa₂, harel⟩ := ih hra hfpa (fun m hm => hE₁.sub (hfva m hm)) (hsva.mono hE₁.sub)
+    hci₁ hFa hLa₁
   rw [hLa₂]
   have hA₁' := hE₁.avoid₁ (by decide : (0 : ℕ) ≠ 2) hA₁
   have hA₂' := hE₁.avoid₂ (by decide : (0 : ℕ) ≠ 2) hA₂ (fun m hm => hAR m (by simp [hm]))
   refine bindAll_sim ?_ harel hb₂
-  rintro ⟨u₂, τ₂⟩ ⟨u₂', τ₂'⟩ N₁ ⟨ν₂, D₂, hfv₂, hE₂, hrel₂, hfp₂, hci₂⟩ hN₁
-  simp only at hN₁ hfv₂ hrel₂ hfp₂ hci₂ ⊢
+  rintro ⟨u₂, τ₂⟩ ⟨u₂', τ₂'⟩ N₁ ⟨ν₂, D₂, hfv₂, hsv₂, hE₂, hrel₂, hfp₂, hci₂⟩ hN₁
+  simp only at hN₁ hfv₂ hsv₂ hrel₂ hfp₂ hci₂ ⊢
   have hA₁'' := hE₂.avoid₁ (by decide : (1 : ℕ) ≠ 2) hA₁'
   have hA₂'' := hE₂.avoid₂ (by decide : (1 : ℕ) ≠ 2) hA₂' (fun m hm => hAR m (by simp [hm]))
   have hARc : ∀ m ∈ Rc, Avoid (π' ++ [2]) m := fun m hm => hAR m (by simp [hm])
-  have hrelf : Rel C ν₂ μ .val [] true u₁ u₁' :=
-    hrel₁.congr (fun m hm => (hE₂.agree m (hfv₁ m hm)).symm) (fun _ _ => rfl)
+  have hrelf : Rel C ν₂ μ .val [] true u₁ u₁' := hrel₁.congr_on hfv₁ hsv₁ hE₂.agree
   have hE12 : Ext π π' (Rf ++ Ra) ν D ν₂ D₂ := hE₁.parent.trans hE₂.parent
   have hfvu₁ : ∀ m ∈ freeNames u₁, m ∈ D₂ := fun m hm => hE₂.sub (hfv₁ m hm)
+  have hsvu₁ : SealOK C D₂ u₁ := hsv₁.mono hE₂.sub
   have hout_app : Out C π π' ν μ D (Rf ++ Ra) Rc (.app u₁ u₂, τ₂) (.app u₁' u₂', τ₂') := by
-    refine ⟨ν₂, D₂, ?_, hE12, .app hrelf hrel₂, by simp [freeParams, hfp₁, hfp₂], hci₂⟩
-    intro m hm
-    simp only [freeNames, List.mem_append] at hm
-    rcases hm with h | h
-    · exact hfvu₁ m h
-    · exact hfv₂ m h
+    refine ⟨ν₂, D₂, ?_, ?_, hE12, .app hrelf hrel₂, by simp [freeParams, hfp₁, hfp₂], hci₂⟩
+    · intro m hm
+      simp only [freeNames, List.mem_append] at hm
+      rcases hm with h | h
+      · exact hfvu₁ m h
+      · exact hfv₂ m h
+    · intro m hm
+      simp only [sealedFree, List.mem_append] at hm
+      rcases hm with h | h
+      · exact hsvu₁ m h
+      · exact hsv₂ m h
   generalize hR0 : ([] : List (Nm X₂)) = R0 at hrelf
   generalize hokv : true = okv at hrelf
   cases hrelf with
   | @lam _ _ _ x₁ own₁ b₁ x₂ own₂ b₂ νb μb Rb _ hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd
-      hpar _ _ =>
+      hpar _ _ hsealO hsealK =>
       simp only [activate] at hN₁ ⊢
       have hcl : ∀ x ∈ freeParams b₁, x = x₁ := by
         intro x hx
@@ -768,25 +951,78 @@ theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
         rw [hfp₁] at this
         cases this
       have hca₁ : ∀ m ∈ freeNames u₂, OK₁ C m := fun m hm => hci₂.ok₁ m (hfv₂ m hm)
-      have hact := activate_lam hνb hμx hb hown hres hcl hrel₂ hca₁ hfp₂
-        (ok₂_of_val hci₂ hrel₂ hfv₂) (freeParams_val hrel₂ hfp₂) (ρ := π ++ [2]) (ρ' := π' ++ [2])
-        (fun n' hn' m e => by
-          rcases hn' with h | h
-          · exact (hA₁'' n' (hfvu₁ n' h)).ne_inst m e
-          · exact (hA₁'' n' (hfv₂ n' h)).ne_inst m e)
-      have hbody : ∀ m ∈ freeNames (subst (renameOwn (π ++ [2]) own₁) (Sub.single x₁ u₂) b₁),
-          m ∈ D₂ ∨ ∃ m₀ ∈ freeNames b₁, ownKey own₁ m₀ = true ∧ m = .inst (π ++ [2]) m₀ := by
+      have hnot : ∀ n, (n ∈ D₂ ∨ ∃ s, n = .src s ∧ C.root₁ s) → ∀ m, n ≠ .inst (π ++ [2]) m := by
+        rintro n (h | ⟨s, rfl, -⟩) m e
+        · exact (hA₁'' n h).ne_inst m e
+        · cases e
+      have hact := activate_lam hνb hμx hb hown hres hsealO hcl hrel₂ hca₁ hfp₂
+        (hsv₂.ok₁ hci₂.ok₁) (ok₂_of_val hci₂ hrel₂ hfv₂) (freeParams_val hrel₂ hfp₂)
+        (ρ := π ++ [2]) (ρ' := π' ++ [2])
+        (fun n' hn' => by
+          rcases hn' with h | h <;> simp only [relNames, List.mem_append] at h
+          · rcases h with h | h
+            · exact hnot n' (Or.inl (hfvu₁ n' h))
+            · exact hnot n' (hsvu₁ n' h)
+          · rcases h with h | h
+            · exact hnot n' (Or.inl (hfv₂ n' h))
+            · exact hnot n' (hsv₂ n' h))
+      set body := subst (renameOwn (π ++ [2]) own₁) (Sub.single x₁ u₂) (sealRen (π ++ [2]) own₁ b₁)
+        with hbodyDef
+      -- where the names of the activated body come from
+      have hbodyF : ∀ m ∈ freeNames body,
+          m ∈ D₂ ∨ ∃ m₀ ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ m₀ = true ∧
+            m = .inst (π ++ [2]) m₀ := by
         intro m hm
         rcases mem_freeNames_open hm with ⟨h1, h2⟩ | ⟨m₀, hm₀, ho, rfl⟩ | ⟨_, h2⟩
-        · exact Or.inl (hfvu₁ m (mem_freeNames_lam.2 ⟨h1, h2⟩))
-        · exact Or.inr ⟨m₀, hm₀, ho, rfl⟩
+        · rw [freeNames_sealRen] at h1
+          exact Or.inl (hfvu₁ m (mem_freeNames_lam.2 ⟨h1, h2⟩))
+        · rw [freeNames_sealRen] at hm₀
+          exact Or.inr ⟨m₀, List.mem_append_left _ hm₀, ho, rfl⟩
         · exact Or.inl (hfv₂ m h2)
+      have hbodyS : ∀ m ∈ sealedFree body, (m ∈ D₂ ∨ ∃ s, m = .src s ∧ C.root₁ s) ∨
+          ∃ m₀ ∈ sealedFree b₁, ownKey own₁ m₀ = true ∧ m = .inst (π ++ [2]) m₀ := by
+        intro m hm
+        rcases mem_sealedFree_subst _ _ _ m hm with h | ⟨n, -, w, hw, hmw⟩ | ⟨x, hx, w, hw, hmw⟩
+        · rcases mem_sealedFree_sealRen _ own₁ b₁ h with ⟨h1, h2⟩ | ⟨m₀, hm₀, ho, rfl⟩
+          · exact Or.inl (hsvu₁ m (by simp [sealedFree, h1, h2]))
+          · exact Or.inr ⟨m₀, hm₀, ho, rfl⟩
+        · simp only [renameOwn] at hw
+          split at hw
+          · injection hw with hw
+            subst hw
+            simp [sealedFree] at hmw
+          · cases hw
+        · rw [freeParams_sealRen] at hx
+          obtain rfl := hcl x hx
+          simp only [Sub.single, if_true] at hw
+          injection hw with hw
+          subst hw
+          exact Or.inl (hsv₂ m hmw)
+      set E : Set (Nm X₁) := {n | n ∈ freeNames body ∨ (n ∈ sealedFree body ∧ ∀ s, n ≠ .src s)}
+        with hEdef
+      have hbody : ∀ n ∈ E, n ∈ D₂ ∨
+          ∃ m ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ m = true ∧ n = .inst (π ++ [2]) m := by
+        intro n hn
+        rcases hn with hn | ⟨hn, hns⟩
+        · exact hbodyF n hn
+        · rcases hbodyS n hn with (h | ⟨s, rfl, -⟩) | ⟨m₀, hm₀, ho, rfl⟩
+          · exact Or.inl h
+          · exact absurd rfl (hns s)
+          · exact Or.inr ⟨m₀, List.mem_append_right _ hm₀, ho, rfl⟩
       have hci₃ := activation_ci hci₂ hA₁'' hA₂'' hARc hinj hdisj hnd hbody
       set ν₃ := openMap (π ++ [2]) own₁ (fun m => Nm.inst (π' ++ [2]) (νb m)) ν₂ with hν₃
       have hold₃ : ∀ n ∈ D₂, ν₃ n = ν₂ n := fun n hn => openMap_other (hA₁'' n hn).ne_inst
-      have hF₃ : Fresh (π ++ [2]) (π' ++ [2]) ν₃ (D₂ ∪ {n | n ∈ freeNames
-          (subst (renameOwn (π ++ [2]) own₁) (Sub.single x₁ u₂) b₁)})
-          (Rb.map (Nm.inst (π' ++ [2])) ++ Rc) := by
+      have himg : ∀ m₀ ∈ freeNames b₁ ++ sealedFree b₁, ownKey own₁ m₀ = true →
+          ∃ k, ν₃ (.inst (π ++ [2]) m₀) = .inst (π' ++ [2]) (.src k) := by
+        intro m₀ hm₀ ho
+        rw [hν₃, openMap_own ho]
+        have h2 : ∃ k, νb m₀ = .src k := by
+          rcases List.mem_append.1 hm₀ with h | h
+          · exact src_of_ownKey (by rw [hown m₀ h]; exact ho)
+          · exact hsealK m₀ h ho
+        obtain ⟨k, hk⟩ := h2
+        exact ⟨k, by simp only [hk]⟩
+      have hF₃ : Fresh (π ++ [2]) (π' ++ [2]) ν₃ (D₂ ∪ E) (Rb.map (Nm.inst (π' ++ [2])) ++ Rc) := by
         refine ⟨?_, ?_, ?_⟩
         · intro n hn
           rcases hn with hn | hn
@@ -800,10 +1036,8 @@ theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
           · rw [hold₃ n hn]; exact (hA₂'' n hn).oldAt
           · rcases hbody n hn with h | ⟨m₀, hm₀, ho, rfl⟩
             · rw [hold₃ n h]; exact (hA₂'' n h).oldAt
-            · rw [hν₃, openMap_own ho]
-              have h2 : ownKey own₂ (νb m₀) = true := by rw [hown m₀ hm₀]; exact ho
-              obtain ⟨k, hk⟩ := src_of_ownKey h2
-              simp only [hk]
+            · obtain ⟨k, hk⟩ := himg m₀ hm₀ ho
+              rw [hk]
               exact oldAt_inst_self _ k
         · intro m hm
           rcases List.mem_append.1 hm with h | h
@@ -811,8 +1045,7 @@ theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
             obtain ⟨k, rfl⟩ := src_of_ownKey (hres m' hm')
             exact oldAt_inst_self _ k
           · exact (hARc m h).oldAt
-      have hEact : Ext π π' [] ν₂ D₂ ν₃ (D₂ ∪ {n | n ∈ freeNames
-          (subst (renameOwn (π ++ [2]) own₁) (Sub.single x₁ u₂) b₁)}) := by
+      have hEact : Ext π π' [] ν₂ D₂ ν₃ (D₂ ∪ E) := by
         refine ⟨hold₃, Set.subset_union_left, ?_⟩
         intro n hn hnD
         rcases hn with hn | hn
@@ -821,14 +1054,22 @@ theorem sim_app [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
           · exact absurd h hnD
           · obtain ⟨s, rfl⟩ := src_of_ownKey ho
             refine ⟨newAt_inst 2 s, Or.inl ?_⟩
-            rw [hν₃, openMap_own ho]
-            have h2 : ownKey own₂ (νb (.src s)) = true := by rw [hown _ hm₀]; exact ho
-            obtain ⟨k, hk⟩ := src_of_ownKey h2
+            obtain ⟨k, hk⟩ := himg _ hm₀ ho
             rw [hk]
             exact newAt_inst 2 k
-      have hfpb : freeParams (subst (renameOwn (π ++ [2]) own₁) (Sub.single x₁ u₂) b₁) = [] :=
-        freeParams_open hcl hfp₂
-      obtain ⟨N₂, hN₂, hrelN⟩ := ih hact hfpb (fun m hm => Or.inr hm) hci₃ hF₃ hN₁
+      have hfpb : freeParams body = [] := by
+        have := freeParams_open (own := own₁) (ρ := π ++ [2]) (ℓ := x₁) (v := u₂)
+          (b := sealRen (π ++ [2]) own₁ b₁)
+          (fun x hx => hcl x (by rwa [freeParams_sealRen] at hx)) hfp₂
+        exact this
+      have hsvb : SealOK C (D₂ ∪ E) body := by
+        intro m hm
+        rcases hbodyS m hm with (h | h) | h
+        · exact Or.inl (Or.inl h)
+        · exact Or.inr h
+        · obtain ⟨m₀, -, ho, rfl⟩ := h
+          exact Or.inl (Or.inr (Or.inr ⟨hm, fun s e => by cases e⟩))
+      obtain ⟨N₂, hN₂, hrelN⟩ := ih hact hfpb (fun m hm => Or.inr (Or.inl hm)) hsvb hci₃ hF₃ hN₁
       refine ⟨N₂, hN₂, hrelN.imp fun {r₁ r₂} h => ?_⟩
       have h' := ((h.parent.res_newAt (R' := []) ?_).after (hE12.trans hEact))
       · exact h'.res_mono (by simp)
@@ -887,7 +1128,7 @@ theorem sim_alt [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
     {R₁ R₂ Rc : List (Nm X₂)} {o₁ o₂ : Bool} {D : Set (Nm X₁)} {L₁ : Result S X₁}
     (h₁ : Rel C ν μ .code R₁ o₁ t₁ t₂) (h₂ : Rel C ν μ .code R₂ o₂ u₁ u₂)
     (hfp : freeParams (.alt t₁ u₁ : Tm S X₁) = [])
-    (hfv : ∀ m ∈ freeNames (.alt t₁ u₁ : Tm S X₁), m ∈ D)
+    (hfv : ∀ m ∈ freeNames (.alt t₁ u₁ : Tm S X₁), m ∈ D) (hsv : SealOK C D (.alt t₁ u₁))
     (hci : CI C ν D (R₁ ++ R₂ ++ Rc) σ₁ σ₂) (hF : Fresh π π' ν D (R₁ ++ R₂ ++ Rc))
     (hrun : step .static P₁ (run .static P₁ n) π σ₁ (.alt t₁ u₁) = some L₁) :
     ∃ L₂, step .static P₂ (run .static P₂ n) π' σ₂ (.alt t₂ u₂) = some L₂ ∧
@@ -905,10 +1146,10 @@ theorem sim_alt [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n)
           subst hrun
           have hci₁ : CI C ν D (R₁ ++ (R₂ ++ Rc)) σ₁ σ₂ := by rw [← List.append_assoc]; exact hci
           have hF₁ : Fresh π π' ν D (R₁ ++ (R₂ ++ Rc)) := by rw [← List.append_assoc]; exact hF
-          obtain ⟨l₂, hl₂, hrl⟩ := ih h₁ hfp.1 (fun m h => hfv m (by simp [freeNames, h])) hci₁
-            (hF₁.child 0 0) e1
-          obtain ⟨r₂, hr₂, hrr⟩ := ih h₂ hfp.2 (fun m h => hfv m (by simp [freeNames, h])) hci₁.drop
-            (hF₁.drop.child 1 1) e2
+          obtain ⟨l₂, hl₂, hrl⟩ := ih h₁ hfp.1 (fun m h => hfv m (by simp [freeNames, h]))
+            (fun m h => hsv m (by simp [sealedFree, h])) hci₁ (hF₁.child 0 0) e1
+          obtain ⟨r₂, hr₂, hrr⟩ := ih h₂ hfp.2 (fun m h => hfv m (by simp [freeNames, h]))
+            (fun m h => hsv m (by simp [sealedFree, h])) hci₁.drop (hF₁.drop.child 1 1) e2
           refine ⟨l₂ ++ r₂, by rw [hl₂, hr₂], forall₂_append ?_ ?_⟩
           · exact hrl.imp fun _ _ h => (h.parent.drop).res_mono (fun m hm => by simp [hm])
           · exact hrr.imp fun _ _ h => h.parent.res_mono (fun m hm => by simp [hm])
@@ -922,15 +1163,17 @@ theorem sim_fn [CodeId X₁] [CodeId X₂] (hP : ProgRel C P₁ P₂) {n : ℕ} 
     ∃ L₂, step .static P₂ (run .static P₂ n) π' σ₂ (.fn F) = some L₂ ∧
       List.Forall₂ (Out C π π' ν μ D [] Rc) L₁ L₂ := by
   simp only [step] at hrun ⊢
-  rcases OptRel.cases (hP F) with ⟨e1, e2⟩ | ⟨e₁, e₂, e1, e2, hfv0, hfp0, hrel0⟩
+  rcases OptRel.cases (hP F) with ⟨e1, e2⟩ | ⟨e₁, e₂, e1, e2, hfv0, hfp0, hsf0, hrel0⟩
   · rw [e1] at hrun
     rw [e2]
     injection hrun with hrun
     subst hrun
-    exact ⟨_, rfl, .cons (Out.value (.fn F) (by simp [freeNames]) rfl hci) .nil⟩
+    exact ⟨_, rfl, .cons (Out.value (.fn F) (by simp [freeNames]) (by simp [SealOK, sealedFree]) rfl
+      hci) .nil⟩
   · rw [e1] at hrun
     rw [e2]
-    obtain ⟨L₂, hL₂, hrel⟩ := ih (hrel0 ν μ) hfp0 (by simp [hfv0]) hci (hF.child 0 0) hrun
+    obtain ⟨L₂, hL₂, hrel⟩ := ih (hrel0 ν μ) hfp0 (by simp [hfv0]) (by simp [SealOK, hsf0]) hci
+      (hF.child 0 0) hrun
     exact ⟨L₂, hL₂, hrel.imp fun _ _ h => h.parent⟩
 
 /-- **The simulation of a `new` block**: the first side activates it, the
@@ -938,13 +1181,15 @@ second side runs its body. -/
 theorem sim_newAct [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂ n) {π π' : Path} {σ₁ : GStore S X₁}
     {σ₂ : GStore S X₂} {ℓ : Nm X₁} {own : List X₁} {b₁ : Tm S X₁} {b₂ : Tm S X₂}
     {ν μ νi : Nm X₁ → Nm X₂} {Rh Rb Rc : List (Nm X₂)} {D : Set (Nm X₁)} {L₁ : Result S X₁}
-    (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hℓ : ℓ ∉ freeParams b₁)
+    (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hr : ∀ s ∈ own, ¬ C.hole s)
+    (hℓ : ℓ ∉ freeParams b₁)
     {ob : Bool} (hb : Rel C νi μ .code Rb ob b₁ b₂)
     (hlive : ∀ n ∈ freeNames b₁, ownKey own n = true → νi n ∈ Rh)
     (hinj : ∀ n ∈ freeNames b₁, ∀ n' ∈ freeNames b₁,
       ownKey own n = true → ownKey own n' = true → νi n = νi n' → n = n')
     (hfp : freeParams (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ)) : Tm S X₁) = [])
     (hfv : ∀ m ∈ freeNames (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ)) : Tm S X₁), m ∈ D)
+    (hsv : SealOK C D (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ))))
     (hci : CI C ν D (Rh ++ Rb ++ Rc) σ₁ σ₂) (hF : Fresh π π' ν D (Rh ++ Rb ++ Rc))
     (hrun : step .static P₁ (run .static P₁ n) π σ₁
       (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ))) = some L₁) :
@@ -959,6 +1204,12 @@ theorem sim_newAct [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂
         show run .static P₁ (n + 1) (π ++ [1]) σ₁ (.lam ℓ [] (.pvar ℓ)) =
           some [(.lam ℓ [] (.pvar ℓ), σ₁)] from rfl, bindOpt_some_singleton] at hrun
       simp only [activate] at hrun
+      have hhb : ∀ m ∈ sealedFree b₁, ownKey own m = false := fun m hm =>
+        ownKey_of_holeName hr (hb.sealedFree_holeName m hm)
+      rw [sealRen_eq_self_of_free _ own b₁ hhb] at hrun
+      have hsb : ∀ m ∈ sealedFree b₁,
+          m ∈ sealedFree (.app (.lam ℓ own b₁) (.lam ℓ [] (.pvar ℓ)) : Tm S X₁) :=
+        fun m hm => by simp [sealedFree, hm, hhb m hm]
       have hfpb : freeParams b₁ = [] := by
         apply List.eq_nil_iff_forall_not_mem.2
         intro x hx
@@ -971,6 +1222,7 @@ theorem sim_newAct [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂
       have hA : ∀ n ∈ D, Avoid (π ++ [2]) n := fun n hn => (hF.old₁ n hn).avoid_child 2
       have hopen := open_body (ℓ := ℓ) hνi hb hfpb (.lam ℓ [] (.pvar ℓ)) (ρ := π ++ [2])
         (fun n hn ho m e => (hA n (hfv n (mem_freeNames_newAct.2 ⟨hn, ho⟩))).ne_inst m e)
+        (fun n hn => hsv.ne_inst hA n (hsb n hn))
       have hbody : ∀ m ∈ freeNames (subst (renameOwn (π ++ [2]) own)
           (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁),
           m ∈ D ∨ ∃ m₀ ∈ freeNames b₁, ownKey own m₀ = true ∧ m = .inst (π ++ [2]) m₀ := by
@@ -980,7 +1232,7 @@ theorem sim_newAct [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂
         · exact Or.inr ⟨m₀, hm₀, ho, rfl⟩
         · exact absurd h1 hℓ
       have hci' : CI C ν D (Rh ++ (Rb ++ Rc)) σ₁ σ₂ := by rw [← List.append_assoc]; exact hci
-      have hci₃ := open_ci hci' hA hlive hinj hbody
+      have hci₃ := open_ci hci' hA hr hlive hinj hbody
       set ν₃ := openMap (π ++ [2]) own νi ν with hν₃
       have hold₃ : ∀ n ∈ D, ν₃ n = ν n := fun n hn => openMap_other (hA n hn).ne_inst
       have hF₃ : Fresh (π ++ [2]) π' ν₃ (D ∪ {n | n ∈ freeNames (subst (renameOwn (π ++ [2]) own)
@@ -1017,20 +1269,37 @@ theorem sim_newAct [CodeId X₁] [CodeId X₂] {n : ℕ} (ih : SimAt C P₁ P₂
       have hfpb' : freeParams (subst (renameOwn (π ++ [2]) own)
           (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁) = [] :=
         freeParams_open (fun x hx => by rw [hfpb] at hx; cases hx) (by simp [freeParams])
-      obtain ⟨L₂, hL₂, hrel⟩ := ih hopen hfpb' (fun m hm => Or.inr hm) hci₃ hF₃ hrun
+      have hsvO : SealOK C (D ∪ {n | n ∈ freeNames (subst (renameOwn (π ++ [2]) own)
+          (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁)}) (subst (renameOwn (π ++ [2]) own)
+          (Sub.single ℓ (.lam ℓ [] (.pvar ℓ))) b₁) := by
+        intro m hm
+        rcases mem_sealedFree_subst b₁ _ _ m hm with h | ⟨m₀, -, w, hw, hmw⟩ | ⟨x, hx, -⟩
+        · exact (hsv m (hsb m h)).imp_left Or.inl
+        · simp only [renameOwn] at hw
+          split at hw
+          · injection hw with hw
+            subst hw
+            simp [sealedFree] at hmw
+          · cases hw
+        · rw [hfpb] at hx
+          cases hx
+      obtain ⟨L₂, hL₂, hrel⟩ := ih hopen hfpb' (fun m hm => Or.inr hm) hsvO hci₃ hF₃ hrun
       refine ⟨L₂, run_mono .static P₂ (Nat.le_succ _) hL₂, ?_⟩
       exact hrel.imp fun _ _ h => h.parent₁.after hE
 
 
 /-- **The `let` continuation, on related values**: matching, substituting, or
 no answer, alike on both sides. -/
-theorem sim_letCont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree) (hA : C.PatAgree) {n : ℕ} (ih : SimAt C P₁ P₂ n) {ρ₁ ρ₂ : Path}
+theorem sim_letCont [CodeId X₁] [CodeId X₂] (hC : C.CodeAgree) (hA : C.PatAgree) {n : ℕ}
+    (ih : SimAt C P₁ P₂ n) {ρ₁ ρ₂ : Path}
     {τ₁ : GStore S X₁} {τ₂ : GStore S X₂} {v₁ : Tm S X₁} {v₂ : Tm S X₂} {p₁ b₁ : Tm S X₁}
     {p₂ b₂ : Tm S X₂} {ν₁ μ : Nm X₁ → Nm X₂} {Rp Rb Rc : List (Nm X₂)} {D₁ : Set (Nm X₁)}
     {M₁ : Result S X₁}
-    (hv : Rel C ν₁ μ .val [] true v₁ v₂) (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₁) (hfpv : freeParams v₁ = [])
+    (hv : Rel C ν₁ μ .val [] true v₁ v₂) (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₁)
+    (hsvv : SealOK C D₁ v₁) (hfpv : freeParams v₁ = [])
     {op ob : Bool} (hp : Rel C ν₁ μ .pat Rp op p₁ p₂) (hb : Rel C ν₁ μ .code Rb ob b₁ b₂)
     (hfvp : ∀ m ∈ freeNames p₁, m ∈ D₁) (hfvb : ∀ m ∈ freeNames b₁, m ∈ D₁)
+    (hsvp : SealOK C D₁ p₁) (hsvb : SealOK C D₁ b₁)
     (hfpb : freeParams b₁ = [])
     (hci : CI C ν₁ D₁ (Rp ++ Rb ++ Rc) τ₁ τ₂) (hF : Fresh (ρ₁ ++ [1]) (ρ₂ ++ [1]) ν₁ D₁ (Rp ++ Rb ++ Rc))
     (hrun : letCont (run .static P₁ n) ρ₁ p₁ b₁ (v₁, τ₁) = some M₁) :
@@ -1039,7 +1308,7 @@ theorem sim_letCont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAg
   have hci' : CI C ν₁ D₁ (Rp ++ (Rb ++ Rc)) τ₁ τ₂ := by rw [← List.append_assoc]; exact hci
   have hF' : Fresh (ρ₁ ++ [1]) (ρ₂ ++ [1]) ν₁ D₁ (Rp ++ (Rb ++ Rc)) := by
     rw [← List.append_assoc]; exact hF
-  have hact := hv.applyStore hfvv hci.store (fun m hm => by cases hm)
+  have hact := hv.applyStore hfvv hci.store hci.ok₁ (fun m hm => by cases hm)
   have hg := hact.toGVal?
   unfold letCont at hrun ⊢
   simp only at hrun ⊢
@@ -1051,8 +1320,18 @@ theorem sim_letCont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAg
     | var f₁ =>
         obtain rfl := hp.var_left
         simp only at hrun ⊢
-        exact sim_chain ih hb hv rfl hci'.drop hF'.drop (hfvp f₁ (by simp [freeNames])) hfvb hfvv
-          hfpv hfpb hrun
+        have hf₁ : f₁ ∈ D₁ := hfvp f₁ (by simp [freeNames])
+        rcases OptRel.cases (hci.store.rel f₁ hf₁) with ⟨e3, e4⟩ | ⟨w₁, w₂, e3, e4, -⟩
+        · rw [e3] at hrun
+          rw [e4]
+          simp only at hrun ⊢
+          exact sim_chain ih hb hv rfl hci'.drop hF'.drop hf₁ hfvb hfvv hsvb hsvv hfpv hfpb hrun
+        · rw [e3] at hrun
+          rw [e4]
+          simp only at hrun ⊢
+          injection hrun with hrun
+          subst hrun
+          exact ⟨[], rfl, .nil⟩
     | sym _ | fn _ | pvar _ | lam _ _ _ | app _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
         simp only at hrun
         injection hrun with hrun
@@ -1066,7 +1345,10 @@ theorem sim_letCont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAg
   · rw [e1] at hrun
     rw [e2]
     simp only at hrun ⊢
-    have hm := hp.matchT hQ hC hA hfvp hci.inj hgg hci.store
+    have hgs : SealOK C D₁ g₁.toTm := by
+      rw [CloTable.toGVal?_toTm e1]
+      exact hsvv.act hci.store.sealOK
+    have hm := hp.matchT hC hA hfvp hci.inj hci.holeInj hsvp hgg hgs hci.store
     rcases OptRel.cases hm with ⟨e3, e4⟩ | ⟨s₁, s₂, e3, e4, hss⟩
     · rw [e3] at hrun
       rw [e4]
@@ -1077,17 +1359,18 @@ theorem sim_letCont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAg
     · rw [e3] at hrun
       rw [e4]
       simp only at hrun ⊢
-      exact ih hb hfpb hfvb (hci'.with_store hss).drop hF'.drop hrun
+      exact ih hb hfpb hfvb hsvb (hci'.with_store hss).drop hF'.drop hrun
 
 /-- **The simulation of a plain `let`.** -/
-theorem sim_letP [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree) (hA : C.PatAgree) {n : ℕ} (ih : SimAt C P₁ P₂ n) {π π' : Path}
+theorem sim_letP [CodeId X₁] [CodeId X₂] (hC : C.CodeAgree) (hA : C.PatAgree) {n : ℕ}
+    (ih : SimAt C P₁ P₂ n) {π π' : Path}
     {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} {p₁ w₁ b₁ : Tm S X₁} {p₂ w₂ b₂ : Tm S X₂}
     {ν μ : Nm X₁ → Nm X₂} {Rp Rw Rb Rc : List (Nm X₂)} {op ow ob : Bool}
     {D : Set (Nm X₁)} {L₁ : Result S X₁}
     (hp : Rel C ν μ .pat Rp op p₁ p₂) (hw : Rel C ν μ .code Rw ow w₁ w₂)
     (hb : Rel C ν μ .code Rb ob b₁ b₂)
     (hfp : freeParams (.letP p₁ w₁ b₁ : Tm S X₁) = [])
-    (hfv : ∀ m ∈ freeNames (.letP p₁ w₁ b₁ : Tm S X₁), m ∈ D)
+    (hfv : ∀ m ∈ freeNames (.letP p₁ w₁ b₁ : Tm S X₁), m ∈ D) (hsv : SealOK C D (.letP p₁ w₁ b₁))
     (hci : CI C ν D (Rp ++ Rw ++ Rb ++ Rc) σ₁ σ₂) (hF : Fresh π π' ν D (Rp ++ Rw ++ Rb ++ Rc))
     (hrun : step .static P₁ (run .static P₁ n) π σ₁ (.letP p₁ w₁ b₁) = some L₁) :
     ∃ L₂, step .static P₂ (run .static P₂ n) π' σ₂ (.letP p₂ w₂ b₂) = some L₂ ∧
@@ -1097,29 +1380,39 @@ theorem sim_letP [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree
   have hfvp : ∀ m ∈ freeNames p₁, m ∈ D := fun m h => hfv m (by simp [freeNames, h])
   have hfvw : ∀ m ∈ freeNames w₁, m ∈ D := fun m h => hfv m (by simp [freeNames, h])
   have hfvb : ∀ m ∈ freeNames b₁, m ∈ D := fun m h => hfv m (by simp [freeNames, h])
+  have hsvp : SealOK C D p₁ := fun m h => hsv m (by simp [sealedFree, h])
+  have hsvw : SealOK C D w₁ := fun m h => hsv m (by simp [sealedFree, h])
+  have hsvb : SealOK C D b₁ := fun m h => hsv m (by simp [sealedFree, h])
   have hperm : (Rp ++ Rw ++ Rb ++ Rc).Perm (Rw ++ (Rp ++ Rb ++ Rc)) := by
     simp only [List.append_assoc]
     exact List.perm_append_comm_assoc Rp Rw (Rb ++ Rc)
   cases hl₁ : letLam? p₁ w₁ with
   | some f₁ =>
-      rw [step_letP_some hl₁] at hrun
       obtain ⟨rfl, x, own, bb, rfl⟩ := letLam?_some hl₁
       obtain rfl := hp.var_left
       obtain ⟨x', own', bb', rfl⟩ := hw.left_lam_code
-      rw [step_letP_some (rfl : letLam? (.var (ν f₁)) (.lam x' own' bb') = some (ν f₁))]
-      have hRp : Rp = [] := by cases hp; rfl
-      have hRw : Rw = [] := by cases hw; rfl
-      subst hRp hRw
-      obtain ⟨-, hwv⟩ := hw.toVal (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨x, own, bb, rfl⟩)))))
-      obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih hb hwv rfl (by simpa using hci) (by simpa using hF)
-        (hfvp f₁ (by simp [freeNames])) hfvb hfvw hfpw hfpb hrun
-      exact ⟨L₂, hL₂, hrel.imp fun _ _ h => h.res_mono (by simp)⟩
+      have hf₁ : f₁ ∈ D := hfvp f₁ (by simp [freeNames])
+      have hl₂ : letLam? (.var (ν f₁) : Tm S X₂) (.lam x' own' bb') = some (ν f₁) := rfl
+      rcases OptRel.cases (hci.store.rel f₁ hf₁) with ⟨e1, e2⟩ | ⟨g₁, g₂, e1, e2, -⟩
+      · rw [step_letP_some hl₁ e1] at hrun
+        rw [step_letP_some hl₂ e2]
+        have hRp : Rp = [] := by cases hp; rfl
+        have hRw : Rw = [] := by cases hw; rfl
+        subst hRp hRw
+        obtain ⟨-, hwv⟩ := hw.toVal (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr ⟨x, own, bb, rfl⟩)))))
+        obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih hb hwv rfl (by simpa using hci) (by simpa using hF)
+          hf₁ hfvb hfvw hsvb hsvw hfpw hfpb hrun
+        exact ⟨L₂, hL₂, hrel.imp fun _ _ h => h.res_mono (by simp)⟩
+      · rw [step_letP_some_bound hl₁ e1] at hrun
+        rw [step_letP_some_bound hl₂ e2]
+        injection hrun with hrun
+        subst hrun
+        exact ⟨[], rfl, .nil⟩
   | none =>
       rw [step_letP_none hl₁] at hrun
       obtain ⟨Lw₁, hLw₁, hbw⟩ := bindOpt_eq_some hrun
       cases hl₂ : letLam? p₂ w₂ with
       | some f₂ =>
-          rw [step_letP_some hl₂]
           obtain ⟨rfl, x₂, own₂, bb₂, rfl⟩ := letLam?_some hl₂
           obtain ⟨f₁, rfl⟩ := hp.right_var_pat
           have hf2 : ν f₁ = f₂ := by have := hp.var_left; injection this with e; exact e.symm
@@ -1130,8 +1423,13 @@ theorem sim_letP [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree
           have hFw : Fresh π π' ν D (Rw ++ (Rb ++ Rc)) := by simpa [List.append_assoc] using hF
           have hold₀ : ∀ m ∈ freeNames w₁, OldAt (π ++ [0]) m :=
             fun m hm => (hF.old₁ m (hfvw m hm)).child 0
-          obtain ⟨v₁, ν', hL, hrelv, hfpv, hagree, hfvv, hinjv⟩ :=
-            newChain n hw hfpw (List.nodup_append.1 hciw.nodup).1 hold₀ hLw₁
+          have hsold₀ : ∀ m ∈ sealedFree w₁, OldAt (π ++ [0]) m := by
+            intro m hm
+            rcases hsvw m hm with hD | ⟨s, rfl, -⟩
+            · exact (hF.old₁ m hD).child 0
+            · exact oldAt_src _ s
+          obtain ⟨v₁, ν', hL, hrelv, hfpv, hagree, hfvv, hsvv, hinjv⟩ :=
+            newChain n hw hfpw (List.nodup_append.1 hciw.nodup).1 hold₀ hsold₀ hLw₁
           subst hL
           rw [bindAll_singleton] at hbw
           obtain ⟨hci', hE, hold, hclass⟩ := newChain_cfg hciw hFw hfvw hagree hfvv hinjv
@@ -1148,29 +1446,38 @@ theorem sim_letP [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree
             · intro m hm
               exact hFw.oldRes m (List.mem_append_right _ hm)
           have hf₁ : f₁ ∈ D := hfv f₁ (by simp [freeNames])
-          have hb' : Rel C ν' μ .code Rb ob b₁ b₂ :=
-            hb.congr (fun m hm => (hold m (hfvb m hm)).symm) (fun _ _ => rfl)
+          have hb' : Rel C ν' μ .code Rb ob b₁ b₂ := hb.congr_on hfvb hsvb hold
           obtain ⟨x₁, own₁, bb₁, rfl⟩ := hrelv.right_lam_val
-          unfold letCont at hbw
-          simp only [act_lam, Tm.toGVal?] at hbw
-          obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih hb' hrelv (hold f₁ hf₁) hci' hF' (Or.inl hf₁)
-            (fun m hm => Or.inl (hfvb m hm)) (fun m hm => Or.inr hm) hfpv hfpb hbw
-          exact ⟨L₂, hL₂, hrel.imp fun _ _ h => (h.parent₁.after hE).res_mono (by simp)⟩
+          have hng : (act σ₁ (.lam x₁ own₁ bb₁ : Tm S X₁)).toGVal? = none := by
+            simp only [act_lam, Tm.toGVal?]
+          rcases OptRel.cases (hci.store.rel f₁ hf₁) with ⟨e1, e2⟩ | ⟨g₁, g₂, e1, e2, -⟩
+          · rw [letCont_var_unbound hng e1] at hbw
+            rw [step_letP_some hl₂ e2]
+            obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih hb' hrelv (hold f₁ hf₁) hci' hF' (Or.inl hf₁)
+              (fun m hm => Or.inl (hfvb m hm)) (fun m hm => Or.inr hm)
+              (hsvb.mono Set.subset_union_left)
+              (fun m hm => (hsvw m (hsvv m hm)).imp_left Or.inl) hfpv hfpb hbw
+            exact ⟨L₂, hL₂, hrel.imp fun _ _ h => (h.parent₁.after hE).res_mono (by simp)⟩
+          · rw [letCont_var_bound hng e1] at hbw
+            rw [step_letP_some_bound hl₂ e2]
+            injection hbw with hbw
+            subst hbw
+            exact ⟨[], rfl, .nil⟩
       | none =>
           rw [step_letP_none hl₂]
-          obtain ⟨Lw₂, hLw₂, hwr⟩ := ih hw hfpw hfvw (hci.perm hperm) ((hF.perm hperm).child 0 0) hLw₁
+          obtain ⟨Lw₂, hLw₂, hwr⟩ := ih hw hfpw hfvw hsvw (hci.perm hperm)
+            ((hF.perm hperm).child 0 0) hLw₁
           rw [hLw₂]
           refine bindAll_sim ?_ hwr hbw
-          rintro ⟨v₁, τ₁⟩ ⟨v₂, τ₂⟩ M₁ ⟨ν₁, D₁, hfv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
-          simp only at hfv₁ hrel₁ hfp₁ hci₁
-          have hp₁ : Rel C ν₁ μ .pat Rp op p₁ p₂ :=
-            hp.congr (fun m hm => (hE₁.agree m (hfvp m hm)).symm) (fun _ _ => rfl)
-          have hb₁ : Rel C ν₁ μ .code Rb ob b₁ b₂ :=
-            hb.congr (fun m hm => (hE₁.agree m (hfvb m hm)).symm) (fun _ _ => rfl)
+          rintro ⟨v₁, τ₁⟩ ⟨v₂, τ₂⟩ M₁ ⟨ν₁, D₁, hfv₁, hsv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
+          simp only at hfv₁ hsv₁ hrel₁ hfp₁ hci₁
+          have hp₁ : Rel C ν₁ μ .pat Rp op p₁ p₂ := hp.congr_on hfvp hsvp hE₁.agree
+          have hb₁ : Rel C ν₁ μ .code Rb ob b₁ b₂ := hb.congr_on hfvb hsvb hE₁.agree
           have hFb : Fresh (π ++ [1]) (π' ++ [1]) ν₁ D₁ (Rp ++ Rb ++ Rc) :=
             hE₁.fresh_sibling (by decide) (by decide) (hF.perm hperm)
-          obtain ⟨M₂, hM₂, hrelM⟩ := sim_letCont hQ hC hA ih hrel₁ hfv₁ hfp₁ hp₁ hb₁
-            (fun m hm => hE₁.sub (hfvp m hm)) (fun m hm => hE₁.sub (hfvb m hm)) hfpb hci₁ hFb hM₁
+          obtain ⟨M₂, hM₂, hrelM⟩ := sim_letCont hC hA ih hrel₁ hfv₁ hsv₁ hfp₁ hp₁ hb₁
+            (fun m hm => hE₁.sub (hfvp m hm)) (fun m hm => hE₁.sub (hfvb m hm))
+            (hsvp.mono hE₁.sub) (hsvb.mono hE₁.sub) hfpb hci₁ hFb hM₁
           refine ⟨M₂, hM₂, hrelM.imp fun _ _ h => ?_⟩
           exact (h.parent.after hE₁.parent).res_mono (fun m hm => by simp at hm ⊢; tauto)
 
@@ -1203,7 +1510,11 @@ theorem letCont_mono {Y : Type v} [DecidableEq Y] [CodeId Y] {d : Disc} {P : S �
       rw [hg] at h
       simp only at h ⊢
       cases p with
-      | var f => exact run_mono d P hnm h
+      | var f =>
+          simp only at h ⊢
+          cases hf : r.2 f with
+          | none => rw [hf] at h; exact run_mono d P hnm h
+          | some _ => rw [hf] at h; exact h
       | _ => exact h
 
 omit [DecidableEq S] in
@@ -1213,19 +1524,23 @@ that sends the copies of the `let`'s own names to its reserved names. -/
 theorem letAct_open {ν ν₁ μ νi : Nm X₁ → Nm X₂} {own : List X₁} {ℓ : Nm X₁}
     {p₁ b₁ : Tm S X₁} {p₂ b₂ : Tm S X₂} {Rh Rp Rb Rc : List (Nm X₂)} {D D₁ : Set (Nm X₁)}
     {τ₁ : GStore S X₁} {τ₂ : GStore S X₂} {v₁ : Tm S X₁} {v₂ : Tm S X₂} {ρ : Path}
-    (hνi : ∀ n, ownKey own n = false → νi n = ν n)
+    (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hr : ∀ s ∈ own, ¬ C.hole s)
     {op ob : Bool} (hp : Rel C νi μ .pat Rp op p₁ p₂) (hb : Rel C νi μ .code Rb ob b₁ b₂)
     (hlive : ∀ n ∈ freeNames p₁ ++ freeNames b₁, ownKey own n = true → νi n ∈ Rh)
     (hinj : ∀ n ∈ freeNames p₁ ++ freeNames b₁, ∀ n' ∈ freeNames p₁ ++ freeNames b₁,
       ownKey own n = true → ownKey own n' = true → νi n = νi n' → n = n')
     (hfpp : freeParams p₁ = []) (hfpb : freeParams b₁ = [])
     (hfvo : ∀ n, (n ∈ freeNames p₁ ∨ n ∈ freeNames b₁) → ownKey own n = false → n ∈ D)
+    (hsvo : ∀ n ∈ sealedFree p₁ ++ sealedFree b₁, n ∈ D ∨ ∃ s, n = .src s ∧ C.root₁ s)
     (hsub : D ⊆ D₁) (hagree : ∀ n ∈ D, ν₁ n = ν n)
     (hv : Rel C ν₁ μ .val [] true v₁ v₂) (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₁)
+    (hsvv : SealOK C D₁ v₁)
     (hci : CI C ν₁ D₁ (Rh ++ (Rp ++ Rb ++ Rc)) τ₁ τ₂) (hav : ∀ n ∈ D₁, Avoid ρ n) :
     ∃ D₂ : Set (Nm X₁), D₁ ⊆ D₂ ∧
       (∀ m ∈ freeNames (subst (renameOwn ρ own) (Sub.single ℓ v₁) p₁), m ∈ D₂) ∧
       (∀ m ∈ freeNames (subst (renameOwn ρ own) (Sub.single ℓ v₁) b₁), m ∈ D₂) ∧
+      SealOK C D₂ (subst (renameOwn ρ own) (Sub.single ℓ v₁) p₁) ∧
+      SealOK C D₂ (subst (renameOwn ρ own) (Sub.single ℓ v₁) b₁) ∧
       Rel C (openMap ρ own νi ν₁) μ .pat Rp op (subst (renameOwn ρ own) (Sub.single ℓ v₁) p₁) p₂ ∧
       Rel C (openMap ρ own νi ν₁) μ .code Rb ob (subst (renameOwn ρ own) (Sub.single ℓ v₁) b₁) b₂ ∧
       Rel C (openMap ρ own νi ν₁) μ .val [] true v₁ v₂ ∧
@@ -1253,17 +1568,60 @@ theorem letAct_open {ν ν₁ μ νi : Nm X₁ → Nm X₂} {own : List X₁} {�
     · rw [openMap_own ho, openMap_own ho]
   have hav₀ : ∀ n ∈ freeNames p₁ ++ freeNames b₁, ownKey own n = false → ∀ m, n ≠ .inst ρ m :=
     fun n hn ho => (hav n (hsub (hfvo n (List.mem_append.1 hn) ho))).ne_inst
+  have havS : ∀ n ∈ sealedFree p₁ ++ sealedFree b₁, ∀ m, n ≠ .inst ρ m := by
+    intro n hn m e
+    rcases hsvo n hn with hD | ⟨s, rfl, -⟩
+    · exact (hav n (hsub hD)).ne_inst m e
+    · cases e
+  -- the sealed code of the opened pattern and body is the written one
+  have hsopen : ∀ (u : Tm S X₁), freeParams u = [] →
+      ∀ m ∈ sealedFree (subst (renameOwn ρ own) (Sub.single ℓ v₁) u), m ∈ sealedFree u := by
+    intro u hfpu m hm
+    rcases mem_sealedFree_subst u _ _ m hm with h | ⟨m₀, -, w, hw, hmw⟩ | ⟨x, hx, -⟩
+    · exact h
+    · simp only [renameOwn] at hw
+      split at hw
+      · injection hw with hw
+        subst hw
+        simp [sealedFree] at hmw
+      · cases hw
+    · rw [hfpu] at hx
+      cases hx
+  have hsc : ∀ (u : Tm S X₁), (∀ n ∈ sealedFree u, n ∈ sealedFree p₁ ++ sealedFree b₁) →
+      freeParams u = [] → ∀ m ∈ sealedFree (subst (renameOwn ρ own) (Sub.single ℓ v₁) u),
+        (∃ s, m = .src s) ∨ openMap ρ own νi ν m = openMap ρ own νi ν₁ m := by
+    intro u hu hfpu m hm
+    rcases hsvo m (hu m (hsopen u hfpu m hm)) with hD | ⟨s, rfl, -⟩
+    · refine Or.inr ?_
+      rw [openMap_other (hav m (hsub hD)).ne_inst, openMap_other (hav m (hsub hD)).ne_inst,
+        hagree m hD]
+    · exact Or.inl ⟨s, rfl⟩
   have hp' := open_body (ℓ := ℓ) hνi hp hfpp v₁ (ρ := ρ)
     (fun n hn ho => hav₀ n (List.mem_append_left _ hn) ho)
+    (fun n hn => havS n (List.mem_append_left _ hn))
   have hb' := open_body (ℓ := ℓ) hνi hb hfpb v₁ (ρ := ρ)
     (fun n hn ho => hav₀ n (List.mem_append_right _ hn) ho)
+    (fun n hn => havS n (List.mem_append_right _ hn))
+  have hsvO : ∀ (u : Tm S X₁), (∀ n ∈ sealedFree u, n ∈ sealedFree p₁ ++ sealedFree b₁) →
+      freeParams u = [] → ∀ (D₂ : Set (Nm X₁)), D₁ ⊆ D₂ →
+        SealOK C D₂ (subst (renameOwn ρ own) (Sub.single ℓ v₁) u) := by
+    intro u hu hfpu D₂ hD₂ m hm
+    exact (hsvo m (hu m (hsopen u hfpu m hm))).imp_left fun h => hD₂ (hsub h)
   refine ⟨D₁ ∪ {n | n ∈ freeNames (.letP (subst (renameOwn ρ own) (Sub.single ℓ v₁) p₁) v₁
       (subst (renameOwn ρ own) (Sub.single ℓ v₁) b₁) : Tm S X₁)}, Set.subset_union_left,
     fun m h => Or.inr (by simp [freeNames, h]), fun m h => Or.inr (by simp [freeNames, h]),
-    hp'.congr (hcongr p₁ (fun n h => Or.inl h) hfpp) (fun _ _ => rfl),
-    hb'.congr (hcongr b₁ (fun n h => Or.inr h) hfpb) (fun _ _ => rfl),
-    hv.congr (fun m hm => (hold m (hfvv m hm)).symm) (fun _ _ => rfl), ?_, hold, ?_⟩
-  · refine open_ci hci hav hlive hinj ?_
+    hsvO p₁ (fun n h => List.mem_append_left _ h) hfpp _ Set.subset_union_left,
+    hsvO b₁ (fun n h => List.mem_append_right _ h) hfpb _ Set.subset_union_left,
+    hp'.congr (hcongr p₁ (fun n h => Or.inl h) hfpp)
+      (hsc p₁ (fun n h => List.mem_append_left _ h) hfpp) (fun _ _ => rfl),
+    hb'.congr (hcongr b₁ (fun n h => Or.inr h) hfpb)
+      (hsc b₁ (fun n h => List.mem_append_right _ h) hfpb) (fun _ _ => rfl),
+    hv.congr (fun m hm => (hold m (hfvv m hm)).symm) ?_ (fun _ _ => rfl), ?_, hold, ?_⟩
+  · intro m hm
+    rcases hsvv m hm with hD | ⟨s, rfl, -⟩
+    · exact Or.inr (hold m hD).symm
+    · exact Or.inl ⟨s, rfl⟩
+  · refine open_ci hci hav hr hlive hinj ?_
     intro n hn
     simp only [freeNames, List.mem_append] at hn
     rcases hn with (hn | hn) | hn
@@ -1351,42 +1709,51 @@ theorem subst_letP_param (θ : Sub S X₁) (ℓ : Nm X₁) (v p b : Tm S X₁) :
 /-- **After opening a `let`-activation** with one value of its right-hand side:
 the first side's `let` at the activation path against the second side's `let`
 continuation. -/
-theorem sim_letAct_cont [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree) (hA : C.PatAgree) {n' : ℕ} (ih' : SimAt C P₁ P₂ n') {π π' : Path}
+theorem sim_letAct_cont [CodeId X₁] [CodeId X₂] (hC : C.CodeAgree) (hA : C.PatAgree) {n' : ℕ}
+    (ih' : SimAt C P₁ P₂ n') {π π' : Path}
     {τ₁ : GStore S X₁} {τ₂ : GStore S X₂} {p₁' b₁' v₁ : Tm S X₁} {p₂ b₂ v₂ : Tm S X₂}
     {ν₂ μ : Nm X₁ → Nm X₂} {Rp Rb Rc : List (Nm X₂)} {D₂ : Set (Nm X₁)} {M₁ : Result S X₁}
     {op ob : Bool} (hp₂ : Rel C ν₂ μ .pat Rp op p₁' p₂) (hb₂ : Rel C ν₂ μ .code Rb ob b₁' b₂)
     (hv₂ : Rel C ν₂ μ .val [] true v₁ v₂) (hci₂ : CI C ν₂ D₂ (Rp ++ Rb ++ Rc) τ₁ τ₂)
     (hFresh : ∀ l : Path, Fresh (π ++ [2] ++ l) (π' ++ [1]) ν₂ D₂ (Rp ++ Rb ++ Rc))
     (hfvp : ∀ m ∈ freeNames p₁', m ∈ D₂) (hfvb : ∀ m ∈ freeNames b₁', m ∈ D₂)
-    (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₂) (hfpv : freeParams v₁ = []) (hfpb : freeParams b₁' = [])
+    (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₂) (hsvp : SealOK C D₂ p₁') (hsvb : SealOK C D₂ b₁')
+    (hsvv : SealOK C D₂ v₁) (hfpv : freeParams v₁ = []) (hfpb : freeParams b₁' = [])
     (hinert : Inert P₁ v₁)
     (hM₁ : step .static P₁ (run .static P₁ n') (π ++ [2]) τ₁ (.letP p₁' v₁ b₁') = some M₁) :
     ∃ M₂, letCont (run .static P₂ (n' + 1)) π' p₂ b₂ (v₂, τ₂) = some M₂ ∧
       List.Forall₂ (Out C π π' ν₂ μ D₂ Rb Rc) M₁ M₂ := by
   cases hl₃ : letLam? p₁' v₁ with
   | some f =>
-      rw [step_letP_some hl₃] at hM₁
       obtain ⟨rfl, x, own', bb, rfl⟩ := letLam?_some hl₃
       have hRp : Rp = [] := by cases hp₂; rfl
       subst hRp
       obtain rfl := hp₂.var_left
       obtain ⟨x₂, own₂, bb₂, rfl⟩ := hv₂.left_lam_code
-      have hF₂ : Fresh (π ++ [2]) (π' ++ [1]) ν₂ D₂ (Rb ++ Rc) := by
-        have h := hFresh []
-        simp only [List.append_nil, List.nil_append] at h
-        exact h
-      obtain ⟨M₂, hM₂, hrelM⟩ := sim_chain ih' hb₂ hv₂ rfl (by simpa using hci₂) hF₂
-        (hfvp f (by simp [freeNames])) hfvb hfvv hfpv hfpb hM₁
-      refine ⟨M₂, ?_, hrelM.imp fun _ _ h => h.parent⟩
-      unfold letCont
-      simp only [act_lam, Tm.toGVal?]
-      exact run_mono .static P₂ (Nat.le_succ n') hM₂
+      have hf : f ∈ D₂ := hfvp f (by simp [freeNames])
+      have hng : (act τ₂ (.lam x₂ own₂ bb₂ : Tm S X₂)).toGVal? = none := by
+        simp only [act_lam, Tm.toGVal?]
+      rcases OptRel.cases (hci₂.store.rel f hf) with ⟨e1, e2⟩ | ⟨g₁, g₂, e1, e2, -⟩
+      · rw [step_letP_some hl₃ e1] at hM₁
+        have hF₂ : Fresh (π ++ [2]) (π' ++ [1]) ν₂ D₂ (Rb ++ Rc) := by
+          have h := hFresh []
+          simp only [List.append_nil, List.nil_append] at h
+          exact h
+        obtain ⟨M₂, hM₂, hrelM⟩ := sim_chain ih' hb₂ hv₂ rfl (by simpa using hci₂) hF₂
+          hf hfvb hfvv hsvb hsvv hfpv hfpb hM₁
+        refine ⟨M₂, ?_, hrelM.imp fun _ _ h => h.parent⟩
+        rw [letCont_var_unbound hng e2]
+        exact run_mono .static P₂ (Nat.le_succ n') hM₂
+      · rw [step_letP_some_bound hl₃ e1] at hM₁
+        injection hM₁ with hM₁
+        subst hM₁
+        exact ⟨[], letCont_var_bound hng e2, .nil⟩
   | none =>
       rw [step_letP_none hl₃] at hM₁
       obtain ⟨Lv, hLv, hbv⟩ := bindOpt_eq_some hM₁
       rw [run_inert P₁ .static v₁ hinert _ _ _ _ hLv, bindAll_singleton] at hbv
-      obtain ⟨M₂, hM₂, hrelM⟩ := sim_letCont hQ hC hA ih' hv₂ hfvv hfpv hp₂ hb₂ hfvp hfvb hfpb
-        hci₂ (hFresh [1]) hbv
+      obtain ⟨M₂, hM₂, hrelM⟩ := sim_letCont hC hA ih' hv₂ hfvv hsvv hfpv hp₂ hb₂ hfvp hfvb
+        hsvp hsvb hfpb hci₂ (hFresh [1]) hbv
       exact ⟨M₂, letCont_mono (Nat.le_succ n') hM₂, hrelM.imp fun _ _ h => h.parent.parent₁⟩
 
 /-- **After a chain of `new` blocks and the opening**, when the second side's
@@ -1398,22 +1765,24 @@ theorem sim_letAct_chain [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C P
     {ob : Bool} (hb₂ : Rel C ν₂ μ .code Rb ob b₁' b₂) (hv₂ : Rel C ν₂ μ .val [] true v₁ v₂) (hf₂ : ν₂ f₁' = f₂)
     (hci₂ : CI C ν₂ D₂ (Rb ++ Rc) σ₁ σ₂) (hF₂ : Fresh (π ++ [2]) π' ν₂ D₂ (Rb ++ Rc))
     (hf : f₁' ∈ D₂) (hfvb : ∀ m ∈ freeNames b₁', m ∈ D₂) (hfvv : ∀ m ∈ freeNames v₁, m ∈ D₂)
+    (hsvb : SealOK C D₂ b₁') (hsvv : SealOK C D₂ v₁)
     (hfpv : freeParams v₁ = []) (hfpb : freeParams b₁' = [])
     (hrun : run .static P₁ n' (π ++ [2]) σ₁ (subst (Sub.single f₁' v₁) Sub.none b₁') = some L₁) :
     ∃ L₂, run .static P₂ (n' + 1) π' σ₂ (subst (Sub.single f₂ v₂) Sub.none b₂) = some L₂ ∧
       List.Forall₂ (Out C π π' ν₂ μ D₂ Rb Rc) L₁ L₂ := by
-  obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih' hb₂ hv₂ hf₂ hci₂ hF₂ hf hfvb hfvv hfpv hfpb hrun
+  obtain ⟨L₂, hL₂, hrel⟩ := sim_chain ih' hb₂ hv₂ hf₂ hci₂ hF₂ hf hfvb hfvv hsvb hsvv hfpv hfpb hrun
   exact ⟨L₂, run_mono .static P₂ (Nat.le_succ n') hL₂, hrel.imp fun _ _ h => h.parent₁⟩
 
-/-- **A `let`-activation whose second side substitutes a lambda in place**:
+/-- **A `let`-activation whose second side has a lambda written in place**:
 the first side evaluates its right-hand side (a chain of `new` blocks around a
-lambda), opens the `let`, and substitutes. -/
+lambda) and opens the `let`.  Then both sides substitute, when the `let`'s name
+is unbound, or both give no answer, when it holds a value. -/
 theorem sim_letAct_inPlace [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C P₁ P₂ n') {π π' : Path}
     {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} {ℓ : Nm X₁} {own : List X₁} {p₁ w₁ b₁ : Tm S X₁}
     {f₂ x₂ : Nm X₂} {own₂ : List X₂} {bb₂ b₂ : Tm S X₂}
     {ν μ νi : Nm X₁ → Nm X₂} {Rh Rw Rp Rb Rc : List (Nm X₂)} {D : Set (Nm X₁)}
     {Lw₁ L₁ : Result S X₁}
-    (hνi : ∀ n, ownKey own n = false → νi n = ν n)
+    (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hr : ∀ s ∈ own, ¬ C.hole s)
     {ow op ob : Bool}
     (hw : Rel C ν μ .code Rw ow w₁ (.lam x₂ own₂ bb₂)) (hp : Rel C νi μ .pat Rp op p₁ (.var f₂))
     (hb : Rel C νi μ .code Rb ob b₁ b₂)
@@ -1423,14 +1792,17 @@ theorem sim_letAct_inPlace [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C
     (hfpp : freeParams p₁ = []) (hfpb : freeParams b₁ = []) (hfpw : freeParams w₁ = [])
     (hfvw : ∀ m ∈ freeNames w₁, m ∈ D)
     (hfvo : ∀ n, (n ∈ freeNames p₁ ∨ n ∈ freeNames b₁) → ownKey own n = false → n ∈ D)
+    (hsvo : ∀ n ∈ sealedFree p₁ ++ sealedFree b₁, n ∈ D ∨ ∃ s, n = .src s ∧ C.root₁ s)
+    (hsvw : SealOK C D w₁)
     (hciw : CI C ν D (Rw ++ (Rh ++ (Rp ++ Rb ++ Rc))) σ₁ σ₂)
     (hFw : Fresh π π' ν D (Rw ++ (Rh ++ (Rp ++ Rb ++ Rc))))
     (hLw₁ : run .static P₁ (n' + 1) (π ++ [1]) σ₁ w₁ = some Lw₁)
     (hbw : bindAll Lw₁ (fun r₂ => run .static P₁ (n' + 1) (π ++ [2]) r₂.2
       (.letP (subst (renameOwn (π ++ [2]) own) (Sub.single ℓ r₂.1) p₁) r₂.1
         (subst (renameOwn (π ++ [2]) own) (Sub.single ℓ r₂.1) b₁))) = some L₁) :
-    ∃ L₂, run .static P₂ (n' + 1) π' σ₂ (subst (Sub.single f₂ (.lam x₂ own₂ bb₂)) Sub.none b₂) =
-      some L₂ ∧ List.Forall₂ (Out C π π' ν μ D (Rw ++ (Rh ++ Rb)) Rc) L₁ L₂ := by
+    ∃ L₂, step .static P₂ (run .static P₂ (n' + 1)) π' σ₂
+        (.letP (.var f₂) (.lam x₂ own₂ bb₂) b₂) = some L₂ ∧
+      List.Forall₂ (Out C π π' ν μ D (Rw ++ (Rh ++ Rb)) Rc) L₁ L₂ := by
   have hoffs : ∀ n ∈ D, Avoid (π ++ [2]) n := fun n hn => (hFw.old₁ n hn).avoid_child 2
   obtain ⟨f₁, rfl⟩ := hp.right_var_pat
   have hRp : Rp = [] := by cases hp; rfl
@@ -1440,8 +1812,12 @@ theorem sim_letAct_inPlace [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C
     injection this
   subst hf₂
   have hndw : Rw.Nodup := (List.nodup_append.1 hciw.nodup).1
-  obtain ⟨v₁, ν', hL, hrelv, hfpv, hagree, hfvv, hinjv⟩ :=
-    newChain (n' + 1) hw hfpw hndw (fun m hm => (hFw.old₁ m (hfvw m hm)).child 1) hLw₁
+  obtain ⟨v₁, ν', hL, hrelv, hfpv, hagree, hfvv, hsvv, hinjv⟩ :=
+    newChain (n' + 1) hw hfpw hndw (fun m hm => (hFw.old₁ m (hfvw m hm)).child 1)
+      (fun m hm => by
+        rcases hsvw m hm with hD | ⟨s, rfl, -⟩
+        · exact (hFw.old₁ m hD).child 1
+        · exact oldAt_src _ s) hLw₁
   subst hL
   rw [bindAll_singleton] at hbw
   obtain ⟨hci₁, hE₁, hold₁, hclass₁⟩ := newChain_cfg hciw hFw hfvw hagree hfvv hinjv
@@ -1450,15 +1826,14 @@ theorem sim_letAct_inPlace [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C
     rcases hclass₁ n hn with h | ⟨hn1, _⟩
     · exact hoffs n h
     · exact hn1.avoid_sibling (by decide)
-  obtain ⟨D₂, hsub₂, hfvp', hfvb', hp₂, hb₂, hv₂, hci₂, hold₂, hclass₂⟩ :=
-    letAct_open (ℓ := ℓ) hνi hp hb hlive hinj hfpp hfpb hfvo Set.subset_union_left hold₁ hrelv
-      (fun m hm => Or.inr hm) hci₁ hAv
+  obtain ⟨D₂, hsub₂, hfvp', hfvb', -, hsvb', hp₂, hb₂, hv₂, hci₂, hold₂, hclass₂⟩ :=
+    letAct_open (ℓ := ℓ) hνi hr hp hb hlive hinj hfpp hfpb hfvo hsvo Set.subset_union_left hold₁
+      hrelv (fun m hm => Or.inr hm) (fun m hm => (hsvw m (hsvv m hm)).imp_left Or.inl) hci₁ hAv
   obtain ⟨x₁, own₁, bb₁, rfl⟩ := hrelv.right_lam_val
   rw [subst_rename_var] at hp₂ hbw hfvp'
   have hpv := hp₂.var_left
   injection hpv with hpv
   change step .static P₁ (run .static P₁ n') (π ++ [2]) σ₁ (.letP (.var _) _ _) = some L₁ at hbw
-  rw [step_letP_some rfl] at hbw
   have hE₂ : Ext π π' Rh ν' (D ∪ {n | n ∈ freeNames (.lam x₁ own₁ bb₁ : Tm S X₁)})
       (openMap (π ++ [2]) own νi ν') D₂ := by
     refine ⟨hold₂, hsub₂, ?_⟩
@@ -1491,20 +1866,33 @@ theorem sim_letAct_inPlace [CodeId X₁] [CodeId X₂] {n' : ℕ} (ih' : SimAt C
   have hci₂' : CI C (openMap (π ++ [2]) own νi ν') D₂ (Rb ++ Rc) σ₁ σ₂ := by
     rw [List.nil_append] at hci₂
     exact hci₂
-  obtain ⟨L₂, hL₂, hrel⟩ := sim_letAct_chain ih' hb₂ hv₂ hpv.symm hci₂' hF₂
-    (hfvp' _ (by simp [freeNames])) hfvb' (fun m h => hsub₂ (Or.inr h)) hfpv
-    (freeParams_open (fun x hx => by rw [hfpb] at hx; cases hx) hfpv) hbw
-  exact ⟨L₂, hL₂, hrel.imp fun _ _ h => (h.after hE₂).after hE₁⟩
+  have hf' : (if ownKey own f₁ = true then Nm.inst (π ++ [2]) f₁ else f₁) ∈ D₂ :=
+    hfvp' _ (by simp [freeNames])
+  rcases OptRel.cases (hci₂'.store.rel _ hf') with ⟨e1, e2⟩ | ⟨g₁, g₂, e1, e2, -⟩
+  · rw [step_letP_some rfl e1] at hbw
+    rw [← hpv] at e2
+    rw [step_letP_some rfl e2]
+    obtain ⟨L₂, hL₂, hrel⟩ := sim_letAct_chain ih' hb₂ hv₂ hpv.symm hci₂' hF₂
+      hf' hfvb' (fun m h => hsub₂ (Or.inr h)) hsvb'
+      (fun m hm => (hsvw m (hsvv m hm)).imp_left fun h => hsub₂ (Or.inl h)) hfpv
+      (freeParams_open (fun x hx => by rw [hfpb] at hx; cases hx) hfpv) hbw
+    exact ⟨L₂, hL₂, hrel.imp fun _ _ h => (h.after hE₂).after hE₁⟩
+  · rw [step_letP_some_bound rfl e1] at hbw
+    rw [← hpv] at e2
+    injection hbw with hbw
+    subst hbw
+    exact ⟨[], step_letP_some_bound rfl e2, .nil⟩
 
 /-- **The simulation of a `let`-activation** against a plain `let`: the
 right-hand side, then the first side opens the `let` at a fresh path, then
 the match, substitution or failure, alike. -/
-theorem sim_letAct [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree) (hA : C.PatAgree) {n' : ℕ} (ih : SimAt C P₁ P₂ (n' + 1))
+theorem sim_letAct [CodeId X₁] [CodeId X₂] (hC : C.CodeAgree) (hA : C.PatAgree) {n' : ℕ}
+    (ih : SimAt C P₁ P₂ (n' + 1))
     (ih' : SimAt C P₁ P₂ n') {π π' : Path} {σ₁ : GStore S X₁} {σ₂ : GStore S X₂}
     {ℓ : Nm X₁} {own : List X₁} {p₁ w₁ b₁ : Tm S X₁} {p₂ w₂ b₂ : Tm S X₂}
     {ν μ νi : Nm X₁ → Nm X₂} {Rh Rw Rp Rb Rc : List (Nm X₂)} {D : Set (Nm X₁)}
     {L₁ : Result S X₁}
-    (hνi : ∀ n, ownKey own n = false → νi n = ν n)
+    (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hr : ∀ s ∈ own, ¬ C.hole s)
     (hℓp : ℓ ∉ freeParams p₁) (hℓb : ℓ ∉ freeParams b₁)
     {ow op ob : Bool}
     (hw : Rel C ν μ .code Rw ow w₁ w₂) (hp : Rel C νi μ .pat Rp op p₁ p₂)
@@ -1514,6 +1902,7 @@ theorem sim_letAct [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgr
       ownKey own n = true → ownKey own n' = true → νi n = νi n' → n = n')
     (hfp : freeParams (.app (.lam ℓ own (.letP p₁ (.pvar ℓ) b₁)) w₁ : Tm S X₁) = [])
     (hfv : ∀ m ∈ freeNames (.app (.lam ℓ own (.letP p₁ (.pvar ℓ) b₁)) w₁ : Tm S X₁), m ∈ D)
+    (hsv : SealOK C D (.app (.lam ℓ own (.letP p₁ (.pvar ℓ) b₁)) w₁))
     (hci : CI C ν D (Rh ++ Rw ++ Rp ++ Rb ++ Rc) σ₁ σ₂)
     (hF : Fresh π π' ν D (Rh ++ Rw ++ Rp ++ Rb ++ Rc))
     (hrun : step .static P₁ (run .static P₁ (n' + 1)) π σ₁
@@ -1546,10 +1935,28 @@ theorem sim_letAct [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgr
     exact List.perm_append_comm_assoc Rh Rw (Rp ++ (Rb ++ Rc))
   have hciw := hci.perm hperm
   have hFw := hF.perm hperm
+  have hhpb : ∀ n ∈ sealedFree p₁ ++ sealedFree b₁, ownKey own n = false := by
+    intro n hn
+    rcases List.mem_append.1 hn with h | h
+    · exact ownKey_of_holeName hr (hp.sealedFree_holeName n h)
+    · exact ownKey_of_holeName hr (hb.sealedFree_holeName n h)
+  have hsvo : ∀ n ∈ sealedFree p₁ ++ sealedFree b₁, n ∈ D ∨ ∃ s, n = .src s ∧ C.root₁ s := by
+    intro n hn
+    refine hsv n ?_
+    rcases List.mem_append.1 hn with h | h <;>
+      simp [sealedFree, h, hhpb n hn]
+  have hsvw : SealOK C D w₁ := fun m h => hsv m (by simp [sealedFree, h])
+  have hsr : sealRen (π ++ [2]) own (.letP p₁ (.pvar ℓ) b₁) = .letP p₁ (.pvar ℓ) b₁ := by
+    refine sealRen_eq_self_of_free _ own _ fun n hn => hhpb n ?_
+    simp only [sealedFree, List.mem_append] at hn
+    rcases hn with (h | h) | h
+    · exact List.mem_append_left _ h
+    · simp at h
+    · exact List.mem_append_right _ h
   simp only [step] at hrun
   rw [show run .static P₁ (n' + 1) (π ++ [0]) σ₁ (.lam ℓ own (.letP p₁ (.pvar ℓ) b₁)) =
       some [(.lam ℓ own (.letP p₁ (.pvar ℓ) b₁), σ₁)] from rfl, bindOpt_some_singleton] at hrun
-  simp only [activate, subst_letP_param] at hrun
+  simp only [activate, hsr, subst_letP_param] at hrun
   obtain ⟨Lw₁, hLw₁, hbw⟩ := bindOpt_eq_some hrun
   have hoffs : ∀ n ∈ D, Avoid (π ++ [2]) n := fun n hn => (hF.old₁ n hn).avoid_child 2
   have hres : ∀ m, m ∈ Rw ++ (Rh ++ Rb) → m ∈ Rh ++ Rw ++ Rp ++ Rb := by
@@ -1559,14 +1966,15 @@ theorem sim_letAct [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgr
   cases hl₂ : letLam? p₂ w₂ with
   | none =>
       rw [step_letP_none hl₂]
-      obtain ⟨Lw₂, hLw₂, hwr⟩ := ih hw hfpw hfvw hciw (hFw.child 1 0) hLw₁
+      obtain ⟨Lw₂, hLw₂, hwr⟩ := ih hw hfpw hfvw hsvw hciw (hFw.child 1 0) hLw₁
       rw [hLw₂]
       refine bindAll_sim_mem ?_ hwr hbw
-      rintro ⟨v₁, τ₁⟩ hmem ⟨v₂, τ₂⟩ M₁ ⟨ν₁, D₁, hfv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
-      simp only at hfv₁ hrel₁ hfp₁ hci₁ hM₁ ⊢
+      rintro ⟨v₁, τ₁⟩ hmem ⟨v₂, τ₂⟩ M₁ ⟨ν₁, D₁, hfv₁, hsv₁, hE₁, hrel₁, hfp₁, hci₁⟩ hM₁
+      simp only at hfv₁ hsv₁ hrel₁ hfp₁ hci₁ hM₁ ⊢
       have hAv : ∀ n ∈ D₁, Avoid (π ++ [2]) n := hE₁.avoid₁ (by decide : (1 : ℕ) ≠ 2) hoffs
-      obtain ⟨D₂, hsub₂, hfvp', hfvb', hp₂, hb₂, hv₂, hci₂, hold₂, hclass₂⟩ :=
-        letAct_open (ℓ := ℓ) hνi hp hb hlive hinj hfpp hfpb hfvo hE₁.sub hE₁.agree hrel₁ hfv₁ hci₁ hAv
+      obtain ⟨D₂, hsub₂, hfvp', hfvb', hsvp', hsvb', hp₂, hb₂, hv₂, hci₂, hold₂, hclass₂⟩ :=
+        letAct_open (ℓ := ℓ) hνi hr hp hb hlive hinj hfpp hfpb hfvo hsvo hE₁.sub hE₁.agree hrel₁
+          hfv₁ hsv₁ hci₁ hAv
       have hE₂ : Ext π π' Rh ν₁ D₁ (openMap (π ++ [2]) own νi ν₁) D₂ := by
         refine ⟨hold₂, hsub₂, ?_⟩
         intro n hn hnD
@@ -1599,31 +2007,31 @@ theorem sim_letAct [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgr
             simp only [List.mem_append] at hm ⊢
             tauto)).child 1
       have hinert := run_results_inert P₁ .static _ _ _ _ _ hLw₁ _ hmem
-      obtain ⟨M₂, hM₂, hrelM⟩ := sim_letAct_cont hQ hC hA ih' hp₂ hb₂ hv₂ hci₂ hFresh hfvp' hfvb'
-        (fun m h => hsub₂ (hfv₁ m h)) hfp₁
+      obtain ⟨M₂, hM₂, hrelM⟩ := sim_letAct_cont hC hA ih' hp₂ hb₂ hv₂ hci₂ hFresh hfvp' hfvb'
+        (fun m h => hsub₂ (hfv₁ m h)) hsvp' hsvb' (hsv₁.mono hsub₂) hfp₁
         (freeParams_open (fun x hx => by rw [hfpb] at hx; cases hx) hfp₁) hinert hM₁
       exact ⟨M₂, hM₂, hrelM.imp fun _ _ h => ((h.after hE₂).after hE₁.parent).res_mono hres⟩
   | some f₂ =>
-      rw [step_letP_some hl₂]
       obtain ⟨rfl, x₂, own₂, bb₂, rfl⟩ := letLam?_some hl₂
-      obtain ⟨L₂, hL₂, hrel⟩ := sim_letAct_inPlace ih' hνi hw hp hb hlive hinj hfpp hfpb hfpw hfvw
-        hfvo hciw hFw hLw₁ hbw
+      obtain ⟨L₂, hL₂, hrel⟩ := sim_letAct_inPlace ih' hνi hr hw hp hb hlive hinj hfpp hfpb hfpw
+        hfvw hfvo hsvo hsvw hciw hFw hLw₁ hbw
       exact ⟨L₂, hL₂, hrel.imp fun _ _ h => h.res_mono hres⟩
 
 end Cases
 
 /-! ## The simulation -/
 
-/-- **First side to second side.**  Under the static discipline, with bi-unique
-code and related programs, a defined run of the first side from a related
-configuration is matched, at the same fuel, by a defined run of the second
-side, with the bags related pointwise and in order. -/
-theorem sim {P₁ : S → Option (Tm S X₁)} {P₂ : S → Option (Tm S X₂)} [CodeId X₁] [CodeId X₂] (hQ : C.BiUnique) (hC : C.CodeAgree) (hA : C.PatAgree)
+/-- **First side to second side.**  Under the static discipline, with code that
+compares alike and related programs, a defined run of the first side from a
+related configuration is matched, at the same fuel, by a defined run of the
+second side, with the bags related pointwise and in order. -/
+theorem sim {P₁ : S → Option (Tm S X₁)} {P₂ : S → Option (Tm S X₂)} [CodeId X₁] [CodeId X₂]
+    (hC : C.CodeAgree) (hA : C.PatAgree)
     (hP : ProgRel C P₁ P₂) : ∀ n, SimAt C P₁ P₂ n := by
   intro n
   induction n using Nat.strong_induction_on with
   | _ n ih =>
-    intro π π' σ₁ σ₂ t₁ t₂ ν μ Res Rc _ D L₁ hR hfp hfv hci hF hrun
+    intro π π' σ₁ σ₂ t₁ t₂ ν μ Res Rc _ D L₁ hR hfp hfv hsv hci hF hrun
     cases n with
     | zero => cases hrun
     | succ n =>
@@ -1635,46 +2043,47 @@ theorem sim {P₁ : S → Option (Tm S X₁)} {P₂ : S → Option (Tm S X₂)} 
           change some [(.sym s, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
-          exact ⟨_, rfl, .cons (Out.value (.sym s) hfv hfp (by simpa using hci)) .nil⟩
+          exact ⟨_, rfl, .cons (Out.value (.sym s) hfv hsv hfp (by simpa using hci)) .nil⟩
       | fn F => exact sim_fn hP ihn hci hF hrun
       | var m hv =>
           change some [(.var m, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
-          exact ⟨_, rfl, .cons (Out.value (.var m hv) hfv hfp (by simpa using hci)) .nil⟩
+          exact ⟨_, rfl, .cons (Out.value (.var m hv) hfv hsv hfp (by simpa using hci)) .nil⟩
       | pvar x _ => simp [freeParams] at hfp
       | quote hq =>
           change some [(.quote _, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
-          exact ⟨_, rfl, .cons (Out.value (.quote hq) hfv hfp (by simpa using hci)) .nil⟩
+          exact ⟨_, rfl, .cons (Out.value (.quote hq) hfv hsv hfp (by simpa using hci)) .nil⟩
       | ctx ho hks hc =>
           change some [(.ctx _ _, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
-          exact ⟨_, rfl, .cons (Out.value (.ctx ho hks hc) hfv hfp (by simpa using hci)) .nil⟩
+          exact ⟨_, rfl, .cons (Out.value (.ctx ho hks hc) hfv hsv hfp (by simpa using hci)) .nil⟩
       | pquote h hp hok =>
           change some [(.pquote _, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
-          exact ⟨_, rfl, .cons (Out.value (.pquote h hp hok) hfv hfp (by simpa using hci)) .nil⟩
-      | app hf ha => exact sim_app ihn hf ha hfp hfv hci hF hrun
-      | letP _ hp hw hb => exact sim_letP hQ hC hA ihn hp hw hb hfp hfv hci hF hrun
-      | alt _ h₁ h₂ => exact sim_alt ihn h₁ h₂ hfp hfv hci hF hrun
-      | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen =>
+          exact ⟨_, rfl, .cons (Out.value (.pquote h hp hok) hfv hsv hfp (by simpa using hci)) .nil⟩
+      | app hf ha => exact sim_app ihn hf ha hfp hfv hsv hci hF hrun
+      | letP _ hp hw hb => exact sim_letP hC hA ihn hp hw hb hfp hfv hsv hci hF hrun
+      | alt _ h₁ h₂ => exact sim_alt ihn h₁ h₂ hfp hfv hsv hci hF hrun
+      | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen hsealO hsealK =>
           change some [(.lam _ _ _, σ₁)] = some L₁ at hrun
           injection hrun with hrun
           subst hrun
           exact ⟨_, rfl, .cons (Out.value
-            (.lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen)
-            hfv hfp (by simpa using hci)) .nil⟩
-      | letAct _ hνi _ hℓp hℓb hw hp hb hlive hinj =>
+            (.lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen hsealO hsealK)
+            hfv hsv hfp (by simpa using hci)) .nil⟩
+      | letAct _ hνi hr hℓp hℓb hw hp hb hlive hinj =>
           cases n with
           | zero => simp [step, run, bindOpt] at hrun
           | succ n' =>
-              exact sim_letAct hQ hC hA ihn (ih n' (by omega)) hνi hℓp hℓb hw hp hb hlive hinj hfp hfv
-                hci hF hrun
-      | newAct hνi _ hℓ hb hlive hinj => exact sim_newAct ihn hνi hℓ hb hlive hinj hfp hfv hci hF hrun
+              exact sim_letAct hC hA ihn (ih n' (by omega)) hνi (fun s hs => (hr s hs).2) hℓp hℓb
+                hw hp hb hlive hinj hfp hfv hsv hci hF hrun
+      | newAct hνi hr hℓ hb hlive hinj =>
+          exact sim_newAct ihn hνi (fun s hs => (hr s hs).2) hℓ hb hlive hinj hfp hfv hsv hci hF hrun
 
 /-! ## The converse direction: definedness -/
 
@@ -1732,7 +2141,7 @@ def SimIAt [CodeId X₁] [CodeId X₂] (C : Setting S X₁ X₂) (P₁ : S → O
   ∀ {π π' : Path} {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} {t₁ : Tm S X₁} {t₂ : Tm S X₂}
     {ν μ : Nm X₁ → Nm X₂} {Res Rc : List (Nm X₂)} {ok : Bool} {D : Set (Nm X₁)} {L₂ : Result S X₂},
     Rel C ν μ .code Res ok t₁ t₂ → freeParams t₁ = [] → (∀ x ∈ freeNames t₁, x ∈ D) →
-    CI C ν D (Res ++ Rc) σ₁ σ₂ → Fresh π π' ν D (Res ++ Rc) →
+    SealOK C D t₁ → CI C ν D (Res ++ Rc) σ₁ σ₂ → Fresh π π' ν D (Res ++ Rc) →
     run .static P₂ m π' σ₂ t₂ = some L₂ → ∃ n L₁, run .static P₁ n π σ₁ t₁ = some L₁
 
 end IdSlot

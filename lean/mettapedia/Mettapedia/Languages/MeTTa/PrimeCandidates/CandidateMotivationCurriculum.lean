@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.ChronologicalArticleCompilation
-import Mettapedia.GSLT.LanguageDef.NIKGSLT
+import Mettapedia.GSLT.LanguageDef.CheckerGSLT
 import Mettapedia.GSLT.LanguageDef.PreparedEquationCompilation
 import Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Core
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DataTranslationKernel
@@ -149,7 +149,7 @@ theorem source_promotion_ne_reverse_direction_call :
 #check Mettapedia.Languages.MeTTa.PrimeCandidates.NativeFibredCost.Examples.contested_analysis_produces_no_schedule
 #check Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionCost.parallel_two_events_ne_sequential
 #check Mettapedia.GSLT.LanguageDef.ChronologicalArticleCompilation.Builder.finish?_closed_sound
-#check Mettapedia.GSLT.LanguageDef.NIKGSLT.Family.acceptance_implies_certified
+#check Mettapedia.GSLT.LanguageDef.CheckerGSLT.Family.acceptance_implies_certified
 #check Mettapedia.Languages.MeTTa.PrimeCandidates.GradualExecutionPlan.NativeCanary.rejected_check_does_not_gate_raw_execution
 #check Mettapedia.Languages.MeTTa.PrimeCandidates.GradualExecutionPlan.CheckedPlan.demandCheck_evaluationCount
 #check Mettapedia.Languages.MeTTa.PrimeCandidates.GradualExecutionPlan.CheckedPlan.executionWorkSpanWithDemand_ne_withoutDemand

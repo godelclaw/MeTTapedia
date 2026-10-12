@@ -23,7 +23,7 @@ open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.Dynamics.OccurrenceSemantics
 open Mettapedia.GSLT.Dynamics.ProofRelevantNeed
 open Mettapedia.GSLT.Dynamics.RevisionedOccurrenceProofFlow

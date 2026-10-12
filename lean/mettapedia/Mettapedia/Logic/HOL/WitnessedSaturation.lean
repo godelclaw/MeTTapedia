@@ -147,7 +147,7 @@ theorem witnessTheoryUsing_succ (supply : WitnessSupply)
           (witnessTheoryUsing supply T₀ enum n) := by
   simp only [witnessTheoryUsing, witnessChainUsing]
   ext x
-  simp only [Set.mem_union, Set.mem_setOf_eq, List.mem_cons, Set.mem_insert_iff]
+  simp only [Set.mem_union, Set.mem_ofPred_eq, List.mem_cons, Set.mem_insert_iff]
   tauto
 
 theorem witnessTheory_zero (T₀ : ClosedTheorySet (WithParams Const))
@@ -183,7 +183,7 @@ theorem witnessTheoryUsing_consistent (supply : WitnessSupply)
           (witnessIndex (witnessChainUsing supply enum n) (enum n))))
         ih ?_ ?_
       · intro ψ hψ
-        simp only [witnessTheoryUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+        simp only [witnessTheoryUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
         rcases hψ with hψ0 | hψc
         · exact hT0 ψ hψ0 (enum n).1 _
         · exact noConstOccurrence_param_of_ge _ ψ
@@ -258,10 +258,10 @@ theorem witnessInstanceTheoryUsing_succ
   by_cases hEx : ClosedTheorySet.Provable (Const := WithParams Const)
       (T₀ ∪ {ψ | ψ ∈ witnessInstanceChainUsing supply T₀ enum n}) (.ex (enum n).2)
   · simp [witnessInstanceTheoryUsing, witnessInstanceChainUsing, hEx,
-      Set.mem_union, Set.mem_setOf_eq, Set.mem_insert_iff]
+      Set.mem_union, Set.mem_insert_iff]
     tauto
   · simp [witnessInstanceTheoryUsing, witnessInstanceChainUsing, hEx,
-      Set.mem_union, Set.mem_setOf_eq]
+      Set.mem_union]
 
 /-- The stage-`n` instance witness is fresh for the current raw instance theory. -/
 theorem witnessInstanceTheoryUsing_fresh_selected
@@ -274,7 +274,7 @@ theorem witnessInstanceTheoryUsing_fresh_selected
         (param (enum n).1 (supply.index
           (witnessIndex (witnessInstanceChainUsing supply T₀ enum n) (enum n)))) ψ := by
   intro n ψ hψ
-  simp only [witnessInstanceTheoryUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessInstanceTheoryUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψ0 | hψc
   · exact hT0 ψ hψ0 (enum n).1 _
   · exact noConstOccurrence_param_of_ge _ ψ
@@ -361,7 +361,7 @@ theorem witnessInstanceTheoryUsing_mono
     witnessInstanceTheoryUsing supply T₀ enum m ⊆
       witnessInstanceTheoryUsing supply T₀ enum n := by
   intro ψ hψ
-  simp only [witnessInstanceTheoryUsing, Set.mem_union, Set.mem_setOf_eq] at hψ ⊢
+  simp only [witnessInstanceTheoryUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ ⊢
   rcases hψ with h0 | hc
   · exact Or.inl h0
   · exact Or.inr (witnessInstanceChainUsing_mono supply T₀ enum h hc)
@@ -394,7 +394,7 @@ theorem exists_stage_instance_using
         exists_stage_instance_using supply T₀ enum Γ
           (fun ψ hψ => hΓ ψ (List.mem_cons_of_mem _ hψ))
       have ha := hΓ a (List.mem_cons_self)
-      simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_setOf_eq] at ha
+      simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at ha
       rcases ha with ha0 | ⟨na, hna⟩
       · refine ⟨N, fun ψ hψ => ?_⟩
         rcases List.mem_cons.mp hψ with rfl | hψ'
@@ -778,7 +778,7 @@ theorem witnessTheoryUsing_mono (supply : WitnessSupply)
     (enum : Nat → Body Const) {m n : Nat} (h : m ≤ n) :
     witnessTheoryUsing supply T₀ enum m ⊆ witnessTheoryUsing supply T₀ enum n := by
   intro ψ hψ
-  simp only [witnessTheoryUsing, Set.mem_union, Set.mem_setOf_eq] at hψ ⊢
+  simp only [witnessTheoryUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ ⊢
   rcases hψ with h0 | hc
   · exact Or.inl h0
   · exact Or.inr (witnessChainUsing_mono supply enum h hc)
@@ -801,7 +801,7 @@ theorem exists_stage_using (supply : WitnessSupply)
         exists_stage_using supply T₀ enum Γ
           (fun ψ hψ => hΓ ψ (List.mem_cons_of_mem _ hψ))
       have ha := hΓ a (List.mem_cons_self)
-      simp only [witnessLimitUsing, Set.mem_union, Set.mem_setOf_eq] at ha
+      simp only [witnessLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at ha
       rcases ha with ha0 | ⟨na, hna⟩
       · refine ⟨N, fun ψ hψ => ?_⟩
         rcases List.mem_cons.mp hψ with rfl | hψ'

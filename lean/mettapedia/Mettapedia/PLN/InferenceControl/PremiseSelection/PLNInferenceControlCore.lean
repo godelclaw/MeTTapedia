@@ -26,7 +26,7 @@ open Mettapedia.PLN.Evidence.EvidenceQuantale
 
 /-- Chapter-13 pooled score channel:
 normalize the pooled Prior-NB posterior at selector default prior-total and project strength. -/
-noncomputable def ch13ScorePooled
+noncomputable def pooledSelectorScore
     {Goal Fact : Type*} [Fintype Fact]
     (globalPrior localPrior likelihood : Scorer Goal Fact)
     (g : Goal) : Fact → ℝ :=
@@ -37,7 +37,7 @@ noncomputable def ch13ScorePooled
 
 /-- Chapter-13 two-stage score channel:
 normalize the commuted Prior-NB posterior at selector default prior-total and project strength. -/
-noncomputable def ch13ScoreTwoStage
+noncomputable def twoStageSelectorScore
     {Goal Fact : Type*} [Fintype Fact]
     (globalPrior localPrior likelihood : Scorer Goal Fact)
     (g : Goal) : Fact → ℝ :=
@@ -48,7 +48,7 @@ noncomputable def ch13ScoreTwoStage
 
 /-- Core Chapter-13 selector theorem:
 defaults discharge budget + gate-range obligations and expose pooled/two-stage ranking equivalence. -/
-theorem ch13_selector_default_ranking_iff
+theorem selector_default_ranking_iff
     {Goal Fact Bin : Type*} [Fintype Fact]
     (A : PriorNBAssumptionChecklist Goal Fact Bin)
     (η : Fact → ℝ)
@@ -59,9 +59,9 @@ theorem ch13_selector_default_ranking_iff
       ∧ (∀ g' f',
           0 ≤ (selectorDefaults_halfGate Goal Fact).gate g' f'
             ∧ (selectorDefaults_halfGate Goal Fact).gate g' f' ≤ 1)
-      ∧ (BayesOptimalRanking η (ch13ScorePooled globalPrior localPrior likelihood g)
+      ∧ (BayesOptimalRanking η (pooledSelectorScore globalPrior localPrior likelihood g)
           ↔
-          BayesOptimalRanking η (ch13ScoreTwoStage globalPrior localPrior likelihood g)) := by
+          BayesOptimalRanking η (twoStageSelectorScore globalPrior localPrior likelihood g)) := by
   change
     A.topK ≤ Fintype.card Fact
       ∧ (∀ g' f',
@@ -81,7 +81,7 @@ theorem ch13_selector_default_ranking_iff
 
 /-- If two-stage Prior-NB ranking is Bayes-optimal, then pooled Prior-NB ranking remains
 Bayes-optimal under bounded perturbations and strict pairwise margins. -/
-theorem ch13_stable_pooled_of_twoStage
+theorem stable_pooled_of_twoStage
     {Goal Fact Bin : Type*} [Fintype Fact]
     (A : PriorNBAssumptionChecklist Goal Fact Bin)
     (η : Fact → ℝ)
@@ -90,30 +90,30 @@ theorem ch13_stable_pooled_of_twoStage
     (hLocal : A.localExchangeabilityInBin)
     (δ : Fact → ℝ) (ε : ℝ)
     (hTwoStage :
-      BayesOptimalRanking η (ch13ScoreTwoStage globalPrior localPrior likelihood g))
+      BayesOptimalRanking η (twoStageSelectorScore globalPrior localPrior likelihood g))
     (hbound : ∀ x, |δ x| ≤ ε)
     (hmargin : ∀ x y, η x < η y →
-      ch13ScorePooled globalPrior localPrior likelihood g y
-        - ch13ScorePooled globalPrior localPrior likelihood g x > 2 * ε)
+      pooledSelectorScore globalPrior localPrior likelihood g y
+        - pooledSelectorScore globalPrior localPrior likelihood g x > 2 * ε)
     (htie : ∀ x y, η x = η y → δ x = δ y) :
     BayesOptimalRanking η
-      (perturbedScore (ch13ScorePooled globalPrior localPrior likelihood g) δ) := by
+      (perturbedScore (pooledSelectorScore globalPrior localPrior likelihood g) δ) := by
   have hSel :=
-    ch13_selector_default_ranking_iff
+    selector_default_ranking_iff
       (A := A) (η := η)
       (globalPrior := globalPrior) (localPrior := localPrior)
       (likelihood := likelihood) (g := g) hLocal
   have hPooled :
-      BayesOptimalRanking η (ch13ScorePooled globalPrior localPrior likelihood g) :=
+      BayesOptimalRanking η (pooledSelectorScore globalPrior localPrior likelihood g) :=
     hSel.2.2.mpr hTwoStage
   exact bayesRanking_stable_of_margin_and_tie_equivariant
-    (η := η) (s := ch13ScorePooled globalPrior localPrior likelihood g)
+    (η := η) (s := pooledSelectorScore globalPrior localPrior likelihood g)
     (δ := δ) (ε := ε)
     hPooled hbound hmargin htie
 
 /-- Chapter-13 one-call composed core theorem:
 selector defaults + ranking transfer + perturbation stability + greedy-coverage bound. -/
-theorem ch13_inferenceControl_end_to_end
+theorem inferenceControl_end_to_end
     {Goal Fact Bin : Type*} [Fintype Fact] [DecidableEq Fact]
     (A : PriorNBAssumptionChecklist Goal Fact Bin)
     (η : Fact → ℝ)
@@ -122,11 +122,11 @@ theorem ch13_inferenceControl_end_to_end
     (hLocal : A.localExchangeabilityInBin)
     (δ : Fact → ℝ) (ε : ℝ)
     (hTwoStage :
-      BayesOptimalRanking η (ch13ScoreTwoStage globalPrior localPrior likelihood g))
+      BayesOptimalRanking η (twoStageSelectorScore globalPrior localPrior likelihood g))
     (hbound : ∀ x, |δ x| ≤ ε)
     (hmargin : ∀ x y, η x < η y →
-      ch13ScorePooled globalPrior localPrior likelihood g y
-        - ch13ScorePooled globalPrior localPrior likelihood g x > 2 * ε)
+      pooledSelectorScore globalPrior localPrior likelihood g y
+        - pooledSelectorScore globalPrior localPrior likelihood g x > 2 * ε)
     (htie : ∀ x y, η x = η y → δ x = δ y)
     (D G : Finset Fact)
     (hGreedy : GreedyChain D A.topK G) :
@@ -135,15 +135,15 @@ theorem ch13_inferenceControl_end_to_end
           0 ≤ (selectorDefaults_halfGate Goal Fact).gate g' f'
             ∧ (selectorDefaults_halfGate Goal Fact).gate g' f' ≤ 1)
       ∧ BayesOptimalRanking η
-          (perturbedScore (ch13ScorePooled globalPrior localPrior likelihood g) δ)
+          (perturbedScore (pooledSelectorScore globalPrior localPrior likelihood g) δ)
       ∧ (1 - Real.exp (-1)) * (Nat.min A.topK D.card : ℝ) ≤ dependencyCoverage D G := by
   have hSel :=
-    ch13_selector_default_ranking_iff
+    selector_default_ranking_iff
       (A := A) (η := η)
       (globalPrior := globalPrior) (localPrior := localPrior)
       (likelihood := likelihood) (g := g) hLocal
   refine ⟨hSel.1, hSel.2.1, ?_, ?_⟩
-  · exact ch13_stable_pooled_of_twoStage
+  · exact stable_pooled_of_twoStage
       (A := A) (η := η)
       (globalPrior := globalPrior) (localPrior := localPrior)
       (likelihood := likelihood) (g := g)

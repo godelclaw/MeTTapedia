@@ -72,11 +72,15 @@ def straightOf (env : IEnv X) (fr pos : Owner) : List (X × S) → Atom S X → 
         (straightOf (env.set [y] fun spelling => ⟨spelling, fr, pos, .pat⟩) fr (pos ++ [2]) rest
           atom)
 
+/- The root of the form being elaborated: straight-line text has no quotation,
+so the elaboration does not depend on it. -/
+variable (R : Owner)
+
 /-- **Lexical fresh elaborates straight-line text to that program**, with no
 name in force. -/
 theorem elabLFId_straight : ∀ (bindings : List (X × S)) (atom : Atom S X) (env : IEnv X)
     (pv : X → Owner) (fr pos : Owner),
-    elabLFId [] env pv fr pos (straightSrc bindings atom) =
+    elabLFId R [] env pv fr pos (straightSrc bindings atom) =
       (straightOf env fr pos bindings atom).toTm
   | [], .sym _, _, _, _, _ => rfl
   | [], .name _, _, _, _, _ => rfl
@@ -92,7 +96,7 @@ theorem elabLFId_straight : ∀ (bindings : List (X × S)) (atom : Atom S X) (en
 theorem elabLFFormAt_straight (bindings : List (X × S)) (atom : Atom S X) :
     elabLFFormAt [] (straightSrc bindings atom) =
       (straightOf (lfRootEnv []) [] [] bindings atom).toTm :=
-  elabLFId_straight bindings atom _ _ _ _
+  elabLFId_straight [] bindings atom _ _ _ _
 
 /-- **Every slot is new where it is bound**: the sites of the `let`s are
 pairwise different, and longer than every site in the store. -/

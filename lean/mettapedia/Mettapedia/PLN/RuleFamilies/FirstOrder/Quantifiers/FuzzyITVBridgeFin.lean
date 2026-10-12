@@ -30,6 +30,6 @@ abbrev fuzzyExistsScoreFin_pos_of_itvStrengthWitness := @fuzzyExistsScore_pos_of
 abbrev nearOneFin_itvStrength_of_fuzzyForAll_eq_one := @nearOne_itvStrength_of_fuzzyForAll_eq_one
 abbrev fuzzyThereExistsHoldsFin_itvStrength_iff_exchange :=
   @fuzzyThereExistsHolds_itvStrength_iff_exchange
-abbrev ch11_itv_rule_family_coreFin := @ch11_itv_rule_family_core
+abbrev itv_rule_family_coreFin := @itv_rule_family_core
 
 end Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers

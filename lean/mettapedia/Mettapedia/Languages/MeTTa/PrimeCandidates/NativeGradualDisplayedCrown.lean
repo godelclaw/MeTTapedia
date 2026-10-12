@@ -41,7 +41,7 @@ open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramElaboration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramGradualGuarantee
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelGradualGuarantee
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost
 
 /-! ## Complete authored programs as a displayed gradual capability -/
@@ -244,7 +244,7 @@ namespace Examples.Separated
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration.Examples
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration.Examples
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission.Examples.Separated
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission.Examples.Separated
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds.Examples.Separated
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelGradualGuarantee.Examples.Separated
 

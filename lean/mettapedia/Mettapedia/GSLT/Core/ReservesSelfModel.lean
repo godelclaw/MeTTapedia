@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.WriterGSLT
 import Mettapedia.GSLT.Core.IndexedOperational
 
@@ -274,16 +275,8 @@ theorem back_is_formation : restoresHome pingPong_back :=
 
 /-- A coarser observer that identifies every subject erases the home
 distinction, so the separation readout does not descend. -/
-def coarse : GSLT where
-  Term := Unit
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def coarse : GSLT :=
+  GSLT.stepFree (Unit)
 
 def forgetSubject : Bool → Unit := fun _ => ()
 

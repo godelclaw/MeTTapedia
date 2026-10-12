@@ -156,3 +156,235 @@ theorem literal_rewrite_sublist_canonical (profile : ReflectionProfile)
     literal_sublist_canonical profile relEnv language ambient rule term
 
 end Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Reflection
+open ReflectiveSubstitution
+open ReflectiveInstantiation
+open Substitution
+open RuleBinding
+open ScopedRuleMatching
+
+theorem reflective_operation_free_within (footprint : List String)
+    (declaration : ReflectivePresentationDecl) (replacement body : Pattern)
+    (inserted : ∀ free ∈ replacement.freeFvarNames, free ∈ footprint)
+    (original : ∀ free ∈ body.freeFvarNames, free ∈ footprint) :
+    ∀ free ∈ (ScopedRuleInstantiation.reflectiveOperation declaration replacement body).freeFvarNames,
+      free ∈ footprint := by
+  apply reflective_instantiate_free_within footprint declaration 0 _ body _ original
+  rw [normalize_replacement_free_names]
+  exact inserted
+
+theorem binder_operation_free_within (footprint : List String)
+    (profile : ReflectionProfile) (rule : RewriteRule) (replacement body : Pattern)
+    (inserted : ∀ free ∈ replacement.freeFvarNames, free ∈ footprint)
+    (original : ∀ free ∈ body.freeFvarNames, free ∈ footprint) :
+    ∀ free ∈ (ScopedReflectiveExecution.binderOperation profile rule replacement body).freeFvarNames,
+      free ∈ footprint := by
+  unfold ScopedReflectiveExecution.binderOperation
+  cases substitutionPresentationForRule? profile rule with
+  | none => exact instantiate_bvar_free_within footprint replacement body inserted original
+  | some declaration => exact reflective_operation_free_within footprint declaration replacement body inserted original
+theorem selected_reduct_free_within (footprint : List String)
+    (profile : ReflectionProfile) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (admitted : admittedFor rule spec = true)
+    (ambient : Nat) (assignment : ScopedRuleMatching.Assignment) (target : Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (success : reductWith? (ScopedReflectiveExecution.binderOperation profile rule)
+      rule spec ambient assignment = some target) :
+    ∀ name ∈ target.freeFvarNames, name ∈ footprint :=
+  admitted_reduct_with_free_within footprint (ScopedReflectiveExecution.binderOperation profile rule)
+    (binder_operation_free_within footprint profile rule) rule spec admitted ambient assignment target stored success
+
+namespace FootprintControls
+
+def declaration : ReflectivePresentationDecl :=
+  { name := "footprint-reflection", processSort := "Proc", nameSort := "Name"
+    quoteConstructor := "Quote", dropConstructor := "Drop", parallelCollection := .hashBag
+    parallelUnitConstructor := "Zero", quoteDropEquation := "quote-drop" }
+
+def bindings : RuleBindingSpec :=
+  { dependencies := [("B", [.base "Name"]), ("P", []), ("R", [])]
+    occurrences :=
+      [{ name := "B", site := .left, path := [0, 0], arguments := [.bvar 0] }
+       , { name := "B", site := .right, path := [0, 0], arguments := [.bvar 0] }] }
+
+def rule (kind : CollType) : RewriteRule :=
+  { name := "footprint-rule"
+    typeContext := [("B", .base "Proc"), ("P", .base "Name"),
+      ("R", .collection kind (.base "Proc"))]
+    premises := []
+    left := .apply "Triple" [.lambda "x" (.fvar "B"), .fvar "P", .collection kind [] (some "R")]
+    right := .collection kind [.subst (.fvar "B") (.fvar "P")] (some "R")
+    bindings := some bindings }
+
+def profile : ReflectionProfile :=
+  { presentations := [declaration]
+    rules := [{ name := "footprint-selection"
+                rewriteRule := "footprint-rule"
+                matchingPresentation := declaration.name
+                substitutionPresentation := declaration.name }] }
+
+def assignment (kind : CollType) : ScopedRuleMatching.Assignment :=
+  [("B", ⟨[.base "Name"], 0, .apply "Drop" [.bvar 0]⟩),
+   ("P", ⟨[], 0, .apply "Quote" [.fvar "inserted"]⟩),
+   ("R", ⟨[], 0, .collection kind [.fvar "residual-a", .fvar "residual-b"] none⟩)]
+
+def footprint : List String := ["inserted", "residual-a", "residual-b"]
+
+theorem nonzero_collection_admitted (kind : CollType) :
+    admittedFor (rule kind) bindings = true := by
+  cases kind <;> decide
+
+theorem selected_collection_success (kind : CollType) :
+    reductWith? (ScopedReflectiveExecution.binderOperation profile (rule kind))
+      (rule kind) bindings 0 (assignment kind) =
+      some (.collection kind [.fvar "inserted", .fvar "residual-a", .fvar "residual-b"] none) := by
+  simp [reductWith?, instantiateWith?, instantiateArgsWith?, rule, bindings, assignment, lookup,
+    arguments?, dependencies?, occurrenceDeclared, sitePattern?, occurrenceAt?, instantiateValue?,
+    occurrenceAssignment, ContextSubstitution.substitute, ContextSubstitution.substituteList,
+    Pattern.isWellScopedAt, Pattern.isWellScopedListAt,
+    ScopedReflectiveExecution.binderOperation, profile, declaration,
+    substitutionPresentationForRule?, reflectiveRuleForRule?, presentationNamed?,
+    ScopedRuleInstantiation.reflectiveOperation, ReflectiveInstantiation.instantiate,
+    ReflectiveInstantiation.nameMark, normalizeReflectiveReplacement, normalizeReflective,
+    Substitution.instantiateBVarAt,
+    Substitution.liftBVars]
+
+theorem ordinary_collection_success (kind : CollType) :
+    reduct? (rule kind) bindings 0 (assignment kind) =
+      some (.collection kind [.apply "Drop" [.apply "Quote" [.fvar "inserted"]],
+        .fvar "residual-a", .fvar "residual-b"] none) := by
+  simp [reduct?, instantiateAt?, instantiateWith?, instantiateArgsWith?, rule, bindings, assignment, lookup,
+    arguments?, dependencies?, occurrenceDeclared, sitePattern?, occurrenceAt?, instantiateValue?,
+    occurrenceAssignment, ContextSubstitution.substitute, ContextSubstitution.substituteList,
+    Pattern.isWellScopedAt, Pattern.isWellScopedListAt,
+    Substitution.instantiateBVar, Substitution.instantiateBVarAt, Substitution.liftBVars]
+
+theorem selected_collection_earned_coverage (kind : CollType) :
+    ∀ name ∈ (Pattern.collection kind
+      [.fvar "inserted", .fvar "residual-a", .fvar "residual-b"] none).freeFvarNames,
+      name ∈ footprint := by
+  apply selected_reduct_free_within footprint profile (rule kind) bindings
+    (nonzero_collection_admitted kind) 0 (assignment kind) _ _ (selected_collection_success kind)
+  simp [assignmentFreeWithin, assignment, footprint, Pattern.freeFvarNames]
+
+theorem residual_order_retained (kind : CollType) :
+    (Pattern.collection kind [.fvar "inserted", .fvar "residual-a", .fvar "residual-b"] none).freeFvarNames =
+      footprint := by
+  simp [Pattern.freeFvarNames, footprint]
+
+theorem literal_drop_quote_remains :
+    ScopedRuleInstantiation.reflectiveOperation declaration (.fvar "unused")
+      (.apply "Drop" [.apply "Quote" [.fvar "literal"]]) =
+      .apply "Drop" [.apply "Quote" [.fvar "literal"]] := by
+  decide
+
+theorem opaque_quote_keeps_name :
+    ScopedRuleInstantiation.reflectiveOperation declaration (.fvar "inserted")
+      (.apply "Quote" [.apply "F" [.bvar 0, .fvar "literal"]]) =
+      .apply "Quote" [.apply "F" [.bvar 0, .fvar "literal"]] := by
+  decide
+
+theorem static_quote_drop_keeps_names :
+    (normalizeReflective declaration
+      (.apply "Quote" [.apply "Drop" [.collection .hashSet [.fvar "literal"] (some "rest")]])).freeFvarNames =
+      ["literal", "rest"] := by
+  rw [normalize_reflective_free_names]
+  simp [Pattern.freeFvarNames]
+
+def openArgumentBindings : RuleBindingSpec :=
+  { dependencies := [("T", [.base "Proc"])]
+    occurrences :=
+      [{ name := "T", site := .left, path := [0], arguments := [.fvar "argument"] },
+       { name := "T", site := .right, path := [0], arguments := [.fvar "argument"] }] }
+
+def openArgumentRule : RewriteRule :=
+  { name := "open-argument-rule", typeContext := [("T", .base "Proc")], premises := []
+    left := .lambda "x" (.fvar "T"), right := .lambda "x" (.fvar "T")
+    bindings := some openArgumentBindings }
+
+def closedStoredAssignment : ScopedRuleMatching.Assignment :=
+  [("T", ⟨[.base "Proc"], 0, .bvar 0⟩)]
+
+theorem unadmitted_argument_can_add_name :
+    admittedFor openArgumentRule openArgumentBindings = false ∧
+    assignmentFreeWithin [] closedStoredAssignment ∧
+    reduct? openArgumentRule openArgumentBindings 0 closedStoredAssignment =
+      some (.lambda "x" (.fvar "argument")) ∧
+    ¬ (∀ name ∈ (Pattern.lambda "x" (.fvar "argument")).freeFvarNames, name ∈ ([] : List String)) := by
+  constructor
+  · decide
+  constructor
+  · simp [assignmentFreeWithin, closedStoredAssignment, Pattern.freeFvarNames]
+  constructor
+  · simp [reduct?, instantiateAt?, instantiateWith?, openArgumentRule, openArgumentBindings,
+      closedStoredAssignment, lookup, arguments?, dependencies?, occurrenceDeclared, sitePattern?,
+      occurrenceAt?, instantiateValue?, occurrenceAssignment, ContextSubstitution.substitute,
+      Pattern.isWellScopedAt]
+  · simp [Pattern.freeFvarNames]
+
+theorem actual_occurrence_argument_coverage :
+    ∀ name ∈ (Pattern.lambda "x" (.fvar "argument")).freeFvarNames,
+      name ∈ ["argument"] := by
+  apply instantiate_with_free_within ["argument"] Substitution.instantiateBVar
+    (instantiate_bvar_free_within ["argument"]) openArgumentRule openArgumentBindings 0 .right [] 0
+    closedStoredAssignment openArgumentRule.right _ _ _
+    (by simpa only [reduct?, instantiateAt?] using unadmitted_argument_can_add_name.2.2.1)
+  · simp [assignmentFreeWithin, closedStoredAssignment, Pattern.freeFvarNames]
+  · intro name site path arguments selected
+    unfold arguments? at selected
+    simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at selected
+    rcases selected with ⟨dependencies, _found, guardValue, _declared, selected⟩
+    split at selected
+    · split at selected <;> cases selected
+      intro pattern member
+      cases member
+    · rename_i row rows
+      split at selected <;> cases selected
+      have selectedRow : row ∈ openArgumentBindings.occurrences.filter
+          (fun candidate => candidate.name == name && candidate.site == site && candidate.path == path) := by
+        rw [rows]
+        simp
+      have member : row ∈ openArgumentBindings.occurrences := (List.mem_filter.mp selectedRow).1
+      simp only [openArgumentBindings, List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with rfl | rfl <;> simp [patternsFreeWithin, Pattern.freeFvarNames]
+    · cases selected
+
+theorem missing_inserted_name_is_not_covered (kind : CollType) :
+    ¬ (∀ name ∈ (Pattern.collection kind
+      [.fvar "inserted", .fvar "residual-a", .fvar "residual-b"] none).freeFvarNames,
+      name ∈ ["residual-a", "residual-b"]) := by
+  simp [Pattern.freeFvarNames]
+
+end FootprintControls
+
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.reflective_operation_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.binder_operation_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.selected_reduct_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.declaration
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.bindings
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.rule
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.profile
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.assignment
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.footprint
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.nonzero_collection_admitted
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.selected_collection_success
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.ordinary_collection_success
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.selected_collection_earned_coverage
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.residual_order_retained
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.literal_drop_quote_remains
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.opaque_quote_keeps_name
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.static_quote_drop_keeps_names
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.openArgumentBindings
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.openArgumentRule
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.closedStoredAssignment
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.unadmitted_argument_can_add_name
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.actual_occurrence_argument_coverage
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution.FootprintControls.missing_inserted_name_is_not_covered
+
+end Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution

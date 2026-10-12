@@ -9,7 +9,7 @@ interpretations witness reflexivity and composition witnesses transitivity.
 
 This order is specific to finitary equational theories.  It is not silently
 identified with proof-theoretic interpretability for arithmetic or with the
-more permissive semantic-simulation order on NIK theory objects.
+more permissive semantic-simulation order on SemanticService theory objects.
 -/
 
 set_option autoImplicit false

@@ -59,12 +59,12 @@ noncomputable def predicateCountingCapacityExistsAndExistsNotBandCut
         (Base := Base) (Const := WithParams Const) tau p (hp0 ρ i))
     hObj hMeasurable 1 1 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsFormula_iff_one_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 tau p)
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsNotFormula_iff_ncard_extension_add_one_le
           (Base := Base) (Const := WithParams Const) M.1 tau p N
@@ -118,12 +118,12 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_ge_iff
           (Base := Base) (Const := WithParams Const) tau p (hp0 ρ i))
       hObj hMeasurable 1 1 N hNpos hCardEq
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateExistsFormula_iff_one_le_ncard_extension
             (Base := Base) (Const := WithParams Const) M.1 tau p)
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateExistsNotFormula_iff_ncard_extension_add_one_le
             (Base := Base) (Const := WithParams Const) M.1 tau p N
@@ -171,8 +171,8 @@ theorem predicateCountingCapacityExistsAndExistsNotBandCut_ge_iff_countingCapaci
             (predicateExtension
               (Base := Base) (Const := WithParams Const) M.1 tau p) :
             unitInterval) : ℝ) < 1 := by
-  letI := hObj M
-  letI := hMeasurable M
+  let := hObj M
+  let := hMeasurable M
   rw [predicateCountingCapacityExistsAndExistsNotBandCut_ge_iff
     (Base := Base) (Const := Const) (T := T)
     tau p hp0 hObj hMeasurable N hNpos hCardEq M]
@@ -494,12 +494,12 @@ noncomputable def predicateCountingCapacityTwoToAllButOneBaseBandCut
         (Base := Base) (Const := WithParams Const) (.base b) p (hp0 ρ i))
     hObj hMeasurable 2 1 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsNotFormula_iff_ncard_extension_add_one_le
           (Base := Base) (Const := WithParams Const) M.1 (.base b) p N
@@ -553,12 +553,12 @@ theorem predicateCountingCapacityTwoToAllButOneBaseBandCut_ge_iff
           (Base := Base) (Const := WithParams Const) (.base b) p (hp0 ρ i))
       hObj hMeasurable 2 1 N hNpos hCardEq
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
             (Base := Base) (Const := WithParams Const) M.1 b p)
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateExistsNotFormula_iff_ncard_extension_add_one_le
             (Base := Base) (Const := WithParams Const) M.1 (.base b) p N

@@ -2,7 +2,7 @@ import Mettapedia.Languages.MeTTa.Experimental.StagedReflective.Presentation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DataFibration
 
 /-!
-# candidate-internal NIK admission
+# candidate-internal SemanticService admission
 
 Admission is a revision-keyed service, not an interior proof replay.  An
 authority decides independently stated claims.  Successful decisions are
@@ -20,7 +20,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.InternalAdmission
 
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Languages.MeTTa.Experimental.StagedReflective
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DataFibration
 
@@ -28,7 +28,7 @@ universe uRevision uKey uClaim
 
 /-! ## Revision-keyed direct authority -/
 
-/-- A direct NIK authority together with the stable authored identity used by
+/-- A direct SemanticService authority together with the stable authored identity used by
 its admission cache.  Equal keys must preserve meaning; cache soundness must
 not rely on collision-prone equality alone. -/
 structure RevisionedAuthority
@@ -377,7 +377,7 @@ def internalAdmissionType
     (familiesCwF.pi (revisionTy authority)
       (familiesCwF.pi (claimTy authority) (runTy authority)))
 
-/-- NIK admission as an ordinary candidate term. -/
+/-- SemanticService admission as an ordinary candidate term. -/
 def internalAdmission
     (authority : RevisionedAuthority Revision Key Claim) :
     familiesCwF.Tm CandidateContext (internalAdmissionType authority) :=

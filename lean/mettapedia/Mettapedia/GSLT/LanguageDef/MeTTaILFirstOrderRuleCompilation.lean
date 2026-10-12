@@ -140,6 +140,13 @@ mutual
     | plan :: plans => plan.erase :: erasePatterns plans
 end
 
+/-- Erasure retains each child occurrence in its authored order. -/
+theorem erasePatterns_eq_map (plans : List PatternPlan) :
+    erasePatterns plans = plans.map PatternPlan.erase := by
+  induction plans with
+  | nil => rfl
+  | cons plan plans ih => simp only [erasePatterns, List.map_cons, ih]
+
 @[simp] theorem erasePatterns_length (plans : List PatternPlan) :
     (erasePatterns plans).length = plans.length := by
   induction plans with
@@ -382,7 +389,32 @@ def PremisePlan.erase (plan : PremisePlan) : Premise :=
 def erasePremisePlans (plans : List PremisePlan) : List Premise :=
   plans.map PremisePlan.erase
 
-private theorem compileArgumentNames?_erase
+/-- Ordered variable schemas compile back to their exact authored names. -/
+theorem compileArgumentNames?_map_fvar (names : List String) :
+    compileArgumentNames? (names.map Pattern.fvar) = some names := by
+  induction names with
+  | nil => rfl
+  | cons name names ih => simp only [List.map_cons, compileArgumentNames?, ih]; rfl
+
+/-- Premise readback is exact; no source query metadata is discarded. -/
+theorem compilePremise?_erase (plan : PremisePlan) :
+    compilePremise? plan.erase = some plan := by
+  cases plan with
+  | mk relation arguments =>
+      simp only [PremisePlan.erase, compilePremise?, compileArgumentNames?_map_fvar]
+      rfl
+
+/-- Readback retains every ordered premise occurrence, including duplicates. -/
+theorem compilePremises?_erase (plans : List PremisePlan) :
+    compilePremises? (erasePremisePlans plans) = some plans := by
+  induction plans with
+  | nil => rfl
+  | cons plan plans ih =>
+      simp only [erasePremisePlans, List.map_cons, compilePremises?, compilePremise?_erase] at *
+      rw [ih]
+      rfl
+
+theorem compileArgumentNames?_erase
     (sources : List Pattern) (names : List String)
     (accepted : compileArgumentNames? sources = some names) :
     names.map Pattern.fvar = sources := by
@@ -448,13 +480,102 @@ theorem erasePremisePlans_of_compilePremises?
               rw [erase_of_compilePremise? premise plan headAccepted,
                 inductionHypothesis plans tailAccepted]
 
+/-- One variable-only relation argument has at most one binding extension.
+An already captured value is compared literally; variables inside that value
+do not become new schema variables. -/
+def relationArgument? (seed : Bindings) (name : String) (value : Pattern) : Option Bindings :=
+  match seed.lookup name with
+  | some prior => if prior = value then some [] else none
+  | none => some [(name, value)]
+
+theorem relationArgument?_exact (seed : Bindings) (name : String) (value : Pattern) :
+    (relationArgument? seed name value).toList =
+      matchRelationArgument seed (.fvar name) value := by
+  unfold relationArgument? matchRelationArgument
+  cases found : seed.lookup name with
+  | none => simp [found]
+  | some prior => by_cases same : prior = value <;> simp [found, same]
+
+/-- Deterministic residual matching for the admitted variable argument row.
+The result remains an extension relative to the seed, as in the canonical
+relation matcher; merge order is retained at both continuation boundaries. -/
+def relationArguments? (seed : Bindings) : List String → List Pattern → Option Bindings
+  | [], [] => some []
+  | name :: names, value :: values => do
+      let head ← relationArgument? seed name value
+      let extended ← mergeBindings seed head
+      let tail ← relationArguments? extended names values
+      mergeBindings head tail
+  | _, _ => none
+
+theorem relationArguments?_exact (seed : Bindings) (names : List String) (values : List Pattern) :
+    (relationArguments? seed names values).toList =
+      matchRelationArgs seed (names.map Pattern.fvar) values := by
+  induction names generalizing seed values with
+  | nil => cases values <;> simp [relationArguments?, matchRelationArgs]
+  | cons name names ih =>
+      cases values with
+      | nil => simp [relationArguments?, matchRelationArgs]
+      | cons value values =>
+          simp only [relationArguments?, Option.bind_eq_bind, List.map_cons, matchRelationArgs,
+            ← relationArgument?_exact]
+          cases head : relationArgument? seed name value with
+          | none => simp
+          | some headBindings =>
+              simp only [Option.toList_some, List.flatMap_cons, List.flatMap_nil,
+                List.append_nil, Option.bind_some]
+              cases merged : mergeBindings seed headBindings with
+              | none => simp
+              | some extended =>
+                  simp only [Option.bind_some]
+                  rw [← ih extended values]
+                  cases tail : relationArguments? extended names values <;> simp
+                  rename_i tailBindings
+                  cases final : mergeBindings headBindings tailBindings <;> simp [final]
+
+/-- Match one tuple and merge its relative extension through the ordinary
+binding boundary. A tuple that conflicts with the seed's first binding is
+refused; this operation does not revalidate duplicate bindings already in the
+seed. -/
+def PremisePlan.matchTuple? (bindings : Bindings) (plan : PremisePlan)
+    (values : List Pattern) : Option Bindings := do
+  let extended ← relationArguments? bindings plan.arguments values
+  mergeBindings bindings extended
+
+theorem PremisePlan.matchTuple?_exact (bindings : Bindings) (plan : PremisePlan)
+    (values : List Pattern) :
+    (plan.matchTuple? bindings values).toList =
+      (matchRelationArgs bindings (plan.arguments.map Pattern.fvar) values).filterMap
+        (mergeBindings bindings) := by
+  rw [← relationArguments?_exact]
+  unfold PremisePlan.matchTuple?
+  cases matched : relationArguments? bindings plan.arguments values with
+  | none => simp
+  | some extended =>
+      simp only [Option.bind_eq_bind, Option.bind_some, Option.toList_some]
+      cases merged : mergeBindings bindings extended <;> simp [merged]
+
+theorem PremisePlan.matchTuples_exact (bindings : Bindings) (plan : PremisePlan)
+    (tuples : List (List Pattern)) :
+    tuples.filterMap (plan.matchTuple? bindings) =
+      tuples.flatMap (fun tuple =>
+        (matchRelationArgs bindings (plan.arguments.map Pattern.fvar) tuple).filterMap
+          (mergeBindings bindings)) := by
+  induction tuples with
+  | nil => rfl
+  | cons tuple tuples ih =>
+      rw [List.flatMap_cons, ← plan.matchTuple?_exact, ← ih]
+      cases matched : plan.matchTuple? bindings tuple <;> simp [matched]
+
 /-- Execute one residual relation query.  The only semantic primitive is the
 declared finite relation table; matching, merge behavior, builtins, and output
 bindings remain fixed by the shared MeTTaIL relation-query semantics. -/
 def PremisePlan.run (relations : RelationEnv) (language : LanguageDef)
     (bindings : Bindings) (plan : PremisePlan) : List Bindings :=
-  relationQueryStep relations language bindings plan.relation
-    (plan.arguments.map Pattern.fvar)
+  let arguments := (plan.arguments.map Pattern.fvar).map (applyBindings bindings)
+  let tuples := builtinRelationTuples language plan.relation arguments ++
+    relations.tuples plan.relation arguments
+  tuples.filterMap (plan.matchTuple? bindings)
 
 /-- Execute source-bound relation premises in authored order. -/
 def runPremisePlans (relations : RelationEnv) (language : LanguageDef) :
@@ -473,7 +594,11 @@ theorem PremisePlan.run_eq_premiseStepUsing
     plan.run relations language bindings =
       premiseStepUsing (engineBasePremises relations) language recursiveStep
         bindings plan.erase := by
-  rfl
+  change plan.run relations language bindings =
+    relationQueryStep relations language bindings plan.relation
+      (plan.arguments.map Pattern.fvar)
+  unfold PremisePlan.run relationQueryStep
+  exact plan.matchTuples_exact bindings _
 
 /-- The residual ordered query program is exactly the authored premise
 interpreter. -/
@@ -493,6 +618,25 @@ theorem runPremisePlans_eq_premisesUsing
       congr 1
       funext nextBindings
       exact inductionHypothesis nextBindings
+
+/-- Admitted relation plans have no recursive or scoped-step premise. This
+property is derived from their complete erasure, rather than supplied by a
+caller of the executor. -/
+theorem noncontextual_erasePremisePlans (plans : List PremisePlan) :
+    NoncontextualPremises (erasePremisePlans plans) := by
+  induction plans with
+  | nil => exact .nil
+  | cons plan plans ih => exact .relationQuery ih
+
+/-- The ordered residual fold computes the canonical root-premise frontier,
+including every duplicate witness contributed by a relation table. -/
+theorem runPremisePlans_eq_applyPremisesWithEnv
+    (relations : RelationEnv) (language : LanguageDef)
+    (plans : List PremisePlan) (bindings : Bindings) :
+    runPremisePlans relations language plans bindings =
+      applyPremisesWithEnv relations language (erasePremisePlans plans) bindings := by
+  rw [runPremisePlans_eq_premisesUsing relations language (fun _ => [])]
+  exact premisesUsing_engineBase_zero_eq_applyPremisesWithEnv relations language _ bindings
 
 /-! ## Complete first-order rewrite-row plans -/
 
@@ -650,6 +794,41 @@ theorem run_compileRule?_eq_applyRuleUsing
     applyBindingsScoped_zero_of_binderFree _ _ _
       (binderFree_erase compiled.right)]
 
+/-- With no premises, an admitted plan realizes the canonical root-row
+interpreter. Binder-free RHS construction supplies the scoped-substitution
+agreement; the row's binding metadata is absent by construction. -/
+theorem RulePlan.run_eq_rootRule_of_premiseFree
+    (relations : RelationEnv) (language : LanguageDef)
+    (plan : RulePlan) (subject : Pattern) (premiseFree : plan.premises = []) :
+    plan.run relations language subject =
+      applyRuleWithPremisesUsing relations language plan.erase subject := by
+  simp only [RulePlan.run, premiseFree, runPremisePlans, List.map_cons,
+    List.map_nil, ← List.map_eq_flatMap, run_eq_matchPattern,
+    applyRuleWithPremisesUsing,
+    Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule_eq_syntactic,
+    RulePlan.erase, erasePremisePlans, List.map_nil, applyPremisesWithEnv,
+    List.foldl_nil,
+    Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_syntactic,
+    applyRuleBindings, applyBindingsScoped_zero_of_binderFree _ _ _
+      (binderFree_erase plan.right), instantiate_eq_applyBindings]
+
+/-- Every admitted first-order row, including its ordered relation premises,
+has the canonical root-row interpretation. -/
+theorem RulePlan.run_eq_rootRule
+    (relations : RelationEnv) (language : LanguageDef)
+    (plan : RulePlan) (subject : Pattern) :
+    plan.run relations language subject =
+      applyRuleWithPremisesUsing relations language plan.erase subject := by
+  simp only [RulePlan.run, run_eq_matchPattern, applyRuleWithPremisesUsing,
+    Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.matchPatternForRule_eq_syntactic,
+    RulePlan.erase,
+    Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.applyBindingsForRule_eq_syntactic,
+    applyRuleBindings, applyBindingsScoped_zero_of_binderFree _ _ _
+      (binderFree_erase plan.right), instantiate_eq_applyBindings]
+  apply List.flatMap_congr
+  intro bindings _
+  rw [runPremisePlans_eq_applyPremisesWithEnv]
+
 /-! ## Ordered rule-program compilation -/
 
 /-- Compile a complete authored rewrite list without dropping or reordering
@@ -736,7 +915,502 @@ theorem RuleProgram.erase_planAt
     List.getElem?_eq_getElem occurrence.isLt] at point
   exact Option.some.inj point
 
+/-- Exact erasure transports the authored premise-free boundary to every
+compiled row, retaining duplicates and their original order. -/
+theorem RuleProgram.premiseFree_plans
+    {source : List RewriteRule} (program : RuleProgram source)
+    (premiseFree : ∀ rule ∈ source, rule.premises = []) :
+    ∀ plan ∈ program.plans, plan.premises = [] := by
+  intro plan member
+  have erasedMember : plan.erase ∈ source := by
+    rw [← program.erase_eq_source, eraseRulePlans]
+    exact List.mem_map_of_mem member
+  have empty := congrArg List.length (premiseFree plan.erase erasedMember)
+  apply List.eq_nil_of_length_eq_zero
+  simpa [RulePlan.erase, erasePremisePlans] using empty
+
+/-- An admitted program contains no discarded scoped-binding annotations. -/
+theorem RuleProgram.bindingMetadata_none
+    {source : List RewriteRule} (program : RuleProgram source) :
+    ∀ rule ∈ source, rule.bindings = none := by
+  intro rule member
+  rw [← program.erase_eq_source, eraseRulePlans] at member
+  obtain ⟨plan, _, rfl⟩ := List.mem_map.mp member
+  rfl
+
+/-- All premise-free plans together enumerate exactly the canonical root
+frontier of their admitted language, with authored order and multiplicity. -/
+theorem RuleProgram.run_eq_rootFrontier_of_premiseFree
+    (relations : RelationEnv) (language : LanguageDef)
+    (program : RuleProgram language.rewrites) (subject : Pattern)
+    (premiseFree : ∀ rule ∈ language.rewrites, rule.premises = []) :
+    program.plans.flatMap (fun plan => plan.run relations language subject) =
+      rewriteStepWithPremisesUsing relations language subject := by
+  rw [rewriteStepWithPremisesUsing]
+  conv_rhs => rw [← program.erase_eq_source, eraseRulePlans, List.flatMap_map]
+  apply List.flatMap_congr
+  intro plan member
+  exact plan.run_eq_rootRule_of_premiseFree relations language subject
+    (program.premiseFree_plans premiseFree plan member)
+
+/-- Compiling all admitted rows retains the complete canonical root frontier,
+with relation-premise branching, authored row order and multiplicity. -/
+theorem RuleProgram.run_eq_rootFrontier
+    (relations : RelationEnv) (language : LanguageDef)
+    (program : RuleProgram language.rewrites) (subject : Pattern) :
+    program.plans.flatMap (fun plan => plan.run relations language subject) =
+      rewriteStepWithPremisesUsing relations language subject := by
+  rw [rewriteStepWithPremisesUsing]
+  conv_rhs => rw [← program.erase_eq_source, eraseRulePlans, List.flatMap_map]
+  apply List.flatMap_congr
+  intro plan _
+  exact plan.run_eq_rootRule relations language subject
+
+/-- Exact source erasure earns the nonrecursive-premise boundary used by the
+equation-free GSLT root-step theorem. -/
+theorem RuleProgram.noncontextual_premises
+    {source : List RewriteRule} (program : RuleProgram source) :
+    ∀ rule ∈ source, NoncontextualPremises rule.premises := by
+  intro rule member
+  rw [← program.erase_eq_source, eraseRulePlans] at member
+  obtain ⟨plan, _, rfl⟩ := List.mem_map.mp member
+  exact noncontextual_erasePremisePlans plan.premises
+
+/-! ## Closure of admitted first-order runs -/
+
+mutual
+  /-- An erased plan recompiles to itself, without changing its syntax. -/
+  theorem compilePattern?_erase (plan : PatternPlan) :
+      compilePattern? plan.erase = some plan := by
+    cases plan with
+    | metavariable name => rfl
+    | bound index => rfl
+    | application constructor arguments =>
+        simp [PatternPlan.erase, compilePattern?, compilePatterns?_erase arguments]
+  termination_by 2 * plan.work
+  decreasing_by simp [PatternPlan.work]; omega
+
+  /-- Recompilation retains every ordered erased child occurrence. -/
+  theorem compilePatterns?_erase (plans : List PatternPlan) :
+      compilePatterns? (erasePatterns plans) = some plans := by
+    cases plans with
+    | nil => rfl
+    | cons plan plans =>
+        simp [erasePatterns, compilePatterns?, compilePattern?_erase plan, compilePatterns?_erase plans]
+  termination_by 2 * patternPlansWork plans + 1
+  decreasing_by
+    all_goals
+      have positive := PatternPlan.work_pos plan
+      rw [patternPlansWork]
+      omega
+end
+
+theorem PatternPlan.erase_injective : Function.Injective PatternPlan.erase := by
+  intro left right same
+  have compiled := congrArg compilePattern? same
+  simpa only [compilePattern?_erase, Option.some.injEq] using compiled
+
+theorem isMatchCorrect_erase (plan : PatternPlan) : isMatchCorrectAux plan.erase = true := by
+  rw [← compilePattern?_isSome_eq_isMatchCorrectAux, compilePattern?_erase]
+  rfl
+
+/-- Every actual binding value belongs to the independently admitted syntax
+fragment. This does not require groundness or reinterpret variables inside
+captured values as new schema parameters. -/
+def FirstOrderBindings (bindings : Bindings) : Prop :=
+  ∀ entry ∈ bindings, isMatchCorrectAux entry.2 = true
+
+/-- A relation table preserves the admitted syntax when queried with admitted
+arguments. Concrete finite providers can earn this closure from compilation of
+their literal rows; this is not an execution or authority contract. -/
+def FirstOrderRelations (relations : RelationEnv) : Prop :=
+  ∀ relation arguments, isMatchCorrectListAux arguments = true →
+    ∀ tuple ∈ relations.tuples relation arguments, isMatchCorrectListAux tuple = true
+
+theorem FirstOrderBindings.nil : FirstOrderBindings [] := by
+  intro entry member
+  cases member
+
+theorem FirstOrderBindings.merge {left right merged : Bindings}
+    (leftFirstOrder : FirstOrderBindings left) (rightFirstOrder : FirstOrderBindings right)
+    (combined : mergeBindings left right = some merged) : FirstOrderBindings merged := by
+  induction right generalizing left with
+  | nil =>
+      have same : merged = left := by simpa [mergeBindings] using combined.symm
+      simpa [same] using leftFirstOrder
+  | cons entry rest ih =>
+      have head : isMatchCorrectAux entry.2 = true := rightFirstOrder entry (by simp)
+      have tail : FirstOrderBindings rest := fun other member =>
+        rightFirstOrder other (List.mem_cons_of_mem _ member)
+      simp only [mergeBindings, List.foldlM_cons] at combined
+      cases found : left.find? (fun pair => pair.1 == entry.1) with
+      | none =>
+          simp only [found] at combined
+          apply ih _ tail combined
+          intro other member
+          rcases List.mem_cons.mp member with rfl | inLeft
+          · exact head
+          · exact leftFirstOrder other inLeft
+      | some prior =>
+          simp only [found] at combined
+          split at combined
+          · exact ih leftFirstOrder tail combined
+          · simp at combined
+
+mutual
+  /-- Matching an admitted subject only captures admitted subject data. -/
+  theorem PatternPlan.run_bindings_firstOrder (plan : PatternPlan) (subject : Pattern)
+      (subjectFirstOrder : isMatchCorrectAux subject = true) (bindings : Bindings)
+      (matched : bindings ∈ plan.run subject) : FirstOrderBindings bindings := by
+    cases plan with
+    | metavariable name =>
+        simp only [PatternPlan.run, List.mem_singleton] at matched
+        subst bindings
+        intro entry member
+        simpa using (List.mem_singleton.mp member ▸ subjectFirstOrder)
+    | bound index =>
+        cases subject with
+        | bvar actual =>
+            by_cases same : index == actual
+            · simp [PatternPlan.run, same] at matched
+              subst bindings
+              exact FirstOrderBindings.nil
+            · simp [PatternPlan.run, same] at matched
+        | _ => simp [PatternPlan.run] at matched
+    | application constructor plans =>
+        cases subject with
+        | apply actual subjects =>
+            by_cases same : constructor == actual && plans.length == subjects.length
+            · simp only [PatternPlan.run, same, ↓reduceIte] at matched
+              exact runPlans_bindings_firstOrder plans subjects
+                (by simpa only [isMatchCorrectAux] using subjectFirstOrder) bindings matched
+            · simp [PatternPlan.run, same] at matched
+        | _ => simp [PatternPlan.run] at matched
+  termination_by 2 * plan.work
+  decreasing_by
+    simp_all only [PatternPlan.work]
+    omega
+
+  /-- Ordered child matching preserves first-order values through each
+successful repeated-variable merge. -/
+  theorem runPlans_bindings_firstOrder (plans : List PatternPlan) (subjects : List Pattern)
+      (subjectsFirstOrder : isMatchCorrectListAux subjects = true) (bindings : Bindings)
+      (matched : bindings ∈ runPlans plans subjects) : FirstOrderBindings bindings := by
+    cases plans with
+    | nil =>
+        cases subjects with
+        | nil =>
+            simp only [runPlans, List.mem_singleton] at matched
+            subst bindings
+            exact FirstOrderBindings.nil
+        | cons subject subjects => simp [runPlans] at matched
+    | cons plan plans =>
+        cases subjects with
+        | nil => simp [runPlans] at matched
+        | cons subject subjects =>
+            simp only [isMatchCorrectListAux, Bool.and_eq_true] at subjectsFirstOrder
+            obtain ⟨head, headMatched, tailMember⟩ := List.mem_flatMap.mp matched
+            obtain ⟨tail, tailMatched, combined⟩ := List.mem_filterMap.mp tailMember
+            exact FirstOrderBindings.merge
+              (plan.run_bindings_firstOrder subject subjectsFirstOrder.1 head headMatched)
+              (runPlans_bindings_firstOrder plans subjects subjectsFirstOrder.2 tail tailMatched) combined
+  termination_by 2 * patternPlansWork plans + 1
+  decreasing_by
+    all_goals
+      have positive := PatternPlan.work_pos plan
+      simp_all only [patternPlansWork]
+      omega
+end
+
+mutual
+  /-- RHS instantiation preserves the admitted syntax, including rigid bound
+indices and unresolved variables, when captures themselves are admitted. -/
+  theorem PatternPlan.instantiate_firstOrder (bindings : Bindings)
+      (bindingsFirstOrder : FirstOrderBindings bindings) (plan : PatternPlan) :
+      isMatchCorrectAux (plan.instantiate bindings) = true := by
+    cases plan with
+    | metavariable name =>
+        cases found : bindings.find? (fun entry => entry.1 == name) with
+        | none => simp [PatternPlan.instantiate, found, isMatchCorrectAux]
+        | some entry =>
+            simpa only [PatternPlan.instantiate, found] using
+              bindingsFirstOrder entry (List.mem_of_find?_eq_some found)
+    | bound index => simp only [PatternPlan.instantiate, isMatchCorrectAux]
+    | application constructor arguments =>
+        simpa only [PatternPlan.instantiate, isMatchCorrectAux] using
+          instantiateList_firstOrder bindings bindingsFirstOrder arguments
+  termination_by 2 * plan.work
+  decreasing_by simp [PatternPlan.work]; omega
+
+  theorem instantiateList_firstOrder (bindings : Bindings)
+      (bindingsFirstOrder : FirstOrderBindings bindings) (plans : List PatternPlan) :
+      isMatchCorrectListAux (plans.map (PatternPlan.instantiate bindings)) = true := by
+    cases plans with
+    | nil => rfl
+    | cons plan plans =>
+        simp only [List.map_cons, isMatchCorrectListAux, Bool.and_eq_true]
+        exact ⟨plan.instantiate_firstOrder bindings bindingsFirstOrder,
+          instantiateList_firstOrder bindings bindingsFirstOrder plans⟩
+  termination_by 2 * patternPlansWork plans + 1
+  decreasing_by
+    all_goals
+      have positive := PatternPlan.work_pos plan
+      rw [patternPlansWork]
+      omega
+end
+
+/-- Ordinary binding application stays in the admitted first-order syntax.
+This is derived from the independent plan compiler and instantiator. -/
+theorem applyBindings_firstOrder (bindings : Bindings)
+    (bindingsFirstOrder : FirstOrderBindings bindings) (pattern : Pattern)
+    (patternFirstOrder : isMatchCorrectAux pattern = true) :
+    isMatchCorrectAux (applyBindings bindings pattern) = true := by
+  cases accepted : compilePattern? pattern with
+  | none =>
+      have same := compilePattern?_isSome_eq_isMatchCorrectAux pattern
+      simp only [accepted, Option.isSome_none, patternFirstOrder] at same
+      cases same
+  | some plan =>
+      have erased := erase_of_compilePattern? pattern plan accepted
+      rw [← erased, ← instantiate_eq_applyBindings]
+      exact plan.instantiate_firstOrder bindings bindingsFirstOrder
+
+/-- Canonical matching of two admitted first-order patterns captures only
+admitted values. Repeated-variable consistency is supplied by the matcher. -/
+theorem matchPattern_bindings_firstOrder (pattern subject : Pattern)
+    (patternFirstOrder : isMatchCorrectAux pattern = true)
+    (subjectFirstOrder : isMatchCorrectAux subject = true) (bindings : Bindings)
+    (matched : bindings ∈ matchPattern pattern subject) : FirstOrderBindings bindings := by
+  cases accepted : compilePattern? pattern with
+  | none =>
+      have same := compilePattern?_isSome_eq_isMatchCorrectAux pattern
+      simp only [accepted, Option.isSome_none, patternFirstOrder] at same
+      cases same
+  | some plan =>
+      have erased := erase_of_compilePattern? pattern plan accepted
+      rw [← erased, ← run_eq_matchPattern] at matched
+      exact plan.run_bindings_firstOrder subject subjectFirstOrder bindings matched
+
+/-- Admitted first-order patterns contain no binder that would require
+capture-depth alignment during right-hand-side construction. -/
+theorem binderFree_of_firstOrder (pattern : Pattern)
+    (patternFirstOrder : isMatchCorrectAux pattern = true) : binderFree pattern = true := by
+  cases accepted : compilePattern? pattern with
+  | none =>
+      have same := compilePattern?_isSome_eq_isMatchCorrectAux pattern
+      simp only [accepted, Option.isSome_none, patternFirstOrder] at same
+      cases same
+  | some plan =>
+      rw [← erase_of_compilePattern? pattern plan accepted]
+      exact binderFree_erase plan
+
+theorem relationArgument?_firstOrder (seed : Bindings) (name : String) (value : Pattern)
+    (valueFirstOrder : isMatchCorrectAux value = true) (bindings : Bindings)
+    (matched : relationArgument? seed name value = some bindings) : FirstOrderBindings bindings := by
+  unfold relationArgument? at matched
+  cases found : seed.lookup name with
+  | none =>
+      simp only [found, Option.some.injEq] at matched
+      subst bindings
+      intro entry member
+      simpa using (List.mem_singleton.mp member ▸ valueFirstOrder)
+  | some prior =>
+      simp only [found] at matched
+      split at matched
+      · simp only [Option.some.injEq] at matched
+        subst bindings
+        exact FirstOrderBindings.nil
+      · simp at matched
+
+theorem relationArguments?_firstOrder (seed : Bindings) (names : List String) (values : List Pattern)
+    (seedFirstOrder : FirstOrderBindings seed) (valuesFirstOrder : isMatchCorrectListAux values = true)
+    (bindings : Bindings) (matched : relationArguments? seed names values = some bindings) :
+    FirstOrderBindings bindings := by
+  induction names generalizing seed values bindings with
+  | nil =>
+      cases values with
+      | nil =>
+          simp only [relationArguments?, Option.some.injEq] at matched
+          subst bindings
+          exact FirstOrderBindings.nil
+      | cons value values => simp [relationArguments?] at matched
+  | cons name names ih =>
+      cases values with
+      | nil => simp [relationArguments?] at matched
+      | cons value values =>
+          simp only [isMatchCorrectListAux, Bool.and_eq_true] at valuesFirstOrder
+          simp only [relationArguments?, Option.bind_eq_bind] at matched
+          cases headMatched : relationArgument? seed name value with
+          | none => simp [headMatched] at matched
+          | some head =>
+              simp only [headMatched, Option.bind_some] at matched
+              have headFirstOrder := relationArgument?_firstOrder seed name value valuesFirstOrder.1 head headMatched
+              cases extendedMerged : mergeBindings seed head with
+              | none => simp [extendedMerged] at matched
+              | some extended =>
+                  simp only [extendedMerged, Option.bind_some] at matched
+                  have extendedFirstOrder := FirstOrderBindings.merge seedFirstOrder headFirstOrder extendedMerged
+                  cases tailMatched : relationArguments? extended names values with
+                  | none => simp [tailMatched] at matched
+                  | some tail =>
+                      simp only [tailMatched, Option.bind_some] at matched
+                      exact FirstOrderBindings.merge headFirstOrder
+                        (ih extended values extendedFirstOrder valuesFirstOrder.2 tail tailMatched) matched
+
+theorem PremisePlan.matchTuple?_firstOrder (seed : Bindings) (plan : PremisePlan) (values : List Pattern)
+    (seedFirstOrder : FirstOrderBindings seed) (valuesFirstOrder : isMatchCorrectListAux values = true)
+    (bindings : Bindings) (matched : plan.matchTuple? seed values = some bindings) : FirstOrderBindings bindings := by
+  simp only [PremisePlan.matchTuple?, Option.bind_eq_bind] at matched
+  cases argumentsMatched : relationArguments? seed plan.arguments values with
+  | none => simp [argumentsMatched] at matched
+  | some extension =>
+      simp only [argumentsMatched, Option.bind_some] at matched
+      exact FirstOrderBindings.merge seedFirstOrder
+        (relationArguments?_firstOrder seed plan.arguments values seedFirstOrder valuesFirstOrder extension argumentsMatched)
+        matched
+
+private theorem names_instantiated_firstOrder (seed : Bindings) (seedFirstOrder : FirstOrderBindings seed)
+    (names : List String) :
+    isMatchCorrectListAux ((names.map Pattern.fvar).map (applyBindings seed)) = true := by
+  induction names with
+  | nil => rfl
+  | cons name names ih =>
+      simp only [List.map_cons, isMatchCorrectListAux, Bool.and_eq_true]
+      exact ⟨by simpa only [instantiate_eq_applyBindings, PatternPlan.erase] using
+        PatternPlan.instantiate_firstOrder seed seedFirstOrder (.metavariable name), ih⟩
+
+theorem builtinRelationTuples_firstOrder (language : LanguageDef) (relation : String) (arguments : List Pattern)
+    (argumentsFirstOrder : isMatchCorrectListAux arguments = true) (values : List Pattern)
+    (member : values ∈ builtinRelationTuples language relation arguments) : isMatchCorrectListAux values = true := by
+  cases arguments with
+  | nil => simp [builtinRelationTuples] at member
+  | cons left arguments =>
+      cases arguments with
+      | nil => simp [builtinRelationTuples] at member
+      | cons right rest =>
+          cases rest with
+          | cons extra rest => simp [builtinRelationTuples] at member
+          | nil =>
+              by_cases same : relation = "eq"
+              · subst relation
+                simp only [isMatchCorrectListAux, Bool.and_eq_true] at argumentsFirstOrder
+                simp [builtinRelationTuples] at member
+                rcases member with rfl | rfl <;> simp [isMatchCorrectListAux, argumentsFirstOrder.1,
+                  argumentsFirstOrder.2.1]
+              · simp [builtinRelationTuples, same] at member
+
+theorem PremisePlan.run_bindings_firstOrder (relations : RelationEnv) (language : LanguageDef)
+    (relationsFirstOrder : FirstOrderRelations relations) (seed : Bindings) (seedFirstOrder : FirstOrderBindings seed)
+    (plan : PremisePlan) (bindings : Bindings) (member : bindings ∈ plan.run relations language seed) :
+    FirstOrderBindings bindings := by
+  obtain ⟨tuple, member, matched⟩ := List.mem_filterMap.mp member
+  have argumentsFirstOrder := names_instantiated_firstOrder seed seedFirstOrder plan.arguments
+  have tupleFirstOrder : isMatchCorrectListAux tuple = true := by
+    rcases List.mem_append.mp member with builtin | provided
+    · exact builtinRelationTuples_firstOrder language plan.relation _ argumentsFirstOrder tuple builtin
+    · exact relationsFirstOrder plan.relation _ argumentsFirstOrder tuple provided
+  exact plan.matchTuple?_firstOrder seed tuple seedFirstOrder tupleFirstOrder bindings matched
+
+theorem runPremisePlans_bindings_firstOrder (relations : RelationEnv) (language : LanguageDef)
+    (relationsFirstOrder : FirstOrderRelations relations) (plans : List PremisePlan)
+    (seed : Bindings) (seedFirstOrder : FirstOrderBindings seed) (bindings : Bindings)
+    (member : bindings ∈ runPremisePlans relations language plans seed) : FirstOrderBindings bindings := by
+  induction plans generalizing seed with
+  | nil =>
+      simp only [runPremisePlans, List.mem_singleton] at member
+      simpa [member] using seedFirstOrder
+  | cons plan plans ih =>
+      obtain ⟨next, nextMember, tailMember⟩ := List.mem_flatMap.mp member
+      exact ih next (plan.run_bindings_firstOrder relations language relationsFirstOrder seed seedFirstOrder next nextMember)
+        tailMember
+
+theorem RulePlan.run_firstOrder (relations : RelationEnv) (language : LanguageDef)
+    (relationsFirstOrder : FirstOrderRelations relations) (plan : RulePlan) (subject : Pattern)
+    (subjectFirstOrder : isMatchCorrectAux subject = true) (target : Pattern)
+    (member : target ∈ plan.run relations language subject) : isMatchCorrectAux target = true := by
+  obtain ⟨initial, initialMatched, targetMember⟩ := List.mem_flatMap.mp member
+  obtain ⟨final, finalMember, rfl⟩ := List.mem_map.mp targetMember
+  exact plan.right.instantiate_firstOrder final
+    (runPremisePlans_bindings_firstOrder relations language relationsFirstOrder plan.premises initial
+      (plan.left.run_bindings_firstOrder subject subjectFirstOrder initial initialMatched) final finalMember)
+
+/-- A fully compiled language stays in its subject compiler's image when its
+literal relation payloads satisfy independently checked syntax admission. -/
+theorem RuleProgram.rootFrontier_firstOrder (relations : RelationEnv) (language : LanguageDef)
+    (relationsFirstOrder : FirstOrderRelations relations) (program : RuleProgram language.rewrites)
+    (subject : Pattern) (subjectFirstOrder : isMatchCorrectAux subject = true) (target : Pattern)
+    (member : target ∈ rewriteStepWithPremisesUsing relations language subject) : isMatchCorrectAux target = true := by
+  rw [← program.run_eq_rootFrontier relations language subject] at member
+  obtain ⟨plan, _, targetMember⟩ := List.mem_flatMap.mp member
+  exact plan.run_firstOrder relations language relationsFirstOrder subject subjectFirstOrder target targetMember
+
 /-! ## Discriminating controls -/
+
+namespace ClosureControls
+
+private def escapingPayload : Pattern := .lambda (some "bound") (.bvar 0)
+
+private def escapingRule : RulePlan :=
+  { name := "provider-value"
+    typeContext := []
+    premises := [⟨"value", ["x"]⟩]
+    left := .application "Start" []
+    right := .metavariable "x" }
+
+private def escapingRelations : RelationEnv where
+  tuples _ _ := [[escapingPayload]]
+
+/-- Captured variables are literal admissible data; syntax closure does not
+require ground payloads. -/
+theorem literal_variable_admitted :
+    isMatchCorrectAux
+      ((PatternPlan.application "Box" [.metavariable "x"]).instantiate
+        [("x", .fvar "inside")]) = true := by
+  simp [PatternPlan.instantiate, isMatchCorrectAux, isMatchCorrectListAux]
+
+/-- Arbitrary provider payloads can escape the compiled first-order image.
+This is why finite path lifting checks provider syntax independently. -/
+theorem unadmitted_provider_payload_escapes :
+    escapingRule.run escapingRelations (LanguageDef.empty "closure-negative")
+      (.apply "Start" []) = [escapingPayload] := by
+  simp only [RulePlan.run, escapingRule, PatternPlan.run, runPlans,
+    runPremisePlans, PremisePlan.run, escapingRelations, PatternPlan.instantiate]
+  decide +kernel
+
+theorem escaping_payload_refused : compilePattern? escapingPayload = none := rfl
+
+end ClosureControls
+
+namespace RelationControls
+
+private def left : Pattern := .apply "Left" []
+private def right : Pattern := .apply "Right" []
+
+theorem argument_order_retained :
+    (PremisePlan.matchTuple? [] ⟨"edge", ["x", "y"]⟩ [left, right]) =
+      some [("x", left), ("y", right)] := by decide +kernel
+
+theorem captured_variable_is_literal :
+    relationArguments? [("x", .fvar "inside")] ["x"] [left] = none := by
+  decide +kernel
+
+theorem repeated_argument_accepts :
+    relationArguments? [] ["x", "x"] [left, left] = some [("x", left)] := by
+  decide +kernel
+
+theorem repeated_argument_refuses :
+    relationArguments? [] ["x", "x"] [left, right] = none := by decide +kernel
+
+theorem wrong_tuple_arity_refuses :
+    relationArguments? [] ["x"] [left, right] = none := by decide +kernel
+
+theorem duplicate_tuples_retained :
+    ([[left, right], [left, right]].filterMap
+      (PremisePlan.matchTuple? [] ⟨"edge", ["x", "y"]⟩)) =
+      [[("x", left), ("y", right)], [("x", left), ("y", right)]] := by
+  decide +kernel
+
+end RelationControls
 
 private def repeatedSource : Pattern :=
   .apply "Pair" [.fvar "x", .fvar "x"]
@@ -770,13 +1444,45 @@ example : compilePattern? repeatedSource = some repeatedPlan := by
 #print axioms erase_of_compilePattern?
 #print axioms run_compilePattern?
 #print axioms instantiate_eq_applyBindings
+#print axioms relationArgument?_exact
+#print axioms relationArguments?_exact
+#print axioms PremisePlan.matchTuple?_exact
+#print axioms PremisePlan.matchTuples_exact
+#print axioms RelationControls.argument_order_retained
+#print axioms RelationControls.captured_variable_is_literal
+#print axioms RelationControls.repeated_argument_accepts
+#print axioms RelationControls.repeated_argument_refuses
+#print axioms RelationControls.wrong_tuple_arity_refuses
+#print axioms RelationControls.duplicate_tuples_retained
 #print axioms erase_of_compilePremise?
 #print axioms erasePremisePlans_of_compilePremises?
 #print axioms runPremisePlans_eq_premisesUsing
+#print axioms noncontextual_erasePremisePlans
+#print axioms runPremisePlans_eq_applyPremisesWithEnv
+#print axioms RulePlan.run_eq_rootRule
+#print axioms RuleProgram.run_eq_rootFrontier
+#print axioms RuleProgram.noncontextual_premises
 #print axioms erase_of_compileRule?
 #print axioms run_compileRule?
 #print axioms run_compileRule?_eq_applyRuleUsing
 #print axioms eraseRulePlans_of_compileRules?
 #print axioms RuleProgram.erase_planAt
+#print axioms compileArgumentNames?_map_fvar
+#print axioms compilePremise?_erase
+#print axioms compilePremises?_erase
+#print axioms compilePattern?_erase
+#print axioms PatternPlan.erase_injective
+#print axioms FirstOrderBindings.merge
+#print axioms PatternPlan.run_bindings_firstOrder
+#print axioms PatternPlan.instantiate_firstOrder
+#print axioms applyBindings_firstOrder
+#print axioms matchPattern_bindings_firstOrder
+#print axioms binderFree_of_firstOrder
+#print axioms PremisePlan.run_bindings_firstOrder
+#print axioms runPremisePlans_bindings_firstOrder
+#print axioms RuleProgram.rootFrontier_firstOrder
+#print axioms ClosureControls.literal_variable_admitted
+#print axioms ClosureControls.unadmitted_provider_payload_escapes
+#print axioms ClosureControls.escaping_payload_refused
 
 end Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation

@@ -15,7 +15,7 @@ The MM0 reference defines **two-stage parsing**:
 This module records both stages as Lean data, exports that data as JSON, and
 marks the two-stage boundary. It does not define an executable lexer or parser,
 recognize MM0 source text, specify the MM0/MMB transition systems, verify
-proofs, or establish NIK hosting. Consequently these records are metadata, not
+proofs, or establish SemanticService hosting. Consequently these records are metadata, not
 a syntax authority. Those stronger claims require executable GSLT
 presentations and correspondence theorems to the upstream languages.
 -/

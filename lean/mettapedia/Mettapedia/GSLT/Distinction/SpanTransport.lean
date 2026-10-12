@@ -229,6 +229,28 @@ theorem targetBack_eq : TargetBack A A Eq := fun _ _ same b targetEq =>
 def compose (R : X → Y → Prop) (S : Y → Z → Prop) : X → Z → Prop :=
   fun x z => ∃ y, R x y ∧ S y z
 
+@[simp] theorem compose_eq_left (R : X → Y → Prop) : compose Eq R = R := by
+  funext x y
+  exact propext ⟨fun ⟨_, same, related⟩ => same ▸ related,
+    fun related => ⟨x, rfl, related⟩⟩
+
+@[simp] theorem compose_eq_right (R : X → Y → Prop) : compose R Eq = R := by
+  funext x y
+  exact propext ⟨fun ⟨_, related, same⟩ => same ▸ related,
+    fun related => ⟨y, related, rfl⟩⟩
+
+/-- Reassociation preserves the endpoint relation. Witnesses of intermediate
+states are retained separately by the dependent path construction. -/
+theorem compose_assoc {W : Type uA} (R : X → Y → Prop) (S : Y → Z → Prop)
+    (T : Z → W → Prop) : compose (compose R S) T = compose R (compose S T) := by
+  funext x w
+  apply propext
+  constructor
+  · rintro ⟨z, ⟨y, first, second⟩, third⟩
+    exact ⟨y, first, z, second, third⟩
+  · rintro ⟨y, first, z, second, third⟩
+    exact ⟨z, ⟨y, first, second⟩, third⟩
+
 theorem SourceForth.comp {R : X → Y → Prop} {S : Y → Z → Prop} (first : SourceForth A B R)
     (second : SourceForth B C S) : SourceForth A C (compose R S) := by
   rintro x z ⟨y, relatedFirst, relatedSecond⟩ a sourceEq
@@ -1041,13 +1063,15 @@ open Mettapedia.GSLT.Distinction.SpanTransport
 
 /-- The outcomes of two finite runs, related through a state relation: one
 verdict, faults, one request with related saved continuations, or related
-residuals. -/
+stuck or exhausted residuals. -/
 inductive OutcomeRel {Source Target Verdict Request : Type} (related : Source → Target → Prop) :
     Outcome Source Verdict Request → Outcome Target Verdict Request → Prop
   | finished (verdict : Verdict) : OutcomeRel related (.finished verdict) (.finished verdict)
   | faulted : OutcomeRel related .faulted .faulted
   | suspended (request : Request) {saved : Source} {saved' : Target} : related saved saved' →
       OutcomeRel related (.suspended request saved) (.suspended request saved')
+  | stuck {state : Source} {state' : Target} : related state state' →
+      OutcomeRel related (.stuck state) (.stuck state')
   | exhausted {residual : Source} {residual' : Target} : related residual residual' →
       OutcomeRel related (.exhausted residual) (.exhausted residual')
 
@@ -1059,6 +1083,22 @@ theorem OutcomeRel.status_eq {outcome : Outcome Source Verdict Request}
     {outcome' : Outcome Target Verdict Request} (relatedOutcomes : OutcomeRel related outcome outcome') :
     outcome.status = outcome'.status := by
   cases relatedOutcomes <;> rfl
+
+theorem OutcomeRel.symm {outcome : Outcome Source Verdict Request}
+    {outcome' : Outcome Target Verdict Request} (relatedOutcomes : OutcomeRel related outcome outcome') :
+    OutcomeRel (fun state' state => related state state') outcome' outcome := by
+  cases relatedOutcomes with
+  | finished verdict => exact .finished verdict
+  | faulted => exact .faulted
+  | suspended request saved => exact .suspended request saved
+  | stuck stopped => exact .stuck stopped
+  | exhausted residual => exact .exhausted residual
+
+theorem OutcomeRel.stuck_inv {state : Source} {outcome' : Outcome Target Verdict Request}
+    (relatedOutcomes : OutcomeRel related (.stuck state) outcome') :
+    ∃ state', outcome' = .stuck state' ∧ related state state' := by
+  cases relatedOutcomes with
+  | stuck relatedState => exact ⟨_, rfl, relatedState⟩
 
 theorem OutcomeRel.exhausted_inv {residual : Source} {outcome' : Outcome Target Verdict Request}
     (relatedOutcomes : OutcomeRel related (.exhausted residual) outcome') :
@@ -1160,6 +1200,62 @@ theorem segment (simulation : CostSimulation source target related cost) {fuel :
   rw [ran] at eventsEq outcome
   obtain ⟨residual', outcomeEq, relatedResidual⟩ := outcome.exhausted_inv
   exact ⟨k, bound, residual', Prod.ext eventsEq outcomeEq, relatedResidual⟩
+
+/-- With the additional absent-transition law, every finite outcome transports,
+including stuckness. The existing segment theorem carries the exact history
+up to the stuck endpoint; no new recursive run interpreter is needed. -/
+theorem run_related_all (simulation : CostSimulation source target related cost)
+    (stuck : MatchesStuck source target related cost) (fuel : Nat)
+    {state : Source} {state' : Target} (relatedStates : related state state') :
+    ∃ count ≤ cost * fuel, (target.run count state').1 = (source.run fuel state).1 ∧
+      OutcomeRel related (source.run fuel state).2 (target.run count state').2 := by
+  cases outcome : (source.run fuel state).2 with
+  | stuck stopped =>
+      have sourceRun : source.run fuel state = ((source.run fuel state).1, .stuck stopped) :=
+        Prod.ext rfl outcome
+      obtain ⟨before, beforeBound, paused, blocked⟩ := source.run_stuck_prefix sourceRun
+      obtain ⟨count, bound, residual, targetRun, retained⟩ := simulation.segment relatedStates paused
+      obtain ⟨last, lastBound, stopped', stoppedRun, relatedStopped⟩ := stuck retained blocked
+      refine ⟨count + last, ?_, ?_, ?_⟩
+      · calc
+          count + last ≤ cost * before + cost := Nat.add_le_add bound lastBound
+          _ = cost * (before + 1) := (Nat.mul_succ _ _).symm
+          _ ≤ cost * fuel := Nat.mul_le_mul_left _ (Nat.succ_le_of_lt beforeBound)
+      · rw [target.run_add, targetRun]
+        simp only [Machine.continueRun, stoppedRun, List.append_nil]
+      · rw [target.run_add, targetRun]
+        simp only [Machine.continueRun, stoppedRun]
+        exact .stuck relatedStopped
+  | _ =>
+      simpa only [outcome] using simulation.run_related fuel relatedStates (by
+        intro stopped impossible
+        rw [outcome] at impossible
+        cases impossible)
+
+/-- Full finite transport reflects unbounded execution within the current
+interaction region. Stuckness, requests and terminal outcomes cannot silently
+turn into an endless run. -/
+theorem divergesWithin_reflected (simulation : CostSimulation source target related cost)
+    (stuck : MatchesStuck source target related cost)
+    {state : Source} {state' : Target} (relatedStates : related state state')
+    (diverges : target.DivergesWithin state') : source.DivergesWithin state := by
+  intro fuel
+  obtain ⟨count, _, _, outcomes⟩ := simulation.run_related_all stuck fuel relatedStates
+  obtain ⟨residual, remains⟩ := diverges count
+  rw [remains] at outcomes
+  obtain ⟨residual', same, _⟩ := outcomes.symm.exhausted_inv
+  exact ⟨residual', same⟩
+
+/-- Two constructed simulations and both stuck-endpoint laws preserve and
+reflect regional divergence. Administrative progress is a separate obligation. -/
+theorem divergesWithin_iff (forward : CostSimulation source target related cost)
+    (stuck : MatchesStuck source target related cost) {back : Nat}
+    (backward : CostSimulation target source (fun state' state => related state state') back)
+    (stuckBack : MatchesStuck target source (fun state' state => related state state') back)
+    {state : Source} {state' : Target} (relatedStates : related state state') :
+    source.DivergesWithin state ↔ target.DivergesWithin state' :=
+  ⟨backward.divergesWithin_reflected stuckBack relatedStates,
+    forward.divergesWithin_reflected stuck relatedStates⟩
 
 end CostSimulation
 

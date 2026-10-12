@@ -395,23 +395,20 @@ theorem erase_rename_shiftBy : ∀ {Γ Δ : Ctx patSig} (rho : Ren patSig Γ Δ)
       show Pattern.lambda nm (erase (rename (liftRen rho [PatSrt.pat]) body)) = _
       rw [erase_rename_shiftBy (liftRen rho [PatSrt.pat]) (c + 1) amount
         (by simpa using shiftsAtBy_liftRen h [PatSrt.pat]) body]
-      simp only [erase, liftBVars,
-        Mettapedia.OSLF.MeTTaIL.Substitution.liftBVarsList_eq_map]
+      simp only [erase, liftBVars]
   | _, _, rho, c, amount, h, _, .op (.multiLamOp ar nms) (.cons body .nil) => by
       show Pattern.multiLambda ar nms
         (erase (rename (liftRen rho (List.replicate ar PatSrt.pat)) body)) = _
       rw [erase_rename_shiftBy (liftRen rho (List.replicate ar PatSrt.pat)) (c + ar) amount
         (by simpa using shiftsAtBy_liftRen h (List.replicate ar PatSrt.pat)) body]
-      simp only [erase, liftBVars,
-        Mettapedia.OSLF.MeTTaIL.Substitution.liftBVarsList_eq_map]
+      simp only [erase, liftBVars]
   | _, _, rho, c, amount, h, _, .op .substOp (.cons body (.cons repl .nil)) => by
       show Pattern.subst (erase (rename (liftRen rho [PatSrt.pat]) body))
         (erase (rename (liftRen rho []) repl)) = _
       rw [erase_rename_shiftBy (liftRen rho [PatSrt.pat]) (c + 1) amount
           (by simpa using shiftsAtBy_liftRen h [PatSrt.pat]) body,
         erase_rename_shiftBy (liftRen rho []) c amount (by exact h) repl]
-      simp only [erase, liftBVars,
-        Mettapedia.OSLF.MeTTaIL.Substitution.liftBVarsList_eq_map]
+      simp only [erase, liftBVars]
   | _, _, rho, c, amount, h, _, .op (.collOp knd arity rst) args => by
       show Pattern.collection knd (eraseArgs (renameArgs rho args)) rst = _
       rw [eraseArgs_rename_shiftBy rho c amount h args (fun e he => by

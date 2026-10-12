@@ -105,10 +105,10 @@ variable [DecidableEq X]
 `let`'s value, `enc k # ⟦w⟧`: the slot the `let` at `P` introduces is not a free
 variable of the value's pattern, unless the environment already held it. -/
 theorem let_slot_freshness_premise {enc : SlotId X → String} (henc : Function.Injective enc)
-    (cr : List X) (env : IEnv X) (pv : X → Owner) (fr P : Owner) (w : Src S X) {k : SlotId X}
-    (hk : k.site = P) (henv : ∀ y, env y ≠ k) (hnot : ¬ rootHead k) :
-    checkFreshness ⟨enc k, toPattern enc (elabLFId cr env pv fr (P ++ [1]) w)⟩ = true :=
-  (checkFreshness_toPattern henc k _).2 (let_slot_fresh_in_value cr env pv fr P w hk henv hnot)
+    (R : Owner) (cr : List X) (env : IEnv X) (pv : X → Owner) (fr P : Owner) (w : Src S X)
+    {k : SlotId X} (hk : k.site = P) (henv : ∀ y, env y ≠ k) (hnot : ¬ rootHead R k) :
+    checkFreshness ⟨enc k, toPattern enc (elabLFId R cr env pv fr (P ++ [1]) w)⟩ = true :=
+  (checkFreshness_toPattern henc k _).2 (let_slot_fresh_in_value R cr env pv fr P w hk henv hnot)
 
 omit [DecidableEq X] in
 /-- **Negative**: a slot that a term mentions fails the premise. -/

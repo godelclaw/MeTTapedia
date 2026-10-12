@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Core.GivenClauseLoop
-import Mettapedia.GSLT.LanguageDef.NIKDownstreamOptimizationAuthority
+import Mettapedia.GSLT.LanguageDef.RepresentationOptimizationAuthority
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationInstances
 
 /-!
@@ -9,7 +9,7 @@ This module exercises the generic downstream authority boundary in two
 different regimes.
 
 * Metamath record fusion, nonescaping storage reuse, and revision-stable memo
-  reuse inhabit revision-current NIK representation authority through their
+  reuse inhabit revision-current SemanticService representation authority through their
   existing typed shape recognizers.
 * A genuine given-clause loop supplies scheduling and pruning controls.  Two
   root orders produce different event streams but the same complete event
@@ -35,9 +35,9 @@ open Mettapedia.GSLT.Core.GivenClauseLoop
 open Mettapedia.GSLT.Core.ObservationControlContract
 open Mettapedia.GSLT.Core.ObservationDemandControl
 open Mettapedia.GSLT.Core.ObservationIndexedPruning
-open Mettapedia.GSLT.LanguageDef.NIKDownstreamOptimizationAuthority
+open Mettapedia.GSLT.LanguageDef.RepresentationOptimizationAuthority
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 
 /-! ## Existing typed shape optimizations inhabit representation authority -/
 
@@ -60,7 +60,7 @@ abbrev MemoSource :=
 authority with its complete optimization key as revision. -/
 def metamath :
     RepresentationAuthority
-      (nikFamily MetamathOperationRecordFusion.spec)
+      (calculusReplayFamily MetamathOperationRecordFusion.spec)
       (keyDependencies MetamathSource)
       MetamathOperationRecordFusion.nativeKey
       MetamathOperationRecordFusion.nativeKey
@@ -94,7 +94,7 @@ source occurrence through its compiled artifact while preserving the named
 source-derived observation. -/
 theorem metamath_observation_agrees :
     metamath.plan.target.observe (metamath.mapPath metamathPath) =
-      ((nikFamily MetamathOperationRecordFusion.spec).source
+      ((calculusReplayFamily MetamathOperationRecordFusion.spec).source
         MetamathOperationRecordFusion.candidate).observe metamathPath :=
   metamath.observationAgreement metamathPath
 
@@ -102,7 +102,7 @@ theorem metamath_observation_agrees :
 authority without sharing Metamath's authority key or shape witness. -/
 def storage :
     RepresentationAuthority
-      (nikFamily StorageReuse.spec)
+      (calculusReplayFamily StorageReuse.spec)
       (keyDependencies StorageSource)
       StorageReuse.nativeKey StorageReuse.nativeKey
       StorageReuse.candidate where
@@ -116,7 +116,7 @@ def storage :
 of the same representation boundary. -/
 def memo :
     RepresentationAuthority
-      (nikFamily StableMemo.spec)
+      (calculusReplayFamily StableMemo.spec)
       (keyDependencies MemoSource)
       StableMemo.nativeKey StableMemo.nativeKey
       StableMemo.candidate where
@@ -131,20 +131,20 @@ representation interface while retaining distinct source-indexed evidence. -/
 theorem three_typed_shape_authorities_exist :
     Nonempty
         (RepresentationAuthority
-          (nikFamily MetamathOperationRecordFusion.spec)
+          (calculusReplayFamily MetamathOperationRecordFusion.spec)
           (keyDependencies MetamathSource)
           MetamathOperationRecordFusion.nativeKey
           MetamathOperationRecordFusion.nativeKey
           MetamathOperationRecordFusion.candidate) ∧
       Nonempty
         (RepresentationAuthority
-          (nikFamily StorageReuse.spec)
+          (calculusReplayFamily StorageReuse.spec)
           (keyDependencies StorageSource)
           StorageReuse.nativeKey StorageReuse.nativeKey
           StorageReuse.candidate) ∧
       Nonempty
         (RepresentationAuthority
-          (nikFamily StableMemo.spec)
+          (calculusReplayFamily StableMemo.spec)
           (keyDependencies MemoSource)
           StableMemo.nativeKey StableMemo.nativeKey
           StableMemo.candidate) :=
@@ -155,7 +155,7 @@ witness, so it cannot inhabit representation authority. -/
 theorem retained_reference_has_no_representation_authority :
     ¬ Nonempty
       (RepresentationAuthority
-        (nikFamily StorageReuse.spec)
+        (calculusReplayFamily StorageReuse.spec)
         (keyDependencies StorageSource)
         StorageReuse.retainedNativeKey StorageReuse.retainedNativeKey
         StorageReuse.retainedCandidate) := by

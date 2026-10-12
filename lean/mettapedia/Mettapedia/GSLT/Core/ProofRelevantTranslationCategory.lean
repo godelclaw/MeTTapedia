@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Core.ProofRelevantGSLT
+import Mathlib.CategoryTheory.Yoneda
 
 /-!
 # The category of proof-relevant GSLTs
@@ -135,6 +136,92 @@ def forgetEvidence : ProofRelevantGSLT.{u} ⥤ CoveredTheory.{u} where
   map_comp _ _ := by
     apply CoveredTranslation.ext
     rfl
+
+/-! ## Complete probes and an occurrence-erasing boundary -/
+
+namespace OccurrenceControls
+
+/-- A genuine transition with two differently labeled occurrences. -/
+def parallelEvents : ProofRelevantGSLT where
+  theory := {
+    Term := Bool
+    equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
+    rewrites source target := source = false ∧ target = true
+    rewrites_resp_left := by
+      intro source source' target equal event
+      subst source'
+      exact ⟨target, event, rfl⟩
+    rewrites_resp_right := by
+      intro source target target' event equal
+      subst target'
+      exact event }
+  steps := {
+    Evidence := fun source target => {label : Bool // source = false ∧ target = true}
+    erases_iff := by
+      intro source target
+      exact ⟨fun ⟨event⟩ => event.property, fun step => ⟨⟨false, step⟩⟩⟩ }
+
+/-- Change occurrence labels without changing endpoints or the enabled graph. -/
+def exchange : parallelEvents ⟶ parallelEvents where
+  mapTerm := id
+  mapEquiv := fun equal => equal
+  mapEvidence event := ⟨!event.val, event.property⟩
+  liftEvidence := fun {_source target} event =>
+    ⟨target, ⟨!event.val, event.property⟩, ⟨⟨rfl⟩⟩⟩
+
+def firstEvent : parallelEvents.Event := ⟨false, true, ⟨false, rfl, rfl⟩⟩
+
+theorem exchange_changes_occurrence :
+    exchange.mapEvent firstEvent ≠ (𝟙 parallelEvents : parallelEvents ⟶ parallelEvents).mapEvent
+      firstEvent := by
+  intro same
+  have labels := congrArg (fun event : parallelEvents.Event => event.evidence.val) same
+  change true = false at labels
+  cases labels
+
+theorem exchange_ne_identity : exchange ≠ 𝟙 parallelEvents := by
+  intro same
+  exact exchange_changes_occurrence (congrArg (fun route => route.mapEvent firstEvent) same)
+
+theorem exchange_twice : exchange ≫ exchange = 𝟙 parallelEvents := by
+  apply Translation.ext_data
+  · rfl
+  · apply heq_of_eq
+    funext source target event
+    apply Subtype.ext
+    exact Bool.not_not event.val
+  · apply heq_of_eq
+    funext source target event
+    rcases event with ⟨label, valid⟩
+    cases label <;> rfl
+
+/-- The endpoint interface cannot detect this nontrivial notation change. -/
+theorem forget_exchange_eq_identity :
+    forgetEvidence.map exchange = forgetEvidence.map (𝟙 parallelEvents) := by
+  apply CoveredTranslation.ext
+  rfl
+
+/-- Erasing occurrence data is a lawful functor but is not a faithful one. -/
+theorem forgetEvidence_not_faithful : ¬ forgetEvidence.{0}.Faithful := by
+  intro faithful
+  exact exchange_ne_identity (faithful.map_injective forget_exchange_eq_identity)
+
+/-- Complete representable probes retain the lost distinction. In particular,
+the probe from this system to itself can supply its identity translation. -/
+theorem full_probes_separate_exchange :
+    yoneda.map exchange ≠ yoneda.map (𝟙 parallelEvents) := by
+  intro same
+  exact exchange_ne_identity (yoneda.map_injective same)
+
+/-- An isomorphism of the full representable interfaces reconstructs an
+isomorphism in this occurrence-sensitive category. This is relative to the
+declared objects and arrows; it says nothing about an omitted physical or
+phenomenal structure. -/
+noncomputable def reconstruct (first second : ProofRelevantGSLT.{u})
+    (comparison : yoneda.obj first ≅ yoneda.obj second) : first ≅ second :=
+  Yoneda.fullyFaithful.preimageIso comparison
+
+end OccurrenceControls
 
 #print axioms Translation.ext_data
 #print axioms Translation.identity_comp

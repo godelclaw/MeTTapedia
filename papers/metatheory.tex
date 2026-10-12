@@ -511,9 +511,9 @@ native kernel, the trusted implementation, and the cost of using it.
 Current evidence covers parts of this contract: the two-profile
 \nolinkurl{SimpleDependentCapabilitySelection} proves least sufficiency for
 constant and genuinely varying family specimens, not for arbitrary calculi;
-\nolinkurl{MaximalNativeCalculus} selects within a finite licensed family for
-a fixed semantic request; \nolinkurl{NIK.Service} keeps all four native-service
-faces; and \nolinkurl{NIKCertifiedCompilation} separates compilation provenance
+\nolinkurl{CapabilitySelection} selects within a finite licensed family for
+a fixed semantic request; \nolinkurl{SemanticService.Service} keeps all four native-service
+faces; and \nolinkurl{MachineCompilationCorrectness} separates compilation provenance
 from execution refinement on its checker-facing boundary. These results do
 not yet synthesize arbitrary feature combinations, decide semantic sufficiency
 in general, or provide a universally weakest or fastest kernel.
@@ -554,7 +554,7 @@ or completeness for every feature selection. Together these works motivate
 dependency-sensitive proof reuse and separately qualified conversion components,
 not automatic compatibility of arbitrary kernel features.
 
-The candidate \nolinkurl{PrimeCandidates.NIKEntryModeSelection.nativeProofOperation}
+The candidate \nolinkurl{PrimeCandidates.EntryModeSelection.nativeProofOperation}
 supplies a claim/native-proof service interface independent of a
 programming-language run. Its comparison with replay uses two interfaces to
 the same guest kernel, not independent physical implementations. A direct
@@ -6848,7 +6848,7 @@ operation its executable arrow with its preservation law.  Services over
 targets are not a category: every face transports along an equivalence of
 targets, a native operation pushes forward along any admitted operation, and
 a decision kernel does not pull back along a meaning-preserving operation
-that fails to reflect meaning (checked in \texttt{NIKServiceFamily}).  A
+that fails to reflect meaning (checked in \texttt{SemanticServiceFamily}).  A
 certificate-transport route between boundary services must separately state:
 
 \begin{enumerate}
@@ -8229,7 +8229,7 @@ protect a namespace from ordinary definitions or to promote every program
 rewrite into judgmental equality.
 
 \paragraph{Propositions as inputs to live programs.}
-\nolinkurl{NIKPropositionBranching} fixes the meaning of a claim at an
+\nolinkurl{EvidenceConditionedBranching} fixes the meaning of a claim at an
 explicit scope. Accepted support for that exact claim selects the then body;
 accepted evidence of its semantic negation selects else. An independently
 supplied complete decision kernel has exact positive and negative
@@ -8260,7 +8260,7 @@ carrier-relative result, not a requirement that every producer expose both
 cases. Public status itself still forgets distinctions between incomplete
 receipts.
 
-The actual assignment sampler in \nolinkurl{NIKOutcomeViewControls}
+The actual assignment sampler in \nolinkurl{OutcomeViewControls}
 illustrates both sides. It has no outside-fragment constructor, so its
 status factors through the answer view. But an empty submission and a
 rejected singleton submission give the same answer and status, whereas
@@ -8437,7 +8437,7 @@ the existing predecessor-universal box, not an unrestricted forward must-run
 decision procedure. Native term admission requires the independent source
 judgment in addition to behavioral observation.
 
-The neutral \texttt{NIKServiceResumption} composes the four existing service
+The neutral \texttt{SemanticServiceResumption} composes the four existing service
 faces at one semantic target. Its qualification theorem preserves source
 admission and actual invocation for every chronological receipt, proves
 meaning for every successful result, and identifies a rejected last receipt
@@ -8930,7 +8930,7 @@ identity proof. Changed indices, outputs and occurrence bindings are rejected.
 The construction is parametric in the input list and valid index, but makes
 no claim to implement a native Fin type.
 
-\texttt{UniformListChartNIKService} reconstructs the retained HOL induction
+\texttt{UniformListChartService} reconstructs the retained HOL induction
 proof from independently supplied equational certificates and premise lists.
 Its intrinsic NIK proof service binds the resulting proof to the complete
 source claim. The intrinsic binding checker is not a checker for arbitrary
@@ -9113,7 +9113,7 @@ expansion in the opposite direction requires additional hypotheses.
 A closed theory induces a semantic target
 (\nolinkurl{TheoryGraph.semanticTargetFunctor}); services over targets are an
 indexed family with an action of target equivalences
-(\texttt{NIKServiceFamily}).  Biform theories project to closed theories and
+(\texttt{SemanticServiceFamily}).  Biform theories project to closed theories and
 to proof-relevant GSLTs, and their arrows are exactly the compatibility
 locus (\texttt{BiformTheory}).  Passes between operational presentations are
 semantic covers, and OSLF is adequate over equation classes
@@ -9533,7 +9533,7 @@ framework with a theory, a theory with a model, or a target with a service.
 \item \textbf{NIK services form an indexed family over targets.} The
   four faces are a classifier, pairwise disjoint; certificate boundaries are
   the subtype of one face and no native service lies in it
-  (\nolinkurl{NIKServiceFamily.Service.face},
+  (\nolinkurl{SemanticServiceFamily.Service.face},
   \nolinkurl{ne_of_face_ne_certificateBoundary}).  Along an equivalence of
   targets every face transports and the face is preserved
   (\texttt{Service.transport}, \texttt{face\_transport}). Transport preserves

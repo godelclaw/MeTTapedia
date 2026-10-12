@@ -88,8 +88,8 @@ name = "mettapedia"
 root = "Main"
 
 [[lean_exe]]
-name = "metamathNIKAudit"
-root = "Mettapedia.Languages.Metamath.DatabaseNIKAudit"
+name = "metamathCheckerAudit"
+root = "Mettapedia.Languages.Metamath.DatabaseCheckerAudit"
 
 [[lean_exe]]
 name = "checkRFC8259NativeForestExact"

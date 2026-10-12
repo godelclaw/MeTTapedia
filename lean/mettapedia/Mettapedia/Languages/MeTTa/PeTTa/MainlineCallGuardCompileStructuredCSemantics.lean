@@ -623,7 +623,7 @@ def handler : ExternalHandler :=
 
 def relations : RelationEnv := relationEnv handler
 
-def reductionLaws : ReductionRespectsEquationsUsing relations
+theorem reductionLaws : ReductionRespectsEquationsUsing relations
     StructuredC.language :=
   ReductionRespectsEquationsUsing.of_equation_free relations rfl
 

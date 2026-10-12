@@ -181,7 +181,7 @@ def ReductionAccessible (term : ScopedTerm n) : Prop :=
 /-- The executable normalizer on the intersection of the accessibility domain
 and the declaration-free presentation fragment.  This is a genuine
 nondegenerate normalization specification: it computes reductions and induces
-an exact NIK decision procedure on its domain.  The later strong-normalization
+an exact SemanticService decision procedure on its domain.  The later strong-normalization
 theorem enlarges its certified coverage to every regular typing judgment. -/
 def accessibleNormalizationSpecification : NormalizationSpecification where
   Domain := fun term => ReductionAccessible term ∧ ConstantFree term
@@ -193,8 +193,8 @@ def accessibleNormalizationSpecification : NormalizationSpecification where
     (normalizeAccessible term covered.1).irreducible
   fragment := fun _ covered => covered.2
 
-/-- The transparent accessibility tree for the distinguished ground type. -/
-def u0ReductionAccessibility (n : Nat) :
+/-- Accessibility of the distinguished ground type. -/
+theorem u0ReductionAccessibility (n : Nat) :
     ReductionAccessible (.u0 : ScopedTerm n) := by
   constructor
   intro reduct step
@@ -205,8 +205,8 @@ theorem u0_reductionAccessible (n : Nat) :
     ReductionAccessible (.u0 : ScopedTerm n) :=
   u0ReductionAccessibility n
 
-/-- The transparent accessibility tree for the untyped formation marker. -/
-def u1ReductionAccessibility (n : Nat) :
+/-- Accessibility of the untyped formation marker. -/
+theorem u1ReductionAccessibility (n : Nat) :
     ReductionAccessible (.u1 : ScopedTerm n) := by
   constructor
   intro reduct step
@@ -248,8 +248,8 @@ theorem regularIdentityU0_reductionAccessible :
   rw [regularIdentityU0_reduct_eq step]
   exact u0_reductionAccessible 0
 
-/-- A transparent accessibility tree used by the executable example. -/
-def regularIdentityU0ReductionAccessibility :
+/-- Accessibility used by the executable example. -/
+theorem regularIdentityU0ReductionAccessibility :
     ReductionAccessible regularIdentityU0 := by
   constructor
   intro reduct step

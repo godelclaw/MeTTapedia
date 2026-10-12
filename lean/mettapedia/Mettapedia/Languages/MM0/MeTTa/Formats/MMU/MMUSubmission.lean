@@ -28,7 +28,7 @@ open SessionProtocol (Command Trace)
 open MMUResolution (resolverSource)
 
 private def submissionEquation : SpaceSemantics.Equation :=
-  resolverSource.program.equations[60]'(by decide)
+  resolverSource.program.equations[56]'(by decide)
 
 private def submissionCases : SpaceSemantics.Cases :=
   match submissionEquation.body with
@@ -218,7 +218,7 @@ def resolvedProgramValue (profile resolverState : Atom) (commands : List Command
     listValue (commands.map SessionProtocol.commandValue), extensions, source]
 
 private def programEquation : SpaceSemantics.Equation :=
-  resolverSource.program.equations[59]'(by decide)
+  resolverSource.program.equations[55]'(by decide)
 
 private def programEnvironment (profile resolverState : Atom) (commands : List Command)
     (extensions source : Atom) : Subst :=

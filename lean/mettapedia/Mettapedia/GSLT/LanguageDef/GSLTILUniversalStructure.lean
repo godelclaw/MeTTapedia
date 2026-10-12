@@ -3,7 +3,7 @@ import Mettapedia.GSLT.LanguageDef.GSLTILElaborationSelection
 import Mettapedia.GSLT.LanguageDef.GSLTILEvidenceWorlds
 import Mettapedia.GSLT.LanguageDef.GSLTILMultiworldObservation
 import Mettapedia.GSLT.LanguageDef.GSLTILCapabilityGeneratedObservation
-import Mettapedia.GSLT.LanguageDef.NIKRepresentedRouteObservation
+import Mettapedia.GSLT.LanguageDef.RepresentedRouteObservation
 
 /-!
 # Universal structure selected for authored GSLT-IL
@@ -327,7 +327,7 @@ theorem represented_capability_domain_universal
   route.pullbackCapabilityDomain_contains_iff_forall_closed
     targetDiscipline chronological parallel Independent container
 
-/-- Observation transport and revision-indexed NIK admission are downstream
+/-- Observation transport and revision-indexed SemanticService admission are downstream
 of represented operational routes; they do not strengthen raw elaboration. -/
 def observedRefinementOfRepresentedRoute
     {source target : GSLT}

@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.BindingSignatureOpenReification
 import Mettapedia.OSLF.Syntax.BindingEquationQuotientModel
+import Mettapedia.OSLF.Syntax.BindingCloneContextComparison
 
 /-!
 # Authored first-order equations as contextual binding axioms
@@ -91,6 +92,59 @@ It is inherited from the constructed contextual quotient, not assumed. -/
 theorem quotient_satisfies (row : CompiledRow language equation sort) :
     BindingEquationInterpretation.Satisfies row.quotient [row.toAxiom] :=
   BindingEquationQuotientModel.algebra_satisfies [row.toAxiom]
+
+/-! ## The actual categorical presentation of a compiled row -/
+
+open _root_.CategoryTheory
+open Mettapedia.GSLT.LanguageDef.MultiSortedClone
+
+/-- The source arrows are actual intrinsic terms over the declaration-derived
+signature. Identities and composition are the existing variable/substitution
+operations, including substitution below declared binders. -/
+abbrev rawClone (language : LanguageDef) :=
+  (BindingCloneAlgebra.terms (signatureOf language)).substitution.toClone
+
+def leftArrow (row : CompiledRow language equation sort) :
+    ContextObject.ofList (rawClone language) (contextSorts equation.typeContext) ⟶
+      ContextObject.ofList (rawClone language) [sort] :=
+  (rawClone language).operationAsSingletonMorphism row.left
+
+def rightArrow (row : CompiledRow language equation sort) :
+    ContextObject.ofList (rawClone language) (contextSorts equation.typeContext) ⟶
+      ContextObject.ofList (rawClone language) [sort] :=
+  (rawClone language).operationAsSingletonMorphism row.right
+
+/-- Compile to the existing finite-product quotient category. This connects
+the accepted authored row to a generated category, rather than supplying a
+category whose relation to the declarations is assumed. -/
+noncomputable def contextPresentation (row : CompiledRow language equation sort) :=
+  quotientContextFunctor [row.toAxiom]
+
+theorem contextPresentation_preservesFiniteProducts (row : CompiledRow language equation sort) :
+    _root_.CategoryTheory.Limits.PreservesFiniteProducts row.contextPresentation :=
+  quotientContextFunctor_preservesFiniteProducts [row.toAxiom]
+
+/-- The accepted equation identifies its two independently reified arrows. -/
+theorem equation_arrows_equal (row : CompiledRow language equation sort) :
+    row.contextPresentation.map row.leftArrow =
+      row.contextPresentation.map row.rightArrow := by
+  rw [contextPresentation, leftArrow, rightArrow,
+    quotientContextFunctor_operation, quotientContextFunctor_operation]
+  funext index
+  refine Fin.cases ?_ (fun impossible => Fin.elim0 impossible) index
+  apply Quotient.sound
+  change EqClosure [row.toAxiom] row.left row.right
+  simpa only [bind_id] using row.instance_eqClosure (fun _ position => .var position)
+
+/-- The identification survives every typed substitution arrow. This uses
+the functor's composition law, not a comparison of printed equation bodies. -/
+theorem equation_arrows_after_substitution (row : CompiledRow language equation sort)
+    (context : ContextObject (rawClone language))
+    (environment : context ⟶
+      ContextObject.ofList (rawClone language) (contextSorts equation.typeContext)) :
+    row.contextPresentation.map (environment ≫ row.leftArrow) =
+      row.contextPresentation.map (environment ≫ row.rightArrow) := by
+  rw [Functor.map_comp, Functor.map_comp, row.equation_arrows_equal]
 
 end CompiledRow
 

@@ -3,6 +3,7 @@ import Mettapedia.Algebra.WorkSpan
 import Mettapedia.Algebra.ParallelCrossover
 import Mettapedia.Algebra.OccurrenceIdentity
 import Mettapedia.Machines.VariableInventory
+import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.GSLT.Dynamics.IndexedEventValuation
 import Mettapedia.GSLT.Core.NonFactorization
 import Mettapedia.GSLT.Core.InferenceRecording
@@ -713,6 +714,53 @@ theorem word_counter_controls :
     wordAddLowerBound (250 : BitVec 8) 4 false = (254, false) ∧
       wordAddLowerBound (250 : BitVec 8) 9 false = (255, true) ∧
       (250 : BitVec 8) + 9 = 3 := by decide
+
+/-- Clipping predecessor finishes commutes with their maximum. Repeated
+edge slots do not charge another occurrence. -/
+theorem predecessorPeak_bounded (maximum : Nat) (times : Nat → Nat) (causes : List Nat) :
+    CausalReceipt.predecessorPeak (fun identity => boundedTotal maximum (times identity)) causes =
+      boundedTotal maximum (CausalReceipt.predecessorPeak times causes) := by
+  induction causes with
+  | nil => simp [CausalReceipt.predecessorPeak, boundedTotal]
+  | cons cause rest ih =>
+      change max (boundedTotal maximum (times cause))
+          (CausalReceipt.predecessorPeak (fun identity => boundedTotal maximum (times identity)) rest) =
+        boundedTotal maximum (max (times cause) (CausalReceipt.predecessorPeak times rest))
+      rw [ih]
+      dsimp [boundedTotal]
+      omega
+
+/-- The bounded native dynamic program updates the installed finish at each
+event. This is saturation after every step, not a wrapping conversion. -/
+def boundedFinishTimes (maximum : Nat) (duration : Nat → Nat) (initial : Nat → Nat) :
+    List (CausalEvent Nat) → (Nat → Nat)
+  | [] => initial
+  | event :: rest => boundedFinishTimes maximum duration
+      (Function.update initial event.event
+        (boundedTotal maximum
+          (CausalReceipt.predecessorPeak initial event.directCauses + duration event.event))) rest
+
+/-- Every intermediate bounded update agrees with clipping the independent
+unbounded dependency interpreter. This holds before any final readout. -/
+theorem boundedFinishTimes_exact (maximum : Nat) (duration initial : Nat → Nat)
+    (events : List (CausalEvent Nat)) :
+    boundedFinishTimes maximum duration (fun identity => boundedTotal maximum (initial identity))
+      events =
+      fun identity => boundedTotal maximum (CausalReceipt.finishTimes duration initial events identity) := by
+  induction events generalizing initial with
+  | nil => rfl
+  | cons event rest ih =>
+      have installed :
+          Function.update (fun identity => boundedTotal maximum (initial identity)) event.event
+            (boundedTotal maximum
+              (CausalReceipt.predecessorPeak (fun identity => boundedTotal maximum (initial identity))
+                event.directCauses + duration event.event)) =
+          fun identity => boundedTotal maximum (CausalReceipt.advanceFinish duration initial event identity) := by
+        rw [predecessorPeak_bounded, boundedTotal_add]
+        funext identity
+        by_cases same : identity = event.event <;> simp [CausalReceipt.advanceFinish, same]
+      rw [boundedFinishTimes, CausalReceipt.finishTimes, installed]
+      exact ih (CausalReceipt.advanceFinish duration initial event)
 
 namespace Recording
 
@@ -2422,33 +2470,61 @@ child owner. A zero-cost child is still a child and retains its lane. -/
 def multipleWorkers {width : Nat} (phases : List (List (List (State width)))) : Bool :=
   phases.any fun phase => 1 < (phase.filter fun lane => !lane.isEmpty).length
 
-/-- After importing work, the declared causal schedule replaces the
-temporary sequential span. Its bound is checked before conversion to a
-machine word; inherited overflow and causal-span flags remain sticky. -/
-def finishJoin {width : Nat} (phases : List (List (List (State width))))
-    (precedingSpan : BitVec width) (imported : State width) : State width :=
-  let spanned := addLowerBound (2 ^ width - 1) precedingSpan.toNat (workerSchedule phases).span
-  { imported with
-    span := BitVec.ofNat width spanned.1
-    overflow := imported.overflow || spanned.2
-    parallel := imported.parallel || multipleWorkers phases }
-
 private theorem addLowerBound_fits (maximum left right : Nat) (fits : left ≤ maximum) :
     (addLowerBound maximum left right).1 ≤ maximum := by
   rw [addLowerBound_value _ _ _ fits]
   exact Nat.min_le_left _ _
 
+/-- All join backends use the same bounded span update after importing the
+actual numerical counters and chronological events. -/
+def finishJoinReadout {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) : State width :=
+  let spanned := addLowerBound (2 ^ width - 1) precedingSpan.toNat childSpan
+  { imported with
+    span := BitVec.ofNat width spanned.1
+    overflow := imported.overflow || spanned.2
+    parallel := imported.parallel || multi }
+
+theorem finishJoinReadout_span {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) :
+    (finishJoinReadout childSpan multi precedingSpan imported).span.toNat =
+      boundedTotal (2 ^ width - 1) (precedingSpan.toNat + childSpan) := by
+  have bounded := addLowerBound_fits (2 ^ width - 1) precedingSpan.toNat
+    childSpan (word_fits precedingSpan)
+  have positive := Nat.two_pow_pos width
+  have strict : (addLowerBound (2 ^ width - 1) precedingSpan.toNat childSpan).1 < 2 ^ width := by omega
+  rw [finishJoinReadout, BitVec.toNat_ofNat, Nat.mod_eq_of_lt strict,
+    addLowerBound_value _ _ _ (word_fits precedingSpan)]
+
+theorem finishJoinReadout_work {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) :
+    (finishJoinReadout childSpan multi precedingSpan imported).work = imported.work := rfl
+
+theorem finishJoinReadout_count {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) (kind : Kind) :
+    (finishJoinReadout childSpan multi precedingSpan imported).counts kind = imported.counts kind := rfl
+
+theorem finishJoinReadout_history {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) :
+    (finishJoinReadout childSpan multi precedingSpan imported).history = imported.history := rfl
+
+theorem finishJoinReadout_incomplete {width : Nat} (childSpan : Nat) (multi : Bool)
+    (precedingSpan : BitVec width) (imported : State width) :
+    (finishJoinReadout childSpan multi precedingSpan imported).traceIncomplete =
+      imported.traceIncomplete := rfl
+
+/-- After importing work, the phase/lane backend supplies its causal span to
+the common bounded join update. Inherited flags remain sticky. -/
+def finishJoin {width : Nat} (phases : List (List (List (State width))))
+    (precedingSpan : BitVec width) (imported : State width) : State width :=
+  finishJoinReadout (workerSchedule phases).span (multipleWorkers phases) precedingSpan imported
+
 theorem finishJoin_span {width : Nat} (phases : List (List (List (State width))))
     (precedingSpan : BitVec width) (imported : State width) :
     (finishJoin phases precedingSpan imported).span.toNat =
       boundedTotal (2 ^ width - 1) (precedingSpan.toNat + (workerSchedule phases).span) := by
-  have bounded := addLowerBound_fits (2 ^ width - 1) precedingSpan.toNat
-    (workerSchedule phases).span (word_fits precedingSpan)
-  have positive := Nat.two_pow_pos width
-  have strict : (addLowerBound (2 ^ width - 1) precedingSpan.toNat
-      (workerSchedule phases).span).1 < 2 ^ width := by omega
-  rw [finishJoin, BitVec.toNat_ofNat, Nat.mod_eq_of_lt strict,
-    addLowerBound_value _ _ _ (word_fits precedingSpan)]
+  exact finishJoinReadout_span (workerSchedule phases).span (multipleWorkers phases)
+    precedingSpan imported
 
 theorem finishJoin_work {width : Nat} (phases : List (List (List (State width))))
     (precedingSpan : BitVec width) (imported : State width) :
@@ -2709,6 +2785,129 @@ theorem joinChildren_span {width : Nat} (maximum : Nat) (phases : List (List (Li
           (lane.map fun child => child.state.span.toNat).sum).foldr max 0).sum) := by
   rw [joinChildren, finishJoin_span, workerSchedule_span]
   simp only [List.map_map, Function.comp_def]
+
+/-- Ledger coordinates, including incomplete-history numerical counters,
+supply the independently recorded occurrence costs. -/
+def dependencyChildReadout {width : Nat} (receipt : CausalReceipt Nat)
+    (children : Nat → Child width) : WorkSpan :=
+  receipt.dependencyReadout fun identity =>
+    ⟨(children identity).state.work.toNat, (children identity).state.span.toNat⟩
+
+/-- Chronological import follows canonical publication order; causal span
+follows the actual dependency graph. The two orders need not coincide.
+Native identity issuance, ownership and edge authenticity remain external
+correspondence obligations, distinct from graph well-formedness. -/
+def joinDependencyChildren {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width) : State width :=
+  finishJoinReadout (dependencyChildReadout receipt children).span multi parent.span
+    (importChildren maximum (publicationOrder.map children) parent)
+
+theorem joinDependencyChildren_work {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width)
+    (coverage : publicationOrder.Perm receipt.flattenedSupport) :
+    (joinDependencyChildren maximum multi receipt children publicationOrder parent).work.toNat =
+      boundedTotal (2 ^ width - 1) (parent.work.toNat + (dependencyChildReadout receipt children).work) := by
+  rw [joinDependencyChildren, finishJoinReadout_work, importChildren_work]
+  simp only [List.map_map, Function.comp_def]
+  rw [(coverage.map fun identity => (children identity).state.work.toNat).sum_eq]
+  rfl
+
+theorem joinDependencyChildren_count {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width) (kind : Kind) :
+    ((joinDependencyChildren maximum multi receipt children publicationOrder parent).counts kind).toNat =
+      boundedTotal (2 ^ width - 1) ((parent.counts kind).toNat +
+        (publicationOrder.map fun identity => ((children identity).state.counts kind).toNat).sum) := by
+  rw [joinDependencyChildren, finishJoinReadout_count, importChildren_count]
+  simp only [List.map_map, Function.comp_def]
+
+theorem joinDependencyChildren_span {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width) :
+    (joinDependencyChildren maximum multi receipt children publicationOrder parent).span.toNat =
+      boundedTotal (2 ^ width - 1) (parent.span.toNat + (dependencyChildReadout receipt children).span) := by
+  rw [joinDependencyChildren, finishJoinReadout_span]
+
+theorem joinDependencyChildren_history {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width) :
+    (joinDependencyChildren maximum multi receipt children publicationOrder parent).history =
+      (importChildren maximum (publicationOrder.map children) parent).history := rfl
+
+theorem dependency_publication_unique (receipt : CausalReceipt Nat) (publicationOrder : List Nat)
+    (valid : receipt.WellFormed []) (coverage : publicationOrder.Perm receipt.flattenedSupport) :
+    publicationOrder.Nodup := by
+  apply coverage.nodup_iff.mpr
+  simpa only [List.nil_append, CausalReceipt.flattenedSupport] using
+    CausalReceipt.ordered_distinct [] receipt.events (by simp) valid.2.1
+
+/-- The retained graph's span is minimal among finish assignments respecting
+these same edges. The statement includes the pre-existing bounded parent
+prefix; it excludes unrecorded execution and synchronization overhead. -/
+theorem joinDependencyChildren_span_le {width : Nat} (maximum : Nat) (multi : Bool)
+    (receipt : CausalReceipt Nat) (children : Nat → Child width)
+    (publicationOrder : List Nat) (parent : State width) (candidate : Nat → Nat)
+    (feasible : CausalReceipt.FeasibleFinishes (fun identity => (children identity).state.span.toNat)
+      candidate receipt.events) :
+    (joinDependencyChildren maximum multi receipt children publicationOrder parent).span.toNat ≤
+      boundedTotal (2 ^ width - 1)
+        (parent.span.toNat + CausalReceipt.predecessorPeak candidate receipt.flattenedSupport) := by
+  rw [joinDependencyChildren_span]
+  apply min_le_min (le_refl _)
+  exact Nat.add_le_add_left (CausalReceipt.dependencyReadout_span_le receipt _ candidate feasible) _
+
+namespace DependencyJoinControls
+
+private def operation (identity units : Nat) : Charge 8 :=
+  ⟨identity, 7, 12, .publish, BitVec.ofNat 8 units, true⟩
+
+def children (identity : Nat) : Child 8 :=
+  let executed := [operation (100 + identity * 100)
+    (if identity = 0 then 5 else if identity = 1 then 1 else 2)]
+  Child.ofRun 255 executed executed rfl
+
+def parent : State 8 := run 255 [operation 400 2] (initial 8)
+
+def joined : State 8 := joinDependencyChildren 255 true
+  CausalReceipt.DependencyControls.migrating children [2, 0, 1] parent
+
+theorem migrating_owner_join_keeps_canonical_history :
+    joined.work.toNat = 10 ∧ joined.span.toNat = 9 ∧
+      (joined.counts .publish).toNat = 10 ∧ joined.traceIncomplete = false ∧
+      (RunLengthEvents.expand joined.history).map Prod.fst = [400, 300, 100, 200] := by
+  decide +kernel
+
+/-- A structurally valid graph can omit a real owner edge. Its numerical
+history remains equal while the reported span becomes too small. -/
+theorem missing_owner_edge_changes_span_only :
+    let wrong := joinDependencyChildren 255 true
+      CausalReceipt.DependencyControls.missingOwner children [2, 0, 1] parent
+    wrong.work = joined.work ∧ wrong.history = joined.history ∧
+      wrong.span.toNat = 7 ∧ wrong.span ≠ joined.span := by decide +kernel
+
+theorem inherited_overflow_survives_dependency_join :
+    let saturatedParent := run 255 [operation 400 250] (initial 8)
+    let result := joinDependencyChildren 255 true
+      CausalReceipt.DependencyControls.migrating children [2, 0, 1] saturatedParent
+    result.work.toNat = 255 ∧ result.span.toNat = 255 ∧ result.overflow = true := by
+  decide +kernel
+
+
+/-- A second unchecked import repeats the same paid events. The native owner
+must consume its import permission together with its successful account join. -/
+theorem blind_reimport_duplicates_work_and_history :
+    let repeated := joinDependencyChildren 255 true
+      CausalReceipt.DependencyControls.migrating children [2, 0, 1] joined
+    repeated.work.toNat = 18 ∧
+      (RunLengthEvents.expand repeated.history).map Prod.fst = [400, 300, 100, 200, 300, 100, 200] ∧
+      ¬ Unique repeated.history := by
+  simp only [Unique]
+  decide +kernel
+
+end DependencyJoinControls
+
 
 private def charge (identity units : Nat) (retained : Bool := true) : Charge 8 :=
   ⟨identity, 7, 12, .publish, BitVec.ofNat 8 units, retained⟩

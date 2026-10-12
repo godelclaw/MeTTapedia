@@ -778,10 +778,10 @@ enclosing level, `L` captures it.  Explicit capture and lexical fresh
 elaborate `L` identically in every context (`elabEC_closed_lam`,
 `elabLF_congr`). -/
 theorem elaboration_context_dependence :
-    elabMS [] (fun _ => []) [] L ≠ elabMS [.y] (fun _ => []) [] L ∧
-    elabEC (fun _ => []) [] L = elabEC (fun m => if m = .y then [3] else []) [] L ∧
-    elabLF (fun _ => []) [] [] L = elabLF (fun m => if m = .y then [3] else []) [] [] L := by
-  refine ⟨by decide +kernel, elabEC_closed_lam _ _ _ _ _, elabLF_congr _ _ _ _ _ ?_⟩
+    elabMS [] [] (fun _ => []) [] L ≠ elabMS [] [.y] (fun _ => []) [] L ∧
+    elabEC [] (fun _ => []) [] L = elabEC [] (fun m => if m = .y then [3] else []) [] L ∧
+    elabLF [] (fun _ => []) [] [] L = elabLF [] (fun m => if m = .y then [3] else []) [] [] L := by
+  refine ⟨by decide +kernel, elabEC_closed_lam _ _ _ _ _ _, elabLF_congr _ _ _ _ _ _ ?_⟩
   decide
 
 end Mettapedia.GSLT.LanguageDef.TemplateScope.SpectrumCorpus

@@ -525,6 +525,103 @@ end Controls
 
 end WeakReservation
 
+/-! ## Relocating a current identity without refreshing its history -/
+
+namespace CurrentRelocation
+
+/-- A completed copy gives the current identity a fresh representative.
+Earlier identities retain their literal representatives. -/
+def move (current replacement identity : Nat) : Nat :=
+  if identity = current then replacement else identity
+
+@[simp] theorem move_current (current replacement : Nat) :
+    move current replacement current = replacement := by
+  simp [move]
+
+theorem move_other (current replacement identity : Nat) (different : identity ≠ current) :
+    move current replacement identity = identity := by
+  simp [move, different]
+
+/-- Freshness is relative to the complete held prefix. The replacement map
+is faithful on that prefix, even though it is not faithful on all naturals. -/
+theorem injective_on_prefix (bound current replacement : Nat) (fresh : bound ≤ replacement) :
+    Function.Injective (fun identity : Fin bound => move current replacement identity.val) := by
+  intro first second equal
+  apply Fin.ext
+  by_cases firstCurrent : first.val = current
+  · by_cases secondCurrent : second.val = current
+    · exact firstCurrent.trans secondCurrent.symm
+    · simp only [move, if_pos firstCurrent, if_neg secondCurrent] at equal
+      have below := second.isLt
+      omega
+  · by_cases secondCurrent : second.val = current
+    · simp only [move, if_neg firstCurrent, if_pos secondCurrent] at equal
+      have below := first.isLt
+      omega
+    · simpa only [move, if_neg firstCurrent, if_neg secondCurrent] using equal
+
+/-- A historical token cannot become current merely because the owner was
+copied. This requires that the fresh destination was absent from the held
+source identities. -/
+theorem move_eq_replacement_iff (bound current replacement identity : Nat)
+    (fresh : bound ≤ replacement) (held : identity < bound) :
+    move current replacement identity = replacement ↔ identity = current := by
+  by_cases same : identity = current
+  · simp [same]
+  · have different : identity ≠ replacement := by omega
+    simp [move, same, different]
+
+/-- Consecutive copies compose by replacing the intermediate current
+representative. Historical representatives in the held prefix stay fixed. -/
+theorem move_comp (bound current middle final identity : Nat)
+    (fresh : bound ≤ middle) (held : identity < bound) :
+    move middle final (move current middle identity) = move current final identity := by
+  by_cases same : identity = current
+  · simp [same]
+  · have different : identity ≠ middle := by omega
+    simp [move, same, different]
+
+/-- Zero remains the distinguished absent identity when the current identity
+is present. -/
+theorem move_zero (current replacement : Nat) (present : current ≠ 0) :
+    move current replacement 0 = 0 :=
+  move_other current replacement 0 (Ne.symm present)
+
+/-- Omitting the held-prefix restriction merges the old current identity
+with a pre-existing destination identity. -/
+theorem not_globally_injective (current replacement : Nat) (different : current ≠ replacement) :
+    ¬ Function.Injective (move current replacement) := by
+  intro injective
+  apply different
+  apply injective
+  simp [move, Ne.symm different]
+
+namespace Controls
+
+/-- A carried comparison can contain an older, already accepted pair. Only
+the actual current identity on its destination side moves on the next copy. -/
+theorem current_moves_and_history_stays :
+    ([(3, 10), (13, 14)] : List (Nat × Nat)).map
+        (fun pair => (pair.1, move 14 15 pair.2)) = [(3, 10), (13, 15)] := by
+  decide
+
+/-- Reconstructing the relation from source spellings loses the historical
+comparison, even when the current comparison is correct. -/
+theorem rebuilding_from_source_loses_history :
+    ([(3, 10), (13, 14)] : List (Nat × Nat)).map
+        (fun pair => (pair.1, move 14 15 pair.2)) ≠
+      ([(3, 10), (13, 14)] : List (Nat × Nat)).map
+        (fun pair => (pair.1, move 13 15 pair.1)) := by
+  decide
+
+/-- A nonfresh destination makes a stale held token look current. -/
+theorem occupied_destination_refreshes_stale_token :
+    (8 : Nat) ≠ 7 ∧ move 7 8 8 = move 7 8 7 := by
+  decide
+
+end Controls
+end CurrentRelocation
+
 /-! ## Checked coverage of keyed occurrences -/
 
 section Coverage

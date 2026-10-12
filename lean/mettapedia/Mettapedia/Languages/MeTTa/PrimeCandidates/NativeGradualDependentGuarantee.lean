@@ -187,7 +187,7 @@ theorem combineDependent_activateAt
 /-! ## Reusable earned-capability records -/
 
 /-- Laws earned by every forward constructional map.  This is the exact
-capability NIK may request from a native realization without assuming
+capability SemanticService may request from a native realization without assuming
 reflection of negative evidence. -/
 structure SafeTransportLaws
     {source : Fibre.{uRaw, uExact}}

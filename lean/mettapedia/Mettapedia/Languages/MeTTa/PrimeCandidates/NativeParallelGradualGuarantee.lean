@@ -21,10 +21,10 @@ intra-world capability, never a nondeterministic branch-selection rule.
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelGradualGuarantee
 
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionParallelWorlds
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost
 
@@ -215,7 +215,7 @@ namespace Examples.Separated
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration.Examples
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration.Examples
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission.Examples.Separated
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission.Examples.Separated
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds.Examples.Separated
 
 theorem rawOfCertified_pairExecution :

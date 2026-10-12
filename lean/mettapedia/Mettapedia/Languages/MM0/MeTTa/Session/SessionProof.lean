@@ -119,7 +119,7 @@ theorem certificate_accepted_iff_source_accepts (spaces : Spaces) (theory : Theo
     (hypotheses : List Preterm) (witness : ProofWitness) (claim : Preterm) (before : State)
     (ready : Ready spaces theory before) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context hypotheses claim)
       (Presentation.Calculus.Witness.translate theory fuel context hypotheses witness) = true) ↔
       ∃ after fuel, run program fuel (requestConfiguration before spaces context hypotheses witness claim) =
@@ -131,7 +131,7 @@ theorem certificate_accepted_iff_judgment (spaces : Spaces) (theory : Theory) (c
     (hypotheses : List Preterm) (witness : ProofWitness) (claim : Preterm) (before : State)
     (ready : Ready spaces theory before) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context hypotheses claim)
       (Presentation.Calculus.Witness.translate theory fuel context hypotheses witness) = true) ↔
       ∃ after, DeclarativeSpec.Runs program (requestConfiguration before spaces context hypotheses witness claim)
@@ -143,7 +143,7 @@ theorem certificate_accepted_iff_gslt_path (spaces : Spaces) (kernelTheory : The
     (hypotheses : List Preterm) (witness : ProofWitness) (claim : Preterm) (before : State)
     (ready : Ready spaces kernelTheory before) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family kernelTheory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family kernelTheory).evaluate
       (Presentation.Calculus.derivesJ context hypotheses claim)
       (Presentation.Calculus.Witness.translate kernelTheory fuel context hypotheses witness) = true) ↔
       ∃ after, (theory program).MultiStep (requestConfiguration before spaces context hypotheses witness claim)
@@ -155,7 +155,7 @@ theorem rejected_certificate_iff_source_refuses (spaces : Spaces) (theory : Theo
     (hypotheses : List Preterm) (witness : ProofWitness) (claim : Preterm) (before : State)
     (ready : Ready spaces theory before) :
     (¬ ∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context hypotheses claim)
       (Presentation.Calculus.Witness.translate theory fuel context hypotheses witness) = true) ↔
       ∃ after fuel, run program fuel (requestConfiguration before spaces context hypotheses witness claim) =
@@ -172,7 +172,7 @@ theorem derives_iff_source_some_witness (spaces : Spaces) (theory : Theory) (con
   rw [Kernel.derives_iff_checked]
   exact exists_congr fun witness => result_iff_source_returns spaces theory context hypotheses witness claim before ready true
 
-theorem formMM0_accepts_iff_source_some_witness (spaces : Spaces) (theory : Theory) (context : Context)
+theorem kernel_calculus_accepts_iff_source_some_witness (spaces : Spaces) (theory : Theory) (context : Context)
     (hypotheses : List Preterm) (claim : Preterm) (before : State) (ready : Ready spaces theory before) :
     (Presentation.Calculus.mm0 theory).Accepts (Presentation.Calculus.derivesJ context hypotheses claim) ↔
       ∃ witness after fuel, run program fuel (requestConfiguration before spaces context hypotheses witness claim) =
@@ -249,7 +249,7 @@ theorem admission_proof_completed_frame (spaces : Spaces) (theory : Theory) (dec
 theorem certificate_accepted_iff_admission_proof (spaces : Spaces) (theory : Theory) (declaration : TheoremDecl)
     (dummies : List Nat) (proof : ProofWitness) (before : State) (ready : Ready spaces theory before) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ (Admission.proofContext declaration dummies) declaration.hypotheses declaration.conclusion)
       (Presentation.Calculus.Witness.translate theory fuel (Admission.proofContext declaration dummies) declaration.hypotheses proof) = true) ↔
       ∃ after fuel, run program fuel (admissionProofConfiguration before spaces declaration dummies proof) =
@@ -271,7 +271,7 @@ theorem theorem_admission_iff_certificate_and_restrictions (spaces : Spaces) (th
       TheoremDecl.Admissible theory.sortSignature theory.termSignature declaration ∧
       (∀ sort ∈ dummies, ∃ info, theory.sortSignature sort = some info ∧ info.strict = false ∧ info.free = false) ∧
       ∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-        Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+        Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
         (Presentation.Calculus.derivesJ (Admission.proofContext declaration dummies) declaration.hypotheses declaration.conclusion)
         (Presentation.Calculus.Witness.translate theory fuel (Admission.proofContext declaration dummies) declaration.hypotheses proof) = true := by
   rw [← AdmissionChecks.authorized_iff_judgment spaces theory (.theoremDecl index declaration dummies proof) before ready]

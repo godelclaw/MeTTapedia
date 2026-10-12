@@ -578,7 +578,7 @@ private theorem quotient_body_returns (state : Effects.State) (number divisor : 
         (boolean (decide (number < divisor))) _ _ _
       · apply native_variable_call_returns program _ state state "<" ["number", "divisor"] _
           (by decide) (by decide) _ (by decide)
-        simp [quotientEnvironment, natural, applySubst, Subst.lookup, StdLib.apply]
+        simp [quotientEnvironment, natural, applySubst, Subst.lookup]
       · by_cases small : number < divisor
         · simp only [small, decide_true, boolean, Nat.div_eq_of_lt small]
           exact grounded_returns program _ state (.int 0)
@@ -595,11 +595,11 @@ private theorem quotient_body_returns (state : Effects.State) (number divisor : 
               (quotient_clause _ _) (ih (number - divisor) (by omega)) (by decide)
             · apply native_variable_call_returns program _ state state "-" ["number", "divisor"] _
                 (by decide) (by decide) _ (by decide)
-              simp [quotientEnvironment, natural, applySubst, Subst.lookup, StdLib.apply,
+              simp [quotientEnvironment, natural, applySubst, Subst.lookup,
                 Int.ofNat_sub (by omega : divisor ≤ number)]
             · simpa [quotientEnvironment, natural, applySubst, Subst.lookup] using
                 variable_returns program (quotientEnvironment number divisor) state "divisor"
-          · simp [StdLib.apply, natural]
+          · simp [natural]
 
 /-- The retained arithmetic helper executes to mathematical quotient on
 captured nonnegative integers and a positive divisor, without changing state. -/

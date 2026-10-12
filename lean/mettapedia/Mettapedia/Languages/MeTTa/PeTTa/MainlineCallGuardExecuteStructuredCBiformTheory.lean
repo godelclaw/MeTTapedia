@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardExecuteBiformTheory
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardExecuteStructuredCPass
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The lowered hot executor as a biform theory
 
@@ -21,7 +23,7 @@ open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.GSLT.LanguageDef.IRRunView
 open Mettapedia.OSLF.MeTTaIL.Syntax

@@ -376,7 +376,7 @@ theorem run_call (F : S) (prog : S → Option (Tm S X)) (t : FO Const σ τ)
   rw [hfn, bindOpt_some_singleton]
   simp only
   rw [run_ground κ .static prog a (m + 2) _ σs (by omega), bindOpt_some_singleton]
-  simp only [rule, activate, renameOwn_nil]
+  simp only [rule, activate, renameOwn_nil, sealRen_nil]
   rw [subst_toTm κ xN a t]
   exact run_ground κ .static prog _ (m + 2) _ σs (by omega)
 

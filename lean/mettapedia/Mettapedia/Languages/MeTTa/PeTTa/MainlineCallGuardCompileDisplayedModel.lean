@@ -541,7 +541,7 @@ def FormulaEvidence.variableMeaning {model : CarrierModel}
 /-- Any evidence whose wire decodes as a bound-relation claim supplies that
 claim's independent relation meaning.  Other witness families are rejected
 by namespace-disjoint decoding, not by dependent reduction of labels. -/
-def FormulaEvidence.guardMeaning {model : CarrierModel}
+theorem FormulaEvidence.guardMeaning {model : CarrierModel}
     {world : ActivationWorld} {formula : Pattern}
     (evidence : FormulaEvidence model world formula)
     {view : SelectedNativeTypeBoundRelationClaim.View guardProfile}
@@ -605,7 +605,7 @@ def FormulaEvidence.guardMeaning {model : CarrierModel}
 claim.  The private family-application head recovers both the exact authored
 occurrence and its family argument; all other semantic witness families are
 rejected by the public syntax decoders. -/
-def FormulaEvidence.resultFamilySortedMeaningDetailed {model : CarrierModel}
+theorem FormulaEvidence.resultFamilySortedMeaningDetailed {model : CarrierModel}
     {world : ActivationWorld} {slot : Occurrence} {family : Pattern}
     (evidence : FormulaEvidence model world
       (ContextualCarrierClaims.typingClaim
@@ -870,7 +870,7 @@ independent typing fact, the occurrence-specific family constructor recovers
 the exact selected source occurrence.  The proof rejects every other witness
 family by its public syntax decoder; in particular, a direct typing witness
 cannot classify a private family application as an ordinary term. -/
-def FormulaEvidence.bodyTypedMeaningDetailed {model : CarrierModel}
+theorem FormulaEvidence.bodyTypedMeaningDetailed {model : CarrierModel}
     {world : ActivationWorld} {slot : Occurrence}
     {target family : Pattern}
     (evidence : FormulaEvidence model world
@@ -1066,7 +1066,7 @@ def FormulaEvidence.bodyTypedMeaningDetailed {model : CarrierModel}
       cases decodedExact
 
 /-- The typing projection of detailed body-claim inversion. -/
-def FormulaEvidence.bodyTypedMeaning {model : CarrierModel}
+theorem FormulaEvidence.bodyTypedMeaning {model : CarrierModel}
     {world : ActivationWorld} {slot : Occurrence}
     {target family : Pattern}
     (evidence : FormulaEvidence model world
@@ -1232,7 +1232,7 @@ def variableRowEvidenceOfMeanings (model : CarrierModel)
 
 /-- Evidence for the exact authored-variable row reconstructs the independent
 typing fact at every exact binding coordinate. -/
-def meaningsOfVariableRowEvidence (model : CarrierModel)
+theorem meaningsOfVariableRowEvidence (model : CarrierModel)
     (world : ActivationWorld)
     (evidence : FormulaRowEvidence (displayedModel model) world
       (groundedVariableClaims world)) :
@@ -1290,7 +1290,7 @@ def groundedGuardClaims (world : ActivationWorld) : List Pattern :=
 endpoint reconstructs the complete ordered source-relation meaning at that
 endpoint.  Evidence remains indexed by one semantic world, so unrelated
 formula witnesses cannot be spliced into the row. -/
-def groundMeaningsOfGroundedGuardRowEvidence (model : CarrierModel)
+theorem groundMeaningsOfGroundedGuardRowEvidence (model : CarrierModel)
     (world : ActivationWorld) (slot : Occurrence) (bindings : Bindings)
     (evidence : FormulaRowEvidence (displayedModel model) world
       (SelectedNativeTypeBoundRelationClaim.groundedClaims
@@ -1336,7 +1336,7 @@ def guardRowEvidenceOfMeanings (model : CarrierModel)
 
 /-- Evidence for the exact grounded guard row reconstructs all ordered
 relation meanings at that same activation world. -/
-def meaningsOfGuardRowEvidence (model : CarrierModel)
+theorem meaningsOfGuardRowEvidence (model : CarrierModel)
     (world : ActivationWorld)
     (evidence : FormulaRowEvidence (displayedModel model) world
       (groundedGuardClaims world)) :

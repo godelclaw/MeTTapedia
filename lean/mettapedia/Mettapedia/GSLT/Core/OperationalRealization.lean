@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.Core.OperationalPathFibration
 
@@ -171,7 +172,7 @@ namespace FusionCanary
     subst last'
     exact ⟨sourceEq, targetEq⟩
 
-@[reducible] def target : GSLT := GSLT.discrete Unit
+@[reducible] def target : GSLT := GSLT.stepFree Unit
 
 theorem source_step : source.Step false true :=
   ⟨rfl, rfl⟩

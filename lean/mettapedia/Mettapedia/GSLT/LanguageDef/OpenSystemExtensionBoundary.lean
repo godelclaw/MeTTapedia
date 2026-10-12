@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.ExtensionGluing
-import Mettapedia.GSLT.LanguageDef.NIKInferenceExtensionAdmission
+import Mettapedia.GSLT.LanguageDef.InferenceExtensionAdmission
 
 /-!
 # Open-system extension boundary
@@ -31,9 +31,9 @@ open Mettapedia.GSLT.LanguageDef.ExtensionGluing
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.InferenceExtension
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
-open Mettapedia.GSLT.LanguageDef.NIKInferenceExtensionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.InferenceExtensionAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 universe uState
@@ -54,7 +54,7 @@ namespace CurrentValidatedGrowth
 variable {base : ValidatedCalculusLanguageDef} {dependencies : DependencySystem}
 variable {admittedRevision currentRevision : dependencies.Revision}
 
-/-- The already-proved NIK transport cell activated at the current revision. -/
+/-- The already-proved SemanticService transport cell activated at the current revision. -/
 def activeTransport
     (growth : CurrentValidatedGrowth base dependencies admittedRevision
       currentRevision) :

@@ -661,7 +661,7 @@ structure PhysicalAssertionResumeSegment
   resultMorkNodup : MorkSupportNodup
     (physicalAssertionResumeResult context)
 
-def physical_assertion_resume_segment
+theorem physical_assertion_resume_segment
     (context : NormalResultContext)
     (inputMorkNodup : MorkSupportNodup (normalToRejoinSlice context))
     (preReferenceMorkNodup : MorkSupportNodup

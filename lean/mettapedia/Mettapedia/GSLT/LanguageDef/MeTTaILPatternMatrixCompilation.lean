@@ -35,7 +35,7 @@ namespace Matrix
 namespace OPM
 
 export Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation
-  (Pattern Subject structuralMatch structuralMatchList Row Matrix runMatrixAll
+  (Pattern Subject structuralMatch structuralMatchList Row runMatrixAll
     DecisionTree matrixWork compile? compile compile?_bounded_eq_some
     compile?_all_correct compile?_candidate_rules_exact)
 
@@ -174,7 +174,7 @@ def rowAt (language : LanguageDef) (occurrence : RuleOccurrence language) :
 /-- The complete authored rewrite list, retaining exact indices, order, and
 duplicate occurrences. -/
 def ofLanguage (language : LanguageDef) :
-    OPM.Matrix Head (RuleOccurrence language) :=
+    OrderedPatternMatrixCompilation.Matrix Head (RuleOccurrence language) :=
   (List.finRange language.rewrites.length).map (rowAt language)
 
 /-- Canonical rule application used as the continuation of the structural

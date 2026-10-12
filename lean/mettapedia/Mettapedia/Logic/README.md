@@ -45,7 +45,7 @@ their own READMEs (linked below).
 | Logic programming theory | `LP/` | sorry-free |
 | Governance / deontic | `GovernanceReasoning/`, `DDLPlus/` | sorry-free |
 | Concept ontology / Mizar benchmark | `../KR/ConceptOntology/` | sorry-free (uses `native_decide`, see below) |
-| Universal prediction (Hutter Ch 2–3) | `../UniversalAI/UniversalPrediction/` (own README) | sorry-free |
+| Universal prediction (Hutter's universal prediction) | `../UniversalAI/UniversalPrediction/` (own README) | sorry-free |
 | Bayesian-network inference | `PLNBayesNetInference.lean`, `PLN*BNLocalMarkov*.lean` | sorry-free |
 | Higher-order / measure-theoretic PLN | `HigherOrder/`, `MeasureTheoreticPLN/` | sorry-free |
 | **Universal hyperprior (2nd-order uncertainty)** | `../UniversalAI/UniversalHyperprior/` + `../UniversalAI/UniversalHyperprior.lean` | **work in progress — open proof obligations** |
@@ -81,29 +81,28 @@ The PLN evidence object is further shown to recover **Naive Bayes**
 (`PLN_hplusPos_eq_knnRelevance`, in `KNN_PLNBridge.lean`), and a
 consolidated **PLN↔NARS** comparison lives in `PLNNARSRuleCorrespondence.lean`.
 
-## Chapter regressions (one-command build targets)
+## Regression targets by subject
 
-Several book chapters are tracked by dedicated regression targets with positive *and*
-negative ("canary") fixtures, so a semantic regression fails the build. From the project
+Dedicated regression targets contain positive *and* negative ("canary")
+fixtures, so a semantic regression fails the build. From the project
 root (`Mettapedia/lean/mettapedia`):
 
 ```bash
-# Ch 11 — quantifier / fuzzy / ITV bridges
+# Quantifier / fuzzy / ITV bridges
 lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression
-# Ch 12 — intensional inheritance
+# Intensional inheritance
 lake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression
-# Ch 13 — inference control (premise selection)
+# Inference control (premise selection)
 lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression
-# Ch 8 — neighborhood consequence + categorical endpoints
+# Neighborhood consequence + categorical endpoints
 lake build Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence \
              Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalRegression
-# Ch 9 — Bayesian-network positive path
+# Bayesian-network positive path
 lake build Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression
 ```
 
-Matching shell checkers live under `scripts/` (`check_ch11_quantifiers.sh`,
-`check_ch12_intensional.sh`, `check_ch13_inference_control.sh`,
-`check_ch8_neighborhood.sh`, `check_ch9_positive.sh`).
+These commands build the named regression modules and their imported fixtures.
+A failing positive or negative fixture makes its module fail to compile.
 
 ## Open-map bridge
 

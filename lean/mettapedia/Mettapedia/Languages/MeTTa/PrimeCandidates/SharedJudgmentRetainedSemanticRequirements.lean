@@ -30,7 +30,7 @@ open Mettapedia.TypeTheory.DesignStudy
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation Presentation.FormationSensitive SharedJudgmentFragment
 open Mettapedia.GSLT.LanguageDef
-open KernelAuthority NIKMetalogic
+open KernelAuthority SemanticEvidence
 open Mettapedia.TypeTheory
 
 universe u v w w' uIndex uArtifact uEvidence

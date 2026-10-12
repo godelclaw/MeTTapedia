@@ -148,7 +148,7 @@ def exhaustedTrace : plan.Trace plan.initial .outOfFuel :=
   .cons .exhaustZeroBudget (.nil _)
 
 theorem direct_certificate_checked :
-    produce? [] (UniformListChartNIKService.actualRequest []) = some (actualProof []) :=
+    produce? [] (UniformListChartService.actualRequest []) = some (actualProof []) :=
   actual_produced []
 
 theorem detoured_certificate_checked :
@@ -156,7 +156,7 @@ theorem detoured_certificate_checked :
   detoured_produced []
 
 theorem malformed_is_constraint_not_refutation : produce? []
-    { UniformListChartNIKService.actualRequest [] with
+    { UniformListChartService.actualRequest [] with
       stepProof := malformedCertificate [] } = none :=
   malformed_rejected []
 

@@ -1,31 +1,19 @@
--- LLM primer: Bridges machine provenance to EvalSpec.InterpretArgs via
--- Correctness.lean's evalAtom_sound. Instantiates typedApplyDirect's
--- abstract parameters with HE's concrete evaluator functions.
-
 import Mettapedia.Languages.MeTTa.HE.TypedApplyMachine
 import Mettapedia.Languages.MeTTa.HE.Correctness
 
 /-!
-# Typed Apply Soundness: Machine Emissions → EvalSpec
+# Per-position HE evidence and sequential argument chains
 
-Connects the typed-apply machine's provenance invariant to the
-declarative `InterpretArgs` spec from `EvalSpec.lean`, using
-`Correctness.lean`'s `evalAtom_sound` as the bridge.
+Instantiating the typed-apply provenance invariant with `evalAtom` gives
+per-position evidence. Each position has either a substitution equality or
+an `EvalAtom` derivation. The equality branch is not itself an evaluation
+derivation, and the separate existential environments do not establish a
+sequential binding chain.
 
-## The Chain
-
-```
-ProvenanceInvariant (evArgs[i] from origArgs[i] via eval1)
-  → instantiate eval1 = evalAtom
-  → evalAtom_sound: membership → EvalAtom derivation
-  → each arg has an EvalAtom derivation
-  → assemble into InterpretArgs
-```
-
-## Key Results
-
-- `provenance_to_evalAtom` — each provenance witness yields an EvalAtom derivation
-- `applyComplete_args_sound` — at completion, every arg has a spec derivation
+An explicit `MachineArgChain` does supply that chain. Its conversion to
+`InterpretArgs` is proved by induction, lifting each computation witness
+with `evalAtom_sound`. This file does not construct that chain from every
+typed-apply machine execution or establish native interpreter refinement.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE
@@ -37,12 +25,8 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 /-- A single provenance witness for position i, instantiated with evalAtom,
     yields an EvalAtom derivation for that argument.
 
-    The fast-path case (evArgs[i] = applyEnv env origArgs[i]) corresponds
-    to InterpretArgs' type-pass behavior: the arg passes through without
-    evaluation when its type is Atom or it's a variable.
-
-    The eval-path case (evArgs[i] ∈ evalAtom results) yields an EvalAtom
-    derivation directly via evalAtom_sound. -/
+    The premise here is an actual `evalAtom` result; a substitution equality
+    alone does not supply it. -/
 theorem provenance_to_evalAtom
     (space : Space) (dispatch : GroundedDispatch)
     (origArg argType evArg : Atom) (env evalEnv : Bindings) (fuel : Nat)
@@ -79,20 +63,12 @@ theorem applyComplete_args_sound
   · exact Or.inr ⟨env, argType, evalEnv,
       evalAtom_sound space dispatch _ _ _ fuel _ h_mem⟩
 
-/-! ## Full Emission Soundness Statement
+/-! ## Per-position evidence at a completed argument state -/
 
-The full theorem: every call-term emission from a machine run that
-started from a well-formed initial state, with eval1 = evalAtom,
-has correct structure AND per-position EvalAtom derivations.
-
-This is stated as a conjunction of `applyComplete_sound_structure`
-(structural) and `applyComplete_args_sound` (semantic). -/
-
-/-- Complete emission soundness for the typed-apply machine instantiated
-    with HE's evaluator. When the machine emits `(head :: evArgs, env)`:
-    1. head = original operator
-    2. evArgs.length = origArgs.length
-    3. each evArgs[i] has a fast-path justification or EvalAtom derivation -/
+/-- The given completed state has the original argument count, and each
+    retained argument has a substitution equality or evaluation derivation.
+    These premises do not characterize all emitted calls or construct a
+    sequential `InterpretArgs` witness. -/
 theorem emission_sound
     (space : Space) (dispatch : GroundedDispatch) (fuel : Nat)
     (st : TypedApplyState)
@@ -121,16 +97,12 @@ To build a full InterpretArgs derivation tree from per-position EvalAtom
 derivations, we need to show the binding chain is consistent: env at
 position i+1 is the output bindings from evaluating position i.
 
-The ProvenanceInvariant has existential envs per position but doesn't
-capture the chain. The chain IS captured by typedApplyDirect's recursive
-structure (each step threads env through advance).
-
-The assembly theorem connects typedApplyDirect's base-case output to
-InterpretArgs. When typedApplyDirect reaches idx = nargs and produces
-(head :: evArgs, env), the evArgs correspond to the "interpreted args"
-that InterpretArgs would produce.
-
-For the SINGLE-ARG case, this is directly provable: -/
+The `ProvenanceInvariant` has existential environments per position; it does
+not supply this sequential witness. The results below construct a single
+argument judgment or consume an explicit `MachineArgChain`. They do not prove
+that every typed-apply emission supplies that chain. In particular, the
+argument judgment returns tagged argument data, whereas the typed-apply
+component emits a call containing its operator. -/
 
 /-- Single-arg soundness: if typedApplyDirect with one arg and evalAtom
     produces a call-term result, that result has a valid EvalAtom derivation
@@ -152,8 +124,8 @@ a changed error), we can construct the InterpretArgs derivation directly.
 InterpretArgs.cons_ok requires:
 - h_head : EvalAtom ... a t b headResult
 - h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a
-- h_tail : InterpretArgs ... [] [] headResult.2 (Atom.unit, headResult.2)
-- h_tail_ok : isEmptyOrError Atom.unit = false -/
+- h_tail : InterpretArgs ... [] [] headResult.2 (argumentPacket [], headResult.2)
+- h_tail_ok : argumentsSucceeded (argumentPacket []) = true -/
 
 /-- For a single argument: EvalAtom derivation + nil tail = InterpretArgs. -/
 theorem single_arg_interpretArgs
@@ -163,10 +135,10 @@ theorem single_arg_interpretArgs
     (h_head : EvalAtom space dispatch arg argType env headResult)
     (h_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = arg) :
     InterpretArgs space dispatch [arg] [argType] env
-      (.expression [headResult.1], headResult.2) := by
-  exact .cons_ok arg [] argType [] env headResult (Atom.unit, headResult.2)
+      (argumentPacket [headResult.1], headResult.2) := by
+  exact .cons_ok arg [] argType [] env headResult (argumentPacket [], headResult.2)
     h_head h_ok (.nil) (by
-      simp [isEmptyOrError, isEmptyAtom, isErrorAtom, Atom.unit, Atom.empty])
+      simp)
 
 /-- For a single argument with changed error: propagates directly. -/
 theorem single_arg_error_interpretArgs
@@ -198,9 +170,9 @@ the chain. -/
     starting from `headResult.2`." -/
 inductive MachineArgChain (space : Space) (dispatch : GroundedDispatch) (fuel : Nat) :
     List Atom → List Atom → Bindings → ResultPair → Prop where
-  /-- Base: no args left → unit result with current bindings. -/
+  /-- Base: no arguments left → tagged empty list with current bindings. -/
   | nil (b : Bindings) :
-      MachineArgChain space dispatch fuel [] [] b (Atom.unit, b)
+      MachineArgChain space dispatch fuel [] [] b (argumentPacket [], b)
   /-- Head evaluates to changed error → propagate immediately. -/
   | head_changed_error (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult : ResultPair)
@@ -214,7 +186,7 @@ inductive MachineArgChain (space : Space) (dispatch : GroundedDispatch) (fuel : 
       (h_head : ∃ f ≤ fuel, headResult ∈ evalAtom space dispatch a t b f)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : MachineArgChain space dispatch fuel as ts headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       MachineArgChain space dispatch fuel (a :: as) (t :: ts) b tailResult
   /-- Head ok, tail ok → combine into expression. -/
   | cons_ok (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
@@ -222,10 +194,9 @@ inductive MachineArgChain (space : Space) (dispatch : GroundedDispatch) (fuel : 
       (h_head : ∃ f ≤ fuel, headResult ∈ evalAtom space dispatch a t b f)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : MachineArgChain space dispatch fuel as ts headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       MachineArgChain space dispatch fuel (a :: as) (t :: ts) b
-        (.expression (headResult.1 :: match tailResult.1 with
-          | .expression es => es | x => [x]), tailResult.2)
+        (argumentPacket (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-! ## MachineArgChain → InterpretArgs Conversion -/
 
@@ -251,41 +222,5 @@ theorem machineArgChain_to_interpretArgs
     obtain ⟨f, _, hf⟩ := h_head
     exact .cons_ok a as t ts b headResult tailResult
       (evalAtom_sound space dispatch a t b f headResult hf) h_ok ih h_tail_ok
-
-/-! ## Merge-Scoped Emission Theorems
-
-The two theorems Codex specified: completed call-term emission and
-changed-error emission both produce valid InterpretArgs derivations,
-given a MachineArgChain witness for the processed arguments. -/
-
-/-- Completed call-term emission: if the machine processed all args
-    with a valid MachineArgChain and the tail produced a non-error result,
-    then the assembled expression is a valid InterpretArgs derivation. -/
-theorem applyComplete_emission_to_interpretArgs
-    (space : Space) (dispatch : GroundedDispatch) (fuel : Nat)
-    (args types : List Atom) (env : Bindings) (r : ResultPair)
-    (h_chain : MachineArgChain space dispatch fuel args types env r) :
-    InterpretArgs space dispatch args types env r :=
-  machineArgChain_to_interpretArgs space dispatch fuel args types env r h_chain
-
-/-- Changed-error emission: if during arg processing a changed error
-    occurs, it is a valid InterpretArgs derivation (error propagation). -/
-theorem consumeError_emission_to_interpretArgs
-    (space : Space) (dispatch : GroundedDispatch) (fuel : Nat)
-    (args types : List Atom) (env : Bindings) (r : ResultPair)
-    (h_chain : MachineArgChain space dispatch fuel args types env r) :
-    InterpretArgs space dispatch args types env r :=
-  machineArgChain_to_interpretArgs space dispatch fuel args types env r h_chain
-
-/-- Combined: any MachineArgChain result is a valid InterpretArgs derivation.
-    This is the merge-scoped semantic closure for this epoch's typed-apply
-    machine: if we can build a MachineArgChain from machine execution,
-    the emitted result is spec-valid. -/
-theorem machineArgChain_sound
-    (space : Space) (dispatch : GroundedDispatch) (fuel : Nat)
-    (args types : List Atom) (env : Bindings) (r : ResultPair)
-    (h_chain : MachineArgChain space dispatch fuel args types env r) :
-    InterpretArgs space dispatch args types env r :=
-  machineArgChain_to_interpretArgs space dispatch fuel args types env r h_chain
 
 end Mettapedia.Languages.MeTTa.HE

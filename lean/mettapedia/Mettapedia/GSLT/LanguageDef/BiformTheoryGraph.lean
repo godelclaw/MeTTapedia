@@ -3,6 +3,8 @@ import Mettapedia.GSLT.Core.ProofRelevantTranslationCategory
 import Mettapedia.GSLT.LanguageDef.BiformTheory
 import Mettapedia.GSLT.LanguageDef.TheoryGraph
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Biform theories over the theory graph
 
@@ -30,7 +32,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformTheoryGraph
 open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT.ProofRelevant
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe uSignature uHom uSentence uTerm
 
@@ -174,7 +176,7 @@ def retainedEvents :
   operationalProjection ⋙ Mettapedia.GSLT.ProofRelevant.eventFunctor
 
 /-- Forget the operational model and read each native closed theory through
-the common semantic NIK interface. -/
+the common semantic interface. -/
 def semanticTargetFunctor :
     CategoryTheory.Functor Object.{uSignature, uHom, uSentence, uTerm}
       CertifiedTheoryCategory.TheoryObject.{0, uSignature, uSentence} :=

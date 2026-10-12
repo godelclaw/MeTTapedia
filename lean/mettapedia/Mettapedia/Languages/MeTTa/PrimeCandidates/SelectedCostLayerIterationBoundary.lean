@@ -25,11 +25,11 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SelectedCostLayerIterationB
 noncomputable section
 
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyTransport
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInteraction
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostIterationObstruction
@@ -121,7 +121,7 @@ theorem rhoSelectedCostLayerIteration_boundary_package :
   rhoCostLayerIteration_boundary_package rhoSelectedCostLayerConfiguration
     rhoSelectedCostLayerRepresentative
 
-/-! ## Unconditional implementation and NIK consequences -/
+/-! ## Unconditional implementation and SemanticService consequences -/
 
 /-- The complete compact value is a runnable hot policy at any revision, but
 it is not an exact receipt; the retained displayed state admits exact replay. -/

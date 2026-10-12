@@ -14251,7 +14251,7 @@ mutual
 /-- Class-relative atom provenance still implies membership in the exact
 translation image: variable representatives may change, but both endpoints
 are HE variables. -/
-def HELeaAtomClassRel.inHEImage
+theorem HELeaAtomClassRel.inHEImage
     {b : Bindings} {atom : Atom} {leaAtom : Metta.Atom}
     (h : HELeaAtomClassRel b atom leaAtom) :
     LeaAtomInHEImage leaAtom :=
@@ -14264,7 +14264,7 @@ def HELeaAtomClassRel.inHEImage
       ⟨.expression atoms, congrArg Metta.Atom.expr hatoms⟩
 
 /-- List companion to exact-image extraction. -/
-def HELeaAtomClassRel.forall₂_inHEImage
+theorem HELeaAtomClassRel.forall₂_inHEImage
     {b : Bindings} {atoms : List Atom} {leaAtoms : List Metta.Atom}
     (h : List.Forall₂ (HELeaAtomClassRel b) atoms leaAtoms) :
     ∃ exactAtoms : List Atom, toLeaTTaAtoms exactAtoms = leaAtoms :=
@@ -16437,7 +16437,7 @@ theorem LeaAliasTraceConsistentReplay.replay
   | cons h _ ih => exact .cons ih
 
 /-- Append one successful equality insertion to a declarative equality fold. -/
-private def mergeEqsRel_snoc
+private theorem mergeEqsRel_snoc
     {base mid out : Bindings} {equalities : List (String × String)}
     {key target : String}
     (hfold : MergeEqsRel base equalities mid)
@@ -16449,7 +16449,7 @@ private def mergeEqsRel_snoc
 
 /-- Equality-upper-bound certificates compose across the same dependent
 snoc boundary as their underlying declarative equality folds. -/
-private def mergeEqsEqualityClosureBoundSound_snoc
+private theorem mergeEqsEqualityClosureBoundSound_snoc
     {allowed : List (String × String)}
     {base mid out : Bindings} {equalities : List (String × String)}
     {key target : String}
@@ -21993,7 +21993,7 @@ seed, the projected residual package yields the complete recursive state for
 the untouched original tail.  The proof composes two prefix-split invariants:
 the earlier divergent head transformed the tail once, and the current head
 transforms it again.  No detached suffix is rerun. -/
-def HEExpressionTailHeadResidualPackage.toTailResidualState
+theorem HEExpressionTailHeadResidualPackage.toTailResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     {h : HEExpressionResidualFrontier fuel left right result}
     {nextLeft : Atom} {leftRest : List Atom}
@@ -22114,7 +22114,7 @@ def HEExpressionTailHeadResidualPackage.toTailResidualState
 /-- The tail of an expression frontier is the recursive list state at the
 strictly smaller residual fuel, with no recomputation of Robinson
 completeness. -/
-def HEExpressionResidualFrontier.toTailResidualState
+theorem HEExpressionResidualFrontier.toTailResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     {seed : Bindings}
@@ -22252,7 +22252,7 @@ structure HEProjectedCertifiedListResidualSolutionState
 /-- Enlarge the ambient provenance trace and equality graph of an exact
 projected solution state without changing its operational prefix split,
 residual work, substitution, or live seed. -/
-def HEProjectedCertifiedListResidualSolutionState.mono
+theorem HEProjectedCertifiedListResidualSolutionState.mono
     {smallTrace largeTrace : List (String × Metta.Atom)}
     {smallAllowed largeAllowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -22294,7 +22294,7 @@ def HEProjectedCertifiedListResidualSolutionState.mono
 /-- Every previously constructed strong residual state projects to the
 solution-only interface without changing any operational or certificate
 field. -/
-def HECertifiedListResidualState.toSolutionState
+theorem HECertifiedListResidualState.toSolutionState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {fuel : Nat} {work : List (Metta.Atom × Metta.Atom)}
@@ -22319,7 +22319,7 @@ def HECertifiedListResidualState.toSolutionState
 }
 
 /-- Projected strong-to-weak residual conversion. -/
-def HEProjectedCertifiedListResidualState.toSolutionState
+theorem HEProjectedCertifiedListResidualState.toSolutionState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -22834,7 +22834,7 @@ expression's original child lists.  The worklist is not recomputed: it is the
 literal transformed suffix produced while solving the preceding head.  The
 fact that the preceding head genuinely eliminates a constraint guarantees
 that the expression suffix was decomposed at that same operational step. -/
-def HEExpressionTailHeadResidualPackage.toCertifiedNestedListResidualState
+theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedListResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     {h : HEExpressionResidualFrontier fuel left right result}
     {nextLeft : Atom} {leftRest : List Atom}
@@ -23006,7 +23006,7 @@ structure HEExpressionTailHeadNestedResidualPackage
 completeness or prefix factorization.  The expression equation and its zipped
 children have equal decomposition, so the existing eliminating prefix can be
 retargeted to the zipped presentation with exactly the same residual state. -/
-def HEExpressionTailHeadResidualPackage.toCertifiedNestedResidualPackage
+theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedResidualPackage
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     {h : HEExpressionResidualFrontier fuel left right result}
     {nextLeft : Atom} {leftRest : List Atom}
@@ -23054,7 +23054,7 @@ def HEExpressionTailHeadResidualPackage.toCertifiedNestedResidualPackage
 
 /-- Forget the specialized nested wrapper into the reusable projected-list
 state consumed by every subsequent child step. -/
-def HEExpressionTailHeadNestedResidualPackage.toProjectedState
+theorem HEExpressionTailHeadNestedResidualPackage.toProjectedState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     {h : HEExpressionResidualFrontier fuel left right result}
     {nextLeft : Atom} {leftRest : List Atom}
@@ -23099,7 +23099,7 @@ original atom has an actual certified match/merge, its output becomes the
 live seed of the smaller tail state.  Trace inclusion follows the literal
 `nextSplit.trace_append` equation; substitution provenance follows the
 fresh-state result/trace theorem. -/
-def HEExpressionTailHeadResidualPackage.toCertifiedTailResidualState
+theorem HEExpressionTailHeadResidualPackage.toCertifiedTailResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     {h : HEExpressionResidualFrontier fuel left right result}
     {nextLeft : Atom} {leftRest : List Atom}
@@ -23212,7 +23212,7 @@ def HEExpressionTailHeadResidualPackage.toCertifiedTailResidualState
 state at `remainingFuel`.  The selected residual trace is embedded through
 the prefix split's literal append equation; the final substitution is tied to
 the enclosing trace by the successful fresh run. -/
-def HEExpressionResidualFrontier.toCertifiedTailResidualState
+theorem HEExpressionResidualFrontier.toCertifiedTailResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccCongruentCertified
@@ -23302,7 +23302,7 @@ def HEExpressionResidualFrontier.toCertifiedTailResidualState
 /-- The first-divergence tail state retains the original prefix projection,
 so it is immediately a projected residual state rather than merely a semantic
 one.  This is the entry point of the reusable nested list kernel. -/
-def HEExpressionResidualFrontier.toProjectedCertifiedTailResidualState
+theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccCongruentCertified
@@ -23361,7 +23361,7 @@ def HEExpressionResidualFrontier.toProjectedCertifiedTailResidualState
 `MatchListAccRel` and both structural certificates, while solution theory and
 assignment provenance replace the unnecessarily strong intermediate class-
 value correspondence. -/
-def HEExpressionResidualFrontier.toProjectedCertifiedTailResidualSolutionState
+theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualSolutionState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccSolutionCertified
@@ -25931,7 +25931,7 @@ theorem HEExpressionResidualFrontier.tailOriginalConstraintCoverage
 /-- Initialize the covered projected tail state by enlarging the previously
 constructed normalized residual certificate with the original structural
 constraint carrier.  No operational witness or substitution is changed. -/
-def HEExpressionResidualFrontier.toCoveredProjectedCertifiedTailResidualSolutionState
+theorem HEExpressionResidualFrontier.toCoveredProjectedCertifiedTailResidualSolutionState
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccSolutionCertified
@@ -25954,7 +25954,7 @@ def HEExpressionResidualFrontier.toCoveredProjectedCertifiedTailResidualSolution
 certified in the full original-plus-normalized carrier.  This is the nested
 return path, where shrinking provenance back to the normalized trace would be
 both unnecessary and generally false. -/
-def HEExpressionResidualFrontier.toCoveredProjectedTailFromCertificate
+theorem HEExpressionResidualFrontier.toCoveredProjectedTailFromCertificate
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccSolutionCertified
@@ -28003,7 +28003,7 @@ match/merge and retain the complete certified state for the untouched
 original tail.  This is the generic projected-state form of the first-frontier
 tail handoff: every trace, provenance, solution, and equality-bound field is
 transported through the literal `nextSplit` state. -/
-def HEProjectedTailHeadResidualPackage.toCertifiedTailResidualStateCore
+theorem HEProjectedTailHeadResidualPackage.toCertifiedTailResidualStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28238,7 +28238,7 @@ def HEProjectedTailHeadResidualPackage.coreResidualOfCoreCongruent
 }
 
 /-- Compatibility wrapper for the former stronger head package. -/
-def HEProjectedTailHeadResidualPackage.toCertifiedTailResidualState
+theorem HEProjectedTailHeadResidualPackage.toCertifiedTailResidualState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28262,7 +28262,7 @@ def HEProjectedTailHeadResidualPackage.toCertifiedTailResidualState
 /-- Solution-only tail handoff.  The exact Robinson suffix needs only the
 solution set of the live accumulator.  Assignment provenance and equality
 closure are preserved independently by the concrete merge derivation. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateCore
+theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28468,7 +28468,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateCore
 /-- Compatibility wrapper for callers that already have standalone child
 assignment provenance.  The residual construction itself consumes only the
 post-merge accumulator provenance. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualState
+theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28492,7 +28492,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualState
 a projected state for the untouched original tail.  This is the closure law
 that permits repeated sibling processing without losing source append
 boundaries. -/
-def HEProjectedTailHeadResidualPackage.toProjectedTailStateCore
+theorem HEProjectedTailHeadResidualPackage.toProjectedTailStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28583,7 +28583,7 @@ def HEProjectedTailHeadResidualPackage.toProjectedTailStateCore
   }
 
 /-- Compatibility wrapper for the former stronger projected-head package. -/
-def HEProjectedTailHeadResidualPackage.toProjectedTailState
+theorem HEProjectedTailHeadResidualPackage.toProjectedTailState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28608,7 +28608,7 @@ def HEProjectedTailHeadResidualPackage.toProjectedTailState
 
 /-- Promote one solution-certified head into the outer prefix.  This is the
 weak projected closure law used by repeated sibling processing. -/
-def HEProjectedTailHeadResidualSolutionPackage.toProjectedTailStateCore
+theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedTailStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28699,7 +28699,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toProjectedTailStateCore
   }
 
 /-- Compatibility wrapper for the stronger pointwise-head package. -/
-def HEProjectedTailHeadResidualSolutionPackage.toProjectedTailState
+theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedTailState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28757,7 +28757,7 @@ transformed head work is already the certified recursive state for the
 original child lists.  The preceding projected prefix remains the operational
 source of that work; only the equal decomposition of the expression equation
 and its zipped children is used. -/
-def HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
+theorem HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28913,7 +28913,7 @@ def HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
 presentation while preserving the same outer prefix, residual fuel, work,
 and substitution.  This supplies the reusable projected input for arbitrary
 nested-expression recursion. -/
-def HEProjectedTailHeadResidualPackage.toProjectedNestedState
+theorem HEProjectedTailHeadResidualPackage.toProjectedNestedState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -28999,7 +28999,7 @@ def HEProjectedTailHeadResidualPackage.toProjectedNestedState
 /-- Solution-only nested-expression retargeting.  The transformed head work
 is the certified child-list state, with the same independent trace and
 equality certificates as the enclosing residual state. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidualState
+theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidualState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -29152,7 +29152,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidualStat
   }
 
 /-- Projected form of the solution-only nested child state. -/
-def HEProjectedTailHeadResidualSolutionPackage.toProjectedNestedState
+theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedNestedState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -29235,7 +29235,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toProjectedNestedState
 /-- Consuming one original head transports raw structural-constraint
 coverage to the untouched sibling tail, in parallel with the exact projected
 Robinson state. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailState
+theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -29273,7 +29273,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailState
 /-- Core residual variant of covered sibling transport.  Standalone child
 assignment provenance is unnecessary; the post-merge accumulator certificate
 is the one carried to the next sibling. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailStateCore
+theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -29310,7 +29310,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailStateCore
 
 /-- Retargeting an expression head to its original child lists transports
 the same raw structural-constraint coverage into the nested projected state. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedNestedState
+theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedNestedState
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}

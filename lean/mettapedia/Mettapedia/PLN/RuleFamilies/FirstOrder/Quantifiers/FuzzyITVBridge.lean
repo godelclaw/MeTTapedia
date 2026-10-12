@@ -137,7 +137,7 @@ theorem fuzzyThereExistsHolds_itvStrength_iff_exchange
 
 /-- Core Chapter-11 rule-family bridge in ITV form (strength coordinate):
 existential generalization + universal specification + exchange. -/
-theorem ch11_itv_rule_family_core
+theorem itv_rule_family_core
     [Nonempty U]
     (p : FuzzyQuantifierParams) (itvs : U → ITV) (c : U) :
     (nearOne p ((itvStrengthProfile itvs) c) →

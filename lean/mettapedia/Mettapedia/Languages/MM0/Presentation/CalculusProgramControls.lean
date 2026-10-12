@@ -83,7 +83,7 @@ theorem wrong_instance_refused (fuel : Nat) :
     Applies P H "mm0:certificate" (request withAxiom (derivesJ [] [] constant) (wrongInstance fuel))
       (.sym "False") := by
   rw [certificate_returns_iff]
-  cases accepted : check formMM0 (settledEvaluate withAxiom) (derivesJ [] [] constant) (wrongInstance fuel)
+  cases accepted : check kernelCalculus (settledEvaluate withAxiom) (derivesJ [] [] constant) (wrongInstance fuel)
   · rfl
   · exfalso
     obtain ⟨-, -, -, children⟩ :=
@@ -126,7 +126,7 @@ def extraChild : Witness.Certificate withAxiom :=
 theorem extra_child_refused :
     Applies P H "mm0:certificate" (request withAxiom (allJ [] [] []) extraChild) (.sym "False") := by
   rw [certificate_returns_iff]
-  cases accepted : check formMM0 (settledEvaluate withAxiom) (allJ [] [] []) extraChild
+  cases accepted : check kernelCalculus (settledEvaluate withAxiom) (allJ [] [] []) extraChild
   · rfl
   · exfalso
     obtain ⟨-, -, -, children⟩ :=

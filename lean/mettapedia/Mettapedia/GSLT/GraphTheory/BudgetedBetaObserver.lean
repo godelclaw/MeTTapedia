@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.GraphTheory.ParallelReduction
 import Mettapedia.GSLT.Logic.ObserverBubble
 
@@ -293,12 +294,8 @@ def decidableCertified (budget : LambdaTerm → ℕ) :
 
 /-- λ-terms with β-conversion as their equations and no reduction: the
 equational theory, observed. -/
-abbrev betaGSLT : GSLT where
-  Term := LambdaTerm
-  equations := ⟨BetaConv, betaConv_equivalence⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev betaGSLT : GSLT :=
+  GSLT.equationOnly (LambdaTerm) (⟨BetaConv, betaConv_equivalence⟩)
 
 /-- Applicative contexts: a term applied to a list of arguments. -/
 abbrev applicativeRules : ContextualRules betaGSLT where

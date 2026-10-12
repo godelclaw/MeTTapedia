@@ -9,7 +9,7 @@ its closed body. The prefix retains an embedding of every earlier source term,
 including terms containing names introduced by earlier successors.
 
 This is a semantic and admission prefix over the existing HOL/native syntax;
-it is not a replacement for the external document parser or NIK replay.
+it is not a replacement for the external document parser or SemanticService replay.
 -/
 
 set_option autoImplicit false

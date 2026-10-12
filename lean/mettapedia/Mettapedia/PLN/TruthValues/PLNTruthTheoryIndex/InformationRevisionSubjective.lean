@@ -174,7 +174,7 @@ structure SubjectiveLogicEvidenceBetaProfile where
 
 /-- Public profile for the Subjective-Logic / EvidenceBeta dictionary used by
 the Revision jewel and its MeTTa witnesses. -/
-noncomputable def subjectiveLogicEvidenceBetaProfile : SubjectiveLogicEvidenceBetaProfile where
+theorem subjectiveLogicEvidenceBetaProfile : SubjectiveLogicEvidenceBetaProfile where
   projectionIsBetaPosteriorMean :=
     subjective_logic_projection_is_beta_posterior_mean
   rawFusionIsSharedPriorBetaProjection :=
@@ -188,9 +188,9 @@ noncomputable def subjectiveLogicEvidenceBetaProfile : SubjectiveLogicEvidenceBe
   sharedPriorCombinedProjection :=
     Mettapedia.PLN.Bridges.ProbabilityTheory.PLNSubjectiveLogicBridge.sharedPriorCombinedProjection_6_2_eq
 
-/-! ## Chapter-12 ASSOC/PAT provenance index -/
+/-! ## ASSOC/PAT provenance index -/
 
-/-- Public index name for the live Chapter-12 ASSOC/PAT source-provenance
+/-- Public index name for the live ASSOC/PAT source-provenance
 consumer: the two demo packets are exact source packets, and guarded list
 Revision rejects their shared provenance rather than double-counting it. -/
 theorem assoc_pat_exact_packets_are_exact_and_guarded_revision_rejects_overlap :
@@ -227,7 +227,7 @@ theorem assoc_pat_exact_packet_duplicate_absorbs :
           Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.birdBirdStampedEvidence] :=
   Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.assoc_pat_packetJointMerge_duplicate_absorb
 
-/-- Public index name for the concrete Chapter-12 noncollapse guardrail: PAT
+/-- Public index name for the concrete noncollapse guardrail: PAT
 strictly extends ASSOC on the `bird/bird` toy concept because the consequent
 extent channel is nonempty. -/
 theorem assoc_pat_base_score_bird_bird_lt_pat_base_score_bird_bird :
@@ -239,7 +239,7 @@ theorem assoc_pat_base_score_bird_bird_lt_pat_base_score_bird_bird :
         Mettapedia.KR.ConceptOntology.Examples.Concept.bird :=
   Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.assocBaseScore_birdBird_lt_patBaseScore_birdBird
 
-/-- Public index name for the evidence-level Chapter-12 noncollapse guardrail:
+/-- Public index name for the evidence-level noncollapse guardrail:
 the ASSOC and PAT query channels remain distinct at the rule-facing evidence
 interface, not only in their raw score definitions. -/
 theorem assoc_pat_evidence_bird_bird_ne_pat_evidence_bird_bird :
@@ -293,14 +293,14 @@ theorem assoc_pat_mixed_monotonicity_requires_extensional_monotonicity :
         ¬ (ext₁ + assoc₁ + pat₁ ≤ ext₂ + assoc₂ + pat₂) :=
   Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLAssocPatBridge.mixedEvidence_mono_requires_extensional_mono_counterexample
 
-/-- Proof-carrying profile for the current Chapter-12 ASSOC/PAT consumer
+/-- Proof-carrying profile for the current ASSOC/PAT consumer
 interface. It packages exact-provenance positive cases, the finite-table and
 formed-concept source packages, the formed-concept semantic-layer ASSOC/PAT
 equality and monotonicity theorems, the formed-concept lower/upper
 semantic-layer concept-closure bridge, the formed-concept mixed boundary and
 monotonicity theorems, the pattern-coded semantic-layer consumer, PAT-vs-ASSOC
 noncollapse, and mixed-channel side-condition guardrails. -/
-structure AssocPatChapter12ConsumerProfile where
+structure AssocPatConsumerProfile where
   exactPacketsAndOverlapGuard :
     Mettapedia.KR.ConceptGeometry.AbstractInheritance.DualConcept.ExactStampPacket
         Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.penguinBirdStampedEvidence ∧
@@ -325,8 +325,8 @@ structure AssocPatChapter12ConsumerProfile where
       Mettapedia.KR.ConceptGeometry.AbstractInheritance.DualConcept.packetJointMerge
         [Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.penguinBirdStampedEvidence,
           Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo.birdBirdStampedEvidence]
-  formedConceptChapter12Source :
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FormedConceptChapter12SourceProfile
+  formedConceptSource :
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FormedConceptSourceProfile
   formedConceptSemanticLayerAssocPatEquality :
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FormedConceptSemanticLayerAssocPatEqualityProfile.{0, 0, 0}
   formedConceptSemanticLayerAssocPatMonotonicity :
@@ -337,14 +337,14 @@ structure AssocPatChapter12ConsumerProfile where
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FormedConceptMixedSemanticLayerBoundaryProfile.{0, 0, 0}
   formedConceptMixedSemanticLayerMonotonicity :
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FormedConceptMixedSemanticLayerMonotonicityProfile.{0, 0, 0}
-  finiteTableChapter12Source :
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FiniteTableChapter12SourceProfile
-  patternCodedChapter12Source :
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.PatternCodedChapter12SourceProfile
+  finiteTableSource :
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.FiniteTableSourceProfile
+  patternCodedSource :
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.PatternCodedSourceProfile
   patternCodedSemanticLayerConsumer :
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.PatternCodedSemanticLayerConsumerProfile.{0, 0, 0}
-  richPatternCodedChapter12Source :
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.RichPatternCodedChapter12SourceProfile
+  rolePatternCodedSource :
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.RolePatternCodedSourceProfile
   richPatternCodedSemanticLayerConsumer :
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.RichPatternCodedSemanticLayerConsumerProfile.{0, 0, 0}
   concreteSemanticLayerAssocPatMixedCanary :
@@ -461,17 +461,17 @@ structure AssocPatChapter12ConsumerProfile where
         ¬ ext₁ ≤ ext₂ ∧
         ¬ (ext₁ + assoc₁ + pat₁ ≤ ext₂ + assoc₂ + pat₂)
 
-/-- Public profile for the current Chapter-12 ASSOC/PAT exact-provenance and
+/-- Public profile for the current ASSOC/PAT exact-provenance and
 noncollapse consumer interface. -/
-def assocPatChapter12ConsumerProfile : AssocPatChapter12ConsumerProfile where
+theorem assocPatConsumerProfile : AssocPatConsumerProfile where
   exactPacketsAndOverlapGuard :=
     assoc_pat_exact_packets_are_exact_and_guarded_revision_rejects_overlap
   exactPacketJointMergeIsSourceUnion :=
     assoc_pat_exact_packet_joint_merge_is_source_union
   duplicateExactPacketAbsorbs :=
     assoc_pat_exact_packet_duplicate_absorbs
-  formedConceptChapter12Source :=
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.formedConceptChapter12SourceProfile
+  formedConceptSource :=
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.formedConceptSourceProfile
   formedConceptSemanticLayerAssocPatEquality :=
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.formedConceptSemanticLayerAssocPatEqualityProfile.{0, 0, 0}
   formedConceptSemanticLayerAssocPatMonotonicity :=
@@ -482,14 +482,14 @@ def assocPatChapter12ConsumerProfile : AssocPatChapter12ConsumerProfile where
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.formedConceptMixedSemanticLayerBoundaryProfile.{0, 0, 0}
   formedConceptMixedSemanticLayerMonotonicity :=
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.formedConceptMixedSemanticLayerMonotonicityProfile.{0, 0, 0}
-  finiteTableChapter12Source :=
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.finiteTableChapter12SourceProfile
-  patternCodedChapter12Source :=
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.patternCodedChapter12SourceProfile
+  finiteTableSource :=
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.finiteTableSourceProfile
+  patternCodedSource :=
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.patternCodedSourceProfile
   patternCodedSemanticLayerConsumer :=
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.patternCodedSemanticLayerConsumerProfile.{0, 0, 0}
-  richPatternCodedChapter12Source :=
-    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.richPatternCodedChapter12SourceProfile
+  rolePatternCodedSource :=
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.rolePatternCodedSourceProfile
   richPatternCodedSemanticLayerConsumer :=
     Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAssocPatBridge.richPatternCodedSemanticLayerConsumerProfile.{0, 0, 0}
   concreteSemanticLayerAssocPatMixedCanary :=

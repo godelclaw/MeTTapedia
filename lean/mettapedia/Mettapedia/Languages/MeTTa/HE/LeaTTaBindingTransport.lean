@@ -3911,7 +3911,7 @@ mutual
 
 /-- Exact translation is the reflexive case of class-relative atom
 agreement. -/
-def HELeaAtomClassRel.translation (b : Bindings) :
+theorem HELeaAtomClassRel.translation (b : Bindings) :
     (atom : Atom) → HELeaAtomClassRel b atom (toLeaTTaAtom atom)
   | .symbol name => .symbol name
   | .var name => .variable (by
@@ -3921,7 +3921,7 @@ def HELeaAtomClassRel.translation (b : Bindings) :
       .expression (HELeaAtomClassRel.translationList b atoms)
 
 /-- List companion to exact class-relative atom translation. -/
-def HELeaAtomClassRel.translationList (b : Bindings) :
+theorem HELeaAtomClassRel.translationList (b : Bindings) :
     (atoms : List Atom) →
       List.Forall₂ (HELeaAtomClassRel b) atoms (toLeaTTaAtoms atoms)
   | [] => .nil
@@ -3935,7 +3935,7 @@ mutual
 
 /-- Class-relative atom agreement is monotone when the HE equality closure is
 extended. -/
-def HELeaAtomClassRel.mono
+theorem HELeaAtomClassRel.mono
     {before after : Bindings}
     (hmono : ∀ {left right},
       right ∈ before.eqClass left → right ∈ after.eqClass left) :
@@ -3948,7 +3948,7 @@ def HELeaAtomClassRel.mono
       .expression (HELeaAtomClassRel.monoList hmono hatoms)
 
 /-- List companion to monotonicity of class-relative atom agreement. -/
-def HELeaAtomClassRel.monoList
+theorem HELeaAtomClassRel.monoList
     {before after : Bindings}
     (hmono : ∀ {left right},
       right ∈ before.eqClass left → right ∈ after.eqClass left) :

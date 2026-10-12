@@ -1,10 +1,10 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 import Mettapedia.Languages.Metamath.SourceGSLTOperations
 
 /-!
 # Native typed optimization instances across language families
 
-The generic candidate/NIK optimization bridge is exercised here by three
+The generic candidate/SemanticService optimization bridge is exercised here by three
 structurally different licenses:
 
 * source-derived Metamath operation-record fusion, licensed by unique keys;
@@ -12,7 +12,7 @@ structurally different licenses:
   publication; and
 * immutable memo reuse, licensed by exact physical-snapshot stability.
 
-Each instance enters the same NIK admission family, keeps profitability
+Each instance enters the same SemanticService admission family, keeps profitability
 separate from semantic adequacy, and supplies a refusing negative.  A final
 cross-family theorem shows that dispatch-tagged authority cannot align with a
 storage candidate even when both mention the same source value.
@@ -23,13 +23,13 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationInst
 open Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Core
 open Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Seam
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission.Examples
 
 /-! ## A generic computed-recognition entry lemma -/
 
 /-- Any exact keyed candidate whose own recognizer returns a witness selects
-the same witness in the native plan and the common NIK family. -/
+the same witness in the native plan and the common SemanticService family. -/
 theorem entersCommonFamily_of_isSome {Source : Type}
     (spec : OptimizationSpec Source) (candidate : KeyedCandidate spec)
     (authority : AlignedAuthority candidate)
@@ -134,7 +134,7 @@ theorem native_authority_coordinates :
       nativeAuthority.judgment.license.demand = .grade .det :=
   SingleValuedDispatch.nativeJudgment_coordinates nativeAuthority.judgment
 
-/-- Metamath record fusion is an ordinary common NIK optimization, with the
+/-- Metamath record fusion is an ordinary common SemanticService optimization, with the
 same source-derived uniqueness witness on both preparation paths. -/
 theorem enters_common_nik_family :
     prepareAtKey spec candidate (some authority) =
@@ -164,14 +164,14 @@ def profitability : ProfitabilityReceipt spec source nativeAuthority evidence
     SingleValuedDispatch.artifactWorkSpan_le_sourceWorkSpan source evidence
 
 theorem pathProfitability :
-    Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.PathProfitabilityReceipt
-      (Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.Prepared.optimized
-        (family := nikFamily spec) (dependencies := keyDependencies _)
+    Mettapedia.GSLT.LanguageDef.OptimizationAdmission.PathProfitabilityReceipt
+      (Mettapedia.GSLT.LanguageDef.OptimizationAdmission.Prepared.optimized
+        (family := calculusReplayFamily spec) (dependencies := keyDependencies _)
         (revision := candidate.key) (candidate := candidate)
         authority evidence)
       Mettapedia.Algebra.WorkSpan (sourcePathWorkSpan spec candidate)
       (targetPathWorkSpan spec candidate) :=
-  NativeTypedOptimizationNIKBridge.profitabilityReceipt spec candidate
+  NativeTypedOptimizationBridge.profitabilityReceipt spec candidate
     authority evidence profitability
 
 private def constantSpec : NodeSpec :=
@@ -250,7 +250,7 @@ theorem native_authority_records_call_local_value :
 theorem recognized : spec.recognize source = some evidence := by
   rfl
 
-/-- Lifetime and value-publication evidence enter the same common NIK family
+/-- Lifetime and value-publication evidence enter the same common SemanticService family
 as keyed dispatch; no storage-specific admission hierarchy is introduced. -/
 theorem enters_common_nik_family :
     prepareAtKey spec candidate (some authority) =
@@ -272,14 +272,14 @@ def profitability : ProfitabilityReceipt spec source nativeAuthority evidence
     NonEscapingStorage.artifactWorkSpan_le_sourceWorkSpan source evidence
 
 theorem pathProfitability :
-    Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.PathProfitabilityReceipt
-      (Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.Prepared.optimized
-        (family := nikFamily spec) (dependencies := keyDependencies _)
+    Mettapedia.GSLT.LanguageDef.OptimizationAdmission.PathProfitabilityReceipt
+      (Mettapedia.GSLT.LanguageDef.OptimizationAdmission.Prepared.optimized
+        (family := calculusReplayFamily spec) (dependencies := keyDependencies _)
         (revision := candidate.key) (candidate := candidate)
         authority evidence)
       Mettapedia.Algebra.WorkSpan (sourcePathWorkSpan spec candidate)
       (targetPathWorkSpan spec candidate) :=
-  NativeTypedOptimizationNIKBridge.profitabilityReceipt spec candidate
+  NativeTypedOptimizationBridge.profitabilityReceipt spec candidate
     authority evidence profitability
 
 abbrev retainedSource := Storage.retainedSource
@@ -380,7 +380,7 @@ theorem native_authority_records_same_snapshot :
 theorem recognized : spec.recognize source = some evidence := by
   rfl
 
-/-- Snapshot equality licenses reuse through the same common NIK family. -/
+/-- Snapshot equality licenses reuse through the same common SemanticService family. -/
 theorem enters_common_nik_family :
     prepareAtKey spec candidate (some authority) =
         .optimized authority evidence ∧
@@ -402,14 +402,14 @@ def profitability : ProfitabilityReceipt spec source nativeAuthority evidence
   improves := by rfl
 
 theorem pathProfitability :
-    Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.PathProfitabilityReceipt
-      (Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission.Prepared.optimized
-        (family := nikFamily spec) (dependencies := keyDependencies _)
+    Mettapedia.GSLT.LanguageDef.OptimizationAdmission.PathProfitabilityReceipt
+      (Mettapedia.GSLT.LanguageDef.OptimizationAdmission.Prepared.optimized
+        (family := calculusReplayFamily spec) (dependencies := keyDependencies _)
         (revision := candidate.key) (candidate := candidate)
         authority evidence)
       Mettapedia.Algebra.WorkSpan (sourcePathWorkSpan spec candidate)
       (targetPathWorkSpan spec candidate) :=
-  NativeTypedOptimizationNIKBridge.profitabilityReceipt spec candidate
+  NativeTypedOptimizationBridge.profitabilityReceipt spec candidate
     authority evidence profitability
 
 abbrev changedSource := Memo.changedSource

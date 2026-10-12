@@ -110,7 +110,7 @@ variable [EvidenceType State] [BinaryWorldModel State Query]
 
 /-- Unified endpoint that packages:
 1) GF syntactic transport consumed as a pure-interface WM obligation, and
-2) the institution+Beck-Chevalley categorical endpoint theorem.
+2) the evidence-level Beck-Chevalley categorical endpoint theorem.
 
 This gives one theorem-level entry point from GF adapter obligations into the
 categorical WM endpoint interface. -/

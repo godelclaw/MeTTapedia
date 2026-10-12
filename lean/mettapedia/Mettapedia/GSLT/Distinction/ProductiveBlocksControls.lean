@@ -15,6 +15,11 @@ import Mettapedia.GSLT.Distinction.BlockTransportControls
   answer once.  Restarting re-delivers an answer, and re-commits an effect
   while the answer bags agree.
 * **Accounts are observations only when declared** (`account_control`).
+* **Relabeling retains execution** (`relabeled_line_resumption`,
+  `relabeling_retains_occurrences`, `masked_call_retains_saved_continuation`).
+  Lossy label maps keep the full residual, transition charges and occurrence
+  count, but cannot identify which committed effect occurred
+  (`lossy_observation_cannot_identify_effects`).
 * **Callbacks** (`callback_events_visible`, `cancellation_visible`,
   `external_erases_callback`).  A reentrant callback's effect appears in the
   closed trace; classifying the callback step as external makes the blocks of
@@ -94,6 +99,33 @@ theorem spinning_not_productive : IsEmpty wedgeMachine.Productive :=
 theorem wedged_not_productive : IsEmpty wedgeMachine.Productive :=
   ⟨fun productive => productive.moves .wedged rfl⟩
 
+theorem spinning_run (fuel : Nat) :
+    wedgeMachine.run fuel .spinning = ([], .exhausted .spinning) := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => simpa only [Machine.run, wedgeMachine] using ih
+
+theorem spinning_diverges : wedgeMachine.DivergesWithin .spinning := by
+  intro fuel
+  exact ⟨.spinning, congrArg Prod.snd (spinning_run fuel)⟩
+
+theorem wedged_does_not_diverge : ¬ wedgeMachine.DivergesWithin .wedged :=
+  wedgeMachine.not_divergesWithin_of_stuck rfl
+
+/-- The coarse observation deliberately forgets the distinction that full
+finite outcomes retain. Neither incompleteness nor absence of events means
+that computation can continue. -/
+theorem same_observation_different_divergence (fuel : Nat) :
+    wedgeMachine.observe fuel .spinning = wedgeMachine.observe fuel .wedged ∧
+      wedgeMachine.DivergesWithin .spinning ∧ ¬ wedgeMachine.DivergesWithin .wedged :=
+  ⟨(wedge_observations fuel).2.1.trans (wedge_observations fuel).2.2.symm,
+    spinning_diverges, wedged_does_not_diverge⟩
+
+theorem spinning_resumption_diverges (fuel : Nat) :
+    ∃ residual, wedgeMachine.run fuel .spinning = ([], .exhausted residual) ∧
+      wedgeMachine.DivergesWithin residual :=
+  ⟨.spinning, spinning_run fuel, spinning_diverges⟩
+
 /-! ## Resumption, not restart -/
 
 inductive Line where
@@ -153,6 +185,69 @@ theorem repeated_effect_control :
         answerBag (machine.run 5 .start).1 :=
   ⟨rfl, rfl, rfl⟩
 
+/-! ## Observation relabeling -/
+
+/-- Retain answer and fault identity but hide the name of each effect. -/
+def maskEffect : LineEvent → LineEvent
+  | .answer value => .answer value
+  | .effect _ => .effect "masked"
+  | .fault failure => .fault failure
+
+/-- Hiding labels preserves the ordered occurrences and complete residual. -/
+theorem relabeling_retains_occurrences :
+    ((lineMachine (.effect "first") (.effect "second")).relabel maskEffect id id).run 3 .start =
+      ([.effect "masked", .effect "masked"], .exhausted .last) := rfl
+
+/-- Even a one-element event carrier retains both emitted occurrences. -/
+theorem constant_event_map_keeps_multiplicity :
+    ((lineMachine (.answer 1) (.answer 2)).relabel (fun _ => ()) id id).run 3 .start =
+      ([(), ()], .exhausted .last) := rfl
+
+/-- Equal masked runs do not establish the identity of the original effects. -/
+theorem lossy_observation_cannot_identify_effects :
+    ((lineMachine (.effect "write-A") (.answer 1)).run 4 .start).1 ≠
+        ((lineMachine (.effect "write-B") (.answer 1)).run 4 .start).1 ∧
+      ((lineMachine (.effect "write-A") (.answer 1)).relabel maskEffect id id).run 4 .start =
+        ((lineMachine (.effect "write-B") (.answer 1)).relabel maskEffect id id).run 4 .start :=
+  ⟨by decide, rfl⟩
+
+theorem relabeled_line_resumption (first second : LineEvent) (fuel : ℕ) :
+    ((lineMachine first second).relabel maskEffect id id).run (2 + fuel) .start =
+      ([maskEffect first] ++ (((lineMachine first second).relabel maskEffect id id).run fuel .middle).1,
+        (((lineMachine first second).relabel maskEffect id id).run fuel .middle).2) := by
+  simpa only [List.map_cons, List.map_nil] using
+    (lineMachine first second).relabel_resumed maskEffect id id 2 fuel .start .middle [first]
+      (line_paused first second)
+
+theorem relabeled_line_accounts (first second : LineEvent) (price : Line → ℕ) (fuel : ℕ) :
+    ((lineMachine first second).relabel maskEffect id id).spent price (2 + fuel) .start =
+      (lineMachine first second).spent price 2 .start +
+        ((lineMachine first second).relabel maskEffect id id).spent price fuel .middle :=
+  (lineMachine first second).relabel_resumed_accounts maskEffect id id price 2 fuel .start .middle [first]
+    (line_paused first second)
+
+theorem relabeled_line_uses_original_rank (first second : LineEvent) (state : Line) :
+    ((lineProductive first second).relabeled maskEffect id id).rank state =
+      (lineProductive first second).rank state := rfl
+
+/-- Reversible event tags reflect exact runs, including their residual states. -/
+theorem injective_event_tags_reflect_runs (first second first' second' : LineEvent)
+    (fuel fuel' : ℕ) (state state' : Line) :
+    ((lineMachine first second).relabel (fun event => (event, ())) id id).run fuel state =
+        ((lineMachine first' second').relabel (fun event => (event, ())) id id).run fuel' state' ↔
+      (lineMachine first second).run fuel state = (lineMachine first' second').run fuel' state' :=
+  (lineMachine first second).relabel_runs_eq_iff (lineMachine first' second')
+    (fun event => (event, ())) id id
+    (fun _ _ equal => congrArg Prod.fst equal) (fun _ _ equal => equal) (fun _ _ equal => equal)
+    fuel fuel' state state'
+
+/-- Hiding every label cannot turn a silent divergent computation into a final one. -/
+theorem coarse_observation_keeps_divergence (fuel : ℕ) :
+    ¬ ((wedgeMachine.relabel (fun _ => ()) (fun _ => ()) id).observe fuel .spinning).status.Final := by
+  rw [wedgeMachine.relabel_final_iff]
+  rw [(wedge_observations fuel).2.1]
+  exact False.elim
+
 /-! ## Accounts -/
 
 inductive Pace where
@@ -210,6 +305,21 @@ def plain : Environment String LineEvent ℕ Unit := fun _ => ([], .returned 0)
 def cancelling : Environment String LineEvent ℕ Unit := fun _ => ([], .cancelled)
 
 theorem caller_suspends : caller.run 1 .start = ([], .suspended "lookup" .after) :=
+  rfl
+
+/-- A retained external request is a boundary awaiting a response, even
+though it has not finished the surrounding program. -/
+theorem pending_request_does_not_diverge : ¬ caller.DivergesWithin .start := by
+  intro diverges
+  obtain ⟨residual, remains⟩ := diverges 1
+  rw [caller_suspends] at remains
+  cases remains
+
+/-- A hidden request still suspends at the exact original continuation. -/
+theorem masked_call_retains_saved_continuation :
+    (caller.relabel maskEffect id (fun _ => ())).run 1 .start =
+      ([], .suspended () .after) := by
+  rw [caller.run_relabel, caller_suspends]
   rfl
 
 /-- **The callback's own effect is visible in the closed trace.** -/
@@ -417,6 +527,17 @@ theorem check_interpret_final :
     (by simp [Machine.observe, Machine.run, checker, Outcome.status, Status.Final])
     (by simp [Machine.observe, Machine.run, interpreter, Outcome.status, Status.Final]), rfl⟩
 
+/-- The constructed simulation transports at the same cost despite hidden effect names. -/
+theorem masked_checker_interpreter_simulation :
+    CostSimulation (checker.relabel maskEffect id id) (interpreter.relabel maskEffect id id) related 3 :=
+  forward.relabel maskEffect id id
+
+/-- Common observation transport also applies to different execution state carriers. -/
+theorem masked_checker_interpreter_observation :
+    (checker.relabel maskEffect id id).observe 2 .start =
+      (interpreter.relabel maskEffect id id).observe 4 .start :=
+  checker.relabel_observation_eq interpreter maskEffect id id 2 4 .start .start check_interpret_final.1
+
 /-- An interpreter that spins silently. -/
 def spinner : Machine Unit LineEvent Unit Empty where
   step _ := some (.silent ())
@@ -432,5 +553,175 @@ theorem spinning_interpreter_not_simulated (relation : Check → Unit → Prop) 
   have events := congrArg Observation.events spins
   simp only [Machine.observe, ran] at events
   cases events
+
+/-! ## Resumable callback execution -/
+
+/-- The callback performs an administrative advance, emits its own effect,
+and replies. It is independently executable before being attached to a caller. -/
+def retainedService : Machine Nat LineEvent (Reply Nat Unit) Empty where
+  step
+    | 0 => some (.silent 1)
+    | 1 => some (.publish [.effect "reentrant"] 2)
+    | _ => some (.finish (.returned 0))
+
+def retainedCaller := caller.handle protocol retainedService (fun _ => 0)
+
+def retainedServiceProgress : retainedService.Productive where
+  rank state := if state = 0 then 1 else 0
+  silent_decreases := by
+    intro state next stepped
+    cases state with
+    | zero => simp [retainedService] at stepped; subst next; decide
+    | succ state => cases state <;> simp [retainedService] at stepped
+  moves state := by cases state with
+    | zero => simp [retainedService]
+    | succ state => cases state <;> simp [retainedService]
+
+def retainedCallerProgress : retainedCaller.Productive :=
+  Machine.Productive.handled caller protocol retainedService (fun _ => 0)
+    { rank := fun _ => 0
+      silent_decreases := by intro state next stepped; cases state <;> simp [caller] at stepped
+      moves := by intro state; cases state <;> simp [caller] }
+    retainedServiceProgress
+
+theorem retained_handler_administration_settles (state : HandledState Call Nat String) :
+    ∃ used ≤ retainedCallerProgress.rank state, ∃ settled transition,
+      retainedCaller.run used state = ([], .exhausted settled) ∧
+        retainedCaller.step settled = some transition ∧ transition.administrative = false :=
+  retainedCallerProgress.settles state
+
+theorem retained_service_computes_environment (request : String) :
+    retainedService.run 3 0 = ((reentrant request).1, .finished (reentrant request).2) := rfl
+
+theorem retained_callback_cost_simulation :
+    CostSimulation (caller.close protocol reentrant) retainedCaller
+      (fun state retained => retained = .running state) 4 :=
+  caller.close_handle_costSimulation protocol (fun _ => 0) retainedService reentrant 3
+    retained_service_computes_environment
+
+theorem retained_callback_stuck_contract :
+    MatchesStuck (caller.close protocol reentrant) retainedCaller
+      (fun state retained => retained = .running state) 4 :=
+  caller.close_handle_matchesStuck protocol (fun _ => 0) retainedService reentrant 3
+
+theorem callback_pauses_after_effect :
+    retainedCaller.run 3 (.running .start) =
+      ([.effect "lookup", .effect "reentrant"], .exhausted (.handling "lookup" .after 2)) := rfl
+
+theorem callback_retains_exact_suffix (later : Nat) :
+    retainedCaller.run (3 + later) (.running .start) =
+      ([.effect "lookup", .effect "reentrant"] ++
+          (retainedCaller.run later (.handling "lookup" .after 2)).1,
+        (retainedCaller.run later (.handling "lookup" .after 2)).2) :=
+  retainedCaller.established_and_pending 3 later (.running .start) (.handling "lookup" .after 2)
+    [.effect "lookup", .effect "reentrant"] callback_pauses_after_effect
+
+/-- Resuming a service after its effect publishes only the reply and caller
+answer. Restarting it would repeat the call and the effect. -/
+theorem callback_resume_does_not_repeat_effect :
+    retainedCaller.run 3 (.handling "lookup" .after 2) =
+        ([.effect "returned", .answer 1], .finished ()) ∧
+      retainedCaller.run 6 (.running .start) =
+        ([.effect "lookup", .effect "reentrant", .effect "returned", .answer 1], .finished ()) :=
+  ⟨rfl, rfl⟩
+
+theorem callback_restart_repeats_effect :
+    (retainedCaller.run 3 (.running .start)).1 ++ (retainedCaller.run 6 (.running .start)).1 =
+      [.effect "lookup", .effect "reentrant", .effect "lookup", .effect "reentrant",
+        .effect "returned", .answer 1] := rfl
+
+theorem callback_charges_each_component :
+    retainedCaller.spent (fun | .running _ => 1 | .handling _ _ _ => 0) 6 (.running .start) = 3 ∧
+      retainedCaller.spent (fun | .running _ => 0 | .handling _ _ _ => 1) 6 (.running .start) = 3 ∧
+      (caller.close protocol reentrant).spent (fun _ => 1) 6 .start = 3 := ⟨rfl, rfl, rfl⟩
+
+/-- The handler can issue a further request before replying to its caller. -/
+def requestingService : Machine Nat LineEvent (Reply Nat Unit) String where
+  step
+    | 0 => some (.publish [.effect "write"] 1)
+    | 1 => some (.call "acknowledge" 2)
+    | _ => some (.finish (.returned 0))
+
+theorem nested_request_retains_both_continuations :
+    (caller.handle protocol requestingService (fun _ => 0)).run 3 (.running .start) =
+      ([.effect "lookup", .effect "write"], .suspended "acknowledge" (.handling "lookup" .after 2)) := rfl
+
+theorem nested_request_does_not_fabricate_reply :
+    ((caller.handle protocol requestingService (fun _ => 0)).run 100 (.running .start)).1 =
+      [.effect "lookup", .effect "write"] := rfl
+
+/-- This service waits for an acknowledgement, whose payload is not used.
+The external protocol leaves its already selected return continuation intact. -/
+def acknowledgementProtocol : Callback Nat LineEvent String Unit Unit where
+  callEvent := .effect
+  replyEvent _ := .effect "acknowledged"
+  resume retained _ := retained
+
+def acknowledgement : Environment String LineEvent Unit Unit :=
+  fun _ => ([.effect "flush"], .returned ())
+
+theorem handling_external_service_commutes :
+    (caller.handle protocol requestingService (fun _ => 0)).close
+        acknowledgementProtocol.throughHandler acknowledgement =
+      caller.handle protocol (requestingService.close acknowledgementProtocol acknowledgement)
+        (fun _ => 0) :=
+  caller.handle_close protocol requestingService (fun _ => 0) acknowledgementProtocol acknowledgement
+
+theorem nested_service_closure_preserves_effect_order :
+    ((caller.handle protocol requestingService (fun _ => 0)).close
+        acknowledgementProtocol.throughHandler acknowledgement).run 6 (.running .start) =
+      ([.effect "lookup", .effect "write", .effect "acknowledge", .effect "flush",
+        .effect "acknowledged", .effect "returned", .answer 1], .finished ()) := rfl
+
+/-- An uncaught service fault stops the composite. A fault reply is a
+different event: it returns control to the callback protocol. -/
+def failingService : Machine Unit LineEvent (Reply Nat Unit) Empty where
+  step _ := some (.fail [.fault ()])
+
+def faultReplyService : Machine Unit LineEvent (Reply Nat Unit) Empty where
+  step _ := some (.finish (.faulted ()))
+
+theorem service_fault_and_fault_reply_differ :
+    (caller.handle protocol failingService (fun _ => ())).run 3 (.running .start) =
+        ([.effect "lookup", .fault ()], .faulted) ∧
+      (caller.handle protocol faultReplyService (fun _ => ())).run 3 (.running .start) =
+        ([.effect "lookup", .fault ()], .finished ()) := ⟨rfl, rfl⟩
+
+def cancelledService : Machine Unit LineEvent (Reply Nat Unit) Empty where
+  step _ := some (.finish .cancelled)
+
+theorem cancelled_service_does_not_publish_caller_answer :
+    (caller.handle protocol cancelledService (fun _ => ())).run 3 (.running .start) =
+      ([.effect "lookup", .effect "cancelled"], .finished ()) := rfl
+
+def stuckService : Machine Unit LineEvent (Reply Nat Unit) Empty where
+  step _ := none
+
+theorem stuck_service_retains_caller :
+    (caller.handle protocol stuckService (fun _ => ())).run 2 (.running .start) =
+      ([.effect "lookup"], .stuck (.handling "lookup" .after ())) := rfl
+
+def spinningService : Machine Unit LineEvent (Reply Nat Unit) Empty where
+  step _ := some (.silent ())
+
+theorem spinning_service_diverges : spinningService.DivergesWithin () := by
+  intro fuel
+  refine ⟨(), ?_⟩
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => exact ih
+
+theorem running_handler_can_diverge :
+    (caller.handle protocol spinningService (fun _ => ())).DivergesWithin (.handling "lookup" .after ()) :=
+  caller.handle_divergesWithin protocol spinningService (fun _ => ()) "lookup" .after ()
+    spinning_service_diverges
+
+/-- Terminating atomic environments cannot stand in for a spinning service. -/
+theorem spinning_service_has_no_atomic_response (fuel : Nat) (events : List LineEvent)
+    (reply : Reply Nat Unit) : spinningService.run fuel () ≠ (events, .finished reply) := by
+  obtain ⟨residual, retained⟩ := spinning_service_diverges fuel
+  intro finished
+  rw [finished] at retained
+  cases retained
 
 end Mettapedia.GSLT.Distinction.ProductiveBlocks.Controls

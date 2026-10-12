@@ -9,9 +9,9 @@ import Mettapedia.TypeTheory.IndexedPolynomialListRelSmall
 import Mettapedia.TypeTheory.HenkinLogicalCodeDescent
 import Mettapedia.GSLT.Core.PolicyFamilyOperationClosure
 import Mettapedia.GSLT.Core.PolicyFamilyContextClosure
-import Mettapedia.GSLT.LanguageDef.NIKServiceInvocation
-import Mettapedia.GSLT.LanguageDef.NIKServiceResumption
-import Mettapedia.GSLT.LanguageDef.NIKPropositionBranching
+import Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
+import Mettapedia.GSLT.LanguageDef.SemanticServiceResumption
+import Mettapedia.GSLT.LanguageDef.EvidenceConditionedBranching
 import Mettapedia.GSLT.LanguageDef.FiniteSetRepresentationService
 import Mettapedia.GSLT.LanguageDef.EquationPremiseStability
 import Mettapedia.Logic.HOL.UniformListInduction
@@ -88,11 +88,13 @@ import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.FormationSensitiveH
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireRelatorCompatibility
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveCompletedConversion
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.MatchedIndexDependentTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeRelatorCompatibility
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeUniverseModelBoundary
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeCumulativeFormationCoherenceBoundary
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireDataDenotation
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLExecution
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListCognitiveWorkload
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.OpaqueRelatorScopedComputation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DecisionSurface
@@ -157,7 +159,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSens
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentQuotientRetainedIdentity
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentRetainedSemanticRequirements
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentQuotientRetainedSemantics
-import Mettapedia.GSLT.LanguageDef.NIKOutcomeViewControls
+import Mettapedia.GSLT.LanguageDef.OutcomeViewControls
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveQuotientBasedJRepresentation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentQuotientProductExamples
 import Mettapedia.TypeTheory.ContextualBasedIdentityScope
@@ -486,7 +488,7 @@ def nativeMatchingMeaningEvidence : CheckedClaim :=
 /-- Repeated calls preserve the authored binding structure and exact native
 worlds under the existing execution qualification. Requests remain actual
 assembly callbacks: this is not the authored backend theorem for nested
-calls, a full native model, or a qualification of every NIK face in this
+calls, a full native model, or a qualification of every SemanticService face in this
 candidate. -/
 def nestedServiceEvidence : CheckedClaim :=
   checked "ASM-SERVICE-COMPOSITION-001" "capture-safe repeated calls with exact worlds and retained declines"
@@ -604,9 +606,9 @@ def study : Decision → Study
         checked "OBS-038" "Boolean answer-only observation supports public status exactly when both unresolved outcome classes are not inhabited"
           (@Mettapedia.TypeTheory.AuthorityOutcomeViews.publicStatus_factors_asBool_iff.{0, 0, 0, 0}),
         checked "OBS-039" "actual unsuccessful SAT attempts have recoverable public status but neither answer nor status recovers submitted work"
-          (And.intro (@Mettapedia.GSLT.LanguageDef.NIKOutcomeViewControls.sample_publicStatus_factors)
-            (And.intro Mettapedia.GSLT.LanguageDef.NIKOutcomeViewControls.sample_receiptSize_not_factors_asBool
-              Mettapedia.GSLT.LanguageDef.NIKOutcomeViewControls.sample_receiptSize_not_factors_publicStatus)),
+          (And.intro (@Mettapedia.GSLT.LanguageDef.OutcomeViewControls.sample_publicStatus_factors)
+            (And.intro Mettapedia.GSLT.LanguageDef.OutcomeViewControls.sample_receiptSize_not_factors_asBool
+              Mettapedia.GSLT.LanguageDef.OutcomeViewControls.sample_receiptSize_not_factors_publicStatus)),
         checked "OBS-040" "a retained local outcome view supports recovery and reconstructs the unresolved receipt with its original context"
           (And.intro (@Mettapedia.TypeTheory.AuthorityOutcomeViews.retainedView_supports_recoveryAxis.{0, 0, 0, 0})
             (@Mettapedia.TypeTheory.AuthorityOutcomeViews.indexedView_supports_incompleteReceipt.{0, 0, 0, 0, 0})),
@@ -1048,16 +1050,16 @@ def study : Decision → Study
         checked "ADM-036" "nonempty annotation-sensitive semantics also fails the collected obligations"
           (@SharedJudgmentSemanticRequirements.annotation_sensitive_interpretation_excluded.{0, 0, 0, 0, 0, 0, 0}),
         checked "ADM-037" "then requires accepted evidence of the exact scoped proposition"
-          (@NIKPropositionBranching.checkSubmission_then_sound.{0, 0, 0}),
+          (@EvidenceConditionedBranching.checkSubmission_then_sound.{0, 0, 0}),
         checked "ADM-038" "else requires accepted evidence of scoped semantic negation rather than rejected proof evidence"
-          (@NIKPropositionBranching.checkSubmission_else_sound.{0, 0, 0}),
+          (@EvidenceConditionedBranching.checkSubmission_else_sound.{0, 0, 0}),
         checked "ADM-039" "a complete decision kernel separately justifies its negative proposition verdict"
-          (@NIKPropositionBranching.decideOutcome_false_iff.{0, 0}),
+          (@EvidenceConditionedBranching.decideOutcome_false_iff.{0, 0}),
         checked "ADM-040" "a rejected proof candidate and an empty search can both concern a true scoped proposition"
-          (And.intro NIKPropositionBranching.Controls.rejected_proof_is_not_else
-            NIKPropositionBranching.Controls.empty_search_is_not_else),
+          (And.intro EvidenceConditionedBranching.Controls.rejected_proof_is_not_else
+            EvidenceConditionedBranching.Controls.empty_search_is_not_else),
         checked "ADM-041" "an accepted claim at one theory cannot reuse its assignment under a changed theory"
-          NIKPropositionBranching.Controls.changed_scope_rejects_old_assignment,
+          EvidenceConditionedBranching.Controls.changed_scope_rejects_old_assignment,
         checked "ADM-042" "every common-package refined judgment is represented on its actual formed telescope"
           (@Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.FormationSensitiveContextual.Common.all_judgments_represented),
         checked "ADM-043" "the refined contextual forgetful functor is faithful without asserting reverse admission"
@@ -1144,14 +1146,14 @@ def study : Decision → Study
         checked "EVAL-015" "equal elaborated code and initial worlds determine equal complete outputs at one assembly"
           (@SharedJudgmentPublicContext.run_eq_of_elaboration_eq),
         checked "EVAL-016" "proposition branching retains exactly the selected body's worlds and evidence"
-          (And.intro (@NIKPropositionBranching.established_worlds.{0, 0, 0, 0, 0, 0, 0})
-            (@NIKPropositionBranching.refuted_worlds.{0, 0, 0, 0, 0, 0, 0})),
+          (And.intro (@EvidenceConditionedBranching.established_worlds.{0, 0, 0, 0, 0, 0, 0})
+            (@EvidenceConditionedBranching.refuted_worlds.{0, 0, 0, 0, 0, 0, 0})),
         checked "EVAL-017" "an incomplete proposition branch changes neither state nor intents"
-          (@NIKPropositionBranching.incomplete_runs_neither.{0, 0, 0, 0, 0, 0, 0}),
+          (@EvidenceConditionedBranching.incomplete_runs_neither.{0, 0, 0, 0, 0, 0, 0}),
         checked "EVAL-018" "actual SAT support and complete refutation select distinct effects; failed evidence selects neither"
-          (And.intro NIKPropositionBranching.Controls.accepted_then_effects
-            (And.intro NIKPropositionBranching.Controls.accepted_else_effects
-              NIKPropositionBranching.Controls.rejected_evidence_executes_neither)),
+          (And.intro EvidenceConditionedBranching.Controls.accepted_then_effects
+            (And.intro EvidenceConditionedBranching.Controls.accepted_else_effects
+              EvidenceConditionedBranching.Controls.rejected_evidence_executes_neither)),
         checked "EVAL-019" "actual admitted finite-set output drives a complete membership decision and precisely its selected body"
           (@FiniteSetRepresentationService.accepted_union_branch_worlds.{0, 0, 0, 0}),
         checked "EVAL-020" "ordinary list union retains its code and selects different effects for present and absent elements"
@@ -1209,9 +1211,9 @@ def study : Decision → Study
         checked "HOST-012" "the specialized chart does not claim quantified induction"
           UniformListInductionChart.induction_outside_chart,
         checked "HOST-013" "submitted leaves produce the exact source claim and its native proposition representation"
-          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService.produced_admission_and_representation),
+          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService.produced_admission_and_representation),
         checked "HOST-014" "formed native proposition syntax cannot supply missing induction"
-          Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService.formed_conclusion_does_not_supply_induction,
+          Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService.formed_conclusion_does_not_supply_induction,
         checked "HOST-015" "all actual HOL declarations are fresh for the common wire/relator package"
           (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeRelatorCompatibility.hol_entry_fresh),
         checked "HOST-016" "a new mixed native payload preserves its original wire under checked projection"
@@ -1705,7 +1707,7 @@ def study : Decision → Study
   | .reasoning =>
     { requirementIds := ["INV-TT-002", "INV-TT-003", "REQ-NIK-001", "KG3", "KG5", "KG6", "KG8", "KG9"]
       requirement := "Compose HO search, learning, model discrimination and imported theorem proving as native services without confusing outcomes."
-      scope := "The four NIK faces and checked TH0 waist are interfaces; capability lists are not implementations of all HO algorithms."
+      scope := "The four SemanticService faces and checked TH0 waist are interfaces; capability lists are not implementations of all HO algorithms."
       alternatives := ["native proof services", "native operations and decisions", "certificate boundaries as one service form"]
       constraints := [
         checked "HO-001" "HO algorithm requirements are not one linear hierarchy"
@@ -1715,11 +1717,11 @@ def study : Decision → Study
         checked "HO-003" "example agreement is not native all-input refinement"
           MetatheoryChoiceConstraints.provedConstraints.nativeAllInput,
         checked "HO-004" "actual submitted chart proofs reconstruct uniform source HOL induction"
-          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService.replay_reconstruct),
+          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService.replay_reconstruct),
         checked "HO-005" "intrinsic admission binds produced proofs to the complete source claim"
-          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService.produced_native_acceptance_iff),
+          (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService.produced_native_acceptance_iff),
         checked "HO-006" "changing conditional derivability to unconditional model truth is unsound"
-          Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService.unconditional_junk_meaning_not_adequate,
+          Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService.unconditional_junk_meaning_not_adequate,
         checked "HO-007" "actual generated and imported claims retain their proof and revision dependencies"
           (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListCognitiveWorkload.learned_current_sound),
         checked "HO-008" "sample fit cannot replace the missing induction assumption"
@@ -1737,13 +1739,13 @@ def study : Decision → Study
         checked "HO-014" "an observed service payload cannot acquire a conflicting constructorwise meaning"
           (@SharedJudgmentServiceOSLF.HOLMeaning.observed_payload_meaning_unique.{0}),
         checked "HO-015" "four native service faces retain their own inputs and operation source admission"
-          (@Mettapedia.GSLT.LanguageDef.NIKServiceInvocation.accepted_meaning.{0, 0}),
+          (@Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation.accepted_meaning.{0, 0}),
         checked "HO-016" "actual repeated calls preserve scoped source worlds and full request history"
           (@SharedJudgmentServicePrograms.Code.interpret_worlds),
         checked "HO-017" "a later rejected claim retains earlier replies without producing an inhabitant"
           (@SharedJudgmentServicePrograms.Examples.stopped_run_nonempty_without_value),
         checked "HO-018" "qualified four-face resumptions retain actual admitted receipts and target meaning"
-          (@Mettapedia.GSLT.LanguageDef.NIKServiceResumption.qualified_run.{0, 0, 0, 0}),
+          (@Mettapedia.GSLT.LanguageDef.SemanticServiceResumption.qualified_run.{0, 0, 0, 0}),
         checked "HO-019" "independently authored repeated-service backend completion is exact in both directions"
           (@SharedJudgmentServiceProgramBackend.completion_run_iff),
         checked "HO-020" "actual matching and HOL callbacks complete into one admitted dependent Sigma"
@@ -1935,7 +1937,7 @@ def study : Decision → Study
                 (@Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedRuleData.Computes.iff_contextualStep))))]
       selection := none
       remaining := [⟨.compatibilityProof,
-        "Which assembly judgments are served by each NIK face, and how do the authored GSLT and generated OSLF meanings agree with them?",
+        "Which assembly judgments are served by each SemanticService face, and how do the authored GSLT and generated OSLF meanings agree with them?",
         "Qualify request, theory and revision binding on the same assembly. The bounded HOL workload does not establish unrestricted decision or OSLF completeness."⟩,
         ⟨.experiment,
         "Which integrated HO workloads distinguish useful service compositions?",

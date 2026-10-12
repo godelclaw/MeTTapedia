@@ -41,6 +41,108 @@ The routine umbrella is `Mettapedia.Languages.MeTTa.PeTTa`
 existing semantic layers. Import `Eval` when proving execution of a retained
 program and `ProgramQuotation` when retaining its pinned text.
 
+The first-order matching adapter lives in `Bridges/MeTTaIL`.
+`MatchAutomataProgram` retains the actual MeTTa library;
+`CettaWireAtom` embeds the shared constructor-data carrier injectively;
+`MatchAutomataSourceExecution` proves its recursive append, length and
+membership operations. `MatchAutomataExecution` composes source compilation,
+traversal and seeding, both structural machines, and canonical binding
+completion. Its top-down and bottom-up `completed_iff` and `derivation_iff`
+theorems characterize the actual entry calls for every finite first-order
+pattern family and subject. Ordered matches, duplicate occurrences, positions,
+bindings, the arbitrary unchanged store and empty I/O are exact. The reported
+counters measure instrumented structural inspections and dispatch or inventory
+tests; they exclude lowering, binding completion and evaluator overhead.
+The five-field LanguageDef adapter is a matching projection, not operational
+admission for scoped rules. The generic execution composition lives in
+`GSLT/LanguageDef/MeTTaILMatchAutomataExecution`.
+
+`MatchAutomataNormalizedExecution` proves the optional retained source that
+partitions overlapping obligations, rebases their common positions, interns
+relative controls and restores ordered origins after cached derivative
+dispatch. Its completed and declarative executions return the canonical
+matches with unchanged store and empty I/O. Runtime normalization is covered;
+offline exploration of the complete derivative state graph remains separate.
+The dispatch counters exclude normalization, lookup and evaluator costs.
+
+`RuleExecutionProgram` conservatively extends the matcher with retained
+rule-operation source. `RuleInstantiationExecution` proves its first-order
+RHS construction against canonical substitution, with exact store and I/O
+observations. Missing variables remain variables; replacement payloads are
+inserted once, and the first matching binding wins. The shared rule fixtures
+also refuse incorrect result observations. `RootRuleExecution` proves actual
+ordered dispatch against the canonical root frontier and completed-run
+observations equivalent to GSLT steps for admitted equation-free first-order
+rules with relation-query premises and a literal finite provider. The
+`Conditional` entry carries each branch through the complete premise fold,
+then constructs its RHS; order and duplicate witnesses remain exact. Binding
+annotations and recursive context premises are refused at compilation.
+Its `Matched` entries run either shared matcher and use each root match's
+retained bindings at the actual authored row before evaluating premises and
+constructing the RHS. Their completed observations have the same canonical
+frontier and GSLT characterization.
+`RelationPremiseExecution` proves the actual query and fold operations, with
+builtin tuples before provider tuples and each query checked in its preceding
+bindings. Scoped provider contracts and authorized contextual execution
+require their own composition laws.
+
+`ContextualRuleExecution` proves the retained recursive congruence entry. It
+matches recursive targets relative to their results and merges with the
+original seed, rejecting conflicts. Both matcher strategies return exactly
+the canonical ordered contextual frontier with unchanged state and empty I/O;
+reduct membership preserves and reflects actual GSLT steps. Current native
+admission includes congruence and variable-only relation queries with finite
+literal providers. Scoped, freshness and quantified premises remain separate
+source extensions.
+
+`ModuleAssemblyExecution` proves complete-row ordered fragment assembly in
+the retained source, using `NativeAuthoring.assembleRaw`. All four families
+remain in source order, including duplicate equations and rewrite rows. The
+module entry then runs the assembled contextual language, allowing recursive
+witnesses across fragments without granting new contextual permissions.
+Its execution theorem states the admitted equation-free profile separately
+from the opaque row encoders used by assembly. Shared-origin import resolution,
+nullary resolution, whole-language validation and a textual `.module` reader
+remain distinct layers.
+
+`RuleTraceExecution` proves the actual receipt-driven source loop. It computes
+each complete ordered frontier, selects an occurrence by ordinal, and re-enters
+the rules on the selected residual. Whole-run laws retain consumed ordinals,
+ordered frontiers, the residual and unread receipts, with unchanged store and
+empty I/O. Stopped traces preserve and reflect finite GSLT paths on the admitted
+equation-free first-order provider profile. Exhausting receipts stops the loop
+without asserting normality; refusal and exhausted fuel have distinct outputs.
+
+## Scoped conditional execution
+
+`GeneralRuleJobExecution` composes the original scoped matcher, premise machine
+and rule-job readout for finite typed authored presentations. It realizes all
+query and evaluation tasks, lexical quantifier continuations, finite provider
+snapshots and preceding-declaration child searches. Unordered collections retain
+physical choice traces, repeated-variable checks and residual captures. Every
+stored capture is validated, including values produced by premises and unused
+values; typed RHS construction retains their dependencies.
+
+The execution protocol calls `gslt:premise:machine-run`, then reads its ordered
+results through `gslt:rule:job-finish-root`. Its completed observations retain the
+exact agenda, pending obligations, work, ordered answers and receipt fields.
+`observes_receipt_iff_valid` preserves and reflects the original authorized
+receipts for each admitted job; completeness uses the source stratification
+check. `observed_job_completed_receipts_exact` identifies the complete ordered
+receipt list, preserving duplicates and removing only the source readout's
+refusals. Arbitrary free-variable contexts are represented by the proved finite
+input footprint. Supplied context permissions remain distinct from typing and
+premise discharge. A single outer driver and effectful provider execution are
+further integrations.
+
+The theorem entry point is
+[GeneralRuleJobExecution.lean](Bridges/MeTTaIL/GeneralRuleJobExecution.lean).
+Its source matcher and premise judgments remain in `OSLF.MeTTaIL`; the
+execution bridges realize those judgments through the retained MeTTa program.
+The module also derives each accepted receipt's step in the original
+`GeneralOccurrenceSemantics.gslt`. This does not yet identify every
+equation-saturated step with the execution protocol.
+
 ## Build
 
 ```bash
@@ -151,7 +253,7 @@ The retained MM0 program connects to this same judgment in
 [`MM0.MeTTa.Proof`](../../MM0/MeTTa/Kernel/Proof.lean):
 `certificate_accepted_iff_petta_judgment` and
 `certificate_accepted_iff_gslt_path` relate acceptance of a translated
-`formMM0` certificate to the actual PeTTa proof call.
+`kernelCalculus` certificate to the actual PeTTa proof call.
 `certificate_accepted_iff_petta_accepts` and
 `certificate_accepted_iff_check_gslt_path` give the corresponding results for
 the Boolean `mm0:check-proof` entry point. Their premises retain

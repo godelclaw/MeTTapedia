@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 import Mettapedia.TypeTheory.CwfSimpleDependentInstitution
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Canary: models over theories, transported and not transported
 
@@ -26,7 +28,7 @@ namespace Mettapedia.GSLT.LanguageDef.TheoryGraphModelsCanary
 
 open Mettapedia.Logic
 open _root_.CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.TypeTheory.CwfInhabitationInstitution

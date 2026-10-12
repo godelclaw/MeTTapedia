@@ -55,7 +55,7 @@ noncomputable def predicateFullInheritanceGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := hObj M
+      let := hObj M
       constructor
       · intro hModels
         have hEq :
@@ -122,7 +122,7 @@ noncomputable def predicateVocabularyFullInheritanceGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := hObj M
+      let := hObj M
       constructor
       · intro hModels
         have hEq :
@@ -269,7 +269,7 @@ noncomputable def predicateVocabularySimilarityGeOneCut
     paramFree := hφ0
     represents_ge := by
       intro M
-      letI := hObj M
+      let := hObj M
       constructor
       · intro hModels
         have hEq :

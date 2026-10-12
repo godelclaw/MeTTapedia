@@ -13,7 +13,7 @@ the residual family only when the prefix history map is surjective.  Without
 that coverage, a prefix runner may make observable choices on unreachable
 intermediate histories; a later route may collapse those choices while the
 source-to-target composite remains fully adequate.  The checked counterexample
-below prevents a global converse from being assumed by NIK or a compiler.
+below prevents a global converse from being assumed by SemanticService or a compiler.
 -/
 
 set_option autoImplicit false
@@ -272,7 +272,7 @@ end RoutePolicyRealization
 namespace Canary
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldPrograms.SignatureEvidenceInterpretation.Canary
-open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldNIKSelection.Canary
+open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldSelection.Canary
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicySelection.Canary
 open RoutePolicyRealization
 

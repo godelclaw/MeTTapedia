@@ -1,4 +1,4 @@
-import Mettapedia.Logic.TheoryModel.Basic
+import Mettapedia.Logic.TheoryModel.Consistency
 
 /-!
 # Gradual types as sets of static types
@@ -13,9 +13,10 @@ satisfaction relation, `Conc T G` ("the static type `T` is a completion of
   (`concretisation_eq_models`);
 * **precision** `G ⊑ G'` is inclusion of concretisations
   (`prec_iff_concretisation_subset`), i.e. entailment `{G} ⊨ G'`;
-* **consistency** `G ∼ G'` is non-empty intersection of concretisations
-  (`consis_iff_exists_conc`), i.e. the theory `{G, G'}` has a model
-  (`consis_iff_models_nonempty`).
+* **consistency** `G ∼ G'`, given by the rules of Siek and Taha (`Consis`),
+  is non-empty intersection of concretisations (`consis_iff_exists_conc`),
+  i.e. `Consistent Conc {G, G'}`: the theory `{G, G'}` has a model
+  (`consis_iff_consistent`).
 
 **Abstraction.**  The abstraction `α K` of a non-empty set `K` of static
 types is the most precise gradual type whose concretisation contains `K`.  In
@@ -250,19 +251,10 @@ theorem consis_iff_exists_conc {G G' : GType} :
       | unknown => exact .unknownRight _
       | arr ha hb => exact .arr (iha ha) (ihb hb)
 
-/-- **Consistency is consistency of the two-sentence theory**: `{G, G'}` has a
-model. -/
-theorem consis_iff_models_nonempty {G G' : GType} :
-    Consis G G' ↔ (models Conc {G, G'}).Nonempty := by
-  rw [consis_iff_exists_conc]
-  constructor
-  · rintro ⟨T, hT, hT'⟩
-    refine ⟨T, fun H hH => ?_⟩
-    rcases hH with rfl | rfl
-    · exact hT
-    · exact hT'
-  · rintro ⟨T, hT⟩
-    exact ⟨T, hT (Or.inl rfl), hT (Or.inr rfl)⟩
+/-- **The rules of Siek and Taha are consistency of the two-sentence
+theory** `{G, G'}`, with concretisation as satisfaction. -/
+theorem consis_iff_consistent {G G' : GType} : Consis G G' ↔ Consistent Conc {G, G'} :=
+  consis_iff_exists_conc.trans (consistent_pair_iff Conc).symm
 
 /-- Consistency is monotone for precision: making types less precise never
 loses consistency. -/
@@ -692,10 +684,10 @@ theorem helly {Gs : List GType} (pairwise : ∀ A ∈ Gs, ∀ B ∈ Gs, Consis A
 
 /-- The same, in the theory–model reading: a pairwise consistent finite
 theory of gradual types has a model. -/
-theorem models_nonempty_of_pairwise {Gs : List GType}
-    (pairwise : ∀ A ∈ Gs, ∀ B ∈ Gs, (models Conc {A, B}).Nonempty) :
-    (models Conc {G | G ∈ Gs}).Nonempty := by
-  obtain ⟨T, hT⟩ := helly fun A hA B hB => consis_iff_models_nonempty.mpr (pairwise A hA B hB)
+theorem consistent_of_pairwise {Gs : List GType}
+    (pairwise : ∀ A ∈ Gs, ∀ B ∈ Gs, Consistent Conc {A, B}) :
+    Consistent Conc {G | G ∈ Gs} := by
+  obtain ⟨T, hT⟩ := helly fun A hA B hB => consis_iff_consistent.mpr (pairwise A hA B hB)
   exact ⟨T, fun G hG => hT G hG⟩
 
 /-! ### Control: shared unknowns -/

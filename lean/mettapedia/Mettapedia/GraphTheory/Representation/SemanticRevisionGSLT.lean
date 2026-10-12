@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.IndexedOperational
 import Mettapedia.GSLT.Core.SemanticTransport
 import Mettapedia.GraphTheory.Representation.AdjacencyMatrix
@@ -314,7 +315,7 @@ noncomputable def matrixQueryTranslation (n : Nat) :
 composition of the exact matrix/query translation and the query invariant's
 realization into a discrete answer GSLT. -/
 noncomputable def matrixAnswerRealization (n : Nat) :
-    OperationalRealization (AdjacencyMatrix.theory n) (GSLT.discrete Bool) :=
+    OperationalRealization (AdjacencyMatrix.theory n) (GSLT.stepFree Bool) :=
   (OperationalRealization.ofTranslation
       ((matrixQueryTranslation n).toOperational)).comp
     ((queryAnswerInvariant n).toDiscreteRealization)

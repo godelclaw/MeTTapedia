@@ -62,7 +62,7 @@ theorem portfolio_state_before_premise (cycle : Nat) :
     Function.iterate_id]
   rfl
 
-def portfolioLocalValidity :
+theorem portfolioLocalValidity :
     portfolioClaim.controller.LocallyValid
       (auditedLabeledSystem portfolioStepAuthority foregroundAccepting)
       portfolioClaim.root :=

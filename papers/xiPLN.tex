@@ -648,7 +648,7 @@ with canonical aliases in \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}. &
 Ch.\ 8 & Error magnification & Confidence-level WM transport and OSLF-threshold grounding:
 \codepath{Mettapedia/PLN/Bridges/Languages/PLNErrorMagnificationGrounding.lean},
 canonical one-call endpoints in \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}
-(including \code{ch8\_wm\_rewrite\_oslf\_threshold\_acceptance\_of\_interval});
+(including \code{wm\_rewrite\_oslf\_threshold\_acceptance\_of\_interval});
 diagnostic/characterization layers remain in
 \codepath{Mettapedia/Logic/PLNBugAnalysis.lean},
 \codepath{Mettapedia/Logic/Comparison/ErrorCharacterization.lean}. & Formalized (core) \\
@@ -680,14 +680,14 @@ Ch.\ 11 & Crisp/fuzzy quantifiers with indefinite TVs & Quantifier semantics and
 bridge:
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyQuantifierSemantics.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyITVBridge.lean}; theorem pointers:
-\code{canary\_ch11\_rule\_family\_end\_to\_end\_ext},
-\code{canary\_ch11\_rule4\_not\_equivalent\_itvPath},
+\code{canary\_rule\_family\_end\_to\_end\_ext},
+\code{canary\_existentialConjunction\_not\_equivalent\_itvPath},
 \code{fuzzyIntervalHolds\_strength\_of\_lower\_upper},
-\code{canary\_ch11\_itv\_strength\_interval\_of\_lower\_upper}; crisp operators:
+\code{canary\_itv\_strength\_interval\_of\_lower\_upper}; crisp operators:
 \codepath{Mettapedia/Logic/PLNCrispEvidence.lean},
 \codepath{Mettapedia/Logic/PLNNoisyOr.lean}; regression target:
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean},
-\codepath{scripts/check\_ch11\_quantifiers.sh}. & Formalized (core + fuzzy/QFM + regressions) \\
+\code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}. & Formalized (core + fuzzy/QFM + regressions) \\
 \hline
 Ch.\ 12 & Intensional inference & Information-theoretic bridge and typed WM grounding:
 \codepath{Mettapedia/Logic/IntensionalInheritance.lean},
@@ -697,7 +697,7 @@ semantic and linked one-call endpoints in
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}, plus executable canary/regression targets:
 \codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
 \codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
-\codepath{scripts/check\_ch12\_intensional.sh}. & Formalized (ASSOC core) \\
+\code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}. & Formalized (ASSOC core) \\
 \hline
 Ch.\ 13 & Aspects of inference control & Formal inference-control components via selector
 specification, ranking transfer/stability, aggregation-role, and executable canary/regression
@@ -709,7 +709,7 @@ targets:
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCore.lean},
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCanary.lean},
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlRegression.lean},
-\codepath{scripts/check\_ch13\_inference\_control.sh}. & Formalized (core + canaries) \\
+\code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression}. & Formalized (core + canaries) \\
 \hline
 Ch.\ 14 & Temporal and causal inference & Temporal operator layer and causal profile:
 \codepath{Mettapedia/PLN/RuleFamilies/Temporal/PLNTemporalCausalInference.lean}; event-calculus WM grounding:
@@ -768,20 +768,20 @@ Monad associativity for flattening (typed kernel convenience) \newline
 \textit{Tags: [PLNBook-Ch7], [Kyburg], [Giry], [associativity]} &
 \code{flatten\_associativity},
 \code{flatten\_associativity\_kernel},
-\code{ch7\_flatten\_associativity},
-\code{ch7\_flatten\_associativity\_kernel} &
+\code{flatten\_associativity},
+\code{flatten\_associativity\_kernel} &
 \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/GiryMonad.lean},
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean} \\
 \hline
 De Finetti singleton bridge into Kyburg flattening \newline
 \textit{Tags: [PLNBook-Ch7], [DeFinetti], [mixture]} &
 \code{deFinetti\_flatten\_apply\_singleton},
-\code{chapter7\_distributional\_kyburg\_bridge\_available} &
+\code{evidenceAggregation\_and\_kyburgFlattening} &
 \codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean} \\
 \hline
 Concrete worked posterior-mean fixture (uniform prior, evidence 3:1) \newline
 \textit{Tags: [PLNBook-Ch7], [worked-example], [Beta]} &
-\code{chapter7\_worked\_example\_strength\_uniform\_3\_1} &
+\code{uniformPrior\_strength\_threePositive\_oneNegative} &
 \codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean} \\
 \hline
 \end{longtable}
@@ -841,10 +841,10 @@ Double-damping threshold-gap characterization \newline
 \hline
 One-call WM rewrite $\to$ OSLF truth transport $\to$ threshold acceptance \newline
 \textit{Tags: [PLNBook-Ch8], [end-to-end], [canonical-API]} &
-\code{ch8ThresholdAccepted},
-\code{ch8\_thresholdAccepted\_of\_finalBundle},
-\code{ch8\_wm\_rewrite\_oslf\_threshold\_acceptance\_of\_interval},
-\code{ch8\_thresholdAccepted\_bool\_selector\_fixture},
+\code{thresholdAccepted},
+\code{thresholdAccepted\_of\_finalBundle},
+\code{wm\_rewrite\_oslf\_threshold\_acceptance\_of\_interval},
+\code{thresholdAccepted\_bool\_selector\_fixture},
 \code{end\_to\_end\_quantale\_selector\_rewrite\_query\_threshold\_finalBundle\_of\_interval} &
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean},
 \codepath{Mettapedia/PLN/InferenceControl/SelectorRewriteThreshold/PLNSelectorRewriteThresholdExamples.lean} \\
@@ -880,7 +880,7 @@ Categorical WM transport layer (institution satisfaction + hyperdoctrine Beck-Ch
 \code{EndpointStatement},
 \code{institution\_beckChevalley\_endpoint},
 \code{endpointContract\_of\_hyperdoctrine},
-\code{ch8\_institution\_beckChevalley\_endpoint\_id\_fixture},
+\code{institution\_beckChevalley\_endpoint\_id\_fixture},
 \code{ch8\_hol\_categorical\_wrapper\_bool\_fixture},
 \code{ch8\_fol\_categorical\_consequence\_singleton\_fixture} &
 \codepath{Mettapedia/Logic/PLNWorldModelInstitution.lean},
@@ -1115,16 +1115,16 @@ For a selected premise set $S$ and ground-truth dependency set $D$:
 Two-term inclusion-exclusion is not identifiable for union mass \newline
 \textit{Tags: [PLNBook-Ch9], [multideduction], [identifiability-no-go]} &
 \code{same\_first\_two\_terms\_different\_union},
-\code{ch9\_ie\_sameFirstTwo\_differentUnion} &
+\code{ie\_sameFirstTwo\_differentUnion} &
 \codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
 No universal predictor from first-two-term statistics \newline
 \textit{Tags: [PLNBook-Ch9], [no-universal-estimator]} &
 \code{no\_universal\_union\_predictor\_from\_first\_two\_terms},
-\code{ch9\_ie\_noUniversalPredictor},
+\code{ie\_noUniversalPredictor},
 \code{no\_single\_additive\_correction\_for\_both\_models},
-\code{ch9\_ie\_noSingleAdditiveCorrection} &
+\code{ie\_noSingleAdditiveCorrection} &
 \codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
@@ -1146,7 +1146,7 @@ Indexed n-way residual decomposition + indexed agreement family \newline
 Trail-free deterministic update can fail to stabilize (2-cycle) \newline
 \textit{Tags: [PLNBook-Ch9], [protocol-dynamics], [counterexample]} &
 \code{orbit\_not\_eventually\_constant},
-\code{ch9\_trailFree\_notEventualConstant} &
+\code{trailFree\_notEventualConstant} &
 \codepath{Mettapedia/PLN/InferenceControl/ProtocolDynamics/PLNTrailFreeDynamicsCounterexample.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
@@ -1166,14 +1166,14 @@ Bounded-gap fairness reset bounds for damped SP/SPN \newline
 Pooling axioms are insufficient to characterize additive fusion \newline
 \textit{Tags: [PLNBook-Ch9], [pooling], [non-uniqueness]} &
 \code{maxPoolingOperator\_ne\_fuse},
-\code{ch9\_poolingAxioms\_notUnique} &
+\code{poolingAxioms\_notUnique} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/ExternalBayesianity.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
 Corrected uniqueness: external-Bayes + total-additivity recovers additive pool \newline
 \textit{Tags: [PLNBook-Ch9], [pooling], [corrected-positive]} &
 \code{poolE\_eq\_hplus\_of\_externalBayes\_totalAdd},
-\code{ch9\_poolingUnique\_of\_externalBayes\_totalAdd} &
+\code{poolingUnique\_of\_externalBayes\_totalAdd} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/ExternalBayesianity.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
@@ -1181,8 +1181,8 @@ Coverage/cardinality surrogate is insufficient for risk-sensitive selection \new
 \textit{Tags: [PLNBook-Ch9], [premise-selection], [surrogate-no-go]} &
 \code{sameCoverageAndCard\_differentFalsePositiveRisk},
 \code{no\_universal\_risk\_predictor\_from\_coverage\_and\_card},
-\code{ch9\_coverageCard\_not\_sufficient\_for\_risk},
-\code{ch9\_noUniversalRiskPredictor\_fromCoverageCard} &
+\code{coverageCard\_not\_sufficient\_for\_risk},
+\code{noUniversalRiskPredictor\_fromCoverageCard} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/CoverageCounterexamples.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
@@ -1192,7 +1192,7 @@ Finite BRGI object + policy-sensitive optimum characterization \newline
 \code{exists\_optimal\_feasible\_set},
 \code{exists\_optimal\_feasible\_set\_with\_policy\_characterization},
 \code{optimal\_value\_eq\_min\_of\_policy},
-\code{ch9\_brgi\_toy\_optimal\_value} &
+\code{brgi\_toy\_optimal\_value} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/BRGI.lean} \\
 \hline
 Graph-level BRGI object + optimality-preserving refinement wrappers \newline
@@ -1200,7 +1200,7 @@ Graph-level BRGI object + optimality-preserving refinement wrappers \newline
 \code{exists\_optimal\_feasible\_set\_brg},
 \code{exists\_optimal\_feasible\_set\_brg\_with\_policy\_characterization},
 \code{brg\_optimal\_value\_eq\_min\_of\_policy},
-\code{ch9\_brg\_graph\_toy\_optimal\_value} &
+\code{brg\_graph\_toy\_optimal\_value} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/BRGI.lean} \\
 \hline
 Class-packaged BN d-separation discharge (non-counterexample positive path) \newline
@@ -1215,7 +1215,7 @@ Class-packaged BN d-separation discharge (non-counterexample positive path) \new
 \hline
 One-call selector $\to$ rewrite $\to$ threshold composition \newline
 \textit{Tags: [PLNBook-Ch9], [selector], [WM-OSLF-threshold], [composed-endpoint]} &
-\code{ch9\_selector\_rewrite\_threshold\_end\_to\_end\_of\_interval},
+\code{selector\_rewrite\_threshold\_end\_to\_end\_of\_interval},
 \code{bool\_selector\_rewrite\_threshold\_end\_to\_end\_fixture} &
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean},
 \codepath{Mettapedia/PLN/InferenceControl/SelectorRewriteThreshold/PLNSelectorRewriteThresholdExamples.lean} \\
@@ -1255,14 +1255,14 @@ Stochastic experiment layer: Blackwell factorization, weighted source policies, 
 xi_deduction_threshold_concrete_true_fixture
 xi_sourceRule_threshold_concrete_true_fixture
 xi_sinkRule_threshold_concrete_true_fixture
-ch9_selector_rewrite_threshold_end_to_end_of_interval
+selector_rewrite_threshold_end_to_end_of_interval
 bool_selector_rewrite_threshold_end_to_end_fixture
-ch9_brgi_toy_optimal_value
+brgi_toy_optimal_value
 repeatedDeductionRevision_agrees_of_residualAssumption
 repeatedDeductionRevisionN_agrees_of_residualAssumptionN
 damped_sp_spn_eventually_constant_of_eventual_fresh
 inconsistency_zero_within_bound_of_boundedGapFresh
-ch9_brg_graph_toy_optimal_value
+brg_graph_toy_optimal_value
 noisyOrMulti_replicate
 atLeastOneHeadProb_eq_noisyOr_replicate
 expectedUtility_eq_of_blackwellFactor
@@ -1308,7 +1308,7 @@ Implication-conditioned inheritance value reduction \newline
 \code{inheritance\_reflects\_implication},
 \code{implication\_reduces\_to\_inheritance\_value},
 \code{implication\_reduces\_to\_perfect\_inheritance},
-\code{chapterImplicationPred},
+\code{pointwiseImplicationPred},
 \code{forAll\_himp\_to\_inheritance\_ratio\_of\_bridge} &
 \codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
 \hline
@@ -1357,7 +1357,7 @@ Inference-rule wrappers tied to ratio-endpoint soundness \newline
 Equivalence-conditioned similarity value reduction (first proved bridge) \newline
 \textit{Tags: [PLNBook-Ch10], [Equivalence], [Similarity], [value-level]} &
 \code{HOEquivalent},
-\code{chapterEquivalencePred},
+\code{pointwiseEquivalencePred},
 \code{equivalence\_reduces\_to\_similarity\_value},
 \code{forAll\_equivalence\_to\_similarity\_ratio\_of\_bridge},
 \code{similarity\_symmetric} &
@@ -1367,8 +1367,8 @@ Constructive corner fixtures and worked endpoint instantiation \newline
 \textit{Tags: [PLNBook-Ch10], [fixtures], [corners], [worked-example]} &
 \code{corner\_source\_unit\_true},
 \code{corner\_source\_unit\_bot},
-\code{ch10\_implication\_ratio\_fixture\_unit\_false},
-\code{ch10\_equivalence\_ratio\_fixture\_unit\_both} &
+\code{implication\_ratio\_fixture\_unit\_false},
+\code{equivalence\_ratio\_fixture\_unit\_both} &
 \codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
 \hline
 HOJ/HOS/Hyp/Context micro-semantics and soundness layer \newline
@@ -1393,12 +1393,12 @@ HOJ/HOS/Hyp/Context micro-semantics and soundness layer \newline
 Concrete Context/Hyp fixtures (math/juggling + mismatch boundary) \newline
 \textit{Tags: [PLNBook-Ch10], [Context], [Hyp], [fixtures], [boundary]} &
 \code{BenContextObj},
-\code{ch10\_ctx\_payload\_math},
-\code{ch10\_ctx\_payload\_juggling},
-\code{ch10\_ctx\_payload\_mismatch},
-\code{ch10\_context\_hyp\_fixture\_math\_sound},
-\code{ch10\_context\_hyp\_fixture\_juggling\_sound},
-\code{ch10\_context\_hyp\_fixture\_mismatch\_not\_sound} &
+\code{ctx\_payload\_math},
+\code{ctx\_payload\_juggling},
+\code{ctx\_payload\_mismatch},
+\code{context\_hyp\_fixture\_math\_sound},
+\code{context\_hyp\_fixture\_juggling\_sound},
+\code{context\_hyp\_fixture\_mismatch\_not\_sound} &
 \codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
 \hline
 Subset-conditioned inheritance structural collapse \newline
@@ -1416,18 +1416,18 @@ Subset-conditioned inheritance structural collapse \newline
 \hline
 Quantifier exchange (De Morgan) \newline
 \textit{Tags: [PLNBook-Ch11], [Classical-DeMorgan]} &
-\code{canary\_ch11\_exists\_deMorgan},
-\code{canary\_ch11\_quantifier\_exchange} &
+\code{canary\_exists\_deMorgan},
+\code{canary\_quantifier\_exchange} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierCanary.lean} \\
 \hline
 Existential generalization (extensional) \newline
 \textit{Tags: [PLNBook-Ch11], [Classical-FO]} &
-\code{canary\_ch11\_existential\_generalization\_ext} &
+\code{canary\_existential\_generalization\_ext} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierCanary.lean} \\
 \hline
 Universal specification (extensional) \newline
 \textit{Tags: [PLNBook-Ch11], [Classical-FO]} &
-\code{canary\_ch11\_universal\_specification\_ext} &
+\code{canary\_universal\_specification\_ext} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierCanary.lean} \\
 \hline
 Fuzzy existential generalization (score positivity) \newline
@@ -1446,29 +1446,29 @@ Fuzzy universal specification (`PCL = 1`) \newline
 \hline
 Rule-4 non-equivalence witness (ITV path) \newline
 \textit{Tags: [PLNBook-Ch11], [ITV-counterexample]} &
-\code{canary\_ch11\_rule4\_not\_equivalent\_itvPath} &
+\code{canary\_existentialConjunction\_not\_equivalent\_itvPath} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 ITV coordinate transfer (lower/upper $\Rightarrow$ strength) \newline
 \textit{Tags: [PLNBook-Ch11], [Walley-IDM], [QFM-bridge]} &
 \code{fuzzyIntervalHolds\_strength\_of\_lower\_upper},
-\code{canary\_ch11\_itv\_strength\_interval\_of\_lower\_upper} &
+\code{canary\_itv\_strength\_interval\_of\_lower\_upper} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyITVBridge.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 ITV rule-family bridge (existential generalization, universal specification, exchange) \newline
 \textit{Tags: [PLNBook-Ch11], [ITV-bridge], [QFM-bridge]} &
 \code{fuzzyThereExistsHolds\_itvStrength\_iff\_exchange},
-\code{ch11\_itv\_rule\_family\_core},
-\code{canary\_ch11\_itv\_rule\_family\_bundle\_bool} &
+\code{itv\_rule\_family\_core},
+\code{canary\_itv\_rule\_family\_bundle\_bool} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyITVBridge.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 Finite MOST/FEW fixtures \newline
 \textit{Tags: [Zadeh1983], [Yager1984]} &
-\code{canary\_ch11\_most\_fraction\_threeQuarters},
-\code{canary\_ch11\_few\_fraction\_oneQuarter},
-\code{canary\_ch11\_most\_vs\_few\_split\_on\_threeQuarters} &
+\code{canary\_most\_fraction\_threeQuarters},
+\code{canary\_few\_fraction\_oneQuarter},
+\code{canary\_most\_vs\_few\_split\_on\_threeQuarters} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 Zadeh-style quantified syllogism family (`MOST $\circ$ MOST`, `FEW $\circ$ MOST`) \newline
@@ -1518,29 +1518,29 @@ QFM-oriented canaries/schemas (monotonicity, conservativity-style signature inva
 \hline
 Additional finite quantifier fixtures (`ALMOST ALL`, `ABOUT HALF`) &
 \textit{Tags: [Zadeh1983], [Glöckner2006]} \newline
-\code{canary\_ch11\_almostAll\_fraction\_threeQuarters},
-\code{canary\_ch11\_almostAll\_holds\_on\_threeQuarters},
-\code{canary\_ch11\_aboutHalf\_fraction\_oneHalf},
-\code{canary\_ch11\_aboutHalf\_positive\_negative\_split} &
+\code{canary\_almostAll\_fraction\_threeQuarters},
+\code{canary\_almostAll\_holds\_on\_threeQuarters},
+\code{canary\_aboutHalf\_fraction\_oneHalf},
+\code{canary\_aboutHalf\_positive\_negative\_split} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 Literature-calibrated verbal probability fixtures (`PROBABLY`, `MAYBE/POSSIBLY`) &
 \textit{Tags: [MostellerYoutz1989], [IPCC-uncertainty-guidance]} \newline
-\code{ch11ProbablyParams},
-\code{canary\_ch11\_probably\_positive\_negative\_split},
-\code{canary\_ch11\_probably\_holds\_on\_threeQuarters},
-\code{canary\_ch11\_probably\_rejects\_oneHalf},
-\code{ch11MaybeParams},
-\code{canary\_ch11\_maybe\_positive\_negative\_split},
-\code{canary\_ch11\_maybe\_holds\_on\_oneHalf} &
+\code{probablyParams},
+\code{canary\_probably\_positive\_negative\_split},
+\code{canary\_probably\_holds\_on\_threeQuarters},
+\code{canary\_probably\_rejects\_oneHalf},
+\code{maybeParams},
+\code{canary\_maybe\_positive\_negative\_split},
+\code{canary\_maybe\_holds\_on\_oneHalf} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 Additional finite quantifier fixtures (`ALMOST NONE`, `MANY-BUT-NOT-MOST`) &
 \textit{Tags: [Zadeh1983], [Yager1984], [DiazHermida2018-QFM]} \newline
-\code{canary\_ch11\_almostNone\_fraction\_oneFifth},
-\code{canary\_ch11\_almostNone\_holds\_on\_oneFifth},
-\code{canary\_ch11\_manyNotMost\_fraction\_threeFifths},
-\code{canary\_ch11\_manyNotMost\_vs\_most\_split} &
+\code{canary\_almostNone\_fraction\_oneFifth},
+\code{canary\_almostNone\_holds\_on\_oneFifth},
+\code{canary\_manyNotMost\_fraction\_threeFifths},
+\code{canary\_manyNotMost\_vs\_most\_split} &
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean} \\
 \hline
 QFM selector-bundle API endpoints \newline
@@ -1564,8 +1564,8 @@ Non-multiplicative QFM instance theorem families \newline
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzySyllogismCanary.lean} \\
 \hline
 Regression entrypoint &
-\codepath{scripts/check\_ch11\_quantifiers.sh},
-\codepath{scripts/check\_ch11\_fuzzy\_syllogism.sh},
+\code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression},
+\code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression} \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzySyllogismRegression.lean} &
 \codepath{.github/workflows/lean\_action\_ci.yml} \\
@@ -1591,9 +1591,9 @@ Chapter 10 HO implication/equivalence value equalities & Unconditional equalitie
 \code{forAll\_equivalence\_ratio\_iff\_piecewise} \\
 \hline
 Chapter 10 HOJ/HOS/Hyp/Context layer & Context soundness exposed with explicit source-truth-clean side conditions and concrete positive/negative fixtures & \code{context\_macro\_sound\_of\_hoj\_alignment\_srcTruthClean},
-\code{ch10\_context\_hyp\_fixture\_math\_sound},
-\code{ch10\_context\_hyp\_fixture\_juggling\_sound},
-\code{ch10\_context\_hyp\_fixture\_mismatch\_not\_sound} \\
+\code{context\_hyp\_fixture\_math\_sound},
+\code{context\_hyp\_fixture\_juggling\_sound},
+\code{context\_hyp\_fixture\_mismatch\_not\_sound} \\
 \hline
 Chapter 11 quantifier layer & Finite-model FO + fuzzy/QFM endpoint families with monotonicity and conservativity-style transport & \code{fuzzyExistsScore\_mono\_of\_pointwise},
 \code{fuzzyForAllHolds\_mono\_of\_pointwise},
@@ -1675,17 +1675,17 @@ Canonicality no-go witness for binary collapse \newline
 \hline
 Executable canaries (positive + non-equivalence) \newline
 \textit{Tags: [PLNBook-Ch12], [canary], [non-equivalence]} &
-\code{canary\_ch12\_mixed\_extensional\_projection},
-\code{canary\_ch12\_mixed\_assoc\_projection},
-\code{canary\_ch12\_mixed\_projection\_non\_equivalent},
-\code{canary\_ch12\_end\_to\_end\_bayesNormal\_lower\_threshold},
-\code{canary\_ch12\_end\_to\_end\_bayesExact\_lower\_threshold},
-\code{canary\_ch12\_end\_to\_end\_walley\_lower\_threshold} &
+\code{canary\_mixed\_extensional\_projection},
+\code{canary\_mixed\_assoc\_projection},
+\code{canary\_mixed\_projection\_non\_equivalent},
+\code{canary\_end\_to\_end\_bayesNormal\_lower\_threshold},
+\code{canary\_end\_to\_end\_bayesExact\_lower\_threshold},
+\code{canary\_end\_to\_end\_walley\_lower\_threshold} &
 \codepath{Mettapedia/Logic/PLNIntensionalCanary.lean} \\
 \hline
 Regression entrypoint &
 \codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
-\codepath{scripts/check\_ch12\_intensional.sh} &
+\code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression} &
 \codepath{Mettapedia/Logic/README.md} \\
 \hline
 \end{longtable}
@@ -1726,14 +1726,14 @@ Coverage/submodularity objective family \newline
 \hline
 Composed Chapter-13 core endpoint (selector + stability + coverage) \newline
 \textit{Tags: [PLNBook-Ch13], [composed-core], [end-to-end]} &
-\code{ch13\_selector\_default\_ranking\_iff},
-\code{ch13\_stable\_pooled\_of\_twoStage},
-\code{ch13\_inferenceControl\_end\_to\_end} &
+\code{selector\_default\_ranking\_iff},
+\code{stable\_pooled\_of\_twoStage},
+\code{inferenceControl\_end\_to\_end} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCore.lean} \\
 \hline
 Executable greedy algorithm endpoint \newline
 \textit{Tags: [PLNBook-Ch13], [algorithmic], [end-to-end]} &
-\code{ch13\_inferenceControl\_end\_to\_end\_algorithmic},
+\code{inferenceControl\_end\_to\_end\_algorithmic},
 \code{greedySelect\_chain\_of\_le\_card},
 \code{greedySelect\_one\_minus\_exp\_bound\_of\_le\_card} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlAlgorithms.lean} \\
@@ -1790,11 +1790,11 @@ FO fixture map + branch-complete root-membership (PeTTa \code{fo\_*} naming) \ne
 \hline
 Operator-contract parity rows for bundle/topK outputs (\code{op\_leancop\_ch13\_bundle*}) \newline
 \textit{Tags: [PLNBook-Ch13], [ATP], [operator-contract], [topK], [bundle]} &
-\code{ch13Bundle\_proofs\_eq\_collectProofs},
-\code{ch13Bundle\_topK\_eq\_topKCollectProofs},
-\code{ch13BundleAll\_proofs\_eq\_collectProofsAll},
-\code{ch13BundleAll\_topK\_eq\_topKCollectProofsAll},
-\code{mem\_ch13BundleAll\_topK\_implies\_mem\_ch13BundleAll\_proofs},
+\code{rootProofBundle\_proofs\_eq\_collectProofs},
+\code{rootProofBundle\_topK\_eq\_topKCollectProofs},
+\code{branchProofBundle\_proofs\_eq\_collectProofsAll},
+\code{branchProofBundle\_topK\_eq\_topKCollectProofsAll},
+\code{mem\_branchProofBundle\_topK\_implies\_mem\_branchProofBundle\_proofs},
 \code{topKCollectProofsAllFO\_contract},
 \code{mem\_topKCollectProofsAllFO\_implies\_mem\_collectProofsAllFO} &
 \codepath{Mettapedia/Logic/LP/PropositionalConnectionChainer.lean},
@@ -1802,24 +1802,24 @@ Operator-contract parity rows for bundle/topK outputs (\code{op\_leancop\_ch13\_
 \hline
 Worked finite fixtures (`topK=1` and nontrivial `topK=2`) \newline
 \textit{Tags: [PLNBook-Ch13], [worked-example], [finite-fixture]} &
-\code{ch13\_bool\_end\_to\_end\_algorithmic},
-\code{ch13\_bool\_coverage\_exact\_one},
-\code{ch13\_fin3\_end\_to\_end\_algorithmic\_topK2},
-\code{ch13\_fin3\_coverage\_exact\_two} &
+\code{bool\_end\_to\_end\_algorithmic},
+\code{bool\_coverage\_exact\_one},
+\code{fin3\_end\_to\_end\_algorithmic\_topK2},
+\code{fin3\_coverage\_exact\_two} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlExamples.lean} \\
 \hline
 Executable canaries (positive + negative) \newline
 \textit{Tags: [PLNBook-Ch13], [canary], [non-equivalence]} &
-\code{canary\_ch13\_pln\_inherits\_nb\_ranking\_bool},
-\code{canary\_ch13\_pairwise\_stable\_of\_margin},
-\code{canary\_ch13\_ranking\_flip\_without\_margin},
-\code{canary\_ch13\_dependencyCoverage\_insert\_gain\_bool},
-\code{canary\_ch13\_selector\_default\_gate\_bounds} &
+\code{canary\_pln\_inherits\_nb\_ranking\_bool},
+\code{canary\_pairwise\_stable\_of\_margin},
+\code{canary\_ranking\_flip\_without\_margin},
+\code{canary\_dependencyCoverage\_insert\_gain\_bool},
+\code{canary\_selector\_default\_gate\_bounds} &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCanary.lean} \\
 \hline
 Regression entrypoint &
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlRegression.lean},
-\codepath{scripts/check\_ch13\_inference\_control.sh} &
+\code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression} &
 \codepath{Mettapedia/Logic/README.md} \\
 \hline
 \end{longtable}
@@ -1878,7 +1878,7 @@ the principal \emph{legacy and current} modules in Mettapedia that track PLN-boo
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCore.lean},
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlCanary.lean},
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/PLNInferenceControlRegression.lean},
-\codepath{scripts/check\_ch13\_inference\_control.sh}.
+\code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression}.
 
 \paragraph{Ch.\ 10--11 (higher-order, quantifiers, crisp/fuzzy operators).}
 \codepath{Mettapedia/Logic/HigherOrder.lean},
@@ -1895,7 +1895,7 @@ the principal \emph{legacy and current} modules in Mettapedia that track PLN-boo
 \codepath{Mettapedia/Logic/PLNNoisyOr.lean},
 \codepath{Mettapedia/Logic/PLNNegation.lean},
 \codepath{Mettapedia/Logic/PLNDisjunction.lean},
-\codepath{scripts/check\_ch11\_quantifiers.sh}.
+\code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}.
 
 \paragraph{Ch.\ 12 (intensional inference).}
 \codepath{Mettapedia/Logic/IntensionalInheritance.lean},
@@ -1904,7 +1904,7 @@ the principal \emph{legacy and current} modules in Mettapedia that track PLN-boo
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean},
 \codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
 \codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
-\codepath{scripts/check\_ch12\_intensional.sh}.
+\code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}.
 
 \paragraph{Ch.\ 14 (temporal/causal; event calculus; OSLF/GSLT grounding).}
 \codepath{Mettapedia/PLN/RuleFamilies/Temporal/PLNTemporal.lean},

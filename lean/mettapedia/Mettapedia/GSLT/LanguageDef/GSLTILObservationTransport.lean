@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.ObservationTransport
 import Mettapedia.GSLT.Dynamics.CapabilityIndexedObservationArchitecture
 import Mettapedia.GSLT.LanguageDef.GSLTILRouteEquipment
@@ -191,7 +192,7 @@ theorem mapCollectedPath_container_mem
 
 namespace Canary
 
-abbrev system : GSLT := GSLT.discrete Bool
+abbrev system : GSLT := GSLT.stepFree Bool
 
 def identityRoute : RepresentedOperationalRoute system system :=
   RepresentedOperationalRoute.id system

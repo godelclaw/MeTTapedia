@@ -1,28 +1,28 @@
-import Mettapedia.GSLT.LanguageDef.NIK
-import Mettapedia.GSLT.LanguageDef.NIKCompositionCapabilitySelection
+import Mettapedia.GSLT.LanguageDef.SemanticService
+import Mettapedia.GSLT.LanguageDef.CompositionCapabilitySelection
 import Mettapedia.GSLT.Core.PolicyFamilyTransport
 import Mettapedia.GSLT.Dynamics.ObservationPolicyFamilyUniversal
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKEntryModeSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.EntryModeSelection
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalStructure
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalCandidateComparison
 import Mettapedia.GSLT.LanguageDef.GSLTILGeneratedCellReflection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILGeneratedCellPolicyNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILGeneratedCellPolicySelection
 import Mettapedia.GSLT.LanguageDef.InferenceCheckedNativeWaist
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory.MILCheckedNativePrograms
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.MILCheckedNativeSearch
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory.MILCheckedNativeListPrograms
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.MILCheckedNativeListSearch
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeRelationalSearchNIKSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeLiftedHypothesisNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeRelationalSearchSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeLiftedHypothesisSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeIndexedContainerLiftingSearch
 import Mettapedia.TypeTheory.NativeFamilyCapabilitySeparation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeFamilyCapabilityNIKSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyNIKAdmittedFlow
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeFamilyCapabilitySelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyAdmittedFlow
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyGradualGuarantee
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyGradualTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathGradualTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDisplayedCrown
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionTheory
@@ -33,16 +33,16 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeFibredScheduleObservatio
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCandidateCostInterface
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCandidateCostRhoAnnex
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionParallelWorlds
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKComposition
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelComposition
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelGradualGuarantee
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldNativeRealization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldPolicyNIKSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldPolicyNIKTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldPolicySelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldPolicyTransport
+import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceWorldSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRoutePolicyComposition
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedEvidenceRouteProvenance
@@ -51,12 +51,12 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementatio
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateDisplayedImplementationContract
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateImplementationPolicyTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CheckedNativeImplementationModel
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKIntegratedExecutionCapabilities
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKProfitabilityFrontierSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCapabilitySelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCurrentSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicyNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.IntegratedExecutionCapabilities
+import Mettapedia.Languages.MeTTa.PrimeCandidates.ProfitabilityFrontierSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCapabilitySelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCurrentSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationComposition
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILInteractionTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILInteractionTransportComposition
@@ -64,10 +64,10 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLinearEffectTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLinearEffectTransportComposition
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILNativeParallelRealization
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationImplementationModel
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationInstances
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilityNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilitySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionOptimizationSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionExternalGuidanceReceipt
 import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionExternalArtifactChecker
@@ -80,7 +80,7 @@ import Mettapedia.Languages.Metamath.InferenceAssertionSliceCompilation
 import Mettapedia.Languages.Metamath.InferencePreparedAssertionStepReceipt
 import Mettapedia.Languages.Metamath.InferenceGeneratedProvesReceipt
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathAssertionOptimization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicyNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathImplementationPolicyTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramGradualGuarantee
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability
@@ -88,11 +88,11 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentTermForm
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentNaturality
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptComputad
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptCoherenceObservation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptCoherenceNIKAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptSubstitutionNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptCoherenceAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeDependentReceiptSubstitutionSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentInteraction
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentGuarantee
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualCapabilityNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualCapabilitySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramSourceAdequacy
 
 /-!
@@ -106,14 +106,14 @@ a Prime language nor proves that every imported component can be combined
 without additional hypotheses. A successful build checks a dependency graph
 containing the following separately scoped results:
 
-* the revision-fibred NIK admission doctrine: proof-relevant semantic and
+* the revision-fibred SemanticService admission doctrine: proof-relevant semantic and
   observed refinement categories, dependency reindexing, common-current
   composition, direct active execution, and its non-faithful endpoint shadow;
 * request-fibred maximal-native selection: exact capability requests cannot
   hide eligible realizations, request-local common-upgrade closure yields one
   unique strongest admitted operation, and an incomparable negative retains a
   genuine maximal frontier rather than an arbitrary dispatcher priority;
-* an actual NIK proof-kernel instance: native checking and explicit boundary
+* an actual SemanticService proof-kernel instance: native checking and explicit boundary
   replay preserve the same proof judgment but distinct route receipts, each is
   strongest only in its exact request fibre, and a neutral request has no
   canonical strongest face; dependency-current activation runs the retained
@@ -128,7 +128,7 @@ containing the following separately scoped results:
   whose complete conversion trees realize structurally into the existing
   native computation; List/identity and the two candidate views of the shared
   Nat/Vec declaration world satisfy this interface, while the raw syntactic
-  boundary remains outside constructional authority; NIK compares that
+  boundary remains outside constructional authority; SemanticService compares that
   constructional face with uniform raw preservation only after the latter's
   declaration theorem is supplied, selects it uniquely for raw-preservation
   requests, and otherwise retains raw input for fallback rather than replay;
@@ -150,10 +150,10 @@ containing the following separately scoped results:
   exact equivalence of primitive step fibres lifts generically to complete
   path equivalence; the indexed-family instance preserves every intermediate
   typed state, authored occurrence, native receipt, and association tree under
-  composition and typed substitution; current NIK admission realizes those
+  composition and typed substitution; current SemanticService admission realizes those
   paths directly; exact native-path evidence is displayed over the complete
   authored conversion tree, typed substitution transports that evidence by the
-  receipt-naturality square, and the gradual exact branch agrees with NIK's
+  receipt-naturality square, and the gradual exact branch agrees with SemanticService's
   selected complete-path face; suspension, unsupported blame, and revision
   staleness retain the authored tree for fallback, while a nonidentity List
   weakening preserves the whole three-leg native tree; a request-local native
@@ -186,14 +186,14 @@ containing the following separately scoped results:
   key for the corresponding history-sensitive request, and retains the raw
   cells as sufficient keys for all observations, so a later strict, weak, or
   higher completion is licensed per declared observation rather than imposed
-  as a global quotient; the corresponding NIK boundary constructively admits
+  as a global quotient; the corresponding SemanticService boundary constructively admits
   generator count for the small request and exact cell retention for the full
   request, proves the lossy face unadmittable for the full request, runs the
   current retained function directly, and preserves the raw cell on staleness;
 * strict substitution transport for proof-relevant dependent receipt cells:
   a generator-naturality witness extends structurally over the complete free
   cell and preserves authored-generator count, constructor count, and raw
-  shape; an empty target-generator fibre cannot acquire that capability; NIK
+  shape; an empty target-generator fibre cannot acquire that capability; SemanticService
   selects the target-cell constructor as the unique strongest exact face,
   activates it only at its retained revision, and leaves complete source-cell
   fallback available after staleness; composability of successive transports
@@ -206,7 +206,7 @@ containing the following separately scoped results:
   functoriality of the authored comparison-generator action is proved
   independently, and the two laws together identify successive and direct
   substitution on every complete dependent cell, including every generator,
-  vertical node, and whiskering; NIK exposes exact retention, sequential
+  vertical node, and whiskering; SemanticService exposes exact retention, sequential
   transport, and direct composite transport as three request-local faces, makes
   the direct face uniquely strongest only when both laws are supplied, disables
   it after revision change, and refuses it for a generator action whose local
@@ -221,12 +221,12 @@ containing the following separately scoped results:
   single primitive collision gives a contractible-but-non-reflecting negative;
   split reflection supports every dependent policy family, while a structural
   quotient may still serve shape-only policies and is excluded exactly when a
-  requested policy distinguishes collided receipts; the resulting exact NIK
+  requested policy distinguishes collided receipts; the resulting exact SemanticService
   request selects the retained admitted operation without inserting replay;
   capability-indexed multiworld observers may retain complete
   outcome/history worlds, visible outcomes, or cardinality, and a policy that
   distinguishes histories cannot factor through the visible-outcome quotient;
-  these faces now form an exact request-local NIK family over one unchanged
+  these faces now form an exact request-local SemanticService family over one unchanged
   retained world history, so a complete-history request uniquely selects the
   full-world face, current execution preserves every distinct history and its
   order, staleness preserves the same history for fallback, and the existence
@@ -236,7 +236,7 @@ containing the following separately scoped results:
   their evidence fibres, and its identity and composition laws lift to exact
   ordered-history transport; target policy families pull back along that map,
   so a complete-target-world request again selects the full-world face and
-  current NIK activation runs the retained transport directly, whereas stale
+  current SemanticService activation runs the retained transport directly, whereas stale
   activation preserves the unmapped source history; an independent
   world-injectivity proof lifts to history reflection, while a checked
   non-injective evidence map preserves two occurrence positions but identifies
@@ -247,7 +247,7 @@ containing the following separately scoped results:
   naturality; primitive routes extend by identity and composition over the
   intrinsic finite route-program syntax, with structural projection exactly
   the existing free-path interpretation; restricting the resulting route at
-  an authored command derives NIK's complete-world transport and current
+  an authored command derives SemanticService's complete-world transport and current
   strongest execution rather than supplying an unrelated function; primitive
   reflection capabilities compose to program-level injectivity, while two
   interpretations of the same typed `promote` program and structural morphism
@@ -255,7 +255,7 @@ containing the following separately scoped results:
   nor structural preservation mints reflection; reflection is then weakened
   exactly to the consumer's declared policy family: support is equivalent to
   factorization of the complete answer vector through the mapped target
-  history, retained runners install directly into NIK's ordinary policy
+  history, retained runners install directly into SemanticService's ordinary policy
   catalog, route composition cannot manufacture support lost by its prefix,
   and the same non-injective route admits history length while refusing exact
   source-history replay; executable route-policy realizations compose through
@@ -281,7 +281,7 @@ containing the following separately scoped results:
   WorkSpan is only their declared valuation, two valid histories may have equal
   WorkSpan and unequal receipts, and any genuine operational realization pulls
   this factorization back to selected cost layer normalization paths;
-* request-scoped NIK admission for those real cost layer observations: WorkSpan is
+* request-scoped SemanticService admission for those real cost layer observations: WorkSpan is
   an executable key for a WorkSpan-only request but is refused for a request
   that also observes receipt chronology; the complete policy-answer vector is
   the least informative sufficient key, current activation evaluates it without
@@ -306,7 +306,7 @@ containing the following separately scoped results:
   revision staleness preserves the complete query and result for fallback;
 * intrinsic `Compρ` inhabitants as the observed execution family, preserving
   endpoint indices, occurrence histories, and non-gating partial observation;
-* revision-indexed NIK admission of intrinsic `Compρ` execution through a
+* revision-indexed SemanticService admission of intrinsic `Compρ` execution through a
   common equipment cell: event count descends to ordinary semantic paths,
   while exact provenance and site-sensitive policies provably do not;
 * the native multiworld boundary: separation licenses one concurrent wave,
@@ -337,7 +337,7 @@ containing the following separately scoped results:
   rho branches lifts canonically across native annotations, while authored
   ambiguity and runtime nondeterminism remain independent multiplicity axes;
 * relational elaboration worlds, retained proof-history multiplicity, exact
-  typed selection, represented route execution, and revision-current NIK
+  typed selection, represented route execution, and revision-current SemanticService
   admission;
 * one common displayed checked-native waist whose exact-erasure carrier adds
   no proofs and rejects no checked proofs, whose retained graph preserves
@@ -345,7 +345,7 @@ containing the following separately scoped results:
   exact faithfulness criterion is proved rather than assumed;
 * checked learned-presentation extensions with independent proof-relevant
   semantics, exact raw-proof retention, intrinsic indexed hypothesis
-  elaboration over formed contexts, and revision-current NIK admission; every
+  elaboration over formed contexts, and revision-current SemanticService admission; every
   checked relational derivation in the learned presentation crosses that
   exact image into a typed native program, while the rejected wrong-middle
   proof cannot cross it;
@@ -372,7 +372,7 @@ containing the following separately scoped results:
   through primitive, chain, and lift hypotheses; native polynomial List earns
   both, while an infinitary strictly-positive product has a compositional
   relator but provably cannot advertise finite search; the resulting generic
-  hypotheses select finite or direct NIK realizations exactly when current;
+  hypotheses select finite or direct SemanticService realizations exactly when current;
 * indexed-container generation of those capabilities: every indexed-container
   description generates an exact compositional proof-relevant relator and
   functional mapping realization, while a separate finitarity witness
@@ -386,7 +386,7 @@ containing the following separately scoped results:
   covariant parameter map nor any unary container representation; recursive
   positivity, parameter covariance, and finitary search are consequently
   independent licenses rather than one datatype flag;
-* exact transport from those family representations into request-local NIK
+* exact transport from those family representations into request-local SemanticService
   selection: polynomial List retains both nondeterministic answer occurrences
   and selects exhaustive finite search; the positive infinitary reader selects
   direct realization for a functional relation while refusing general finite
@@ -401,7 +401,7 @@ containing the following separately scoped results:
   complete answer enumeration, and occurrence membership remain jointly
   inspectable, while hot execution consumes only the constructed provider and
   a missing recursive premise cannot construct a native-search plan;
-* request-local maximal-native selection connected to revision-indexed NIK
+* request-local maximal-native selection connected to revision-indexed SemanticService
   admission over one common complete-occurrence contract: represented relations
   select direct map, finite nondeterministic relations select exact exhaustive
   search without claiming functionality, activation runs the chosen operation
@@ -495,7 +495,7 @@ containing the following separately scoped results:
   definitionally the compact output of the exported rho cost layer domain object,
   its representative premise is proved, and its second-layer displayed carrier
   has a genuinely nontrivial elaboration fibre; hence the complete
-  nonfactorization, compact-policy, provenance-replay, and NIK refusal package
+  nonfactorization, compact-policy, provenance-replay, and SemanticService refusal package
   applies without a caller-supplied configuration or a selected compact cost-layer iteration
   executor;
 * the induced information preorder on observation keys: exact keys refine
@@ -503,7 +503,7 @@ containing the following separately scoped results:
   information, and rho's provenance key strictly refines its compact key;
   two elaborations in the cost-layer iteration witness collide compactly while a policy
   distinguishes them, forcing every compact decoder to misreplay at least one;
-* revision-current NIK admission of request-scoped receipt keys, displayed
+* revision-current SemanticService admission of request-scoped receipt keys, displayed
   over rather than replacing an admitted semantic execution model: retained
   keyed functions run without interior checking, stronger keys inherit safe
   runners, staleness preserves raw fallback, the policy vector is the least
@@ -528,7 +528,7 @@ containing the following separately scoped results:
   a proof-relevant native judgment indexed by the exact source and complete
   revision key, while shape recognition and profitability remain independent;
 * derivation of every extensional native typed optimization specification as
-  an ordinary NIK optimization family: exact source occurrences compile to
+  an ordinary SemanticService optimization family: exact source occurrences compile to
   artifact terms, independent adequacy supplies the observed refinement
   square, native and generic preparation agree, full-key equality governs
   currentness, cross-family alignment is impossible, and WorkSpan receipts
@@ -582,7 +582,7 @@ containing the following separately scoped results:
   and one proof-relevant receipt retains the generated inference node, exact
   authored-to-runtime substitution correspondence, slice-backed fused match,
   and complete live verifier step; end-to-end theorems join that occurrence to
-  revision-keyed NIK admission and the abstract implementation-model contract;
+  revision-keyed SemanticService admission and the abstract implementation-model contract;
   the receipt construction lifts over complete generated proof trees, retaining
   every intermediate stack invariant, active-hypothesis occurrence, assertion
   substitution, and exact final execution state; duplicate authored labels
@@ -646,7 +646,7 @@ containing the following separately scoped results:
   map has a unique strongest safe selection, an explicit reflection
   registration strictly upgrades it and is uniquely strongest for exact-state
   and stable-blame requests, a non-reflecting collapse cannot construct that
-  registration or a blame-sensitive request, and revision-current NIK
+  registration or a blame-sensitive request, and revision-current SemanticService
   activation executes the retained face directly;
 * the shared displayed operational crown: complete authored programs are raw
   indices with source-preserving plans as exact evidence, island promotion is

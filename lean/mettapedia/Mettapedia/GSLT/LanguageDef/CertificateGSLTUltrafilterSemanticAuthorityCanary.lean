@@ -8,7 +8,7 @@ coordinate semantics makes `C` true everywhere and makes `D` true at every
 nonzero coordinate.  Selecting the principal view at zero therefore denies
 `D`, while selecting the free hyperfilter affirms `D`.
 
-The two generated NIK authorities use the same calculus, native checker, and
+The two generated SemanticService authorities use the same calculus, native checker, and
 certificate representation, but own genuinely different independent meaning
 predicates.  There is an identity-on-syntax semantic embedding from the
 principal authority to the free authority, while an identity-on-syntax map in
@@ -18,7 +18,7 @@ the free perspective but remains underivable.
 
 This is not a claim that one ultrafilter is the universal foundation.  It is a
 minimal proof that an ultrafilter-relative meaning face can inhabit the same
-NIK authority architecture as ordinary semantic faces without redefining or
+SemanticService authority architecture as ordinary semantic faces without redefining or
 weakening the checker.
 -/
 
@@ -28,7 +28,7 @@ namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTUltrafilterSemanticAuthorit
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
@@ -301,7 +301,7 @@ private theorem closed_derivation_concludes_C {goal : Pattern}
       exact application_conclusion ruleInstance application
 
 /-- At the free perspective `D` has semantic meaning but no generated native
-proof.  NIK's meaning face therefore does not collapse into derivability. -/
+proof.  SemanticService's meaning face therefore does not collapse into derivability. -/
 theorem free_claimD_meaning_but_not_scope :
     freePresentation.Meaning claimD ∧
       ¬ (theory freePresentation).Scope () claimD := by

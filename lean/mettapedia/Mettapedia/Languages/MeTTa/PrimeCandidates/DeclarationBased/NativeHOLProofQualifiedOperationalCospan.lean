@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Core.IndexedOperational
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLRecursiveProofNIKQualification
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLRecursiveProofQualification
 
 /-!
 # Proof-qualified operational cospans
@@ -509,8 +509,8 @@ end EquationClassBoundary
 
 open Presentation NativeIndexedFamilies IntrinsicNativeListMapComputation
 open NativeHOLRecursiveProofOperationalObservation
-open NativeHOLRecursiveProofNIKQualification
-open NativeHOLRecursiveProofNIKQualification.Controls
+open NativeHOLRecursiveProofQualification
+open NativeHOLRecursiveProofQualification.Controls
 open NativeHOLTraceRecursiveExtensionalCompilerSemantics
 open HOLLeibnizNativeQualifiedHOTGIntegration
 open FormationSensitiveHOLInterface FormationSensitiveHOLUniformList
@@ -549,7 +549,7 @@ def common (programs : MapFusionPrograms n) : Tower.Tm n :=
 
 end MapFusionPrograms
 
-/-- Qualification retains both NIK acceptance of the submitted source proof
+/-- Qualification retains both SemanticService acceptance of the submitted source proof
 and the exact recursive compiler output, then binds them to a concrete native
 map-fusion pair. -/
 def RetainedMapFusionQualifies {n : Nat}

@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.LanguageDef.ExtensionComposition
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 
@@ -147,7 +148,7 @@ structure ReadoutCoherence {source : GSLT} {Payload : Type uPayload}
       some (readout payload)
 
 /-- Every exact elaboration induces the complete readout-coherence square. -/
-def exactElaboration_readoutCoherence
+theorem exactElaboration_readoutCoherence
     {source : GSLT} {Payload : Type uPayload}
     (elaboration : GSLT.ExactElaboration source Payload)
     {Observation : Type uObservation} (readout : Payload -> Observation) :
@@ -166,6 +167,8 @@ def exactElaboration_readoutCoherence
 
 /-! ## Applying the square to generated semantic NTTs -/
 
+-- Theory and generated predicate carriers retain independent universes.
+set_option linter.checkUnivs false in
 /-- A semantic GSLT packaged with the OSLF type system generated from it. -/
 abbrev GeneratedNTT :=
   Sigma fun theory : GSLT => OSLFTypeSystem (gsltRewriteSystem theory)
@@ -265,7 +268,7 @@ def oneStepGSLT : GSLT where
     subst target'
     exact step
 
-def noStepDenotation : Unit -> GSLT := fun _ => GSLT.discrete Bool
+def noStepDenotation : Unit -> GSLT := fun _ => GSLT.stepFree Bool
 def oneStepDenotation : Unit -> GSLT := fun _ => oneStepGSLT
 
 /-- The same unit payload admits two semantic denotations with observably

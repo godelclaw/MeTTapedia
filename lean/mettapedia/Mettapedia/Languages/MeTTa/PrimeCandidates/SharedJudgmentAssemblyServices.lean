@@ -33,7 +33,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentAssemblyServices
 
 open Mettapedia.Logic
-open Mettapedia.GSLT.LanguageDef NIKMetalogic
+open Mettapedia.GSLT.LanguageDef SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation
@@ -100,32 +100,32 @@ theorem receipt_interface_matches (assembly : Assembly) :
   .directDecision _
 
 def receiptService (assembly : Assembly) (admission : MatchAdmission assembly)
-    (coverage : MatchCoverage assembly) : NIK.Service.{0, 0} submittedReceiptTarget :=
+    (coverage : MatchCoverage assembly) : SemanticService.Service.{0, 0} submittedReceiptTarget :=
   (receiptDecisionRaw assembly).toService (receipt_decision_qualified admission coverage)
 
 def receiptRequest (assembly : Assembly) (admission : MatchAdmission assembly)
     (coverage : MatchCoverage assembly) (expected : PolarizedNeedMatchedIndex.Request)
     (input : NativeWireData.Wire) :
-    NIKServiceInvocation.Request (receiptService assembly admission coverage) :=
+    SemanticServiceInvocation.Request (receiptService assembly admission coverage) :=
   .directDecision (expected, input)
 
 theorem receipt_service_accepts_iff (admission : MatchAdmission assembly)
     (coverage : MatchCoverage assembly) (expected : PolarizedNeedMatchedIndex.Request)
     (input : NativeWireData.Wire) :
-    (NIKServiceInvocation.invoke (receiptRequest assembly admission coverage expected input)).acceptedValue =
+    (SemanticServiceInvocation.invoke (receiptRequest assembly admission coverage expected input)).acceptedValue =
         some (expected, input) ↔ submittedReceiptTarget.Meaning (expected, input) := by
   change (if (assembly.reconstructMatch expected input).isSome then some (expected, input) else none) =
     some (expected, input) ↔ _
   cases present : (assembly.reconstructMatch expected input).isSome <;>
     simpa [present] using (receipt_callback_iff admission coverage expected input)
 
-/-- The NIK decision licenses the submitted receipt. The separate actual
+/-- The SemanticService decision licenses the submitted receipt. The separate actual
 response retains whichever native proof the callback really returned. -/
 theorem receipt_accepted_actual_response (admission : MatchAdmission assembly)
     (coverage : MatchCoverage assembly) (expected : PolarizedNeedMatchedIndex.Request)
     (input : NativeWireData.Wire)
     (accepted :
-      (NIKServiceInvocation.invoke (receiptRequest assembly admission coverage expected input)).acceptedValue =
+      (SemanticServiceInvocation.invoke (receiptRequest assembly admission coverage expected input)).acceptedValue =
         some (expected, input)) :
     ∃ source proposition transport,
       assembly.reconstructMatch expected input = some (source, proposition) ∧
@@ -153,28 +153,28 @@ variable {Γ : HOL.Ctx HOL.UniformListInduction.BaseSort}
 
 theorem hol_interface_matches (Γ : HOL.Ctx HOL.UniformListInduction.BaseSort) :
     SharedJudgmentServiceRegistry.InterfaceMatches (HOLControls.raw Γ)
-      (.nativeProof (UniformListChartNIKService.intrinsicProofSystem Γ)) :=
+      (.nativeProof (UniformListChartService.intrinsicProofSystem Γ)) :=
   .nativeProof _ _
 
 /-- The raw callback determines which intrinsic proof is submitted. An
 absent producer result is not replaced by a reference proof. -/
-def holRequest? (assembly : Assembly) (replay : UniformListChartNIKService.ReplayRequest Γ) :
-    Option (NIKServiceInvocation.Request (UniformListChartNIKService.nativeProofService Γ)) :=
+def holRequest? (assembly : Assembly) (replay : UniformListChartService.ReplayRequest Γ) :
+    Option (SemanticServiceInvocation.Request (UniformListChartService.nativeProofService Γ)) :=
   (assembly.produceHOL Γ replay).map fun proof => .nativeProof replay.claim proof
 
-def holRun? (assembly : Assembly) (replay : UniformListChartNIKService.ReplayRequest Γ) :
-    Option (UniformListChartNIKService.SourceClaim Γ) :=
+def holRun? (assembly : Assembly) (replay : UniformListChartService.ReplayRequest Γ) :
+    Option (UniformListChartService.SourceClaim Γ) :=
   (holRequest? assembly replay).bind fun request =>
-    (NIKServiceInvocation.invoke request).acceptedValue
+    (SemanticServiceInvocation.invoke request).acceptedValue
 
 /-- Before assembly qualification, acceptance means that an actual returned
 proof passed the existing kernel at this exact submitted claim. -/
 theorem holRun_some_iff (assembly : Assembly)
-    (replay : UniformListChartNIKService.ReplayRequest Γ)
-    (claim : UniformListChartNIKService.SourceClaim Γ) :
+    (replay : UniformListChartService.ReplayRequest Γ)
+    (claim : UniformListChartService.SourceClaim Γ) :
     holRun? assembly replay = some claim ↔
       ∃ proof, assembly.produceHOL Γ replay = some proof ∧
-        (UniformListChartNIKService.intrinsicKernel Γ).decide replay.claim proof = true ∧
+        (UniformListChartService.intrinsicKernel Γ).decide replay.claim proof = true ∧
         claim = replay.claim := by
   constructor
   · intro returned
@@ -182,24 +182,24 @@ theorem holRun_some_iff (assembly : Assembly)
     obtain ⟨proof, produced, same⟩ := Option.map_eq_some_iff.mp selected
     cases same
     exact ⟨proof, produced,
-      (NIKServiceInvocation.native_proof_value_iff _ _ _ _ _ _).mp accepted⟩
+      (SemanticServiceInvocation.native_proof_value_iff _ _ _ _ _ _).mp accepted⟩
   · rintro ⟨proof, produced, checked, bound⟩
     unfold holRun? holRequest?
     rw [produced]
-    exact (NIKServiceInvocation.native_proof_value_iff
-      (target := UniformListChartNIKService.sourceTarget Γ)
-      (UniformListChartNIKService.intrinsicProofSystem Γ)
-      (UniformListChartNIKService.intrinsicKernel Γ)
-      (UniformListChartNIKService.intrinsic_meaning_exact Γ) replay.claim proof claim).mpr
+    exact (SemanticServiceInvocation.native_proof_value_iff
+      (target := UniformListChartService.sourceTarget Γ)
+      (UniformListChartService.intrinsicProofSystem Γ)
+      (UniformListChartService.intrinsicKernel Γ)
+      (UniformListChartService.intrinsic_meaning_exact Γ) replay.claim proof claim).mpr
         ⟨checked, bound⟩
 
 /-- Replay qualification, not intrinsic claim binding alone, connects this
 actual producer/service pipeline to the submitted equational certificates. -/
 theorem holRun_iff (qualified : HOLReplayQualified assembly)
-    (replay : UniformListChartNIKService.ReplayRequest Γ)
-    (claim : UniformListChartNIKService.SourceClaim Γ) :
+    (replay : UniformListChartService.ReplayRequest Γ)
+    (claim : UniformListChartService.SourceClaim Γ) :
     holRun? assembly replay = some claim ↔
-      UniformListChartNIKService.replayAccepted Γ replay = true ∧ claim = replay.claim := by
+      UniformListChartService.replayAccepted Γ replay = true ∧ claim = replay.claim := by
   constructor
   · intro accepted
     obtain ⟨proof, produced, _, bound⟩ := (holRun_some_iff assembly replay claim).mp accepted
@@ -225,12 +225,12 @@ theorem faithful_hol_service (qualified : HOLReplayQualified assembly)
 variable {C : Cwf.{u, v, w, w'}}
 variable {interpretation : SharedJudgmentInterpretation.Data assembly C}
 
-/-- The actual callback-driven NIK request, shared native response and
+/-- The actual callback-driven SemanticService request, shared native response and
 independently related semantic value all concern the same retained claim.
 This preserves the explicit formation and meaning premises of the attachment. -/
 theorem faithful_hol_service_attached (qualified : HOLReplayQualified assembly)
     {evidence : SharedJudgmentProofEvidence.Evidence Γ} (faithful : evidence.Produced)
-    (attachment : NativeAttachment (UniformListChartNIKService.sourceTarget Γ) interpretation)
+    (attachment : NativeAttachment (UniformListChartService.sourceTarget Γ) interpretation)
     (environment : Sub Tower.Head Γ.length (attachment.scope evidence.request.claim))
     (bound : SharedJudgmentProofEvidence.ResponseBound attachment evidence environment)
     (formed : FormationSensitive.ContextFormation assembly.rules
@@ -313,7 +313,7 @@ theorem canonical_distinct_returned_proofs :
     cases impossible
 
 theorem canonical_reflexivity_service_accepted :
-    (NIKServiceInvocation.invoke (receiptRequest reflexivityAssembly reflexivity_admission
+    (SemanticServiceInvocation.invoke (receiptRequest reflexivityAssembly reflexivity_admission
       reflexivity_coverage canonical.request (admittedWire canonical))).acceptedValue =
         some (canonical.request, admittedWire canonical) :=
   (receipt_service_accepts_iff reflexivity_admission reflexivity_coverage _ _).mpr
@@ -352,27 +352,27 @@ namespace HOLCallbackControls
 
 open HOL HOL.UniformListInduction
 
-def changedPremises (Γ : HOL.Ctx BaseSort) : UniformListChartNIKService.ReplayRequest Γ :=
-  { UniformListChartNIKService.actualRequest Γ with
+def changedPremises (Γ : HOL.Ctx BaseSort) : UniformListChartService.ReplayRequest Γ :=
+  { UniformListChartService.actualRequest Γ with
       stepPremises := HOL.UniformListInductionChart.alteredStepAssumptions Γ }
 
 /-- This deliberately incorrect callback ignores the supplied certificates.
 Its returned intrinsic proof is valid, but it is not a qualified replay. -/
 def replayedHOL : Assembly :=
-  { common with produceHOL := fun Γ _ => some (UniformListChartNIKService.actualNativeProof Γ) }
+  { common with produceHOL := fun Γ _ => some (UniformListChartService.actualNativeProof Γ) }
 
 theorem common_actual (Γ : HOL.Ctx BaseSort) :
-    holRequest? common (UniformListChartNIKService.actualRequest Γ) =
+    holRequest? common (UniformListChartService.actualRequest Γ) =
         some (SharedJudgmentProofEvidence.Controls.actual Γ).nativeRequest ∧
-      holRun? common (UniformListChartNIKService.actualRequest Γ) =
-        some (UniformListChartNIKService.mapLengthClaim Γ) :=
+      holRun? common (UniformListChartService.actualRequest Γ) =
+        some (UniformListChartService.mapLengthClaim Γ) :=
   faithful_hol_service common_hol_replay (SharedJudgmentProofEvidence.Controls.actual_faithful Γ)
 
 theorem common_detoured (Γ : HOL.Ctx BaseSort) :
     holRequest? common (UniformListChartProofSyntax.detouredRequest Γ) =
         some (SharedJudgmentProofEvidence.Controls.detoured Γ).nativeRequest ∧
       holRun? common (UniformListChartProofSyntax.detouredRequest Γ) =
-        some (UniformListChartNIKService.mapLengthClaim Γ) :=
+        some (UniformListChartService.mapLengthClaim Γ) :=
   faithful_hol_service common_hol_replay (SharedJudgmentProofEvidence.Controls.detoured_faithful Γ)
 
 theorem common_refuses_changed_premises : holRun? common (changedPremises []) = none := rfl
@@ -381,7 +381,7 @@ theorem common_refuses_changed_premises : holRun? common (changedPremises []) = 
 Thus the callback's independent replay qualification is indispensable. -/
 theorem replayed_accepts_changed_premises :
     holRun? replayedHOL (changedPremises []) =
-      some (UniformListChartNIKService.mapLengthClaim []) := rfl
+      some (UniformListChartService.mapLengthClaim []) := rfl
 
 theorem replayed_not_qualified : ¬ HOLReplayQualified replayedHOL := by
   intro qualified
@@ -390,10 +390,10 @@ theorem replayed_not_qualified : ¬ HOLReplayQualified replayedHOL := by
   cases accepted
 
 theorem replayed_changed_claim_rejected : holRun? replayedHOL
-    { UniformListChartNIKService.actualRequest [] with claim := (theory, lengthNil) } = none := rfl
+    { UniformListChartService.actualRequest [] with claim := (theory, lengthNil) } = none := rfl
 
 theorem missing_induction_rejected : holRun? common
-    { UniformListChartNIKService.actualRequest [] with claim := (equations, mapLength) } = none := rfl
+    { UniformListChartService.actualRequest [] with claim := (equations, mapLength) } = none := rfl
 
 end HOLCallbackControls
 

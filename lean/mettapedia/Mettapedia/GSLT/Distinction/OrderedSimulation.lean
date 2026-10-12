@@ -5,8 +5,10 @@ import Mathlib.Logic.Relation
 # Ordered relations between nondeterministic machines
 
 A nondeterministic machine whose step returns its successor occurrences as an
-ordered list, with a halting test, runs a frontier: every live occurrence
-advances in place, and a halted occurrence stays.  Two such machines are
+ordered list, with a halting test, runs a frontier: every occurrence advances
+in place, an occurrence without successors stays, and an entirely halted
+frontier stays. Individual halted occurrences are inert under the explicit
+halting-stability premise used by `runFrontier_distribute`. Two such machines are
 compared on their actual states, not on answer sets or endpoints.
 
 * **Ordered simulations** (`OrderedSimulation`).  Related states agree on
@@ -53,6 +55,75 @@ def runFrontier : ℕ → List State → List State
   | 0, states => states
   | fuel + 1, states =>
       if states.all system.halted then states else runFrontier fuel (states.flatMap system.advance)
+
+/-- The complete frontier, including halted and pending occurrences, is the
+residual. Splitting a budget continues that frontier rather than reloading its
+initial states. -/
+theorem runFrontier_add (first second : ℕ) (states : List State) :
+    system.runFrontier (first + second) states =
+      system.runFrontier second (system.runFrontier first states) := by
+  induction first generalizing states with
+  | zero => simp only [Nat.zero_add, runFrontier]
+  | succ first ih =>
+      rw [show first + 1 + second = (first + second) + 1 by omega]
+      by_cases stopped : states.all system.halted = true
+      · cases second <;> simp only [runFrontier, stopped, if_true]
+      · simp [runFrontier, stopped, ih]
+
+theorem runFrontier_halted (fuel : ℕ) (states : List State)
+    (halted : states.all system.halted = true) : system.runFrontier fuel states = states := by
+  cases fuel <;> simp only [runFrontier, halted, if_true]
+
+/-- Local halting must have no successors to justify distributing a synchronous
+frontier across independently serviced blocks. `OrderedSystem` itself does not
+silently impose that condition. -/
+theorem halted_frontier_advance
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (states : List State) (halted : states.all system.halted = true) :
+    states.flatMap system.advance = states := by
+  induction states with
+  | nil => rfl
+  | cons state states ih =>
+      simp only [List.all_cons, Bool.and_eq_true] at halted
+      simp only [List.flatMap_cons, advance, stable state halted.1, List.singleton_append,
+        ih halted.2]
+
+theorem runFrontier_succ
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (states : List State) :
+    system.runFrontier (fuel + 1) states =
+      system.runFrontier fuel (states.flatMap system.advance) := by
+  by_cases halted : states.all system.halted = true
+  · rw [halted_frontier_advance system stable states halted]
+    rw [runFrontier_halted system _ states halted, runFrontier_halted system _ states halted]
+  · simp [runFrontier, halted]
+
+theorem runFrontier_append
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (first second : List State) :
+    system.runFrontier fuel (first ++ second) =
+      system.runFrontier fuel first ++ system.runFrontier fuel second := by
+  induction fuel generalizing first second with
+  | zero => rfl
+  | succ fuel ih =>
+      simp only [runFrontier_succ system stable, List.flatMap_append, ih]
+
+@[simp] theorem runFrontier_nil (fuel : ℕ) : system.runFrontier fuel [] = [] := by
+  cases fuel <;> simp only [runFrontier, List.all_nil, if_true]
+
+/-- Independent local runs reproduce the synchronous frontier precisely when
+halted states are inert. Blocks stay in source order and duplicates remain. -/
+theorem runFrontier_distribute
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (states : List State) :
+    system.runFrontier fuel states =
+      states.flatMap (fun state => system.runFrontier fuel [state]) := by
+  induction states with
+  | nil => exact runFrontier_nil system fuel
+  | cons state states ih =>
+      rw [show state :: states = [state] ++ states from rfl,
+        runFrontier_append system stable, ih]
+      rfl
 
 end OrderedSystem
 

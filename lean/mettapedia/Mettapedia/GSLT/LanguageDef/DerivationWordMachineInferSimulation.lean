@@ -52,9 +52,10 @@ theorem generic_non_infer_lifted_rule_empty
     (recordDecoded :
       decodeDecision host record =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:infer"
-          [id, rule, parents, evidence, conclusion, relevance])) :
+          [id, rule, parents, evidence, conclusion, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId root serviceState) = [] := by
   simp only [genericNonInferSourceRules, List.mem_cons, List.mem_nil_iff,
     or_false] at membership
@@ -252,9 +253,10 @@ theorem root_rules_on_infer_record_root_none_empty
     (recordDecoded :
       decodeDecision host record =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:infer"
-          [id, rule, parents, evidence, conclusion, relevance])) :
+          [id, rule, parents, evidence, conclusion, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId
         DerivationCheckMachineLanguageDef.rootNone serviceState) = [] := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at membership
@@ -305,9 +307,10 @@ theorem finish_shape_rules_on_infer_record_root_none_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:infer"
-          [id, rule, parents, evidence, conclusion, relevance])) :
+          [id, rule, parents, evidence, conclusion, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId DerivationCheckMachineLanguageDef.rootNone
         serviceState) = [] := by
@@ -391,9 +394,10 @@ theorem finish_shape_rules_on_infer_record_root_some_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:infer"
-          [id, rule, parents, evidence, conclusion, relevance])) :
+          [id, rule, parents, evidence, conclusion, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId
         (DerivationCheckMachineLanguageDef.rootSome priorId priorFormula
@@ -480,9 +484,10 @@ theorem finish_root_some_rules_on_infer_record_root_some_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:infer"
-          [id, rule, parents, evidence, conclusion, relevance])) :
+          [id, rule, parents, evidence, conclusion, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId
         (DerivationCheckMachineLanguageDef.rootSome priorId priorFormula
@@ -1598,9 +1603,10 @@ theorem infer_index_fault_excludes_later_rule
     (idDecoded : decodeIndex? idPattern = some actualId)
     (indexFaulted :
       indexDecision expectedId actualId =
-        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue) :
+        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue)
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextIdPattern root
         serviceStatePattern) = [] := by
   simp only [inferIndexSuccessSourceRules, List.mem_cons, List.mem_nil_iff,
@@ -1828,9 +1834,10 @@ theorem infer_relevance_fault_excludes_later_rule
           [advancedPattern])
     (relevanceFaulted :
       relevanceDecision actualId relevance =
-        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue) :
+        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue)
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextIdPattern root
         serviceStatePattern) = [] := by
   simp only [inferRelevanceSuccessSourceRules, List.mem_cons,
@@ -2204,8 +2211,9 @@ theorem infer_rule_with_parent_accept_empty_of_parent_fault
       relevancePatternValue advancedPattern faultPatternValue : Pattern)
     (nodes : List (Node Formula)) (expectedId actualId : Nat)
     (relevance : RelevanceWitness) (parents : List Nat)
+    (unannotated : sourceRule.bindings = none)
     (premisesExact :
-      (liftRewrite sourceRule).premises =
+      (liftRewrite sourceRule unannotated).premises =
         [query "DWMDecodeRecord" [v "record", decoded
           (DerivationCheckMachineLanguageDef.a "dcm:infer"
             [v "id", v "rule", v "parents", v "evidence",
@@ -2220,7 +2228,7 @@ theorem infer_rule_with_parent_accept_empty_of_parent_fault
              "dcm:decision-parents" [v "parentFormulas", v "nextNodes"]]] ++
           remainingPremises)
     (leftExact :
-      (liftRewrite sourceRule).left =
+      (liftRewrite sourceRule unannotated).left =
         run (recordsCons (v "record") (v "rest")) (v "nodes")
           (v "nextId") (v "root") (v "serviceState"))
     (recordDecoded :
@@ -2245,7 +2253,7 @@ theorem infer_rule_with_parent_accept_empty_of_parent_fault
       parentDecision host nodes actualId relevance parents =
         DerivationCheckMachineLanguageDef.decisionFault faultPatternValue) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodesPatternValue nextIdPattern root
         serviceStatePattern) = [] := by
   apply applyRuleUsing_empty_of_unique_match
@@ -2353,9 +2361,10 @@ theorem infer_parent_fault_excludes_later_rule
         DerivationCheckMachineLanguageDef.a "dcm:decision-accept")
     (parentFaulted :
       parentDecision host nodes actualId relevance parents =
-        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue) :
+        DerivationCheckMachineLanguageDef.decisionFault faultPatternValue)
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodesPatternValue nextIdPattern root
         serviceStatePattern) = [] := by
   simp only [inferParentSuccessSourceRules, List.mem_cons, List.mem_nil_iff,
@@ -2369,7 +2378,7 @@ theorem infer_parent_fault_excludes_later_rule
       record rest nodesPatternValue nextIdPattern root serviceStatePattern
       idPattern rulePattern parentsPattern evidencePattern conclusionPattern
       relevancePatternValue advancedPattern faultPatternValue nodes expectedId
-      actualId relevance parents
+      actualId relevance parents unannotated
     · simp [liftRewrite,
         DerivationCheckMachineLanguageDef.inferRuleFaultTransition,
         sourceInstruction?, liftPremise, liftPattern,
@@ -2408,7 +2417,7 @@ theorem infer_parent_fault_excludes_later_rule
       record rest nodesPatternValue nextIdPattern root serviceStatePattern
       idPattern rulePattern parentsPattern evidencePattern conclusionPattern
       relevancePatternValue advancedPattern faultPatternValue nodes expectedId
-      actualId relevance parents
+      actualId relevance parents unannotated
     · exact liftedInferAccept_premises
     · exact liftedInferAccept_left
     · exact recordDecoded

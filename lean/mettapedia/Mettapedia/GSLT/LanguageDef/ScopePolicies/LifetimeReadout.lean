@@ -97,11 +97,11 @@ theorem translates_same_readout (c : Config) (u : X) (unit : S) :
 of the environment.**  (Through lexical fresh and its annotated text:
 `elabLF_explicit`, `elabLF_eq_slotOf`, `Ann.freeNames_slotOf`.) -/
 theorem freeNames_elabQ_explicit {t : Src S X} (written : explicit t = true)
-    (admissible : t.patsNewFree = true) (env : REnv X) (pos : Owner) (n : Nm (Slot X))
-    (free : n ∈ freeNames (elabQ env pos t)) : ∃ y, n = .src (env y, y) := by
-  rw [← elabLF_explicit t env [] pos written, elabLF_eq_slotOf t [] pos pos env pos] at free
+    (admissible : t.patsNewFree = true) (R : Owner) (env : REnv X) (pos : Owner) (n : Nm (Slot X))
+    (free : n ∈ freeNames (elabQ R env pos t)) : ∃ y, n = .src (env y, y) := by
+  rw [← elabLF_explicit R t env [] pos written, elabLF_eq_slotOf R t [] pos pos env pos] at free
   obtain ⟨y, -, same⟩ :=
-    Ann.freeNames_slotOf _ env pos n (Ann.Open.of_WF (annLF_WF t [] pos pos admissible)) free
+    Ann.freeNames_slotOf R _ env pos n (Ann.Open.of_WF (annLF_WF t [] pos pos admissible)) free
   exact ⟨y, same⟩
 
 /-- The per-closure elaboration of `(lam z $y){}`: the lambda owns nothing any
@@ -122,14 +122,14 @@ theorem perClosure_not_explicit (ownership ownership' : Ownership) (readout read
       elabCfg ⟨ownership, .perClosure, readout⟩ [] (.lam z (some []) (.sv y)) := by
   intro same
   rw [perClosure_lam] at same
-  have toQ : elabCfg ⟨ownership', .perCall, readout'⟩ [] t = elabQ (fun _ => []) [] t :=
+  have toQ : elabCfg ⟨ownership', .perCall, readout'⟩ [] t = elabQ [] (fun _ => []) [] t :=
     elabForm_explicit ownership' .queryWide [] written
   rw [toQ] at same
   have free : (Nm.src (([0] : Owner), y) : Nm (Slot X)) ∈
-      freeNames (elabQ (fun _ => []) [] t) := by
+      freeNames (elabQ [] (fun _ => []) [] t) := by
     rw [same]
     simp [freeNames, ownKey]
-  obtain ⟨y', isRoot⟩ := freeNames_elabQ_explicit written admissible _ _ _ free
+  obtain ⟨y', isRoot⟩ := freeNames_elabQ_explicit written admissible _ _ _ _ free
   injection isRoot with pair
   have owners := congrArg Prod.fst pair
   cases owners

@@ -13,6 +13,9 @@ require ordered_semigroups from "../externals/ordered_semigroups"
 
 require Foundation from "../externals/Foundation"
 
+-- Polynomial functors and lenses (Spivak–Niu Poly); its cslib dependency is ../externals/cslib.
+require PolyFun from "../externals/PolyFun"
+
 require exchangeability from "../externals/exchangeability"
 
 require provenance from "../externals/provenance"
@@ -58,6 +61,40 @@ input_dir primeMotivationSources where
 lean_lib PrimeMotivationQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateMotivationProgramPackages]
   needs := #[`@/primeMotivationSources]
+
+input_dir holLightMeTTaSources where
+  path := "../../../hyperon/cetta-prime-2.0-draft-20260910/lib/hol_light"
+  text := true
+  filter := .extension "metta"
+
+lean_lib HOLLightMeTTaQuotation where
+  roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
+  needs := #[`@/holLightMeTTaSources]
+
+input_file gsltMatchAutomataSource where
+  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_match_automata.metta"
+  text := false
+
+lean_lib GSLTMatchAutomataQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataProgram]
+  needs := #[`@/gsltMatchAutomataSource]
+
+input_file gsltRuleExecutionSource where
+  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_rule_execution.metta"
+  text := false
+
+input_file gsltPremiseOperationsSource where
+  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_premise_operations.metta"
+  text := false
+
+input_file gsltScopedExecutionSource where
+  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/gslt_scoped_execution.metta"
+  text := false
+
+lean_lib GSLTRuleExecutionQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleExecutionProgram]
+  needs := #[`@/gsltRuleExecutionSource, `@/gsltPremiseOperationsSource,
+    `@/gsltScopedExecutionSource]
 
 -- Concrete MM2 execution examples are an explicit proof audit, not a
 -- dependency of the routine language umbrellas or the default library.
@@ -174,8 +211,8 @@ lean_lib MM0MMBQuotation where
 
 lean_exe mettapedia where root := `Main
 
-lean_exe metamathNIKAudit where
-  root := `Mettapedia.Languages.Metamath.DatabaseNIKAudit
+lean_exe metamathCheckerAudit where
+  root := `Mettapedia.Languages.Metamath.DatabaseCheckerAudit
 
 lean_exe checkRFC8259NativeForestExact where
   root := `Mettapedia.GSLT.Tools.CheckRFC8259NativeForestExact
@@ -185,3 +222,6 @@ lean_exe sumoNativeSourceCheck where
 
 lean_exe pettaRun where
   root := `Mettapedia.Languages.MeTTa.PeTTa.Main
+
+lean_exe holLightExportReplay where
+  root := `scripts.check_hol_light_export

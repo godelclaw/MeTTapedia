@@ -20,7 +20,7 @@ The claim action is not arbitrary: it is exactly the structural action of the
 calculus-language morphism.  The binding naturality theorems therefore follow
 from the locally nameless structural action, while proof-hole substitution is
 inherited from `JudgmentEmbedding.mapOpen_bind`.  Independent semantic
-preservation remains a separate field and induces the existing exact NIK
+preservation remains a separate field and induces the existing exact SemanticService
 authority translation.
 -/
 
@@ -203,7 +203,7 @@ end Mettapedia.GSLT.LanguageDef.CertificateGSLT
 namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthority
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
 
@@ -247,7 +247,7 @@ def comp {first middle last : SemanticPresentation}
     exact later.meaning_preserved _
       (earlier.meaning_preserved claim meaningful)
 
-/-- A binding-aware semantic presentation map generates the same exact NIK
+/-- A binding-aware semantic presentation map generates the same exact SemanticService
 authority translation as its ground action. -/
 def map {source target : SemanticPresentation}
     (embedding : BindingSemanticEmbedding source target) :

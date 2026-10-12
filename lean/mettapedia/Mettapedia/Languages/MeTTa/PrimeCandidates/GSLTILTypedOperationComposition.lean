@@ -1,7 +1,7 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationAdmission
 
 /-!
-# Composition of typed candidate operations at a common NIK world
+# Composition of typed candidate operations at a common SemanticService world
 
 A selected candidate operation has an authored typed occurrence, a represented
 proof-relevant route, and an observation-preserving admission.  This module
@@ -29,13 +29,13 @@ open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LooseRelationEquipment
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteEquipment
 open Mettapedia.GSLT.LanguageDef.GSLTIL.ElaborationSelection
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
-open Mettapedia.GSLT.LanguageDef.NIKRevisionAlignedComposition
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
+open Mettapedia.GSLT.LanguageDef.RevisionAlignedComposition
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLayeredCrown
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationFactorization
-open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 open Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.DeclarationSemantics
@@ -219,7 +219,7 @@ theorem activateComposite
     alignment
 
 /-- Hot execution is exactly later-after-earlier; elaboration, route
-representation, and NIK currentness do not reappear in the runner. -/
+representation, and SemanticService currentness do not reappear in the runner. -/
 theorem activeComposite_run
     {dependencies : DependencySystem}
     {earlierRevision laterRevision currentRevision : dependencies.Revision}
@@ -316,7 +316,7 @@ def compositeRouteWitnessEquiv
 
 namespace Canary
 
-open Mettapedia.GSLT.LanguageDef.NIKRepresentedRouteObservation.Canary
+open Mettapedia.GSLT.LanguageDef.RepresentedRouteObservation.Canary
 
 /-- The current signature has one proper edge, so a factorization of its
 promotion cannot contain two positive-length route programs. -/
@@ -351,11 +351,11 @@ typed/represented/admitted composition in the current finite signature. -/
 theorem currentComposite_runs_promotion
     (model : CandidateModel) :
     (activateComposite
-        (dependencies := LanguageOperationNIKAdmission.Canary.dependencies)
+        (dependencies := LanguageOperationAdmission.Canary.dependencies)
         (model := model) promoteProgram (identityProgram .prime)
         (fun _ : StateAt model .zero => True)
         (eventCount (SemanticTheoryAt model .prime))
-        (CommonCurrent.refl LanguageOperationNIKAdmission.Canary.dependencies
+        (CommonCurrent.refl LanguageOperationAdmission.Canary.dependencies
           (false, false))).run =
       (programTranslation model promoteProgram).mapTerm := by
   erw [activeComposite_run_is_composedProgram]
@@ -372,9 +372,9 @@ theorem raw_ambiguity_is_not_removed_by_typed_composition :
 composition; there is no common current world at which to activate it. -/
 theorem relevant_revision_change_prevents_composition :
     ¬ ∃ currentRevision,
-      CommonCurrent LanguageOperationNIKAdmission.Canary.dependencies
+      CommonCurrent LanguageOperationAdmission.Canary.dependencies
         (false, false) (true, false) currentRevision :=
-  LanguageOperationNIKAdmission.Canary.relevant_change_has_no_alignment
+  LanguageOperationAdmission.Canary.relevant_change_has_no_alignment
 
 end Canary
 

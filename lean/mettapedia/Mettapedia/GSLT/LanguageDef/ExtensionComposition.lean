@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.LanguageDef.InferenceExtension
 import Mettapedia.GSLT.Core.FreeDocumentNormalization
 
@@ -725,7 +726,7 @@ private def trivialMonoid : PartialMonoid Unit where
 private def trivialLayer : CompositionalLayer Unit where
   Fiber := fun _ => Unit
   system := fun _ =>
-    { authoring := GSLT.freeDocumentCompositional (GSLT.discrete Unit)
+    { authoring := GSLT.freeDocumentCompositional (GSLT.stepFree Unit)
       elaboration :=
         { elaborate := fun _ => some ()
           equation := by intro _ _ _; rfl
@@ -754,7 +755,7 @@ private def andMonoid : PartialMonoid Bool where
 private def orFlagLayer : CompositionalLayer Unit where
   Fiber := fun _ => Bool
   system := fun _ =>
-    { authoring := GSLT.freeDocumentCompositional (GSLT.discrete Unit)
+    { authoring := GSLT.freeDocumentCompositional (GSLT.stepFree Unit)
       elaboration :=
         { elaborate := foldWith orMonoid fun _ => true
           equation := by
@@ -783,7 +784,7 @@ private def orFlagLayer : CompositionalLayer Unit where
 private def andFlagLayer : CompositionalLayer Unit where
   Fiber := fun _ => Bool
   system := fun _ =>
-    { authoring := GSLT.freeDocumentCompositional (GSLT.discrete Unit)
+    { authoring := GSLT.freeDocumentCompositional (GSLT.stepFree Unit)
       elaboration :=
         { elaborate := foldWith andMonoid fun _ => false
           equation := by

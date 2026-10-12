@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathSelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentGuarantee
 
 /-!
@@ -16,7 +16,7 @@ lift of the transported authored tree.  Exact evidence therefore remains
 exact, while suspension and unsupported local blame remain ordinary fallback.
 Revision staleness forgets only the optional native realization.
 
-The exact branch agrees with the complete-path face already selected by NIK.
+The exact branch agrees with the complete-path face already selected by SemanticService.
 No checker, certificate replay, endpoint quotient, or second conversion
 semantics is introduced.
 -/
@@ -33,7 +33,7 @@ namespace NativeConversionPathGradualTransport
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability.State
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathNIKSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeConversionPathSelection
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentGuarantee
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredDeclarationSignature
@@ -331,7 +331,7 @@ theorem substitute_activateAt {presented : PresentedCandidate}
         state).activateAt cached current :=
   mapSafe_activateAt _ cached current state
 
-/-! ## Nonidentity List path controls and the NIK join -/
+/-! ## Nonidentity List path controls and the SemanticService join -/
 
 namespace Canary
 
@@ -388,11 +388,11 @@ theorem weakened_complete_path_without_evidence_is_fallback :
     (runState (mapSafe weakeningMap suspendedState)).outcome = .outsideFragment :=
   rfl
 
-/-- The exact gradual face and the current NIK-selected strongest conversion
+/-- The exact gradual face and the current SemanticService-selected strongest conversion
 face produce the same native tree. -/
 theorem exact_path_agrees_with_current_nik_selection :
     (runState exactState).outcome =
-      (NativeConversionPathNIKSelection.NativeIndexedFamily.Canary.activeNil.run
+      (NativeConversionPathSelection.NativeIndexedFamily.Canary.activeNil.run
         authoredNilLeftAssociated).outcome :=
   rfl
 

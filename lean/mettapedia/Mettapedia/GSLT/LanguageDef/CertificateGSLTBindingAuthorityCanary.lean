@@ -26,7 +26,7 @@ namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTBindingAuthorityCanary
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Substitution
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority

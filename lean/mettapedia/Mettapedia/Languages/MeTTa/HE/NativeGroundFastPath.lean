@@ -357,7 +357,7 @@ private theorem sizeOf_mem_lt_expression
     This is the semantic law behind shared-occurrence reflexivity; allocation
     identity is only a constant-time certificate that both inputs are this
     same atom. -/
-private noncomputable def groundMatchRelSelfAux :
+private theorem groundMatchRelSelfAux :
     (a : Atom) → isGroundAtom a = true →
       MatchRel a a Bindings.empty :=
   WellFounded.fix (measure (sizeOf (α := Atom))).wf fun a ih hg => by
@@ -399,7 +399,7 @@ theorem ground_matchRel_self (a : Atom)
 
 /-- Ground self-matching cannot manufacture a binding: every faithful
     relational witness is empty. -/
-private noncomputable def groundMatchRelSelfUniqueAux :
+private theorem groundMatchRelSelfUniqueAux :
     (a : Atom) → isGroundAtom a = true →
       ∀ {b}, MatchRel a a b → b = Bindings.empty :=
   WellFounded.fix (measure (sizeOf (α := Atom))).wf fun a ih hg => by

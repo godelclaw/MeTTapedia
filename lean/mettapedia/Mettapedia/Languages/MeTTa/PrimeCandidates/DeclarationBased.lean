@@ -2,7 +2,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredIndex
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.BoundaryJudgments
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareCheckedContext
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareDataLanguage
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareNIKAuthority
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareAuthority
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternMatching
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionCompiler
@@ -71,7 +71,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLProo
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLProofQualifiedExecutionCospan
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLProofQualifiedOperationalCospan
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLProofQualifiedSemanticQuotient
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLRecursiveProofNIKQualification
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLRecursiveProofQualification
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLRecursiveProofOperationalObservation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeIndexedContainerLiftingSearch
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeListHOLPredicateObservation
@@ -92,7 +92,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputa
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationObservation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationSpecification
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SimpleFragmentCheckerTranslation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListCognitiveWorkload
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedSubstitution
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.Telescopes
@@ -209,6 +209,13 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeUnivers
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeCumulativeFormationCoherenceBoundary
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeMatchedTransportDenotation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireDataDenotation
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaBoundCalls
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLBoundDispatch
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLSourceReplay
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLExecution
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLReflexivity
+import Mettapedia.Languages.HOLLight.MeTTa.Abstraction
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedComputation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedComputationTyping
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedMachine
@@ -495,6 +502,8 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTran
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.IdentityEquality.Translation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.Package
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CertifiedTransformProgram.Preservation
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeDependentSchemaControls
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeDependentSourceCheckingControls
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.TowerBoundaryAuthority
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.InternalAuthorityMetatheory
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.IntrinsicRunMetatheory
@@ -779,7 +788,7 @@ The development exposes:
   tower-boundary image.
 
 Importing this module supplies theory and proof interfaces only.  It does not
-install a native implementation as semantic NIK reading.  The proved
+install a native implementation or establish its semantic correctness.  The proved
 internal-language result is exact on the returned-fibre image; it is not a
 claim of semantic-CwF initiality or a universal property for the full command
 language.  Those stronger statements remain machine-visible open boundaries.

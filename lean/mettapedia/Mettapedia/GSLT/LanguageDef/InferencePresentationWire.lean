@@ -1,7 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.InferenceCettaWireFormat
 
 /-!
-# Native NIK presentation wire
+# Native SemanticService presentation wire
 
 The native authority catalog uses `GPresentationV1` as its package constructor.
 The inference-language interchange carrier uses `GInferenceLanguageV1`.

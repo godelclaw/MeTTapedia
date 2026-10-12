@@ -24,10 +24,10 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
 
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.ConstructorCategory
 
@@ -146,7 +146,7 @@ def compactDerivedPolicyRealization
   run := observeCompact
   agrees := rfl
 
-/-- Policy-only NIK admission of a compact-derived observation. -/
+/-- Policy-only SemanticService admission of a compact-derived observation. -/
 def compactDerivedPolicyAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (source : CIGSLT) {Value : Type uValue}

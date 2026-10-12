@@ -4,6 +4,8 @@ import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 import Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
 import Mettapedia.Logic.HOL.HenkinInstitutionCanary
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # A nontrivial Henkin/GSLT biform-theory discriminator
 
@@ -23,11 +25,11 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
 
 open Mettapedia.Logic
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.ProofRelevant
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary

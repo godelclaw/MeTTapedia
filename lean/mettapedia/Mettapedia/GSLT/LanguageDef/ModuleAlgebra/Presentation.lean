@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.Core.Composition
 import Mathlib.Data.Finset.Image
+import Mettapedia.Data.List.CheckedUnion
 
 /-!
 # Origin-sensitive declaration fragments
@@ -63,6 +64,71 @@ def check (entries : Fragment (Origin := Origin) (Label := Label) (Body := Body)
 
 def join (first second : Presentation Origin Label Body) :
     Option (Presentation Origin Label Body) := check (first.val ∪ second.val)
+
+/-- Pairwise form of the existing origin-coherent admission contract. -/
+def entryCompatible (first second : Entry Origin Label Body) : Bool :=
+  decide ((first.origin = second.origin ∨ first.label = second.label) → first = second)
+
+@[simp] theorem entryCompatible_self (entry : Entry Origin Label Body) :
+    entryCompatible entry entry = true := by simp [entryCompatible]
+
+theorem entryCompatible_symm (first second : Entry Origin Label Body) :
+    entryCompatible first second = entryCompatible second first := by
+  apply Bool.decide_congr
+  constructor
+  · intro accepted overlap
+    exact (accepted (overlap.imp Eq.symm Eq.symm)).symm
+  · intro accepted overlap
+    exact (accepted (overlap.imp Eq.symm Eq.symm)).symm
+
+theorem allCompatible_iff_valid (entries : List (Entry Origin Label Body)) :
+    List.AllCompatible entryCompatible entries ↔ Valid entries.toFinset := by
+  simp only [List.AllCompatible, entryCompatible, decide_eq_true_eq, Valid, List.mem_toFinset]
+
+/-- Check every declaration and retain its first position. A diamond import
+is shared only when its full origin, label and body agree. -/
+def orderedCheck? (entries : List (Entry Origin Label Body)) :
+    Option (List (Entry Origin Label Body)) :=
+  List.unionCompatible? entryCompatible [] entries
+
+theorem orderedCheck_isSome_iff (entries : List (Entry Origin Label Body)) :
+    (orderedCheck? entries).isSome = true ↔ Valid entries.toFinset := by
+  rw [orderedCheck?, List.unionCompatible?_from_empty_isSome_iff entryCompatible
+    entryCompatible_self entryCompatible_symm, allCompatible_iff_valid]
+
+theorem orderedCheck_toFinset (entries result : List (Entry Origin Label Body))
+    (checked : orderedCheck? entries = some result) : result.toFinset = entries.toFinset := by
+  simpa only [List.toFinset_nil, Finset.empty_union] using
+    List.unionCompatible?_toFinset entryCompatible [] entries result checked
+
+theorem orderedCheck_nodup (entries result : List (Entry Origin Label Body))
+    (checked : orderedCheck? entries = some result) : result.Nodup :=
+  List.unionCompatible?_nodup entryCompatible [] entries result (by simp) checked
+
+/-- The executable ordered checker refines the original finite-presentation
+checker, including rejection; no compilation of bodies precedes admission. -/
+theorem orderedCheck_agrees (entries : List (Entry Origin Label Body)) :
+    (orderedCheck? entries).bind (fun result => check result.toFinset) = check entries.toFinset := by
+  cases completed : orderedCheck? entries with
+  | none =>
+      have refused : ¬ Valid entries.toFinset := by
+        intro accepted
+        have := (orderedCheck_isSome_iff entries).mpr accepted
+        simp [completed] at this
+      simp [check, refused]
+  | some result => simp [orderedCheck_toFinset entries result completed]
+
+def orderedJoin? (first second : List (Entry Origin Label Body)) :
+    Option (List (Entry Origin Label Body)) := orderedCheck? (first ++ second)
+
+theorem orderedJoin_isSome_iff (first second : List (Entry Origin Label Body)) :
+    (orderedJoin? first second).isSome = true ↔ Valid (first.toFinset ∪ second.toFinset) := by
+  simpa only [orderedJoin?, List.toFinset_append] using orderedCheck_isSome_iff (first ++ second)
+
+theorem orderedJoin_agrees (first second : List (Entry Origin Label Body)) :
+    (orderedJoin? first second).bind (fun result => check result.toFinset) =
+      check (first.toFinset ∪ second.toFinset) := by
+  simpa only [orderedJoin?, List.toFinset_append] using orderedCheck_agrees (first ++ second)
 
 @[simp] theorem check_val (p : Presentation Origin Label Body) : check p.val = some p := by
   simp [check, p.property]
@@ -186,6 +252,62 @@ theorem join_meet_diff (p q : Presentation Origin Label Body) :
 
 def origins (entries : Fragment (Origin := Origin) (Label := Label) (Body := Body)) :
     Finset Origin := entries.image Entry.origin
+
+/-! ## Origin-preserving compilation of declaration bodies
+
+Compilation may forget notation or formal names. It preserves a successful
+source join, but a noninjective body map need not reflect a source conflict.
+The source admission check must therefore precede such compilation.
+-/
+
+section BodyCompilation
+
+variable {Body' : Type} [DecidableEq Body']
+
+def mapBodyEntry (compile : Body → Body') (entry : Entry Origin Label Body) :
+    Entry Origin Label Body' := ⟨entry.origin, entry.label, compile entry.body⟩
+
+def mapBodies (compile : Body → Body') (p : Presentation Origin Label Body) :
+    Presentation Origin Label Body' :=
+  ⟨p.val.image (mapBodyEntry compile), by
+    intro first firstMember second secondMember overlap
+    obtain ⟨a, aMember, rfl⟩ := Finset.mem_image.mp firstMember
+    obtain ⟨b, bMember, rfl⟩ := Finset.mem_image.mp secondMember
+    exact congrArg (mapBodyEntry compile) (p.property a aMember b bMember overlap)⟩
+
+/-- The compiled payloads retain the exact successful shared-module union. -/
+theorem mapBodies_join_of_success (compile : Body → Body')
+    {p q r : Presentation Origin Label Body} (joined : join p q = some r) :
+    join (mapBodies compile p) (mapBodies compile q) = some (mapBodies compile r) := by
+  apply join_eq_some_iff.mpr
+  change p.val.image (mapBodyEntry compile) ∪ q.val.image (mapBodyEntry compile) =
+    r.val.image (mapBodyEntry compile)
+  rw [← Finset.image_union, join_eq_some_iff.mp joined]
+
+theorem origins_mapBodies (compile : Body → Body') (p : Presentation Origin Label Body) :
+    origins (mapBodies compile p).val = origins p.val := by
+  simp only [origins, mapBodies, Finset.image_image, mapBodyEntry, Function.comp_def]
+
+theorem mapBodies_comp {Body'' : Type} [DecidableEq Body'']
+    (first : Body → Body') (second : Body' → Body'') (p : Presentation Origin Label Body) :
+    mapBodies second (mapBodies first p) = mapBodies (second ∘ first) p := by
+  apply Subtype.ext
+  simp only [mapBodies, Finset.image_image]
+  rfl
+
+/-- Compilation functions need agree only on the module's retained entries. -/
+theorem mapBodies_congr (first second : Body → Body')
+    (p : Presentation Origin Label Body)
+    (same : ∀ entry ∈ p.val, first entry.body = second entry.body) :
+    mapBodies first p = mapBodies second p := by
+  apply Subtype.ext
+  apply Finset.image_congr
+  intro entry member
+  cases entry with
+  | mk origin label body =>
+      simpa only [mapBodyEntry, Entry.mk.injEq, true_and] using same ⟨origin, label, body⟩ member
+
+end BodyCompilation
 
 /-- Replacement changes a declaration in place, retaining its origin. -/
 def replaceEntry (origin : Origin) (label : Label) (body : Body)

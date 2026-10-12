@@ -121,7 +121,7 @@ private theorem certificate_called : "mm0:certificate" ∈ Service.program.calle
 
 def verdict (T : Theory) (context : Context) (hypotheses : List Preterm)
     (claim : Preterm) (certificate : Certificate T) : Bool :=
-  Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check formMM0 (settledEvaluate T)
+  Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check kernelCalculus (settledEvaluate T)
     (derivesJ context hypotheses claim) certificate
 
 private theorem constructors_undefined (head : String)

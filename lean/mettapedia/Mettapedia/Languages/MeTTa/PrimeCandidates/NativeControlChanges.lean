@@ -14,6 +14,16 @@ Goal revision rechecks retained witnesses. Detached pure collection consumers
 carry generation ownership; revoking an obsolete generation preserves source
 production and the newly admitted consumer. It is a cancellation contract,
 not a scheduling permutation or a certificate for the new goal.
+
+Bounded shared-arena slices use the common `MachineCore.runSlice` contract.
+Their readout retains native Need worlds, work accounts, pending update/resume
+frames and emitted occurrences. Shared-program dispatch counts remain distinct
+from Need transitions, and neither count certifies a compiled implementation.
+
+The native shared producer also feeds the common owned occurrence log. Its
+representation comparison retains pending returns, source context, consumer
+positions and public roots. Capture services and native owner validity are
+separate realization obligations.
 -/
 
 set_option autoImplicit false
@@ -43,6 +53,60 @@ machine; its heap contains the authored root expression, rather than answers. -/
 theorem initial_decodes (term : Atom) :
     NeedContinuation.machines (initialState term) =
       [NeedExecution.eraseMachine (initial term)] := rfl
+
+/-- A bounded authored-equation run decodes to a genuine prefix of the
+independent Need evaluator. No completion premise discards its pending cells,
+selected worlds, remaining rows or receiving frames. -/
+theorem native_partial_prefix (equations : Program) (term : Atom) (fuel : Nat) :
+    ∃ count ≤ (MachineCore.runSlice
+        (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+        fuel (SharedContinuation.encode (initialState term))).2,
+      NeedContinuation.machines (MachineCore.runSlice
+        (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+        fuel (SharedContinuation.encode (initialState term))).1.1.decode =
+        (NeedContinuation.expandFirst (specification equations))^[count]
+          [NeedExecution.eraseMachine (initial term)] := by
+  have settled : NeedContinuation.Settled (initialState term) :=
+    NeedContinuation.settled_single (initialTask term) rfl
+  simpa only [SharedContinuation.decode_encode, initial_decodes] using
+    NeedContinuation.shared_slice_prefix (specification equations) fuel
+      (SharedContinuation.encode (initialState term))
+      (by rwa [SharedContinuation.decode_encode])
+
+/-- Resumption continues the same authored equation execution even if a slice
+ends between lookup and claim. Both slices retain their actual charges. -/
+theorem native_resumption_prefix (equations : Program) (term : Atom) (first second : Nat) :
+    let core := SharedContinuation.sharedCore
+      (NeedContinuation.program (specification equations))
+    let earlier := MachineCore.runSlice core first (SharedContinuation.encode (initialState term))
+    let later := MachineCore.runSlice core second earlier.1
+    ∃ count ≤ earlier.2 + later.2,
+      NeedContinuation.machines later.1.1.decode =
+        (NeedContinuation.expandFirst (specification equations))^[count]
+          [NeedExecution.eraseMachine (initial term)] := by
+  have settled : NeedContinuation.Settled (initialState term) :=
+    NeedContinuation.settled_single (initialTask term) rfl
+  simpa only [SharedContinuation.decode_encode, initial_decodes] using
+    NeedContinuation.shared_resumption_prefix (specification equations) first second
+      (SharedContinuation.encode (initialState term))
+      (by rwa [SharedContinuation.decode_encode])
+
+/-- As long as authored execution is still pending, shared administration
+cannot outrun genuine Need progress by more than one unfinished claim. This
+bound does not assume that the source term terminates. -/
+theorem native_active_prefix_progress (equations : Program) (term : Atom) (steps : Nat)
+    (active : ((SharedContinuation.step
+      (NeedContinuation.program (specification equations)))^[steps]
+        (initialState term)).frontier ≠ []) :
+    ∃ count ≤ steps, steps ≤ 2 * count + 1 ∧
+      NeedContinuation.machines ((SharedContinuation.step
+        (NeedContinuation.program (specification equations)))^[steps] (initialState term)) =
+        (NeedContinuation.expandFirst (specification equations))^[count]
+          [NeedExecution.eraseMachine (initial term)] := by
+  obtain ⟨count, bound, progress, decoded⟩ :=
+    NeedContinuation.prefix_of_program (specification equations) steps (initialState term)
+      (NeedContinuation.settled_single (initialTask term) rfl)
+  exact ⟨count, bound, progress active, by simpa only [initial_decodes] using decoded⟩
 
 /-- A native Need force may need a separate shared dispatch quantum. Both
 representations retain the same physical alternatives and return obligations. -/
@@ -77,6 +141,116 @@ theorem transfer_retains_native_state (equations : Program) (before after : Nat)
         (before + after) state :=
   Mettapedia.GSLT.Dynamics.ContinuationRegionSwitching.split_execution_exact
     (NeedContinuation.program (specification equations)) before after state
+
+/-- Administrative transfer resumes the captured native configuration, with
+exact prefix, residual and performed shared-dispatch count. It does not reload
+the authored call, and an exhausted slice budget does not mean a final state. -/
+theorem transfer_retains_native_slice (equations : Program) (before after : Nat)
+    (state : NativeState) :
+    (let earlier := MachineCore.runSlice
+        (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+        before (SharedContinuation.encode state)
+     let later := MachineCore.runSlice
+        (SharedContinuation.referenceCore (NeedContinuation.program (specification equations)))
+        after earlier.1.1.decode
+     (later.1, earlier.2 + later.2)) =
+      MachineCore.runSlice
+        (SharedContinuation.referenceCore (NeedContinuation.program (specification equations)))
+        (before + after) state :=
+  SharedContinuation.slice_transfer_exact
+    (NeedContinuation.program (specification equations)) before after state
+
+/-- A captured native Need context uses at most one additional shared return
+node per performed dispatch. No factor of the number of alternatives appears. -/
+theorem native_shared_slice_node_bounds (equations : Program) (fuel : Nat)
+    (state : NativeState) :
+    (SharedContinuation.encode state).1.arena.length ≤
+        (MachineCore.runSlice
+          (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+          fuel (SharedContinuation.encode state)).1.1.arena.length ∧
+      (MachineCore.runSlice
+          (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+          fuel (SharedContinuation.encode state)).1.1.arena.length ≤
+        (SharedContinuation.encode state).1.arena.length +
+          (MachineCore.runSlice
+            (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+            fuel (SharedContinuation.encode state)).2 :=
+  SharedContinuation.slice_node_bounds
+    (NeedContinuation.program (specification equations)) fuel (SharedContinuation.encode state)
+
+abbrev NativeSharedState := SharedContinuation.CheckedState NativeContext
+  (NeedContinuation.Mode Origin Local Atom Empty String) (NeedReference.Frame Resume) Outcome
+
+
+/-- The detached paid endpoint embeds in the original native frontier without
+advancing later alternatives or rebuilding its retained return arena. This is
+an exclusive-frontier law, separate from concurrent owner scheduling. -/
+theorem native_frontier_paid_handoff_exact (equations : Program) (fuel : Nat)
+    (state : NativeSharedState)
+    (later : List (SharedContinuation.RootTask NativeContext
+      (NeedContinuation.Mode Origin Local Atom Empty String)))
+    (bounded : ∀ task ∈ later, task.root ≤ state.1.arena.length) :
+    let detached := MachineCore.runSlice
+      (SharedContinuation.sharedCore (NeedContinuation.program (specification equations))) fuel state
+    let joined := MachineCore.runSlice
+      (SharedContinuation.sharedCore (NeedContinuation.program (specification equations))) detached.2
+      (SharedContinuation.appendCheckedFrontier state later bounded)
+    joined.1.1 = detached.1.1.appendFrontier later ∧ joined.2 = detached.2 :=
+  SharedContinuation.shared_slice_append_paid_arena
+    (NeedContinuation.program (specification equations)) fuel state later bounded
+
+/-- An externally held native return task keeps its world, work context and
+frame payloads across the exclusively advanced slice. Service authority and
+actual native owner validity remain separate realization obligations. -/
+theorem native_held_return_exact (equations : Program) (fuel : Nat)
+    (state : NativeSharedState)
+    (task : SharedContinuation.RootTask NativeContext
+      (NeedContinuation.Mode Origin Local Atom Empty String))
+    (bounded : task.root ≤ state.1.arena.length) :
+    task.decode (MachineCore.runSlice
+      (SharedContinuation.sharedCore (NeedContinuation.program (specification equations)))
+      fuel state).1.1.arena = task.decode state.1.arena :=
+  SharedContinuation.slice_held_task_exact
+    (NeedContinuation.program (specification equations)) fuel state task bounded
+
+abbrev NativeReturn := NativeContext × Outcome
+
+abbrev NativeReturnConfiguration (Stored SourceContext Output : Type) (clients : Nat) :=
+  Cursor.ProducerOccurrenceLog.Configuration NativeSharedState NativeReturn
+    Stored SourceContext Output Empty Empty clients
+
+/-- This is the authored equation/Need instance of the common producer
+composition, including unfinished producer worlds and publication obligations.
+The separate source-context predicate is checked without granting it native
+service authority merely from its Boolean result. -/
+theorem native_owned_producer_run {Stored SourceContext Output : Type} {clients : Nat}
+    (equations : Program) (capture : NativeReturn → Option Stored) (capacity : Stored → Bool)
+    (compatible : SourceContext → Bool) (ticks : Nat)
+    (state : NativeReturnConfiguration Stored SourceContext Output clients) :
+    Cursor.ProducerOccurrenceLog.run
+        (SharedContinuation.referenceProducerStep (NeedContinuation.program (specification equations)))
+        capture capacity compatible ticks
+        (Cursor.ProducerOccurrenceLog.mapProducer (fun retained => retained.1.decode) state) =
+      ((Cursor.ProducerOccurrenceLog.run
+          (SharedContinuation.sharedProducerStep (NeedContinuation.program (specification equations)))
+          capture capacity compatible ticks state).1,
+        Cursor.ProducerOccurrenceLog.mapProducer (fun retained => retained.1.decode)
+          (Cursor.ProducerOccurrenceLog.run
+            (SharedContinuation.sharedProducerStep (NeedContinuation.program (specification equations)))
+            capture capacity compatible ticks state).2) :=
+  SharedContinuation.producer_run_exact (NeedContinuation.program (specification equations))
+    capture capacity compatible ticks state
+
+theorem native_owned_producer_delivery {Stored SourceContext Output : Type} {clients : Nat}
+    [DecidableEq Stored] [DecidableEq Output] (compatible : SourceContext → Bool)
+    (state : NativeReturnConfiguration Stored SourceContext Output clients)
+    (client : Fin clients) (output : Output) :
+    Cursor.ProducerOccurrenceLog.deliver compatible
+        (Cursor.ProducerOccurrenceLog.mapProducer (fun retained => retained.1.decode) state) client output =
+      ((Cursor.ProducerOccurrenceLog.deliver compatible state client output).1,
+        Cursor.ProducerOccurrenceLog.mapProducer (fun retained => retained.1.decode)
+          (Cursor.ProducerOccurrenceLog.deliver compatible state client output).2) :=
+  SharedContinuation.producer_delivery_exact compatible state client output
 
 abbrev NativeOccurrence := WorkOccurrence NativeMachine
 
@@ -164,6 +338,32 @@ set_option maxHeartbeats 3000000
 example : NeedContinuation.cost (specification NativeEquationNeed.Controls.program)
     (initialTask (NativeEquationNeed.Controls.call "twice"
       [NativeEquationNeed.Controls.call "coin"])) = 2 := by decide +kernel
+
+def ownedChoiceStart : NativeReturnConfiguration Atom Nat Nat 1 :=
+  Cursor.ProducerOccurrenceLog.initial
+    (SharedContinuation.encode (initialState (NativeEquationNeed.Controls.call "twice"
+      [NativeEquationNeed.Controls.call "coin"]))) 0 4
+
+def captureValue (row : NativeReturn) : Option Atom :=
+  match row.2 with
+  | .value value => some value
+  | _ => none
+
+def ownedChoiceRun (ticks : Nat) :=
+  Cursor.ProducerOccurrenceLog.run
+    (SharedContinuation.sharedProducerStep
+      (NeedContinuation.program (specification NativeEquationNeed.Controls.program)))
+    captureValue (fun _ => true) (fun _ => true) ticks ownedChoiceStart
+
+/-- The actual authored choice is allocated once per branch world; its two
+demands agree. The producer/log adapter does not turn them into four choices. -/
+theorem owned_producer_retains_native_call_time_choice :
+    (ownedChoiceRun 100).2.delivery.log.rows =
+      [NativeEquationNeed.Controls.call "Pair" [NativeEquationNeed.Controls.integer 0,
+        NativeEquationNeed.Controls.integer 0],
+       NativeEquationNeed.Controls.call "Pair" [NativeEquationNeed.Controls.integer 1,
+        NativeEquationNeed.Controls.integer 1]] ∧
+      (ownedChoiceRun 100).2.delivery.log.completed = true := by decide +kernel
 
 /-- Existing answers satisfy the old occurrence goal but fail the revised
 coverage goal. Reordering them supplies no missing final obligation. -/

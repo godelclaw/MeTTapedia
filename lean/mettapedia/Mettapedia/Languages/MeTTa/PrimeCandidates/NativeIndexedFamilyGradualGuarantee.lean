@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDependentGuarantee
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionSelection
 
 /-!
 # The gradual-dependent instance for constructional indexed families
@@ -11,7 +11,7 @@ with that raw request.  Suspension and local refutation therefore need no
 second operational semantics: both return the same request to the ordinary
 fallback branch.
 
-The existing constructional NIK operation realizes exact states without a
+The existing constructional SemanticService operation realizes exact states without a
 checker or certificate.  Revision invalidation forgets only the optional
 construction witness, after which the retained raw request falls back.  This
 is the indexed-family instance of candidate's generic lazy gradual-dependent law;
@@ -29,11 +29,11 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates
 namespace NativeIndexedFamilyGradualGuarantee
 
-open Mettapedia.GSLT.LanguageDef.NIKMaximalNativeAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.MaximalCapabilityAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability.State
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionNIKSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeIndexedFamilyConstructionSelection
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredIndexedFamilyConstruction
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredIndexedFamilyPresentation
@@ -122,7 +122,7 @@ theorem inputOfState_request {presented : PresentedCandidate}
   | exact evidence => exact evidence.input_request
   | refuted blame => rfl
 
-/-- Run a gradual family state through the already-proved constructional NIK
+/-- Run a gradual family state through the already-proved constructional SemanticService
 operation.  This is an adapter, not a second evaluator. -/
 def runState {presented : PresentedCandidate}
     (typed : TypedNativePresentation presented)
@@ -220,7 +220,7 @@ theorem stale_state_runs_fallback {presented : PresentedCandidate}
   rw [activateAt_stale stale state]
   exact run_suspended_is_fallback request
 
-/-! ## Revision-indexed NIK admission of the shared gradual operation -/
+/-! ## Revision-indexed SemanticService admission of the shared gradual operation -/
 
 /-- Admit the already-proved constructional operation at one dependency
 revision.  Unlike the stronger uniform-preservation family, this admission
@@ -342,7 +342,7 @@ theorem stale_nil_exact_is_fallback :
         (nilExactState.activateAt false true)).outcome :=
   stale_state_runs_fallback typedNativePresentation (by decide) nilExactState
 
-/-- The NIK artifact itself cannot activate after the dependency changes. -/
+/-- The SemanticService artifact itself cannot activate after the dependency changes. -/
 theorem changed_revision_has_no_activation :
     ¬ Nonempty (listAdmission.Active true) := by
   rintro ⟨active⟩

@@ -638,7 +638,7 @@ For the MeTTa Native lane: the seam transports verbatim — replace `Ty` by
 the native type syntax and `checkEvidence` by the corresponding boundary
 judgment; laws 1–7 are the coherence obligations of the
 Exact/Gradual/Conflict runtime waist, with `Refines` as the precision
-order and `OptLicense` as the admitted-fact shape NIK records per
+order and `OptLicense` as the admitted-fact shape SemanticService records per
 revision. -/
 
 def seamHandoff : List String :=

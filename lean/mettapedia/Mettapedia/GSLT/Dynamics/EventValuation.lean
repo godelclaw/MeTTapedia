@@ -19,6 +19,12 @@ The separation is intentional:
 
 The partial operation accommodates linear or unavailable capabilities, while
 ordinary additive quantities use the total additive instance below.
+
+A successful merge alone does not license reversing its order. Actual-path
+interchange and equality of the two local compositions retain the final world
+and selected grade through a complete continuation. Chronological observations
+retain their own order; worker preparation may overlap while publication keeps
+the original order.
 -/
 
 namespace Mettapedia.GSLT.Dynamics.EventValuation
@@ -118,6 +124,53 @@ theorem prod_compatible {theory : Theory}
   IndexedEventValuation.Valuation.prod_compatible left right first second
     leftCompatible rightCompatible
 
+/-- Actual-path interchange and the declared local algebra law preserve the
+full final world and that valuation through the same complete continuation.
+No chronological or derivation-bag equality is inferred. -/
+theorem swap_actual_history {theory : Theory} (valuation : Valuation theory)
+    {first second : theory.Revision}
+    (interchange : ∀ {source middle target : theory.World},
+      theory.Step first source middle → theory.Step second middle target →
+        ∃ afterSecond, theory.Step second source afterSecond ∧
+          theory.Step first afterSecond target)
+    (orderAgrees : valuation.combine? first second = valuation.combine? second first)
+    (preceding following : List theory.Revision) {source target : theory.World}
+    (steps : theory.HistoryStep (preceding ++ first :: second :: following) source target) :
+    theory.HistoryStep (preceding ++ second :: first :: following) source target ∧
+      valuation.historyGrade (preceding ++ first :: second :: following) =
+        valuation.historyGrade (preceding ++ second :: first :: following) :=
+  ⟨Theory.HistoryStep.swap_adjacent interchange preceding following steps,
+    IndexedEventValuation.Valuation.historyGrade_swap_adjacent valuation orderAgrees
+      preceding following⟩
+
+
+/-- Whole finite trace transport retains the actual final world, the
+declared partial grade and all revision occurrences. Only swaps licensed by
+both state interchange and local grade agreement are identified. -/
+theorem trace_preserves_actual_world_and_grade {theory : Theory}
+    (valuation : Valuation theory)
+    (independent : theory.Revision → theory.Revision → Prop)
+    (symmetric : ∀ {first second}, independent first second → independent second first)
+    (interchange : ∀ {first second : theory.Revision}
+      {source middle target : theory.World}, independent first second →
+      theory.Step first source middle → theory.Step second middle target →
+        ∃ afterSecond, theory.Step second source afterSecond ∧
+          theory.Step first afterSecond target)
+    (lawful : ∀ first second, independent first second →
+      valuation.combine? first second = valuation.combine? second first)
+    {first second : List theory.Revision}
+    (equivalent : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      independent first second) {source target : theory.World}
+    (steps : theory.HistoryStep first source target) :
+    theory.HistoryStep second source target ∧
+      valuation.historyGrade first = valuation.historyGrade second ∧
+      first.Perm second :=
+  ⟨(Theory.HistoryStep.traceEquiv_iff independent symmetric interchange
+      equivalent source target).mp steps,
+    IndexedEventValuation.Valuation.historyGrade_traceEquiv
+      valuation independent lawful equivalent,
+    Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv.perm equivalent⟩
+
 end Valuation
 
 /-! ## Total additive valuations -/
@@ -180,6 +233,116 @@ def Subsumes {theory : Theory}
     more.Admits first second source
 
 end ParallelBackend
+
+namespace Controls
+
+/-- The nondeterministic coordinate instance preserves all actual endpoints
+and additive work through arbitrary generated finite trace rearrangements. -/
+theorem independent_finite_trace_preserves_world_and_work (cost : Bool → Nat)
+    {first second : List Bool}
+    (equivalent : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      (· ≠ ·) first second) {source target : Nat × Nat}
+    (steps : QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      first source target) :
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep second source target ∧
+      (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+        first =
+      (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+        second ∧ first.Perm second :=
+  Valuation.trace_preserves_actual_world_and_grade
+    (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost)
+    (· ≠ ·) Ne.symm QueryRevision.Controls.independent_branching_interchange
+    (fun first second _ =>
+      IndexedEventValuation.additive_composition_swap cost first second)
+    equivalent steps
+
+/-- Two permitted swaps retain a four-event actual run and arbitrary
+additive costs, including both repetitions, while chronology still differs. -/
+theorem repeated_finite_wave_keeps_world_work_and_chronology (cost : Bool → Nat) :
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      [true, false, true, false] (0, 0) (2, 6) ∧
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      [false, true, false, true] (0, 0) (2, 6) ∧
+    (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+      [true, false, true, false] =
+    (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+      [false, true, false, true] ∧
+    ([true, false, true, false] : List Bool).Perm [false, true, false, true] ∧
+    (IndexedEventValuation.chronological (id : Bool → Bool)).historyGrade
+      [true, false, true, false] ≠
+    (IndexedEventValuation.chronological (id : Bool → Bool)).historyGrade
+      [false, true, false, true] := by
+  have one : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      (· ≠ ·) [true, false, true, false] [false, true, true, false] :=
+    .rel _ _ (Mettapedia.GSLT.Distinction.CausalGluing.Swap.swap []
+      [true, false] (by decide))
+  have two : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      (· ≠ ·) [false, true, true, false] [false, true, false, true] :=
+    .rel _ _ (Mettapedia.GSLT.Distinction.CausalGluing.Swap.swap [false, true]
+      [] (by decide))
+  have forward : QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      [true, false, true, false] (0, 0) (2, 6) := by
+    have first : QueryRevision.Controls.independentBranchingTheory.Step true
+        ((0, 0) : Nat × Nat) (1, 0) := by
+      simp [QueryRevision.Controls.independentBranchingTheory]
+    have second : QueryRevision.Controls.independentBranchingTheory.Step false
+        ((1, 0) : Nat × Nat) (1, 3) := by
+      simp [QueryRevision.Controls.independentBranchingTheory]
+    have third : QueryRevision.Controls.independentBranchingTheory.Step true
+        ((1, 3) : Nat × Nat) (2, 3) := by
+      simp [QueryRevision.Controls.independentBranchingTheory]
+    have fourth : QueryRevision.Controls.independentBranchingTheory.Step false
+        ((2, 3) : Nat × Nat) (2, 6) := by
+      simp [QueryRevision.Controls.independentBranchingTheory]
+    exact .cons first (.cons second (.cons third (.single fourth)))
+  have preserved := independent_finite_trace_preserves_world_and_work cost
+    (.trans _ _ _ one two) forward
+  refine ⟨forward, preserved.1, preserved.2.1, preserved.2.2, ?_⟩
+  simp only [IndexedEventValuation.chronological_historyGrade, List.map_id]
+  decide
+
+/-- Nondeterministic independent updates preserve arbitrary additive work
+and the complete suffix after the two actual operations are interchanged. -/
+theorem independent_work_history_swap (cost : Bool → Nat)
+    (preceding following : List Bool) {source target : Nat × Nat}
+    (steps : QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      (preceding ++ true :: false :: following) source target) :
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep
+      (preceding ++ false :: true :: following) source target ∧
+      (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+        (preceding ++ true :: false :: following) =
+      (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost).historyGrade
+        (preceding ++ false :: true :: following) :=
+  Valuation.swap_actual_history
+    (additive (theory := QueryRevision.Controls.independentBranchingTheory) cost)
+    QueryRevision.Controls.independent_branching_actual_steps_swap
+    (IndexedEventValuation.additive_composition_swap cost true false)
+    preceding following steps
+
+/-- The same concrete independent updates can swap actual state paths while
+the accepted chronological grade remains different. Compatibility alone
+cannot license erasure of its order. -/
+theorem independent_state_swap_retains_distinct_chronology :
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep [true, false]
+      (0, 0) (1, 3) ∧
+    QueryRevision.Controls.independentBranchingTheory.HistoryStep [false, true]
+      (0, 0) (1, 3) ∧
+    (IndexedEventValuation.chronological (id : Bool → Bool)).Compatible true false ∧
+    (IndexedEventValuation.chronological (id : Bool → Bool)).Compatible false true ∧
+    (IndexedEventValuation.chronological (id : Bool → Bool)).combine? true false ≠
+      (IndexedEventValuation.chronological (id : Bool → Bool)).combine? false true := by
+  have forward : QueryRevision.Controls.independentBranchingTheory.HistoryStep [true, false]
+      (0, 0) (1, 3) :=
+    Theory.HistoryStep.two_iff.mpr
+      ⟨(1, 0), by simp [QueryRevision.Controls.independentBranchingTheory],
+        by simp [QueryRevision.Controls.independentBranchingTheory]⟩
+  refine ⟨forward, QueryRevision.Controls.independent_branching_history_swap [] [] forward,
+    ?_, ?_, IndexedEventValuation.chronological_composition_cannot_swap true false (by decide)⟩
+  · rfl
+  · rfl
+
+
+end Controls
 
 /-! ## Separating canary: behavior is not resource authority -/
 

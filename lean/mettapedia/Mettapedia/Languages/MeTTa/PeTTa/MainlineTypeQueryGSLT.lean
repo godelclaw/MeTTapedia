@@ -464,10 +464,10 @@ private theorem getTypeAtDepth_exists (snapshot : Snapshot) :
                     List.Forall₂ (GetTypeAtDepth snapshot fuel)
                       arguments declaration.inputTypes
             | _ => False
-          letI (child expectedChild : Term) :
+          let (child expectedChild : Term) :
               Decidable (GetTypeAtDepth snapshot fuel child expectedChild) :=
             decidableGetTypeAtDepth snapshot fuel child expectedChild
-          letI (children expectedChildren : List Term) :
+          let (children expectedChildren : List Term) :
               Decidable
                 (List.Forall₂ (GetTypeAtDepth snapshot fuel)
                   children expectedChildren) :=
@@ -475,7 +475,7 @@ private theorem getTypeAtDepth_exists (snapshot : Snapshot) :
               (fun child expectedChild =>
                 decidableGetTypeAtDepth snapshot fuel child expectedChild)
               children expectedChildren
-          letI declarationInputDecidable
+          let declarationInputDecidable
               (function : String) (arguments : List Term) :
               Decidable
                 (∃ declaration ∈ snapshot.declarations,
@@ -488,7 +488,7 @@ private theorem getTypeAtDepth_exists (snapshot : Snapshot) :
                   List.Forall₂ (GetTypeAtDepth snapshot fuel)
                     arguments declaration.inputTypes)
               (fun _ => by infer_instance) snapshot.declarations
-          letI : Decidable hasFunction := by
+          let : Decidable hasFunction := by
             unfold hasFunction
             split <;> infer_instance
           by_cases functionApplies : hasFunction
@@ -669,7 +669,7 @@ def queryGSLT : GSLT where
 
 def stepDecision : EffectiveStructure.StepDecision queryGSLT where
   decideStep := fun (source target : Machine) => decide (MachineStep source target)
-  correct := fun (source target : Machine) => decide_eq_true_iff
+  correct := fun (_source _target : Machine) => decide_eq_true_iff
 
 /-- The OSLF-generated exact-target NTT accepts exactly one successful
 mainline type-query transition. -/

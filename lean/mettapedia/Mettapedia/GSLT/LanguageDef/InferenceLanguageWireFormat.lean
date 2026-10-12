@@ -282,7 +282,7 @@ the definition's constructor signature.  An undeclared nullary application
 remains open atom data, but a declared head is structural and must retain its
 declared arity.  Authorities constrain open atoms through ordinary premises,
 signatures, and environments.  Keeping this policy here prevents a physical
-vocabulary check from being mistaken for universal NIK semantics.
+vocabulary check from being mistaken for universal SemanticService semantics.
 -/
 
 def RuntimeInferenceLanguage.lookupRule? (definition : RuntimeInferenceLanguage)

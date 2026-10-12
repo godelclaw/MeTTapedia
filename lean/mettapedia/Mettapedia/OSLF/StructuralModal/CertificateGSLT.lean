@@ -7,15 +7,15 @@ import Mettapedia.OSLF.Framework.ReductionSpanTypeSynthesis
 
 OSLF supplies the semantic meaning of a structural-modal formula.
 CertificateGSLT supplies the finite, versioned article checker.  This module states
-the exact bridge required before a native inference kernel may treat an
-accepted article as evidence of structural-modal satisfaction.
+the adequacy obligation relating accepted articles to structural-modal
+satisfaction.
 
 The bridge is deliberately parameterized by a proved language-adequacy map.
 A language definition that merely spells a judgment `NativeSat` gains no
 authority: its derivations must be proved sound for the OSLF reduction span.
 Once that theorem exists, the existing `WireArticle` authority and
-`CheckedLowering` machinery provide the MIK and NIK boundaries without a
-second checker semantics.
+`CheckedLowering` machinery provide the certificate and representation boundaries over the same
+checker semantics.
 -/
 
 namespace Mettapedia.OSLF.StructuralModal.CertificateGSLT
@@ -105,7 +105,7 @@ def wireAuthority {AuthorityId : Type uAuthority}
         (adequacy.encode claim) article) :=
   rfl
 
-/-- A native checker is a NIK for native types only when each native
+/-- A native checker is a SemanticService for native types only when each native
 acceptance lowers to an article accepted by the MIK authority above. -/
 abbrev NativeCheckedLowering {AuthorityId : Type uAuthority}
     (authorityId : AuthorityId) {span : ReductionSpan Pattern}
@@ -225,7 +225,7 @@ def openWireAuthority {AuthorityId : Type uAuthority}
             article.rootId [article.nodes]) :=
   rfl
 
-/-- A NIK for an open structural-modal article must replay its native evidence at
+/-- A SemanticService for an open structural-modal article must replay its native evidence at
 the same CertificateGSLT open-DAG authority. -/
 abbrev OpenNativeCheckedLowering {AuthorityId : Type uAuthority}
     (authorityId : AuthorityId) {span : ReductionSpan Pattern}

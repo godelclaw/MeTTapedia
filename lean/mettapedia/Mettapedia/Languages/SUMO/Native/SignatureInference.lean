@@ -1,12 +1,12 @@
 import Mettapedia.Languages.SUMO.Native.SignatureSemantics
-import Mettapedia.Languages.SUMO.Native.NIKAuthority
+import Mettapedia.Languages.SUMO.Native.CheckerAuthority
 
 /-!
 # Source-signature inference for native SUMO
 
 SUMO `domain` and `domainSubclass` declarations do more than annotate source
 text.  A true relation application supplies domain judgments for its actual
-arguments.  This module makes that inference explicit and gives it a native NIK
+arguments.  This module makes that inference explicit and gives it a native SemanticService
 authority.
 
 The authority keeps the submitted ontology assumptions unchanged.  Before
@@ -27,7 +27,7 @@ namespace Mettapedia.Languages.SUMO.Native.SignatureInference
 
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKGSLT
+open Mettapedia.GSLT.LanguageDef.CheckerGSLT
 open Mettapedia.Languages.SUMO.Native
 open Mettapedia.Languages.SUMO.Native.SourceElaboration
 open Mettapedia.Languages.SUMO.Native.SignatureSemantics
@@ -47,7 +47,7 @@ def RelationApplicationsRespectDomains
 closed argument term. -/
 def restrictionFormula
     (argument : Term String String 0 0)
-    (restriction : DomainRestriction) : NIKAuthority.Claim :=
+    (restriction : DomainRestriction) : CheckerAuthority.Claim :=
   let predicate := match restriction.kind with
     | .object => "instance"
     | .class => "subclass"
@@ -64,7 +64,7 @@ def closedTerms : Spine String String 0 0 -> List (Term String String 0 0)
 at one zero-based operator position. -/
 def consequencesFrom
     (signature : SourceSignature) (operator : String) :
-    Nat -> List (Term String String 0 0) -> List NIKAuthority.Claim
+    Nat -> List (Term String String 0 0) -> List CheckerAuthority.Claim
   | _, [] => []
   | position, argument :: rest =>
       (signature.argumentRestrictions operator (position + 1)).map
@@ -75,7 +75,7 @@ def consequencesFrom
 Only operators in the finite source inventory can contribute facts. -/
 def atomDomainConsequences
     (signature : SourceSignature) :
-    NIKAuthority.Claim -> List NIKAuthority.Claim
+    CheckerAuthority.Claim -> List CheckerAuthority.Claim
   | .atom (.constant operator) arguments =>
       if operator ∈ signature.declaredOperators then
         consequencesFrom signature operator 0 (closedTerms arguments)
@@ -85,14 +85,14 @@ def atomDomainConsequences
 /-- Every direct domain consequence contributed by an ontology context. -/
 def domainConsequences
     (signature : SourceSignature)
-    (assumptions : List NIKAuthority.Claim) : List NIKAuthority.Claim :=
+    (assumptions : List CheckerAuthority.Claim) : List CheckerAuthority.Claim :=
   assumptions.flatMap (atomDomainConsequences signature)
 
 /-- The exact checker context: submitted ontology formulas first, followed by
 their deterministic source-signature consequences. -/
 def expandedAssumptions
     (signature : SourceSignature)
-    (assumptions : List NIKAuthority.Claim) : List NIKAuthority.Claim :=
+    (assumptions : List CheckerAuthority.Claim) : List CheckerAuthority.Claim :=
   assumptions ++ domainConsequences signature assumptions
 
 private theorem denote_closedTermsLifted
@@ -159,7 +159,7 @@ private theorem atomDomainConsequences_sound
     (realizes : RealizesSourceSignature signature model)
     (applicationsRespectDomains : RelationApplicationsRespectDomains model)
     (world : model.World)
-    (source : NIKAuthority.Claim)
+    (source : CheckerAuthority.Claim)
     (sourceHolds :
       model.satisfies model.emptyObjects model.emptyRows source world) :
     SatisfiesAssumptions model model.emptyObjects model.emptyRows world
@@ -249,7 +249,7 @@ theorem domainConsequences_sound
     (realizes : RealizesSourceSignature signature model)
     (applicationsRespectDomains : RelationApplicationsRespectDomains model)
     (world : model.World)
-    (assumptions : List NIKAuthority.Claim)
+    (assumptions : List CheckerAuthority.Claim)
     (assumptionsHold :
       SatisfiesAssumptions model model.emptyObjects model.emptyRows world
         assumptions) :
@@ -267,7 +267,7 @@ theorem expandedAssumptions_sound
     (realizes : RealizesSourceSignature signature model)
     (applicationsRespectDomains : RelationApplicationsRespectDomains model)
     (world : model.World)
-    (assumptions : List NIKAuthority.Claim)
+    (assumptions : List CheckerAuthority.Claim)
     (assumptionsHold :
       SatisfiesAssumptions model model.emptyObjects model.emptyRows world
         assumptions) :
@@ -280,16 +280,16 @@ theorem expandedAssumptions_sound
   · exact domainConsequences_sound realizes applicationsRespectDomains world
       assumptions assumptionsHold body consequenceMember
 
-/-! ## Native NIK authority -/
+/-! ## Native SemanticService authority -/
 
 /-- A source-signature judgment retains the finite signature, the original
 ontology assumptions, and the requested conclusion. -/
 structure EntailmentClaim where
   signature : SourceSignature
-  assumptions : List NIKAuthority.Claim
-  conclusion : NIKAuthority.Claim
+  assumptions : List CheckerAuthority.Claim
+  conclusion : CheckerAuthority.Claim
 
-abbrev Evidence := NIKAuthority.Evidence
+abbrev Evidence := CheckerAuthority.Evidence
 
 /-- Derivability from the exact source context after its deterministic domain
 consequences have been added. -/
@@ -350,7 +350,7 @@ def family : AuthorityFamily Unit where
   Meaning := fun _ => Meaning
   projection := fun _ => checker_projection
 
-/-- The fail-closed public NIK invocation machine for source-signature
+/-- The fail-closed public SemanticService invocation machine for source-signature
 consequences. -/
 abbrev invocationGSLT : Mettapedia.GSLT.GSLT := Atomic.theory checker
 
@@ -377,11 +377,11 @@ theorem invocation_acceptance_reaches_native_empty
   ProofSearch.accepted_certificate_reaches_empty
     ((invocation_accepts_iff claim certificate).mp accepted)
 
-abbrev NIKEvidence (claim : EntailmentClaim) :=
+abbrev CheckedEvidence (claim : EntailmentClaim) :=
   { certificate : Evidence // checker.check claim certificate = true }
 
 theorem nonempty_nikEvidence_iff_derivable (claim : EntailmentClaim) :
-    Nonempty (NIKEvidence claim) <-> Certified claim := by
+    Nonempty (CheckedEvidence claim) <-> Certified claim := by
   constructor
   · rintro ⟨⟨certificate, accepted⟩⟩
     exact checker_authority.sound claim certificate accepted
@@ -391,7 +391,7 @@ theorem nonempty_nikEvidence_iff_derivable (claim : EntailmentClaim) :
 
 theorem nonempty_nikEvidence_valid_in_model
     (claim : EntailmentClaim)
-    (evidence : Nonempty (NIKEvidence claim))
+    (evidence : Nonempty (CheckedEvidence claim))
     (model : Model.{0, 0, uModel} String String) (world : model.World)
     (realizes : RealizesSourceSignature claim.signature model)
     (applicationsRespectDomains : RelationApplicationsRespectDomains model)

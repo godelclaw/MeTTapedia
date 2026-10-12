@@ -12535,7 +12535,7 @@ theorem normalDVLoadedComplete_pairBegin_no_matches
     List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at carrierMember
   rcases carrierMember with phaseMember | cursorEqual
   · rcases phaseMember with h | h | h | h | h | h | h | h
-    all_goals subst carrier <;> rfl
+    all_goals (subst carrier; rfl)
   · subst carrier
     rfl
 

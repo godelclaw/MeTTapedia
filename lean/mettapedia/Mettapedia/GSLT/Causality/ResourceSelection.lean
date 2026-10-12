@@ -180,11 +180,61 @@ contracts. The latter also detects newly inserted matches, including changes
 to a previously empty result. Unrelated resources need not invalidate it.
 -/
 
+/-- Revalidate a complete read, then consume an independently selected bag.
+The captured read is not itself a consumption. In particular, an empty take
+can retain an entire nonempty observation without deleting its resources. -/
+def commitWithCompleteRead (predicate : R → Bool)
+    (captured picked current : Multiset R) : Option (Multiset R) :=
+  if captured = allMatches predicate current then commit picked current else none
+
+theorem commitWithCompleteRead_eq_some_iff (predicate : R → Bool)
+    (captured picked current remaining : Multiset R) :
+    commitWithCompleteRead predicate captured picked current = some remaining ↔
+      captured = allMatches predicate current ∧ picked ≤ current ∧
+        remaining = current - picked := by
+  unfold commitWithCompleteRead
+  split
+  · next complete => simp [complete, commit_eq_some_iff]
+  · next changed => simp [changed]
+
+theorem commitWithCompleteRead_eq_none_iff (predicate : R → Bool)
+    (captured picked current : Multiset R) :
+    commitWithCompleteRead predicate captured picked current = none ↔
+      captured ≠ allMatches predicate current ∨ ¬ picked ≤ current := by
+  unfold commitWithCompleteRead
+  split
+  · next complete => simp [complete, commit_eq_none_iff]
+  · next changed => simp [changed]
+
+/-- A successful complete read with no take leaves the exact bag unchanged. -/
+@[simp] theorem commitWithCompleteRead_zero (predicate : R → Bool)
+    (current : Multiset R) :
+    commitWithCompleteRead predicate (allMatches predicate current) 0 current =
+      some current := by
+  simp [commitWithCompleteRead]
+
+/-- Framing is sound only when the new frame adds no matching observations.
+Availability alone does not supply this complete-read premise. -/
+theorem commitWithCompleteRead_add_irrelevant_frame {predicate : R → Bool}
+    {captured picked current remaining : Multiset R}
+    (success : commitWithCompleteRead predicate captured picked current = some remaining)
+    (frame : Multiset R) (irrelevant : allMatches predicate frame = 0) :
+    commitWithCompleteRead predicate captured picked (current + frame) =
+      some (remaining + frame) := by
+  obtain ⟨complete, available, residual⟩ :=
+    (commitWithCompleteRead_eq_some_iff _ _ _ _ _).mp success
+  apply (commitWithCompleteRead_eq_some_iff _ _ _ _ _).mpr
+  refine ⟨?_, le_trans available (Multiset.le_add_right _ _), ?_⟩
+  · simp only [allMatches, Multiset.filter_add] at irrelevant ⊢
+    simpa only [allMatches, irrelevant, add_zero] using complete
+  · rw [residual]
+    exact tsub_add_eq_add_tsub available
+
 /-- Revalidate the captured complete match set, then atomically consume it.
 Unlike `commit`, this checks the predicate's whole current observation. -/
 def commitAll (predicate : R → Bool) (captured current : Multiset R) :
     Option (Multiset R) :=
-  if captured = allMatches predicate current then commit captured current else none
+  commitWithCompleteRead predicate captured captured current
 
 /-- Successful complete-match publication certifies both completeness and
 the exact residual store. -/
@@ -192,32 +242,24 @@ theorem commitAll_eq_some_iff (predicate : R → Bool)
     (captured current remaining : Multiset R) :
     commitAll predicate captured current = some remaining ↔
       captured = allMatches predicate current ∧ remaining = current - captured := by
-  unfold commitAll
-  split
-  · next currentMatches =>
-      rw [commit_eq_some_iff]
-      constructor
-      · rintro ⟨_, remainingEq⟩
-        exact ⟨currentMatches, remainingEq⟩
-      · rintro ⟨_, remainingEq⟩
-        exact ⟨currentMatches ▸ allMatches_le predicate current, remainingEq⟩
-  · next changed => simp [changed]
+  rw [commitAll, commitWithCompleteRead_eq_some_iff]
+  constructor
+  · rintro ⟨currentMatches, _, remainingEq⟩
+    exact ⟨currentMatches, remainingEq⟩
+  · rintro ⟨currentMatches, remainingEq⟩
+    exact ⟨currentMatches, currentMatches ▸ allMatches_le predicate current, remainingEq⟩
 
 /-- Stale complete-match observations perform no partial consumption. -/
 theorem commitAll_eq_none_iff (predicate : R → Bool) (captured current : Multiset R) :
     commitAll predicate captured current = none ↔
       captured ≠ allMatches predicate current := by
-  unfold commitAll
-  split
-  · next currentMatches =>
-      rw [commit_eq_none_iff]
-      have available : captured ≤ current := currentMatches ▸ allMatches_le predicate current
-      constructor
-      · intro unavailable
-        exact False.elim (unavailable available)
-      · intro changed
-        exact False.elim (changed currentMatches)
-  · next changed => simp [changed]
+  rw [commitAll, commitWithCompleteRead_eq_none_iff]
+  constructor
+  · rintro (changed | unavailable)
+    · exact changed
+    · intro currentMatches
+      exact unavailable (currentMatches ▸ allMatches_le predicate current)
+  · exact Or.inl
 
 /-- A successful complete-match commit leaves no current match. -/
 theorem commitAll_leaves_no_match {predicate : R → Bool}
@@ -240,15 +282,8 @@ theorem commitAll_add_irrelevant_frame {predicate : R → Bool}
     {captured current remaining : Multiset R}
     (success : commitAll predicate captured current = some remaining)
     (frame : Multiset R) (irrelevant : allMatches predicate frame = 0) :
-    commitAll predicate captured (current + frame) = some (remaining + frame) := by
-  obtain ⟨matchCurrent, residual⟩ := (commitAll_eq_some_iff _ _ _ _).mp success
-  apply (commitAll_eq_some_iff _ _ _ _).mpr
-  constructor
-  · rw [allMatches_add, irrelevant, add_zero]
-    exact matchCurrent
-  · exact ((commit_eq_some_iff _ _ _).mp
-      (commit_add_frame ((commit_eq_some_iff _ _ _).mpr
-        ⟨matchCurrent ▸ allMatches_le predicate current, residual⟩) frame)).2
+    commitAll predicate captured (current + frame) = some (remaining + frame) :=
+  commitWithCompleteRead_add_irrelevant_frame success frame irrelevant
 
 /-- A newly inserted matching occurrence invalidates the former complete
 match claim, even when every formerly selected occurrence is still present. -/
@@ -262,6 +297,73 @@ theorem commitAll_rejects_new_matches (predicate : R → Bool)
     apply add_left_cancel (a := allMatches predicate snapshot)
     simpa only [add_zero] using same.symm
   exact newMatch noNewMatches
+
+/-! ## Transport to a separately owned resource world
+
+An injective occurrence map preserves successful takes and rejects exactly
+the same unavailable occurrences. Complete reads additionally require that
+the grounded predicate commutes with that map. These are resource-bag laws;
+they do not erase ordered match witnesses, scope receipts or execution costs.
+-/
+
+section Transport
+
+universe v
+variable {R' : Type v}
+
+omit [DecidableEq R] in
+theorem allMatches_map (f : R → R') (source : R → Bool) (target : R' → Bool)
+    (predicatePreserved : ∀ resource, target (f resource) = source resource)
+    (current : Multiset R) :
+    allMatches target (current.map f) = (allMatches source current).map f := by
+  simp only [allMatches, Multiset.filter_map, Function.comp_apply, predicatePreserved]
+
+variable [DecidableEq R']
+
+/-- Injectivity is needed for reflection of refusal, not merely for sending a
+successful consumption to a successful mapped consumption. -/
+theorem commit_map (f : R → R') (injective : Function.Injective f)
+    (picked current : Multiset R) :
+    commit (picked.map f) (current.map f) = (commit picked current).map (Multiset.map f) := by
+  have availability : picked.map f ≤ current.map f ↔ picked ≤ current := by
+    constructor
+    · intro available
+      apply Multiset.le_iff_count.mpr
+      intro resource
+      have count := Multiset.le_iff_count.mp available (f resource)
+      simpa only [Multiset.count_map_eq_count' f _ injective] using count
+    · exact Multiset.map_le_map
+  unfold commit
+  simp only [availability]
+  by_cases available : picked ≤ current
+  · rw [if_pos available, if_pos available, Option.map_some]
+    congr 1
+    conv_lhs => rw [← tsub_add_cancel_of_le available, Multiset.map_add]
+    exact add_tsub_cancel_right _ _
+  · simp [available]
+
+theorem commitWithCompleteRead_map (f : R → R') (injective : Function.Injective f)
+    (source : R → Bool) (target : R' → Bool)
+    (predicatePreserved : ∀ resource, target (f resource) = source resource)
+    (captured picked current : Multiset R) :
+    commitWithCompleteRead target (captured.map f) (picked.map f) (current.map f) =
+      (commitWithCompleteRead source captured picked current).map (Multiset.map f) := by
+  unfold commitWithCompleteRead
+  rw [allMatches_map f source target predicatePreserved]
+  simp only [Multiset.map_eq_map injective]
+  by_cases complete : captured = allMatches source current
+  · rw [if_pos complete, if_pos complete, commit_map f injective]
+  · simp [complete]
+
+theorem commitAll_map (f : R → R') (injective : Function.Injective f)
+    (source : R → Bool) (target : R' → Bool)
+    (predicatePreserved : ∀ resource, target (f resource) = source resource)
+    (captured current : Multiset R) :
+    commitAll target (captured.map f) (current.map f) =
+      (commitAll source captured current).map (Multiset.map f) :=
+  commitWithCompleteRead_map f injective source target predicatePreserved captured captured current
+
+end Transport
 
 /-- Exploration gives every selected alternative its own residual snapshot.
 The alternatives do not successively consume one shared mutable store. -/

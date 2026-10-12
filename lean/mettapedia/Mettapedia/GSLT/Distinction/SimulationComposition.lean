@@ -37,16 +37,20 @@ preserves, and which premises reflect completion through it.
   of a related target run is the observation of some source run.  It follows
   from a backward simulation (`reflectsCompletion_of_backward`), or from the
   forward simulation together with progress (`Progress`,
-  `CostSimulation.reflectsCompletion`): related source states are never
-  stuck, and a rank on source states decreases whenever a source transition is
+  `CostSimulation.reflectsCompletion`): stuck source states have stuck targets,
+  and a rank on source states decreases whenever a source transition is
   matched without moving the target, so the target cannot finish while the
   source stutters forever.  Reflection composes (`ReflectsCompletion.comp`)
   without composing ranks.  A simulation that moves the target on every
   silent and publishing transition has progress at every rank
-  (`Progress.of_positive`).
+  (`Progress.of_positive`), or with matched stuck endpoints
+  (`Progress.of_positive_and_stuck`).
 * **The interface of a compilation stage** (`Stage`, `Stage.comp`).  A stage
   discharges a relation between the actual states of its source and target
   machines, a forward cost-bounded simulation, and completion reflection.
+  Identity stages and composition obey the unit and associativity laws at the
+  actual relation and cost (`Stage.refl_comp`, `Stage.comp_refl`,
+  `Stage.comp_assoc`). These equalities do not identify retained middle paths.
   Chains of stages compose with the product cost, and every chain carries
   observation prefixes, equal final observations, reflected completion and
   preserved non-completion (`Stage.observe_prefix`, `Stage.final_eq`,
@@ -58,6 +62,12 @@ preserves, and which premises reflect completion through it.
   per-transition cost bound; and reflection, either by a backward simulation
   over the scheduled target or by progress, where a lower bound of one target
   transition per source transition is `Progress.of_positive`.
+* **Resumable services** (`Stage.ofHandler`). A service that actually computes
+  the declared callback response within a uniform bound realizes an atomic
+  call at that bound plus one entry transition. The source caller may be
+  partial or diverging; positive target work and matched stuck endpoints
+  establish completion reflection. Calls with further external interaction
+  first use `Machine.handle_close` and discharge the resulting service law.
 * **Span transport** (`segmentComposite`, `comp_segment_sourceForthOcc`,
   `comp_segment_sourceBackOcc`, `comp_future_related`).  The event-relation
   composite of the two segment relations relates segments through a middle
@@ -194,8 +204,11 @@ variable {Source Middle Target Verdict Request : Type}
 
 theorem OutcomeRel.ne_stuck {outcome : Outcome Source Verdict Request}
     {outcome' : Outcome Middle Verdict Request} (relatedOutcomes : OutcomeRel R outcome outcome')
+    (sourceNotStuck : ∀ state, outcome ≠ .stuck state)
     (stuckAt : Middle) : outcome' ≠ .stuck stuckAt := by
-  cases relatedOutcomes <;> intro same <;> cases same
+  cases relatedOutcomes with
+  | stuck related => exact False.elim (sourceNotStuck _ rfl)
+  | _ => intro same; cases same
 
 theorem OutcomeRel.finished_inv {verdict : Verdict} {outcome' : Outcome Middle Verdict Request}
     (relatedOutcomes : OutcomeRel R (.finished verdict) outcome') : outcome' = .finished verdict := by
@@ -230,6 +243,9 @@ theorem OutcomeRel.comp {outcome : Outcome Source Verdict Request}
   | suspended request relatedSaved =>
       cases second with
       | suspended _ relatedSaved' => exact .suspended request ⟨_, relatedSaved, relatedSaved'⟩
+  | stuck relatedStopped =>
+      cases second with
+      | stuck relatedStopped' => exact .stuck ⟨_, relatedStopped, relatedStopped'⟩
   | exhausted relatedResidual =>
       cases second with
       | exhausted relatedResidual' => exact .exhausted ⟨_, relatedResidual, relatedResidual'⟩
@@ -430,8 +446,25 @@ theorem comp_run_staged (first : CostSimulation source middle R cost)
         OutcomeRel S (middle.run k path.1).2 (target.run j state'').2 := by
   obtain ⟨k, bound, eventsEq, outcome⟩ := first.run_related fuel path.2.1 notStuck
   obtain ⟨j, bound', eventsEq', outcome'⟩ :=
-    second.run_related k path.2.2 fun stuckAt => outcome.ne_stuck stuckAt
+    second.run_related k path.2.2 fun stuckAt => outcome.ne_stuck notStuck stuckAt
   exact ⟨k, bound, j, bound', eventsEq, outcome, eventsEq'.trans eventsEq, outcome'⟩
+
+/-- Stuck-endpoint transport retains the actual middle run and its outcome,
+just as every other finite outcome does. -/
+theorem comp_run_staged_all (first : CostSimulation source middle R cost)
+    (firstStuck : MatchesStuck source middle R cost)
+    (second : CostSimulation middle target S cost')
+    (secondStuck : MatchesStuck middle target S cost')
+    (fuel : Nat) {state : Source} {state'' : Target} (path : Path R S state state'') :
+    ∃ count ≤ cost * fuel, ∃ count' ≤ cost' * count,
+      (middle.run count path.1).1 = (source.run fuel state).1 ∧
+        OutcomeRel R (source.run fuel state).2 (middle.run count path.1).2 ∧
+        (target.run count' state'').1 = (source.run fuel state).1 ∧
+        OutcomeRel S (middle.run count path.1).2 (target.run count' state'').2 := by
+  obtain ⟨count, bound, events, outcome⟩ := first.run_related_all firstStuck fuel path.2.1
+  obtain ⟨count', bound', events', outcome'⟩ :=
+    second.run_related_all secondStuck count path.2.2
+  exact ⟨count, bound, count', bound', events, outcome, events'.trans events, outcome'⟩
 
 /-- **The observation chain through the middle**: the source observation is a
 prefix of the middle observation at `cost` times the fuel, which is a prefix of
@@ -444,6 +477,45 @@ theorem observe_prefix_staged (first : CostSimulation source middle R cost)
   ⟨first.observe_prefix fuel path.2.1, second.observe_prefix (cost * fuel) path.2.2⟩
 
 end CostSimulation
+
+namespace MatchesStuck
+
+variable {Source Middle Target Event Verdict Request : Type}
+  {source : Machine Source Event Verdict Request} {middle : Machine Middle Event Verdict Request}
+  {target : Machine Target Event Verdict Request}
+  {R : Source → Middle → Prop} {S : Middle → Target → Prop} {cost cost' : Nat}
+
+/-- A matched stuck endpoint cannot also finish or fault at another budget.
+The proof uses determinism of runs, rather than totality of the source. -/
+theorem not_final {related : Source → Target → Prop}
+    (stuck : MatchesStuck source target related cost) {state : Source} {state' : Target}
+    (retained : related state state') (blocked : source.step state = none) (fuel : Nat) :
+    ¬ (target.observe fuel state').status.Final := by
+  intro final
+  obtain ⟨count, _, stopped, ran, _⟩ := stuck retained blocked
+  have ended : ∀ residual, (target.run count state').2 ≠ .exhausted residual := by
+    intro residual impossible
+    rw [ran] at impossible
+    cases impossible
+  have same := target.observe_eq_of_ended ended final
+  rw [same] at final
+  simp only [Machine.observe, ran, Outcome.status, Status.Final] at final
+
+/-- Matching absent transitions composes with the same product cost as
+ordinary transition simulation. The intermediate stuck endpoint is retained. -/
+theorem comp (first : MatchesStuck source middle R cost)
+    (second : CostSimulation middle target S cost')
+    (secondStuck : MatchesStuck middle target S cost') :
+    MatchesStuck source target (compose R S) (cost' * cost) := by
+  rintro state state'' ⟨mid, relatedFirst, relatedSecond⟩ blocked
+  obtain ⟨count, bound, stopped, middleRun, retainedFirst⟩ := first relatedFirst blocked
+  obtain ⟨count', bound', events, outcomes⟩ := second.run_related_all secondStuck count relatedSecond
+  rw [middleRun] at events outcomes
+  obtain ⟨stopped', targetOutcome, retainedSecond⟩ := outcomes.stuck_inv
+  exact ⟨count', bound'.trans (Nat.mul_le_mul_left _ bound), stopped',
+    Prod.ext events targetOutcome, ⟨stopped, retainedFirst, retainedSecond⟩⟩
+
+end MatchesStuck
 
 /-! ## Completion reflection -/
 
@@ -472,6 +544,21 @@ theorem ReflectsCompletion.comp {R : Source → Middle → Prop} {S : Middle →
   obtain ⟨fuel, reached⟩ := first relatedFirst fuel' final'
   exact ⟨fuel, reached.trans reached'⟩
 
+/-- Relabeling both observers preserves completion reflection. Injectivity is
+unnecessary for this direction; it is needed to recover distinctions erased
+by an observer. -/
+theorem ReflectsCompletion.relabel {Event' Verdict' Request' : Type}
+    {related : Source → Target → Prop}
+    (reflects : ReflectsCompletion source target related)
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    ReflectsCompletion (source.relabel events verdicts requests)
+      (target.relabel events verdicts requests) related := by
+  intro state state' relatedStates fuel' final'
+  obtain ⟨fuel, same⟩ := reflects relatedStates fuel'
+    ((target.relabel_final_iff events verdicts requests fuel' state').mp final')
+  exact ⟨fuel, source.relabel_observation_eq target events verdicts requests fuel fuel'
+    state state' same⟩
+
 /-- Under reflection, a source state that never completes has related target
 states that never complete. -/
 theorem ReflectsCompletion.never_completes {related : Source → Target → Prop}
@@ -494,13 +581,14 @@ theorem reflectsCompletion_of_backward {related : Source → Target → Prop} {b
     ((backward.observe_prefix fuel'
       (relatedStates : (fun state' state => related state state') state' state)).2 final).symm⟩
 
-/-- **Progress of a forward simulation**: related source states are never
-stuck, and a rank on source states decreases on every silent or publishing
-source transition that is matched without a target transition. -/
+/-- **Progress of a forward simulation**: stuck source states have stuck
+targets, and a rank on source states decreases on every silent or publishing
+source transition that is matched without a target transition. Neither
+machine is required to terminate or to have a transition in every state. -/
 structure Progress (source : Machine Source Event Verdict Request)
     (target : Machine Target Event Verdict Request) (related : Source → Target → Prop)
     (cost : ℕ) (rank : Source → ℕ) : Prop where
-  moves : ∀ {state state'}, related state state' → source.step state ≠ none
+  stuck : MatchesStuck source target related cost
   silent : ∀ {state state' next}, related state state' → source.step state = some (.silent next) →
     ∃ k ≤ cost, ∃ next', target.run k state' = ([], .exhausted next') ∧ related next next' ∧
       (k = 0 → rank next < rank state)
@@ -509,8 +597,28 @@ structure Progress (source : Machine Source Event Verdict Request)
     ∃ k ≤ cost, ∃ next', target.run k state' = (events, .exhausted next') ∧ related next next' ∧
       (k = 0 → rank next < rank state)
 
-/-- A simulation that moves the target on every silent and publishing source
-transition makes progress at every rank. -/
+/-- Matching stuck endpoints and moving the target on every silent and
+publishing source transition gives progress at every rank. -/
+theorem Progress.of_positive_and_stuck {related : Source → Target → Prop} {cost : ℕ} (rank : Source → ℕ)
+    (stuck : MatchesStuck source target related cost)
+    (silent : ∀ {state state' next}, related state state' →
+      source.step state = some (.silent next) →
+      ∃ k ≤ cost, 0 < k ∧ ∃ next', target.run k state' = ([], .exhausted next') ∧ related next next')
+    (publish : ∀ {state state' events next}, related state state' →
+      source.step state = some (.publish events next) →
+      ∃ k ≤ cost, 0 < k ∧ ∃ next', target.run k state' = (events, .exhausted next') ∧
+        related next next') :
+    Progress source target related cost rank where
+  stuck := stuck
+  silent relatedStates stepped :=
+    let ⟨k, bound, positive, next', ran, relatedNext⟩ := silent relatedStates stepped
+    ⟨k, bound, next', ran, relatedNext, fun zero => absurd zero (Nat.pos_iff_ne_zero.mp positive)⟩
+  publish relatedStates stepped :=
+    let ⟨k, bound, positive, next', ran, relatedNext⟩ := publish relatedStates stepped
+    ⟨k, bound, next', ran, relatedNext, fun zero => absurd zero (Nat.pos_iff_ne_zero.mp positive)⟩
+
+/-- The total-source specialization: positive target work on every silent and
+publishing source transition gives progress without an endpoint obligation. -/
 theorem Progress.of_positive {related : Source → Target → Prop} {cost : ℕ} (rank : Source → ℕ)
     (moves : ∀ {state state'}, related state state' → source.step state ≠ none)
     (silent : ∀ {state state' next}, related state state' →
@@ -520,14 +628,10 @@ theorem Progress.of_positive {related : Source → Target → Prop} {cost : ℕ}
       source.step state = some (.publish events next) →
       ∃ k ≤ cost, 0 < k ∧ ∃ next', target.run k state' = (events, .exhausted next') ∧
         related next next') :
-    Progress source target related cost rank where
-  moves := moves
-  silent relatedStates stepped :=
-    let ⟨k, bound, positive, next', ran, relatedNext⟩ := silent relatedStates stepped
-    ⟨k, bound, next', ran, relatedNext, fun zero => absurd zero (Nat.pos_iff_ne_zero.mp positive)⟩
-  publish relatedStates stepped :=
-    let ⟨k, bound, positive, next', ran, relatedNext⟩ := publish relatedStates stepped
-    ⟨k, bound, next', ran, relatedNext, fun zero => absurd zero (Nat.pos_iff_ne_zero.mp positive)⟩
+    Progress source target related cost rank :=
+  .of_positive_and_stuck rank (by
+    intro state state' retained blocked
+    exact (moves retained blocked).elim) silent publish
 
 /-- **A forward simulation with progress reflects completion**: a target that
 finishes or faults is matched by a source run with the same observation.  The
@@ -551,7 +655,7 @@ theorem CostSimulation.reflectsCompletion {related : Source → Target → Prop}
   | _ r ihRank =>
   intro state state' ranked relatedStates final
   cases found : source.step state with
-  | none => exact absurd found (progress.moves relatedStates)
+  | none => exact False.elim (progress.stuck.not_final relatedStates found fuel' final)
   | some transition =>
       cases transition with
       | silent next =>
@@ -627,6 +731,54 @@ theorem CostSimulation.reflectsCompletion {related : Source → Target → Prop}
           rw [same] at final
           simp only [Machine.observe, ran, Outcome.status, Status.Final] at final
 
+/-- A bounded service realizes atomic callbacks with positive target work.
+The caller may loop, fault or become stuck; only each service invocation
+must compute the stated reply within the bound. -/
+theorem Progress.close_handle {State Service Value Failure : Type}
+    (machine : Machine State Event Verdict Request)
+    (callback : Callback State Event Request Value Failure)
+    (service : Machine Service Event (Reply Value Failure) Empty) (load : Request → Service)
+    (environment : Environment Request Event Value Failure) (bound : Nat)
+    (answers : ∀ request, service.run bound (load request) =
+      ((environment request).1, .finished (environment request).2)) :
+    Progress (machine.close callback environment) (machine.handle callback service load)
+      (fun state retained => retained = .running state) (bound + 1) (fun _ => 0) := by
+  apply Progress.of_positive_and_stuck
+  · exact machine.close_handle_matchesStuck callback load service environment bound
+  · rintro state _ next rfl stepped
+    cases found : machine.step state with
+    | none => simp [Machine.close, found] at stepped
+    | some transition =>
+        cases transition <;> simp [Machine.close, found] at stepped
+        subst next
+        refine ⟨1, by omega, by omega, .running _, ?_, rfl⟩
+        simp [Machine.run, Machine.handle, found]
+  · rintro state _ events next rfl stepped
+    cases found : machine.step state with
+    | none => simp [Machine.close, found] at stepped
+    | some transition =>
+        cases transition with
+        | silent next => simp [Machine.close, found] at stepped
+        | publish published retained =>
+            simp only [Machine.close, found, Option.map_some, Option.some.injEq,
+              Transition.publish.injEq] at stepped
+            obtain ⟨rfl, rfl⟩ := stepped
+            refine ⟨1, by omega, by omega, .running retained, ?_, rfl⟩
+            simp [Machine.run, Machine.handle, found]
+        | finish verdict => simp [Machine.close, found] at stepped
+        | fail faults => simp [Machine.close, found] at stepped
+        | call request saved =>
+            simp only [Machine.close, found, Option.map_some, Option.some.injEq,
+              Transition.publish.injEq] at stepped
+            obtain ⟨rfl, rfl⟩ := stepped
+            obtain ⟨used, within, ran⟩ := machine.handle_call_run callback service load state saved request
+              found bound (environment request).1 (environment request).2 (answers request)
+            have positive : 0 < used := by
+              cases used with
+              | zero => simp [Machine.run] at ran
+              | succ used => exact Nat.succ_pos used
+            exact ⟨used, within, positive, .running _, ran, rfl⟩
+
 end Reflection
 
 /-! ## The interface of a compilation stage -/
@@ -647,6 +799,33 @@ variable {Source Middle Target Event Verdict Request : Type}
   {source : Machine Source Event Verdict Request} {middle : Machine Middle Event Verdict Request}
   {target : Machine Target Event Verdict Request}
 
+/-- Stage equality retains the state relation and the numeric cost. The
+simulation and completion-reflection fields are proofs of those contracts. -/
+@[ext] theorem ext {first second : Stage source target}
+    (related : first.related = second.related) (cost : first.cost = second.cost) :
+    first = second := by
+  cases first
+  cases second
+  cases related
+  cases cost
+  rfl
+
+/-- Every machine realizes itself at unit cost, including stuck, faulting,
+diverging and suspended executions. -/
+def refl (machine : Machine Source Event Verdict Request) : Stage machine machine where
+  related := Eq
+  cost := 1
+  forward := CostSimulation.refl machine
+  reflects := by
+    rintro _ _ rfl fuel _
+    exact ⟨fuel, rfl⟩
+
+@[simp] theorem refl_related (machine : Machine Source Event Verdict Request) :
+    (refl machine).related = Eq := rfl
+
+@[simp] theorem refl_cost (machine : Machine Source Event Verdict Request) :
+    (refl machine).cost = 1 := rfl
+
 /-- A stage from a forward and a backward simulation. -/
 def ofBackward (related : Source → Target → Prop) (cost : ℕ)
     (forward : CostSimulation source target related cost) {back : ℕ}
@@ -659,6 +838,22 @@ def ofProgress (related : Source → Target → Prop) (cost : ℕ)
     (forward : CostSimulation source target related cost) {rank : Source → ℕ}
     (progress : Progress source target related cost rank) : Stage source target :=
   ⟨related, cost, forward, forward.reflectsCompletion progress⟩
+
+/-- Expand an atomic callback into its actual bounded service machine. This
+stage preserves finite observations and reflects completed runs, and can be
+composed with other compilation stages. The service's execution equation is
+a premise to establish for the particular implementation. -/
+def ofHandler {State Service Value Failure : Type}
+    (machine : Machine State Event Verdict Request)
+    (callback : Callback State Event Request Value Failure)
+    (service : Machine Service Event (Reply Value Failure) Empty) (load : Request → Service)
+    (environment : Environment Request Event Value Failure) (bound : Nat)
+    (answers : ∀ request, service.run bound (load request) =
+      ((environment request).1, .finished (environment request).2)) :
+    Stage (machine.close callback environment) (machine.handle callback service load) :=
+  .ofProgress (fun state retained => retained = .running state) (bound + 1)
+    (machine.close_handle_costSimulation callback load service environment bound answers)
+    (Progress.close_handle machine callback service load environment bound answers)
 
 /-- **Stages compose**, along the composite relation at the product cost. -/
 def comp (first : Stage source middle) (second : Stage middle target) : Stage source target where
@@ -674,6 +869,56 @@ def comp (first : Stage source middle) (second : Stage middle target) : Stage so
 @[simp] theorem comp_cost (first : Stage source middle) (second : Stage middle target) :
     (first.comp second).cost = second.cost * first.cost :=
   rfl
+
+@[simp] theorem refl_comp (stage : Stage source target) : (refl source).comp stage = stage := by
+  apply ext
+  · exact SpanTransport.compose_eq_left stage.related
+  · exact Nat.mul_one stage.cost
+
+@[simp] theorem comp_refl (stage : Stage source target) : stage.comp (refl target) = stage := by
+  apply ext
+  · exact SpanTransport.compose_eq_right stage.related
+  · exact Nat.one_mul stage.cost
+
+/-- A chain's endpoint contract and multiplicative cost are independent of
+parenthesization. This does not assert that a stage is invertible. -/
+theorem comp_assoc {Final : Type} {last : Machine Final Event Verdict Request}
+    (first : Stage source middle) (second : Stage middle target) (third : Stage target last) :
+    (first.comp second).comp third = first.comp (second.comp third) := by
+  apply ext
+  · exact SpanTransport.compose_assoc first.related second.related third.related
+  · exact (Nat.mul_assoc third.cost second.cost first.cost).symm
+
+/-- A common observation map transports a checked stage without changing its
+actual state relation or cost account. -/
+def relabel {Event' Verdict' Request' : Type} (stage : Stage source target)
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    Stage (source.relabel events verdicts requests) (target.relabel events verdicts requests) where
+  related := stage.related
+  cost := stage.cost
+  forward := stage.forward.relabel events verdicts requests
+  reflects := stage.reflects.relabel events verdicts requests
+
+@[simp] theorem relabel_related {Event' Verdict' Request' : Type} (stage : Stage source target)
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    (stage.relabel events verdicts requests).related = stage.related := rfl
+
+@[simp] theorem relabel_cost {Event' Verdict' Request' : Type} (stage : Stage source target)
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    (stage.relabel events verdicts requests).cost = stage.cost := rfl
+
+@[simp] theorem relabel_refl {Event' Verdict' Request' : Type}
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    (refl source).relabel events verdicts requests = refl (source.relabel events verdicts requests) := by
+  apply ext <;> rfl
+
+/-- Observation transport commutes with stage composition. -/
+theorem relabel_comp {Event' Verdict' Request' : Type}
+    (first : Stage source middle) (second : Stage middle target)
+    (events : Event → Event') (verdicts : Verdict → Verdict') (requests : Request → Request') :
+    (first.comp second).relabel events verdicts requests =
+      (first.relabel events verdicts requests).comp (second.relabel events verdicts requests) := by
+  apply ext <;> rfl
 
 variable (stage : Stage source target)
 

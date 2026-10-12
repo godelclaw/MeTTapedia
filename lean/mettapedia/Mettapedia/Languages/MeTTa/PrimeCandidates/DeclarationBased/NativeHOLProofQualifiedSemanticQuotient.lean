@@ -302,7 +302,7 @@ abbrev GeneratedOSLFClaim (level : LevelExpr Nat)
       (toSemantic (executionCospan level lower x)).leftPath.length = 18 ∧
       (toSemantic (executionCospan level lower x)).rightPath.length = 10 ∧
       (toSemantic (executionCospan level lower x)).evidence.proof =
-        NativeHOLRecursiveProofNIKQualification.Controls.retainedMapFusionProof
+        NativeHOLRecursiveProofQualification.Controls.retainedMapFusionProof
 
 /-- The retained HOL induction proof and the two native executions survive
 the semantic quotient together.  Generated diamonds see the common HOTG
@@ -330,7 +330,7 @@ theorem semantic_projection (level : LevelExpr Nat)
       (toSemantic (executionCospan level lower x)).leftPath.length = 18 ∧
       (toSemantic (executionCospan level lower x)).rightPath.length = 10 ∧
       (toSemantic (executionCospan level lower x)).evidence.proof =
-        NativeHOLRecursiveProofNIKQualification.Controls.retainedMapFusionProof := by
+        NativeHOLRecursiveProofQualification.Controls.retainedMapFusionProof := by
   have coherence :=
     toSemantic_modal_and_path_coherence (executionCospan level lower x)
   have lengths := execution_path_lengths level lower x

@@ -1450,7 +1450,7 @@ def HEExpressionResidualFrontier.embedHiddenListStructural_of_covered
 
 /-- The semantic field of a hidden atom post-state is independent of its
 structural certificate. -/
-def HELiveHiddenMatchStructuralCertified.congruence
+theorem HELiveHiddenMatchStructuralCertified.congruence
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)} {left right : Atom}
     {seed : Bindings} {subst : Metta.Subst}
@@ -1461,7 +1461,7 @@ def HELiveHiddenMatchStructuralCertified.congruence
   h.structural.withSolutions h.operational.liveMerge.solutions
 
 /-- List form of `HELiveHiddenMatchStructuralCertified.congruence`. -/
-def HELiveHiddenListMatchStructuralCertified.congruence
+theorem HELiveHiddenListMatchStructuralCertified.congruence
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)} {left right : List Atom}
     {seed : Bindings} {subst : Metta.Subst}
@@ -1632,7 +1632,7 @@ The incoming projected state needs only solution equivalence; exact
 post-merge congruence for that head supplies the stronger seed presentation
 required by the existing sibling fold.  All trace and equality certificates
 are inherited from the concrete weak tail handoff. -/
-def HEProjectedTailHeadResidualSolutionPackage.toCertifiedStrongTailStateCore
+theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedStrongTailStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -1669,7 +1669,7 @@ def HEProjectedTailHeadResidualSolutionPackage.toCertifiedStrongTailStateCore
 /-- Projected form of the first-head bootstrap.  It preserves the exact
 original-prefix split while upgrading only the reached seed from solution
 equivalence to full binding congruence. -/
-def HEProjectedTailHeadResidualSolutionPackage.toProjectedStrongTailStateCore
+theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedStrongTailStateCore
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -6646,7 +6646,7 @@ structure HEProjectedHiddenStructuralConflictCallbacksAt
 /-- Forget only the post-state structural field.  This projection feeds the
 existing hidden-inner head dispatcher; reconstruction of the original
 projected head remains at that outer layer. -/
-def HEProjectedHiddenStructuralConflictCallbacksAt.toHidden
+theorem HEProjectedHiddenStructuralConflictCallbacksAt.toHidden
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -6735,7 +6735,7 @@ structure HESolutionSizeBoundedProjectedHiddenStructuralConflictKernel
 /-- Forget structural post-state evidence only after the paired recursion has
 constructed it.  All concrete matchers, merges, traces, and equality bounds
 are preserved. -/
-def HESolutionSizeBoundedProjectedHiddenStructuralConflictKernel.toHidden
+theorem HESolutionSizeBoundedProjectedHiddenStructuralConflictKernel.toHidden
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
@@ -6749,7 +6749,7 @@ def HESolutionSizeBoundedProjectedHiddenStructuralConflictKernel.toHidden
 /-- Every former full callback package projects to the minimal interface.
 This is a one-way compatibility theorem: the new recursion may target the
 weaker boundary without invalidating any already-certified full kernel. -/
-def HEProjectedLiveConflictCallbacksAt.toHidden
+theorem HEProjectedLiveConflictCallbacksAt.toHidden
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -6793,7 +6793,7 @@ def HEProjectedLiveConflictCallbacksAt.toHidden
 /-- The minimal callback family closes the original semantic head kernel
 directly; no upgrade to the over-strong hidden matcher trace interface is
 required. -/
-def HESolutionSizeBoundedProjectedHiddenLiveConflictKernel.toHeadKernel
+theorem HESolutionSizeBoundedProjectedHiddenLiveConflictKernel.toHeadKernel
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
@@ -6851,7 +6851,7 @@ structure HESolutionSizeBoundedProjectedLiveConflictKernel
     HEProjectedLiveConflictCallbacksAt trace allowed covered
 
 /-- Family-level compatibility projection. -/
-def HESolutionSizeBoundedProjectedLiveConflictKernel.toHidden
+theorem HESolutionSizeBoundedProjectedLiveConflictKernel.toHidden
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
@@ -6866,7 +6866,7 @@ def HESolutionSizeBoundedProjectedLiveConflictKernel.toHidden
 fresh finite bound for its literal lists; the callbacks remain tied to that
 same state, so this choice introduces no global maximum and no constraint on
 the live seed. -/
-def HESolutionSizeBoundedProjectedLiveConflictKernel.toLiveConflictKernel
+theorem HESolutionSizeBoundedProjectedLiveConflictKernel.toLiveConflictKernel
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
@@ -6916,7 +6916,7 @@ def HESolutionSizeBoundedProjectedLiveConflictKernel.toLiveConflictKernel
 
 /-- The bounded live-conflict family induces the exhaustive semantic head
 kernel through the existing original-head dispatcher. -/
-def HESolutionSizeBoundedProjectedLiveConflictKernel.toHeadKernel
+theorem HESolutionSizeBoundedProjectedLiveConflictKernel.toHeadKernel
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
@@ -7088,7 +7088,7 @@ structure HEProjectedLiveConflictKernelBounded
 /-- Forget the explicit finite ceiling.  Finiteness of the current literal
 state supplies a bound independently at every callback, so this erasure does
 not assume a global maximum and does not compare binding presentations. -/
-def HEProjectedLiveConflictKernelBounded.toLiveConflictKernel
+theorem HEProjectedLiveConflictKernelBounded.toLiveConflictKernel
     {trace : List (String × Metta.Atom)}
     {allowed : List (String × String)}
     (kernel : HEProjectedLiveConflictKernelBounded trace allowed) :

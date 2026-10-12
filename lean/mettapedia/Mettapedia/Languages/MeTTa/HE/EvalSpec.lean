@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.TypeCheck
+import Mettapedia.Languages.MeTTa.HE.ArgumentResult
 
 /-!
 # HE MeTTa Declarative Evaluation Specification
@@ -175,7 +176,8 @@ inductive InterpretExpression (space : Space) (dispatch : GroundedDispatch) :
                           | .expression (op :: _) => op | _ => atom),
                         isFunctionType t = false ∨ t = Atom.undefinedType)
       (h_tuple : InterpretTuple space dispatch atom b tupleResult)
-      (h_call : MettaCall space dispatch tupleResult.1 type_ tupleResult.2 callResult) :
+      (h_call : MettaCall space dispatch tupleResult.1 type_ tupleResult.2 callResult)
+      (h_nonempty : atom ≠ Atom.unit) :
       InterpretExpression space dispatch atom type_ b callResult
   /-- Spec line 184-186: Operator has incorrect type → error.
       ```
@@ -217,15 +219,8 @@ inductive InterpretFunction (space : Space) (dispatch : GroundedDispatch) :
       (h_head : EvalAtom space dispatch op opType b headResult)
       (h_err : isEmptyOrError headResult.1 = true) :
       InterpretFunction space dispatch atom opType retType b headResult
-  /-- Spec lines 315-320: Head ok, evaluate args, combine.
-      ```
-      else:
-          for ($t, $tb) in interpret_args($args, $arg_types, $space, $hb):
-              if $t == Empty or $t ~ (Error ...):
-                  $result += [($t, $tb)]
-              else:
-                  $result += [(<tuple with head $h and tail $t>, $tb)]
-      ``` -/
+  /-- Propagate a failed argument computation. Successful lists use the
+      interpreter's `Ok` packet; the contents are not tested as an error. -/
   | head_ok_tail_error (atom opType retType : Atom) (b : Bindings)
       (op : Atom) (args argTypes : List Atom) (headResult tailResult : ResultPair)
       (h_shape : atom = .expression (op :: args))
@@ -233,7 +228,7 @@ inductive InterpretFunction (space : Space) (dispatch : GroundedDispatch) :
       (h_head : EvalAtom space dispatch op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgs space dispatch args argTypes headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretFunction space dispatch atom opType retType b tailResult
   | head_ok_tail_ok (atom opType retType : Atom) (b : Bindings)
       (op : Atom) (args argTypes : List Atom) (headResult tailResult : ResultPair)
@@ -242,22 +237,20 @@ inductive InterpretFunction (space : Space) (dispatch : GroundedDispatch) :
       (h_head : EvalAtom space dispatch op opType b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false)
       (h_tail : InterpretArgs space dispatch args argTypes headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretFunction space dispatch atom opType retType b
-        (.expression (headResult.1 :: match tailResult.1 with
-          | .expression es => es | a => [a]), tailResult.2)
+        (.expression (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Interpret argument list (recursive evaluation of each arg with its type).
     Ref: spec lines 322-347 "Interpret arguments (interpret_args)".
 
     Input: args list, types list, bindings.
-    Output: one result pair (combined args as expression). -/
+    Output: a tagged argument-list success, or a propagated changed error. -/
 inductive InterpretArgs (space : Space) (dispatch : GroundedDispatch) :
     List Atom → List Atom → Bindings → ResultPair → Prop where
-  /-- Base case: empty args → return unit.
-      Implicit in spec (loop terminates when args exhausted). -/
+  /-- Empty arguments produce the tagged empty list. -/
   | nil :
-      InterpretArgs space dispatch [] [] b (Atom.unit, b)
+      InterpretArgs space dispatch [] [] b (argumentPacket [], b)
   /-- Spec lines 338-340: Head evaluates to Empty/Error AND changed → propagate.
       ```
       for ($h, $hb) in metta($atom, $type, $space, $bindings):
@@ -281,17 +274,16 @@ inductive InterpretArgs (space : Space) (dispatch : GroundedDispatch) :
       (h_head : EvalAtom space dispatch a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgs space dispatch as ts headResult.2 tailResult)
-      (h_tail_err : isEmptyOrError tailResult.1 = true) :
+      (h_tail_err : argumentsSucceeded tailResult.1 = false) :
       InterpretArgs space dispatch (a :: as) (t :: ts) b tailResult
   | cons_ok (a : Atom) (as : List Atom) (t : Atom) (ts : List Atom)
       (b : Bindings) (headResult tailResult : ResultPair)
       (h_head : EvalAtom space dispatch a t b headResult)
       (h_head_ok : isEmptyOrError headResult.1 = false ∨ headResult.1 = a)
       (h_tail : InterpretArgs space dispatch as ts headResult.2 tailResult)
-      (h_tail_ok : isEmptyOrError tailResult.1 = false) :
+      (h_tail_ok : argumentsSucceeded tailResult.1 = true) :
       InterpretArgs space dispatch (a :: as) (t :: ts) b
-        (.expression (headResult.1 :: match tailResult.1 with
-          | .expression es => es | x => [x]), tailResult.2)
+        (argumentPacket (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Interpret a tuple (recursive element-wise evaluation).
     Ref: spec lines 211-233 "Interpret tuple (interpret_tuple)".
@@ -300,10 +292,18 @@ inductive InterpretArgs (space : Space) (dispatch : GroundedDispatch) :
     Output: one result pair. -/
 inductive InterpretTuple (space : Space) (dispatch : GroundedDispatch) :
     Atom → Bindings → ResultPair → Prop where
-  /-- Single-element expression: evaluate the element.
-      Implicit base case: `(x)` → `metta(x, %Undefined%, space, bindings)`. -/
+  /-- The empty tuple is the base of tuple construction. -/
+  | nil (b : Bindings) :
+      InterpretTuple space dispatch Atom.unit b (Atom.unit, b)
+  /-- A successful single element retains its tuple wrapper. -/
   | singleton (a : Atom) (b : Bindings) (r : ResultPair)
-      (h_eval : EvalAtom space dispatch a Atom.undefinedType b r) :
+      (h_eval : EvalAtom space dispatch a Atom.undefinedType b r)
+      (h_ok : isEmptyOrError r.1 = false) :
+      InterpretTuple space dispatch (.expression [a]) b (.expression [r.1], r.2)
+  /-- Empty or Error from the single element propagates without a wrapper. -/
+  | singleton_error (a : Atom) (b : Bindings) (r : ResultPair)
+      (h_eval : EvalAtom space dispatch a Atom.undefinedType b r)
+      (h_error : isEmptyOrError r.1 = true) :
       InterpretTuple space dispatch (.expression [a]) b r
   /-- Spec lines 224-226: Head evaluates to Empty/Error → propagate.
       ```

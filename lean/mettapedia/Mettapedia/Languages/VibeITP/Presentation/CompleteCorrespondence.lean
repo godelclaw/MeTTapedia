@@ -7,7 +7,7 @@ import Mettapedia.Languages.VibeITP.Presentation.DerivedTermShape
 # Complete static Vibe-ITP kernel correspondence
 
 Every independent derivation has a presented derivation and an accepted raw
-article for the actual validated NIK package. Together with the assembled
+article for the actual validated SemanticService package. Together with the assembled
 soundness theorem this yields equivalence, uniformly over concrete hosted
 theories. A theory's declared axioms remain its premises.
 -/
@@ -76,7 +76,7 @@ theorem derives_iff_foDerivable {T : Theory} {n : Nat} (h : Hosted T n) (φ : Te
       (fun _ hr => List.mem_append.mpr (Or.inr hr)) h,
     derives_of_foDerivable h⟩
 
-/-- The independent static kernel and the actual theory-extended NIK checker
+/-- The independent static kernel and the actual theory-extended SemanticService checker
 accept exactly the same encoded theorem statements. -/
 theorem derives_iff_checkRaw {T : Theory} {n : Nat} (h : Hosted T n) (φ : Term) :
     Derives T φ ↔ ∃ article : RawProof,

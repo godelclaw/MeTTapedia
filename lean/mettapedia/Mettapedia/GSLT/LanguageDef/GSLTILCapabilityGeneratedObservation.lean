@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.CapabilityGeneratedObservationUniversal
 import Mettapedia.GSLT.LanguageDef.GSLTILObservationTransport
 
@@ -176,7 +177,7 @@ namespace CapabilityCanary
 
 open Mettapedia.Algebra
 
-abbrev system : GSLT := GSLT.discrete Bool
+abbrev system : GSLT := GSLT.stepFree Bool
 
 def route : RepresentedOperationalRoute system system :=
   RepresentedOperationalRoute.id system
@@ -195,7 +196,7 @@ def refuseAll (_ _ : WorkSpan) : Type := Empty
 
 /-- The empty source history is a genuine member of the pulled operational
 domain. -/
-def sourceEmptyMember :
+theorem sourceEmptyMember :
     (route.pullbackCapabilityDomain discipline chronological parallel permitAll
       ).contains (0 : WorkSpan) :=
   ⟨.history [] rfl⟩

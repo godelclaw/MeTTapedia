@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mathlib.Data.List.Perm.Basic
 import Mettapedia.GSLT.Core.GSLT
 
@@ -60,16 +61,8 @@ inductive DualEq : Formula → Formula → Prop where
       DualEq (.par A B) (.par A' B')
   | dual_dual (A : Formula) : DualEq (dual (dual A)) A
 
-def mllEqGSLT : GSLT where
-  Term := Formula
-  equations := ⟨DualEq, ⟨DualEq.refl, DualEq.symm, DualEq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def mllEqGSLT : GSLT :=
+  GSLT.equationOnly (Formula) (⟨DualEq, ⟨DualEq.refl, DualEq.symm, DualEq.trans⟩⟩)
 
 theorem mllEq_no_step (A B : Formula) : ¬ mllEqGSLT.Step A B :=
   fun h => h

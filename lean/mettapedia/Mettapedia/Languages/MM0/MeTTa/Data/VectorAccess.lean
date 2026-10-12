@@ -130,7 +130,7 @@ private theorem vector_condition_returns (state : State) (handle : Handle) (size
       (.expression [.symbol "<", .var "index", .var "size"]) state (boolean (index < size)) := by
   apply native_variable_call_returns program (vectorEnvironment handle size index) state state "<"
     ["index", "size"] _ (by decide) (by decide) _ (by decide)
-  simp [vectorEnvironment, environment, applySubst, Subst.lookup, natural, StdLib.apply]
+  simp [vectorEnvironment, environment, applySubst, Subst.lookup, natural]
 
 theorem vector_body_returns (state : State) (handle : Handle) (rows : List Atom) (size index : Nat)
     (represented : state.read handle = some rows) :
@@ -156,7 +156,7 @@ theorem vector_body_returns (state : State) (handle : Handle) (rows : List Atom)
       · apply match_collapse_returns program bound state state "space"
           (.expression [.var "index", .var "value"]) (.var "value") answers
         simp [bound, vectorEnvironment, environment, applySubst, Subst.lookup,
-          applySubst.applySubstList, StdLib.apply, represented, indexedQuery, answers]
+          applySubst.applySubstList, represented, indexedQuery, answers]
       · simp [SpaceSemantics.matchValue, matchAtom, bound, vectorEnvironment, environment,
           Subst.lookup, found]
       · exact found_body_returns state handle size index answers

@@ -1,6 +1,7 @@
 import Mettapedia.OSLF.Programs.NativeType
 import Mettapedia.OSLF.Programs.GradualTypes
 import Mettapedia.OSLF.Programs.HoleEvaluation
+import Mettapedia.Logic.TheoryModel.Consistency
 
 /-!
 # Completion spaces of partial programs
@@ -105,41 +106,6 @@ theorem Refines.trans {P Q R : Part} (first : Refines Completes P Q)
     (second : Refines Completes Q R) : Refines Completes P R :=
   fun _ member => second (first member)
 
-/-- **Consistency**: a set of partial programs has a joint completion. -/
-def Consistent (Φ : Set Part) : Prop :=
-  (models Completes Φ).Nonempty
-
-theorem consistent_pair_iff {P Q : Part} :
-    Consistent Completes {P, Q} ↔ ∃ t, Completes t P ∧ Completes t Q := by
-  constructor
-  · rintro ⟨t, model⟩
-    exact ⟨t, model (Or.inl rfl), model (Or.inr rfl)⟩
-  · rintro ⟨t, hP, hQ⟩
-    refine ⟨t, fun R member => ?_⟩
-    rcases member with rfl | rfl
-    · exact hP
-    · exact hQ
-
-/-- Fewer constraints stay consistent. -/
-theorem Consistent.mono {Φ Ψ : Set Part} (included : Φ ⊆ Ψ) (consistent : Consistent Completes Ψ) :
-    Consistent Completes Φ := by
-  obtain ⟨t, model⟩ := consistent
-  exact ⟨t, fun _ member => model (included member)⟩
-
-/-- Pairwise consistency. -/
-def PairwiseConsistent (Φ : Set Part) : Prop :=
-  ∀ P ∈ Φ, ∀ Q ∈ Φ, Consistent Completes {P, Q}
-
-/-- Joint consistency implies pairwise consistency. -/
-theorem Consistent.pairwise {Φ : Set Part} (consistent : Consistent Completes Φ) :
-    PairwiseConsistent Completes Φ := by
-  intro P hP Q hQ
-  apply consistent.mono
-  intro R member
-  rcases member with rfl | rfl
-  · exact hP
-  · exact hQ
-
 /-! ## Abstraction -/
 
 /-- **An abstraction** of a class `K` of complete programs: a partial
@@ -221,7 +187,7 @@ theorem gradual_refines_iff {G G' : GType} : Refines Conc G G' ↔ Prec G G' := 
 /-- Consistency of two gradual types is consistency of the two-element
 theory. -/
 theorem gradual_consistent_iff {G G' : GType} : Consistent Conc {G, G'} ↔ Consis G G' :=
-  consis_iff_models_nonempty.symm
+  consis_iff_consistent.symm
 
 /-- The general abstraction specialises to AGT's. -/
 theorem gradual_isAbstraction_iff (K : Set SType) (G : GType) :

@@ -20,6 +20,8 @@ import Mettapedia.Machines.Cursor.TailSummary
 import Mettapedia.Machines.Cursor.GenerationalSharing
 import Mettapedia.Machines.Cursor.ListCells
 import Mettapedia.Machines.Cursor.PrefixBuffer
+import Mettapedia.Machines.Cursor.ProductiveBlocks
+import Mettapedia.Machines.Cursor.ProductiveBlocksControls
 
 /-!
 # Cursor protocol algebra
@@ -49,4 +51,8 @@ read it, and `OwnedLifecycle` publishes and cancels owned answer cursors.
 `TailSummary` and `GenerationalSharing` are the summaries and storage
 generations that retained tails rely on; `ListCells` and `PrefixBuffer` are
 the PeTTa lane's list cells and constant-time `cons` onto flat lists.
+
+`ProductiveBlocks` connects the independently recursive cursor driver to the
+common prefix/residual machine interface, retaining ordered request receipts,
+the exact reply-indexed continuation and its provider charge account.
 -/

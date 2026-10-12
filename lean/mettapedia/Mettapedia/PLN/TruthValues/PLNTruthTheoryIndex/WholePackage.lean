@@ -54,7 +54,7 @@ structure TruthTheoryPackage where
     Mettapedia.PLN.Bridges.ProbabilityTheory.RevisionCredalEnvelope.RevisionCredalEnvelopeProfile
   inductionAbductionRuleFamily :
     Mettapedia.PLN.RuleFamilies.FirstOrder.InductionAbductionRuleFamilyProfile
-  assocPatChapter12Consumer : AssocPatChapter12ConsumerProfile
+  assocPatConsumer : AssocPatConsumerProfile
   meanConcentration : MeanConcentrationProfile
   informationGeometry : InformationGeometryLiftProfile
   amplitudePhase : AmplitudePhasePLNProfile
@@ -109,7 +109,7 @@ noncomputable def plnTruthTheoryPackage : TruthTheoryPackage where
     Mettapedia.PLN.Bridges.ProbabilityTheory.RevisionCredalEnvelope.revisionCredalEnvelopeProfile
   inductionAbductionRuleFamily :=
     Mettapedia.PLN.RuleFamilies.FirstOrder.inductionAbductionRuleFamilyProfile
-  assocPatChapter12Consumer := assocPatChapter12ConsumerProfile
+  assocPatConsumer := assocPatConsumerProfile
   meanConcentration := meanConcentrationProfile
   informationGeometry := informationGeometryLiftProfile
   amplitudePhase := amplitudePhasePLNProfile

@@ -282,6 +282,66 @@ theorem counted_scan_refines_pointer_slots {base : Environment Ptr} {fields : Fi
   rw [← exactCount] at result
   simpa only [membership] using result
 
+/-- An index is a hint only. Success reads the current initialized list and
+checks its value; an absent or changed entry does not establish membership. -/
+def checkedHint (values : List (Option Ptr)) (target : Option Ptr) (hint : Nat) : Bool :=
+  match values[hint]? with
+  | none => false
+  | some entry => decide (entry = target)
+
+theorem checkedHint_true_iff (values : List (Option Ptr)) (target : Option Ptr) (hint : Nat) :
+    checkedHint values target hint = true ↔ values[hint]? = some target := by
+  unfold checkedHint
+  cases values[hint]? <;> simp
+
+theorem checkedHint_mem {values : List (Option Ptr)} {target : Option Ptr} {hint : Nat}
+    (accepted : checkedHint values target hint = true) : target ∈ values := by
+  exact List.mem_of_getElem? ((checkedHint_true_iff values target hint).mp accepted)
+
+theorem checkedHint_miss {values : List (Option Ptr)} {target : Option Ptr} {hint : Nat}
+    (changed : values[hint]? ≠ some target) : checkedHint values target hint = false := by
+  cases result : checkedHint values target hint with
+  | false => rfl
+  | true => exact False.elim (changed ((checkedHint_true_iff values target hint).mp result))
+
+/-- A checked hint can stop the existing source-body scan early. Otherwise
+the ordinary bounded scan supplies the answer. The hint may originate from
+an unrelated or older list: it conveys no authority until reread here.
+This preserves the membership observation, not the number or order of reads. -/
+theorem counted_scan_refines_checked_hint {base : Environment Ptr} {fields : FieldReader Ptr}
+    {array limit needle : CExpr} {initialized spare : List (Option Ptr)} {bound : UInt32}
+    {target : Option Ptr}
+    (operands : Operands base fields array limit needle (initialized ++ spare) bound target)
+    (exactExtent : bound.toNat = initialized.length) (savedCounter : UInt32) (hint : Nat) :
+    countedLoop fields initialized.length
+      (locals base savedCounter (checkedHint initialized target hint))
+      (scanStatement array limit needle) = some (.finished (some
+        (locals base savedCounter (decide (target ∈ initialized))))) := by
+  have membership : (checkedHint initialized target hint = true ∨ target ∈ initialized) ↔
+      target ∈ initialized :=
+    ⟨fun present => present.elim checkedHint_mem id, Or.inr⟩
+  simpa only [membership] using counted_scan_refines_initialized operands exactExtent
+    savedCounter (checkedHint initialized target hint)
+
+/-- Spare capacity cannot justify a hit, even if it contains the requested
+identity. The same position in the initialized extent still misses. -/
+theorem checkedHint_spare_rejected :
+    checkedHint (Ptr := Nat) [some 7] (some 9) 1 = false ∧
+      checkedHint (Ptr := Nat) [some 7, some 9] (some 9) 1 = true := by
+  decide
+
+theorem checkedHint_changed_entry_rejected :
+    checkedHint (Ptr := Nat) [some 7, some 9] (some 9) 1 = true ∧
+      checkedHint (Ptr := Nat) [some 7, some 8] (some 9) 1 = false := by
+  decide
+
+/-- Reordering can invalidate the hint while leaving membership unchanged;
+the caller must then scan, rather than reject the identity outright. -/
+theorem checkedHint_moved_entry_needs_scan :
+    checkedHint (Ptr := Nat) [some 9, some 7] (some 9) 1 = false ∧
+      some 9 ∈ ([some 9, some 7] : List (Option Nat)) := by
+  decide
+
 #print axioms update_flag
 #print axioms locals_are_scoped_updates
 #print axioms counted_scan_refines_outer_scope
@@ -294,5 +354,9 @@ theorem counted_scan_refines_pointer_slots {base : Environment Ptr} {fields : Fi
 #print axioms counted_scan_refines_initialized
 #print axioms counted_scan_refines_membership
 #print axioms counted_scan_refines_pointer_slots
+#print axioms checkedHint_true_iff
+#print axioms checkedHint_mem
+#print axioms checkedHint_miss
+#print axioms counted_scan_refines_checked_hint
 
 end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC.IdentityScan

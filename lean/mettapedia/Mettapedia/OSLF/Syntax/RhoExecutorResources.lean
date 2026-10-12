@@ -44,8 +44,8 @@ theorem atomBag_of_strict_step {M N : Multiset (Cls [] Srt.pr)} (bag : AtomBag M
   exact atomBag_add (atomBag_of_le bag tsub_le_self) (atomBag_atoms _)
 
 /-- Firing a communication or a drop keeps a bag of atoms a bag of atoms. -/
-theorem atomBag_of_book_step {M N : Multiset (Cls [] Srt.pr)} (bag : AtomBag M)
-    (step : (bookSystem []).theory.Step M N) : AtomBag N := by
+theorem atomBag_of_dropExecution_step {M N : Multiset (Cls [] Srt.pr)} (bag : AtomBag M)
+    (step : (dropExecutionSystem []).theory.Step M N) : AtomBag N := by
   obtain ⟨site, _, _, rfl⟩ := step
   cases site <;> exact atomBag_add (atomBag_of_le bag tsub_le_self) (atomBag_atoms _)
 
@@ -68,9 +68,9 @@ theorem executorWithDrop_step_fires {free : FreeSortContext} {bound : List Strin
     (step : RhoStepWithDrop source target) {s₀ : Term sig [] Srt.pr}
     (hs : tProc (Env.empty []) source = some s₀) :
     ∃ t₀, tProc (Env.empty []) target = some t₀ ∧
-      (bookSystem []).theory.Step (atoms s₀) (atoms t₀) := by
+      (dropExecutionSystem []).theory.Step (atoms s₀) (atoms t₀) := by
   obtain ⟨t₀, ht, steps⟩ := rhoStepWithDrop_simulation sourceTyped step hs
-  exact ⟨t₀, ht, (book_step_iff s₀ t₀).mp steps⟩
+  exact ⟨t₀, ht, (dropExecution_step_iff s₀ t₀).mp steps⟩
 
 /-- **Every communication on the atom bag of an admitted closed process is an
 executor step** from a structurally congruent rearrangement, reaching a process
@@ -91,16 +91,16 @@ theorem firing_realized {free : FreeSortContext} {P : Pattern}
 /-- **Every communication or drop on the atom bag of an admitted closed process
 is a step of the executor with Drop**, from a structurally congruent
 rearrangement. -/
-theorem bookFiring_realized {free : FreeSortContext} {P : Pattern}
+theorem dropExecutionFiring_realized {free : FreeSortContext} {P : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] P)
     {s₀ : Term sig [] Srt.pr} (hs : tProc (Env.empty []) P = some s₀)
-    {N : Multiset (Cls [] Srt.pr)} (step : (bookSystem []).theory.Step (atoms s₀) N) :
+    {N : Multiset (Cls [] Srt.pr)} (step : (dropExecutionSystem []).theory.Step (atoms s₀) N) :
     ∃ P₁ P', StructuralCongruence P P₁ ∧ RhoStepWithDrop P₁ P' ∧
       ∃ t, tProc (Env.empty []) P' = some t ∧ atoms t = N := by
-  have bag := atomBag_of_book_step (atomBag_atoms s₀) step
-  have steps : Steps bookRules s₀ (realize N) :=
-    (book_step_iff s₀ (realize N)).mpr (by rw [atoms_realize bag]; exact step)
-  obtain ⟨P₁, P', congruent, executes, t, ht, same⟩ := book_reflection typed hs steps
+  have bag := atomBag_of_dropExecution_step (atomBag_atoms s₀) step
+  have steps : Steps dropExecutionRules s₀ (realize N) :=
+    (dropExecution_step_iff s₀ (realize N)).mpr (by rw [atoms_realize bag]; exact step)
+  obtain ⟨P₁, P', congruent, executes, t, ht, same⟩ := dropExecution_reflection typed hs steps
   exact ⟨P₁, P', congruent, executes, t, ht,
     by rw [atoms_invariant (cls_eq_iff.mp same), atoms_realize bag]⟩
 
@@ -128,5 +128,5 @@ end Mettapedia.OSLF.Binding.RhoPayloadPresentation
 #print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.executor_step_fires
 #print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.executorWithDrop_step_fires
 #print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.firing_realized
-#print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.bookFiring_realized
+#print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.dropExecutionFiring_realized
 #print axioms Mettapedia.OSLF.Binding.RhoPayloadPresentation.executor_square

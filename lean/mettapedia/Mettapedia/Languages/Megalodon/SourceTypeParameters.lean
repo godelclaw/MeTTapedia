@@ -4,7 +4,7 @@ import Mettapedia.Languages.Megalodon.MathdataTypeFormation
 # Declaration-order source parameters and nested type binders
 
 The source exporter numbers type parameters in application order: source
-parameter zero receives the first type argument. The Mathdata/NIK syntax
+parameter zero receives the first type argument. The Mathdata/SemanticService syntax
 uses nested type abstractions, so that same parameter has the largest bound
 index. The boundary reverses the declared interval and preserves variables
 bound inside it or outside it.

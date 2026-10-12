@@ -389,10 +389,10 @@ def matchingRequest (n : Nat) : Request n :=
     (PolarizedNeedMatchedIndex.admittedWire PolarizedNeedMatchedIndex.Examples.canonical)
 
 def holRequest (n : Nat) : Request n :=
-  .hol [] (UniformListChartNIKService.actualRequest []) Fin.elim0
+  .hol [] (UniformListChartService.actualRequest []) Fin.elim0
 
 def changedHOLRequest (n : Nat) : Request n :=
-  .hol [] { UniformListChartNIKService.actualRequest [] with
+  .hol [] { UniformListChartService.actualRequest [] with
     claim := (Mettapedia.Logic.HOL.UniformListInduction.equations,
       Mettapedia.Logic.HOL.UniformListInduction.mapLength) } Fin.elim0
 
@@ -436,9 +436,9 @@ theorem hol_returned (n : Nat) :
     (invoke common (holRequest n)).nativePayload? =
       some (holValue n, .const `HOLUniformList.prop) := by
   have crossing : Invocation common (holRequest n)
-      (.holProof (UniformListChartNIKService.actualNativeProof [])
+      (.holProof (UniformListChartService.actualNativeProof [])
         FormationSensitiveHOLUniformList.rawMapLength) :=
-    .holSuccess (UniformListChartNIKService.actual_produced [])
+    .holSuccess (UniformListChartService.actual_produced [])
       (FormationSensitiveHOLUniformList.mapLength_represented [])
   rw [(invoke_iff _ _ _).mpr crossing]
   rfl
@@ -446,7 +446,7 @@ theorem hol_returned (n : Nat) :
 theorem changed_hol_declined (n : Nat) :
     invoke common (changedHOLRequest n) = .declined (changedHOLRequest n) :=
   (invoke_iff _ _ _).mpr
-    (.holDecline (UniformListChartNIKService.missing_induction_request_rejected []))
+    (.holDecline (UniformListChartService.missing_induction_request_rejected []))
 
 theorem changed_hol_no_payload (n : Nat) :
     (invoke common (changedHOLRequest n)).nativePayload? = none := by

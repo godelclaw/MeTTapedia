@@ -36,7 +36,7 @@ overclaiming.
 
 ## Architecture
 
-Three strands, 29 files in total:
+Three strands:
 
 - **Lambda theory / native type theory** (7 files) — the OSLF/PLN categorical
   logic core.
@@ -140,6 +140,28 @@ Three strands, 29 files in total:
 - `TOGL.lean`
   - TOGL.lean formalizes Greg Meredith's theory of graphs
 
+- [`LocalSections.lean`](LocalSections.lean)
+  - Constructs the assignment presheaf on sets of observation features, with
+    restriction and re-encoding laws. Pairwise compatible sections on an arbitrary
+    cover have an explicitly constructed unique extension to its union. Conflicting
+    overlap data prevents gluing. An additional uniformity constraint is preserved
+    across inhabited overlaps, but compatible uniform descriptions on disconnected
+    contexts can have no uniform extension. Carriers and their subject identities
+    remain separate from the assignment data.
+
+- [`PartialSections.lean`](PartialSections.lean)
+  - Packages these sections into a category of partial descriptions. Arrows extend
+    the observation context while preserving its values. Context restriction is a
+    report functor, right adjoint to inclusion of reports. Compatible gluing has
+    the least-common-extension universal property; conflicting reports have no
+    common extension. A covering pair of report vocabularies recovers a
+    description, whereas restricted reports can identify distinct descriptions.
+    Feature selection pulls descriptions back along the selected vocabulary,
+    commutes with reporting and value changes, and retains all data when the
+    selection covers every original feature.
+    These are laws for assignment data, independent of any experiential
+    interpretation.
+
 - `Topos/InternalLanguage.lean`
   - Topos/InternalLanguage.lean formalizes Kripke-Joyal semantics for OSLF
 
@@ -158,26 +180,20 @@ Three strands, 29 files in total:
 
 ## Formalization status
 
-Every `.lean` file in this directory (29 files) is `sorry`-free and `admit`-free.
-There are **no source-level `axiom` declarations** here — a source grep, *not* a
-per-theorem `#print axioms` audit, so a theorem can still inherit a Mathlib axiom
-(e.g. `propext`, choice, `Quot.sound`) transitively.
+`LocalSections.lean` passes warnings-as-errors and kernel-dependency checking
+in the 2026-10-09 realization and local-view batch. Its dependencies are limited
+to `propext`, `Quot.sound` and `Classical.choice`. This qualification covers the
+new construction; the directory-wide inventory is historical.
 
-**Trusted base.** There is **no `native_decide` anywhere in this directory**, so
-nothing here compile-evaluates in place of kernel checking; nothing in this lane
-enlarges the trusted base beyond Mathlib's own.
-
-Reproduce from this directory — the `sorry`/`admit` regex below is a *raw* scan
-that also matches prose in comments and docstrings (e.g. "exchangeable processes
-admit a factorization", and the literal "(0 sorry)" note in `TOGL.lean`), so the
-authoritative figures are the comment-stripped footer counts:
+These source searches also find occurrences in comments and strings; their
+results need interpretation separately from a kernel-dependency audit:
 
 ```bash
 # sorry/admit occurrences (raw — also matches comment/string mentions):
 rg -n --glob '*.lean' '\b(sorry|admit)\b' .
-# axiom declarations (prints nothing):
+# source-level axiom declarations:
 rg -n --glob '*.lean' '^\s*(@\[[^]]*\]\s*)*(noncomputable\s+)?axiom\s' .
-# native_decide occurrences (prints nothing):
+# native_decide occurrences:
 rg -n --glob '*.lean' 'native_decide' .
 ```
 
@@ -214,4 +230,5 @@ DeFinettiCategoricalInterface -> PermutationCone -> KernelInterface
   (Springer, 2005).
 
 ---
-*Status (drafted 2026-06-22 by Claude Code, Opus 4.8): 29 .lean files, 0 with sorries.*
+*Historical inventory: 29 .lean files on 2026-06-22. `LocalSections.lean` was
+qualified with warnings-as-errors and kernel dependency checking on 2026-10-09.*

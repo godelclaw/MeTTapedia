@@ -76,7 +76,7 @@ open Mettapedia.GSLT.AdmissibleContextCongruence
 open Mettapedia.GSLT.Distinction
 open Mettapedia.GSLT.Causality.Hierarchy
 
-universe uS uT uC uR uC' uR' uO uO' uA uL uV
+universe uS uT uM uC uR uC' uR' uC'' uR'' uO uO' uA uL uV
 
 /-! ## Intervention maps, passive maps, saturated maps -/
 
@@ -87,6 +87,24 @@ structure InterventionMap {S : GSLT.{uS}} {T : GSLT.{uT}}
     (A : AdmissibleClass rulesS) (B : AdmissibleClass rulesT) where
   map : rulesS.Context → rulesT.Context
   admissible : ∀ {context : rulesS.Context}, A.Admissible context → B.Admissible (map context)
+
+/-- Retaining the same declared interventions. -/
+def InterventionMap.id {S : GSLT.{uS}} {rules : ContextualRules.{uC, uR} S}
+    (A : AdmissibleClass rules) : InterventionMap A A where
+  map := _root_.id
+  admissible allowed := allowed
+
+/-- Successive intervention translations retain admissibility through both
+boundaries. Their commuting squares remain separate obligations. -/
+def InterventionMap.comp {S : GSLT.{uS}} {M : GSLT.{uM}} {T : GSLT.{uT}}
+    {sourceRules : ContextualRules.{uC, uR} S}
+    {middleRules : ContextualRules.{uC', uR'} M}
+    {targetRules : ContextualRules.{uC'', uR''} T}
+    {A : AdmissibleClass sourceRules} {B : AdmissibleClass middleRules}
+    {C : AdmissibleClass targetRules}
+    (earlier : InterventionMap A B) (later : InterventionMap B C) : InterventionMap A C where
+  map := later.map ∘ earlier.map
+  admissible allowed := later.admissible (earlier.admissible allowed)
 
 /-- The translation on the labels of the saturated systems. -/
 def InterventionMap.label {S : GSLT.{uS}} {T : GSLT.{uT}}

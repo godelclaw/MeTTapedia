@@ -7,9 +7,12 @@ The admitted scalars are `bool` flags, signed 32-bit integers, `uint32_t`
 counters and capacities, `uint64_t` identities and guards, and object pointers
 such as `Space *`. Interpreting a native `int` as signed 32-bit storage requires
 that width in the declared native layout; it is not a claim about every C ABI.
-`CVal` is their sum.  A load at one type of a cell that holds another kind of
-value is undefined (the effective-type rule, C11 6.5p7), so each typed load
-either returns the value or reaches `undefined`.
+`CVal` is their sum. Each admitted typed-cell reader accepts its matching
+constructor and otherwise reaches `undefined` in this restricted calculus.
+This is not the complete C11 effective-type rule: C11 6.5p7 also permits
+corresponding signed/unsigned types and character accesses, among others.
+Those accesses require a byte representation and a source/type adapter;
+the sum of scalar constructors does not provide them.
 
 ## Examples
 

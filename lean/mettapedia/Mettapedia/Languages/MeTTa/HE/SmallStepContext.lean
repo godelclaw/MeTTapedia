@@ -12,9 +12,8 @@ replacement of a single element.
 The hypothesis shape is exactly M's induction hypothesis: a
 *result-preserving substitution* — every official evaluation of the
 new element is an official evaluation of the old one, with the same
-result pair.  Because the transported derivation keeps its exact result,
-the T6 shape subtleties (singleton unwrap, tail splice) do not arise:
-nothing here claims anything about the result's shape.
+result pair.  The transport retains the exact result pair, including the wrapper of a
+successful singleton tuple and the shape of nested expression elements.
 
 * `interpretTuple_swap` — tuple-path transport at any element position
   (including the head: in the tuple path the head is evaluated at
@@ -48,10 +47,15 @@ theorem interpretTuple_swap {space : Space} {d : GroundedDispatch}
       InterpretTuple space d (.expression (pre ++ x :: post)) b r
   | [], post, b, r, l, h_eq, h => by
       cases h with
-      | singleton a _ _ h_eval =>
+      | nil => simp at h_eq
+      | singleton a _ result h_eval h_ok =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
-          exact InterpretTuple.singleton x b r (h_sub b r h_eval)
+          exact InterpretTuple.singleton x b result (h_sub b result h_eval) h_ok
+      | singleton_error a _ result h_eval h_error =>
+          injection h_eq.symm with h1 h2
+          cases h1; cases h2
+          exact InterpretTuple.singleton_error x b r (h_sub b r h_eval) h_error
       | head_error =>
           -- probed: h_ne : tl ≠ [], h_isErr : isEmptyOrError r.1 = true,
           --         h_ev : EvalAtom hd ⊤ b r
@@ -80,7 +84,8 @@ theorem interpretTuple_swap {space : Space} {d : GroundedDispatch}
             (h_sub b hr h_ev) h_hok h_tl h_tok
   | p :: ps, post, b, r, l, h_eq, h => by
       cases h with
-      | singleton a _ _ h_eval =>
+      | nil => simp at h_eq
+      | singleton a _ _ _ _ | singleton_error a _ _ _ _ =>
           exfalso
           injection h_eq.symm with h1 h2
           exact absurd h2.symm (by simp)
@@ -182,7 +187,7 @@ theorem interpretExpression_swap_tuple_path
   InterpretExpression.tuple_path _ _ _ tupleResult callResult
     (by simpa using h_has)
     (interpretTuple_swap h_sub (p :: ps) rfl h_tuple)
-    h_call
+    h_call (by simp [Atom.unit])
 
 /-- `EvalAtom` transport for tuple-path `interpret_success` derivations at
 non-head positions.  All `interpret_success` side conditions about the

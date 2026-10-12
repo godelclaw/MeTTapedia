@@ -82,9 +82,13 @@ def Profile.letIntro (P : Profile S X) (xs : Option (List X)) (p : Src S X) (cr 
     List X :=
   crossOwn xs (Src.patNames p) (P.letOwn p cr)
 
-/-- Elaboration under a profile, storing its lists.  Inside a lambda, every
-spelling it owns or writes directly is quantified; inside a construct, its
-crossing names are in force (`cr`). -/
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
+/-- Elaboration under a profile, storing its lists, in a form rooted at `R`.
+Inside a lambda, every spelling it owns or writes directly is quantified;
+inside a construct, its crossing names are in force (`cr`). -/
 def elabWith (P : Profile S X) (E cr : List X) (env : REnv X) (pos : Owner) :
     Src S X → Tm S (Slot X)
   | .sym s => .sym s
@@ -96,8 +100,8 @@ def elabWith (P : Profile S X) (E cr : List X) (env : REnv X) (pos : Owner) :
         (elabWith P (P.own xs b E ++ Src.direct b ++ E) (crossIn xs (P.own xs b E) cr)
           (env.update (P.own xs b E) (pos ++ [0])) (pos ++ [0]) b)
   | .app f a => .app (elabWith P E cr env (pos ++ [0]) f) (elabWith P E cr env (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       match P.letIntro xs p cr with
       | [] =>
@@ -181,7 +185,7 @@ theorem REnv.update_nil (env : REnv X) (o : Owner) : env.update [] o = env := by
   simp [REnv.update]
 
 theorem elabMS_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner),
-    elabMS E env pos t = elabWith profM E cr env pos t
+    elabMS R E env pos t = elabWith R profM E cr env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -221,7 +225,7 @@ theorem elabMS_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owne
       rw [elabMS_eq b]
 
 theorem elabEC_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner),
-    elabEC env pos t = elabWith profEC E cr env pos t
+    elabEC R env pos t = elabWith R profEC E cr env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -261,7 +265,7 @@ theorem elabEC_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owne
       rw [elabEC_eq b]
 
 theorem elabQ_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner),
-    elabQ env pos t = elabWith profQ E cr env pos t
+    elabQ R env pos t = elabWith R profQ E cr env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -301,7 +305,7 @@ theorem elabQ_eq : ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner
       rw [elabQ_eq b]
 
 theorem elabLF_eq : ∀ (t : Src S X) (E : List X) (env : REnv X) (cr : List X) (pos : Owner),
-    elabLF env cr pos t = elabWith profLF E cr env pos t
+    elabLF R env cr pos t = elabWith R profLF E cr env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -345,9 +349,9 @@ under every profile and in every context: the explicit rule `ownRuleEC`.
 Inside it, its crossing names are in force. -/
 theorem elabWith_lam_crossing (P : Profile S X) (E cr : List X) (env : REnv X) (pos : Owner)
     (z : X) (sh : List X) (b : Src S X) :
-    elabWith P E cr env pos (.lam z (some sh) b) =
+    elabWith R P E cr env pos (.lam z (some sh) b) =
       .lam (parName z) ((ownRuleEC sh b E).map fun y => (pos ++ [0], y))
-        (elabWith P (ownRuleEC sh b E ++ Src.direct b ++ E) (crossIn (some sh) (ownRuleEC sh b E) cr)
+        (elabWith R P (ownRuleEC sh b E ++ Src.direct b ++ E) (crossIn (some sh) (ownRuleEC sh b E) cr)
           (env.update (ownRuleEC sh b E) (pos ++ [0])) (pos ++ [0]) b) := rfl
 
 /-- **A `let` with a crossing set makes every other name of its pattern
@@ -365,9 +369,9 @@ theorem profLF_letIntro_in_force (p : Src S X) {cr : List X} {y : X} (hy : y ∈
 /-- With no crossing set, the profile's default decides. -/
 theorem elabWith_lam_none (P : Profile S X) (E cr : List X) (env : REnv X) (pos : Owner) (z : X)
     (b : Src S X) :
-    elabWith P E cr env pos (.lam z none b) =
+    elabWith R P E cr env pos (.lam z none b) =
       .lam (parName z) ((P.lamOwn b E).map fun y => (pos ++ [0], y))
-        (elabWith P (P.lamOwn b E ++ Src.direct b ++ E) (crossIn none (P.lamOwn b E) cr)
+        (elabWith R P (P.lamOwn b E ++ Src.direct b ++ E) (crossIn none (P.lamOwn b E) cr)
           (env.update (P.lamOwn b E) (pos ++ [0])) (pos ++ [0]) b) := rfl
 
 /-! ## Elaborated metadata determines meaning -/
@@ -400,7 +404,7 @@ def agree (P₁ P₂ : Profile S X) : List X → List X → Src S X → Bool
 store the same lists on a program elaborate it to the same term. -/
 theorem elabWith_congr (P₁ P₂ : Profile S X) :
     ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner), agree P₁ P₂ E cr t = true →
-      elabWith P₁ E cr env pos t = elabWith P₂ E cr env pos t
+      elabWith R P₁ E cr env pos t = elabWith R P₂ E cr env pos t
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _ => rfl
@@ -459,9 +463,9 @@ profile. -/
 theorem answers_eq_of_agree [DecidableEq S] (P₁ P₂ : Profile S X) (t : Src S X)
     (E cr : List X) (env : REnv X) (pos : Owner) (h : agree P₁ P₂ E cr t = true) (d : Disc)
     (prog : S → Option (Tm S (Slot X))) (n : ℕ) :
-    answers d prog n (elabWith P₁ E cr env pos t) =
-      answers d prog n (elabWith P₂ E cr env pos t) := by
-  rw [elabWith_congr P₁ P₂ t E cr env pos h]
+    answers d prog n (elabWith R P₁ E cr env pos t) =
+      answers d prog n (elabWith R P₂ E cr env pos t) := by
+  rw [elabWith_congr R P₁ P₂ t E cr env pos h]
 
 /-! ## Fully written programs -/
 
@@ -496,7 +500,7 @@ whose `let`s only constrain, give the same term. -/
 theorem elabWith_fullyWritten_profile (P₁ P₂ : Profile S X)
     (hlet : ∀ p cr, P₁.letOwn p cr = P₂.letOwn p cr) :
     ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner), t.FullyWritten = true →
-      elabWith P₁ E cr env pos t = elabWith P₂ E cr env pos t
+      elabWith R P₁ E cr env pos t = elabWith R P₂ E cr env pos t
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _ => rfl
@@ -554,7 +558,7 @@ theorem elabWith_fullyWritten_profile (P₁ P₂ : Profile S X)
 elaborates alike under every two profiles**, lexical fresh included. -/
 theorem elabWith_allWritten_profile (P₁ P₂ : Profile S X) :
     ∀ (t : Src S X) (E cr : List X) (env : REnv X) (pos : Owner), t.AllWritten = true →
-      elabWith P₁ E cr env pos t = elabWith P₂ E cr env pos t
+      elabWith R P₁ E cr env pos t = elabWith R P₂ E cr env pos t
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _ => rfl
@@ -613,7 +617,7 @@ Rule M's same-spelled outsiders lose their hold once the crossing sets are
 written. -/
 theorem elabWith_fullyWritten_context (P : Profile S X) :
     ∀ (t : Src S X) (E E' cr : List X) (env : REnv X) (pos : Owner), t.FullyWritten = true →
-      elabWith P E cr env pos t = elabWith P E' cr env pos t
+      elabWith R P E cr env pos t = elabWith R P E' cr env pos t
   | .sym _, _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _, _ => rfl
