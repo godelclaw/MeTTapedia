@@ -1,5 +1,16 @@
 # PettaClaw — a formally verified life-loop for autonomous language agents
 
+The current sequential dispatcher contract is in `SequentialTools.lean`: every
+emitted call gets an ordered receipt, failure does not discard the suffix,
+and only explicit stop prevents execution. Runtime fixtures check real
+PeTTa/CeTTa behavior; these proofs do not certify the foreign implementation.
+`ObservedStrategy`, `AdmissionFrontier`, the fair-goal models, `IterGrounding`,
+`ToolLoopComparison`, and `ContextCore` retain historical or proposed policies
+for comparison. Their execution holds and rotating goal service are not live
+features. `CommandHolds` establishes conditional costs and limitations of the
+removed policy.
+
+
 Lean 4 models of the PettaClaw agent loop (a MeTTa/PeTTa agent runtime,
 descended from Patrick Hammer's mettaclaw example), verified
 incident-first: production failures are reconstructed as theorems, fixes
@@ -56,7 +67,7 @@ are derived from the models, deployed, and re-observed live.
 - `FeedbackSensitiveBatch.lean` — the exact boundary for precommitted command
   batches: a continuation chosen before an observation is right for every
   outcome if and only if the step is observation-invariant.
-- `ToolLoopComparison.lean` — the deployed batch admission against the
+- `ToolLoopComparison.lean` — historical batch admission against the
   call/result boundary shared by Codex and OpenCode.  The five-command envelope
   became, at `b7e8837`, a count limit that keeps the requested count only for
   batches of independent reads and runs one command of any other batch; with
@@ -72,7 +83,7 @@ are derived from the models, deployed, and re-observed live.
   a third of the time), deciding after the observation never loses expected
   value, and a batched absence claim is right only when the item is truly
   absent.
-- `IterGrounding.lean` — Iter, the deployed one-command broker and a hybrid
+- `IterGrounding.lean` — Iter, the historical one-command broker and a hybrid
   over one call/result vocabulary.  Iter gives every call exactly one result
   before the next decision, defers nothing silently and decides on complete
   evidence, but runs effects blind and trims away the originating request at
@@ -87,7 +98,7 @@ are derived from the models, deployed, and re-observed live.
   does not erase them. Dependency soundness remains a host obligation. Without
   a claim gate the false claim still goes out
   (`hybrid_without_claim_gate_admits_claim`).
-- `CommandHolds.lean` — what the deployed dependency hold and failure stop
+- `CommandHolds.lean` — what the historical dependency hold and failure stop
   cost, against a runner that executes every emitted call, as Codex,
   opencode, Claude Code and Iter do.  If the model re-proposes what was held,
   the hold is pure delay: the same commands with the same results in
@@ -235,6 +246,7 @@ LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
 lean IterGrounding.lean
 lean CommandHolds.lean
+lean SequentialTools.lean
 lean ContextCore.lean
 lean -o HeartModel.olean HeartModel.lean
 LEAN_PATH=. lean -o AsyncWait.olean AsyncWait.lean
@@ -302,7 +314,7 @@ runnable work and checkpoints ownership across restart. Reaching quiescence
 means no reaction is enabled now; it does not complete a pending external call.
 Scheduling policy can remain MeTTa over native transport and storage services.
 
-The active strategy and topic models share `AdmissionFrontier` for provider
+The historical strategy and topic models share `AdmissionFrontier` for provider
 admission. A missing broker outcome cannot disable eligible thinking. Unknown
 effects still block dependent effects; task completion checks settlement and
 the task-specific acceptance rule. This conservative strategic model treats

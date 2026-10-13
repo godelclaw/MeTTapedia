@@ -6,6 +6,11 @@ import FeedbackSensitiveBatch
 import AdmissionFrontier
 
 /-!
+
+Historical/design model: this file records a policy studied before the sequential
+tool simplification. Its holds, quotas, or scheduling assumptions are not the
+current dispatch contract. See `SequentialTools.lean` for that contract and
+`CommandHolds.lean` for the conditional costs of the removed hold policy.
 # An observed, interruptible strategy over the shared request ledger
 
 The managed host composes existing source models rather than changing their

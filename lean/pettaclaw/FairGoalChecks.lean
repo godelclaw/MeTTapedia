@@ -2,6 +2,11 @@ import FairGoalStrategy
 import GoalReviewChecks
 
 /-!
+
+Historical/design model: this file records a policy studied before the sequential
+tool simplification. Its holds, quotas, or scheduling assumptions are not the
+current dispatch contract. See `SequentialTools.lean` for that contract and
+`CommandHolds.lean` for the conditional costs of the removed hold policy.
 # Fair scheduling and request-ledger replays
 
 Shares, costs, periods and payloads here are fixture values, not deployment

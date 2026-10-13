@@ -1,4 +1,8 @@
 /-!
+
+This analysis concerns the historical hold policy. The simplified dispatcher
+uses the all-call alternative; `SequentialTools.lean` states its current
+ordered-receipt and stop contract.
 # CommandHolds — what the dependency hold and the failure stop cost
 
 A tool-using agent's model call returns a batch of commands. The host runs them in order, and
