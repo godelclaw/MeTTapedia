@@ -903,9 +903,10 @@ def hrun (cfg : Config) (turn : Nat) :
       else
         (c, .denied, false) :: stopAll rest
 
-/-- Every proposed call gets an entry; at most ten execute. -/
+/-- Every proposed call gets an entry. Dependency and outcome boundaries,
+not a numeric count, determine which calls execute. -/
 def hEntries (cfg : Config) (s : HState) (ps : List Cmd) : List (Cmd × Status × Bool) :=
-  hrun cfg s.turn s.ledger [] (ps.take maxCalls) ++ overCap (ps.drop maxCalls)
+  hrun cfg s.turn s.ledger [] ps
 
 def hRan (cfg : Config) (s : HState) (ps : List Cmd) : List Cmd :=
   ((hEntries cfg s ps).filter (·.2.2)).map (·.1)
@@ -918,8 +919,7 @@ def hStep (cfg : Config) (s : HState) (ps : List Cmd) : HState :=
   { request := s.request
     transcript := s.transcript ++ block (es.map (fun e => (e.1, e.2.1)))
     ledger := s.ledger ++ es.map (fun e => ⟨s.turn, e.1, e.2.1⟩)
-    pending := s.pending.filter (fun p => !(hRan cfg s ps).any (·.name == p.name)) ++
-      hOwed cfg s ps
+    pending := s.pending ++ hOwed cfg s ps
     executed := s.executed ++ hRan cfg s ps
     turn := s.turn + 1 }
 
@@ -1041,23 +1041,15 @@ theorem hrun_admitted (cfg : Config) (turn : Nat) :
 
 theorem hEntries_fst (cfg : Config) (s : HState) (ps : List Cmd) :
     (hEntries cfg s ps).map (·.1) = ps := by
-  simp only [hEntries, List.map_append, hrun_fst]
-  simp [overCap, List.map_map, Function.comp_def]
+  exact hrun_fst cfg s.turn s.ledger [] ps
 
 theorem hRan_eq (cfg : Config) (s : HState) (ps : List Cmd) :
-    hRan cfg s ps = ((hrun cfg s.turn s.ledger [] (ps.take maxCalls)).filter (·.2.2)).map (·.1) := by
-  simp [hRan, hEntries, List.filter_append, overCap_filter]
+    hRan cfg s ps = ((hrun cfg s.turn s.ledger [] ps).filter (·.2.2)).map (·.1) := rfl
 
 theorem hEntries_truthful (cfg : Config) (s : HState) (ps : List Cmd) :
     ∀ e ∈ hEntries cfg s ps,
       (e.2.2 = true ∧ e.2.1.nonRun = false) ∨ (e.2.2 = false ∧ e.2.1.nonRun = true) := by
-  intro e he
-  simp only [hEntries, List.mem_append] at he
-  rcases he with he | he
-  · exact hrun_truthful cfg s.turn _ _ _ e he
-  · simp only [overCap, List.mem_map] at he
-    obtain ⟨d, _, rfl⟩ := he
-    exact Or.inr ⟨rfl, rfl⟩
+  exact hrun_truthful cfg s.turn s.ledger [] ps
 
 /-! ### The headline -/
 
@@ -1108,12 +1100,7 @@ theorem hybrid_grounded_and_safe (cfg : Config) (s : HState) (ps : List Cmd)
     rw [hRan_eq]
     exact hrun_safe cfg s.turn _ _ _
   · intro e he hx
-    simp only [hEntries, List.mem_append] at he
-    rcases he with he | he
-    · exact hrun_admitted cfg s.turn _ _ _ e he hx
-    · simp only [overCap, List.mem_map] at he
-      obtain ⟨d, _, rfl⟩ := he
-      simp at hx
+    exact hrun_admitted cfg s.turn _ _ _ e he hx
 
 /-- With `blindDep` the hybrid is effect safe against every dependency
 relation, including the true one, without trusting any classification. -/
@@ -1160,7 +1147,8 @@ theorem hybrid_invariants_forever (cfg : Config) :
       exact hybrid_invariants_forever cfg evs (hTrim s) h'
 
 /-- Multi-step S2: a pending call stays pending, hence in every later view,
-until a call with the same content executes. -/
+until an explicit resolution outside this execution model. Equal command
+content never discharges an earlier occurrence by itself. -/
 theorem hybrid_nonrun_resolved_or_visible (cfg : Config) (p : Cmd) :
     ∀ (evs : List Ev) (s : HState),
       (p ∈ s.pending ∨ ∃ c ∈ s.executed, c.name = p.name) →
@@ -1171,12 +1159,7 @@ theorem hybrid_nonrun_resolved_or_visible (cfg : Config) (p : Cmd) :
   | .step ps :: evs, s, h => by
       apply hybrid_nonrun_resolved_or_visible cfg p evs
       rcases h with hp | ⟨c, hc, hn⟩
-      · by_cases hr : (hRan cfg s ps).any (·.name == p.name) = true
-        · obtain ⟨c, hc, hn⟩ := List.any_eq_true.mp hr
-          exact Or.inr ⟨c, List.mem_append_right _ hc, by simpa using hn⟩
-        · refine Or.inl (List.mem_append_left _ ?_)
-          simp only [List.mem_filter]
-          exact ⟨hp, by simpa using hr⟩
+      · exact Or.inl (List.mem_append_left _ hp)
       · exact Or.inr ⟨c, List.mem_append_left _ hc, hn⟩
 
 /-- **No silent deferral, ever.** A call that did not run in a step is, after
@@ -1192,6 +1175,13 @@ theorem hybrid_no_silent_deferral (cfg : Config) (s : HState) (ps : List Cmd)
   rcases h with h | h
   · rw [notRan] at h; exact absurd h.1 (by decide)
   · exact Or.inl h.2.2
+
+/-- Running later commands cannot silently resolve an earlier pending occurrence. -/
+theorem hybrid_pending_survives_step (cfg : Config) (s : HState) (ps : List Cmd)
+    (p : Cmd) (h : p ∈ s.pending) : p ∈ (hStep cfg s ps).pending :=
+  List.mem_append_left _ h
+
+#print axioms hybrid_pending_survives_step
 
 /-! ### Thoroughness: never less than godelclaw -/
 
@@ -1219,11 +1209,11 @@ theorem hybrid_dominates_godel (cfg : Config) (s : HState) (ps : List Cmd)
     simp [godelRanNow, hadm]
   rw [hfilter]
   by_cases hb : ps.all (·.batchable) = true
-  · have hobs : ∀ c ∈ ps.take maxCalls, c.kind = .observation := fun c hc =>
-      readsOnly c (List.mem_of_mem_take hc) (List.all_eq_true.mp hb c (List.mem_of_mem_take hc))
+  · have hobs : ∀ c ∈ ps, c.kind = .observation := fun c hc =>
+      readsOnly c hc (List.all_eq_true.mp hb c hc)
     rw [hrun_all_observations cfg s.turn hadm hok _ _ _ hobs]
-    have : godelAdmitted ps = (ps.take maxCalls).take requestedLimit := by
-      simp [godelAdmitted, godelLimit, hb, List.take_take, maxCalls, requestedLimit]
+    have : godelAdmitted ps = ps.take requestedLimit := by
+      simp [godelAdmitted, godelLimit, hb]
     rw [this]
     exact List.take_prefix _ _
   · have h1 : godelAdmitted ps = ps.take 1 := by
@@ -1235,6 +1225,16 @@ theorem hybrid_dominates_godel (cfg : Config) (s : HState) (ps : List Cmd)
         simp only [List.take, maxCalls, hrun, List.any_nil, Bool.and_false, hadm, hok,
           if_true, Bool.false_eq_true, if_false]
         simp
+
+/-- Successful admitted observations have no numerical batch ceiling.
+The host must still justify its observation and dependency declarations. -/
+theorem hybrid_all_observations (cfg : Config) (s : HState) (ps : List Cmd)
+    (hadm : ∀ L c, cfg.admit L c = true)
+    (hok : ∀ c, (cfg.exec c).failed = false)
+    (hobs : ∀ c ∈ ps, c.kind = .observation) : hRan cfg s ps = ps := by
+  exact hrun_all_observations cfg s.turn hadm hok s.ledger [] ps hobs
+
+#print axioms hybrid_all_observations
 
 /-- The trade-off of stopping at the first failure: when a batchable read
 fails, godelclaw still runs the next read and the hybrid does not (it is

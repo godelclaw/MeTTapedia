@@ -27,6 +27,12 @@ extends:
 * §6 ClaimGate — extends `AgentArchitecture.step_claim_requires_end_to_end_evidence`
   to outgoing messages; `ObservedStrategy.Snapshot` gains the visible cids.
 
+The static `admit` prefix below assumes its host has already computed the
+hold predicate. It does not discover dependencies or update them from results;
+`IterGrounding.hrun` models that result-sensitive execution. The runtime task
+projection uses paired receipts and explicit recoverable pages, without an
+ECAN policy or a prose claim gate. Those sections remain proposed extensions.
+
 Not modelled: LLM behaviour, prose claim extraction (the gate is over declared
 or detected claim cids), wall clocks, SQLite, the cache layer.
 -/

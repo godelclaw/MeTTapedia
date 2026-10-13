@@ -81,7 +81,10 @@ are derived from the models, deployed, and re-observed live.
   ledger holds, and the deferred-write/claimed-send incident replays as a
   concrete trace.  The hybrid (execute in order, stop at a failure, denial or
   dependent effect, give the rest a `notRun` result and a pending entry, pin
-  the request) has all of these together (`hybrid_grounded_and_safe`); without
+  the request) has all of these together (`hybrid_grounded_and_safe`). The hybrid
+  has no numeric command ceiling; successful admitted observations all run.
+  Pending occurrences require an explicit resolution; repeating equal content
+  does not erase them. Dependency soundness remains a host obligation. Without
   a claim gate the false claim still goes out
   (`hybrid_without_claim_gate_admits_claim`).
 - `PromptCacheLayout.lean` — why a prompt's stable text must lead: laid out
