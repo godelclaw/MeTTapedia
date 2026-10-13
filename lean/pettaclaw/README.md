@@ -87,6 +87,22 @@ are derived from the models, deployed, and re-observed live.
   does not erase them. Dependency soundness remains a host obligation. Without
   a claim gate the false claim still goes out
   (`hybrid_without_claim_gate_admits_claim`).
+- `CommandHolds.lean` — what the deployed dependency hold and failure stop
+  cost, against a runner that executes every emitted call, as Codex,
+  opencode, Claude Code and Iter do.  If the model re-proposes what was held,
+  the hold is pure delay: the same commands with the same results in
+  `1 + stops` calls instead of one (`pure_delay`).  `n` read/effect pairs take
+  `n + 1` calls and leave `n * n` pending entries that only `task-resolve`
+  clears, at most one per call (`alternation_pending`, `draining_takes_calls`,
+  `resolve_batch_never_drains`); a search with `k - 1` failing candidates
+  before the right one takes `k` calls (`failure_stop_search`).  Running every
+  call already grounds the loop (`allCall_grounded`), and no read result can
+  change an effect of its own batch (`allCall_noninterference`); the hold is
+  what lets read content choose the effect (`hold_opens_channel`).  It changes
+  what runs only when the model would revise, and with a per-call cost it
+  loses below a revision probability of `cost / G`
+  (`hold_negative_below_threshold`).  No Mathlib; its audit also lists
+  `Classical.choice`, through core list lemmas.
 - `PromptCacheLayout.lean` — why a prompt's stable text must lead: laid out
   least changeable first, the text up to any level is a prefix of the whole,
   so turns that agree on it share it with the provider's prefix cache; one
@@ -218,6 +234,7 @@ LEAN_PATH=. lean StiMass.lean
 LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
 lean IterGrounding.lean
+lean CommandHolds.lean
 lean ContextCore.lean
 lean -o HeartModel.olean HeartModel.lean
 LEAN_PATH=. lean -o AsyncWait.olean AsyncWait.lean
