@@ -10,6 +10,12 @@ for comparison. Their execution holds and rotating goal service are not live
 features. `CommandHolds` establishes conditional costs and limitations of the
 removed policy.
 
+`ReplyableMailbox.lean` specifies generated reply identities, retained task
+frames, isolation from unrelated replies, first-reply stability and inspection
+of an existing ask without republication. Native runtime fixtures separately
+check immediate replies, restart, publication failure and structured return
+routing. Check this standalone model with `lean ReplyableMailbox.lean`.
+
 
 Lean 4 models of the PettaClaw agent loop (a MeTTa/PeTTa agent runtime,
 descended from Patrick Hammer's mettaclaw example), verified
