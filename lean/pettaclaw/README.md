@@ -68,6 +68,18 @@ are derived from the models, deployed, and re-observed live.
   a third of the time), deciding after the observation never loses expected
   value, and a batched absence claim is right only when the item is truly
   absent.
+- `IterGrounding.lean` — Iter, the deployed one-command broker and a hybrid
+  over one call/result vocabulary.  Iter gives every call exactly one result
+  before the next decision, defers nothing silently and decides on complete
+  evidence, but runs effects blind and trims away the originating request at
+  its real limits.  The broker is effect-safe for every dependency relation,
+  yet a withheld command gets no receipt, the next view omits results the
+  ledger holds, and the deferred-write/claimed-send incident replays as a
+  concrete trace.  The hybrid (execute in order, stop at a failure, denial or
+  dependent effect, give the rest a `notRun` result and a pending entry, pin
+  the request) has all of these together (`hybrid_grounded_and_safe`); without
+  a claim gate the false claim still goes out
+  (`hybrid_without_claim_gate_admits_claim`).
 - `PromptCacheLayout.lean` — why a prompt's stable text must lead: laid out
   least changeable first, the text up to any level is a prefix of the whole,
   so turns that agree on it share it with the provider's prefix cache; one
@@ -77,6 +89,12 @@ are derived from the models, deployed, and re-observed live.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
+- `ContextCore.lean` — the proposed context layer over that batch rule: a
+  paired task transcript, a pending list that resolves each entry once,
+  compaction that leaves a recoverable stub for every dropped pair, an
+  integer short-term-importance pool for optional context only, a trigger-aware
+  assembler whose pins do not depend on the pool or the trigger, and a claim
+  gate under which a `notRun` result never backs a claim.
 - `ConversationContinuation.lean` — the shared managed-host request ledger:
   delivery acknowledgements, interruptions and bounded context cannot discharge
   unfinished requests; dependent effects wait for observed broker results;
@@ -191,6 +209,8 @@ LEAN_PATH=. lean RestEnergy.lean
 LEAN_PATH=. lean StiMass.lean
 LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
+lean IterGrounding.lean
+lean ContextCore.lean
 lean -o HeartModel.olean HeartModel.lean
 LEAN_PATH=. lean -o AsyncWait.olean AsyncWait.lean
 LEAN_PATH=. lean -o AdmissionFrontier.olean AdmissionFrontier.lean
