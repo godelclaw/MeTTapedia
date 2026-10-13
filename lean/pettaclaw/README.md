@@ -56,9 +56,13 @@ are derived from the models, deployed, and re-observed live.
 - `FeedbackSensitiveBatch.lean` — the exact boundary for precommitted command
   batches: a continuation chosen before an observation is right for every
   outcome if and only if the step is observation-invariant.
-- `ToolLoopComparison.lean` — the deployed five-command envelope against the
-  call/result boundary shared by Codex and OpenCode: stimulus-guarded batches,
-  a failed prefix that does not stop a mutating suffix, lossy result
+- `ToolLoopComparison.lean` — the deployed batch admission against the
+  call/result boundary shared by Codex and OpenCode.  The five-command envelope
+  became, at `b7e8837`, a count limit that keeps the requested count only for
+  batches of independent reads and runs one command of any other batch; with
+  no new input the stimulus guard alone would run the whole batch
+  (`count_limit_withholds_what_the_guard_would_run`).  Also: stimulus-guarded
+  batches, a failed prefix that does not stop a mutating suffix, lossy result
   projections, and query-then-use.  Its per-chat refinement withholds only a
   reply into a chat with unread input, or a rest, so input in one chat never
   cancels a send to another.
@@ -89,8 +93,9 @@ are derived from the models, deployed, and re-observed live.
 - `ContextAttention.lean` — an interruptible task capsule with a separate
   foreground human-event lane, exact acknowledgement, stop dominance, and
   bounded semantic retrieval that cannot erase required context.
-- `ContextCore.lean` — the proposed context layer over that batch rule: a
-  paired task transcript, a pending list that resolves each entry once,
+- `ContextCore.lean` — the proposed context layer over that batch rule, with
+  no count limit (a proposal runs in order up to the first command the host
+  holds back): a paired task transcript, a pending list that resolves each entry once,
   compaction that leaves a recoverable stub for every dropped pair, an
   integer short-term-importance pool for optional context only, a trigger-aware
   assembler whose pins do not depend on the pool or the trigger, and a claim

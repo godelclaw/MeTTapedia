@@ -15,7 +15,7 @@ Modules, each tagged with the existing `lean/pettaclaw` (or mettapedia) file it
 extends:
 
 * §1 BatchRule + TaskTranscript — extends `AdmissionFrontier` (prefixKind),
-  `ToolLoopComparison` (replaces `batchLimit _ = 5`), `IterBranches.wf`,
+  `ToolLoopComparison` (replaces its count limit), `IterBranches.wf`,
   `CodingAgent` round evidence, `StrategyTraceAudit` (adds `notRun`).
 * §2 Pending — extends `AgentMemory/EventSourcedMemory` (requeue/resolve once).
 * §3 Compaction — extends `ConversationContinuation.compact` (laws on the view)
@@ -66,44 +66,36 @@ def Status.ran : Status → Bool
 theorem Exec.toStatus_ran (e : Exec) : e.toStatus.ran = true := by
   cases e <;> rfl
 
-/-- The recommended batch rule: reads run (up to `cap`), the
-first effect runs, and the batch stops there.  Returns (run, notRun).
+/-- The batch rule: run the proposal in order up to the first command the host
+holds back (it depends on new input, or follows a failed effect it depends
+on); that command and everything after it are not run.  There is no count
+limit: with nothing held back the whole proposal runs.  Returns (run, notRun).
 It is a prefix split, so `AdmissionFrontier.admitted_prefix` is unchanged. -/
-def admit : Nat → List Cmd → List Cmd × List Cmd
-  | _, [] => ([], [])
-  | cap, c :: cs =>
-    if c.effect then ([c], cs)
-    else match cap with
-      | 0 => ([], c :: cs)
-      | n + 1 => (c :: (admit n cs).1, (admit n cs).2)
+def admit (holds : Cmd → Bool) : List Cmd → List Cmd × List Cmd
+  | [] => ([], [])
+  | c :: cs =>
+    if holds c then ([], c :: cs)
+    else (c :: (admit holds cs).1, (admit holds cs).2)
 
 /-- Nothing proposed is lost by the split: run ++ notRun = proposal. -/
-theorem admit_append (cap : Nat) (cs : List Cmd) :
-    (admit cap cs).1 ++ (admit cap cs).2 = cs := by
-  induction cs generalizing cap with
-  | nil => cases cap <;> simp [admit]
-  | cons c cs ih =>
-    cases cap with
-    | zero =>
-      by_cases h : c.effect = true <;> simp [admit, h]
-    | succ n =>
-      by_cases h : c.effect = true
-      · simp [admit, h]
-      · simp [admit, h, ih]
-
-/-- At most one effect runs per model call (the b7e8837 safety property). -/
-theorem admit_at_most_one_effect (cap : Nat) (cs : List Cmd) :
-    ((admit cap cs).1.filter (·.effect)).length ≤ 1 := by
-  induction cs generalizing cap with
+theorem admit_append (holds : Cmd → Bool) (cs : List Cmd) :
+    (admit holds cs).1 ++ (admit holds cs).2 = cs := by
+  induction cs with
   | nil => simp [admit]
   | cons c cs ih =>
-    cases cap with
-    | zero =>
-      by_cases h : c.effect = true <;> simp [admit, h]
-    | succ n =>
-      by_cases h : c.effect = true
-      · simp [admit, h]
-      · simp [admit, h, ih n]
+    by_cases h : holds c = true
+    · simp [admit, h]
+    · simp [admit, h, ih]
+
+/-- With nothing held back every proposed command runs. -/
+theorem admit_runs_whole_proposal (holds : Cmd → Bool) (cs : List Cmd)
+    (free : ∀ c ∈ cs, holds c = false) : admit holds cs = (cs, []) := by
+  induction cs with
+  | nil => rfl
+  | cons c cs ih =>
+    have here : holds c = false := free c (by simp)
+    have rest : ∀ d ∈ cs, holds d = false := fun d m => free d (by simp [m])
+    simp [admit, here, ih rest]
 
 /-- One paired transcript entry. -/
 structure Pair where
@@ -127,28 +119,28 @@ def notRunPairs (k : Nat) (rest : List Cmd) : List Pair :=
 
 /-- One model step under the batch rule: every proposed command gets exactly
 one paired result, executed ones from `exec`, the rest `notRun` (S1/S2). -/
-def step (cap k : Nat) (exec : Cmd → Exec) (s : State) (cs : List Cmd) : State :=
-  { transcript := s.transcript ++ (runPairs k exec (admit cap cs).1 ++
-                                    notRunPairs k (admit cap cs).2)
-    executed := s.executed ++ (admit cap cs).1.map (·.cid)
-    pending := s.pending ++ (admit cap cs).2.map (·.cid) }
+def step (holds : Cmd → Bool) (k : Nat) (exec : Cmd → Exec) (s : State) (cs : List Cmd) : State :=
+  { transcript := s.transcript ++ (runPairs k exec (admit holds cs).1 ++
+                                    notRunPairs k (admit holds cs).2)
+    executed := s.executed ++ (admit holds cs).1.map (·.cid)
+    pending := s.pending ++ (admit holds cs).2.map (·.cid) }
 
 /-- S5: the transcript only grows within a window. -/
-theorem step_extends (cap k : Nat) (exec : Cmd → Exec) (s : State) (cs : List Cmd) :
-    s.transcript <+: (step cap k exec s cs).transcript :=
+theorem step_extends (holds : Cmd → Bool) (k : Nat) (exec : Cmd → Exec) (s : State) (cs : List Cmd) :
+    s.transcript <+: (step holds k exec s cs).transcript :=
   List.prefix_append _ _
 
 /-- S1: the appended segment pairs every proposed command exactly once, in order. -/
-theorem step_pairs_every_proposed (cap k : Nat) (exec : Cmd → Exec) (s : State)
+theorem step_pairs_every_proposed (holds : Cmd → Bool) (k : Nat) (exec : Cmd → Exec) (s : State)
     (cs : List Cmd) :
-    ∃ new, (step cap k exec s cs).transcript = s.transcript ++ new ∧
+    ∃ new, (step holds k exec s cs).transcript = s.transcript ++ new ∧
       new.map (·.cmd) = cs := by
-  refine ⟨runPairs k exec (admit cap cs).1 ++ notRunPairs k (admit cap cs).2, rfl, ?_⟩
+  refine ⟨runPairs k exec (admit holds cs).1 ++ notRunPairs k (admit holds cs).2, rfl, ?_⟩
   simp only [runPairs, notRunPairs, List.map_append, List.map_map]
   have h1 : ((fun p : Pair => p.cmd) ∘ fun c => (⟨c, (exec c).toStatus, k⟩ : Pair)) = id := rfl
   have h2 : ((fun p : Pair => p.cmd) ∘ fun c => (⟨c, Status.notRun, k⟩ : Pair)) = id := rfl
   rw [h1, h2, List.map_id, List.map_id]
-  exact admit_append cap cs
+  exact admit_append holds cs
 
 theorem filter_ran_runPairs (k : Nat) (exec : Cmd → Exec) (run : List Cmd) :
     (runPairs k exec run).filter (·.status.ran) = runPairs k exec run := by
@@ -170,18 +162,18 @@ theorem filter_ran_notRunPairs (k : Nat) (rest : List Cmd) :
 /-- Transcript ↔ execution log on each step: the newly executed cids are exactly
 the cids of new pairs whose status witnesses a run (no silent execution, no
 phantom result).  This is the per-step core of `transcript_bijection`. -/
-theorem step_executed_are_run (cap k : Nat) (exec : Cmd → Exec) (cs : List Cmd) :
-    ((runPairs k exec (admit cap cs).1 ++ notRunPairs k (admit cap cs).2).filter
+theorem step_executed_are_run (holds : Cmd → Bool) (k : Nat) (exec : Cmd → Exec) (cs : List Cmd) :
+    ((runPairs k exec (admit holds cs).1 ++ notRunPairs k (admit holds cs).2).filter
         (·.status.ran)).map (·.cmd.cid) =
-      (admit cap cs).1.map (·.cid) := by
+      (admit holds cs).1.map (·.cid) := by
   rw [List.filter_append, filter_ran_runPairs, filter_ran_notRunPairs, List.append_nil]
   simp only [runPairs, List.map_map]
   rfl
 
 /-- Every not-run command enters Pending (§2). -/
-theorem step_notrun_enters_pending (cap k : Nat) (exec : Cmd → Exec) (s : State)
-    (cs : List Cmd) (c : Cmd) (h : c ∈ (admit cap cs).2) :
-    c.cid ∈ (step cap k exec s cs).pending := by
+theorem step_notrun_enters_pending (holds : Cmd → Bool) (k : Nat) (exec : Cmd → Exec) (s : State)
+    (cs : List Cmd) (c : Cmd) (h : c ∈ (admit holds cs).2) :
+    c.cid ∈ (step holds k exec s cs).pending := by
   simp only [step]
   exact List.mem_append_right _ (List.mem_map_of_mem h)
 
@@ -492,12 +484,17 @@ def q : Cmd := ⟨1, false⟩   -- query (read)
 def w : Cmd := ⟨2, true⟩    -- write-file (effect)
 def s : Cmd := ⟨3, true⟩    -- send (effect)
 
-/-- Under the new rule the read and the first effect run; the send is not run
-and enters Pending instead of vanishing. -/
-example : admit 8 [q, w, s] = ([q, w], [s]) := by decide
+/-- With nothing held back the read, the write and the send all run. -/
+example : admit (fun _ => false) [q, w, s] = ([q, w, s], []) := by decide
+
+/-- New input that the send depends on holds it back: it is not run and enters
+Pending instead of vanishing. -/
+def heldSend (c : Cmd) : Bool := c.cid == 3
+
+example : admit heldSend [q, w, s] = ([q, w], [s]) := by decide
 
 def s0 : State := ⟨[], [], []⟩
-def s1 : State := step 8 1311 (fun _ => .ok) s0 [q, w, s]
+def s1 : State := step heldSend 1311 (fun _ => .ok) s0 [q, w, s]
 
 example : s1.pending = [3] := by decide
 example : s1.executed = [1, 2] := by decide
@@ -507,13 +504,10 @@ passes. -/
 example : gate .withhold s1.transcript [3] = .withheld := by decide
 example : gate .withhold s1.transcript [2] = .send := by decide
 
-/-- Two effects in one proposal: only the first runs. -/
-example : admit 8 [w, s] = ([w], [s]) := by decide
-
 end ContextCore
 
 #print axioms ContextCore.admit_append
-#print axioms ContextCore.admit_at_most_one_effect
+#print axioms ContextCore.admit_runs_whole_proposal
 #print axioms ContextCore.step_pairs_every_proposed
 #print axioms ContextCore.step_executed_are_run
 #print axioms ContextCore.step_notrun_enters_pending

@@ -20,36 +20,71 @@ namespace PettaClaw.ToolLoopComparison
 
 open PettaClaw.FeedbackSensitiveBatch
 
-/-! ## A permissive, stimulus-guarded execution policy -/
+universe u
 
-inductive Mode where
-  | agent
-  | iter
-  | coding
-  | iterCoding
-deriving Repr, DecidableEq
+/-! ## Batch admission
 
-/-- Every mode retains the existing five-command envelope. The model chooses a
-short or long batch; mode selection does not force stepwise execution. -/
-def batchLimit : Mode → Nat
-  | _ => 5
+Until `b7e8837` every preset admitted up to five commands per response, and the
+model chose a short or long batch.  With the observed strategy on, as both
+deployed agents run it, the broker keeps the requested count only for a batch
+made entirely of host-state reads it lists as independent
+(`strategy_host.INDEPENDENT_READS`); any other batch runs its first command and
+the rest is recorded once as deferred.  This count limit is not what grounds
+the loop.  The dispatcher already withholds dependent commands at new input and
+after a failed send or deletion (`runUnlessStimulus` and `runFresh` below), and
+`IterGrounding` proves result totality, no silent deferral and complete
+evidence for a runner that executes every proposed command in order and pairs
+each with its result.  The theorems here state the limit exactly and what it
+withholds. -/
 
-def admitBatch {Command : Type*} (mode : Mode) (commands : List Command) :
-    List Command :=
-  commands.take (batchLimit mode)
+/-- The requested count, at least one (`skills.pl` `command_batch_limit`). -/
+def staticLimit (requested : Nat) : Nat := max 1 requested
 
-theorem every_mode_retains_five_commands {Command : Type*}
-    (mode : Mode)
+/-- The deployed count limit (`strategy_host.batch_limit`). -/
+def brokerLimit {Command : Type u} (independent : Command → Bool)
+    (requested : Nat) (commands : List Command) : Nat :=
+  if !commands.isEmpty && commands.all independent then staticLimit requested
+  else 1
+
+def admitBatch {Command : Type u} (independent : Command → Bool)
+    (requested : Nat) (commands : List Command) : List Command :=
+  commands.take (brokerLimit independent requested commands)
+
+/-- Before the count limit, and with the observed strategy off, a response
+kept five commands. -/
+theorem static_envelope_retains_five_commands {Command : Type u}
     (first second third fourth fifth : Command) (rest : List Command) :
-    admitBatch mode
-      ([first, second, third, fourth, fifth] ++ rest) =
+    ([first, second, third, fourth, fifth] ++ rest).take (staticLimit 5) =
       [first, second, third, fourth, fifth] := by
-  cases mode <;> simp [admitBatch, batchLimit]
+  simp [staticLimit]
+
+/-- A batch of independent reads keeps the requested count. -/
+theorem independent_reads_keep_the_requested_count {Command : Type u}
+    (independent : Command → Bool) (requested : Nat) (commands : List Command)
+    (reads : ∀ c ∈ commands, independent c = true) :
+    admitBatch independent requested commands =
+      commands.take (staticLimit requested) := by
+  cases commands with
+  | nil => simp [admitBatch]
+  | cons c cs =>
+      have all : (c :: cs).all independent = true := List.all_eq_true.mpr reads
+      simp only [admitBatch, brokerLimit]
+      simp [all]
+
+/-- Any other batch runs its first command only. -/
+theorem any_other_batch_runs_its_first_command {Command : Type u}
+    (independent : Command → Bool) (requested : Nat) (commands : List Command)
+    (other : ∃ c ∈ commands, independent c = false) :
+    admitBatch independent requested commands = commands.take 1 := by
+  obtain ⟨c, member, notRead⟩ := other
+  have some : commands.all independent = false :=
+    List.all_eq_false.mpr ⟨c, member, by simp [notRead]⟩
+  simp [admitBatch, brokerLimit, some]
 
 /-- The revision witnessed immediately before each command. Execution stops at
 the first revision which differs from the context frontier captured for the
 model turn. -/
-def runUnlessStimulus {Command : Type*} (captured : Nat) :
+def runUnlessStimulus {Command : Type u} (captured : Nat) :
     List (Nat × Command) → List Command
   | [] => []
   | (live, command) :: rest =>
@@ -59,7 +94,7 @@ def runUnlessStimulus {Command : Type*} (captured : Nat) :
         []
 
 /-- With no new stimulus the guard preserves the whole chosen batch. -/
-theorem stable_frontier_executes_full_batch {Command : Type*}
+theorem stable_frontier_executes_full_batch {Command : Type u}
     (captured : Nat) (commands : List Command) :
     runUnlessStimulus captured
       (commands.map (fun command => (captured, command))) = commands := by
@@ -68,7 +103,7 @@ theorem stable_frontier_executes_full_batch {Command : Type*}
   | cons command rest ih => simp [runUnlessStimulus, ih]
 
 /-- A changed frontier withholds exactly the suffix which has not yet run. -/
-theorem changed_frontier_withholds_unexecuted_suffix {Command : Type*}
+theorem changed_frontier_withholds_unexecuted_suffix {Command : Type u}
     (captured changed : Nat) (different : changed ≠ captured)
     (executed : List Command) (next : Command)
     (suffix : List (Nat × Command)) :
@@ -82,10 +117,22 @@ theorem changed_frontier_withholds_unexecuted_suffix {Command : Type*}
 /-- The guarded policy is strictly less restrictive than a universal
 one-command cap on a stable two-command trace. -/
 theorem stable_guard_preserves_a_batch_rejected_by_hard_single_step
-    {Command : Type*} (first second : Command) :
+    {Command : Type u} (first second : Command) :
     runUnlessStimulus 7 [(7, first), (7, second)] = [first, second] ∧
       [first, second].take 1 = [first] := by
   simp [runUnlessStimulus]
+
+/-- What the count limit withholds: with no new input the stimulus guard runs
+the whole chosen batch, while the deployed limit runs one command of any batch
+that is not made entirely of independent reads. -/
+theorem count_limit_withholds_what_the_guard_would_run {Command : Type u}
+    (independent : Command → Bool) (requested captured : Nat)
+    (commands : List Command) (other : ∃ c ∈ commands, independent c = false) :
+    runUnlessStimulus captured
+        (commands.map (fun command => (captured, command))) = commands ∧
+      admitBatch independent requested commands = commands.take 1 :=
+  ⟨stable_frontier_executes_full_batch captured commands,
+    any_other_batch_runs_its_first_command independent requested commands other⟩
 
 /-- Cooperative interruption occurs only between effects. A stimulus arriving
 inside a non-preemptible command cannot be acted on before that command ends. -/
@@ -165,7 +212,7 @@ theorem rejected_prefix_does_not_bar_mutating_suffix :
 /-- A bounded suffix projection cannot, in general, preserve facts that differ
 only in the discarded prefix. This is the abstract failure mode of retaining
 only the last characters of a multi-command result bundle. -/
-def lastOne {α : Type*} (items : List α) : List α :=
+def lastOne {α : Type u} (items : List α) : List α :=
   items.drop (items.length - 1)
 
 theorem result_suffix_projection_is_not_injective :
@@ -296,7 +343,7 @@ theorem rest_waits_on_unread_input (unread : List Nat) (after : List Step)
 /-- Where the global guard withholds a whole suffix of steps chosen before
 newer input arrived, the refinement keeps every step that input cannot
 affect. -/
-theorem refinement_keeps_what_the_global_guard_withheld {Command : Type*}
+theorem refinement_keeps_what_the_global_guard_withheld {Command : Type u}
     (captured changed : Nat) (different : changed ≠ captured)
     (commands : List Command) (unread : List Nat) (steps : List Step)
     (unrelated : ∀ step ∈ steps, unaffected unread step = true) :
@@ -310,7 +357,10 @@ theorem refinement_keeps_what_the_global_guard_withheld {Command : Type*}
 
 end PettaClaw.ToolLoopComparison
 
-#print axioms PettaClaw.ToolLoopComparison.every_mode_retains_five_commands
+#print axioms PettaClaw.ToolLoopComparison.static_envelope_retains_five_commands
+#print axioms PettaClaw.ToolLoopComparison.independent_reads_keep_the_requested_count
+#print axioms PettaClaw.ToolLoopComparison.any_other_batch_runs_its_first_command
+#print axioms PettaClaw.ToolLoopComparison.count_limit_withholds_what_the_guard_would_run
 #print axioms PettaClaw.ToolLoopComparison.stable_frontier_executes_full_batch
 #print axioms PettaClaw.ToolLoopComparison.changed_frontier_withholds_unexecuted_suffix
 #print axioms PettaClaw.ToolLoopComparison.stable_guard_preserves_a_batch_rejected_by_hard_single_step

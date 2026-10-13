@@ -21,9 +21,9 @@ while an act-then-observe loop does not.
   with probability at most `(1 - ε) ^ k`, while act-then-observe is right
   with probability one (`observed_batch_success_eq_one`).
 * `five_step_blind_batch_is_right_less_than_a_third`: five such steps with
-  `ε = 1/5` — the runtime's five-command envelope
-  (`ToolLoopComparison.every_mode_retains_five_commands`) — are all right
-  less than a third of the time.
+  `ε = 1/5` — the runtime's five-command envelope before its count limit
+  (`ToolLoopComparison.static_envelope_retains_five_commands`) — are all
+  right less than a third of the time.
 * `observed_value_ge_blind_value`, `observed_value_gt_blind_value`: for any
   rewards, deciding after the observation is never worse in expectation than
   deciding before it, and is strictly better when two possible outcomes have
@@ -266,7 +266,10 @@ inductive SearchOutcome where
   | found
   | silentlyBroken
   | trulyAbsent
-deriving DecidableEq, Fintype
+deriving DecidableEq
+
+instance : Fintype SearchOutcome :=
+  ⟨{.found, .silentlyBroken, .trulyAbsent}, fun outcome => by cases outcome <;> decide⟩
 
 inductive SearchFollowup where
   | reportFound
