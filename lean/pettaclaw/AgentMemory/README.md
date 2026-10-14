@@ -242,6 +242,15 @@ A `children` function splits each community into sub-communities. `hsum` and
   member, at most one per level.
 - `stale_iff` (S): a cached summary is stale exactly when a member changed after
   its recorded latest time.
+- `revisionStamp_eq_iff`: dependency/revision sets agree exactly when membership
+  agrees and every member's revision agrees. This handles changing membership,
+  which the timestamp result fixes in advance.
+- `changed_membership_changes_stamp`, `changed_dependency_changes_stamp`,
+  `added_member_changes_stamp`, `removed_member_changes_stamp`: linked source
+  additions, removals and revisions invalidate the structural stamp.
+- `unrelated_revision_does_not_change_stamp`: changes outside the dependencies
+  leave the stamp unchanged. `latest_time_misses_removed_membership` gives a
+  concrete counterexample to using the maximum timestamp alone after removal.
 
 ## Realization in CeTTa
 

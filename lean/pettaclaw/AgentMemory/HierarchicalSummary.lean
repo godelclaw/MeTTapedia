@@ -173,4 +173,92 @@ theorem stale_iff (updated : ι → ℕ) (c : Finset ι) (cached : ℕ) :
     push Not at hno
     exact absurd h (not_lt.mpr (Finset.sup_le fun i hi => hno i hi))
 
+/-! ## Revision stamps, including changing membership
+
+The timestamp theorem above fixes the member set. The native hierarchy also
+allows links to be added or removed, and records node and child-summary
+revisions. Its freshness test compares sets of dependency/revision pairs.
+This model characterizes that test; it does not prove summary prose accurate,
+or verify the evaluator, store transport, or native implementation.
+-/
+
+section Revisions
+
+variable {D : Type*} [DecidableEq D]
+
+def revisionStamp (members : Finset D) (revision : D → ℕ) : Finset (D × ℕ) :=
+  members.image fun d => (d, revision d)
+
+theorem mem_revisionStamp (members : Finset D) (revision : D → ℕ) (d : D) (r : ℕ) :
+    (d, r) ∈ revisionStamp members revision ↔ d ∈ members ∧ r = revision d := by
+  simp [revisionStamp, Prod.ext_iff, eq_comm]
+
+theorem revisionStamp_eq_iff (a b : Finset D) (ra rb : D → ℕ) :
+    revisionStamp a ra = revisionStamp b rb ↔ a = b ∧ ∀ d ∈ a, ra d = rb d := by
+  constructor
+  · intro h
+    have hab : a = b := by
+      ext d
+      constructor
+      · intro hd
+        have hm : (d, ra d) ∈ revisionStamp b rb := h ▸ (mem_revisionStamp a ra d (ra d)).mpr ⟨hd, rfl⟩
+        exact ((mem_revisionStamp b rb d (ra d)).mp hm).1
+      · intro hd
+        have hm : (d, rb d) ∈ revisionStamp a ra := h.symm ▸ (mem_revisionStamp b rb d (rb d)).mpr ⟨hd, rfl⟩
+        exact ((mem_revisionStamp a ra d (rb d)).mp hm).1
+    refine ⟨hab, ?_⟩
+    intro d hd
+    have hm : (d, ra d) ∈ revisionStamp b rb := h ▸ (mem_revisionStamp a ra d (ra d)).mpr ⟨hd, rfl⟩
+    exact ((mem_revisionStamp b rb d (ra d)).mp hm).2
+  · rintro ⟨rfl, h⟩
+    apply Finset.image_congr
+    intro d hd
+    simp [h d hd]
+
+theorem changed_membership_changes_stamp (a b : Finset D) (ra rb : D → ℕ)
+    (h : a ≠ b) : revisionStamp a ra ≠ revisionStamp b rb := by
+  intro heq
+  exact h ((revisionStamp_eq_iff a b ra rb).mp heq).1
+
+theorem changed_dependency_changes_stamp (a : Finset D) (ra rb : D → ℕ)
+    (d : D) (hd : d ∈ a) (h : ra d ≠ rb d) :
+    revisionStamp a ra ≠ revisionStamp a rb := by
+  intro heq
+  exact h (((revisionStamp_eq_iff a a ra rb).mp heq).2 d hd)
+
+theorem unrelated_revision_does_not_change_stamp (a : Finset D) (ra rb : D → ℕ)
+    (h : ∀ d ∈ a, ra d = rb d) : revisionStamp a ra = revisionStamp a rb :=
+  (revisionStamp_eq_iff a a ra rb).mpr ⟨rfl, h⟩
+
+theorem added_member_changes_stamp (a : Finset D) (r : D → ℕ) (d : D) (hd : d ∉ a) :
+    revisionStamp a r ≠ revisionStamp (insert d a) r := by
+  apply changed_membership_changes_stamp
+  intro h
+  exact hd (h.symm ▸ Finset.mem_insert_self d a)
+
+theorem removed_member_changes_stamp (a : Finset D) (r : D → ℕ) (d : D) (hd : d ∈ a) :
+    revisionStamp a r ≠ revisionStamp (a.erase d) r := by
+  apply changed_membership_changes_stamp
+  intro h
+  have hm : d ∈ a.erase d := h ▸ hd
+  simp at hm
+
+/-- The latest timestamp can remain unchanged when an older member disappears. -/
+theorem latest_time_misses_removed_membership :
+    ({1, 2} : Finset ℕ).sup (fun d => if d = 1 then 5 else 4) =
+      ({1} : Finset ℕ).sup (fun d => if d = 1 then 5 else 4) ∧
+    revisionStamp ({1, 2} : Finset ℕ) (fun d => if d = 1 then 5 else 4) ≠
+      revisionStamp ({1} : Finset ℕ) (fun d => if d = 1 then 5 else 4) := by
+  decide
+
+end Revisions
+
+#print axioms revisionStamp_eq_iff
+#print axioms changed_membership_changes_stamp
+#print axioms changed_dependency_changes_stamp
+#print axioms unrelated_revision_does_not_change_stamp
+#print axioms added_member_changes_stamp
+#print axioms removed_member_changes_stamp
+#print axioms latest_time_misses_removed_membership
+
 end AgentMemory.Summary
