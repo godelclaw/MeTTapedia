@@ -217,6 +217,13 @@ are derived from the models, deployed, and re-observed live.
   irreflexivity, transitivity, totality, and injected-over-never precedence.
 - `StiFloorDecay.lean` — the concrete fixed-point floor-division decay model
   and its contraction and loss bounds.
+- `ECANReal.lean` — the real-valued STI/MTI/LTI specification for the independent
+  `godelclaw/metta-attention` native library: separate reserve conservation,
+  identity-targeted replacement, elapsed-time retention and complete-bank
+  composition, adjacent consolidation, non-overshooting smoothing, and exact
+  half-life calibration. These ideal real-number laws do not certify the
+  floating-point runtime, C math functions, or recall quality. Zero half-life
+  disables decay; reserves can overdraw without withholding stimulation.
 
 Most models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -250,6 +257,7 @@ LEAN_PATH=. lean RestEnergy.lean
 LEAN_PATH=. lean StiMass.lean
 LEAN_PATH=. lean StiFloor.lean
 LEAN_PATH=. lean StiFloorDecay.lean
+lean ECANReal.lean
 lean IterGrounding.lean
 lean CommandHolds.lean
 lean SequentialTools.lean
