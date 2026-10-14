@@ -223,6 +223,14 @@ constant `c`.
   exactly to items that some ranking returned, at least `1/(c + m)` for rank
   `m` in any one ranking, and at most `|rankings|/(c + 1)`.
 
+### `MemoryRefinement.lean` (`AgentMemory.Refinement`)
+
+Agent-owned semantic edits keep their record identity and retain original text.
+Operation identities prevent a late embedding completion from undoing a forget
+or overwriting a newer edit. Hierarchical retirement survives automatic capture;
+explicit restoration reactivates a node. These laws cover state and provenance,
+not the accuracy of summary text. Native runtime tests check restart recovery.
+
 ### `HierarchicalSummary.lean` (`AgentMemory.Summary`)
 
 A `children` function splits each community into sub-communities. `hsum` and
