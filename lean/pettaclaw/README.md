@@ -1,5 +1,13 @@
 # PettaClaw — a formally verified life-loop for autonomous language agents
 
+This is a legacy source location, not a home for new shared mathematics.
+Place new results by the subject of their main theorem in the
+`Mettapedia` library: cognitive mechanisms in `CogArch`, concurrency contracts
+in `Machines`, stochastic transport in `ProbabilityTheory/MarkovChain`, and
+generic retrieval in `Algorithms/Retrieval`. Cross-subject results belong in
+explicit bridges. Concrete agent names may identify instance or runtime
+conformance modules; they do not determine the home of reusable theory.
+
 The current sequential dispatcher contract is in `SequentialTools.lean`: every
 emitted call gets an ordered receipt, failure does not discard the suffix,
 and only explicit stop prevents execution. Runtime fixtures check real
