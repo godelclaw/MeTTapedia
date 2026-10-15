@@ -1,4 +1,4 @@
-import Mettapedia.CognitiveArchitecture.GuidedAlgorithmicMemory
+import Mettapedia.CogArch.GuidedAlgorithmicMemory
 import Mettapedia.Logic.WorldModel.Algorithmic
 import Mettapedia.UniversalAI.ZetaProgramPrior
 
@@ -36,8 +36,8 @@ separate compression, retention, guide learning, and machine plurality.
 namespace Mettapedia.Logic.WorldModel.CompressionTransfer
 
 open KolmogorovComplexity
-open Mettapedia.CognitiveArchitecture.ProblemSolvingMethods
-open Mettapedia.CognitiveArchitecture.GuidedAlgorithmicMemory
+open Mettapedia.CogArch.ProblemSolvingMethods
+open Mettapedia.CogArch.GuidedAlgorithmicMemory
 
 /-- There is a strict executable decomposition of this one source. -/
 def HasWithinObjectCompression

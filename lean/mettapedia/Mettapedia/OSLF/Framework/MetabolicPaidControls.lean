@@ -21,8 +21,8 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Metabolic
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourcePredation
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourceClaimHistory
-open Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
+open Mettapedia.CogArch.Consciousness.ArchitecturalIndicators
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
 open Mettapedia.OSLF.Framework.MetabolicPaidTrace
 open Mettapedia.OSLF.Framework.MetabolicPaidLearner
 open Mettapedia.GSLT.Causality Mettapedia.GSLT.Causality.ProbeCampaign

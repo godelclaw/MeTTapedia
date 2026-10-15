@@ -1,4 +1,4 @@
-import Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
+import Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
 
 /-!
 # Actual paid learner events before metabolic coupling
@@ -20,8 +20,8 @@ open Mettapedia.GSLT.Causality
 open Mettapedia.GSLT.Causality.ResourceInteraction
 open Mettapedia.GSLT.Causality.OccurrenceHistory
 open Mettapedia.GSLT.Causality.ProbeCampaign
-open Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
+open Mettapedia.CogArch.Consciousness.ArchitecturalIndicators
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
 
 abbrev AssayResources := AssayProbeDelivery.Resources Bool Nat Nat ⊕ Unit
 

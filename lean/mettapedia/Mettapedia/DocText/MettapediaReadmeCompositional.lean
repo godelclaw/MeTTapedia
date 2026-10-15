@@ -61,7 +61,7 @@ inductive MettapediaClaim where
   | subprojectGF
   | subprojectProcessCalculi
   | subprojectCategoryTheory
-  | subprojectCognitiveArchitecture
+  | subprojectCogArch
   | subprojectOrderedSemigroups
   | mettailRoundtripChecksExportBuildRewrite
   | mettailBenchmarkRunsThreeRounds
@@ -142,8 +142,8 @@ def renderMettapediaClaim : MettapediaClaim → String
   | .subprojectCategoryTheory =>
       let subj := properNameNP "CategoryTheory"
       mkPresPos subj (complV2 (mkV2 (regV "host")) (properNameNP "StagedReflectivePresentation, a PLN categorical instance, and de Finetti categorical development"))
-  | .subprojectCognitiveArchitecture =>
-      let subj := properNameNP "CognitiveArchitecture"
+  | .subprojectCogArch =>
+      let subj := properNameNP "CogArch"
       mkPresPos subj (complV2 (mkV2 (regV "host")) (properNameNP "MetaMo, OpenPsi, MicroPsi, and value-system models"))
   | .subprojectOrderedSemigroups =>
       let subj := properNameNP "Algebra/OrderedSemigroups"
@@ -208,7 +208,7 @@ def allMettapediaClaims : List MettapediaClaim :=
   , .subprojectGF
   , .subprojectProcessCalculi
   , .subprojectCategoryTheory
-  , .subprojectCognitiveArchitecture
+  , .subprojectCogArch
   , .subprojectOrderedSemigroups
   , .mettailRoundtripChecksExportBuildRewrite
   , .mettailBenchmarkRunsThreeRounds
@@ -285,7 +285,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderMettapediaHeading .layoutHighLevel)
   , .paragraph [renderMettapediaClaim .layoutPresentsHighLevelStructure]
   , .codeBlock ""
-      "Mettapedia/\n├── Algebra/\n├── Bridge/\n├── CategoricalLogic/\n├── CategoryTheory/\n├── CognitiveArchitecture/\n├── Computability/\n├── Examples/\n├── GraphTheory/\n├── GSLT/\n├── Implementation/\n├── InformationTheory/\n├── Languages/\n├── Logic/\n├── MeasureTheory/\n├── Metatheory/\n├── OSLF/\n├── ProbabilityTheory/\n├── QuantumTheory/\n├── SetTheory/\n├── UniversalAI/\n└── external/"
+      "Mettapedia/\n├── Algebra/\n├── Bridge/\n├── CategoricalLogic/\n├── CategoryTheory/\n├── CogArch/\n├── Computability/\n├── Examples/\n├── GraphTheory/\n├── GSLT/\n├── Implementation/\n├── InformationTheory/\n├── Languages/\n├── Logic/\n├── MeasureTheory/\n├── Metatheory/\n├── OSLF/\n├── ProbabilityTheory/\n├── QuantumTheory/\n├── SetTheory/\n├── UniversalAI/\n└── external/"
   , .heading 2 (renderMettapediaHeading .toolchain)
   , .claimBullets
       [ claimBullet .toolchainUsesLean4270
@@ -313,7 +313,7 @@ def mettapediaReadmeBlocks : List ReadmeBlock :=
   , .fileRef "Languages/GF/" (renderMettapediaClaim .subprojectGF)
   , .fileRef "Languages/ProcessCalculi/" (renderMettapediaClaim .subprojectProcessCalculi)
   , .fileRef "CategoryTheory/" (renderMettapediaClaim .subprojectCategoryTheory)
-  , .fileRef "CognitiveArchitecture/" (renderMettapediaClaim .subprojectCognitiveArchitecture)
+  , .fileRef "CogArch/" (renderMettapediaClaim .subprojectCogArch)
   , .fileRef "Algebra/OrderedSemigroups/" (renderMettapediaClaim .subprojectOrderedSemigroups)
   , .heading 2 (renderMettapediaHeading .leanToMettailExample)
   , .paragraph

@@ -16,7 +16,7 @@ defaults. The task checker comes from the existing checked-cycle fixtures.
 namespace FairGoalChecks
 
 open GoalSystem
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def research : Goal := { id := 8, share := 2, baseUrgency := 1000 }
 def review : Goal := { GoalReview.goal 100 3 with age := 3 }

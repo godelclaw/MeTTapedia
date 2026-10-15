@@ -22,8 +22,8 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Metabolic
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourcePredation
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourceClaimHistory
 open Mettapedia.OSLF.Framework.MetabolicPaidTrace
-open Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
+open Mettapedia.CogArch.Consciousness.ArchitecturalIndicators
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
 open Mettapedia.GSLT.Causality Mettapedia.GSLT.Causality.ProbeCampaign
 open Mettapedia.OSLF.Framework.FiniteAssayLearner
 open CanonicalBag LanguageDefGSLT
@@ -453,7 +453,7 @@ theorem silence_preserves_candidates
 finish every affordable instruction. -/
 theorem correct_candidate_survives (mode : Mode)
     (receipt : AcquiredExperiment encoding
-      (Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators.initial mode)
+      (Mettapedia.CogArch.Consciousness.ArchitecturalIndicators.initial mode)
       question stack session provider client record source) :
     mode ∈ receipt.revision candidates := by
   apply (revise_mem prediction candidates question receipt.answers mode).2
@@ -461,10 +461,10 @@ theorem correct_candidate_survives (mode : Mode)
   intro response present
   have sound := receipt.experiment.response_sound response present
   rw [sound.2.1]
-  change observation (Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators.initial mode)
+  change observation (Mettapedia.CogArch.Consciousness.ArchitecturalIndicators.initial mode)
     question = (session, ComplementaryAssay.verdictOf
-      (observation (Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators.initial mode) question),
-      client, observation (Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators.initial mode)
+      (observation (Mettapedia.CogArch.Consciousness.ArchitecturalIndicators.initial mode) question),
+      client, observation (Mettapedia.CogArch.Consciousness.ArchitecturalIndicators.initial mode)
         question).2.1.bit
   exact (ComplementaryAssay.verdictOf_bit _).symm
 

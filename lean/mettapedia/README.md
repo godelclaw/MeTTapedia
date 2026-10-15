@@ -12,7 +12,7 @@ Mettapedia/
 ├── Bridge/
 ├── CategoricalLogic/
 ├── CategoryTheory/
-├── CognitiveArchitecture/
+├── CogArch/
 ├── Computability/
 ├── Examples/
 ├── GraphTheory/
@@ -96,8 +96,8 @@ lake build
 - `CategoryTheory/`
   - CategoryTheory hosts NativeTypeTheory, a PLN categorical instance, and de Finetti categorical development
 
-- `CognitiveArchitecture/`
-  - CognitiveArchitecture hosts MetaMo, OpenPsi, MicroPsi, and value-system models
+- `CogArch/`
+  - CogArch hosts MetaMo, OpenPsi, MicroPsi, and value-system models
 
 - `Algebra/OrderedSemigroups/`
   - Algebra/OrderedSemigroups hosts ordered semigroup formalization

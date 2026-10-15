@@ -4,7 +4,7 @@ import FairGoalStrategy
 namespace TopicAsyncChecks
 
 open TopicAsync
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def key (id round : Nat) : ConversationContinuation.RequestKey := ⟨7, round, id⟩
 def cfg : Config :=

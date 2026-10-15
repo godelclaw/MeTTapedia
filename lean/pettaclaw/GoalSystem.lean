@@ -29,7 +29,7 @@ competing urgency, permanent blocking or resource denial.
 
 namespace GoalSystem
 
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 structure Config where
   key : Nat × Nat → ConversationContinuation.RequestKey

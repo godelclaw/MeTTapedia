@@ -120,7 +120,7 @@ def main():
                     'FairGoalScheduling', 'FairGoalStrategy', 'FairGoalChecks']
                    if args.suite == 'fair-goals' else
                    ['IterArchitecture', 'OmegaArchitecture', 'CodingAgent',
-                    'Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation',
+                    'Mettapedia.CogArch.Agent.ConversationContinuation',
                     'FeedbackSensitiveBatch', 'ObservedStrategy', 'ObservedStrategyChecks'])
         shared_modules = (['AdmissionFrontier'] if args.suite == 'response-timing'
                           else ['AdmissionFrontier', 'ObservedStrategy'])

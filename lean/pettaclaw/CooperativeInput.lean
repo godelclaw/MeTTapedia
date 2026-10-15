@@ -21,7 +21,7 @@ adoption checks the original owner and dependencies and admits each result once.
 
 namespace CooperativeInput
 
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 abbrev Key := ConversationContinuation.RequestKey
 
 structure Arrival where

@@ -510,7 +510,7 @@ python3 lean/pettaclaw/check_observed_strategy.py \
 
 The topic, fair-goal and observed-strategy suites build from Lean's standard
 library. The generic typed state and query contracts are in
-`Mettapedia.CognitiveArchitecture.Agent.WorldStateCore`; `Agent.WorldState`
+`Mettapedia.CogArch.Agent.WorldStateCore`; `Agent.WorldState`
 re-exports them and adds the Mathlib finite-cardinality theorem. No extra
 Mathlib copy is needed for these executable architecture checks.
 

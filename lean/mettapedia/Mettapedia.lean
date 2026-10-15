@@ -578,7 +578,7 @@ import Mettapedia.HundredProofs
 import Mettapedia.Hyperseed
 
 -- Cognitive architecture: MetaMo / OpenPsi / MicroPsi / Bridges / Values (axiom-free strands)
-import Mettapedia.CognitiveArchitecture.Main
+import Mettapedia.CogArch.Main
 
 -- GodelClaw (Oruži cognitive architecture) is NOT imported here: its full
 -- transitive closure pulls in `Logic.MarkovLogic*` modules that still have genuine

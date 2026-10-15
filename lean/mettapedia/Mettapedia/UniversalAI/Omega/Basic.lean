@@ -1,5 +1,5 @@
 import Mathlib.Data.NNReal.Defs
-import Mettapedia.CognitiveArchitecture.ProblemSolvingMethods
+import Mettapedia.CogArch.ProblemSolvingMethods
 import Mettapedia.Computability.KolmogorovComplexity.PrefixComplexity
 import Mettapedia.Computability.KolmogorovComplexity.ReferenceMachine
 import Mettapedia.UniversalAI.SelfModification.ProofBackedImprovement
@@ -20,7 +20,7 @@ Eray Ozkural, *Omega: An Architecture for AI Unification*
 
 The reusable components live outside this historical namespace:
 
-* `CognitiveArchitecture.ProblemSolvingMethods` supplies proof-relevant PSM
+* `CogArch.ProblemSolvingMethods` supplies proof-relevant PSM
   registries, evidence-retaining invention, and multiple-reference-machine
   memory;
 * `UniversalAI.SelfModification.ProofBackedImprovement` supplies the abstract
@@ -36,7 +36,7 @@ not claim that Ozkural's assumed bootstrap was demonstrated in the 2018 paper.
 
 namespace Mettapedia.UniversalAI.Omega
 
-open Mettapedia.CognitiveArchitecture.ProblemSolvingMethods
+open Mettapedia.CogArch.ProblemSolvingMethods
 open Mettapedia.UniversalAI.SelfModification
 open Mettapedia.UniversalAI.SolomonoffPrior
 open scoped NNReal

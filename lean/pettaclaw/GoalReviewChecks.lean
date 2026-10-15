@@ -11,7 +11,7 @@ sound outcome checker for real work. Intervals and priorities are test values.
 namespace GoalReviewChecks
 
 open GoalSystem
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def cfg : Config where
   key := fun pair => ⟨1, pair.2, pair.1⟩

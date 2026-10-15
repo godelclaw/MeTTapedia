@@ -11,7 +11,7 @@ exercise explicit broken alternatives to the same transition gates.
 namespace ObservedStrategyChecks
 
 open ObservedStrategy
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def task : ConversationContinuation.RequestKey := ⟨1, 1, 7⟩
 def steering : ConversationContinuation.RequestKey := ⟨1, 1, 8⟩

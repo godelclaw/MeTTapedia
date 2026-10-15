@@ -1,5 +1,5 @@
 import Mettapedia.Logic.WorldModel.Indexed.Survival
-import Mettapedia.CognitiveArchitecture.Agent.WellbeingObserverTransformationBoundary
+import Mettapedia.CogArch.Agent.WellbeingObserverTransformationBoundary
 
 /-!
 # Shared appraisals are the view law
@@ -20,7 +20,7 @@ namespace Mettapedia.Logic.WorldModel.Indexed.BridgesWellbeing
 open Mettapedia.Cybernetics
 open Mettapedia.GSLT.Dynamics
 open Mettapedia.GSLT.Dynamics.ObserverRelativeTransformationCrown
-open Mettapedia.CognitiveArchitecture.Agent.WellbeingObserverTransformationBoundary
+open Mettapedia.CogArch.Agent.WellbeingObserverTransformationBoundary
 
 universe uSource uTarget uView uAppraisal
 

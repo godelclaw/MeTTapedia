@@ -29,7 +29,7 @@ operations; the finite-cohort bound does not cover unlimited reconfiguration.
 namespace FairGoalStrategy
 
 open GoalSystem
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def next (state : State) (admitted : Bool) : Choice :=
   if !state.agent.requests.inbox.isEmpty then .input

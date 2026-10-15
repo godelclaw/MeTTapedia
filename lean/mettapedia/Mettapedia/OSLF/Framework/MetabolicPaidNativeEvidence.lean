@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.MetabolicPaidControls
-import Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceNativeEvidence
+import Mettapedia.CogArch.Consciousness.PaidWorkspaceNativeEvidence
 
 /-!
 # Native families retain acquired resources and learning receipts
@@ -25,10 +25,10 @@ open _root_.CategoryTheory
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.ResourcePredation
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Metabolic
-open Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceDescriptions
-open Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceNativeEvidence
+open Mettapedia.CogArch.Consciousness.ArchitecturalIndicators
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceDescriptions
+open Mettapedia.CogArch.Consciousness.PaidWorkspaceNativeEvidence
 open Mettapedia.GSLT.Causality Mettapedia.GSLT.Causality.ProbeCampaign
 open Mettapedia.OSLF.Framework.MetabolicPaidLearner
 open Mettapedia.OSLF.Framework.MetabolicPaidControls

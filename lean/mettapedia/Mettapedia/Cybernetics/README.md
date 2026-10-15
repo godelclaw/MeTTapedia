@@ -72,7 +72,7 @@ attributing later bridge theorems to those sources.
   from relational scope expansion. Finite scopes stabilize at reachability;
   connected and disconnected controls separate universal from intermediate
   absorbing scopes, including an actual coherent intermediate plan.
-- `Mettapedia.CognitiveArchitecture.Consciousness.Valence` accumulates authored
+- `Mettapedia.CogArch.Consciousness.Valence` accumulates authored
   appraisals in arbitrary additive monoids, including products and coordinate
   families. Optional additive readouts preserve chronological accumulation;
   a scalar balance control loses the independently retained pain and

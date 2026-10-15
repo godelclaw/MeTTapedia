@@ -42,7 +42,7 @@ No theorem asserts that model prose is true or that arbitrary tasks terminate.
 
 namespace ObservedStrategy
 
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 inductive Mode where
   | coding | iter | omega | combined

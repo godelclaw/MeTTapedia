@@ -19,7 +19,7 @@ pruning argument.
 namespace Mettapedia.Logic.WorldModel.InferenceControl
 
 open KolmogorovComplexity
-open Mettapedia.CognitiveArchitecture.GuidedAlgorithmicMemory
+open Mettapedia.CogArch.GuidedAlgorithmicMemory
 open Mettapedia.GSLT.Core.BranchingTemporal
 open Mettapedia.GSLT.Core.InferenceControl
 open Mettapedia.Logic.WorldModel.CompressionTransfer

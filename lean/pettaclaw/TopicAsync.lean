@@ -26,7 +26,7 @@ Soft waiting does not extend a hard transport deadline or retry a remote POST.
 
 namespace TopicAsync
 
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 abbrev Topic := Nat
 
 structure CallId where

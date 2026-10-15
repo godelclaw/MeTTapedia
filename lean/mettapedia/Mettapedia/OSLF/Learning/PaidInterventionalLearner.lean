@@ -6,9 +6,9 @@ import Mettapedia.OSLF.Framework.PaidInterventionalDescriptions
 import Mettapedia.OSLF.Framework.PaidInterventionalNativeEvidence
 import Mettapedia.OSLF.Framework.PaidInterventionalEvidenceTransport
 import Mettapedia.OSLF.Framework.PaidAssayLearningTranslation
-import Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceExperiments
-import Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceDescriptions
-import Mettapedia.CognitiveArchitecture.Consciousness.PaidWorkspaceNativeEvidence
+import Mettapedia.CogArch.Consciousness.PaidWorkspaceExperiments
+import Mettapedia.CogArch.Consciousness.PaidWorkspaceDescriptions
+import Mettapedia.CogArch.Consciousness.PaidWorkspaceNativeEvidence
 import Mettapedia.OSLF.Framework.RhoScopedPaidDescriptions
 
 open Mettapedia.OSLF.Framework

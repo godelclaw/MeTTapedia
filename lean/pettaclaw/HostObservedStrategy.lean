@@ -13,7 +13,7 @@ request/ticket identities. Their equality is separately checked by the host.
 namespace HostObservedStrategy
 
 open ObservedStrategy ObservedStrategyChecks
-open Mettapedia.CognitiveArchitecture.Agent
+open Mettapedia.CogArch.Agent
 
 def projection (s : State) : List Nat :=
   [ (s.requests.accepted.filter (fun k => decide (s.requests.commitments k = .active))).length,

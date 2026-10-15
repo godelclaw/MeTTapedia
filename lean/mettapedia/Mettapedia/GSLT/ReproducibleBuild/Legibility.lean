@@ -1,5 +1,5 @@
 import Mathlib.Tactic
-import Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext
+import Mettapedia.CogArch.Agent.OpenEndedContext
 import Mettapedia.GSLT.HierarchicalComplexity
 import Mettapedia.GSLT.ReproducibleBuild.DiverseDoubleCompiling
 import Mettapedia.GSLT.ReproducibleBuild.HattaProfile
@@ -41,7 +41,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.ReproducibleBuild.Legibility
 
-open Mettapedia.CognitiveArchitecture.Agent.OpenEndedContext
+open Mettapedia.CogArch.Agent.OpenEndedContext
 open Mettapedia.Cybernetics.HierarchicalComplexity
 open Mettapedia.Cybernetics.HierarchicalComplexity.Composition
 

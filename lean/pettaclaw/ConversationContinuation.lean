@@ -1,4 +1,4 @@
-import Mettapedia.CognitiveArchitecture.Agent.ConversationContinuation
+import Mettapedia.CogArch.Agent.ConversationContinuation
 
 /-!
 The framework's request-continuation contract lives in the shared agent
