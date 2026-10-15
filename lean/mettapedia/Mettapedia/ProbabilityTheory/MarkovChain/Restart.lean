@@ -37,7 +37,7 @@ Main results:
 
 set_option autoImplicit false
 
-namespace AgentMemory.PPR
+namespace Mettapedia.ProbabilityTheory.MarkovChain.Restart
 
 open Finset Matrix
 
@@ -423,4 +423,4 @@ theorem mass_outside_reach {s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (k : ℕ) :
 
 end RestartWalk
 
-end AgentMemory.PPR
+end Mettapedia.ProbabilityTheory.MarkovChain.Restart
