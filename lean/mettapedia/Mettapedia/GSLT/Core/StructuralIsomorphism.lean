@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.Composition
 import Mathlib.Logic.Equiv.List
 import Mathlib.Logic.Equiv.Prod
@@ -36,16 +37,8 @@ structure StructuralIsomorphism (source target : GSLT) where
 
 /-- The empty theory is the neutral object for disjoint composition.  It has
 no terms, hence no equations or rewrites beyond the vacuous laws. -/
-abbrev disjointSumUnit : GSLT where
-  Term := Empty
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ impossible
-    exact impossible.elim
-  rewrites_resp_right := by
-    intro _ _ _ impossible _
-    exact impossible.elim
+abbrev disjointSumUnit : GSLT :=
+  GSLT.stepFree (Empty)
 
 namespace StructuralIsomorphism
 

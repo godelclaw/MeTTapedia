@@ -118,21 +118,22 @@ variable [DecidableEq X]
 /-- **Well-formed annotated text** at the identity position `pos`: patterns
 without `new` blocks on their spine, admissible identities for every lambda's
 own names, and, for a pattern quotation, one `CodeRel` between the two
-elaborations. A hole is a free name of that code. A binder of the code and a
-free parameter of the code are named inside it, so the relation's one map
-sends both, and neither is a free name of the sealed quotation. -/
+elaborations, in a form rooted at any scope owner. A hole is a free name of that
+code. A binder of the code and a free parameter of the code are named inside
+it, so the relation's one map sends both, and neither is a free name of the
+sealed quotation. -/
 def WF : Owner → Ann S X → Prop
   | pos, .lam _ own key b =>
       (∀ y ∈ own, (key y).spell = y ∧ (key y).frame = pos ++ [0] ∧ KeyOK (pos ++ [0]) b (key y)) ∧
         WF (pos ++ [0]) b
   | pos, .app f a => WF (pos ++ [0]) f ∧ WF (pos ++ [1]) a
   | _, .pquote c =>
-      ∀ (env : REnv X) (envI : IEnv X),
+      ∀ (R : Owner) (env : REnv X) (envI : IEnv X), scopeOwner R →
         (∀ y, codeBound (env y) = false) → (∀ y, env y ≠ codeFreeParam) →
         CodeRel (R₁ := fun (_ : Slot X) => True) (R₂ := fun (_ : BId X) => True)
           codeQ (fun _ => True) (codeMapHoles env envI)
-          (sealParams (codeAt (some env) [] [] [] c))
-          (sealParams (codeIAt (some envI) [] [] [] c))
+          (sealParams (codeAt R (some env) [] [] [] c))
+          (sealParams (codeIAt R (some envI) [] [] [] c))
   | pos, .letP p w b => p.NewFree ∧ WF (pos ++ [0]) p ∧ WF (pos ++ [1]) w ∧ WF (pos ++ [2]) b
   | pos, .letA _ _ p w b => p.NewFree ∧ WF (pos ++ [0]) p ∧ WF (pos ++ [1]) w ∧ WF (pos ++ [2]) b
   | pos, .alt t₁ t₂ => WF (pos ++ [0]) t₁ ∧ WF (pos ++ [1]) t₂
@@ -146,8 +147,8 @@ def Open : Ann S X → Prop
   | .lam _ _ _ b => Open b
   | .app f a => Open f ∧ Open a
   | .pquote c =>
-      ∀ (env : REnv X) (n : Nm (Slot X)),
-        n ∈ freeNames (sealParams (codeAt (some env) [] [] [] c)) →
+      ∀ (R : Owner) (env : REnv X) (n : Nm (Slot X)),
+        n ∈ freeNames (sealParams (codeAt R (some env) [] [] [] c)) →
         ∃ y ∈ Src.names c, n = .src (env y, y)
   | .letP p w b => Open p ∧ Open w ∧ Open b
   | .letA _ _ p w b => Open p ∧ Open w ∧ Open b
@@ -158,9 +159,9 @@ def Open : Ann S X → Prop
 theorem Open.of_WF {pos : Owner} {t : Ann S X} (h : t.WF pos) : t.Open := by
   induction t generalizing pos with
   | pquote c =>
-      intro env n hn
+      intro R env n hn
       rw [freeNames_sealParams] at hn
-      exact mem_freeNames_codeAt env [] [] [] c n hn
+      exact mem_freeNames_codeAt R env [] [] [] c n hn
   | lam _ _ _ _ ih =>
       simp only [WF] at h
       exact ih h.2
@@ -212,6 +213,10 @@ def freePars : Ann S X → List X
 
 /-! ## The two elaborations of annotated text -/
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 /-- **The slot model**: names are slots; a lambda owns its names as slots of its
 body's position; a `let` that introduces names and a `new` block are
 activations. -/
@@ -224,8 +229,8 @@ def slotOf (env : REnv X) (pos : Owner) : Ann S X → Tm S (Slot X)
       .lam (parName z) (own.map fun y => (pos ++ [0], y))
         (slotOf (env.update own (pos ++ [0])) (pos ++ [0]) b)
   | .app f a => .app (slotOf env (pos ++ [0]) f) (slotOf env (pos ++ [1]) a)
-  | .quote c => .quote (codeOf c)
-  | .pquote c => .pquote (sealParams (codeAt (some env) [] [] [] c))
+  | .quote c => .quote (codeOf R c)
+  | .pquote c => .pquote (sealParams (codeAt R (some env) [] [] [] c))
   | .letP p w b =>
       .letP (slotOf env (pos ++ [0]) p) (slotOf env (pos ++ [1]) w) (slotOf env (pos ++ [2]) b)
   | .letA y₀ ys p w b =>
@@ -253,8 +258,8 @@ def idOf (env : IEnv X) (pv : X → Owner) (fr pos : Owner) : Ann S X → Tm S (
         (frameSlots (pos ++ [0]) (idOf (env.set own key) (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b))
         (idOf (env.set own key) (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b)
   | .app f a => .app (idOf env pv fr (pos ++ [0]) f) (idOf env pv fr (pos ++ [1]) a)
-  | .quote c => .quote (codeI c)
-  | .pquote c => .pquote (sealParams (codeIAt (some env) [] [] [] c))
+  | .quote c => .quote (codeI R c)
+  | .pquote c => .pquote (sealParams (codeIAt R (some env) [] [] [] c))
   | .letP p w b =>
       .letP (idOf env pv fr (pos ++ [0]) p) (idOf env pv fr (pos ++ [1]) w)
         (idOf env pv fr (pos ++ [2]) b)
@@ -556,41 +561,52 @@ theorem scParOK_scope {z : X} {pos : Owner} :
   · simp [codeBound] at h
   · simp [codeFreeParam] at h
 
-/-- The slot model's code names in the identity model. A query-root hole
-`.src ([], y)` is the head slot of that spelling: sealed code and the body's
-`$` share that one cell. Every other owner is a code name, so the map stays
-injective. Binders of code are never at owner `[]`. -/
+/-- The slot model's code names in the identity model. A binder of code and a
+free parameter of code keep their owner, as a code name. A slot of any other
+owner is a hole: the head slot of that owner, `⟨y, o, o, .head⟩`. The hole of a
+quotation written in a form rooted at `R` is `(R, y)`, so it is sent to the
+form's head slot: for the query, sealed code and the body's `$` share that one
+cell; for an equation, it is a slot of the equation's frame. The map is
+injective. -/
 def codeFwd : Nm (Slot X) → Nm (BId X)
-  | .src ([], y) => .src (.slot ⟨y, [], [], .head⟩)
-  | .src ((n :: o), y) => .src (.code y (n :: o))
+  | .src (o, y) =>
+      if codeBound o = true ∨ o = codeFreeParam then .src (.code y o)
+      else .src (.slot ⟨y, o, o, .head⟩)
   | .inst ρ n => .inst ρ (codeFwd n)
 
-/-- The identity model's code names in the slot model. -/
+/-- The identity model's code names in the slot model. A slot is read back at
+its frame. -/
 def codeBack : Nm (BId X) → Nm (Slot X)
   | .src (.code y o) => .src (o, y)
-  | .src (.slot k) => .src ([], k.spell)
+  | .src (.slot k) => .src (k.frame, k.spell)
   | .src (.par z _) => .src ([], z)
   | .inst ρ n => .inst ρ (codeBack n)
 
+/-- A name of code keeps its owner. -/
+theorem codeFwd_code {o : Owner} {y : X} (h : codeBound o = true ∨ o = codeFreeParam) :
+    codeFwd (.src (o, y)) = .src (.code y o) := by
+  simp only [codeFwd, if_pos h]
+
+/-- A slot of a scope owner is that owner's head slot. -/
+theorem codeFwd_scope {o : Owner} {y : X} (h : scopeOwner o) :
+    codeFwd (.src (o, y)) = .src (.slot ⟨y, o, o, .head⟩) := by
+  simp only [codeFwd, if_neg (not_code_of_scopeOwner h)]
+
 theorem codeBack_codeFwd : ∀ n : Nm (Slot X), codeBack (codeFwd n) = n
-  | .src ([], _) => rfl
-  | .src ((_ :: _), _) => rfl
+  | .src (o, y) => by
+      by_cases h : codeBound o = true ∨ o = codeFreeParam
+      · rw [codeFwd_code h]
+        rfl
+      · simp only [codeFwd, if_neg h]
+        rfl
   | .inst _ n => by simp only [codeFwd, codeBack, codeBack_codeFwd n]
 
 theorem codeFwd_injective : Function.Injective (codeFwd : Nm (Slot X) → Nm (BId X)) :=
   Function.LeftInverse.injective codeBack_codeFwd
 
 theorem codeFwd_root (y : X) :
-    codeFwd (.src ([], y)) = .src (.slot ⟨y, [], [], .head⟩) := rfl
-
-theorem codeFwd_cons (n : ℕ) (o : List ℕ) (y : X) :
-    codeFwd (.src (n :: o, y)) = .src (.code y (n :: o)) := rfl
-
-theorem codeFwd_ne_nil {o : Owner} {y : X} (h : o ≠ []) :
-    codeFwd (.src (o, y)) = .src (.code y o) := by
-  cases o with
-  | nil => exact absurd rfl h
-  | cons _ _ => rfl
+    codeFwd (.src ([], y)) = .src (.slot ⟨y, [], [], .head⟩) :=
+  codeFwd_scope ⟨rfl, by decide⟩
 
 theorem codeBinder_ne_nil (pos : Owner) : codeBinder pos ≠ [] :=
   List.cons_ne_nil 9 (1 :: pos)
@@ -606,13 +622,43 @@ theorem owner_code_ne_nil {o : Owner}
     simp [codeBound] at hb
   · exact codeFreeParam_ne_nil
 
+/-- **The root of a form**: `[]` for the query, `[5]` for an equation.  A hole of
+sealed code written in a form is a slot of the form's root. -/
+def formRoot (o : Owner) : Prop := o = [] ∨ o = [5]
+
+theorem formRoot.scopeOwner {o : Owner} (h : formRoot o) : scopeOwner o := by
+  rcases h with rfl | rfl
+  · exact ⟨rfl, by decide⟩
+  · exact ⟨rfl, by decide⟩
+
+/-- No owner written below a position other than `5` is a form root. -/
+theorem not_formRoot_append (pos : Owner) {i : ℕ} (hi : i ≠ 5) : ¬ formRoot (pos ++ [i]) := by
+  rintro (h | h)
+  · simp at h
+  · cases pos with
+    | nil =>
+        simp only [List.nil_append, List.cons.injEq, and_true] at h
+        exact hi h
+    | cons a l => simp at h
+
+theorem codeFwd_src : ∀ s : Slot X, ∃ s', codeFwd (.src s : Nm (Slot X)) = .src s'
+  | (o, y) => by
+      by_cases h : codeBound o = true ∨ o = codeFreeParam
+      · exact ⟨_, codeFwd_code h⟩
+      · exact ⟨_, codeFwd_scope ⟨by
+          rcases Bool.eq_false_or_eq_true (codeBound o) with hb | hb
+          · exact absurd (Or.inl hb) h
+          · exact hb, fun e => h (Or.inr e)⟩⟩
+
 /-- **The setting of the two models**: sealed code is related through the two
-code maps; the query's own slots (owner `[]`) and identities (frame `[]`) are
-the names no binder owns. Holes agree by recurring under an activation. A binder
-of code, and a free parameter of code, owns nothing; those are the names
-`matchCode` may enter. A scope hole is not entered, at any own lists. -/
+code maps, written in a form rooted at a scope owner (`codeQ`); the query's own
+slots (owner `[]`) and identities (frame `[]`) are the names no binder owns.
+Holes agree by recurring under an activation. A binder of code, and a free
+parameter of code, owns nothing; those are the names `matchCode` may enter. A
+scope hole is not entered, at any own lists.  A hole of sealed code is a slot of
+a form root. -/
 def SC [DecidableEq X] : Setting S (Slot X) (BId X) where
-  Q c₁ c₂ := ∃ s : Src S X, c₁ = codeOf s ∧ c₂ = codeI s
+  Q := codeQ
   root₁ s := s.1 = []
   root₂ b := ∃ k : SlotId X, b = .slot k ∧ k.frame = []
   varHole := scVarHole
@@ -627,6 +673,13 @@ def SC [DecidableEq X] : Setting S (Slot X) (BId X) where
   varHole_rename := sc_varHole_rename
   codeMap := codeFwd
   codeMap_inj := codeFwd_injective
+  codeMap_src := codeFwd_src
+  codeMap_root s hs := by
+    obtain ⟨o, y⟩ := s
+    change o = [] at hs
+    subst hs
+    exact ⟨_, codeFwd_root y, _, rfl, rfl⟩
+  hole s := formRoot s.1
 
 variable [DecidableEq X]
 
@@ -691,11 +744,14 @@ theorem update_of_not_mem {env : REnv X} {ys : List X} {o : Owner} {y : X} (h : 
     env.update ys o y = env y := by
   simp [REnv.update, h]
 
+/- The root of the form being elaborated. -/
+variable (R : Owner)
+
 /-- **Free names of the slot model**: occurrences of the environment's slots
 of spellings written in open text.  A pattern quotation is sealed, so the
 claim is stated for open text. -/
 theorem freeNames_slotOf : ∀ (t : Ann S X) (env : REnv X) (pos : Owner) (n : Nm (Slot X)),
-    t.Open → n ∈ freeNames (t.slotOf env pos) → ∃ y ∈ t.names, n = .src (env y, y)
+    t.Open → n ∈ freeNames (t.slotOf R env pos) → ∃ y ∈ t.names, n = .src (env y, y)
   | .sym _, _, _, _, _, h => by simp [slotOf, freeNames] at h
   | .fn _, _, _, _, _, h => by simp [slotOf, freeNames] at h
   | .sv y, env, _, n, _, h => by
@@ -721,7 +777,7 @@ theorem freeNames_slotOf : ∀ (t : Ann S X) (env : REnv X) (pos : Owner) (n : N
   | .quote _, _, _, _, _, h => by simp [slotOf, freeNames] at h
   | .pquote c, env, _, n, hopen, h => by
       simp only [slotOf, freeNames] at h
-      obtain ⟨y, hy, rfl⟩ := hopen env n h
+      obtain ⟨y, hy, rfl⟩ := hopen R env n h
       exact ⟨y, by simpa [names] using hy, rfl⟩
   | .letP p w b, env, _, n, hopen, h => by
       simp only [Open] at hopen
@@ -776,7 +832,7 @@ theorem freeNames_slotOf : ∀ (t : Ann S X) (env : REnv X) (pos : Owner) (n : N
 
 /-- **Free parameters of the slot model** are written parameters, by spelling. -/
 theorem freeParams_slotOf : ∀ (t : Ann S X) (env : REnv X) (pos : Owner) (x : Nm (Slot X)),
-    t.Open → x ∈ freeParams (t.slotOf env pos) → ∃ z ∈ t.freePars, x = .src ([], z)
+    t.Open → x ∈ freeParams (t.slotOf R env pos) → ∃ z ∈ t.freePars, x = .src ([], z)
   | .sym _, _, _, _, _, h => by simp [slotOf, freeParams] at h
   | .fn _, _, _, _, _, h => by simp [slotOf, freeParams] at h
   | .sv _, _, _, _, _, h => by simp [slotOf, slotVar, freeParams] at h
@@ -1015,24 +1071,24 @@ theorem ResOK.news_child {fr pos : Owner} {i : ℕ} {c : Ann S X} {t₁ : Tm S (
 /-- **The conditions of a frame**: the body of a lambda (or of a clause), with
 the frame's own names at owner `O` on the slot side and at frame `F` on the
 identity side, satisfies the side conditions of `Rel.lam`. -/
-theorem frame_conds {own : List X} {O F : Owner} {key : X → SlotId X}
+theorem frame_conds {R : Owner} {own : List X} {O F : Owner} {key : X → SlotId X}
     {νb μb : Nm (Slot X) → Nm (BId X)} {b : Ann S X} {env' : REnv X} {b₂ : Tm S (BId X)}
     {Rb : List (Nm (BId X))} {ok : Bool}
-    (hrel : Rel SC νb μb .code Rb ok (b.slotOf env' O) b₂)
-    (hres : ResOK F F b (b.slotOf env' O) b₂ Rb)
+    (hrel : Rel SC νb μb .code Rb ok (b.slotOf R env' O) b₂)
+    (hres : ResOK F F b (b.slotOf R env' O) b₂ Rb)
     (hO : ∀ y ∈ b.names, y ∈ own → env' y = O)
     (hνown : ∀ y ∈ own, νb (.src (O, y)) = .src (.slot (key y)))
     (hout : ∀ y ∈ b.names, y ∉ own →
       ∃ k : SlotId X, νb (.src (env' y, y)) = .src (.slot k) ∧ k.frame ≠ F)
     (hkey : ∀ y ∈ own, (key y).spell = y ∧ (key y).frame = F ∧ KeyOK F b (key y))
     (hopen : b.Open) :
-    (∀ n ∈ freeNames (b.slotOf env' O),
+    (∀ n ∈ freeNames (b.slotOf R env' O),
       ownKey (frameSlots F b₂) (νb n) = ownKey (own.map fun y => (O, y)) n) ∧
     (∀ m ∈ Rb, ownKey (frameSlots F b₂) m = true) ∧
-    (∀ n ∈ freeNames (b.slotOf env' O), ∀ n' ∈ freeNames (b.slotOf env' O),
+    (∀ n ∈ freeNames (b.slotOf R env' O), ∀ n' ∈ freeNames (b.slotOf R env' O),
       ownKey (own.map fun y => (O, y)) n = true → ownKey (own.map fun y => (O, y)) n' = true →
         νb n = νb n' → n = n') ∧
-    (∀ n ∈ freeNames (b.slotOf env' O), ownKey (own.map fun y => (O, y)) n = true → νb n ∉ Rb) := by
+    (∀ n ∈ freeNames (b.slotOf R env' O), ownKey (own.map fun y => (O, y)) n = true → νb n ∉ Rb) := by
   have hown_iff : ∀ y ∈ b.names,
       ownKey (own.map fun y => (O, y)) (.src (env' y, y)) = decide (y ∈ own) := by
     intro y hy
@@ -1042,7 +1098,7 @@ theorem frame_conds {own : List X} {O F : Owner} {key : X → SlotId X}
     · simp [h]
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro n hn
-    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf b env' O n hopen hn
+    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf R b env' O n hopen hn
     rw [hown_iff y hy]
     by_cases h : y ∈ own
     · have hm := hrel.mem_freeNames hn
@@ -1056,8 +1112,8 @@ theorem frame_conds {own : List X} {O F : Owner} {key : X → SlotId X}
     obtain ⟨k, rfl, hkF, -, -⟩ := hres.shape m hm
     exact ownKey_frameSlots (hres.free _ hm) hkF
   · intro n hn n' hn' ho ho' he
-    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf b env' O n hopen hn
-    obtain ⟨y', hy', rfl⟩ := Ann.freeNames_slotOf b env' O n' hopen hn'
+    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf R b env' O n hopen hn
+    obtain ⟨y', hy', rfl⟩ := Ann.freeNames_slotOf R b env' O n' hopen hn'
     rw [hown_iff y hy, decide_eq_true_iff] at ho
     rw [hown_iff y' hy', decide_eq_true_iff] at ho'
     rw [hO y hy ho, hO y' hy' ho', hνown y ho, hνown y' ho'] at he
@@ -1068,7 +1124,7 @@ theorem frame_conds {own : List X} {O F : Owner} {key : X → SlotId X}
     have hyy : y = y' := by rw [← (hkey y ho).1, ← (hkey y' ho').1, hkk]
     rw [hyy]
   · intro n hn ho hmem
-    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf b env' O n hopen hn
+    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf R b env' O n hopen hn
     rw [hown_iff y hy, decide_eq_true_iff] at ho
     have hmem' : (.src (.slot (key y)) : Nm (BId X)) ∈ Rb := by
       rw [hO y hy ho, hνown y ho] at hmem
@@ -1154,7 +1210,7 @@ theorem ResOK.three {fr pos : Owner} {t c d e : Ann S X}
 `let` on the identity side, whose introduced identities are reserved until the
 activation runs. -/
 theorem rel_letA_of {k : Kd} (hk : k ≠ .val) {ν μ : Nm (Slot X) → Nm (BId X)} {O : Owner}
-    (hO : O ≠ []) {y₀ : X} {ys : List X} {fr pos : Owner} {ℓ : Nm (Slot X)}
+    (hO : ¬ formRoot O) {y₀ : X} {ys : List X} {fr pos : Owner} {ℓ : Nm (Slot X)}
     {t p w b : Ann S X} {t₁ p₁ w₁ b₁ : Tm S (Slot X)} {p₂ w₂ b₂ : Tm S (BId X)}
     {Rp Rw Rb : List (Nm (BId X))} {ow op ob : Bool}
     (hℓp : ℓ ∉ freeParams p₁) (hℓb : ℓ ∉ freeParams b₁)
@@ -1183,9 +1239,9 @@ theorem rel_letA_of {k : Kd} (hk : k ≠ .val) {ν μ : Nm (Slot X) → Nm (BId 
       fun n => ownKey ((y₀ :: ys).map fun y => (O, y)) n).map
         (bindν ν O (y₀ :: ys) fun y => ⟨y, fr, pos, .pat⟩)).dedup) ++ Rw ++ Rp ++ Rb, ?_, ?_⟩
   · refine .letAct hk (fun n hn => bindν_off hn) ?_ hℓp hℓb hw hp hb ?_ ?_
-    · intro s hs h
+    · intro s hs
       obtain ⟨y, _, rfl⟩ := List.mem_map.1 hs
-      exact hO h
+      exact ⟨fun h => hO (Or.inl h), hO⟩
     · intro n hn ho
       exact List.mem_dedup.2 (List.mem_map.2 ⟨n, List.mem_filter.2 ⟨hn, ho⟩, rfl⟩)
     · intro n _ n' _ ho ho' he
@@ -1261,7 +1317,7 @@ theorem rel_letA_of {k : Kd} (hk : k ≠ .val) {ν μ : Nm (Slot X) → Nm (BId 
 
 /-- **A `new` block**: an activation on the slot side, nothing on the identity
 side, whose declared identities are reserved until the activation runs. -/
-theorem rel_new_of {ν μ : Nm (Slot X) → Nm (BId X)} {O : Owner} (hO : O ≠ []) {y₀ : X}
+theorem rel_new_of {ν μ : Nm (Slot X) → Nm (BId X)} {O : Owner} (hO : ¬ formRoot O) {y₀ : X}
     {ys : List X} {fr pos : Owner} {ℓ : Nm (Slot X)} {t b : Ann S X} {b₁ : Tm S (Slot X)}
     {b₂ : Tm S (BId X)} {Rb : List (Nm (BId X))} {ob : Bool}
     (hℓ : ℓ ∉ freeParams b₁)
@@ -1287,9 +1343,9 @@ theorem rel_new_of {ν μ : Nm (Slot X) → Nm (BId X)} {O : Owner} (hO : O ≠ 
       fun n => ownKey ((y₀ :: ys).map fun y => (O, y)) n).map
         (bindν ν O (y₀ :: ys) fun y => ⟨y, fr, pos, .new⟩)).dedup ++ Rb, ?_, ?_⟩
   · refine .newAct (fun n hn => bindν_off hn) ?_ hℓ hb ?_ ?_
-    · intro s hs h
+    · intro s hs
       obtain ⟨y, _, rfl⟩ := List.mem_map.1 hs
-      exact hO h
+      exact ⟨fun h => hO (Or.inl h), hO⟩
     · intro n hn ho
       exact List.mem_dedup.2 (List.mem_map.2 ⟨n, List.mem_filter.2 ⟨hn, ho⟩, rfl⟩)
     · intro n _ n' _ ho ho' he
@@ -1339,11 +1395,6 @@ theorem ne_of_prefix {a b : Owner} (h : a <+: b) (i : ℕ) : a ≠ b ++ [i] := b
   omega
 
 /-! ## Scope owners -/
-
-/-- An owner a scope may write: not a binder of code, and not a free parameter
-of code. -/
-def scopeOwner (o : Owner) : Prop :=
-  codeBound o = false ∧ o ≠ codeFreeParam
 
 /-- Every extension of `o` is a scope owner. -/
 def headSafe (o : Owner) : Prop :=
@@ -1404,13 +1455,19 @@ theorem PosSafe.two {pos : Owner} (h : PosSafe pos) : PosSafe (pos ++ [2]) :=
   ⟨headSafe.append (xs := [0]) h.2.2, headSafe.append (xs := [1]) h.2.2,
     headSafe.append (xs := [2]) h.2.2⟩
 
+/-- The query root is a scope owner. -/
+theorem scopeOwner_nil : scopeOwner ([] : Owner) := ⟨rfl, by decide⟩
+
+/-- The root of an equation is a scope owner. -/
+theorem scopeOwner_five : scopeOwner ([5] : Owner) := ⟨rfl, by decide⟩
+
 omit [DecidableEq X] in
 theorem scopeOwners_nil : ∀ _ : X, scopeOwner ([] : Owner) :=
-  fun _ => ⟨rfl, by decide⟩
+  fun _ => scopeOwner_nil
 
 omit [DecidableEq X] in
 theorem scopeOwners_five : ∀ _ : X, scopeOwner ([5] : Owner) :=
-  fun _ => ⟨rfl, by decide⟩
+  fun _ => scopeOwner_five
 
 omit [DecidableEq X] in
 theorem PosSafe.root : PosSafe ([] : Owner) :=
@@ -1419,6 +1476,906 @@ theorem PosSafe.root : PosSafe ([] : Owner) :=
 omit [DecidableEq X] in
 theorem PosSafe.clause : PosSafe ([5] : Owner) :=
   ⟨headSafe_cons (by decide) [0], headSafe_cons (by decide) [1], headSafe_cons (by decide) [2]⟩
+
+/-! ## Sealed code -/
+
+theorem ownNil_fold {Y : Type v} (ps : List (Nm Y)) {t : Tm S Y} (h : ownNil t) :
+    ownNil (ps.foldr (fun p acc => .lam p [] acc) t) := by
+  induction ps with
+  | nil => exact h
+  | cons _ _ ih => exact ⟨rfl, ih⟩
+
+theorem ownNil_seal {Y : Type v} [DecidableEq Y] {t : Tm S Y} (h : ownNil t) :
+    ownNil (sealParams t) := by
+  unfold sealParams
+  exact ownNil_fold _ h
+
+theorem ownNil_codeAt (R : Owner) (holes : Option (X → Owner)) (penv senv : List (X × Owner))
+    (pos : Owner) (s : Src S X) : ownNil (codeAt R holes penv senv pos s) := by
+  induction s generalizing holes penv senv pos with
+  | sym _ => simp [codeAt, ownNil]
+  | fn _ => simp [codeAt, ownNil]
+  | sv y =>
+      simp only [codeAt]
+      cases codeLookup senv y with
+      | some _ => simp [ownNil]
+      | none => cases holes <;> simp [ownNil]
+  | par _ =>
+      simp only [codeAt]
+      split <;> simp [ownNil]
+  | lam z _ _ ih =>
+      unfold codeAt
+      exact ⟨rfl, ih _ _ _ _⟩
+  | form z _ ih =>
+      unfold codeAt
+      exact ⟨rfl, ih _ _ _ _⟩
+  | app _ _ ihf iha =>
+      simp only [codeAt, ownNil]
+      exact ⟨ihf _ _ _ _, iha _ _ _ _⟩
+  | quote _ ih =>
+      simp only [codeAt, ownNil]
+      exact ownNil_seal (ih none [] [] [])
+  | pquote _ ih =>
+      simp only [codeAt, ownNil]
+      exact ih _ _ _ _
+  | letS _ _ _ _ ihp ihw ihb =>
+      simp only [codeAt, ownNil]
+      exact ⟨ihp _ _ _ _, ihw _ _ _ _, ihb _ _ _ _⟩
+  | unify _ _ _ ihp ihw ihb =>
+      simp only [codeAt, ownNil]
+      exact ⟨ihp _ _ _ _, ihw _ _ _ _, ihb _ _ _ _⟩
+  | alt _ _ iht ihu =>
+      simp only [codeAt, ownNil]
+      exact ⟨iht _ _ _ _, ihu _ _ _ _⟩
+  | new _ _ ih =>
+      simpa [codeAt] using ih holes penv senv (pos ++ [0])
+
+omit [DecidableEq X] in
+theorem mapCode_back_fwd {t : Tm S (Slot X)} (h : ownNil t) :
+    mapCode codeBack (mapCode codeFwd t) = t := by
+  induction t with
+  | sym _ => rfl
+  | fn _ => rfl
+  | var n => simp [mapCode, codeBack_codeFwd]
+  | pvar n => simp [mapCode, codeBack_codeFwd]
+  | lam x own b ih =>
+      simp only [ownNil] at h
+      rcases h with ⟨rfl, hb⟩
+      simp only [mapCode, codeBack_codeFwd, ih hb]
+  | app _ _ ihf iha =>
+      simp only [ownNil] at h
+      simp only [mapCode, ihf h.1, iha h.2]
+  | quote _ ih =>
+      simp only [ownNil] at h
+      simp only [mapCode, ih h]
+  | ctx ks c ih =>
+      simp only [ownNil] at h
+      have hb := ih h
+      simp only [mapCode, hb, List.map_map]
+      congr
+      induction ks with
+      | nil => rfl
+      | cons n ns ihk => simp [List.map_cons, codeBack_codeFwd, ihk]
+  | pquote _ ih =>
+      simp only [ownNil] at h
+      simp only [mapCode, ih h]
+  | letP _ _ _ ihp ihw ihb =>
+      simp only [ownNil] at h
+      simp only [mapCode, ihp h.1, ihw h.2.1, ihb h.2.2]
+  | alt _ _ ih₁ ih₂ =>
+      simp only [ownNil] at h
+      simp only [mapCode, ih₁ h.1, ih₂ h.2]
+
+omit [DecidableEq X] in
+private theorem map_filter_binder {α β : Type v} [DecidableEq α] [DecidableEq β]
+    {f : α → β} (hf : Function.Injective f) (x : α) (l : List α) :
+    ((l.filter fun y => decide (y ≠ x)).map f) =
+      ((l.map f).filter fun z => decide (z ≠ f x)) := by
+  induction l with
+  | nil => rfl
+  | cons a l ih =>
+      by_cases ha : a = x
+      · have hd : decide (a ≠ x) = false := decide_eq_false (fun h => h ha)
+        have hdf : decide (f a ≠ f x) = false :=
+          decide_eq_false (fun h => h (congrArg f ha))
+        rw [List.filter_cons_of_neg (p := fun y => decide (y ≠ x))
+            (by rw [hd]; exact Bool.false_ne_true),
+          List.map_cons,
+          List.filter_cons_of_neg (p := fun z => decide (z ≠ f x))
+            (by rw [hdf]; exact Bool.false_ne_true),
+          ih]
+      · have hk : decide (a ≠ x) = true := decide_eq_true ha
+        have hkf : decide (f a ≠ f x) = true := decide_eq_true (hf.ne ha)
+        rw [List.filter_cons_of_pos (p := fun y => decide (y ≠ x)) hk,
+          List.map_cons, List.map_cons,
+          List.filter_cons_of_pos (p := fun z => decide (z ≠ f x)) hkf, ih]
+
+private theorem paramOcc_mapCode {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
+    {f : Nm Y → Nm Z} (hf : Function.Injective f) :
+    ∀ t : Tm S Y, paramOcc (mapCode f t) = (paramOcc t).map f
+  | .sym _ => rfl
+  | .fn _ => rfl
+  | .var _ => rfl
+  | .pvar _ => rfl
+  | .lam x _ b => by
+      simp only [mapCode, paramOcc, paramOcc_mapCode hf b, map_filter_binder hf x]
+  | .app a b => by
+      simp only [mapCode, paramOcc, paramOcc_mapCode hf a, paramOcc_mapCode hf b, List.map_append]
+  | .quote _ => rfl
+  | .ctx _ _ => rfl
+  | .pquote c => by
+      simp only [mapCode, paramOcc, paramOcc_mapCode hf c]
+  | .letP p w b => by
+      simp only [mapCode, paramOcc, paramOcc_mapCode hf p, paramOcc_mapCode hf w,
+        paramOcc_mapCode hf b, List.map_append]
+  | .alt t₁ t₂ => by
+      simp only [mapCode, paramOcc, paramOcc_mapCode hf t₁, paramOcc_mapCode hf t₂, List.map_append]
+
+private theorem mapCode_fold {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
+    (f : Nm Y → Nm Z) (ps : List (Nm Y)) (t : Tm S Y) :
+    mapCode f (ps.foldr (fun p acc => .lam p [] acc) t) =
+      (ps.map f).foldr (fun p acc => .lam p [] acc) (mapCode f t) := by
+  induction ps with
+  | nil => rfl
+  | cons _ _ ih => simp only [List.foldr, List.map, mapCode, ih]
+
+theorem mapCode_seal {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
+    {f : Nm Y → Nm Z} (hf : Function.Injective f) (t : Tm S Y) :
+    mapCode f (sealParams t) = sealParams (mapCode f t) := by
+  unfold sealParams
+  rw [mapCode_fold, paramOcc_mapCode hf]
+
+omit [DecidableEq X] in
+private theorem nil_bound : ∀ p ∈ ([] : List (X × Owner)), codeBound p.2 = true := by
+  intro _ h
+  simp at h
+
+omit [DecidableEq X] in
+private theorem cons_bound {z : X} {o : Owner} {l : List (X × Owner)}
+    (ho : codeBound o = true) (hl : ∀ p ∈ l, codeBound p.2 = true) :
+    ∀ p ∈ (z, o) :: l, codeBound p.2 = true := by
+  intro p hp
+  simp only [List.mem_cons] at hp
+  rcases hp with rfl | hp
+  · exact ho
+  · exact hl p hp
+
+omit [DecidableEq X] in
+private theorem append_bound {l₁ l₂ : List (X × Owner)}
+    (h₁ : ∀ p ∈ l₁, codeBound p.2 = true) (h₂ : ∀ p ∈ l₂, codeBound p.2 = true) :
+    ∀ p ∈ l₁ ++ l₂, codeBound p.2 = true := by
+  intro p hp
+  rcases List.mem_append.1 hp with hp | hp
+  · exact h₁ p hp
+  · exact h₂ p hp
+
+theorem codeLookup_bound (l : List (X × Owner)) {z : X} {o : Owner}
+    (hb : ∀ p ∈ l, codeBound p.2 = true) (hl : codeLookup l z = some o) :
+    codeBound o = true := by
+  induction l generalizing z o with
+  | nil => simp [codeLookup] at hl
+  | cons p rest ih =>
+      obtain ⟨y, o'⟩ := p
+      simp only [codeLookup] at hl
+      by_cases hy : y = z
+      · simp only [hy] at hl
+        cases hl
+        exact hb (y, o) List.mem_cons_self
+      · simp only [hy] at hl
+        exact ih (fun q hq => hb q (List.mem_cons_of_mem _ hq)) hl
+
+omit [DecidableEq X] in
+theorem svBinds_bound (pos : Owner) (s : Src S X) :
+    ∀ p ∈ svBinds pos s, codeBound p.2 = true := by
+  induction s generalizing pos with
+  | sv _ =>
+      intro p hp
+      simp only [svBinds, List.mem_singleton] at hp
+      subst hp
+      exact codeBound_binder _
+  | app _ _ ihf iha =>
+      intro p hp
+      simp only [svBinds, List.mem_append] at hp
+      rcases hp with hp | hp
+      · exact ihf _ p hp
+      · exact iha _ p hp
+  | alt _ _ iht ihu =>
+      intro p hp
+      simp only [svBinds, List.mem_append] at hp
+      rcases hp with hp | hp
+      · exact iht _ p hp
+      · exact ihu _ p hp
+  | sym _ | fn _ | par _ | lam _ _ _ | quote _ | pquote _ | letS _ _ _ _ | unify _ _ _ | new _ _ | form _ _ =>
+      intro p hp
+      simp [svBinds] at hp
+
+/-- Sealed code in the slot model is sealed code in the identity model, for
+code written in a form rooted at the scope owner `R`.  The environments are the
+binders of this quotation, most recent first, all binders of code; a hole is the
+root's head slot on both sides. -/
+theorem mapCode_codeAt (R : Owner) (hR : scopeOwner R) (penv senv : List (X × Owner)) (pos : Owner)
+    (hpenv : ∀ p ∈ penv, codeBound p.2 = true) (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
+    ∀ s : Src S X,
+      mapCode codeFwd (codeAt R none penv senv pos s) = codeIAt R none penv senv pos s
+  | .sym _ => rfl
+  | .fn _ => rfl
+  | .sv y => by
+      simp only [codeAt, codeIAt]
+      cases h : codeLookup senv y with
+      | none =>
+          simp only [mapCode, iVar]
+          rw [codeFwd_scope hR]
+      | some p =>
+          simp only [mapCode]
+          rw [codeFwd_code (Or.inl (codeLookup_bound senv hsenv h))]
+  | .par z => by
+      simp only [codeAt, codeIAt]
+      cases h : codeLookup penv z with
+      | none =>
+          simp only [mapCode]
+          rw [codeFwd_code (Or.inr rfl)]
+      | some p =>
+          simp only [mapCode]
+          rw [codeFwd_code (Or.inl (codeLookup_bound penv hpenv h))]
+  | .lam z _ b => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+          (cons_bound (codeBound_binder pos) hpenv) hsenv b]
+      rw [codeFwd_code (Or.inl (codeBound_binder pos))]
+  | .form z b => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+          (cons_bound (codeBound_binder pos) hpenv) hsenv b]
+      rw [codeFwd_code (Or.inl (codeBound_binder pos))]
+  | .app f a => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR penv senv (pos ++ [0]) hpenv hsenv f,
+        mapCode_codeAt R hR penv senv (pos ++ [1]) hpenv hsenv a]
+  | .quote c => by
+      simp only [codeAt, codeIAt, mapCode]
+      rw [mapCode_seal codeFwd_injective]
+      exact congrArg Tm.quote (congrArg sealParams
+        (mapCode_codeAt R hR [] [] [] nil_bound nil_bound c))
+  | .pquote c => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR [] [] [] nil_bound nil_bound c]
+  | .letS p w b _ => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
+          (append_bound (svBinds_bound (pos ++ [0]) p) hsenv) p,
+        mapCode_codeAt R hR penv senv (pos ++ [1]) hpenv hsenv w,
+        mapCode_codeAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
+          (append_bound (svBinds_bound (pos ++ [0]) p) hsenv) b]
+  | .unify p w b => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
+          (append_bound (svBinds_bound (pos ++ [0]) p) hsenv) p,
+        mapCode_codeAt R hR penv senv (pos ++ [1]) hpenv hsenv w,
+        mapCode_codeAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
+          (append_bound (svBinds_bound (pos ++ [0]) p) hsenv) b]
+  | .alt t₁ t₂ => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeAt R hR penv senv (pos ++ [0]) hpenv hsenv t₁,
+        mapCode_codeAt R hR penv senv (pos ++ [1]) hpenv hsenv t₂]
+  | .new _ b => by
+      simp only [codeAt, codeIAt,
+        mapCode_codeAt R hR penv senv (pos ++ [0]) hpenv hsenv b]
+
+/-- Sealed code in the identity model is sealed code in the slot model. -/
+theorem mapCode_codeIAt (R : Owner) (hR : scopeOwner R) (penv senv : List (X × Owner))
+    (pos : Owner) :
+    ∀ s : Src S X,
+      mapCode codeBack (codeIAt R none penv senv pos s) = codeAt R none penv senv pos s
+  | .sym _ => rfl
+  | .fn _ => rfl
+  | .sv y => by
+      simp only [codeAt, codeIAt]
+      cases codeLookup senv y <;> rfl
+  | .par z => by
+      simp only [codeAt, codeIAt]
+      cases codeLookup penv z <;> rfl
+  | .lam z _ b => by
+      simp only [codeAt, codeIAt, mapCode, codeBack,
+        mapCode_codeIAt R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b]
+  | .form z b => by
+      simp only [codeAt, codeIAt, mapCode, codeBack,
+        mapCode_codeIAt R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b]
+  | .app f a => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeIAt R hR penv senv (pos ++ [0]) f, mapCode_codeIAt R hR penv senv (pos ++ [1]) a]
+  | .quote c => by
+      simp only [codeAt, codeIAt, mapCode]
+      have hfwd : mapCode codeFwd (codeAt R none [] [] [] c) = codeIAt R none [] [] [] c :=
+        mapCode_codeAt R hR [] [] [] nil_bound nil_bound c
+      rw [← hfwd, ← mapCode_seal codeFwd_injective]
+      exact congrArg Tm.quote
+        (mapCode_back_fwd (ownNil_seal (ownNil_codeAt R none [] [] [] c)))
+  | .pquote c => by
+      simp only [codeAt, codeIAt, mapCode, mapCode_codeIAt R hR [] [] [] c]
+  | .letS p w b _ => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeIAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) p,
+        mapCode_codeIAt R hR penv senv (pos ++ [1]) w,
+        mapCode_codeIAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) b]
+  | .unify p w b => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeIAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) p,
+        mapCode_codeIAt R hR penv senv (pos ++ [1]) w,
+        mapCode_codeIAt R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) b]
+  | .alt t₁ t₂ => by
+      simp only [codeAt, codeIAt, mapCode,
+        mapCode_codeIAt R hR penv senv (pos ++ [0]) t₁, mapCode_codeIAt R hR penv senv (pos ++ [1]) t₂]
+  | .new _ b => by
+      simp only [codeAt, codeIAt, mapCode_codeIAt R hR penv senv (pos ++ [0]) b]
+
+theorem mapCode_codeOf {R : Owner} (hR : scopeOwner R) (s : Src S X) :
+    mapCode codeFwd (codeOf R s) = codeI R s := by
+  simp only [codeOf, codeI]
+  rw [mapCode_seal codeFwd_injective]
+  exact congrArg sealParams (mapCode_codeAt R hR [] [] [] nil_bound nil_bound s)
+
+theorem mapCode_codeI {R : Owner} (hR : scopeOwner R) (s : Src S X) :
+    mapCode codeBack (codeI R s) = codeOf R s := by
+  rw [← mapCode_codeOf hR]
+  exact mapCode_back_fwd (ownNil_seal (ownNil_codeAt R none [] [] [] s))
+
+/-! ## Sealed code in the setting -/
+
+omit [DecidableEq X] in
+theorem codeVars_fold {Y : Type v} (ps : List (Nm Y)) (t : Tm S Y) :
+    codeVars (ps.foldr (fun p acc => .lam p [] acc) t) = codeVars t := by
+  induction ps with
+  | nil => rfl
+  | cons _ _ ih => simp only [List.foldr_cons, codeVars, ih]
+
+omit [DecidableEq X] in
+theorem codeVars_sealParams {Y : Type v} [DecidableEq Y] (t : Tm S Y) :
+    codeVars (sealParams t) = codeVars t := by
+  unfold sealParams
+  exact codeVars_fold _ t
+
+theorem sealedFree_fold {Y : Type v} [DecidableEq Y] (ps : List (Nm Y)) (t : Tm S Y) :
+    sealedFree (ps.foldr (fun p acc => .lam p [] acc) t) = sealedFree t := by
+  induction ps with
+  | nil => rfl
+  | cons _ _ ih =>
+      simp only [List.foldr_cons, sealedFree, ih]
+      exact List.filter_eq_self.2 fun n _ => by cases n <;> simp [ownKey]
+
+theorem sealedFree_sealParams {Y : Type v} [DecidableEq Y] (t : Tm S Y) :
+    sealedFree (sealParams t) = sealedFree t := by
+  unfold sealParams
+  exact sealedFree_fold _ t
+
+omit [DecidableEq X] in
+/-- A parameter occurring in a term is a name of its code. -/
+theorem mem_codeNames_of_paramOcc {Y : Type v} [DecidableEq Y] :
+    ∀ (t : Tm S Y) {n : Nm Y}, n ∈ paramOcc t → n ∈ codeNames t
+  | .pvar x, n, h => by simpa [paramOcc, codeNames] using h
+  | .lam x _ b, n, h => by
+      simp only [paramOcc, List.mem_filter] at h
+      exact List.mem_cons_of_mem _ (mem_codeNames_of_paramOcc b h.1)
+  | .app f a, n, h => by
+      simp only [paramOcc, List.mem_append] at h
+      simp only [codeNames, List.mem_append]
+      exact h.imp (mem_codeNames_of_paramOcc f) (mem_codeNames_of_paramOcc a)
+  | .pquote c, n, h => by
+      simp only [paramOcc] at h
+      exact mem_codeNames_of_paramOcc c h
+  | .letP p w b, n, h => by
+      simp only [paramOcc, List.mem_append] at h
+      simp only [codeNames, List.mem_append]
+      rcases h with (h | h) | h
+      · exact Or.inl (Or.inl (mem_codeNames_of_paramOcc p h))
+      · exact Or.inl (Or.inr (mem_codeNames_of_paramOcc w h))
+      · exact Or.inr (mem_codeNames_of_paramOcc b h)
+  | .alt t u, n, h => by
+      simp only [paramOcc, List.mem_append] at h
+      simp only [codeNames, List.mem_append]
+      exact h.imp (mem_codeNames_of_paramOcc t) (mem_codeNames_of_paramOcc u)
+  | .sym _, _, h | .fn _, _, h | .var _, _, h | .quote _, _, h | .ctx _ _, _, h => by
+      simp [paramOcc] at h
+
+omit [DecidableEq X] in
+/-- Sealing the parameters of code adds no name: the binders it adds are the
+code's parameters. -/
+theorem codeNames_sealParams {Y : Type v} [DecidableEq Y] (t : Tm S Y) {n : Nm Y}
+    (h : n ∈ codeNames (sealParams t)) : n ∈ codeNames t := by
+  unfold sealParams at h
+  have key : ∀ (ps : List (Nm Y)), (∀ p ∈ ps, p ∈ codeNames t) →
+      n ∈ codeNames (ps.foldr (fun p acc => .lam p [] acc) t) → n ∈ codeNames t := by
+    intro ps hps
+    induction ps with
+    | nil => exact id
+    | cons p ps ih =>
+        intro h
+        simp only [List.foldr_cons, codeNames, List.mem_cons] at h
+        rcases h with rfl | h
+        · exact hps _ (by simp)
+        · exact ih (fun q hq => hps q (by simp [hq])) h
+  exact key _ (fun p hp => mem_codeNames_of_paramOcc t hp) h
+
+/-- **The names of sealed code written by `codeAt` are names as written**, and
+its holes, when it seals them, are the root's slots. -/
+theorem codeNames_codeAt (R : Owner) :
+    ∀ (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X),
+      ∀ n ∈ codeNames (codeAt R holes penv senv pos s), ∃ s', n = .src s'
+  | _, _, _, _, .sym _, n, h | _, _, _, _, .fn _, n, h => by simp [codeAt, codeNames] at h
+  | _, penv, _, _, .par z, n, h => by
+      simp only [codeAt] at h
+      split at h <;> simp only [codeNames, List.mem_singleton] at h <;> exact ⟨_, h⟩
+  | holes, _, senv, _, .sv y, n, h => by
+      simp only [codeAt] at h
+      split at h
+      · simp only [codeNames, List.mem_singleton] at h
+        exact ⟨_, h⟩
+      · split at h <;> simp only [codeNames, List.mem_singleton] at h <;> exact ⟨_, h⟩
+  | holes, penv, senv, pos, .lam z _ b, n, h => by
+      simp only [codeAt, codeNames, List.mem_cons] at h
+      rcases h with rfl | h
+      · exact ⟨_, rfl⟩
+      · exact codeNames_codeAt R holes _ senv _ b n h
+  | holes, penv, senv, pos, .form z b, n, h => by
+      simp only [codeAt, codeNames, List.mem_cons] at h
+      rcases h with rfl | h
+      · exact ⟨_, rfl⟩
+      · exact codeNames_codeAt R holes _ senv _ b n h
+  | holes, penv, senv, pos, .app f a, n, h => by
+      simp only [codeAt, codeNames, List.mem_append] at h
+      rcases h with h | h
+      · exact codeNames_codeAt R holes penv senv _ f n h
+      · exact codeNames_codeAt R holes penv senv _ a n h
+  | _, _, _, _, .quote c, n, h => by
+      simp only [codeAt, codeNames] at h
+      exact codeNames_codeAt R none [] [] [] c n (codeNames_sealParams _ h)
+  | holes, _, _, _, .pquote c, n, h => by
+      simp only [codeAt, codeNames] at h
+      exact codeNames_codeAt R holes [] [] [] c n h
+  | holes, penv, senv, pos, .letS p w b _, n, h => by
+      simp only [codeAt, codeNames, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact codeNames_codeAt R holes _ _ _ p n h
+      · exact codeNames_codeAt R holes _ _ _ w n h
+      · exact codeNames_codeAt R holes _ _ _ b n h
+  | holes, penv, senv, pos, .unify p w b, n, h => by
+      simp only [codeAt, codeNames, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact codeNames_codeAt R holes _ _ _ p n h
+      · exact codeNames_codeAt R holes _ _ _ w n h
+      · exact codeNames_codeAt R holes _ _ _ b n h
+  | holes, penv, senv, pos, .alt t u, n, h => by
+      simp only [codeAt, codeNames, List.mem_append] at h
+      rcases h with h | h
+      · exact codeNames_codeAt R holes _ _ _ t n h
+      · exact codeNames_codeAt R holes _ _ _ u n h
+  | holes, penv, senv, pos, .new _ b, n, h => by
+      simp only [codeAt] at h
+      exact codeNames_codeAt R holes _ _ _ b n h
+
+/-- **The holes of sealed code written in a form rooted at `R` are `R`'s slots.** -/
+theorem codeVars_codeAt_none (R : Owner) :
+    ∀ (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X),
+      ∀ n ∈ codeVars (codeAt R none penv senv pos s), ∃ y, n = .src (R, y)
+  | _, _, _, .sym _, n, h | _, _, _, .fn _, n, h => by simp [codeAt, codeVars] at h
+  | penv, _, _, .par z, n, h => by
+      simp only [codeAt] at h
+      split at h <;> simp [codeVars] at h
+  | _, senv, _, .sv y, n, h => by
+      simp only [codeAt] at h
+      split at h
+      · simp [codeVars] at h
+      · simp only [codeVars, List.mem_singleton] at h
+        exact ⟨y, h⟩
+  | penv, senv, pos, .lam z _ b, n, h => by
+      simp only [codeAt, codeVars] at h
+      exact codeVars_codeAt_none R _ senv _ b n h
+  | penv, senv, pos, .form z b, n, h => by
+      simp only [codeAt, codeVars] at h
+      exact codeVars_codeAt_none R _ senv _ b n h
+  | penv, senv, pos, .app f a, n, h => by
+      simp only [codeAt, codeVars, List.mem_append] at h
+      rcases h with h | h
+      · exact codeVars_codeAt_none R penv senv _ f n h
+      · exact codeVars_codeAt_none R penv senv _ a n h
+  | _, _, _, .quote c, n, h => by
+      simp only [codeAt, codeVars, codeVars_sealParams] at h
+      exact codeVars_codeAt_none R [] [] [] c n h
+  | _, _, _, .pquote c, n, h => by
+      simp only [codeAt, codeVars] at h
+      exact codeVars_codeAt_none R [] [] [] c n h
+  | penv, senv, pos, .letS p w b _, n, h => by
+      simp only [codeAt, codeVars, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact codeVars_codeAt_none R _ _ _ p n h
+      · exact codeVars_codeAt_none R _ _ _ w n h
+      · exact codeVars_codeAt_none R _ _ _ b n h
+  | penv, senv, pos, .unify p w b, n, h => by
+      simp only [codeAt, codeVars, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact codeVars_codeAt_none R _ _ _ p n h
+      · exact codeVars_codeAt_none R _ _ _ w n h
+      · exact codeVars_codeAt_none R _ _ _ b n h
+  | penv, senv, pos, .alt t u, n, h => by
+      simp only [codeAt, codeVars, List.mem_append] at h
+      rcases h with h | h
+      · exact codeVars_codeAt_none R _ _ _ t n h
+      · exact codeVars_codeAt_none R _ _ _ u n h
+  | penv, senv, pos, .new _ b, n, h => by
+      simp only [codeAt] at h
+      exact codeVars_codeAt_none R _ _ _ b n h
+
+theorem codeVars_codeOf (R : Owner) (c : Src S X) :
+    ∀ n ∈ codeVars (codeOf R c), ∃ y, n = .src (R, y) := by
+  intro n hn
+  simp only [codeOf, codeVars_sealParams] at hn
+  exact codeVars_codeAt_none R [] [] [] c n hn
+
+/-- **The free names of sealed code in pattern code written in a form rooted at
+`R` are `R`'s slots.** -/
+theorem sealedFree_codeAt (R : Owner) :
+    ∀ (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X),
+      ∀ n ∈ sealedFree (codeAt R holes penv senv pos s), ∃ y, n = .src (R, y)
+  | _, _, _, _, .sym _, n, h | _, _, _, _, .fn _, n, h => by simp [codeAt, sealedFree] at h
+  | _, penv, _, _, .par z, n, h => by
+      simp only [codeAt] at h
+      split at h <;> simp [sealedFree] at h
+  | holes, _, senv, _, .sv y, n, h => by
+      simp only [codeAt] at h
+      split at h
+      · simp [sealedFree] at h
+      · split at h <;> simp [sealedFree] at h
+  | holes, penv, senv, pos, .lam z _ b, n, h => by
+      simp only [codeAt, sealedFree, List.mem_filter] at h
+      exact sealedFree_codeAt R holes _ senv _ b n h.1
+  | holes, penv, senv, pos, .form z b, n, h => by
+      simp only [codeAt, sealedFree, List.mem_filter] at h
+      exact sealedFree_codeAt R holes _ senv _ b n h.1
+  | holes, penv, senv, pos, .app f a, n, h => by
+      simp only [codeAt, sealedFree, List.mem_append] at h
+      rcases h with h | h
+      · exact sealedFree_codeAt R holes penv senv _ f n h
+      · exact sealedFree_codeAt R holes penv senv _ a n h
+  | _, _, _, _, .quote c, n, h => by
+      simp only [codeAt, sealedFree, codeVars_sealParams] at h
+      exact codeVars_codeAt_none R [] [] [] c n h
+  | holes, _, _, _, .pquote c, n, h => by
+      simp only [codeAt, sealedFree] at h
+      exact sealedFree_codeAt R holes [] [] [] c n h
+  | holes, penv, senv, pos, .letS p w b _, n, h => by
+      simp only [codeAt, sealedFree, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact sealedFree_codeAt R holes _ _ _ p n h
+      · exact sealedFree_codeAt R holes _ _ _ w n h
+      · exact sealedFree_codeAt R holes _ _ _ b n h
+  | holes, penv, senv, pos, .unify p w b, n, h => by
+      simp only [codeAt, sealedFree, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact sealedFree_codeAt R holes _ _ _ p n h
+      · exact sealedFree_codeAt R holes _ _ _ w n h
+      · exact sealedFree_codeAt R holes _ _ _ b n h
+  | holes, penv, senv, pos, .alt t u, n, h => by
+      simp only [codeAt, sealedFree, List.mem_append] at h
+      rcases h with h | h
+      · exact sealedFree_codeAt R holes _ _ _ t n h
+      · exact sealedFree_codeAt R holes _ _ _ u n h
+  | holes, penv, senv, pos, .new _ b, n, h => by
+      simp only [codeAt] at h
+      exact sealedFree_codeAt R holes _ _ _ b n h
+
+omit [DecidableEq X] in
+/-- Reading a name as written strips no tag. -/
+theorem mapCode_nmBase_self {Y : Type v} :
+    ∀ (t : Tm S Y), ownNil t → (∀ n ∈ codeNames t, ∃ s, n = .src s) → mapCode nmBase t = t
+  | .sym _, _, _ => rfl
+  | .fn _, _, _ => rfl
+  | .var n, _, h => by
+      obtain ⟨s, rfl⟩ := h n (by simp [codeNames])
+      rfl
+  | .pvar n, _, h => by
+      obtain ⟨s, rfl⟩ := h n (by simp [codeNames])
+      rfl
+  | .lam x o b, ho, h => by
+      obtain ⟨rfl, hb⟩ := ho
+      obtain ⟨s, rfl⟩ := h x (by simp [codeNames])
+      simp only [mapCode, nmBase,
+        mapCode_nmBase_self b hb fun n hn => h n (by simp [codeNames, hn])]
+  | .app f a, ho, h => by
+      simp only [mapCode, mapCode_nmBase_self f ho.1 fun n hn => h n (by simp [codeNames, hn]),
+        mapCode_nmBase_self a ho.2 fun n hn => h n (by simp [codeNames, hn])]
+  | .quote c, ho, h => by
+      simp only [mapCode, mapCode_nmBase_self c ho fun n hn => h n (by simpa [codeNames] using hn)]
+  | .ctx ks c, ho, h => by
+      have hks : ∀ (l : List (Nm Y)), (∀ n ∈ l, ∃ s, n = .src s) → l.map nmBase = l := by
+        intro l hl
+        induction l with
+        | nil => rfl
+        | cons a l ih =>
+            obtain ⟨s, rfl⟩ := hl a (by simp)
+            simp only [List.map_cons, nmBase, ih (fun n hn => hl n (by simp [hn]))]
+      simp only [mapCode, mapCode_nmBase_self c ho fun n hn => h n (by simp [codeNames, hn]),
+        hks ks fun n hn => h n (by simp [codeNames, hn])]
+  | .pquote c, ho, h => by
+      simp only [mapCode, mapCode_nmBase_self c ho fun n hn => h n (by simpa [codeNames] using hn)]
+  | .letP p w b, ho, h => by
+      simp only [mapCode, mapCode_nmBase_self p ho.1 fun n hn => h n (by simp [codeNames, hn]),
+        mapCode_nmBase_self w ho.2.1 fun n hn => h n (by simp [codeNames, hn]),
+        mapCode_nmBase_self b ho.2.2 fun n hn => h n (by simp [codeNames, hn])]
+  | .alt t u, ho, h => by
+      simp only [mapCode, mapCode_nmBase_self t ho.1 fun n hn => h n (by simp [codeNames, hn]),
+        mapCode_nmBase_self u ho.2 fun n hn => h n (by simp [codeNames, hn])]
+
+omit [DecidableEq X] in
+theorem codeNames_mapCode {Y Z : Type v} (f : Nm Y → Nm Z) :
+    ∀ (t : Tm S Y) {m : Nm Z}, m ∈ codeNames (mapCode f t) → ∃ n ∈ codeNames t, m = f n
+  | .sym _, _, h | .fn _, _, h => by simp [mapCode, codeNames] at h
+  | .var n, m, h => by simp only [mapCode, codeNames, List.mem_singleton] at h; exact ⟨n, by simp [codeNames], h⟩
+  | .pvar n, m, h => by simp only [mapCode, codeNames, List.mem_singleton] at h; exact ⟨n, by simp [codeNames], h⟩
+  | .lam x o b, m, h => by
+      simp only [mapCode, codeNames, List.mem_cons] at h
+      rcases h with rfl | h
+      · exact ⟨x, by simp [codeNames], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f b h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+  | .app a b, m, h => by
+      simp only [mapCode, codeNames, List.mem_append] at h
+      rcases h with h | h
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f a h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f b h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+  | .quote c, m, h => by
+      simp only [mapCode, codeNames] at h
+      obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f c h
+      exact ⟨n, by simpa [codeNames] using hn, rfl⟩
+  | .ctx ks c, m, h => by
+      simp only [mapCode, codeNames, List.mem_append, List.mem_map] at h
+      rcases h with ⟨n, hn, rfl⟩ | h
+      · exact ⟨n, by simp [codeNames, hn], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f c h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+  | .pquote c, m, h => by
+      simp only [mapCode, codeNames] at h
+      obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f c h
+      exact ⟨n, by simpa [codeNames] using hn, rfl⟩
+  | .letP p w b, m, h => by
+      simp only [mapCode, codeNames, List.mem_append] at h
+      rcases h with (h | h) | h
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f p h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f w h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f b h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+  | .alt t u, m, h => by
+      simp only [mapCode, codeNames, List.mem_append] at h
+      rcases h with h | h
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f t h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+      · obtain ⟨n, hn, rfl⟩ := codeNames_mapCode f u h
+        exact ⟨n, by simp [codeNames, hn], rfl⟩
+
+omit [DecidableEq X] in
+theorem ownNil_mapCode {Y Z : Type v} (f : Nm Y → Nm Z) : ∀ t : Tm S Y, ownNil (mapCode f t)
+  | .sym _ => trivial
+  | .fn _ => trivial
+  | .var _ => trivial
+  | .pvar _ => trivial
+  | .lam _ _ b => ⟨rfl, ownNil_mapCode f b⟩
+  | .app a b => ⟨ownNil_mapCode f a, ownNil_mapCode f b⟩
+  | .quote c => ownNil_mapCode f c
+  | .ctx _ c => ownNil_mapCode f c
+  | .pquote c => ownNil_mapCode f c
+  | .letP p w b => ⟨ownNil_mapCode f p, ownNil_mapCode f w, ownNil_mapCode f b⟩
+  | .alt t u => ⟨ownNil_mapCode f t, ownNil_mapCode f u⟩
+
+/-- **Sealed code written in a form root is related sealed code**, under any name
+map: its names are names as written, read by `codeFwd`, and its holes are the
+root's slots. -/
+theorem QR_codeOf {R : Owner} (hR : formRoot R) (c : Src S X) (ν : Nm (Slot X) → Nm (BId X)) :
+    QR SC ν (codeOf R c) (codeI R c) := by
+  have hsrc : ∀ n ∈ codeNames (codeOf R c), ∃ s, n = .src s := fun n hn =>
+    codeNames_codeAt R none [] [] [] c n (codeNames_sealParams _ hn)
+  have hown : ownNil (codeOf R c) := ownNil_seal (ownNil_codeAt R none [] [] [] c)
+  have hI : codeI R c = mapCode codeFwd (codeOf R c) := (mapCode_codeOf hR.scopeOwner c).symm
+  have hsrcI : ∀ n ∈ codeNames (codeI R c), ∃ s, n = .src s := by
+    intro n hn
+    rw [hI] at hn
+    obtain ⟨m, hm, rfl⟩ := codeNames_mapCode codeFwd _ hn
+    obtain ⟨s, rfl⟩ := hsrc m hm
+    exact codeFwd_src s
+  refine ⟨?_, ⟨hown, ?_, ?_⟩, ?_⟩
+  · show codeQ (stripCode (codeOf R c)) (stripCode (codeI R c))
+    rw [stripCode, stripCode, mapCode_nmBase_self _ hown hsrc,
+      mapCode_nmBase_self _ (by rw [hI]; exact ownNil_mapCode _ _) hsrcI]
+    exact ⟨R, c, hR.scopeOwner, rfl, rfl⟩
+  · intro n hn
+    obtain ⟨y, rfl⟩ := codeVars_codeOf R c n hn
+    exact hR
+  · intro n hn
+    exact hsrc n ((mem_codeNames _).2 (Or.inr hn))
+  · rw [hI]
+    exact mapCode_congr _ fun n hn => by
+      obtain ⟨s, rfl⟩ := hsrc n hn
+      rfl
+
+/-- **The free names of sealed code of an elaborated form rooted at `R` are `R`'s
+slots.** -/
+theorem Ann.sealedFree_slotOf (R : Owner) :
+    ∀ (t : Ann S X) (env : REnv X) (pos : Owner),
+      ∀ n ∈ sealedFree (t.slotOf R env pos), ∃ y, n = .src (R, y)
+  | .sym _, _, _, n, h | .fn _, _, _, n, h | .sv _, _, _, n, h | .par _, _, _, n, h => by
+      simp [Ann.slotOf, slotVar, sealedFree] at h
+  | .lam z own _ b, env, pos, n, h => by
+      simp only [Ann.slotOf, sealedFree, List.mem_filter] at h
+      exact Ann.sealedFree_slotOf R b _ _ n h.1
+  | .app f a, env, pos, n, h => by
+      simp only [Ann.slotOf, sealedFree, List.mem_append] at h
+      rcases h with h | h
+      · exact Ann.sealedFree_slotOf R f _ _ n h
+      · exact Ann.sealedFree_slotOf R a _ _ n h
+  | .quote c, _, _, n, h => by
+      simp only [Ann.slotOf, sealedFree] at h
+      exact codeVars_codeOf R c n h
+  | .pquote c, env, _, n, h => by
+      simp only [Ann.slotOf, sealedFree, sealedFree_sealParams] at h
+      exact sealedFree_codeAt R (some env) [] [] [] c n h
+  | .letP p w b, env, pos, n, h => by
+      simp only [Ann.slotOf, sealedFree, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact Ann.sealedFree_slotOf R p _ _ n h
+      · exact Ann.sealedFree_slotOf R w _ _ n h
+      · exact Ann.sealedFree_slotOf R b _ _ n h
+  | .letA y₀ ys p w b, env, pos, n, h => by
+      simp only [Ann.slotOf, sealedFree, List.mem_append, List.mem_filter] at h
+      rcases h with ⟨(h | h) | h, -⟩ | h
+      · exact Ann.sealedFree_slotOf R p _ _ n h
+      · simp at h
+      · exact Ann.sealedFree_slotOf R b _ _ n h
+      · exact Ann.sealedFree_slotOf R w _ _ n h
+  | .alt t u, env, pos, n, h => by
+      simp only [Ann.slotOf, sealedFree, List.mem_append] at h
+      rcases h with h | h
+      · exact Ann.sealedFree_slotOf R t _ _ n h
+      · exact Ann.sealedFree_slotOf R u _ _ n h
+  | .new [] b, env, pos, n, h => by
+      simp only [Ann.slotOf] at h
+      exact Ann.sealedFree_slotOf R b _ _ n h
+  | .new (y₀ :: ys) b, env, pos, n, h => by
+      simp only [Ann.slotOf, newBlock, sealedFree, List.mem_append, List.mem_filter] at h
+      rcases h with ⟨h, -⟩ | ⟨h, -⟩
+      · exact Ann.sealedFree_slotOf R b _ _ n h
+      · simp at h
+
+/-! ## Holes are variables of elaborated text -/
+
+omit [DecidableEq X] in
+/-- In a term without contextual code, a name of code is one of its variables. -/
+theorem mem_vars_of_mem_codeVars {Y : Type v} {n : Nm Y} :
+    ∀ {t : Tm S Y}, ctxFree t → n ∈ codeVars t → n ∈ Tm.vars t
+  | .var _, _, h => by simpa [codeVars, Tm.vars] using h
+  | .lam _ _ b, hc, h => by
+      simp only [codeVars, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_codeVars (t := b) hc h
+  | .app f a, hc, h => by
+      simp only [codeVars, Tm.vars, List.mem_append] at h ⊢
+      exact h.imp (mem_vars_of_mem_codeVars hc.1) (mem_vars_of_mem_codeVars hc.2)
+  | .quote c, hc, h => by
+      simp only [codeVars, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_codeVars (t := c) hc h
+  | .pquote c, hc, h => by
+      simp only [codeVars, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_codeVars (t := c) hc h
+  | .letP p w b, hc, h => by
+      simp only [codeVars, Tm.vars, List.mem_append] at h ⊢
+      rcases h with (h | h) | h
+      · exact Or.inl (Or.inl (mem_vars_of_mem_codeVars hc.1 h))
+      · exact Or.inl (Or.inr (mem_vars_of_mem_codeVars hc.2.1 h))
+      · exact Or.inr (mem_vars_of_mem_codeVars hc.2.2 h)
+  | .alt t u, hc, h => by
+      simp only [codeVars, Tm.vars, List.mem_append] at h ⊢
+      exact h.imp (mem_vars_of_mem_codeVars hc.1) (mem_vars_of_mem_codeVars hc.2)
+  | .ctx _ _, hc, _ => hc.elim
+  | .sym _, _, h | .fn _, _, h | .pvar _, _, h => by simp [codeVars] at h
+
+omit [DecidableEq X] in
+/-- In a term without contextual code, a free name of sealed code is one of its
+variables. -/
+theorem mem_vars_of_mem_sealedFree {Y : Type v} [DecidableEq Y] {n : Nm Y} :
+    ∀ {t : Tm S Y}, ctxFree t → n ∈ sealedFree t → n ∈ Tm.vars t
+  | .quote c, hc, h => by
+      simp only [sealedFree, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_codeVars (t := c) hc h
+  | .lam _ _ b, hc, h => by
+      simp only [sealedFree, List.mem_filter, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_sealedFree (t := b) hc h.1
+  | .app f a, hc, h => by
+      simp only [sealedFree, Tm.vars, List.mem_append] at h ⊢
+      exact h.imp (mem_vars_of_mem_sealedFree hc.1) (mem_vars_of_mem_sealedFree hc.2)
+  | .pquote c, hc, h => by
+      simp only [sealedFree, Tm.vars] at h ⊢
+      exact mem_vars_of_mem_sealedFree (t := c) hc h
+  | .letP p w b, hc, h => by
+      simp only [sealedFree, Tm.vars, List.mem_append] at h ⊢
+      rcases h with (h | h) | h
+      · exact Or.inl (Or.inl (mem_vars_of_mem_sealedFree hc.1 h))
+      · exact Or.inl (Or.inr (mem_vars_of_mem_sealedFree hc.2.1 h))
+      · exact Or.inr (mem_vars_of_mem_sealedFree hc.2.2 h)
+  | .alt t u, hc, h => by
+      simp only [sealedFree, Tm.vars, List.mem_append] at h ⊢
+      exact h.imp (mem_vars_of_mem_sealedFree hc.1) (mem_vars_of_mem_sealedFree hc.2)
+  | .ctx _ _, hc, _ => hc.elim
+  | .sym _, _, h | .fn _, _, h | .var _, _, h | .pvar _, _, h => by simp [sealedFree] at h
+
+omit [DecidableEq X] in
+theorem ctxFree_sealParams {Y : Type v} [DecidableEq Y] {t : Tm S Y} (h : ctxFree t) :
+    ctxFree (sealParams t) := by
+  unfold sealParams
+  induction paramOcc t with
+  | nil => exact h
+  | cons _ _ ih => simpa only [List.foldr_cons, ctxFree] using ih
+
+/-- Sealed code holds no contextual code. -/
+theorem ctxFree_codeAt (R : Owner) :
+    ∀ (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X),
+      ctxFree (codeAt R holes penv senv pos s)
+  | _, _, _, _, .sym _ | _, _, _, _, .fn _ => trivial
+  | _, penv, _, _, .par z => by
+      simp only [codeAt]
+      split <;> trivial
+  | holes, _, senv, _, .sv y => by
+      simp only [codeAt]
+      split
+      · trivial
+      · split <;> trivial
+  | holes, penv, senv, pos, .lam z _ b => by
+      simpa only [codeAt, ctxFree] using ctxFree_codeAt R holes _ senv _ b
+  | holes, penv, senv, pos, .form z b => by
+      simpa only [codeAt, ctxFree] using ctxFree_codeAt R holes _ senv _ b
+  | holes, penv, senv, pos, .app f a =>
+      ⟨ctxFree_codeAt R holes penv senv _ f, ctxFree_codeAt R holes penv senv _ a⟩
+  | _, _, _, _, .quote c => ctxFree_sealParams (ctxFree_codeAt R none [] [] [] c)
+  | holes, _, _, _, .pquote c => ctxFree_codeAt R holes [] [] [] c
+  | holes, penv, senv, pos, .letS p w b _ =>
+      ⟨ctxFree_codeAt R holes _ _ _ p, ctxFree_codeAt R holes _ _ _ w,
+        ctxFree_codeAt R holes _ _ _ b⟩
+  | holes, penv, senv, pos, .unify p w b =>
+      ⟨ctxFree_codeAt R holes _ _ _ p, ctxFree_codeAt R holes _ _ _ w,
+        ctxFree_codeAt R holes _ _ _ b⟩
+  | holes, penv, senv, pos, .alt t u =>
+      ⟨ctxFree_codeAt R holes _ _ _ t, ctxFree_codeAt R holes _ _ _ u⟩
+  | holes, penv, senv, pos, .new _ b => by
+      simpa only [codeAt] using ctxFree_codeAt R holes penv senv _ b
+
+/-- **Elaborated text holds no contextual code.** -/
+theorem Ann.ctxFree_slotOf (R : Owner) :
+    ∀ (t : Ann S X) (env : REnv X) (pos : Owner), ctxFree (t.slotOf R env pos)
+  | .sym _, _, _ | .fn _, _, _ | .sv _, _, _ | .par _, _, _ => trivial
+  | .lam _ _ _ b, _, _ => Ann.ctxFree_slotOf R b _ _
+  | .app f a, _, _ => ⟨Ann.ctxFree_slotOf R f _ _, Ann.ctxFree_slotOf R a _ _⟩
+  | .quote c, _, _ => ctxFree_sealParams (ctxFree_codeAt R none [] [] [] c)
+  | .pquote c, _, _ => ctxFree_sealParams (ctxFree_codeAt R _ [] [] [] c)
+  | .letP p w b, _, _ =>
+      ⟨Ann.ctxFree_slotOf R p _ _, Ann.ctxFree_slotOf R w _ _, Ann.ctxFree_slotOf R b _ _⟩
+  | .letA _ _ p w b, _, _ =>
+      ⟨⟨Ann.ctxFree_slotOf R p _ _, trivial, Ann.ctxFree_slotOf R b _ _⟩,
+        Ann.ctxFree_slotOf R w _ _⟩
+  | .alt t u, _, _ => ⟨Ann.ctxFree_slotOf R t _ _, Ann.ctxFree_slotOf R u _ _⟩
+  | .new [] b, _, _ => Ann.ctxFree_slotOf R b _ _
+  | .new (_ :: _) b, _, _ => ⟨Ann.ctxFree_slotOf R b _ _, trivial⟩
+
+/-- **The identity model's frame collects the holes of its form**: a hole of
+sealed code written in a form rooted at `R` is, on the identity side, the head
+slot of `R`'s frame, and it is among the frame's slots. -/
+theorem Ann.hole_mem_frameSlots {R : Owner} (hR : formRoot R) {t : Ann S X} {env : REnv X}
+    {pos : Owner} {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd} {Res : List (Nm (BId X))}
+    {ok : Bool} {t₂ : Tm S (BId X)} (hrel : Rel SC ν μ k Res ok (t.slotOf R env pos) t₂) {y : X}
+    (hy : (.src (R, y) : Nm (Slot X)) ∈ sealedFree (t.slotOf R env pos)) :
+    BId.slot ⟨y, R, R, .head⟩ ∈ frameSlots R t₂ := by
+  have h := hrel.holeRead_mem_sealedFree hy
+  change codeFwd (.src (R, y)) ∈ sealedFree t₂ at h
+  rw [codeFwd_scope hR.scopeOwner] at h
+  exact slot_mem_frameSlots
+    (mem_vars_of_mem_sealedFree (hrel.ctxFree (Ann.ctxFree_slotOf R t env pos)) h) rfl
 
 /-! ## The static relation -/
 
@@ -1430,15 +2387,16 @@ model's term and the identity model's term are related by `Rel`, as a pattern
 reserved names satisfying `ResOK`. A pattern quotation is related as code:
 its holes are the outer slots, and its binders travel by `CodeRel`. The
 resolution environment and the owners written at `posS` are scope owners. -/
-theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI : IEnv X}
+theorem rel_ann {R : Owner} (hR : formRoot R) (t : Ann S X) :
+    ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI : IEnv X}
     {pv : X → Owner} {fr posI : Owner} {ν μ : Nm (Slot X) → Nm (BId X)},
     t.WF posI → k ≠ .val → (k = .pat → t.NewFree) →
     (∀ y ∈ t.names, ν (.src (env y, y)) = .src (.slot (envI y))) →
     (∀ y ∈ t.names, (envI y).spell = y ∧ (envI y).frame <+: fr) → fr <+: posI →
     (∀ z ∈ t.freePars, μ (.src ([], z)) = .src (.par z (pv z))) →
     (∀ y, scopeOwner (env y)) → PosSafe posS →
-    ∃ Res, Rel SC ν μ k Res (annOK t) (t.slotOf env posS) (t.idOf envI pv fr posI) ∧
-      ResOK fr posI t (t.slotOf env posS) (t.idOf envI pv fr posI) Res := by
+    ∃ Res, Rel SC ν μ k Res (annOK t) (t.slotOf R env posS) (t.idOf R envI pv fr posI) ∧
+      ResOK fr posI t (t.slotOf R env posS) (t.idOf R envI pv fr posI) Res := by
   induction t with
   | sym s =>
       intro _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
@@ -1464,27 +2422,35 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
         rw [hμ z (by simp [Ann.freePars])]
         exact scParOK_scope
   | quote c =>
-      intro _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
-      exact ⟨[], .quote ⟨c, rfl, rfl⟩, .nil⟩
+      intro _ _ _ _ _ _ _ ν _ _ _ _ _ _ _ _ _ _
+      exact ⟨[], .quote (QR_codeOf hR c ν), .nil⟩
   | pquote c =>
-      intro _ env _ envI _ _ _ ν _ hwf _ _ hν _ _ _ hE _
+      intro _ env _ envI _ _ _ ν μ _ _ _ hν _ _ _ hE _
       simp only [Ann.slotOf, Ann.idOf]
       have hB : ∀ y, codeBound (env y) = false := fun y => (hE y).1
       have hF : ∀ y, env y ≠ codeFreeParam := fun y => (hE y).2
       have hbody : Rel SC (codeMapHoles env envI) (codeMapHoles env envI) .code [] true
-          (sealParams (codeAt (some env) [] [] [] c))
-          (sealParams (codeIAt (some envI) [] [] [] c)) :=
-        Rel.of_codeRel (C := SC) (fun {_ _} h => h) (scVarHole_map env envI)
-          (scParOK_map env envI) (fun {_ _ _} h₁ h₂ => scBare_map env envI h₁ h₂)
-          (hwf env envI hB hF) .code (by decide)
-      refine ⟨[], .pquote (hbody.congr ?hnames ?hparams) (hbody.shape_of rfl) rfl, ResOK.nil⟩
-      · intro n hn
-        rw [freeNames_sealParams] at hn
-        obtain ⟨y, hy, rfl⟩ := mem_freeNames_codeAt env [] [] [] c n hn
-        rw [codeMapHoles_hole (hB y) (hF y), hν y (by simpa [Ann.names] using hy)]
-      · intro x hx
-        rw [freeParams_sealParams] at hx
-        cases hx
+          (sealParams (codeAt R (some env) [] [] [] c))
+          (sealParams (codeIAt R (some envI) [] [] [] c)) :=
+        Rel.code_pattern (C := SC) R hR.scopeOwner env envI (fun s => QR_codeOf hR s _)
+          (scVarHole_map env envI) (scParOK_map env envI)
+          (fun {_ _ _} h₁ h₂ => scBare_map env envI h₁ h₂) hB hF c .code (by decide)
+      have hbody' : Rel SC ν μ .code [] true
+          (sealParams (codeAt R (some env) [] [] [] c))
+          (sealParams (codeIAt R (some envI) [] [] [] c)) := by
+        refine hbody.congr ?_ ?_ ?_
+        · intro n hn
+          rw [freeNames_sealParams] at hn
+          obtain ⟨y, hy, rfl⟩ := mem_freeNames_codeAt R env [] [] [] c n hn
+          rw [codeMapHoles_hole (hB y) (hF y), hν y (by simpa [Ann.names] using hy)]
+        · intro n hn
+          rw [sealedFree_sealParams] at hn
+          obtain ⟨y, rfl⟩ := sealedFree_codeAt R (some env) [] [] [] c n hn
+          exact Or.inl ⟨_, rfl⟩
+        · intro x hx
+          rw [freeParams_sealParams] at hx
+          cases hx
+      exact ⟨[], .pquote hbody' (hbody'.shape_of rfl) rfl, ResOK.nil⟩
   | lam z own key b ih =>
       intro _ env posS envI pv fr posI ν μ hwf _ _ hν hI hfr hμ hE hP
       simp only [Ann.WF] at hwf
@@ -1525,12 +2491,30 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
         (fun y _ hy => Ann.update_of_mem hy) (fun y hy => bindν_on hy)
         (fun y hy hyo => ⟨envI y, by rw [Ann.update_of_not_mem hyo, bindν_not_mem hyo]; exact hν y hy,
           ne_of_prefix ((hI y hy).2.trans hfr) 0⟩) hkeys (Ann.Open.of_WF hwfb)
+      have hnotown : ∀ n ∈ sealedFree (b.slotOf R (env.update own (posS ++ [0])) (posS ++ [0])),
+          ownKey (own.map fun y => (posS ++ [0], y)) n = false := by
+        intro n hn
+        obtain ⟨y, rfl⟩ := Ann.sealedFree_slotOf R b _ _ n hn
+        rw [ownKey_map_src, decide_eq_false_iff_not]
+        rintro ⟨hRo, -⟩
+        exact not_formRoot_append posS (by decide) (hRo ▸ hR)
+      have hfreeOwn : ∀ n ∈ freeNames (b.slotOf R (env.update own (posS ++ [0])) (posS ++ [0])) ++
+          sealedFree (b.slotOf R (env.update own (posS ++ [0])) (posS ++ [0])),
+          ownKey (own.map fun y => (posS ++ [0], y)) n = true →
+          n ∈ freeNames (b.slotOf R (env.update own (posS ++ [0])) (posS ++ [0])) := by
+        intro n hn ho
+        rcases List.mem_append.1 hn with h | h
+        · exact h
+        · rw [hnotown n h] at ho
+          cases ho
       refine ⟨[], ?_, .nil⟩
       simp only [Ann.slotOf, Ann.idOf]
       refine .lam (νb := bindν ν (posS ++ [0]) own key)
         (μb := Function.update μ (parName z) (.src (.par z posI)))
         (fun n hn => bindν_off hn) (fun x hx => Function.update_of_ne hx _ _)
-        (Function.update_self _ _ _) ?_ ?_ hrel hown hresb hinj hdisj hres.nodup ?_
+        (Function.update_self _ _ _) ?_ ?_ hrel hown hresb
+        (fun n hn n' hn' ho ho' he => hinj n (hfreeOwn n hn ho) n' (hfreeOwn n' hn' ho') ho ho' he)
+        (fun n hn ho => hdisj n (hfreeOwn n hn ho) ho) hres.nodup ?_
         scBare_scope
         (by
           intro hent
@@ -1538,7 +2522,7 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
             codeBound, codeFreeParam] at hent
           rcases hent with hent | hent
           · exact absurd hent.1 Bool.false_ne_true.symm
-          · exact absurd hent.1 Bool.false_ne_true)
+          · exact absurd hent.1 Bool.false_ne_true) ?_ ?_
       · intro s hs h
         obtain ⟨y, _, rfl⟩ := List.mem_map.1 hs
         exact (by simp : posS ++ [0] ≠ []) h
@@ -1550,13 +2534,33 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
         rw [hkF] at hk0
         simp at hk0
       · intro x hx hne
-        obtain ⟨z', hz', rfl⟩ := Ann.freeParams_slotOf b _ _ x (Ann.Open.of_WF hwfb) hx
+        obtain ⟨z', hz', rfl⟩ := Ann.freeParams_slotOf R b _ _ x (Ann.Open.of_WF hwfb) hx
         have hzz : z' ≠ z := fun e => hne (by rw [e]; rfl)
         rw [hμ z' (by simp [Ann.freePars, hz', hzz])]
         intro e
         injection e with e
         injection e with e
         exact hzz e
+      · intro s hs
+        rw [hnotown _ hs]
+        obtain ⟨y, hy⟩ := Ann.sealedFree_slotOf R b _ _ _ hs
+        cases hy
+        change ownKey _ (codeFwd (.src (R, y))) = false
+        rw [codeFwd_scope hR.scopeOwner]
+        cases hk : ownKey (frameSlots (posI ++ [0])
+            (b.idOf R (envI.set own key) (pvSet pv z posI) (posI ++ [0]) (posI ++ [0])))
+            (.src (.slot ⟨y, R, R, .head⟩))
+        · rfl
+        · exfalso
+          simp only [ownKey, List.contains_eq_mem, decide_eq_true_eq] at hk
+          obtain ⟨k', hk', hkF⟩ := frame_of_mem_frameSlots hk
+          injection hk' with hk'
+          subst hk'
+          have hRe : R = posI ++ [0] := hkF
+          exact not_formRoot_append posI (i := 0) (by decide) (hRe ▸ hR)
+      · intro n hn ho
+        rw [hnotown n hn] at ho
+        cases ho
   | app f a ihf iha =>
       intro k env posS envI pv fr posI ν μ hwf hk hpat hν hI hfr hμ hE hP
       simp only [Ann.WF] at hwf
@@ -1640,12 +2644,12 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
         (fun z hz => hμ z (by simp [Ann.freePars, hz]))
         (scopeOwner_update hE (headSafe.owner hP.2.2)) hP.two
       simp only [Ann.slotOf, Ann.idOf]
-      exact rel_letA_of hk (by simp)
+      exact rel_letA_of hk (not_formRoot_append posS (by decide))
         (fun h => by
-          obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf p _ _ _ (Ann.Open.of_WF hwp) h
+          obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf R p _ _ _ (Ann.Open.of_WF hwp) h
           simp [letParam] at hz)
         (fun h => by
-          obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf b _ _ _ (Ann.Open.of_WF hwb) h
+          obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf R b _ _ _ (Ann.Open.of_WF hwb) h
           simp [letParam] at hz)
         hw hp hb hrp hrw hrb trivial (fun _ h => h) (fun _ h => h) (fun _ h => h)
   | alt t₁ t₂ ih₁ ih₂ =>
@@ -1713,17 +2717,31 @@ theorem rel_ann (t : Ann S X) : ∀ {k : Kd} {env : REnv X} {posS : Owner} {envI
             (fun z hz => hμ z (by simpa [Ann.freePars] using hz))
             (scopeOwner_update hE (headSafe.owner hP.1)) hP.zero
           simp only [Ann.slotOf, Ann.idOf, newBlock]
-          exact rel_new_of (by simp)
+          exact rel_new_of (not_formRoot_append posS (by decide))
             (fun h => by
-              obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf b _ _ _ (Ann.Open.of_WF hwf) h
+              obtain ⟨z, _, hz⟩ := Ann.freeParams_slotOf R b _ _ _ (Ann.Open.of_WF hwf) h
               simp [newParam] at hz)
             hb hrb (fun _ h => h)
             (fun n hn ho => by
-              obtain ⟨y, _, rfl⟩ := Ann.freeNames_slotOf b _ _ n (Ann.Open.of_WF hwf) hn
+              obtain ⟨y, _, rfl⟩ := Ann.freeNames_slotOf R b _ _ n (Ann.Open.of_WF hwf) hn
               by_cases hyo : y ∈ y₀ :: ys
               · rw [Ann.update_of_mem hyo, ownKey_map_src, decide_eq_false_iff_not] at ho
                 exact absurd ⟨rfl, hyo⟩ ho
               · simpa [spellS] using hyo)
+
+/-- **`rel_ann` needs a form root**: at the scope owner `[2]`, which is no form
+root, the hole of a quotation is not a hole of the setting, so the two
+elaborations of `(quote $y)` are not related.  The statement asked `scopeOwner R`
+only; `[2]` is a scope owner. -/
+theorem rel_ann_needs_formRoot (y : X) {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
+    {Res : List (Nm (BId X))} {ok : Bool} {t₂ : Tm S (BId X)} :
+    scopeOwner ([2] : Owner) ∧ ¬ Rel SC ν μ k Res ok (.quote (codeOf [2] (.sv y))) t₂ := by
+  refine ⟨⟨rfl, by decide⟩, fun h => ?_⟩
+  cases h with
+  | quote hq =>
+      have hh := hq.2.1.2.1 (.src ([2], y))
+        (by simp [codeOf, codeAt, codeLookup, sealParams, paramOcc, codeVars])
+      simp [holeName, SC, formRoot] at hh
 
 end IdSlot
 

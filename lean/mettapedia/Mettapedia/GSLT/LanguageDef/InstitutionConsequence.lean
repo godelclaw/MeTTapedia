@@ -2,6 +2,8 @@ import Mettapedia.Logic.InstitutionCategory
 import Mettapedia.GSLT.LanguageDef.PiInstitutionCategory
 import Mettapedia.GSLT.LanguageDef.OperationalModel
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Model-valued institutions at the logical/operational seam
 
@@ -26,7 +28,7 @@ open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 

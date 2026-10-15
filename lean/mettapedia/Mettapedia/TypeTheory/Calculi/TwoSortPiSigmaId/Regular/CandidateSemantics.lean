@@ -250,14 +250,14 @@ structure CandidateSubstitution (source : CandidateContext n)
 namespace CandidateSubstitution
 
 /-- Identity substitutions preserve every semantic context. -/
-def id (context : CandidateContext n) :
+theorem id (context : CandidateContext n) :
     CandidateSubstitution context context ids where
   maps_realizers := by
     intro k environment realized
     simpa using realized
 
 /-- Candidate-respecting substitutions compose. -/
-def comp {source : CandidateContext n} {middle : CandidateContext m}
+theorem comp {source : CandidateContext n} {middle : CandidateContext m}
     {target : CandidateContext k} {first : Sub n m} {later : Sub m k}
     (sourceToMiddle : CandidateSubstitution source middle first)
     (middleToTarget : CandidateSubstitution middle target later) :
@@ -271,7 +271,7 @@ def comp {source : CandidateContext n} {middle : CandidateContext m}
 
 /-- The weakening substitution is the semantic projection from a context
 extension to its base. -/
-def projection {context : CandidateContext n} (type : CandidateType context) :
+theorem projection {context : CandidateContext n} (type : CandidateType context) :
     CandidateSubstitution context (context.extend type) (renToSub wk) where
   maps_realizers := by
     intro k environment realized
@@ -347,7 +347,7 @@ namespace CandidateSubstitution
 
 /-- Semantic pairing: a substitution into the base together with a term in
 the pulled-back fibre determines a substitution into the extension. -/
-def pair {source : CandidateContext n} {target : CandidateContext m}
+theorem pair {source : CandidateContext n} {target : CandidateContext m}
     {σ : Sub n m} (type : CandidateType source)
     (base : CandidateSubstitution source target σ)
     {term : ScopedTerm m}

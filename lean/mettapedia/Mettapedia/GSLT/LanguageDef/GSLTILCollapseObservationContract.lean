@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.CollapseObservationContract
 import Mettapedia.GSLT.LanguageDef.GSLTILObservationControlContract
 
@@ -251,7 +252,7 @@ theorem pullbackDirectFold_comp_run
 
 namespace Canary
 
-abbrev boolSystem : GSLT := GSLT.discrete Bool
+abbrev boolSystem : GSLT := GSLT.stepFree Bool
 
 def boolObservation (event : boolSystem.LabeledStep) : Obs Bool Unit :=
   ⟨event.source, 1, ()⟩

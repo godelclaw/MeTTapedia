@@ -205,7 +205,7 @@ theorem topos_representable_transport_pack_fixture
       (lang := lang) (s := s) (seed := seed) (φ := φ) (hNat := hNat) (f := f)
 
 /-- Categorical regression fixture: consume the unified formula endpoint that
-combines graph-witness transport with the WM institution+Beck-Chevalley
+combines graph-witness transport with the WM evidence-level Beck-Chevalley
 endpoint statement. -/
 theorem formula_graph_triangle_categorical_fixture
     (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine State)
@@ -320,8 +320,8 @@ theorem semE_fragment_interface_step_fixture
   simpa using (Iev.step_sound (W := semEState relEnv Iatom φ) (p := p) (q := q) hSide hstep)
 
 /-- SemE fragment fixture: consume the unified semE categorical endpoint and
-project the institution/Beck-Chevalley endpoint together with one-step evidence
-closure. -/
+project the evidence-level Beck-Chevalley endpoint together with one-step
+evidence closure. -/
 theorem semE_fragment_categorical_endpoint_step_fixture
     (H : Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine.WMHyperdoctrine.{u, v, 0, 0} SemEState)
     {P Aobj Bobj D : H.Obj}

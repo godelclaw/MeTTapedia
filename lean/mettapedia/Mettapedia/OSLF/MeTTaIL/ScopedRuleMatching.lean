@@ -366,4 +366,355 @@ def extendRoot? (spec : RuleBindingSpec) (ambient : Nat)
     (assignment : Assignment) (raw : Bindings) : Option Assignment :=
   raw.foldlM (init := assignment) (reconcileRootResult? spec ambient)
 
+/-- Patterns whose collections retain a fixed element order. Collection rest
+capture is included; unordered collection choices are a separate fragment. -/
+inductive OrderedPattern : Pattern → Prop where
+  | fvar (name : String) : OrderedPattern (.fvar name)
+  | bvar (index : Nat) : OrderedPattern (.bvar index)
+  | apply (label : String) (patterns : List Pattern)
+      (children : ∀ pattern ∈ patterns, OrderedPattern pattern) : OrderedPattern (.apply label patterns)
+  | lambda (display : Option String) (body : Pattern) (child : OrderedPattern body) :
+      OrderedPattern (.lambda display body)
+  | multiLambda (arity : Nat) (display : List String) (body : Pattern) (child : OrderedPattern body) :
+      OrderedPattern (.multiLambda arity display body)
+  | subst (body replacement : Pattern) (first : OrderedPattern body) (second : OrderedPattern replacement) :
+      OrderedPattern (.subst body replacement)
+  | vector (patterns : List Pattern) (rest : Option String)
+      (children : ∀ pattern ∈ patterns, OrderedPattern pattern) : OrderedPattern (.collection .vec patterns rest)
+
+
+end Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open RuleBinding
+open Substitution
+
+theorem lookup_member (assignment : Assignment) (name : String)
+    (value : ContextualValue) (found : lookup assignment name = some value) :
+    (name, value) ∈ assignment := by
+  unfold lookup at found
+  cases selected : assignment.find? (fun entry => entry.1 == name) with
+  | none => simp [selected] at found
+  | some pair =>
+      have member := List.mem_of_find?_eq_some selected
+      have named := List.find?_some selected
+      simp only [beq_iff_eq] at named
+      simp only [selected, Option.map_some, Option.some.injEq] at found
+      cases pair with
+      | mk actualName actualValue =>
+          dsimp only at named found member
+          subst actualName
+          subst actualValue
+          exact member
+
+def assignmentFreeWithin (footprint : List String) (assignment : Assignment) : Prop :=
+  ∀ entry ∈ assignment, ∀ name ∈ entry.2.body.freeFvarNames, name ∈ footprint
+theorem assigned_free_within (footprint : List String) (initial final : Assignment)
+    (name : String) (value : ContextualValue)
+    (before : assignmentFreeWithin footprint initial)
+    (captured : ∀ name ∈ value.body.freeFvarNames, name ∈ footprint)
+    (assigned : assign initial name value = some final) : assignmentFreeWithin footprint final := by
+  unfold assign at assigned
+  cases found : lookup initial name with
+  | none =>
+      simp only [found, Option.some.injEq] at assigned
+      subst final
+      intro entry member free occurs
+      simp only [List.mem_cons] at member
+      rcases member with rfl | member
+      · exact captured free occurs
+      · exact before entry member free occurs
+  | some prior =>
+      simp only [found] at assigned
+      split at assigned
+      · cases assigned
+        exact before
+      · cases assigned
+
+theorem capture_free_within (footprint : List String)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (ambient depth : Nat)
+    (site : RulePatternSite) (path : List Nat) (initial final : Assignment) (name : String) (target : Pattern)
+    (before : assignmentFreeWithin footprint initial)
+    (covered : ∀ name ∈ target.freeFvarNames, name ∈ footprint)
+    (captured : capture? rule spec ambient depth site path initial name target = some final) :
+    assignmentFreeWithin footprint final := by
+  unfold capture? at captured
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at captured
+  rcases captured with ⟨dependencies, _dependenciesFound, arguments, _argumentsFound, value, recovered, assigned⟩
+  apply assigned_free_within footprint initial final name value before _ assigned
+  rw [recovered_body_free_names dependencies ambient depth arguments target value recovered]
+  exact covered
+
+theorem capture_rest_free_within (footprint : List String)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (ambient depth : Nat)
+    (site : RulePatternSite) (path : List Nat) (initial final : Assignment)
+    (name : String) (kind : CollType) (targets : List Pattern)
+    (before : assignmentFreeWithin footprint initial)
+    (covered : patternsFreeWithin footprint targets)
+    (captured : captureRest? rule spec ambient depth site path initial name kind targets = some final) :
+    assignmentFreeWithin footprint final := by
+  apply capture_free_within footprint rule spec ambient depth site path initial final name (.collection kind targets none) before _ captured
+  intro free occurs
+  simp only [Pattern.freeFvarNames, Option.toList_none, List.append_nil, List.mem_flatMap] at occurs
+  rcases occurs with ⟨target, member, occurs⟩
+  exact covered target member free occurs
+mutual
+theorem instantiate_with_free_within (footprint : List String)
+    (operation : Pattern → Pattern → Pattern)
+    (operationCovered : ∀ replacement body,
+      (∀ name ∈ replacement.freeFvarNames, name ∈ footprint) →
+      (∀ name ∈ body.freeFvarNames, name ∈ footprint) →
+      ∀ name ∈ (operation replacement body).freeFvarNames, name ∈ footprint)
+    (rule : RewriteRule) (spec : RuleBindingSpec)
+    (ambient : Nat) (site : RulePatternSite) (path : List Nat) (depth : Nat)
+    (assignment : ScopedRuleMatching.Assignment) (schema target : Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (argumentsCovered : ∀ name site path arguments,
+      arguments? rule spec name site path = some arguments →
+      patternsFreeWithin footprint arguments)
+    (success : instantiateWith? operation rule spec ambient site path depth assignment schema = some target) :
+    ∀ name ∈ target.freeFvarNames, name ∈ footprint := by
+  cases schema with
+  | bvar index =>
+      simp only [instantiateWith?, Option.some.injEq] at success
+      cases success
+      intro name occurs
+      simp only [Pattern.freeFvarNames, List.not_mem_nil] at occurs
+  | fvar name =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨value, found, arguments, argumentLookup, instantiated⟩
+      exact instantiate_value_free_within footprint value ambient depth arguments target
+        (stored _ (lookup_member assignment name value found))
+        (argumentsCovered name site path arguments argumentLookup) instantiated
+  | apply constructor arguments =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨results, completed, success⟩
+      cases success
+      intro name occurs
+      simp only [Pattern.freeFvarNames, List.mem_flatMap] at occurs
+      rcases occurs with ⟨result, member, occurs⟩
+      exact instantiate_args_with_free_within footprint operation operationCovered rule spec ambient
+        site path depth assignment 0 arguments results stored argumentsCovered completed result member name occurs
+  | lambda binder body =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨result, completed, success⟩
+      cases success
+      simp only [Pattern.freeFvarNames]
+      exact instantiate_with_free_within footprint operation operationCovered rule spec ambient site
+        (path ++ [0]) (depth + 1) assignment body result stored argumentsCovered completed
+  | multiLambda arity binders body =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨result, completed, success⟩
+      cases success
+      simp only [Pattern.freeFvarNames]
+      exact instantiate_with_free_within footprint operation operationCovered rule spec ambient site
+        (path ++ [0]) (depth + arity) assignment body result stored argumentsCovered completed
+  | subst body replacement =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨bodyResult, bodyCompleted, replacementResult, replacementCompleted, success⟩
+      cases success
+      apply operationCovered replacementResult bodyResult
+      · exact instantiate_with_free_within footprint operation operationCovered rule spec ambient site
+          (path ++ [1]) depth assignment replacement replacementResult stored argumentsCovered replacementCompleted
+      · exact instantiate_with_free_within footprint operation operationCovered rule spec ambient site
+          (path ++ [0]) (depth + 1) assignment body bodyResult stored argumentsCovered bodyCompleted
+  | collection kind elements rest =>
+      simp only [instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨explicit, completed, success⟩
+      have explicitCovered := instantiate_args_with_free_within footprint operation operationCovered
+        rule spec ambient site path depth assignment 0 elements explicit stored argumentsCovered completed
+      cases rest with
+      | none =>
+          cases success
+          intro name occurs
+          simp only [Pattern.freeFvarNames, Option.toList_none, List.append_nil, List.mem_flatMap] at occurs
+          rcases occurs with ⟨element, member, occurs⟩
+          exact explicitCovered element member name occurs
+      | some name =>
+          simp only [Option.bind_eq_some_iff] at success
+          rcases success with ⟨value, found, arguments, argumentLookup, resolved, instantiated, success⟩
+          have resolvedCovered := instantiate_value_free_within footprint value ambient depth arguments resolved
+            (stored _ (lookup_member assignment name value found))
+            (argumentsCovered name site (path ++ [elements.length]) arguments argumentLookup) instantiated
+          split at success <;> try cases success
+          split at success <;> cases success
+          intro free occurs
+          simp only [Pattern.freeFvarNames, Option.toList_none, List.append_nil,
+            List.flatMap_append, List.mem_append] at occurs
+          rcases occurs with occurs | occurs
+          · rcases List.mem_flatMap.mp occurs with ⟨element, member, occurs⟩
+            exact explicitCovered element member free occurs
+          · apply resolvedCovered free
+            simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using occurs
+termination_by sizeOf schema
+
+theorem instantiate_args_with_free_within (footprint : List String)
+    (operation : Pattern → Pattern → Pattern)
+    (operationCovered : ∀ replacement body,
+      (∀ name ∈ replacement.freeFvarNames, name ∈ footprint) →
+      (∀ name ∈ body.freeFvarNames, name ∈ footprint) →
+      ∀ name ∈ (operation replacement body).freeFvarNames, name ∈ footprint)
+    (rule : RewriteRule) (spec : RuleBindingSpec)
+    (ambient : Nat) (site : RulePatternSite) (path : List Nat) (depth : Nat)
+    (assignment : ScopedRuleMatching.Assignment) (index : Nat) (schemas targets : List Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (argumentsCovered : ∀ name site path arguments,
+      arguments? rule spec name site path = some arguments →
+      patternsFreeWithin footprint arguments)
+    (success : instantiateArgsWith? operation rule spec ambient site path depth assignment index schemas = some targets) :
+    patternsFreeWithin footprint targets := by
+  cases schemas with
+  | nil =>
+      simp only [instantiateArgsWith?, Option.some.injEq] at success
+      cases success
+      intro pattern member
+      simp only [List.not_mem_nil] at member
+  | cons schema schemas =>
+      simp only [instantiateArgsWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+      rcases success with ⟨head, headCompleted, tail, tailCompleted, success⟩
+      cases success
+      intro pattern member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact instantiate_with_free_within footprint operation operationCovered rule spec ambient
+          site (path ++ [index]) depth assignment schema _ stored argumentsCovered headCompleted
+      · exact instantiate_args_with_free_within footprint operation operationCovered rule spec ambient
+          site path depth assignment (index + 1) schemas tail stored argumentsCovered tailCompleted pattern member
+termination_by sizeOf schemas
+end
+
+private theorem ground_list_each (depth : Nat) (patterns : List Pattern)
+    (ground : Pattern.isGroundListAt depth patterns = true) :
+    ∀ pattern ∈ patterns, pattern.isGroundAt depth = true := by
+  induction patterns with
+  | nil => intro pattern member; cases member
+  | cons head tail ih =>
+      simp only [Pattern.isGroundListAt, Bool.and_eq_true] at ground
+      intro pattern member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ground.1
+      · exact ih ground.2 pattern member
+theorem admitted_occurrence_arguments_free (rule : RewriteRule) (spec : RuleBindingSpec)
+    (admitted : admittedFor rule spec = true) (row : MetavariableOccurrence)
+    (member : row ∈ spec.occurrences) :
+    ∀ argument ∈ row.arguments, argument.freeFvarNames = [] := by
+  have rows := admitted
+  simp only [admittedFor, Bool.and_eq_true] at rows
+  have rows := rows.2
+  have checked := List.all_eq_true.mp rows row member
+  simp only [Bool.and_eq_true] at checked
+  cases dependenciesFound : dependencies? spec row.name with
+  | none =>
+      simp only [dependenciesFound, Bool.false_eq_true] at checked
+      exact False.elim checked.2
+  | some dependencies =>
+      cases depthFound : occurrenceDepthAtSite? rule row.site row.path with
+      | none =>
+          simp only [dependenciesFound, depthFound, Bool.false_eq_true] at checked
+          exact False.elim checked.2
+      | some depth =>
+          simp only [dependenciesFound, depthFound, Bool.and_eq_true] at checked
+          intro argument member
+          exact ground_free_names argument depth (List.all_eq_true.mp checked.2.2 argument member)
+
+theorem admitted_arguments_free (rule : RewriteRule) (spec : RuleBindingSpec)
+    (admitted : admittedFor rule spec = true)
+    (name : String) (site : RulePatternSite) (path : List Nat) (arguments : List Pattern)
+    (success : arguments? rule spec name site path = some arguments) :
+    ∀ argument ∈ arguments, argument.freeFvarNames = [] := by
+  unfold arguments? at success
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at success
+  rcases success with ⟨dependencies, _dependencyLookup, guardValue, _declared, success⟩
+  split at success
+  · split at success <;> cases success
+    intro argument member
+    cases member
+  · rename_i row rows
+    split at success <;> cases success
+    apply admitted_occurrence_arguments_free rule spec admitted row
+    have selected : row ∈ spec.occurrences.filter
+        (fun candidate => candidate.name == name && candidate.site == site && candidate.path == path) := by
+      rw [rows]
+      simp
+    exact (List.mem_filter.mp selected).1
+  · cases success
+
+theorem admitted_arguments_free_within (footprint : List String)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (admitted : admittedFor rule spec = true)
+    (name : String) (site : RulePatternSite) (path : List Nat) (arguments : List Pattern)
+    (success : arguments? rule spec name site path = some arguments) :
+    patternsFreeWithin footprint arguments := by
+  intro argument member free occurs
+  rw [admitted_arguments_free rule spec admitted name site path arguments success argument member] at occurs
+  cases occurs
+
+theorem admitted_instantiate_with_free_within (footprint : List String)
+    (operation : Pattern → Pattern → Pattern)
+    (operationCovered : ∀ replacement body,
+      (∀ name ∈ replacement.freeFvarNames, name ∈ footprint) →
+      (∀ name ∈ body.freeFvarNames, name ∈ footprint) →
+      ∀ name ∈ (operation replacement body).freeFvarNames, name ∈ footprint)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (admitted : admittedFor rule spec = true)
+    (ambient : Nat) (site : RulePatternSite) (path : List Nat) (depth : Nat)
+    (assignment : ScopedRuleMatching.Assignment) (schema target : Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (success : instantiateWith? operation rule spec ambient site path depth assignment schema = some target) :
+    ∀ name ∈ target.freeFvarNames, name ∈ footprint :=
+  instantiate_with_free_within footprint operation operationCovered rule spec ambient site path depth
+    assignment schema target stored (admitted_arguments_free_within footprint rule spec admitted) success
+
+theorem admitted_reduct_with_free_within (footprint : List String)
+    (operation : Pattern → Pattern → Pattern)
+    (operationCovered : ∀ replacement body,
+      (∀ name ∈ replacement.freeFvarNames, name ∈ footprint) →
+      (∀ name ∈ body.freeFvarNames, name ∈ footprint) →
+      ∀ name ∈ (operation replacement body).freeFvarNames, name ∈ footprint)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (admitted : admittedFor rule spec = true)
+    (ambient : Nat) (assignment : ScopedRuleMatching.Assignment) (target : Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (success : reductWith? operation rule spec ambient assignment = some target) :
+    ∀ name ∈ target.freeFvarNames, name ∈ footprint :=
+  admitted_instantiate_with_free_within footprint operation operationCovered rule spec admitted ambient
+    .right [] 0 assignment rule.right target stored success
+
+theorem ordinary_reduct_free_within (footprint : List String)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (admitted : admittedFor rule spec = true)
+    (ambient : Nat) (assignment : ScopedRuleMatching.Assignment) (target : Pattern)
+    (stored : assignmentFreeWithin footprint assignment)
+    (success : reduct? rule spec ambient assignment = some target) :
+    ∀ name ∈ target.freeFvarNames, name ∈ footprint :=
+  admitted_reduct_with_free_within footprint Substitution.instantiateBVar
+    (instantiate_bvar_free_within footprint) rule spec admitted ambient assignment target stored success
+
+namespace FootprintControls
+
+theorem complete_stored_body_covered :
+    assignmentFreeWithin ["kept"] [("unused", ⟨[.base "Name"], 2, .fvar "kept"⟩)] := by
+  simp [assignmentFreeWithin, Pattern.freeFvarNames]
+
+theorem unused_stored_body_cannot_be_ignored :
+    ¬ assignmentFreeWithin [] [("unused", ⟨[.base "Name"], 2, .fvar "outside"⟩)] := by
+  simp [assignmentFreeWithin, Pattern.freeFvarNames]
+
+end FootprintControls
+
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup_member
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.assignmentFreeWithin
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.assigned_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.capture_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.capture_rest_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.instantiate_with_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.instantiate_args_with_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.admitted_occurrence_arguments_free
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.admitted_arguments_free
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.admitted_arguments_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.admitted_instantiate_with_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.admitted_reduct_with_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.ordinary_reduct_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.FootprintControls.complete_stored_body_covered
+#print axioms Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.FootprintControls.unused_stored_body_cannot_be_ignored
+
 end Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching

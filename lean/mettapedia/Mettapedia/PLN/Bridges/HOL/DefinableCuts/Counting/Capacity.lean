@@ -28,7 +28,7 @@ theorem FuzzyCapacity.countingCapacity_pos_iff_one_le_ncard_of_card_eq
         ((FuzzyCapacity.countingCapacity (U := U) A : unitInterval) : ℝ) ↔
       1 ≤ A.ncard := by
   classical
-  haveI : Fintype A := Set.Finite.fintype (Set.toFinite A)
+  have : Fintype A := Set.Finite.fintype (Set.toFinite A)
   have hUposNat : 0 < Fintype.card U := by
     simpa [hCard] using hNpos
   have hNposR : 0 < (N : ℝ) := by
@@ -67,7 +67,7 @@ theorem FuzzyCapacity.countingCapacity_lt_one_iff_ncard_add_one_le_of_card_eq
     ((FuzzyCapacity.countingCapacity (U := U) A : unitInterval) : ℝ) < 1 ↔
       A.ncard + 1 ≤ N := by
   classical
-  haveI : Fintype A := Set.Finite.fintype (Set.toFinite A)
+  have : Fintype A := Set.Finite.fintype (Set.toFinite A)
   have hUposNat : 0 < Fintype.card U := by
     simpa [hCard] using hNpos
   have hNposR : 0 < (N : ℝ) := by
@@ -197,8 +197,8 @@ noncomputable def predicateCountingCapacityExistsPositiveThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       constructor
       · intro hModels
         exact le_trans htheta_le
@@ -564,8 +564,8 @@ noncomputable def predicateCountingCapacityExistsExactThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       constructor
       · intro hModels
         exact
@@ -885,8 +885,8 @@ noncomputable def predicateCountingCapacityCardinalityThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       constructor
       · intro hModels
         exact
@@ -1216,7 +1216,7 @@ noncomputable def predicateCountingCapacityAtLeastNBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
     hObj hMeasurable k N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -1268,7 +1268,7 @@ theorem predicateCountingCapacityAtLeastNBaseCut_width_eq_zero_iff_decides
           (Base := Base) (Const := WithParams Const) b p (hp0 ρ i) k)
       hObj hMeasurable k N hNpos hCardEq
       (fun M => by
-        letI := hObj M
+        let := hObj M
         exact
           models_predicateAtLeastNBaseFormula_iff_k_le_ncard_extension
             (Base := Base) (Const := WithParams Const) M.1 b p k)
@@ -1308,7 +1308,7 @@ noncomputable def predicateCountingCapacityAtLeastTwoBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable 2 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastTwoBaseFormula_iff_two_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -1594,7 +1594,7 @@ noncomputable def predicateCountingCapacityAtLeastThreeBaseCut
         (Base := Base) (Const := WithParams Const) b p (hp0 ρ i))
     hObj hMeasurable 3 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateAtLeastThreeBaseFormula_iff_three_le_ncard_extension
           (Base := Base) (Const := WithParams Const) M.1 b p)
@@ -1900,8 +1900,8 @@ noncomputable def predicateCountingCapacityComplementCardinalityThresholdCut
     represents_ge := by
       intro M
       classical
-      letI := hObj M
-      letI := hMeasurable M
+      let := hObj M
+      let := hMeasurable M
       constructor
       · intro hModels
         exact
@@ -2231,7 +2231,7 @@ noncomputable def predicateCountingCapacityExistsNotComplementCut
         (Base := Base) (Const := WithParams Const) tau p (hp0 ρ i))
     hObj hMeasurable 1 N hNpos hCardEq
     (fun M => by
-      letI := hObj M
+      let := hObj M
       exact
         models_predicateExistsNotFormula_iff_ncard_extension_add_one_le
           (Base := Base) (Const := WithParams Const) M.1 tau p N (hCardEq M))

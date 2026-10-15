@@ -522,7 +522,7 @@ def ruleCode : Option (List Pattern × Pattern) → Term
 /-- **Local rule instantiation of the calculus**: arguments that are all valid
 and a rule of that name and arity. -/
 theorem instantiateRule?_eq (rule : String) (arguments : List Pattern) :
-    instantiateRule? formMM0 ⟨⟨rule⟩, arguments⟩ =
+    instantiateRule? kernelCalculus ⟨⟨rule⟩, arguments⟩ =
       if arguments.all (argumentValidAt 0) then ruleShape rule arguments else none := by
   cases found : rules.find? (fun r => r.id == rule && arguments.length == r.vars.length) with
   | some r =>
@@ -532,21 +532,21 @@ theorem instantiateRule?_eq (rule : String) (arguments : List Pattern) :
       obtain ⟨sameId, length⟩ := condition
       subst sameId
       have key := fun premises conclusion =>
-        (instantiateRule?_eq_some_iff_application (definition := formMM0)
+        (instantiateRule?_eq_some_iff_application (definition := kernelCalculus)
           (ruleInstance := ⟨⟨r.id⟩, arguments⟩) (premises := premises) (conclusion := conclusion)).trans
-          (ruleApplication_iff formMM0 rules presents.package r member (presents.lookup member)
+          (ruleApplication_iff kernelCalculus rules presents.package r member (presents.lookup member)
             arguments premises conclusion)
       simp only [ruleShape, found, Option.map_some]
       split_ifs with valid
       · exact (key _ _).mpr ⟨length, List.all_eq_true.mp valid, rfl, rfl⟩
-      · cases application : instantiateRule? formMM0 ⟨⟨r.id⟩, arguments⟩ with
+      · cases application : instantiateRule? kernelCalculus ⟨⟨r.id⟩, arguments⟩ with
         | none => rfl
         | some result =>
             obtain ⟨premises, conclusion⟩ := result
             exact absurd (List.all_eq_true.mpr ((key premises conclusion).mp application).2.1) valid
   | none =>
       simp only [ruleShape, found, Option.map_none, ite_self]
-      cases application : instantiateRule? formMM0 ⟨⟨rule⟩, arguments⟩ with
+      cases application : instantiateRule? kernelCalculus ⟨⟨rule⟩, arguments⟩ with
       | none => rfl
       | some result =>
           obtain ⟨premises, conclusion⟩ := result
@@ -555,7 +555,7 @@ theorem instantiateRule?_eq (rule : String) (arguments : List Pattern) :
           obtain ⟨r, member, -, sameId⟩ := presents.rule_of_lookup lookup
           simp only [RuleId.mk.injEq] at sameId
           subst sameId
-          have length := ((ruleApplication_iff formMM0 rules presents.package r member
+          have length := ((ruleApplication_iff kernelCalculus rules presents.package r member
             (presents.lookup member) arguments premises conclusion).mp
               (instantiateRule?_eq_some_iff_application.mp application)).1
           rw [List.find?_eq_none] at found
@@ -650,7 +650,7 @@ def settledEvaluate (leaf : (family T).Leaf) : Option Pattern :=
   if settled T leaf then some ((family T).judgment leaf.1 leaf.2.query leaf.2.answer) else none
 
 theorem check_computed (goal : Pattern) (leaf : (family T).Leaf) :
-    check formMM0 (settledEvaluate T) goal (.computed leaf) =
+    check kernelCalculus (settledEvaluate T) goal (.computed leaf) =
       (settled T leaf && decide ((family T).judgment leaf.1 leaf.2.query leaf.2.answer = goal)) := by
   simp only [check, settledEvaluate]
   by_cases verdict : settled T leaf = true
@@ -718,7 +718,7 @@ theorem judgment_evaluates {environment : Env} {head : String} {names : List Str
 /-- **A computed leaf is checked by running the theory's program.** -/
 theorem leaf_computes (goal : Pattern) : ∀ leaf : (family T).Leaf,
     Applies P H "mm0:certificate" (request T goal (.computed leaf))
-      (boolean (check formMM0 (settledEvaluate T) goal (.computed leaf)))
+      (boolean (check kernelCalculus (settledEvaluate T) goal (.computed leaf)))
   | ⟨.lookup, ⟨index, declaration, fuel⟩⟩ => by
       rw [check_computed]
       have returned := data_eq_computes (encodeLookupResult ((T.theoremSignature index).map encodeTheorem))
@@ -801,10 +801,10 @@ theorem list_view_evaluates {environment : Env} {name : String} {values : List T
 /-- **Children are checked against the premises in order.** -/
 theorem children_computes : ∀ (premises : List Pattern) (children : List (CompactProof (family T).Leaf)),
     (∀ child ∈ children, ∀ goal, Applies P H "mm0:certificate" (request T goal child)
-      (boolean (check formMM0 (settledEvaluate T) goal child))) →
+      (boolean (check kernelCalculus (settledEvaluate T) goal child))) →
     Applies P H "mm0:certificate-children"
       (theoryArguments T ++ [.list (codes premises), .list (certificateCodes T children)])
-      (boolean (checkChildren formMM0 (settledEvaluate T) premises children))
+      (boolean (checkChildren kernelCalculus (settledEvaluate T) premises children))
   | [], [], _ => by
       simp only [checkChildren]
       exact calculus_equation (equation := certificateEquations[12]) (by decide) (by rfl) (by rfl)
@@ -838,7 +838,7 @@ theorem children_computes : ∀ (premises : List Pattern) (children : List (Comp
           Applies P H "mm0:certificate-rest"
             ([boolean accepted] ++ theoryArguments T ++
               [.list (codes premises), .list (certificateCodes T children)])
-            (boolean (accepted && checkChildren formMM0 (settledEvaluate T) premises children)) := by
+            (boolean (accepted && checkChildren kernelCalculus (settledEvaluate T) premises children)) := by
         intro accepted
         cases accepted
         · exact calculus_equation (equation := certificateEquations[16]) (by decide) (by rfl) (by rfl)
@@ -861,11 +861,11 @@ def nodeVerdict (goal : Pattern) (children : List (CompactProof (family T).Leaf)
     Option (List Pattern × Pattern) → Bool
   | none => false
   | some (premises, conclusion) =>
-      decide (conclusion = goal) && checkChildren formMM0 (settledEvaluate T) premises children
+      decide (conclusion = goal) && checkChildren kernelCalculus (settledEvaluate T) premises children
 
 theorem check_node_verdict (goal : Pattern) (rule : String) (arguments : List Pattern)
     (children : List (CompactProof (family T).Leaf)) :
-    check formMM0 (settledEvaluate T) goal (.node ⟨⟨rule⟩, arguments⟩ children) =
+    check kernelCalculus (settledEvaluate T) goal (.node ⟨⟨rule⟩, arguments⟩ children) =
       nodeVerdict T goal children
         (if arguments.all (argumentValidAt 0) then ruleShape rule arguments else none) := by
   simp only [check]
@@ -879,13 +879,13 @@ section Node
 variable (goal : Pattern) (rule : String) (arguments : List Pattern)
   (children : List (CompactProof (family T).Leaf))
   (each : ∀ child ∈ children, ∀ goal, Applies P H "mm0:certificate" (request T goal child)
-    (boolean (check formMM0 (settledEvaluate T) goal child)))
+    (boolean (check kernelCalculus (settledEvaluate T) goal child)))
 
 include each in
 theorem conclusion_branch (premises : List Pattern) (agrees : Bool) :
     Applies P H "mm0:certificate-conclusion"
       ([boolean agrees] ++ theoryArguments T ++ [.list (codes premises), .list (certificateCodes T children)])
-      (boolean (agrees && checkChildren formMM0 (settledEvaluate T) premises children)) := by
+      (boolean (agrees && checkChildren kernelCalculus (settledEvaluate T) premises children)) := by
   cases agrees
   · exact calculus_equation (equation := certificateEquations[10]) (by decide) (by rfl) (by rfl)
       (.symbol _ _ _ _)
@@ -929,7 +929,7 @@ children.** -/
 theorem node_computes :
     Applies P H "mm0:certificate"
       (theoryArguments T ++ [code goal, nodeCode rule arguments (certificateCodes T children)])
-      (boolean (check formMM0 (settledEvaluate T) goal (.node ⟨⟨rule⟩, arguments⟩ children))) := by
+      (boolean (check kernelCalculus (settledEvaluate T) goal (.node ⟨⟨rule⟩, arguments⟩ children))) := by
   rw [check_node_verdict]
   exact calculus_equation (equation := certificateEquations[0]) (by decide) (by rfl) (by rfl)
     (Evaluates.call (by simp [Special])
@@ -976,7 +976,7 @@ mutual
 
 theorem replay_computes : ∀ (raw : RawProof) (goal : Pattern),
     Applies P H "mm0:certificate" (request T goal (.replay raw))
-      (boolean (check formMM0 (settledEvaluate T) goal (.replay raw)))
+      (boolean (check kernelCalculus (settledEvaluate T) goal (.replay raw)))
   | .node ⟨⟨rule⟩, arguments⟩ children, goal => by
       rw [check_replay_node]
       have coded : request T goal (.replay (.node ⟨⟨rule⟩, arguments⟩ children)) =
@@ -989,7 +989,7 @@ theorem replay_computes : ∀ (raw : RawProof) (goal : Pattern),
 theorem replays_compute : ∀ children : List RawProof,
     ∀ child ∈ children.map CompactProof.replay, ∀ goal,
       Applies P H "mm0:certificate" (request T goal child)
-        (boolean (check formMM0 (settledEvaluate T) goal child))
+        (boolean (check kernelCalculus (settledEvaluate T) goal child))
   | [], _, member, _ => absurd member List.not_mem_nil
   | raw :: raws, child, member, goal => by
       rcases List.mem_cons.mp member with same | inRest
@@ -1005,7 +1005,7 @@ mutual
 leaves**, for every goal and every certificate. -/
 theorem certificate_computes (goal : Pattern) : ∀ proof : CompactProof (family T).Leaf,
     Applies P H "mm0:certificate" (request T goal proof)
-      (boolean (check formMM0 (settledEvaluate T) goal proof))
+      (boolean (check kernelCalculus (settledEvaluate T) goal proof))
   | .replay raw => replay_computes T raw goal
   | .computed leaf => leaf_computes T goal leaf
   | .node ⟨⟨rule⟩, arguments⟩ children =>
@@ -1014,7 +1014,7 @@ theorem certificate_computes (goal : Pattern) : ∀ proof : CompactProof (family
 theorem certificates_compute : ∀ children : List (CompactProof (family T).Leaf),
     ∀ child ∈ children, ∀ goal,
       Applies P H "mm0:certificate" (request T goal child)
-        (boolean (check formMM0 (settledEvaluate T) goal child))
+        (boolean (check kernelCalculus (settledEvaluate T) goal child))
   | [], _, member, _ => absurd member List.not_mem_nil
   | first :: rest, child, member, goal => by
       rcases List.mem_cons.mp member with same | inRest

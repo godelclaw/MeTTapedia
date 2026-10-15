@@ -171,7 +171,7 @@ def exactForProvability :
 /-! ## Foundation semantics -/
 
 /-- Foundation's independent soundness and completeness instances are the
-generic two-sided calculus/semantics law expected by the NIK completeness
+generic two-sided calculus/semantics law expected by the SemanticService completeness
 spectrum. -/
 def foundationCalculusExact
     {Model : Type uModel} [LO.Semantics Model Formula] (model : Model)
@@ -203,7 +203,7 @@ def exactForModel
       ((foundationCalculusExact (system := system) model).complete formula meaningful)
 
 /-- The resulting semantic authority is directly consumable by the
-generic exact CertificateGSLT wire authority and dependent NIK family. -/
+generic exact CertificateGSLT wire authority and dependent SemanticService family. -/
 def semanticallyCompleteCertificateGSLT
     {Model : Type uModel} [LO.Semantics Model Formula] (model : Model)
     [LO.Sound system model] [LO.Complete system model] :

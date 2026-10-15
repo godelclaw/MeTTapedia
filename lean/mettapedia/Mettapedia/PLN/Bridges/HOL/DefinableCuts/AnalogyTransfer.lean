@@ -110,7 +110,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_lower_eq_one_of_source_simila
     (Cpr.lower_eq_one_iff_forall_ge
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).2 <|
       fun M => by
-        letI := hObj M
+        let := hObj M
         have hSimGe :
             1 ≤ predicateVocabularySimilarityStrength
               (Base := Base) (Const := WithParams Const) M.1 σ decode p q := by
@@ -329,7 +329,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_sourceSimilarityRuleImpCut_lo
     ((Csim.andCut (Base := Base) (Const := Const) Cqr).impCut_lower_eq_one_iff_forall_imp_ge
       (Base := Base) (Const := Const) Cpr enum henum hCons hT0 hEM).2 <|
       fun M hJoint => by
-        letI := hObj M
+        let := hObj M
         have hBoth :
             Csim.threshold ≤ Csim.score M ∧ Cqr.threshold ≤ Cqr.score M :=
           (Csim.andCut_ge_iff (Base := Base) (Const := Const) Cqr M).mp hJoint
@@ -455,7 +455,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_lower_eq_one_of_target_simila
     (Cpr.lower_eq_one_iff_forall_ge
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).2 <|
       fun M => by
-        letI := hObj M
+        let := hObj M
         have hPQGe :
             1 ≤ predicateVocabularyFullInheritanceStrength
               (Base := Base) (Const := WithParams Const) M.1 σ decode p q := by
@@ -672,7 +672,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_targetSimilarityRuleImpCut_lo
     ((Cpq.andCut (Base := Base) (Const := Const) Csim).impCut_lower_eq_one_iff_forall_imp_ge
       (Base := Base) (Const := Const) Cpr enum henum hCons hT0 hEM).2 <|
       fun M hJoint => by
-        letI := hObj M
+        let := hObj M
         have hBoth :
             Cpq.threshold ≤ Cpq.score M ∧ Csim.threshold ≤ Csim.score M :=
           (Cpq.andCut_ge_iff (Base := Base) (Const := Const) Csim M).mp hJoint

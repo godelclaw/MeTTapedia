@@ -8,9 +8,10 @@ import Mettapedia.Languages.MeTTa.HE.NondeterminismCarrier
 /-!
 # Argument Evaluation Frame Machine
 
-Frame-based argument evaluator for MeTTa's `InterpretArgs`
-(EvalSpec.lean lines 255-294). Eliminates C recursion in
-`interpret_function_args` (eval.c:8112).
+Argument frames for MeTTa's `InterpretArgs`. The independently recursive
+argument-product semantics retains selected values and threads bindings.
+The candidate cursor selects values for one argument; complete traversal
+must retain the selected child separately from its pending sibling values.
 
 ## Architecture
 
@@ -24,7 +25,7 @@ Two-frame machine following LetChainResumption:
 |-------------|-----------|
 | `ArgSourceFrame.remaining` | `orig_args[idx..nargs]` with types |
 | `ArgBodyFrame.pending` | results from `arg_os` at eval.c:8492 |
-| `resume?` | what C must become: yield one result, save frame |
+| `resume?` | candidate selection for one argument, retaining its siblings |
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE
@@ -81,11 +82,12 @@ def nextFromSource? (eval1 : Atom → Atom → Bindings → ResultList) :
     | [] => none
     | r :: rs => some (r, .body ⟨rs, ⟨done, rest, env⟩⟩)
 
-/-- Resume one step: yield at most one eval1 result pair. -/
+/-- Select another value for the current argument. Exhausting those candidates
+does not start a later argument: that needs a selected value and its bindings. -/
 def resume? (eval1 : Atom → Atom → Bindings → ResultList) :
     ArgEvalFrame → Option (ResultPair × ArgEvalFrame)
   | .source sf => nextFromSource? eval1 sf
-  | .body ⟨[], sf⟩ => nextFromSource? eval1 sf
+  | .body ⟨[], _⟩ => none
   | .body ⟨r :: rs, sf⟩ => some (r, .body ⟨rs, sf⟩)
 
 /-! ## Correctness Theorems -/
@@ -175,10 +177,10 @@ theorem resume?_body_toBag_step (eval1 : Atom → Atom → Bindings → ResultLi
   rw [run_body_cons]
   simp [ResultList.toBag]
 
-/-- Resume on empty body delegates to source. -/
+/-- Candidate exhaustion does not invent a continuation for a later argument. -/
 theorem resume?_body_nil (eval1 : Atom → Atom → Bindings → ResultList)
     (sf : ArgSourceFrame) :
-    resume? eval1 (.body ⟨[], sf⟩) = nextFromSource? eval1 sf := rfl
+    resume? eval1 (.body ⟨[], sf⟩) = none := rfl
 
 /-! ## Examples -/
 

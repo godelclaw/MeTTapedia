@@ -128,22 +128,7 @@ theorem oldAt_src {Y : Type v} (π : Path) (s : Y) : OldAt π (.src s : Nm Y) :=
   intro ρ hρ
   simp [tags] at hρ
 
-/-! ## The invariant of a configuration -/
-
-/-- **The invariant of a configuration**: `D` holds every name that still
-matters (the current term's, the waiting terms', the store's); `Res` the
-reserved names of every pending construct.  The map is injective on `D`, no
-image is reserved, reserved names are distinct, the stores are related, and
-every name in play may occur free. -/
-structure CI (C : Setting S X₁ X₂) (ν : Nm X₁ → Nm X₂) (D : Set (Nm X₁)) (Res : List (Nm X₂))
-    (σ₁ : GStore S X₁) (σ₂ : GStore S X₂) : Prop where
-  inj : Set.InjOn ν D
-  nodup : Res.Nodup
-  disj : ∀ n ∈ D, ν n ∉ Res
-  store : StoreRel C ν D σ₁ σ₂
-  ok₁ : ∀ n ∈ D, OK₁ C n
-  ok₂ : ∀ n ∈ D, OK₂ C (ν n)
-  okRes : ∀ m ∈ Res, OK₂ C m
+/-! ## Freshness and extensions -/
 
 /-- Nothing in play was made at or below the current paths. -/
 structure Fresh (π π' : Path) (ν : Nm X₁ → Nm X₂) (D : Set (Nm X₁)) (Res : List (Nm X₂)) :
@@ -162,47 +147,6 @@ structure Ext (π π' : Path) (Res : List (Nm X₂)) (ν : Nm X₁ → Nm X₂) 
   new : ∀ n ∈ D', n ∉ D → NewAt π n ∧ (NewAt π' (ν' n) ∨ ν' n ∈ Res)
 
 variable {C : Setting S X₁ X₂}
-
-theorem CI.res_unbound {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Res : List (Nm X₂)}
-    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D Res σ₁ σ₂) {m : Nm X₂} (hm : m ∈ Res) :
-    σ₂ m = none := by
-  by_contra hc
-  obtain ⟨n, hn, rfl⟩ := h.store.only m hc
-  exact h.disj n hn hm
-
-theorem CI.drop {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {A B : List (Nm X₂)}
-    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D (A ++ B) σ₁ σ₂) : CI C ν D B σ₁ σ₂ where
-  inj := h.inj
-  nodup := (List.nodup_append.1 h.nodup).2.1
-  disj n hn hm := h.disj n hn (List.mem_append_right _ hm)
-  store := h.store
-  ok₁ := h.ok₁
-  ok₂ := h.ok₂
-  okRes m hm := h.okRes m (List.mem_append_right _ hm)
-
-theorem CI.sub {ν : Nm X₁ → Nm X₂} {D E : Set (Nm X₁)} {Res : List (Nm X₂)}
-    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D Res σ₁ σ₂) (hE : E ⊆ D)
-    (hdom : ∀ n, σ₁ n ≠ none → n ∈ E) : CI C ν E Res σ₁ σ₂ where
-  inj := h.inj.mono hE
-  nodup := h.nodup
-  disj n hn := h.disj n (hE hn)
-  store := {
-    rel := fun n hn => h.store.rel n (hE hn)
-    dom := hdom
-    only := by
-      intro m hm
-      obtain ⟨n, hn, rfl⟩ := h.store.only m hm
-      have hb : σ₁ n ≠ none := by
-        intro e
-        have hr := h.store.rel n hn
-        rw [e] at hr
-        cases h2 : σ₂ (ν n) with
-        | none => exact hm h2
-        | some _ => rw [h2] at hr; exact hr
-      exact ⟨n, hdom n hb, rfl⟩ }
-  ok₁ n hn := h.ok₁ n (hE hn)
-  ok₂ n hn := h.ok₂ n (hE hn)
-  okRes := h.okRes
 
 theorem Fresh.drop {π π' : Path} {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {A B : List (Nm X₂)}
     (h : Fresh π π' ν D (A ++ B)) : Fresh π π' ν D B where
@@ -299,14 +243,85 @@ theorem Ext.fresh_sibling₁ {π π' : Path} {i j : ℕ} (hij : i ≠ j)
     · exact hF.oldRes _ (List.mem_append_left _ (hres n hn hD))
   oldRes m hm := hF.oldRes m (List.mem_append_right _ hm)
 
-/-! ## Programs and inert values -/
-
 variable [DecidableEq X₁] [DecidableEq X₂]
 
-/-- Related programs: the same equations, each closed and related. -/
+/-! ## The invariant of a configuration -/
+
+/-- **The invariant of a configuration**: `D` holds every name that still
+matters (the current term's, the waiting terms', the store's, and the hole copies
+of their sealed code); `Res` the reserved names of every pending construct.  The
+map is injective on `D`, no image is reserved, reserved names are distinct, the
+stores are related, every name in play may occur free, every hole copy in play is
+sent to an activation copy, and `holeRead` separates the hole copies in play. -/
+structure CI (C : Setting S X₁ X₂) (ν : Nm X₁ → Nm X₂) (D : Set (Nm X₁)) (Res : List (Nm X₂))
+    (σ₁ : GStore S X₁) (σ₂ : GStore S X₂) : Prop where
+  inj : Set.InjOn ν D
+  nodup : Res.Nodup
+  disj : ∀ n ∈ D, ν n ∉ Res
+  store : StoreRel C ν D σ₁ σ₂
+  ok₁ : ∀ n ∈ D, OK₁ C n
+  ok₂ : ∀ n ∈ D, OK₂ C (ν n)
+  okRes : ∀ m ∈ Res, OK₂ C m
+  copyImg : ∀ n ∈ D, holeCopy C n → ∃ ρ m, ν n = .inst ρ m
+  holeInj : HoleInj C ν D
+
+omit [DecidableEq X₂] in
+theorem CI.res_unbound {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {Res : List (Nm X₂)}
+    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D Res σ₁ σ₂) {m : Nm X₂} (hm : m ∈ Res) :
+    σ₂ m = none := by
+  by_contra hc
+  obtain ⟨n, hn, rfl⟩ := h.store.only m hc
+  exact h.disj n hn hm
+
+omit [DecidableEq X₂] in
+theorem CI.drop {ν : Nm X₁ → Nm X₂} {D : Set (Nm X₁)} {A B : List (Nm X₂)}
+    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D (A ++ B) σ₁ σ₂) : CI C ν D B σ₁ σ₂ where
+  inj := h.inj
+  nodup := (List.nodup_append.1 h.nodup).2.1
+  disj n hn hm := h.disj n hn (List.mem_append_right _ hm)
+  store := h.store
+  ok₁ := h.ok₁
+  ok₂ := h.ok₂
+  okRes m hm := h.okRes m (List.mem_append_right _ hm)
+  copyImg := h.copyImg
+  holeInj := h.holeInj
+
+omit [DecidableEq X₂] in
+theorem CI.sub {ν : Nm X₁ → Nm X₂} {D E : Set (Nm X₁)} {Res : List (Nm X₂)}
+    {σ₁ : GStore S X₁} {σ₂ : GStore S X₂} (h : CI C ν D Res σ₁ σ₂) (hE : E ⊆ D)
+    (hdom : ∀ n, σ₁ n ≠ none → n ∈ E) (hseal : ∀ n g, σ₁ n = some g → SealOK C E g.toTm) :
+    CI C ν E Res σ₁ σ₂ where
+  inj := h.inj.mono hE
+  nodup := h.nodup
+  disj n hn := h.disj n (hE hn)
+  store := {
+    rel := fun n hn => h.store.rel n (hE hn)
+    dom := hdom
+    only := by
+      intro m hm
+      obtain ⟨n, hn, rfl⟩ := h.store.only m hm
+      have hb : σ₁ n ≠ none := by
+        intro e
+        have hr := h.store.rel n hn
+        rw [e] at hr
+        cases h2 : σ₂ (ν n) with
+        | none => exact hm h2
+        | some _ => rw [h2] at hr; exact hr
+      exact ⟨n, hdom n hb, rfl⟩
+    sealOK := hseal }
+  ok₁ n hn := h.ok₁ n (hE hn)
+  ok₂ n hn := h.ok₂ n (hE hn)
+  okRes := h.okRes
+  copyImg n hn := h.copyImg n (hE hn)
+  holeInj n hn n' hn' := h.holeInj n (hE hn) n' (hE hn')
+
+/-! ## Programs and inert values -/
+
+/-- Related programs: the same equations, each closed (no free name, no free
+parameter, no free name of sealed code) and related. -/
 def ProgRel (C : Setting S X₁ X₂) (P₁ : S → Option (Tm S X₁)) (P₂ : S → Option (Tm S X₂)) :
     Prop :=
-  ∀ F, OptRel (fun e₁ e₂ => freeNames e₁ = [] ∧ freeParams e₁ = [] ∧
+  ∀ F, OptRel (fun e₁ e₂ => freeNames e₁ = [] ∧ freeParams e₁ = [] ∧ sealedFree e₁ = [] ∧
     ∀ ν μ, Rel C ν μ .code [] true e₁ e₂) (P₁ F) (P₂ F)
 
 /-- Terms that evaluate to themselves. -/
@@ -448,7 +463,12 @@ theorem run_results_inert [CodeId Y] (P : S → Option (Tm S Y)) (d : Disc) :
       | letP p w b =>
           simp only [step] at h
           cases hl : letLam? p w with
-          | some f => rw [hl] at h; exact run_results_inert P d n _ _ _ L h r hr
+          | some f =>
+              rw [hl] at h
+              simp only at h
+              cases hf : σ f with
+              | none => rw [hf] at h; exact run_results_inert P d n _ _ _ L h r hr
+              | some _ => rw [hf] at h; injection h with h; subst h; cases hr
           | none =>
               rw [hl] at h
               simp only at h
@@ -466,7 +486,11 @@ theorem run_results_inert [CodeId Y] (P : S → Option (Tm S Y)) (d : Disc) :
                   rw [hg] at hM₁
                   simp only at hM₁
                   cases p with
-                  | var f => exact run_results_inert P d n _ _ _ M₁ hM₁ r hx₁
+                  | var f =>
+                      simp only at hM₁
+                      cases hf : r₁.2 f with
+                      | none => rw [hf] at hM₁; exact run_results_inert P d n _ _ _ M₁ hM₁ r hx₁
+                      | some _ => rw [hf] at hM₁; injection hM₁ with hM₁; subst hM₁; cases hx₁
                   | _ => injection hM₁ with hM₁; subst hM₁; cases hx₁
       | alt t₁ t₂ =>
           simp only [step] at h
@@ -591,8 +615,8 @@ variable [DecidableEq S]
 
 omit [DecidableEq S] in
 /-- **Activating related lambdas** on related arguments at fresh paths gives
-related bodies: the copies of the owned names are related, and the second
-side's reserved names of the body become copies too. -/
+related bodies: the copies of the owned names are related, inside sealed code
+too, and the second side's reserved names of the body become copies too. -/
 theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : List X₁} {b₁ : Tm S X₁}
     {x₂ : Nm X₂} {own₂ : List X₂} {b₂ : Tm S X₂} {νb μb : Nm X₁ → Nm X₂} {Rb : List (Nm X₂)}
     {ok : Bool}
@@ -600,20 +624,43 @@ theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : Li
     (hb : Rel C νb μb .code Rb ok b₁ b₂)
     (hown : ∀ n ∈ freeNames b₁, ownKey own₂ (νb n) = ownKey own₁ n)
     (hres : ∀ m ∈ Rb, ownKey own₂ m = true)
+    (hsealO : ∀ s, Nm.src s ∈ sealedFree b₁ →
+      ownKey own₂ (C.codeMap (.src s)) = ownKey own₁ (.src s))
     (hcl : ∀ x ∈ freeParams b₁, x = x₁)
     {a₁ : Tm S X₁} {a₂ : Tm S X₂} (ha : Rel C ν μ .val [] true a₁ a₂)
     (hca₁ : ∀ m ∈ freeNames a₁, OK₁ C m) (hpa₁ : freeParams a₁ = [])
+    (hsa₁ : ∀ m ∈ sealedFree a₁, OK₁ C m)
     (hca₂ : ∀ m ∈ freeNames a₂, OK₂ C m) (hpa₂ : freeParams a₂ = [])
     {ρ ρ' : Path}
-    (hav : ∀ n, (n ∈ freeNames (.lam x₁ own₁ b₁ : Tm S X₁) ∨ n ∈ freeNames a₁) → ∀ m, n ≠ .inst ρ m) :
+    (hav : ∀ n, (n ∈ relNames (.lam x₁ own₁ b₁ : Tm S X₁) ∨ n ∈ relNames a₁) → ∀ m, n ≠ .inst ρ m) :
     Rel C (openMap ρ own₁ (fun m => .inst ρ' (νb m)) ν) μ .code (Rb.map (Nm.inst ρ')) ok
-      (subst (renameOwn ρ own₁) (Sub.single x₁ a₁) b₁)
-      (subst (renameOwn ρ' own₂) (Sub.single x₂ a₂) b₂) := by
-  refine hb.substitute {
+      (subst (renameOwn ρ own₁) (Sub.single x₁ a₁) (sealRen ρ own₁ b₁))
+      (subst (renameOwn ρ' own₂) (Sub.single x₂ a₂) (sealRen ρ' own₂ b₂)) := by
+  -- the body's names, other than owned names as written, are old
+  have hold : ∀ n ∈ relNames b₁, (∃ s, n = .src s) ∨ ∀ m, n ≠ .inst ρ m := by
+    intro n hn
+    cases n with
+    | src s => exact Or.inl ⟨s, rfl⟩
+    | inst ρ₀ m₀ =>
+        refine Or.inr (hav _ (Or.inl ?_))
+        simp only [relNames, List.mem_append] at hn ⊢
+        rcases hn with hn | hn
+        · exact Or.inl (mem_freeNames_lam.2 ⟨hn, rfl⟩)
+        · exact Or.inr (by simp [sealedFree, hn, ownKey])
+  have hνs : ∀ n ∈ relNames b₁, openMap ρ own₁ (fun m => Nm.inst ρ' (νb m)) νb n = νb n := by
+    intro n hn
+    rcases hold n hn with ⟨s, rfl⟩ | h
+    · rfl
+    · exact openMap_other h
+  have hb' := hb.sealRen ρ ρ' own₁ own₂ (openMap ρ own₁ (fun m => Nm.inst ρ' (νb m)) νb) hνs hsealO
+    (fun m _ ho => by rw [openMap_own ho]; rfl)
+  refine hb'.substitute {
     names := ?_, params := ?_, res := ?_, resInj := ?_, rnPres := C.preserve_inst ρ',
-    cap₁ := ?_, capφ₁ := ?_, cap₂ := ?_,
-    capφ₂ := ?_, capR := ?_ }
+    cap₁ := ?_, capφ₁ := ?_, cap₂ := ?_, capφ₂ := ?_, capR := ?_, sealed := ?_,
+    sealCap₁ := ?_, sealCapφ₁ := ?_ }
   · intro n hn
+    rw [freeNames_sealRen] at hn
+    rw [hνs n (by simp [relNames, hn])]
     by_cases ho : ownKey own₁ n = true
     · have h2 : ownKey own₂ (νb n) = true := by rw [hown n hn]; exact ho
       simp only [renameOwn, ho, h2, if_true, Option.getD_some]
@@ -626,15 +673,18 @@ theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : Li
       have h2 : ownKey own₂ (νb n) = false := by rw [hown n hn]; exact ho'
       simp only [renameOwn, ho', h2, Bool.false_eq_true, if_false, Option.getD_none]
       rw [hνb n ho', ← openMap_other (ρ := ρ) (own := own₁) (τ := fun m => Nm.inst ρ' (νb m))
-        (ν := ν) (hav n (Or.inl (mem_freeNames_lam.2 ⟨hn, ho'⟩)))]
+        (ν := ν) (hav n (Or.inl (by simp [relNames, mem_freeNames_lam.2 ⟨hn, ho'⟩])))]
       exact .var n <| by
         rw [openMap_other (ρ := ρ) (own := own₁) (τ := fun m => Nm.inst ρ' (νb m))
-          (ν := ν) (hav n (Or.inl (mem_freeNames_lam.2 ⟨hn, ho'⟩))), ← hνb n ho']
+          (ν := ν) (hav n (Or.inl (by simp [relNames, mem_freeNames_lam.2 ⟨hn, ho'⟩]))), ← hνb n ho']
         exact hb.varHole_free hn
   · intro x hx
+    rw [freeParams_sealRen] at hx
     obtain rfl := hcl x hx
     simp only [Sub.single, if_true, Option.getD_some, hμx]
-    refine ha.congr (fun m hm => (openMap_other (hav m (Or.inr hm))).symm) (fun _ _ => rfl)
+    refine ha.congr (fun m hm => (openMap_other (hav m (Or.inr (by simp [relNames, hm])))).symm)
+      (fun m hm => Or.inr (openMap_other (hav m (Or.inr (by simp [relNames, hm])))).symm)
+      (fun _ _ => rfl)
   · intro m hm
     simp [renameOwn, hres m hm]
   · intro m _ m' _ e
@@ -647,6 +697,7 @@ theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : Li
       exact ⟨by simp [freeNames, OK₁], rfl⟩
     · cases hw
   · intro x hx w hw
+    rw [freeParams_sealRen] at hx
     obtain rfl := hcl x hx
     simp only [Sub.single, if_true] at hw
     injection hw with hw
@@ -660,6 +711,7 @@ theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : Li
       exact ⟨by simp [freeNames, OK₂], rfl⟩
     · cases hw
   · intro x hx w hw
+    rw [freeParams_sealRen] at hx
     obtain rfl := hcl x hx
     simp only [Sub.single, hμx, if_true] at hw
     injection hw with hw
@@ -672,6 +724,31 @@ theorem activate_lam {ν μ : Nm X₁ → Nm X₂} {x₁ : Nm X₁} {own₁ : Li
       subst hw
       exact ⟨by simp [freeNames, OK₂], rfl⟩
     · cases hw
+  · intro n hn
+    rcases mem_sealedFree_sealRen ρ own₁ b₁ hn with ⟨h, -⟩ | ⟨m, -, ho, rfl⟩
+    · cases n with
+      | src s => exact Or.inl ⟨s, rfl⟩
+      | inst ρ₀ m₀ =>
+          refine Or.inr ?_
+          have hne : ∀ m, (Nm.inst ρ₀ m₀ : Nm X₁) ≠ .inst ρ m :=
+            hav _ (Or.inl (by simp [relNames, sealedFree, h, ownKey]))
+          rw [openMap_other hne, openMap_other hne]
+          exact (hνb _ rfl).symm
+    · exact Or.inr (by rw [openMap_own ho, openMap_own ho])
+  · intro n _ w hw
+    simp only [renameOwn] at hw
+    split at hw
+    · injection hw with hw
+      subst hw
+      simp [sealedFree]
+    · cases hw
+  · intro x hx w hw
+    rw [freeParams_sealRen] at hx
+    obtain rfl := hcl x hx
+    simp only [Sub.single, if_true] at hw
+    injection hw with hw
+    subst hw
+    exact hsa₁
 
 omit [DecidableEq S] in
 /-- **Opening a pending construct on the first side** (a `let` or a `new`
@@ -681,14 +758,15 @@ theorem open_body {ν νi μ : Nm X₁ → Nm X₂} {own : List X₁} {ℓ : Nm 
     {Res : List (Nm X₂)} {ok : Bool} {u₁ : Tm S X₁} {u₂ : Tm S X₂}
     (hνi : ∀ n, ownKey own n = false → νi n = ν n) (hu : Rel C νi μ k Res ok u₁ u₂)
     (hfp : freeParams u₁ = []) (v₁ : Tm S X₁) {ρ : Path}
-    (hav : ∀ n ∈ freeNames u₁, ownKey own n = false → ∀ m, n ≠ .inst ρ m) :
+    (hav : ∀ n ∈ freeNames u₁, ownKey own n = false → ∀ m, n ≠ .inst ρ m)
+    (havS : ∀ n ∈ sealedFree u₁, ∀ m, n ≠ .inst ρ m) :
     Rel C (openMap ρ own νi ν) μ k Res ok
       (subst (renameOwn ρ own) (Sub.single ℓ v₁) u₁) u₂ := by
   have h := hu.substitute (θ₁ := renameOwn ρ own) (φ₁ := Sub.single ℓ v₁) (θ₂ := Sub.none)
     (φ₂ := Sub.none) (ν' := openMap ρ own νi ν) (μ' := μ) (rn := id) {
       names := ?_, params := ?_, res := ?_, resInj := ?_, rnPres := C.preserve_refl,
       cap₁ := ?_, capφ₁ := ?_, cap₂ := ?_,
-      capφ₂ := ?_, capR := ?_ }
+      capφ₂ := ?_, capR := ?_, sealed := ?_, sealCap₁ := ?_, sealCapφ₁ := ?_ }
   · rw [List.map_id, subst_none_none] at h
     exact h
   · intro n hn
@@ -728,6 +806,23 @@ theorem open_body {ν νi μ : Nm X₁ → Nm X₂} {own : List X₁} {ℓ : Nm 
     cases hx
   · intro m _ w hw
     cases hw
+  · intro n hn
+    cases n with
+    | src s => exact Or.inl ⟨s, rfl⟩
+    | inst ρ₀ m₀ =>
+        refine Or.inr ?_
+        rw [openMap_other (havS _ hn)]
+        exact (hνi _ rfl).symm
+  · intro n _ w hw
+    simp only [renameOwn] at hw
+    split at hw
+    · injection hw with hw
+      subst hw
+      simp [sealedFree]
+    · cases hw
+  · intro x hx
+    rw [hfp] at hx
+    cases hx
 
 omit [DecidableEq S] in
 /-- **Substituting related values for a store name** on both sides. -/
@@ -735,6 +830,7 @@ theorem subst_var {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (Nm X₂)} 
     {b₁ : Tm S X₁}
     {b₂ : Tm S X₂} (hb : Rel C ν μ k Res ok b₁ b₂) {f : Nm X₁} {w₁ : Tm S X₁} {w₂ : Tm S X₂}
     (hw : Rel C ν μ .val [] true w₁ w₂) (hcw₁ : ∀ m ∈ freeNames w₁, OK₁ C m) (hpw₁ : freeParams w₁ = [])
+    (hsw₁ : ∀ m ∈ sealedFree w₁, OK₁ C m)
     (hcw₂ : ∀ m ∈ freeNames w₂, OK₂ C m) (hpw₂ : freeParams w₂ = [])
     (hinj : ∀ n ∈ freeNames b₁, ν n = ν f → n = f) (hfR : ν f ∉ Res) :
     Rel C ν μ k Res ok (subst (Sub.single f w₁) Sub.none b₁)
@@ -743,7 +839,7 @@ theorem subst_var {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (Nm X₂)} 
     (φ₂ := Sub.none) (ν' := ν) (μ' := μ) (rn := id) {
       names := ?_, params := ?_, res := ?_, resInj := ?_, rnPres := C.preserve_refl,
       cap₁ := ?_, capφ₁ := ?_, cap₂ := ?_,
-      capφ₂ := ?_, capR := ?_ }
+      capφ₂ := ?_, capR := ?_, sealed := fun _ _ => Or.inr rfl, sealCap₁ := ?_, sealCapφ₁ := ?_ }
   · rw [List.map_id] at h
     exact h
   · intro n hn
@@ -782,6 +878,15 @@ theorem subst_var {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (Nm X₂)} 
   · intro m hm w hw'
     have hne : m ≠ ν f := fun e => hfR (e ▸ hm)
     simp [Sub.single, hne] at hw'
+  · intro n _ w hw'
+    simp only [Sub.single] at hw'
+    split at hw'
+    · injection hw' with hw'
+      subst hw'
+      exact hsw₁
+    · cases hw'
+  · intro x _ w hw'
+    cases hw'
 
 
 /-! ## More about the relation -/
@@ -839,7 +944,7 @@ theorem Rel.mem_freeNames_rev {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List
       · rcases ih₂ hm with ⟨n, hn, e⟩ | hr
         · exact Or.inl ⟨n, by simp [freeNames, hn], e⟩
         · exact Or.inr (List.mem_append_right _ hr)
-  | @lam ν μ k x₁ own₁ b₁ x₂ own₂ b₂ νb μb Rb _ hνb _ _ _ _ _ hown hres _ _ _ _ _ _ ihb =>
+  | @lam ν μ k x₁ own₁ b₁ x₂ own₂ b₂ νb μb Rb _ hνb _ _ _ _ _ hown hres _ _ _ _ _ _ _ _ ihb =>
       intro m hm
       rw [mem_freeNames_lam] at hm
       obtain ⟨hm, hk⟩ := hm
@@ -921,7 +1026,7 @@ theorem Rel.freeParams_nil {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (N
       rcases hx with hx | hx
       · obtain ⟨y, hy, e⟩ := ih₁ hx; exact ⟨y, by simp [freeParams, hy], e⟩
       · obtain ⟨y, hy, e⟩ := ih₂ hx; exact ⟨y, by simp [freeParams, hy], e⟩
-  | @lam ν μ k x₁ own₁ b₁ x₂ own₂ b₂ νb μb Rb _ _ hμb hμx _ _ _ _ _ _ _ _ _ _ _ ihb =>
+  | @lam ν μ k x₁ own₁ b₁ x₂ own₂ b₂ νb μb Rb _ _ hμb hμx _ _ _ _ _ _ _ _ _ _ _ _ _ ihb =>
       intro x hx
       rw [mem_freeParams_lam] at hx
       obtain ⟨hx, hne⟩ := hx
@@ -968,8 +1073,8 @@ theorem Rel.toVal {ν μ : Nm X₁ → Nm X₂} {k : Kd} {Res : List (Nm X₂)} 
       rcases hv with ⟨_, hs⟩ | ⟨_, hs⟩ | ⟨_, hs⟩ | ⟨_, hs⟩ | ⟨_, hs⟩ | ⟨_, _, _, hs⟩ <;>
         cases hs
   | pquote _ _ _ => simp at hv
-  | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen =>
-      exact ⟨rfl, .lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen⟩
+  | lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen hsealO hsealK =>
+      exact ⟨rfl, .lam hνb hμb hμx hr₁ hr₂ hb hown hres hinj hdisj hnd hpar hbare hseen hsealO hsealK⟩
   | app => simp at hv
   | letP => simp at hv
   | alt => simp at hv

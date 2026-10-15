@@ -61,7 +61,7 @@ def RewriteRule.directTraceSupported (rule : RewriteRule) : Bool :=
 translation.  A presentation with authored or presentation-derived equations
 must use an equation-aware realization of `E;R;E`; it cannot enter this
 generator. -/
-def LanguageDef.directTraceSupported (language : LanguageDef) : Bool :=
+def languageDirectTraceSupported (language : LanguageDef) : Bool :=
   language.isEquationFree &&
     language.rewrites.all RewriteRule.directTraceSupported
 
@@ -74,7 +74,7 @@ and judgment validation remain the responsibility of
 structure DirectTraceLanguage where
   toLanguageDef : LanguageDef
   traceSupported :
-    LanguageDef.directTraceSupported toLanguageDef = true
+    languageDirectTraceSupported toLanguageDef = true
 
 namespace DirectTraceLanguage
 
@@ -83,7 +83,7 @@ generated equation theory. -/
 theorem equation_free (source : DirectTraceLanguage) :
     source.toLanguageDef.isEquationFree = true := by
   have supported := source.traceSupported
-  simp only [LanguageDef.directTraceSupported, Bool.and_eq_true] at supported
+  simp only [languageDirectTraceSupported, Bool.and_eq_true] at supported
   exact supported.1
 
 /-- Recover support for any authored rule from the carrier evidence. -/
@@ -91,13 +91,13 @@ theorem rule_supported (source : DirectTraceLanguage) {rule : RewriteRule}
     (member : rule ∈ source.toLanguageDef.rewrites) :
     RewriteRule.directTraceSupported rule = true := by
   have supported := source.traceSupported
-  simp only [LanguageDef.directTraceSupported, Bool.and_eq_true] at supported
+  simp only [languageDirectTraceSupported, Bool.and_eq_true] at supported
   have rulesSupported := supported.2
   exact List.all_eq_true.mp rulesSupported rule member
 
 /-- Executable, fail-closed admission into the direct trace fragment. -/
 def ofLanguage? (language : LanguageDef) : Option DirectTraceLanguage :=
-  if supported : LanguageDef.directTraceSupported language = true then
+  if supported : languageDirectTraceSupported language = true then
     some ⟨language, supported⟩
   else
     none
@@ -107,7 +107,7 @@ def ofLanguage? (language : LanguageDef) : Option DirectTraceLanguage :=
   simp [ofLanguage?, source.traceSupported]
 
 theorem ofLanguage?_eq_none_of_unsupported {language : LanguageDef}
-    (unsupported : LanguageDef.directTraceSupported language = false) :
+    (unsupported : languageDirectTraceSupported language = false) :
     ofLanguage? language = none := by
   simp [ofLanguage?, unsupported]
 

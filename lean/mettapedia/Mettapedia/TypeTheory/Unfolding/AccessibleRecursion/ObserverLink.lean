@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.TypeTheory.Unfolding.AccessibleRecursion.Checker
 import Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarity
 
@@ -40,12 +41,8 @@ variable {A P : Ty}
 variable (A P) in
 /-- Terms of one type over one data context, with syntactic identity as
 equations and no reduction. -/
-abbrev carvedTermGSLT (Γ : List Ty) (T : Ty) : GSLT where
-  Term := Tm A P Γ T
-  equations := ⟨Eq, eq_equivalence⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev carvedTermGSLT (Γ : List Ty) (T : Ty) : GSLT :=
+  GSLT.stepFree (Tm A P Γ T)
 
 variable (A P) in
 /-- An observer that sends beta-convertible terms to beta-convertible terms. -/

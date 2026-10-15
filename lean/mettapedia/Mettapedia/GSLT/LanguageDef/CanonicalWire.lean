@@ -4,9 +4,11 @@ import Mettapedia.OSLF.MeTTaIL.Syntax
 # Canonical five-field LanguageDef wire projection
 
 This renderer is deliberately partial.  It accepts the first-order constructor,
-free-variable, application, relation-query, and recursive-congruence profile
+free-variable, application, freshness, relation-query, and recursive-congruence profile
 used by the executable language presentations, and rejects unsupported syntax
-rather than erasing it.
+rather than erasing it. The five-field rewrite rows have no binding-metadata
+slot, so rows carrying rule-local dependency or occurrence annotations are
+rejected.
 -/
 
 namespace Mettapedia.GSLT.LanguageDef.CanonicalWire
@@ -86,6 +88,9 @@ decreasing_by
     omega
 
 def renderPremise? : Premise → Option String
+  | .freshness condition => do
+      let renderedTerm ← renderPattern? condition.term
+      pure s!"(Freshness {quote condition.varName} {renderedTerm})"
   | .congruence source target => do
       let renderedSource ← renderPattern? source
       let renderedTarget ← renderPattern? target
@@ -99,13 +104,18 @@ def renderTypeBinding? (binding : String × TypeExpr) : Option String := do
   let renderedType ← renderTypeExpr? binding.2
   pure s!"(TypeBinding {quote binding.1} {renderedType})"
 
-def renderRewrite? (rewrite : RewriteRule) : Option String := do
-  let context ← rewrite.typeContext.mapM renderTypeBinding?
-  let premises ← rewrite.premises.mapM renderPremise?
-  let left ← renderPattern? rewrite.left
-  let right ← renderPattern? rewrite.right
-  pure (s!"(RewriteRule {quote rewrite.name} {renderList context} " ++
-    s!"{renderList premises} {left} {right})")
+/-- Render only rows whose information fits the existing five-field wire.
+Binding metadata has no representation in this wire and is never discarded. -/
+def renderRewrite? (rewrite : RewriteRule) : Option String :=
+  if rewrite.bindings.isNone then do
+    let context ← rewrite.typeContext.mapM renderTypeBinding?
+    let premises ← rewrite.premises.mapM renderPremise?
+    let left ← renderPattern? rewrite.left
+    let right ← renderPattern? rewrite.right
+    pure (s!"(RewriteRule {quote rewrite.name} {renderList context} " ++
+      s!"{renderList premises} {left} {right})")
+  else
+    none
 
 /-- Partial structural projection into `GSLTLanguageDefWireV1`. -/
 def renderLanguage? (language : LanguageDef) : Option String :=
@@ -154,6 +164,7 @@ end
 
 /-- Structural premise fragment represented by the canonical wire. -/
 def premiseSupported : Premise → Bool
+  | .freshness condition => patternSupported condition.term
   | .congruence source target =>
       patternSupported source && patternSupported target
   | .relationQuery _ arguments => patternListSupported arguments
@@ -170,12 +181,20 @@ def grammarRuleSupported (rule : GrammarRule) : Bool :=
     rule.syntaxPattern.all syntaxItemSupported
 
 /-- A rewrite row is supported when its context, premises, and both patterns
-belong to the independently defined structural wire fragment. -/
+belong to the independently defined structural wire fragment and it carries
+no binding metadata that the five-field wire cannot represent. -/
 def rewriteSupported (rewrite : RewriteRule) : Bool :=
-  rewrite.typeContext.all typeBindingSupported &&
+  rewrite.bindings.isNone &&
+    (rewrite.typeContext.all typeBindingSupported &&
     rewrite.premises.all premiseSupported &&
     patternSupported rewrite.left &&
-    patternSupported rewrite.right
+    patternSupported rewrite.right)
+
+/-- Structural admission cannot omit an authored binding annotation. -/
+theorem rewriteSupported_has_no_binding_metadata (rewrite : RewriteRule)
+    (supported : rewriteSupported rewrite) : rewrite.bindings = none := by
+  simp only [rewriteSupported, Bool.and_eq_true] at supported
+  exact Option.isNone_iff_eq_none.mp supported.1
 
 /-- The exact structural profile accepted by `renderLanguage?`. -/
 def languageSupported (language : LanguageDef) : Bool :=
@@ -256,7 +275,11 @@ theorem renderPattern?_isSome_eq_supported (pattern : Pattern) :
 theorem renderPremise?_isSome_eq_supported (premise : Premise) :
     (renderPremise? premise).isSome = premiseSupported premise := by
   cases premise with
-  | freshness => rfl
+  | freshness condition =>
+      have supported := renderPattern?_isSome_eq_supported condition.term
+      cases rendered : renderPattern? condition.term <;>
+        simp [renderPremise?, premiseSupported, rendered] at supported ⊢ <;>
+        simp_all
   | congruence source target =>
       have sourceSupported := renderPattern?_isSome_eq_supported source
       have targetSupported := renderPattern?_isSome_eq_supported target
@@ -313,29 +336,43 @@ theorem renderGrammarRule?_isSome_eq_supported (rule : GrammarRule) :
 
 theorem renderRewrite?_isSome_eq_supported (rewrite : RewriteRule) :
     (renderRewrite? rewrite).isSome = rewriteSupported rewrite := by
-  have renderedContext := mapM_isSome_eq_all renderTypeBinding? rewrite.typeContext
-  have supportedContext :
-      rewrite.typeContext.all (fun binding => (renderTypeBinding? binding).isSome) =
-        rewrite.typeContext.all typeBindingSupported :=
-    all_congr_of_mem rewrite.typeContext _ _
-      (fun binding _ => renderTypeBinding?_isSome_eq_supported binding)
-  rw [supportedContext] at renderedContext
-  have renderedPremises := mapM_isSome_eq_all renderPremise? rewrite.premises
-  have supportedPremises :
-      rewrite.premises.all (fun premise => (renderPremise? premise).isSome) =
-        rewrite.premises.all premiseSupported :=
-    all_congr_of_mem rewrite.premises _ _
-      (fun premise _ => renderPremise?_isSome_eq_supported premise)
-  rw [supportedPremises] at renderedPremises
-  have supportedLeft := renderPattern?_isSome_eq_supported rewrite.left
-  have supportedRight := renderPattern?_isSome_eq_supported rewrite.right
-  cases context : rewrite.typeContext.mapM renderTypeBinding? <;>
-    cases premises : rewrite.premises.mapM renderPremise? <;>
-    cases left : renderPattern? rewrite.left <;>
-    cases right : renderPattern? rewrite.right <;>
-    simp [renderRewrite?, rewriteSupported, context, premises, left, right]
-      at renderedContext renderedPremises supportedLeft supportedRight ⊢ <;>
-    simp_all
+  cases metadata : rewrite.bindings with
+  | some spec => simp [renderRewrite?, rewriteSupported, metadata]
+  | none =>
+      have renderedContext := mapM_isSome_eq_all renderTypeBinding? rewrite.typeContext
+      have supportedContext :
+          rewrite.typeContext.all (fun binding => (renderTypeBinding? binding).isSome) =
+            rewrite.typeContext.all typeBindingSupported :=
+        all_congr_of_mem rewrite.typeContext _ _
+          (fun binding _ => renderTypeBinding?_isSome_eq_supported binding)
+      rw [supportedContext] at renderedContext
+      have renderedPremises := mapM_isSome_eq_all renderPremise? rewrite.premises
+      have supportedPremises :
+          rewrite.premises.all (fun premise => (renderPremise? premise).isSome) =
+            rewrite.premises.all premiseSupported :=
+        all_congr_of_mem rewrite.premises _ _
+          (fun premise _ => renderPremise?_isSome_eq_supported premise)
+      rw [supportedPremises] at renderedPremises
+      have supportedLeft := renderPattern?_isSome_eq_supported rewrite.left
+      have supportedRight := renderPattern?_isSome_eq_supported rewrite.right
+      cases context : rewrite.typeContext.mapM renderTypeBinding? <;>
+        cases premises : rewrite.premises.mapM renderPremise? <;>
+        cases left : renderPattern? rewrite.left <;>
+        cases right : renderPattern? rewrite.right <;>
+        simp [renderRewrite?, rewriteSupported, metadata, context, premises, left, right]
+          at renderedContext renderedPremises supportedLeft supportedRight ⊢ <;>
+        simp_all
+
+/-- Successful rendering excludes binding metadata that the current wire
+cannot represent. -/
+theorem accepted_rewrite_has_no_binding_metadata (rewrite : RewriteRule)
+    (accepted : (renderRewrite? rewrite).isSome) : rewrite.bindings = none := by
+  rw [renderRewrite?_isSome_eq_supported] at accepted
+  exact rewriteSupported_has_no_binding_metadata rewrite accepted
+
+theorem annotated_rewrite_rejected (rewrite : RewriteRule) (spec : RuleBindingSpec)
+    (annotated : rewrite.bindings = some spec) : renderRewrite? rewrite = none := by
+  simp [renderRewrite?, annotated]
 
 /-- Canonical-wire renderability is precisely the conjunction of its
 compositional row obligations. -/
@@ -362,6 +399,30 @@ theorem renderLanguage?_isSome_eq_supported (language : LanguageDef) :
       at renderedTerms renderedRewrites ⊢ <;>
     simp_all
 
+/-- Successful language rendering admits every authored row without losing
+rule-local binding metadata. -/
+theorem accepted_language_has_no_binding_metadata (language : LanguageDef)
+    (accepted : (renderLanguage? language).isSome)
+    (rewrite : RewriteRule) (membership : rewrite ∈ language.rewrites) :
+    rewrite.bindings = none := by
+  rw [renderLanguage?_isSome_eq_supported] at accepted
+  simp only [languageSupported, Bool.and_eq_true] at accepted
+  exact rewriteSupported_has_no_binding_metadata rewrite
+    (List.all_eq_true.mp accepted.2 rewrite membership)
+
+/-- An unrepresentable row rejects the enclosing language rather than
+silently projecting away its annotation. -/
+theorem annotated_language_rejected (language : LanguageDef)
+    (rewrite : RewriteRule) (spec : RuleBindingSpec)
+    (membership : rewrite ∈ language.rewrites)
+    (annotated : rewrite.bindings = some spec) : renderLanguage? language = none := by
+  cases rendered : renderLanguage? language with
+  | none => rfl
+  | some wire =>
+      have accepted : (renderLanguage? language).isSome := by simp [rendered]
+      have omitted := accepted_language_has_no_binding_metadata language accepted rewrite membership
+      simp [annotated] at omitted
+
 namespace Canary
 
 def supportedCongruence : Premise :=
@@ -380,9 +441,85 @@ theorem unsupportedCongruence_rejected :
     renderPremise? unsupportedCongruence = none := by
   simp [unsupportedCongruence, renderPremise?, renderPattern?]
 
+def unannotatedRewrite : RewriteRule := {
+  name := "wire-canary:rewrite"
+  typeContext := [("input", .base "Term"), ("output", .base "Term")]
+  premises := [supportedCongruence]
+  left := .apply "wire-canary:source" [.fvar "input"]
+  right := .apply "wire-canary:target" [.fvar "output"]
+}
+
+def bindingSpec : RuleBindingSpec := {
+  dependencies := [("input", [.base "Term"])]
+  occurrences := [{
+    name := "input"
+    site := .left
+    path := [0]
+    arguments := [.bvar 0]
+  }]
+}
+
+/-- The negative row differs only by information omitted by the old wire. -/
+def annotatedRewrite : RewriteRule :=
+  { unannotatedRewrite with bindings := some bindingSpec }
+
+def unannotatedLanguage : LanguageDef := {
+  name := "wire-canary:language"
+  types := ["Term"]
+  terms := []
+  equations := []
+  rewrites := [unannotatedRewrite]
+}
+
+def annotatedLanguage : LanguageDef :=
+  { unannotatedLanguage with rewrites := [unannotatedRewrite, annotatedRewrite] }
+
+theorem unannotatedRewrite_renders :
+    (renderRewrite? unannotatedRewrite).isSome := by
+  rw [renderRewrite?_isSome_eq_supported]
+  simp [unannotatedRewrite, supportedCongruence, rewriteSupported, typeBindingSupported,
+    typeExprSupported, premiseSupported, patternSupported, patternListSupported]
+
+theorem annotatedRewrite_rejected : renderRewrite? annotatedRewrite = none :=
+  annotated_rewrite_rejected annotatedRewrite bindingSpec rfl
+
+theorem unannotatedLanguage_renders :
+    (renderLanguage? unannotatedLanguage).isSome := by
+  rw [renderLanguage?_isSome_eq_supported]
+  simp [unannotatedLanguage, languageSupported,
+    ← renderRewrite?_isSome_eq_supported, unannotatedRewrite_renders]
+
+theorem annotatedLanguage_rejected : renderLanguage? annotatedLanguage = none :=
+  annotated_language_rejected annotatedLanguage annotatedRewrite bindingSpec
+    (by simp [annotatedLanguage]) rfl
+
+def supportedFreshness : Premise :=
+  .freshness {varName := "atom", term := .apply "Pair" [.fvar "subject", .fvar "subject"]}
+
+theorem supportedFreshness_renders :
+    (renderPremise? supportedFreshness).isSome := by
+  simp [supportedFreshness, renderPremise?, renderPattern?]
+
+theorem binder_freshness_rejected :
+    renderPremise? (.freshness {varName := "atom", term := .lambda none (.bvar 0)}) = none := by
+  simp [renderPremise?, renderPattern?]
+
+#print axioms supportedFreshness_renders
+#print axioms binder_freshness_rejected
+
 #print axioms supportedCongruence_renders
 #print axioms unsupportedCongruence_rejected
+#print axioms unannotatedRewrite_renders
+#print axioms annotatedRewrite_rejected
+#print axioms unannotatedLanguage_renders
+#print axioms annotatedLanguage_rejected
 
 end Canary
+
+#print axioms renderRewrite?_isSome_eq_supported
+#print axioms renderLanguage?_isSome_eq_supported
+#print axioms accepted_rewrite_has_no_binding_metadata
+#print axioms accepted_language_has_no_binding_metadata
+#print axioms annotated_language_rejected
 
 end Mettapedia.GSLT.LanguageDef.CanonicalWire

@@ -27,9 +27,9 @@ import Mettapedia.Languages.Metamath.InferenceNormalProvabilitySoundness
 import Mettapedia.Languages.Metamath.InferenceSourceAdmission
 import Mettapedia.Languages.Metamath.SourceInferenceDeclarativeAdequacy
 import Mettapedia.Languages.Metamath.SourceInferenceProjectionValidation
-import Mettapedia.Languages.Metamath.NIKAuthority
-import Mettapedia.Languages.Metamath.NIKDefault
-import Mettapedia.Languages.Metamath.DatabaseNIKAuthority
+import Mettapedia.Languages.Metamath.CheckerAuthority
+import Mettapedia.Languages.Metamath.SubmissionProfile
+import Mettapedia.Languages.Metamath.DatabaseCheckerAuthority
 import Mettapedia.Languages.Metamath.SourceGSLTOperations
 import Mettapedia.Languages.Metamath.SourceGSLTState
 import Mettapedia.Languages.Metamath.SourceGSLTNormalTheorem

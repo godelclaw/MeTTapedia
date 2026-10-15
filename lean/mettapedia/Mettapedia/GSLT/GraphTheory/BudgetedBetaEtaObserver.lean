@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.GraphTheory.BetaEtaConfluence
 import Mettapedia.GSLT.GraphTheory.BudgetedBetaObserver
 
@@ -399,12 +400,8 @@ theorem betaEtaConv_app_left {function function' : LambdaTerm} (argument : Lambd
   | trans _ _ _ _ _ firstIh secondIh => exact Relation.EqvGen.trans _ _ _ firstIh secondIh
 
 /-- λ-terms with βη-conversion as their equations and no reduction. -/
-abbrev betaEtaGSLT : GSLT where
-  Term := LambdaTerm
-  equations := ⟨BetaEtaConv, betaEtaConv_equivalence⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev betaEtaGSLT : GSLT :=
+  GSLT.equationOnly (LambdaTerm) (⟨BetaEtaConv, betaEtaConv_equivalence⟩)
 
 /-- Applicative contexts over βη-conversion. -/
 abbrev betaEtaApplicativeRules : ContextualRules betaEtaGSLT where

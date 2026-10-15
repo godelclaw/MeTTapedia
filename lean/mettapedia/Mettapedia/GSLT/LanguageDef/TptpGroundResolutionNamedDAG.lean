@@ -17,7 +17,7 @@ formulae, sources, roles, or parent order.
 namespace Mettapedia.GSLT.LanguageDef.TptpGroundResolutionNamedDAG
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.Languages.TPTP.CheckerAuthority
 open Mettapedia.Languages.TPTP.ProblemAuthority
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionProblemAuthority
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionEvidenceSynthesis

@@ -60,7 +60,7 @@ theorem missing_finish_rewriteAt_exact
         (fun _ => []) rule
         (run recordsNil nodes nextId root serviceState)) = _
   rw [show language.rewrites = transitions by rfl]
-  simp [transitions, liftedTransitions,
+  simp [transitions, liftedTransitions_eq_admitted_map,
     DerivationCheckMachineLanguageDef.transitions, applyRuleUsing,
     malformedRecordTransition, liftRewrite, sourceInstruction?, liftLeft,
     liftPattern, DerivationCheckMachineLanguageDef.missingFinishTransition,

@@ -32,7 +32,7 @@ is ignored by book and verifiers alike.
 Per the ratified design, this module authors **one** include GSLT with a
 policy toggle confined to that single branch:
 
-* `bookSpecPolicy` — cyclic/self references are ignored ([MM §4.1.2]);
+* `ignoreCyclicReferencesPolicy` — cyclic/self references are ignored ([MM §4.1.2]);
 * `mmLean4CompatPolicy` — cyclic/self references are rejected with exact
   provenance (the refinement and verdict-matrix profile).
 
@@ -477,7 +477,7 @@ deriving DecidableEq, Repr
 
 /-- [MM §4.1.2] profile: "A file self-reference is ignored, as is any
 reference to the top-level file (to avoid loops)." -/
-def bookSpecPolicy : IncludePolicy := ⟨.ignore⟩
+def ignoreCyclicReferencesPolicy : IncludePolicy := ⟨.ignore⟩
 
 /-- Common-verifier profile: a reference to a file currently being
 processed is rejected (mm-lean4 `includeCycleDetected`; metamath.exe and
@@ -632,7 +632,7 @@ theorem expandFile_compat_ok (files : FileMap) :
       (site : LocatedByteSpan) {r : List LocatedByteSpan × List String},
       expandFile files mmLean4CompatPolicy fuel processing seen path site =
         .ok r →
-      expandFile files bookSpecPolicy fuel processing seen path site =
+      expandFile files ignoreCyclicReferencesPolicy fuel processing seen path site =
         .ok r := by
   intro fuel
   induction fuel with
@@ -675,7 +675,7 @@ theorem expandFile_compat_ok (files : FileMap) :
 theorem expandDatabase_compat_ok {files : FileMap} {root : String}
     {fuel : Nat} {spans : List LocatedByteSpan}
     (h : expandDatabase files mmLean4CompatPolicy root fuel = .ok spans) :
-    expandDatabase files bookSpecPolicy root fuel = .ok spans := by
+    expandDatabase files ignoreCyclicReferencesPolicy root fuel = .ok spans := by
   unfold expandDatabase at h ⊢
   cases hfile : expandFile files mmLean4CompatPolicy fuel [] [] root
       ⟨root, 0, 0⟩ with
@@ -960,7 +960,7 @@ def insideAxiomStatementFiles : FileMap := fun n =>
 /-- Negative: an include between `$d` and its `$.` is rejected at its own
 span, under both ratified policies. -/
 example :
-    expandDatabase insideDjStatementFiles bookSpecPolicy "root" =
+    expandDatabase insideDjStatementFiles ignoreCyclicReferencesPolicy "root" =
       .rejected ⟨⟨"root", 13, 15⟩, .includeInsideStatement⟩ := rfl
 
 example :
@@ -970,7 +970,7 @@ example :
 /-- Negative: an include inside a label-bearing statement is likewise
 rejected at its own span, under both ratified policies. -/
 example :
-    expandDatabase insideAxiomStatementFiles bookSpecPolicy "root" =
+    expandDatabase insideAxiomStatementFiles ignoreCyclicReferencesPolicy "root" =
       .rejected ⟨⟨"root", 8, 10⟩, .includeInsideStatement⟩ := rfl
 
 example :
@@ -980,7 +980,7 @@ example :
 /-- Positive: the book profile agrees on the cycle-free database
 (instance of `expandDatabase_compat_ok`). -/
 example :
-    expandDatabase basicFiles bookSpecPolicy "root" =
+    expandDatabase basicFiles ignoreCyclicReferencesPolicy "root" =
       .ok [⟨"sub", 0, 1⟩, ⟨"root", 10, 11⟩] := rfl
 
 /-- The canonical self-include database (metamath-test `test28` shape):
@@ -992,12 +992,12 @@ def selfIncludeFiles : FileMap := fun n =>
 /-- Stage probe: file expansion reduces, threading `processing` and
 `seen`. -/
 example :
-    expandFile selfIncludeFiles bookSpecPolicy 2 [] [] "s" ⟨"s", 0, 0⟩ =
+    expandFile selfIncludeFiles ignoreCyclicReferencesPolicy 2 [] [] "s" ⟨"s", 0, 0⟩ =
       .ok ([], ["s"]) := rfl
 
 /-- Positive ([MM §4.1.2]): "A file self-reference is ignored". -/
 example :
-    expandDatabase selfIncludeFiles bookSpecPolicy "s" = .ok [] := rfl
+    expandDatabase selfIncludeFiles ignoreCyclicReferencesPolicy "s" = .ok [] := rfl
 
 /-- Negative (compatibility profile): the self-reference is rejected
 with the exact `$[` site in the exact file. -/
@@ -1044,7 +1044,7 @@ example :
       .ok [⟨"a", 0, 1⟩] := rfl
 
 example :
-    expandDatabase repeatFiles bookSpecPolicy "root" =
+    expandDatabase repeatFiles ignoreCyclicReferencesPolicy "root" =
       .ok [⟨"a", 0, 1⟩] := rfl
 
 end Mettapedia.Languages.Metamath.SourceGSLTIncludeDAG

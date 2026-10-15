@@ -5,7 +5,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDisplayedCrown
 # Displayed gradual capabilities in the abstract candidate implementation model
 
 The abstract implementation contract already requires exact fallback codecs,
-proof-relevant receipts, observation agreement, and revision-current NIK
+proof-relevant receipts, observation agreement, and revision-current SemanticService
 activation.  The displayed gradual crown already proves that whole programs
 and native parallel schedules live over unchanged raw computations.  This
 module closes the precise join between those results.
@@ -30,12 +30,12 @@ open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateDisplayedImplementationContract
 
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GradualDependentCapability.State
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDisplayedCrown
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelGradualGuarantee
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterministicWorlds
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramElaboration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeProgramGradualGuarantee
@@ -138,7 +138,7 @@ theorem compile_stateTrace_target {Ground : Type}
 
 /-- Evidence staleness and implementation staleness are independent, and both
 fail open.  The former returns the displayed world to its raw branch; the
-latter prevents NIK activation; the exact fallback codec remains available. -/
+latter prevents SemanticService activation; the exact fallback codec remains available. -/
 theorem stale_evidence_and_model_preserve_raw
     {Ground : Type} {source : CostConfig Ground}
     {raw : RawBranchWorld source}
@@ -176,7 +176,7 @@ namespace SeparatedCanary
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradualDisplayedCrown.Examples.Separated
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration.Examples
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration.Examples
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission.Examples.Separated
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission.Examples.Separated
 
 /-- Current exact evidence compiles to the established certified one-wave
 schedule without an interior checker. -/

@@ -1,4 +1,4 @@
-import Mettapedia.Languages.SUMO.Native.NIKAuthority
+import Mettapedia.Languages.SUMO.Native.CheckerAuthority
 import Mettapedia.Languages.SUMO.Native.DomainGuardElaboration
 import Mettapedia.Languages.SUMO.Native.SignatureSemantics
 import Mettapedia.Languages.SUMO.Native.SignatureInference
@@ -14,9 +14,9 @@ proof-producing checker.  Exact-spine bounded universals give row-domain
 restrictions a native meaning without imposing a finite arity, while denoted
 operator-domain judgments handle variable and computed operators directly.
 The umbrella also exports the native proof-search GSLT and its two-way adequacy
-theorem with the calculus, together with exact closed and contextual NIK
+theorem with the calculus, together with exact closed and contextual SemanticService
 authority fibres.
 Source-signature inference additionally derives declared argument-domain facts
 from true ground relation applications under an explicit domain-respecting
-model law, while retaining the original ontology context in its NIK claim.
+model law, while retaining the original ontology context in its SemanticService claim.
 -/

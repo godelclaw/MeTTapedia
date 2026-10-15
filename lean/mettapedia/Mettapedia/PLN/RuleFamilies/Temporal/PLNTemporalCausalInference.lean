@@ -160,7 +160,7 @@ variable [EvidenceType State] [BinaryWorldModel State Pattern]
 
 /-- Chapter-14 sequential conjunction at the evidence layer, grounded in
 the WM temporal atom semantics. -/
-noncomputable def chapter14SequentialAndSemE
+noncomputable def wmSequentialAndSemE
     (R : Pattern → Pattern → Prop)
     (W : State) (baseAtomQuery : String → Pattern → Pattern)
     (baseTime T : Int)
@@ -169,32 +169,32 @@ noncomputable def chapter14SequentialAndSemE
 
 /-- Chapter-14 predictive implication at the evidence layer, grounded in
 the WM temporal atom semantics. -/
-noncomputable def chapter14PredictiveImplicationSemE
+noncomputable def wmPredictiveImplicationSemE
     (R : Pattern → Pattern → Prop)
     (W : State) (baseAtomQuery : String → Pattern → Pattern)
     (baseTime T : Int)
     (φ ψ : OSLFFormula) (p : Pattern) :=
   predictiveImplicationSemE R W baseAtomQuery baseTime T φ ψ p
 
-theorem chapter14SequentialAnd_le_left
+theorem wmSequentialAnd_le_left
     (R : Pattern → Pattern → Prop)
     (W : State) (baseAtomQuery : String → Pattern → Pattern)
     (baseTime T : Int)
     (φ ψ : OSLFFormula) (p : Pattern) :
-    chapter14SequentialAndSemE R W baseAtomQuery baseTime T φ ψ p ≤
+    wmSequentialAndSemE R W baseAtomQuery baseTime T φ ψ p ≤
       semE R (temporalEvidenceAtomSem W baseAtomQuery baseTime) φ p := by
-  simpa [chapter14SequentialAndSemE] using
+  simpa [wmSequentialAndSemE] using
     (sequentialAnd_le_left R W baseAtomQuery baseTime T φ ψ p)
 
-theorem chapter14PredictiveImplication_mp
+theorem wmPredictiveImplication_mp
     (R : Pattern → Pattern → Prop)
     (W : State) (baseAtomQuery : String → Pattern → Pattern)
     (baseTime T : Int)
     (φ ψ : OSLFFormula) (p : Pattern) :
     semE R (temporalEvidenceAtomSem W baseAtomQuery baseTime) φ p ⊓
-      chapter14PredictiveImplicationSemE R W baseAtomQuery baseTime T φ ψ p ≤
+      wmPredictiveImplicationSemE R W baseAtomQuery baseTime T φ ψ p ≤
       semE R (temporalEvidenceAtomSem W baseAtomQuery (baseTime + T)) ψ p := by
-  simpa [chapter14PredictiveImplicationSemE] using
+  simpa [wmPredictiveImplicationSemE] using
     (predictiveImplication_mp R W baseAtomQuery baseTime T φ ψ p)
 
 end WMGrounding
@@ -249,16 +249,16 @@ open Mettapedia.OSLF.Framework.QuantaleCoherence
 open Mettapedia.PLN.RuleFamilies.Temporal.PLNProbabilisticEventCalculus
 
 /-- Chapter-14 event query example: atom-to-query encoding for `holdsAt`. -/
-def chapter14EventHoldsQuery (a : String) (t : Pattern) : Sigma PatternEventQueryFamily :=
+def eventHoldsQuery (a : String) (t : Pattern) : Sigma PatternEventQueryFamily :=
   patternEventQueryOfAtom_holds a t
 
-theorem chapter14EventHoldsQuery_pattern
+theorem eventHoldsQuery_pattern
     (a : String) (t : Pattern) :
-    sigmaEventQueryPattern (chapter14EventHoldsQuery a t) = pHoldsAt (.fvar a) t := rfl
+    sigmaEventQueryPattern (eventHoldsQuery a t) = pHoldsAt (.fvar a) t := rfl
 
 /-- Concrete Chapter-14 flow step:
 temporal/event reductions transport from `quantum` to `kolmogorov`. -/
-theorem chapter14_event_forward_transport_quantum_to_kolmogorov
+theorem event_forward_transport_quantum_to_kolmogorov
     {p q : Pattern}
     (hred : Mettapedia.OSLF.Framework.LangMorphism.LangReducesStar
       (vertexTemporalLanguageDef quantum) p q) :
@@ -268,7 +268,7 @@ theorem chapter14_event_forward_transport_quantum_to_kolmogorov
 
 /-- Chapter-14 flow bundle:
 `vertexTemporalLanguageDef` reachability transport and quantale coherence. -/
-theorem chapter14_event_quantale_coherence_temporal
+theorem event_quantale_coherence_temporal
     {v w : ProbabilityVertex}
     (hvw : v ≤ w)
     (f : QuantaleHom

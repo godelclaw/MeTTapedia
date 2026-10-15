@@ -491,7 +491,7 @@ theorem cons_decons_roundtrip (services : Spec.Eval.Minimal.Services)
 ### InterpretArgs constructors (spec lines 322-347)
 | Constructor          | Spec Line | Description                |
 |---------------------|-----------|----------------------------|
-| `nil`                | (base)    | empty args → unit           |
+| `nil`                | (base)    | empty args → `(Ok ())`      |
 | `head_changed_error` | 338-340   | head error AND changed      |
 | `cons_tail_error`    | 341-346   | head ok, tail error         |
 | `cons_ok`            | 341-346   | head ok, tail ok, combine   |

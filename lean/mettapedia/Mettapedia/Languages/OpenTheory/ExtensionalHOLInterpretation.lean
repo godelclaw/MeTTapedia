@@ -247,6 +247,30 @@ theorem toHOL_surjective : ∀ τ : HOL.Ty AtomicTy, ∃ ty : Ty, ty.toHOL = τ
       obtain ⟨codomain, rfl⟩ := toHOL_surjective τ
       exact ⟨.function domain codomain, toHOL_function domain codomain⟩
 
+/-- Reconstruct source type syntax from the shared STT substrate. Atomic
+operator provenance and variable identities are retained exactly. -/
+def fromHOL : HOL.Ty AtomicTy → Ty
+  | .prop => Ty.bool
+  | .base atomic => atomic.val
+  | .arr domain codomain => .function (fromHOL domain) (fromHOL codomain)
+
+@[simp] theorem toHOL_fromHOL (type : HOL.Ty AtomicTy) : (fromHOL type).toHOL = type := by
+  induction type with
+  | prop => exact toHOL_bool
+  | base atomic => exact toHOL_of_isAtomic atomic.property
+  | arr domain codomain ihd ihc => simp [fromHOL, ihd, ihc]
+
+@[simp] theorem fromHOL_toHOL (type : Ty) : fromHOL type.toHOL = type := by
+  rcases function_or_bool_or_isAtomic type with ⟨domain, codomain, rfl⟩ | rfl | atomic
+  · rw [toHOL_function, fromHOL, fromHOL_toHOL domain, fromHOL_toHOL codomain]
+  · rw [toHOL_bool, fromHOL]
+  · rw [toHOL_of_isAtomic atomic, fromHOL]
+termination_by sizeOf type
+decreasing_by
+  all_goals subst_vars
+  · exact sizeOf_domain_lt _ _
+  · exact sizeOf_codomain_lt _ _
+
 @[simp] theorem toHOL_equality (operand : Ty) :
     (Ty.equality operand).toHOL =
       .arr operand.toHOL (.arr operand.toHOL .prop) := by
@@ -310,6 +334,21 @@ namespace Symbol
 /-- The target symbol of one free OpenTheory variable at its own type. -/
 abbrev ofVar (sourceVar : SourceVar) : Symbol sourceVar.ty.toHOL :=
   .variable sourceVar rfl
+
+theorem constant_heq (constant : Const) (annotation : Ty)
+    {left right : HOL.Ty AtomicTy} (leftTyped : annotation.toHOL = left)
+    (rightTyped : annotation.toHOL = right) :
+    HEq (Symbol.constant constant annotation leftTyped)
+      (Symbol.constant constant annotation rightTyped) := by
+  subst left right
+  rfl
+
+theorem variable_heq (sourceVar : SourceVar)
+    {left right : HOL.Ty AtomicTy} (leftTyped : sourceVar.ty.toHOL = left)
+    (rightTyped : sourceVar.ty.toHOL = right) :
+    HEq (Symbol.variable sourceVar leftTyped) (Symbol.variable sourceVar rightTyped) := by
+  subst left right
+  rfl
 
 end Symbol
 
@@ -1041,6 +1080,40 @@ def symbolInstance (substitution : TypeSubst) :
   | _, .variable sourceVar typed =>
       .variable (substitution.applyVar sourceVar)
         (by rw [← typed, substitute_toHOL]; rfl)
+
+@[simp] theorem baseInstance_empty : empty.baseInstance = HOL.Ty.base := by
+  funext atomic
+  simp only [baseInstance, apply_empty]
+  exact Ty.toHOL_of_isAtomic atomic.property
+
+theorem baseInstance_compose (first second : TypeSubst) :
+    (first.compose second).baseInstance =
+      fun atomic => HOL.Ty.substitute second.baseInstance (first.baseInstance atomic) := by
+  funext atomic
+  rw [baseInstance, apply_compose, ← substitute_toHOL]
+  rfl
+
+theorem symbolInstance_empty_heq {type : HOL.Ty AtomicTy} (symbol : Symbol type) :
+    HEq (empty.symbolInstance symbol) symbol := by
+  cases symbol with
+  | constant constant annotation typed =>
+      simp only [symbolInstance, apply_empty]
+      exact Symbol.constant_heq _ _ _ _
+  | «variable» sourceVar typed =>
+      simp only [symbolInstance, applyVar, apply_empty]
+      exact Symbol.variable_heq _ _ _
+
+theorem symbolInstance_compose_heq (first second : TypeSubst)
+    {type : HOL.Ty AtomicTy} (symbol : Symbol type) :
+    HEq ((first.compose second).symbolInstance symbol)
+      (second.symbolInstance (first.symbolInstance symbol)) := by
+  cases symbol with
+  | constant constant annotation typed =>
+      simp only [symbolInstance, apply_compose]
+      exact Symbol.constant_heq _ _ _ _
+  | «variable» sourceVar typed =>
+      simp only [symbolInstance, applyVar, apply_compose]
+      exact Symbol.variable_heq _ _ _
 
 end TypeSubst
 
@@ -2263,7 +2336,9 @@ theorem extDerivation_foldr_imp {Δ : List (HOL.ClosedFormula C)} :
 
 end ImplicationChains
 
-theorem models_of_foldr_imp (model : HOL.HenkinModel AtomicTy Symbol) :
+universe w
+
+theorem models_of_foldr_imp (model : HOL.HenkinModel.{0, 0, w} AtomicTy Symbol) :
     ∀ {premises : List (HOL.ClosedFormula Symbol)} {φ : HOL.ClosedFormula Symbol},
       model.models (premises.foldr .imp φ) → (∀ ψ ∈ premises, model.models ψ) →
         model.models φ
@@ -2276,7 +2351,7 @@ theorem models_of_foldr_imp (model : HOL.HenkinModel AtomicTy Symbol) :
 /-- Finite-context provability is sound for extensional Henkin models. -/
 theorem provable_models {T : HOL.ClosedTheorySet Symbol} {φ : HOL.ClosedFormula Symbol}
     (provable : HOL.ClosedTheorySet.Provable T φ)
-    (model : HOL.HenkinModel AtomicTy Symbol) (extensional : model.FunctionsRespectEqv)
+    (model : HOL.HenkinModel.{0, 0, w} AtomicTy Symbol) (extensional : model.FunctionsRespectEqv)
     (theoryHolds : ∀ ψ ∈ T, model.models ψ) : model.models φ := by
   obtain ⟨premises, hpremises, derivation⟩ := provable
   have closed : HOL.ExtDerivation.Theorem Symbol (premises.foldr .imp φ) :=
@@ -2293,7 +2368,7 @@ theorem derives_models {Θ : HOL.ClosedTheorySet Symbol}
     {out : Theorem}
     (derivation : Mettapedia.Logic.Derives (PolicyPrimitiveRule policy) out)
     (axiomsProvable : ∀ tagged ∈ out.axioms, TranslatedProvable Θ tagged)
-    (model : HOL.HenkinModel AtomicTy Symbol) (extensional : model.FunctionsRespectEqv)
+    (model : HOL.HenkinModel.{0, 0, w} AtomicTy Symbol) (extensional : model.FunctionsRespectEqv)
     (backgroundHolds : ∀ ψ ∈ Θ, model.models ψ) :
     ∃ φ, Translates [] out.sequent.concl.term .prop φ ∧
       ((∀ ψ ∈ translatedHypotheses out.sequent.hyp, model.models ψ) → model.models φ) := by
@@ -2755,5 +2830,40 @@ theorem unrestrictedAbs_step_leaves_untagged_closure :
     exact HOL.PreModel.eqv_refl _ trivial
 
 end InterpretationExamples
+
+/-- Direct primitive-equality readout and the compositional translation have
+the same denotation in a full-domain model. The comparison follows from the
+existing derivation connecting the translations, not from their syntax. -/
+theorem Translates.denote_eq_compositional
+    {context : HOL.Ctx AtomicTy} {source : DBTerm} {type : HOL.Ty AtomicTy}
+    {direct compositional : HOL.Term Symbol context type}
+    (directImage : Translates context source type direct)
+    (compositionalImage : TranslatesCompositionally context source type compositional)
+    (M : HOL.HenkinModel.{0, 0, w} AtomicTy Symbol) (full : M.FullDomains)
+    (valuation : M.Valuation context) :
+    M.denote direct valuation = M.denote compositional valuation := by
+  apply M.eq_of_eqv_of_fullDomains full
+  exact HOL.Soundness.extDerivation_sound
+    (directImage.extDerivation_eq_compositional compositionalImage [])
+    (M.functionsRespectEqv_of_fullDomains full)
+    (by intro type index; exact full type (valuation index))
+    (by intro formula member; cases member)
+
+/-! The type-indexed comparison also exposes its transport when the two
+translations present their result types through different equal expressions. -/
+theorem Translates.denote_heq_compositional
+    {context : HOL.Ctx AtomicTy} {source : DBTerm}
+    {directType compositionalType : HOL.Ty AtomicTy}
+    {direct : HOL.Term Symbol context directType}
+    {compositional : HOL.Term Symbol context compositionalType}
+    (directImage : Translates context source directType direct)
+    (compositionalImage : TranslatesCompositionally context source compositionalType compositional)
+    (M : HOL.HenkinModel.{0, 0, w} AtomicTy Symbol) (full : M.FullDomains)
+    (valuation : M.Valuation context) :
+    HEq (M.denote direct valuation) (M.denote compositional valuation) := by
+  obtain ⟨counterpart, counterpartImage⟩ := directImage.exists_compositional
+  obtain ⟨sameType, _⟩ := counterpartImage.unique compositionalImage
+  cases sameType
+  exact heq_of_eq (directImage.denote_eq_compositional compositionalImage M full valuation)
 
 end Mettapedia.Languages.OpenTheory

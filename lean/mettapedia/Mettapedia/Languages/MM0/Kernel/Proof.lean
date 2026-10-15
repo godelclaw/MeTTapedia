@@ -23,8 +23,21 @@ structure TheoremDecl where
   arguments : Context
   hypotheses : List Preterm
   conclusion : Preterm
+  deriving DecidableEq
 
 abbrev TheoremSignature := Nat → Option TheoremDecl
+
+namespace TheoremDecl
+
+/-- Relocate global references in a declaration, retaining all ordered premises. -/
+def relocate? (sorts terms : Nat → Option Nat) (declaration : TheoremDecl) :
+    Option TheoremDecl := do
+  let arguments ← declaration.arguments.relocateSorts? sorts
+  let hypotheses ← declaration.hypotheses.mapM (Preterm.relocateTerms? terms)
+  let conclusion ← declaration.conclusion.relocateTerms? terms
+  pure ⟨arguments, hypotheses, conclusion⟩
+
+end TheoremDecl
 
 namespace Substitution
 

@@ -120,11 +120,16 @@ abbrev IEnv (X : Type v) := X → SlotId X
 
 variable [DecidableEq X]
 
-/-- Code at a quotation-relative position.  `holes` is the scope environment
-whose slots a free store name denotes, when the code is a pattern; `none`
-seals those names as code names of the query.  A use of a name bound inside
-this quotation is a parameter of the code.  A nested quotation is sealed and
-starts again at the root. -/
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
+/-- Code at a quotation-relative position, written in a form rooted at `R`.
+`holes` is the scope environment whose slots a free store name denotes, when
+the code is a pattern; `none` seals those names as the form's head slots
+`⟨y, R, R, .head⟩` (the query's own head slots when `R = []`).  A use of a
+name bound inside this quotation is a parameter of the code.  A nested
+quotation is sealed and starts again at the root, in the same form. -/
 def codeIAt (holes : Option (IEnv X)) (penv senv : List (X × Owner)) (pos : Owner) :
     Src S X → Tm S (BId X)
   | .sym s => .sym s
@@ -139,7 +144,7 @@ def codeIAt (holes : Option (IEnv X)) (penv senv : List (X × Owner)) (pos : Own
       | none =>
           match holes with
           | some env => iVar (env y)
-          | none => iVar ⟨y, [], [], .head⟩
+          | none => iVar ⟨y, R, R, .head⟩
   | .lam z _ b =>
       let o := codeBinder pos
       .lam (.src (.code z o)) [] (codeIAt holes ((z, o) :: penv) senv (pos ++ [0]) b)
@@ -164,11 +169,14 @@ def codeIAt (holes : Option (IEnv X)) (penv senv : List (X × Owner)) (pos : Own
       .alt (codeIAt holes penv senv (pos ++ [0]) t₁) (codeIAt holes penv senv (pos ++ [1]) t₂)
   | .new _ b => codeIAt holes penv senv (pos ++ [0]) b
 
-/-- Sealed code.  Binders carry their quotation-relative position.  A free
-parameter of the code, including a store name bound inside it, is bound by a
-lambda of this quotation.  A free store name keeps the query owner `[]`.
-The spelling is display data. -/
-def codeI (s : Src S X) : Tm S (BId X) := sealParams (codeIAt none [] [] [] s)
+/-- Sealed code written in a form rooted at `R`.  Binders carry their
+quotation-relative position.  A free parameter of the code, including a store
+name bound inside it, is bound by a lambda of this quotation.  A free store
+name (a hole) is the form's head slot `⟨y, R, R, .head⟩`: the hole of a
+quotation written in an equation is a slot of the equation's frame, and the
+hole of the query's own quotation is the query's head slot.  The spelling is
+display data. -/
+def codeI (s : Src S X) : Tm S (BId X) := sealParams (codeIAt R none [] [] [] s)
 
 /-- An identity is a hole unless it is a binder of code. An activation copy
 keeps the hole bit of the name it copies. A slot and a scope parameter are
@@ -292,9 +300,9 @@ def mentionsSv (y : X) : Src S X → Bool
   | .form _ b => mentionsSv y b
   | _ => false
 
-/-- `y` occurs as a store name inside a quotation. Such a name is the query's
-root cell in both models, not a pattern slot: the quotation is sealed at that
-cell, and a covering pattern would give the two models different owners. -/
+/-- `y` occurs as a store name inside a quotation. Such a name is the root cell
+of the form in both models, not a pattern slot: the quotation is sealed at
+that cell, and a covering pattern would give the two models different owners. -/
 def quoteMentions (y : X) : Src S X → Bool
   | .quote c => mentionsSv y c
   | .pquote c => mentionsSv y c
@@ -389,7 +397,7 @@ def wrapNew (ys : List X) (b : Src S X) : Src S X :=
 
 /-! ## The elaborations -/
 
-/-- **Lexical fresh with binder identities.** -/
+/-- **Lexical fresh with binder identities**, in a form rooted at `R`. -/
 def elabLFId (cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner) :
     Src S X → Tm S (BId X)
   | .sym s => .sym s
@@ -402,8 +410,8 @@ def elabLFId (cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner) :
         (pos ++ [0]) (pos ++ [0]) b
       .lam (.src (.par z pos)) (frameSlots (pos ++ [0]) b') b'
   | .app f a => .app (elabLFId cr env pv fr (pos ++ [0]) f) (elabLFId cr env pv fr (pos ++ [1]) a)
-  | .quote c => .quote (codeI c)
-  | .pquote c => .pquote (sealParams (codeIAt (some env) [] [] [] c))
+  | .quote c => .quote (codeI R c)
+  | .pquote c => .pquote (sealParams (codeIAt R (some env) [] [] [] c))
   | .letS p w b xs =>
       .letP
         (elabLFId (crossIn xs (lfIntro xs p cr) cr)
@@ -422,9 +430,9 @@ def elabLFId (cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner) :
         (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b
       .lam (.src (.par z pos)) (frameSlots (pos ++ [0]) b') b'
 
-/-- **Rule M with binder identities.**  `cr` is bookkeeping for the names only:
-the names in force lexical fresh would have in the translated text, which
-decide whether a name has a covering pattern. -/
+/-- **Rule M with binder identities**, in a form rooted at `R`.  `cr` is
+bookkeeping for the names only: the names in force lexical fresh would have in
+the translated text, which decide whether a name has a covering pattern. -/
 def elabMId (E cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner) :
     Src S X → Tm S (BId X)
   | .sym s => .sym s
@@ -447,8 +455,8 @@ def elabMId (E cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner) :
         (pvSet pv z pos) (pos ++ [0]) (pos ++ [0]) b
       .lam (.src (.par z pos)) (frameSlots (pos ++ [0]) b') b'
   | .app f a => .app (elabMId E cr env pv fr (pos ++ [0]) f) (elabMId E cr env pv fr (pos ++ [1]) a)
-  | .quote c => .quote (codeI c)
-  | .pquote c => .pquote (sealParams (codeIAt (some env) [] [] [] c))
+  | .quote c => .quote (codeI R c)
+  | .pquote c => .pquote (sealParams (codeIAt R (some env) [] [] [] c))
   | .letS p w b none =>
       .letP (elabMId E (letCr cr env fr pos p) env pv fr (pos ++ [0]) p)
         (elabMId E cr env pv fr (pos ++ [1]) w)
@@ -760,8 +768,8 @@ theorem mem_mNews {E cr : List X} {b : Src S X} {own : List X} {y : X} :
 /-- Lexical fresh elaborates a `new` block written by `wrapNew` as the block. -/
 theorem elabLFId_wrapNew (ys cr : List X) (env : IEnv X) (pv : X → Owner) (fr pos : Owner)
     (b : Src S X) :
-    elabLFId cr env pv fr pos (wrapNew ys b) =
-      elabLFId (cr.filter fun y => decide (y ∉ ys)) (env.set ys fun y => ⟨y, fr, pos, .new⟩) pv fr pos b := by
+    elabLFId R cr env pv fr pos (wrapNew ys b) =
+      elabLFId R (cr.filter fun y => decide (y ∉ ys)) (env.set ys fun y => ⟨y, fr, pos, .new⟩) pv fr pos b := by
   cases ys with
   | nil => simp [wrapNew, IEnv.set_nil]
   | cons y ys => rfl
@@ -770,7 +778,7 @@ theorem elabLFId_wrapNew (ys cr : List X) (env : IEnv X) (pv : X → Owner) (fr 
 free.  Environments that agree on those names give the same code. -/
 theorem codeIAt_holeEnv (env₁ env₂ : IEnv X) (penv senv : List (X × Owner)) (pos : Owner) :
     ∀ s : Src S X, (∀ y, 0 < codeHoleOcc senv pos y s → env₁ y = env₂ y) →
-      codeIAt (some env₁) penv senv pos s = codeIAt (some env₂) penv senv pos s
+      codeIAt R (some env₁) penv senv pos s = codeIAt R (some env₂) penv senv pos s
   | .sym _, _ => rfl
   | .fn _, _ => rfl
   | .par _, _ => rfl
@@ -860,7 +868,7 @@ elaborates the translated text to the very term that rule M elaborates the
 source to: same constructors, same binder identities, same own lists. -/
 theorem elabLFId_toLexAt : ∀ (t : Src S X) (E cr : List X) (envM envL : IEnv X)
     (pv : X → Owner) (fr pos : Owner), Corr E cr envM envL fr pos t →
-    elabLFId cr envL pv fr pos (toLexAt E cr envM fr pos t) = elabMId E cr envM pv fr pos t
+    elabLFId R cr envL pv fr pos (toLexAt E cr envM fr pos t) = elabMId R E cr envM pv fr pos t
   | .sym _, _, _, _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _, _, _, _ => rfl
   | .sv y, E, cr, envM, envL, pv, fr, pos, h => by
@@ -956,7 +964,7 @@ theorem elabLFId_toLexAt : ∀ (t : Src S X) (E cr : List X) (envM envL : IEnv X
   | .pquote c, E, cr, envM, envL, pv, fr, pos, h => by
       simp only [toLexAt, elabLFId, elabMId, Tm.pquote.injEq]
       apply congrArg sealParams
-      apply codeIAt_holeEnv envL envM [] [] [] c
+      apply codeIAt_holeEnv R envL envM [] [] [] c
       intro y hy
       have hocc : 0 < occM E y (.pquote c) := by simpa [occM] using hy
       rcases h y hocc with h' | ⟨_, hP, _⟩
@@ -1197,11 +1205,11 @@ def pvRoot (R : Owner) : X → Owner := fun _ => R
 /-- Rule M with binder identities, at a form rooted at `R` (the query: `[]`; an
 equation: `[5]`). -/
 def elabMFormAt (R : Owner) (t : Src S X) : Tm S (BId X) :=
-  elabMId (Src.direct t) [] (mRootEnv R t) (pvRoot R) R R t
+  elabMId R (Src.direct t) [] (mRootEnv R t) (pvRoot R) R R t
 
 /-- Lexical fresh with binder identities, at a form rooted at `R`. -/
 def elabLFFormAt (R : Owner) (t : Src S X) : Tm S (BId X) :=
-  elabLFId [] (lfRootEnv R) (pvRoot R) R R t
+  elabLFId R [] (lfRootEnv R) (pvRoot R) R R t
 
 /-- **The translator**, at a form rooted at `R`. -/
 def toLexicalAt (R : Owner) (t : Src S X) : Src S X :=
@@ -1225,7 +1233,7 @@ theorem corr_root (R : Owner) (t : Src S X) :
 /-- **The translation is exact, at a form.** -/
 theorem elabLFFormAt_toLexicalAt (R : Owner) (t : Src S X) :
     elabLFFormAt R (toLexicalAt R t) = elabMFormAt R t :=
-  elabLFId_toLexAt t _ _ _ _ _ _ _ (corr_root R t)
+  elabLFId_toLexAt R t _ _ _ _ _ _ _ (corr_root R t)
 
 /-- An equation `(= (F) body)` rooted at `R`: its root slots are the clause's
 variables, renamed per call by a wrapper activation applied to `unit`; `u`

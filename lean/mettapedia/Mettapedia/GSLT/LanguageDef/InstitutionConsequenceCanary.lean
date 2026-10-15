@@ -1,5 +1,8 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.Logic.InstitutionCanary
 import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # Model-qualified operational-face canary
@@ -15,11 +18,11 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.InstitutionConsequenceCanary
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 open Mettapedia.Logic.InstitutionCanary
 
@@ -31,7 +34,7 @@ def falseTheory : PiInstitution.TheoryObject
 
 /-- A single operational state denotes the native predicate model `{false}`. -/
 def falseFace : StateIndexedModel membershipInstitution falseTheory where
-  system := GSLT.discrete Unit
+  system := GSLT.stepFree Unit
   stateModel := fun _ => CategoryTheory.Discrete.mk ({false} : Set Bool)
   models_theory := by
     intro formula theoremhood _state

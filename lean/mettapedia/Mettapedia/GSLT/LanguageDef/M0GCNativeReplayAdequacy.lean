@@ -217,7 +217,7 @@ def nativeReplay? (profile : RuntimeProfile) (tables : RuleTables)
   else none
   else none
 
-/-- NIK-facing decoded-certificate observation: raw native replay must succeed,
+/-- SemanticService-facing decoded-certificate observation: raw native replay must succeed,
 and the pinned goal term must be exactly the separately submitted claim. -/
 def nativeCheckCertificate (profile : RuntimeProfile) (tables : RuleTables)
     (fuel : Nat) (submitted : Pattern) (certificate : Certificate) : Bool :=

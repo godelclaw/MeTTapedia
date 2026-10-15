@@ -26,7 +26,7 @@ open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.CalculusAsLanguage
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.GSLTIL.SemanticPredicateInstitution
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
 open Mettapedia.OSLF.MeTTaIL.Syntax

@@ -337,7 +337,7 @@ theorem exists_preimage_selection {State : Type}
   exact Selects.of_fill sourceContext sourcePayload
 
 /-- Transport an exact source occurrence through a structural action. -/
-def mapSelection {State : Type} (action : StructuralPatternAction State)
+theorem mapSelection {State : Type} (action : StructuralPatternAction State)
     (state : State) {sourcePayload sourceRoot : Pattern}
     {sourceContext : OneHoleContext}
     (selected : Selects sourcePayload sourceContext sourceRoot) :
@@ -829,7 +829,7 @@ theorem exists_preimage_renameFVars (rename : String → String)
       payloadEquality⟩
 
 /-- Positive canary: a mapped occurrence retains the exact mapped zipper. -/
-def mapPattern (symbols : LanguageDefSymbolMap)
+theorem mapPattern (symbols : LanguageDefSymbolMap)
     {sourcePayload sourceRoot : Pattern} {sourceContext : OneHoleContext}
     (selected : Selects sourcePayload sourceContext sourceRoot) :
     Selects (Mettapedia.GSLT.LanguageDef.mapPattern symbols sourcePayload)

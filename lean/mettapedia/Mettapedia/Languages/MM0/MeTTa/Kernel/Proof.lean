@@ -771,7 +771,7 @@ theorem certificate_accepted_iff_petta_judgment (theory : Kernel.Theory)
     (context : Context) (witness : ProofWitness) (state : State)
     (ready : Ready tables state) (claim : Preterm) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context tables.values claim)
       (Presentation.Calculus.Witness.translate theory fuel context tables.values witness) = true) ↔
       ∃ after, DeclarativeSpec.Runs program (requestConfiguration state tables context witness)
@@ -807,7 +807,7 @@ theorem certificate_accepted_iff_gslt_path (theory : Kernel.Theory)
     (context : Context) (witness : ProofWitness) (state : State)
     (ready : Ready tables state) (claim : Preterm) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context tables.values claim)
       (Presentation.Calculus.Witness.translate theory fuel context tables.values witness) = true) ↔
       ∃ after, (Eval.theory program).MultiStep (requestConfiguration state tables context witness)
@@ -947,7 +947,7 @@ theorem certificate_accepted_iff_petta_accepts (theory : Kernel.Theory)
     (context : Context) (witness : ProofWitness) (state : State)
     (ready : Ready tables state) (claim : Preterm) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context tables.values claim)
       (Presentation.Calculus.Witness.translate theory fuel context tables.values witness) = true) ↔
       ∃ after, DeclarativeSpec.Runs program
@@ -965,7 +965,7 @@ theorem certificate_accepted_iff_check_gslt_path (theory : Kernel.Theory)
     (context : Context) (witness : ProofWitness) (state : State)
     (ready : Ready tables state) (claim : Preterm) :
     (∃ fuel, Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves.check
-      Presentation.Calculus.formMM0 (Presentation.Calculus.family theory).evaluate
+      Presentation.Calculus.kernelCalculus (Presentation.Calculus.family theory).evaluate
       (Presentation.Calculus.derivesJ context tables.values claim)
       (Presentation.Calculus.Witness.translate theory fuel context tables.values witness) = true) ↔
       ∃ after, (Eval.theory program).MultiStep

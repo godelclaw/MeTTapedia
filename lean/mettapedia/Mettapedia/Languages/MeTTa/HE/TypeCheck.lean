@@ -9,6 +9,10 @@ Type checking and type casting for the HE interpreter.
 1. `interpreter.rs` (ground truth)
 2. `metta.md` lines 275-450 (spec)
 
+The runtime matches expected types before actual types and reports argument
+positions starting at one. These two details differ from the pseudocode's
+cast operand order and its `idx - 1` error position.
+
 ## Main Definitions
 * `checkArgumentType` - Check argument type (metta.md lines 429-450)
 * `checkIfFunctionTypeIsApplicable` - Check function type applicability (metta.md lines 384-427)
@@ -107,7 +111,7 @@ where
         checks.foldl (fun (errs', succs') c =>
           match c with
           | .inl t =>
-            (errs' ++ [mkError expr (.badArgType (idx - 1) argTy t)], succs')
+            (errs' ++ [mkError expr (.badArgType idx argTy t)], succs')
           | .inr b =>
             (errs', succs' ++ [b])
         ) (errs, succs)
@@ -138,7 +142,7 @@ where
       noMatch.map fun t =>
         (mkError atom (.badType expectedType t), b)
     | t :: rest =>
-      let mtch := matchTypes t expectedType b fuel
+      let mtch := matchTypes expectedType t b fuel
       if mtch.isEmpty then
         -- This type didn't match; record it and continue
         typeCastLoop rest atom expectedType b fuel (noMatch ++ [t])
@@ -196,6 +200,14 @@ example : checkIfFunctionTypeIsApplicable
     (.expression [.symbol "->", .symbol "Int", .symbol "Int", .symbol "Int"])
     Atom.undefinedType testSpace Bindings.empty 10 =
     .inl [mkError (.expression [.symbol "add", .symbol "x"]) .incorrectNumberOfArguments] := rfl
+
+-- A later rejected argument keeps its one-based source position.
+example : checkIfFunctionTypeIsApplicable
+    (.expression [.symbol "add", .symbol "x", .symbol "z"])
+    (.expression [.symbol "->", .symbol "Int", .symbol "Int", .symbol "Int"])
+    Atom.undefinedType testSpace Bindings.empty 10 =
+    .inl [mkError (.expression [.symbol "add", .symbol "x", .symbol "z"])
+      (.badArgType 2 (.symbol "Int") (.symbol "Bool"))] := rfl
 
 end Tests
 

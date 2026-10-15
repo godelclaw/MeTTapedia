@@ -1,13 +1,13 @@
 import Mettapedia.GSLT.LanguageDef.IsabellePureMetaCore
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
-# Independent semantics and NIK authority for the selected Pure meta-core
+# Independent semantics and SemanticService authority for the selected Pure meta-core
 
 The executable replay in `IsabellePureMetaCore` establishes structural
 derivability.  This module supplies a separate Tarskian interpretation and
 proves every selected proof-term constructor sound for it before attaching a
-NIK authority.  Thus checker acceptance does not define semantic meaning.
+SemanticService authority.  Thus checker acceptance does not define semantic meaning.
 
 The model has an arbitrary carrier, constants, binary application, and
 relations.  Meta-universal quantification ranges over the carrier;
@@ -21,7 +21,7 @@ namespace Mettapedia.GSLT.LanguageDef.IsabellePureMetaCoreAuthority
 
 open Mettapedia.GSLT.LanguageDef.IsabellePureMetaCore
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe u
 
@@ -337,7 +337,7 @@ theorem derivable_valid {theory hypotheses claim}
   exact HasProof.sound derivation interpretation environment axiomsHold hypothesesHold
     (by intro proposition member; simp at member)
 
-/-! ## NIK attachment -/
+/-! ## SemanticService attachment -/
 
 /-- Claims retain their ambient hypotheses rather than encoding them into a
 flat implication chain. -/

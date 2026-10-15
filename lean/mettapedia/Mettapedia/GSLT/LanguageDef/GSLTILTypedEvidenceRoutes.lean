@@ -12,7 +12,7 @@ and transports every elaboration witness over the structurally mapped internal
 pattern.
 
 The construction has identity and composition laws.  Restricting it to one
-source command produces the existing `EvidenceWorldMap`, so NIK's
+source command produces the existing `EvidenceWorldMap`, so SemanticService's
 request-local world transport is derived from this typed route capability
 rather than supplied as an unrelated function.
 

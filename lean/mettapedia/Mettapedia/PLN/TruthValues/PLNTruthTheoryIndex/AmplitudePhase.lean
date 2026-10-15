@@ -190,7 +190,7 @@ structure TypedITVOperationProfile where
         ITV.conjunction (B.left x).value (B.right y).value
 
 /-- Typed operation profile: no silent cross-semantics mixing. -/
-def typedITVOperationProfile : TypedITVOperationProfile where
+theorem typedITVOperationProfile : TypedITVOperationProfile where
   sameSemanticsConjunction :=
     typed_itv_same_semantics_conjunction_raw_value
   sameSemanticsImplication :=
@@ -406,7 +406,7 @@ structure WorldModelTypedITVProfile where
 
 /-- World-model ITV profile: typed provenance is now available at the query
 boundary, with raw ITV queries retained only as forgetful views. -/
-def worldModelTypedITVProfile : WorldModelTypedITVProfile where
+theorem worldModelTypedITVProfile : WorldModelTypedITVProfile where
   binaryForgetsToRaw :=
     Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_value_eq_queryITV
   binaryTypedLowerIsRawLower :=
@@ -932,7 +932,7 @@ setoid-based distinction/credal bridge and its OSLF observational
 specialization.  The concrete Bool witness remains available underneath these
 fields, but the profile exposes the generic and language-specialized theorems
 directly. -/
-def credalProjectionTowerProfile : CredalProjectionTowerProfile where
+theorem credalProjectionTowerProfile : CredalProjectionTowerProfile where
   lowerForced :=
     credal_projection_tower_lower_forced
   upperForced :=

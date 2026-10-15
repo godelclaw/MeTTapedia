@@ -4,6 +4,8 @@ import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNModel
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Soundness
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleConnection
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.TwistNegation
 
 /-!
 # PLN Quantale Semantics
@@ -36,6 +38,26 @@ Sound inference rules with provable bounds
 - `cdTensor` (⊙): Multiplicative conjunction (coordinatewise ×)
 - `cdPar` (⅋): Additive disjunction (coordinatewise +)
 - `cdTensor_sup_left/right`: Quantale distributivity
+
+### DoubleNegationCorners.lean - Double Negation as the Corner Readout
+- `isRegular_iff`: the elements fixed by double negation are the saturated corners
+- `regularEquivQuadrant`, `toRegular_eq`: Glivenko's Boolean algebra of regular
+  evidence is the four corners, and double negation reads off the quadrant
+- `saturatedCorner_le_iff`: the corners carry Belnap's knowledge order
+- `compl_compl_add`, `compl_compl_mul`: revision descends to the knowledge join,
+  the tensor to the knowledge meet
+- `wheel_quadrant`, `wheelOf_quadrant`: Dignāga's wheel of reasons is the quadrant
+  of presence among similar and dissimilar instances
+
+### TwistNegation.lean - Strong and Intuitionistic Negation
+- `tmeet`, `tjoin`, `timp`: the truth-order operations (the twist structure of
+  Nelson's logic over the chain `[0, ∞]`)
+- `cdNeg_truthLE_inot_iff`: strong negation entails intuitionistic negation exactly
+  on consistent evidence
+- `inot_truthLE_cdNeg_iff`: intuitionistic negation entails strong negation exactly
+  when absence of support counts as full refutation
+- `inot_inot_apply`: double intuitionistic negation keeps two values (closed world),
+  while the double complement of the information order keeps four
 
 ### PLNModel.lean - Formal Model Theory
 - `PLNModel`: BinaryEvidence assignment to propositions

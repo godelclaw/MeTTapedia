@@ -12,9 +12,12 @@ the identity model.  This module says what such a chain keeps.
   first-order answer exactly when the other has, and then the two results
   match up to a one-to-one correspondence of names (`IdSlot.FOMatch`): the
   answers have the same symbols in the same shape, with corresponding names;
-  corresponding names hold the same value in the two stores; and every name
-  that either store binds has a partner.  So the answers with their
-  multiplicity, the stores, and which names share a cell are kept.
+  corresponding names hold the same value in the two stores, up to a
+  one-to-one correspondence of the names of stored sealed code (an activation
+  renames the holes of its frame's quotations, so two runs can make different
+  copies); and every name that either store binds has a partner.  So the
+  answers with their multiplicity, the stores, and which names share a cell
+  are kept.
 
 `FOEquiv` is that relation on results; it is an equivalence relation
 (`FOEquiv.refl`, `FOEquiv.symm`, `FOEquiv.trans`), which is why it passes
@@ -153,30 +156,71 @@ end Correspondence
 
 variable {X : Type v}
 
+/-- Optional ground values correspond to themselves, name by name. -/
+theorem optRel_gcorr_refl {Y : Type v} :
+    ∀ o : Option (GVal S Y), OptRel (GCorr (fun n m => n = m)) o o
+  | none => trivial
+  | some g => TmCorr.refl g.toTm
+
+/-- Correspondence of optional ground values read the other way. -/
+theorem optRel_gcorr_symm {Y : Type v} {K : Nm Y → Nm Y → Prop} :
+    ∀ {o o' : Option (GVal S Y)}, OptRel (GCorr K) o o' → OptRel (GCorr fun m n => K n m) o' o
+  | none, none, _ => trivial
+  | some _, some _, h => TmCorr.symm h
+  | some _, none, h => h.elim
+  | none, some _, h => h.elim
+
+/-- Correspondences of optional ground values compose. -/
+theorem optRel_gcorr_trans {Y : Type v} {K K' : Nm Y → Nm Y → Prop} :
+    ∀ {o o' o'' : Option (GVal S Y)}, OptRel (GCorr K) o o' → OptRel (GCorr K') o' o'' →
+      OptRel (GCorr fun n k => ∃ m, K n m ∧ K' m k) o o''
+  | none, none, none, _, _ => trivial
+  | some _, some _, some _, h, h' => TmCorr.trans h h'
+  | some _, none, _, h, _ => h.elim
+  | none, some _, _, h, _ => h.elim
+  | _, some _, none, _, h' => h'.elim
+  | _, none, some _, _, h' => h'.elim
+
+/-- Corresponding optional values are bound together. -/
+theorem optRel_ne_none_iff {α β : Type*} {R : α → β → Prop} :
+    ∀ {o : Option α} {o' : Option β}, OptRel R o o' → (o ≠ none ↔ o' ≠ none)
+  | none, none, _ => by simp
+  | some _, some _, _ => by simp
+  | some _, none, h => h.elim
+  | none, some _, h => h.elim
+
 /-- A result with a first-order answer matches itself. -/
 theorem FOMatch.refl {result : Tm S (Slot X) × GStore S (Slot X)}
     (isFirstOrder : result.1.FirstOrder = true) : FOMatch result result :=
-  ⟨fun n m => n = m, fun _ _ _ first second => first.symm.trans second,
+  ⟨fun n m => n = m, fun n m => n = m, fun _ _ _ first second => first.symm.trans second,
+    fun _ _ _ first second => first.trans second.symm,
+    fun _ _ _ first second => first.symm.trans second,
     fun _ _ _ first second => first.trans second.symm, FOCorr.refl isFirstOrder,
-    fun _ _ same => same ▸ rfl, fun n _ => ⟨n, rfl⟩, fun m _ => ⟨m, rfl⟩⟩
+    fun n _ same => same ▸ optRel_gcorr_refl (result.2 n), fun n _ => ⟨n, rfl⟩,
+    fun m _ => ⟨m, rfl⟩⟩
 
 /-- Matching is symmetric. -/
 theorem FOMatch.symm {first second : Tm S (Slot X) × GStore S (Slot X)}
     (isMatch : FOMatch first second) : FOMatch second first := by
-  obtain ⟨related, functional, injective, corresponds, stores, leftTotal, rightTotal⟩ := isMatch
-  exact ⟨fun m n => related n m, fun m n n' one other => injective n n' m one other,
-    fun m m' n one other => functional n m m' one other, FOCorr.flip corresponds,
-    fun m n one => (stores n m one).symm, rightTotal, leftTotal⟩
+  obtain ⟨related, copies, functional, injective, copiesFunctional, copiesInjective, corresponds,
+    stores, leftTotal, rightTotal⟩ := isMatch
+  exact ⟨fun m n => related n m, fun m n => copies n m,
+    fun m n n' one other => injective n n' m one other,
+    fun m m' n one other => functional n m m' one other,
+    fun m n n' one other => copiesInjective n n' m one other,
+    fun m m' n one other => copiesFunctional n m m' one other, FOCorr.flip corresponds,
+    fun m n one => optRel_gcorr_symm (stores n m one), rightTotal, leftTotal⟩
 
 /-- Matching is transitive. -/
 theorem FOMatch.trans {first second third : Tm S (Slot X) × GStore S (Slot X)}
     (firstMatch : FOMatch first second) (secondMatch : FOMatch second third) :
     FOMatch first third := by
-  obtain ⟨related, functional, injective, corresponds, stores, leftTotal, rightTotal⟩ := firstMatch
-  obtain ⟨related', functional', injective', corresponds', stores', leftTotal', rightTotal'⟩ :=
-    secondMatch
-  refine ⟨fun n k => ∃ m, related n m ∧ related' m k, ?_, ?_, FOCorr.comp corresponds corresponds',
-    ?_, ?_, ?_⟩
+  obtain ⟨related, copies, functional, injective, copiesFunctional, copiesInjective, corresponds,
+    stores, leftTotal, rightTotal⟩ := firstMatch
+  obtain ⟨related', copies', functional', injective', copiesFunctional', copiesInjective',
+    corresponds', stores', leftTotal', rightTotal'⟩ := secondMatch
+  refine ⟨fun n k => ∃ m, related n m ∧ related' m k, fun n k => ∃ m, copies n m ∧ copies' m k,
+    ?_, ?_, ?_, ?_, FOCorr.comp corresponds corresponds', ?_, ?_, ?_⟩
   · rintro n k k' ⟨m, one, other⟩ ⟨m', one', other'⟩
     have same := functional n m m' one one'
     subst same
@@ -185,28 +229,30 @@ theorem FOMatch.trans {first second third : Tm S (Slot X) × GStore S (Slot X)}
     have same := injective' m m' k other other'
     subst same
     exact injective n n' m one one'
+  · rintro n k k' ⟨m, one, other⟩ ⟨m', one', other'⟩
+    have same := copiesFunctional n m m' one one'
+    subst same
+    exact copiesFunctional' m k k' other other'
+  · rintro n n' k ⟨m, one, other⟩ ⟨m', one', other'⟩
+    have same := copiesInjective' m m' k other other'
+    subst same
+    exact copiesInjective n n' m one one'
   · rintro n k ⟨m, one, other⟩
-    exact (stores n m one).trans (stores' m k other)
+    exact optRel_gcorr_trans (stores n m one) (stores' m k other)
   · intro n bound
     obtain ⟨m, one⟩ := leftTotal n bound
-    have boundMiddle : second.2 m ≠ none := by
-      rw [← stores n m one]
-      exact bound
-    obtain ⟨k, other⟩ := leftTotal' m boundMiddle
+    obtain ⟨k, other⟩ := leftTotal' m ((optRel_ne_none_iff (stores n m one)).1 bound)
     exact ⟨k, m, one, other⟩
   · intro k bound
     obtain ⟨m, other⟩ := rightTotal' k bound
-    have boundMiddle : second.2 m ≠ none := by
-      rw [stores' m k other]
-      exact bound
-    obtain ⟨n, one⟩ := rightTotal m boundMiddle
+    obtain ⟨n, one⟩ := rightTotal m ((optRel_ne_none_iff (stores' m k other)).2 bound)
     exact ⟨n, m, one, other⟩
 
 /-- A match has first-order answers on both sides. -/
 theorem FOMatch.firstOrder {first second : Tm S (Slot X) × GStore S (Slot X)}
     (isMatch : FOMatch first second) :
     first.1.FirstOrder = true ∧ second.1.FirstOrder = true := by
-  obtain ⟨_, -, -, corresponds, -, -, -⟩ := isMatch
+  obtain ⟨_, _, -, -, -, -, corresponds, -, -, -⟩ := isMatch
   exact FOCorr.firstOrder corresponds
 
 /-- **What the static equivalence keeps of one result**: the two answers are
@@ -317,7 +363,8 @@ theorem CoreEquiv.observes {first second : Core S X} (equivalent : CoreEquiv fir
 /-- **What the static equivalence keeps of an observation.**  Result by
 result, in order: the answers are first-order together, and then the two
 results have the same answer, the same store and the same sharing of cells,
-up to a one-to-one correspondence of names. -/
+up to a one-to-one correspondence of names, the names of stored sealed code
+included. -/
 theorem coreEquiv_done_firstOrder {bag bag' : Result S (Slot X)}
     (equivalent : CoreEquiv (.done bag : Core S X) (.done bag')) :
     List.Forall₂ FOEquiv bag bag' :=
@@ -334,7 +381,7 @@ theorem done_apart_of_symbols {s s' : S} (differ : s ≠ s') (σ σ' : GStore S 
   have observed := coreEquiv_done_firstOrder equivalent
   cases observed with
   | cons head _ =>
-      obtain ⟨_, -, -, corresponds, -, -, -⟩ := head.2 rfl
+      obtain ⟨_, _, -, -, -, -, corresponds, -, -, -⟩ := head.2 rfl
       exact differ corresponds
 
 /-- Negative: a symbol and an unbound name are apart. -/
@@ -344,7 +391,7 @@ theorem done_apart_symbol_name (s : S) (n : Nm (Slot X)) (σ σ' : GStore S (Slo
   have observed := coreEquiv_done_firstOrder equivalent
   cases observed with
   | cons head _ =>
-      obtain ⟨_, -, -, corresponds, -, -, -⟩ := head.2 rfl
+      obtain ⟨_, _, -, -, -, -, corresponds, -, -, -⟩ := head.2 rfl
       exact corresponds
 
 #print axioms FOMatch.trans

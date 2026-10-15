@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Distinction.BehaviouralMetric
 import Mettapedia.GSLT.Logic.ImageFinitenessNecessary
 import Mettapedia.GSLT.Core.NonFactorization
@@ -443,16 +444,8 @@ theorem quad_behaviouralDistance :
 /-! ## A threshold of the distance is not transitive -/
 
 /-- Three states and no steps. -/
-abbrev still : GSLT.{0} where
-  Term := Fin 3
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+abbrev still : GSLT.{0} :=
+  GSLT.stepFree (Fin 3)
 
 /-- No steps under the single label. -/
 abbrev stillSystem : System.{0, 0} still where

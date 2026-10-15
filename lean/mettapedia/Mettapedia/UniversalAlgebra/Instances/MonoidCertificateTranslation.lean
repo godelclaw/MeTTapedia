@@ -1,5 +1,5 @@
 import Mettapedia.UniversalAlgebra.Instances.MonoidConservativeExtension
-import Mettapedia.UniversalAlgebra.NIK.ConstructiveCertifiedTranslation
+import Mettapedia.UniversalAlgebra.SemanticService.ConstructiveCertifiedTranslation
 
 /-!
 # Constructive certificate translation for a redundant monoid extension
@@ -13,7 +13,7 @@ extension.
 
 set_option autoImplicit false
 
-namespace Mettapedia.UniversalAlgebra.NIK.Monoid
+namespace Mettapedia.UniversalAlgebra.SemanticService.Monoid
 
 open Mettapedia.Logic
 open Mettapedia.UniversalAlgebra.Monoid
@@ -141,7 +141,7 @@ def monoidToExtension :
 /-- The constructive occurrence map gives an exact all-input native authority
 translation back to monoids. -/
 def extensionCertifiedTranslation :
-    Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory.CertifiedTranslation
+    Mettapedia.GSLT.LanguageDef.HeterogeneousTheory.CertifiedTranslation
       (contract derivedExtension) (contract equationSystem) :=
   extensionToMonoid.authorityTranslation
 
@@ -216,4 +216,4 @@ theorem no_collapsingExtensionToMonoid :
     collapsingExtension.equations
   simp [collapsingExtension, EquationSystem.extend]
 
-end Mettapedia.UniversalAlgebra.NIK.Monoid
+end Mettapedia.UniversalAlgebra.SemanticService.Monoid

@@ -1,4 +1,6 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Logic.HennessyMilnerTransport
+import Mettapedia.GSLT.Core.NonFactorization
 import Mathlib.CategoryTheory.Opposites
 
 /-!
@@ -30,7 +32,7 @@ namespace Mettapedia.GSLT.HennessyMilner
 open Mettapedia.GSLT
 open scoped CategoryTheory
 
-universe uS uAtomCoarse uLabelCoarse uAtomMiddle uLabelMiddle
+universe uS uValue uAtomCoarse uLabelCoarse uAtomMiddle uLabelMiddle
   uAtomFine uLabelFine
 
 variable {S : GSLT.{uS}}
@@ -58,6 +60,25 @@ theorem behavioralClass_eq_iff (M : System.{uAtomCoarse, uLabelCoarse} S)
     (left right : S.Term) :
     M.toBehavioralClass left = M.toBehavioralClass right ↔ M.Bisimilar left right :=
   Quotient.eq
+
+/-- Every behavioral class has a representative operational state. -/
+theorem toBehavioralClass_surjective (M : System.{uAtomCoarse, uLabelCoarse} S) :
+    Function.Surjective M.toBehavioralClass := by
+  intro stateClass
+  induction stateClass using Quotient.inductionOn with
+  | _ term => exact ⟨term, rfl⟩
+
+/-- A value-valued readout descends to behavioral classes exactly when it
+cannot separate bisimilar states. No interpretation of the values as physical
+or phenomenal quantities is supplied by this mathematical criterion. -/
+theorem factors_behavioralClass_iff (M : System.{uAtomCoarse, uLabelCoarse} S)
+    {Value : Type uValue} (readout : S.Term → Value) :
+    Mettapedia.GSLT.Core.NonFactorization.Factors M.toBehavioralClass readout ↔
+      ∀ left right, M.Bisimilar left right → readout left = readout right := by
+  rw [Mettapedia.GSLT.Core.NonFactorization.factors_iff_constantOnFibers
+    M.toBehavioralClass_surjective]
+  simp only [Mettapedia.GSLT.Core.NonFactorization.ConstantOnFibers,
+    M.behavioralClass_eq_iff]
 
 end System
 
@@ -165,6 +186,77 @@ theorem classMap_toBehavioralClass (refinement : ObserverRefinement coarse fine)
       coarse.toBehavioralClass term :=
   rfl
 
+/-- Forgetting distinctions reaches every coarse class, even when it merges
+several finer classes. Surjectivity is not a no-information-loss guarantee. -/
+theorem classMap_surjective (refinement : ObserverRefinement coarse fine) :
+    Function.Surjective refinement.classMap := by
+  intro stateClass
+  induction stateClass using Quotient.inductionOn with
+  | _ term => exact ⟨fine.toBehavioralClass term, rfl⟩
+
+/-- The forgetting map is injective precisely when coarse behavioral identity
+already implies fine behavioral identity. -/
+theorem classMap_injective_iff_reflects_bisimilar
+    (refinement : ObserverRefinement coarse fine) :
+    Function.Injective refinement.classMap ↔
+      ∀ left right, coarse.Bisimilar left right → fine.Bisimilar left right := by
+  constructor
+  · intro injective left right related
+    apply (fine.behavioralClass_eq_iff left right).mp
+    apply injective
+    exact (coarse.behavioralClass_eq_iff left right).mpr related
+  · intro reflects first second equalImages
+    induction first using Quotient.inductionOn with
+    | _ left =>
+        induction second using Quotient.inductionOn with
+        | _ right =>
+            exact (fine.behavioralClass_eq_iff left right).mpr
+              (reflects left right
+                ((coarse.behavioralClass_eq_iff left right).mp equalImages))
+
+/-- A coarse behavioral readout is also a fine behavioral readout, by the
+shared factorization law for coarsening. -/
+theorem readout_factors_fine (refinement : ObserverRefinement coarse fine)
+    {Value : Type uValue} {readout : S.Term → Value}
+    (factors : Mettapedia.GSLT.Core.NonFactorization.Factors
+      coarse.toBehavioralClass readout) :
+    Mettapedia.GSLT.Core.NonFactorization.Factors fine.toBehavioralClass readout :=
+  factors.of_coarsening (fun term => (refinement.classMap_toBehavioralClass term).symm)
+
+/-- If no fine classes are merged, every fine-invariant readout descends to
+the coarse boundary, for an arbitrary value type. -/
+theorem readout_descends (refinement : ObserverRefinement coarse fine)
+    (injective : Function.Injective refinement.classMap)
+    {Value : Type uValue} {readout : S.Term → Value}
+    (factors : Mettapedia.GSLT.Core.NonFactorization.Factors
+      fine.toBehavioralClass readout) :
+    Mettapedia.GSLT.Core.NonFactorization.Factors coarse.toBehavioralClass readout := by
+  apply (coarse.factors_behavioralClass_iff readout).mpr
+  intro left right related
+  exact (fine.factors_behavioralClass_iff readout).mp factors left right
+    ((refinement.classMap_injective_iff_reflects_bisimilar.mp injective) left right related)
+
+/-- Preserving every fine behavioral readout is exactly the injectivity of
+the forgetting map. State-universe readouts already suffice for the converse:
+the fine class itself is a separating readout when information is lost. -/
+theorem classMap_injective_iff_all_readouts_descend
+    (refinement : ObserverRefinement coarse fine) :
+    Function.Injective refinement.classMap ↔
+      ∀ (Value : Type uS) (readout : S.Term → Value),
+        Mettapedia.GSLT.Core.NonFactorization.Factors fine.toBehavioralClass readout →
+        Mettapedia.GSLT.Core.NonFactorization.Factors coarse.toBehavioralClass readout := by
+  constructor
+  · intro injective Value readout factors
+    exact refinement.readout_descends injective factors
+  · intro descends
+    obtain ⟨recover, recovers⟩ := descends fine.BehavioralClass fine.toBehavioralClass
+      ⟨_root_.id, fun _ => rfl⟩
+    apply refinement.classMap_injective_iff_reflects_bisimilar.mpr
+    intro left right related
+    apply (fine.behavioralClass_eq_iff left right).mp
+    rw [← recovers left, ← recovers right,
+      (coarse.behavioralClass_eq_iff left right).mpr related]
+
 /-- Identity refinement has the identity quotient map. -/
 theorem classMap_id (M : System.{uAtomCoarse, uLabelCoarse} S) :
     (ObserverRefinement.id M).classMap = _root_.id := by
@@ -203,15 +295,10 @@ theorem classMap_injective_of_surjective
     (atomSurjective : Function.Surjective refinement.mapAtom)
     (labelSurjective : Function.Surjective refinement.mapLabel) :
     Function.Injective refinement.classMap := by
-  intro first second equalImages
-  induction first using Quotient.inductionOn with
-  | _ left =>
-      induction second using Quotient.inductionOn with
-      | _ right =>
-          apply Quotient.sound
-          apply (refinement.bisimilar_iff_of_surjective
-            atomSurjective labelSurjective left right).2
-          exact Quotient.exact equalImages
+  apply refinement.classMap_injective_iff_reflects_bisimilar.mpr
+  intro left right related
+  exact (refinement.bisimilar_iff_of_surjective
+    atomSurjective labelSurjective left right).mpr related
 
 end ObserverRefinement
 
@@ -264,12 +351,8 @@ namespace ObserverRefinementCanary
 
 /-- Two inert states: all distinctions in this specimen come from the
 observer, not from transition structure. -/
-def states : GSLT where
-  Term := Bool
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+def states : GSLT :=
+  GSLT.stepFree (Bool)
 
 /-- The coarse observer asks only the always-true question. -/
 def coarse : System.{0, 0} states where
@@ -338,6 +421,11 @@ end ObserverRefinementCanary
 #print axioms ObserverRefinement.bisimilar_iff_of_surjective
 #print axioms ObserverRefinement.classMap_comp
 #print axioms ObserverRefinement.classMap_injective_of_surjective
+#print axioms System.factors_behavioralClass_iff
+#print axioms ObserverRefinement.classMap_surjective
+#print axioms ObserverRefinement.classMap_injective_iff_reflects_bisimilar
+#print axioms ObserverRefinement.readout_descends
+#print axioms ObserverRefinement.classMap_injective_iff_all_readouts_descend
 #print axioms ObserverObject.behavioralClasses
 #print axioms ObserverRefinementCanary.coarse_identifies
 #print axioms ObserverRefinementCanary.fine_distinguishes

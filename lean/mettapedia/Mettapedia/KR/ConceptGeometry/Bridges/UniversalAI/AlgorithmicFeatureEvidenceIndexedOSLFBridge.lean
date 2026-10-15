@@ -19,8 +19,8 @@ stage and therefore need not commute with diamonds exactly.
 
 namespace Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidence
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.Ultrainfinite

@@ -511,7 +511,7 @@ theorem theoryCredalHOLFormulaInterval_lower_eq_zero_of_not_provable
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (theoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 0 := by
-  letI : Nonempty (TheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (TheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_theoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -541,7 +541,7 @@ theorem theoryCredalHOLFormulaInterval_upper_eq_one_of_not_provable_not
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (theoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 1 := by
-  letI : Nonempty (TheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (TheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_theoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -570,7 +570,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_zero_of_not_provable
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 0 := by
-  letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_extensionalTheoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -599,7 +599,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_one_of_not_provable_n
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 1 := by
-  letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_extensionalTheoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -627,7 +627,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_one_of_provable
     (hProv : ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 1 := by
-  letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_extensionalTheoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -655,7 +655,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_zero_of_provable_not
     (hProvNot : ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 0 := by
-  letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+  let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
     nonempty_extensionalTheoryModel_of_consistent_classical
       (Base := Base) (Const := Const) (T := T)
       enum henum hCons hT0 hEM
@@ -898,7 +898,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_width_eq_zero_iff_decides
         simp [Interval.width, hLowerZero, hUpperOne] at hWidth
       norm_num at hWidthOne
   · intro hDec
-    letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
+    let : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
       nonempty_extensionalTheoryModel_of_consistent_classical
         (Base := Base) (Const := Const) (T := T)
         enum henum hCons hT0 hEM

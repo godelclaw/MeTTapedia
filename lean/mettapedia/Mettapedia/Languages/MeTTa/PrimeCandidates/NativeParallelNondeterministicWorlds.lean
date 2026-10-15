@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Dynamics.CapabilityIndexedObservationArchitecture
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
 
 /-!
 # Worldwise native parallelism over rho nondeterminism
@@ -20,15 +20,15 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNondeterminis
 open Mettapedia.Algebra
 open Mettapedia.GSLT.Dynamics
 open Mettapedia.GSLT.LanguageDef.Cost.Layer.Operational
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.Experimental.StagedReflective
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteraction
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionParallelWorlds
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerOperationalAdequacy
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost
 
 /-- One already-established raw rho branch, including receipt, target, and
@@ -294,7 +294,7 @@ def observedRealization {Ground : Type} (source : CostConfig Ground) :
   refinement := realizationRefinement source
   commutes := realizationRefinement_compatible source
 
-/-- NIK retains the worldwise realization square at one dependency revision.
+/-- SemanticService retains the worldwise realization square at one dependency revision.
 Currentness governs reuse of the retained map, not the existence of raw
 worlds. -/
 def admittedAt {Ground : Type}
@@ -317,7 +317,7 @@ namespace Examples.Separated
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFamilyFibration.Examples
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration.Examples
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission.Examples.Separated
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission.Examples.Separated
 
 def world : ExecutionWorld Ground source :=
   .parallel pairExecution
@@ -383,7 +383,7 @@ def admission := admittedAt exampleDependencies false source
 theorem active : admission.Active false :=
   admission.activate (exampleDependencies.sameDependencies_refl false)
 
-/-- Current NIK execution realizes the certified world directly. -/
+/-- Current SemanticService execution realizes the certified world directly. -/
 @[simp] theorem active_realizes_certified_world :
     active.mapExecution (first := PUnit.unit) (last := PUnit.unit) [world] =
       [RealizedWorld.scheduled (compileFamilyExecution pairExecution)] :=
@@ -437,14 +437,14 @@ theorem alternatives_do_not_mint_joint_parallelism :
           CertifiedFamilyExecution ExampleGround
             [aliceEvent, aliceCompetitor] contestedSource target) :=
   ⟨⟨worlds⟩,
-    Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelNIKAdmission.Examples.Contested.no_certified_joint_family⟩
+    Mettapedia.Languages.MeTTa.PrimeCandidates.NativeParallelAdmission.Examples.Contested.no_certified_joint_family⟩
 
 def admission := admittedAt exampleDependencies false contestedSource
 
 theorem active : admission.Active false :=
   admission.activate (exampleDependencies.sameDependencies_refl false)
 
-/-- Current NIK realization maps both alternatives and selects neither. -/
+/-- Current SemanticService realization maps both alternatives and selects neither. -/
 @[simp] theorem active_retains_both_raw_worlds :
     active.mapExecution (first := PUnit.unit) (last := PUnit.unit) worlds =
       realizeWorlds worlds :=

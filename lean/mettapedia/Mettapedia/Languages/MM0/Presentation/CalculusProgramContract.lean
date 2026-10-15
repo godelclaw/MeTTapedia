@@ -282,19 +282,19 @@ theorem evaluate_eventually (leaf : (family T).Leaf) :
 /-- **Every certificate settles once its leaves name enough fuel.** -/
 theorem enough_fuel (goal : Pattern) (proof : CompactProof (family T).Leaf) :
     ∃ needed, ∀ fuel, needed ≤ fuel →
-      check formMM0 (family T).evaluate goal (mapLeaves (refuel T fuel) proof) =
-        check formMM0 (settledEvaluate T) goal proof := by
+      check kernelCalculus (family T).evaluate goal (mapLeaves (refuel T fuel) proof) =
+        check kernelCalculus (settledEvaluate T) goal proof := by
   obtain ⟨needed, enough⟩ := exists_bound
     (fun leaf fuel => (family T).evaluate (refuel T fuel leaf) = settledEvaluate T leaf)
     (leaves proof) (fun leaf _ => evaluate_eventually T leaf)
   refine ⟨needed, fun fuel atLeast => ?_⟩
   rw [check_mapLeaves]
-  exact check_congr formMM0 goal proof fun leaf member => enough fuel atLeast leaf member
+  exact check_congr kernelCalculus goal proof fun leaf member => enough fuel atLeast leaf member
 
 theorem settled_of_accepted {goal : Pattern} {proof : CompactProof (family T).Leaf} {fuel : Nat}
-    (accepted : check formMM0 (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = true) :
-    check formMM0 (settledEvaluate T) goal proof = true := by
-  have settledRefueled := check_mono formMM0 (fun _ _ => settledEvaluate_of_evaluate T) goal _ accepted
+    (accepted : check kernelCalculus (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = true) :
+    check kernelCalculus (settledEvaluate T) goal proof = true := by
+  have settledRefueled := check_mono kernelCalculus (fun _ _ => settledEvaluate_of_evaluate T) goal _ accepted
   rw [check_mapLeaves] at settledRefueled
   rwa [show settledEvaluate T ∘ refuel T fuel = settledEvaluate T from
     funext (settledEvaluate_refuel T fuel)] at settledRefueled
@@ -306,7 +306,7 @@ result, the shared checker's verdict with settled leaves. -/
 theorem certificate_returns_iff (goal : Pattern) (proof : CompactProof (family T).Leaf)
     (result : Term) :
     Applies P H "mm0:certificate" (request T goal proof) result ↔
-      result = boolean (check formMM0 (settledEvaluate T) goal proof) :=
+      result = boolean (check kernelCalculus (settledEvaluate T) goal proof) :=
   ⟨fun returned => returned.deterministic (certificate_computes T goal proof),
     fun same => same ▸ certificate_computes T goal proof⟩
 
@@ -315,22 +315,22 @@ specified checker.** -/
 theorem certificate_exact {goal : Pattern} {proof : CompactProof (family T).Leaf}
     (enough : ∀ leaf ∈ leaves proof, (family T).evaluate leaf = settledEvaluate T leaf) :
     Applies P H "mm0:certificate" (request T goal proof)
-      (boolean (check formMM0 (family T).evaluate goal proof)) := by
-  rw [check_congr formMM0 goal proof enough]
+      (boolean (check kernelCalculus (family T).evaluate goal proof)) := by
+  rw [check_congr kernelCalculus goal proof enough]
   exact certificate_computes T goal proof
 
 /-- **The checker returns `True` exactly when the specified checker accepts
 the certificate with enough fuel at its leaves.** -/
 theorem certificate_accepts_iff (goal : Pattern) (proof : CompactProof (family T).Leaf) :
     Applies P H "mm0:certificate" (request T goal proof) (.sym "True") ↔
-      ∃ fuel, check formMM0 (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = true := by
+      ∃ fuel, check kernelCalculus (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = true := by
   rw [certificate_returns_iff]
   obtain ⟨needed, enough⟩ := enough_fuel T goal proof
   constructor
   · intro same
     refine ⟨needed, ?_⟩
     rw [enough needed le_rfl]
-    cases verdict : check formMM0 (settledEvaluate T) goal proof
+    cases verdict : check kernelCalculus (settledEvaluate T) goal proof
     · simp [verdict, boolean] at same
     · rfl
   · rintro ⟨fuel, accepted⟩
@@ -340,11 +340,11 @@ theorem certificate_accepts_iff (goal : Pattern) (proof : CompactProof (family T
 the certificate at every fuel of its leaves.** -/
 theorem certificate_refuses_iff (goal : Pattern) (proof : CompactProof (family T).Leaf) :
     Applies P H "mm0:certificate" (request T goal proof) (.sym "False") ↔
-      ∀ fuel, check formMM0 (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = false := by
+      ∀ fuel, check kernelCalculus (family T).evaluate goal (mapLeaves (refuel T fuel) proof) = false := by
   rw [certificate_returns_iff]
   constructor
   · intro same fuel
-    cases accepted : check formMM0 (family T).evaluate goal (mapLeaves (refuel T fuel) proof)
+    cases accepted : check kernelCalculus (family T).evaluate goal (mapLeaves (refuel T fuel) proof)
     · rfl
     · simp [settled_of_accepted T accepted, boolean] at same
   · intro refused
@@ -355,17 +355,17 @@ theorem certificate_refuses_iff (goal : Pattern) (proof : CompactProof (family T
 /-- **A certificate accepted by the specified checker is accepted by the
 checker.** -/
 theorem certificate_accepts_of_check {goal : Pattern} {proof : CompactProof (family T).Leaf}
-    (accepted : check formMM0 (family T).evaluate goal proof = true) :
+    (accepted : check kernelCalculus (family T).evaluate goal proof = true) :
     Applies P H "mm0:certificate" (request T goal proof) (.sym "True") := by
   rw [certificate_returns_iff,
-    check_mono formMM0 (fun _ _ => settledEvaluate_of_evaluate T) goal proof accepted]
+    check_mono kernelCalculus (fun _ _ => settledEvaluate_of_evaluate T) goal proof accepted]
   rfl
 
 /-- The checker runs to completion on every goal and certificate. -/
 theorem certificate_eventually_stable (goal : Pattern) (proof : CompactProof (family T).Leaf) :
     ∃ needed, ∀ fuel, needed ≤ fuel →
       apply P H fuel "mm0:certificate" (request T goal proof) =
-        .value (boolean (check formMM0 (settledEvaluate T) goal proof)) :=
+        .value (boolean (check kernelCalculus (settledEvaluate T) goal proof)) :=
   (certificate_computes T goal proof).at_least
 
 /-! ## Soundness -/
@@ -392,9 +392,9 @@ theorem settled_coversFacts : (mm0 T).CoversFacts (settledEvaluate T) := by
 
 theorem settled_of_returned {goal : Pattern} {proof : CompactProof (family T).Leaf}
     (returned : Applies P H "mm0:certificate" (request T goal proof) (.sym "True")) :
-    check formMM0 (settledEvaluate T) goal proof = true := by
+    check kernelCalculus (settledEvaluate T) goal proof = true := by
   rw [certificate_returns_iff] at returned
-  cases verdict : check formMM0 (settledEvaluate T) goal proof
+  cases verdict : check kernelCalculus (settledEvaluate T) goal proof
   · simp [verdict, boolean] at returned
   · rfl
 
@@ -485,7 +485,7 @@ theorem witness_refused_iff (fuel : Nat) (context : Context) (hypotheses : List 
         (request T (derivesJ context hypotheses expression)
           (Witness.translate T fuel context hypotheses witness)) (.sym "False") := by
   rw [witness_accepted_iff T fuel, certificate_returns_iff, certificate_returns_iff]
-  cases check formMM0 (settledEvaluate T) (derivesJ context hypotheses expression)
+  cases check kernelCalculus (settledEvaluate T) (derivesJ context hypotheses expression)
     (Witness.translate T fuel context hypotheses witness) <;> simp [boolean]
 
 end Mettapedia.Languages.MM0.Presentation.ComputationalCalculus

@@ -228,7 +228,7 @@ theorem recurrentUniformMeaning_implies_rootMeaning
 /-- The recurrent component packaged at the generic checker waist: exact for
 uniform audited recurrence and sound, by projection, for the selected-root
 GSLT meaning. -/
-def recurrentChecker_authorityProjection
+theorem recurrentChecker_authorityProjection
     {AuthorityId : Type uAuthority} {theory : GSLT}
     [Fintype theory.Term] [DecidableEq theory.Term]
     (authorityId : AuthorityId)

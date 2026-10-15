@@ -1,4 +1,5 @@
 import Mettapedia.Machines.Cursor.RelationalAmortized
+import Mettapedia.Machines.CooperativeQueue
 
 /-!
 # Two-list queues, live clients, and sequential potential
@@ -312,6 +313,138 @@ theorem enqueues_exact (items : List Item) (queue : Queue Item) :
         (rest.length + 1) (base := ()) ⟨(), rest, ⟨queue.front, item :: queue.rear⟩⟩).2) = _
       rw [ih]
       simp [List.reverse_cons, List.append_assoc, Nat.mul_add, Nat.add_comm]
+
+/-! ## Realizing the cooperative service policy without front-list append -/
+
+/-- Execute the existing enqueue operation once per arrival. Each operation
+retains the old front and rear tails; it never traverses the old queue. -/
+def enqueueMany (queue : Queue Item) : List Item → Nat × Queue Item
+  | [] => (0, queue)
+  | item :: rest =>
+      let pushed := execute Item queue (.enqueue item)
+      let later := enqueueMany pushed.2.2 rest
+      (pushed.1 + later.1, later.2)
+
+theorem enqueueMany_exact (queue : Queue Item) (items : List Item) :
+    enqueueMany queue items =
+      (2 * items.length, ⟨queue.front, items.reverse ++ queue.rear⟩) := by
+  induction items generalizing queue with
+  | nil => simp [enqueueMany]
+  | cons item rest ih =>
+      simp [enqueueMany, execute, ih, List.reverse_cons, List.append_assoc,
+        Nat.mul_add, Nat.add_comm]
+
+theorem enqueueMany_contents (queue : Queue Item) (items : List Item) :
+    contents Item (enqueueMany queue items).2 = contents Item queue ++ items := by
+  rw [enqueueMany_exact]
+  simp [contents, List.reverse_append, List.append_assoc]
+
+theorem enqueueMany_account (queue : Queue Item) (items : List Item) :
+    (enqueueMany queue items).1 +
+        potential Item (base := ()) (index := ()) (enqueueMany queue items).2 =
+      4 * items.length + potential Item (base := ()) (index := ()) queue := by
+  rw [enqueueMany_exact]
+  simp [potential, List.length_append, Nat.mul_add]
+  omega
+
+/-- One logical pump slot performs one dequeue, requeues its retained owner
+if present, and then appends the new arrivals through the same queue provider. -/
+def rotateService (queue : Queue Item) (arrivals : List Item) :
+    Nat × (Option Item × Queue Item) :=
+  let pulled := execute Item queue .dequeue
+  let pushed := enqueueMany pulled.2.2 (pulled.2.1.toList ++ arrivals)
+  (pulled.1 + pushed.1, pulled.2.1, pushed.2)
+
+theorem dequeue_view (queue : Queue Item) :
+    (execute Item queue .dequeue).2.1 = (contents Item queue).head? ∧
+    contents Item (execute Item queue .dequeue).2.2 = (contents Item queue).tail := by
+  rcases queue with ⟨front, rear⟩
+  cases front with
+  | cons item rest => simp [execute, contents]; rfl
+  | nil =>
+      simp only [execute, reverseCount_exact, List.append_nil, contents, List.nil_append]
+      cases rear.reverse <;> simp <;> rfl
+
+/-- The concrete queue produces the same service and complete residual as the
+independent list policy, including the empty-slot arrival case. -/
+theorem rotateService_refines (queue : Queue Item) (arrivals : List Item) :
+    (rotateService queue arrivals).2.1 = (contents Item queue).head? ∧
+    contents Item (rotateService queue arrivals).2.2 =
+      CooperativeQueue.rotate arrivals (contents Item queue) := by
+  have view := dequeue_view queue
+  refine ⟨view.1, ?_⟩
+  change contents Item (enqueueMany (execute Item queue .dequeue).2.2
+    ((execute Item queue .dequeue).2.1.toList ++ arrivals)).2 = _
+  rw [enqueueMany_contents, view.1, view.2]
+  cases contents Item queue <;> simp [CooperativeQueue.rotate, List.append_assoc]
+
+/-- This is the existing sequential potential account, now for a pump slot.
+It includes queue work but not computation performed by the serviced task.
+The rear credit belongs to this residual chain and cannot be duplicated. -/
+theorem rotateService_amortized (queue : Queue Item) (arrivals : List Item) :
+    (rotateService queue arrivals).1 +
+        potential Item (base := ()) (index := ()) (rotateService queue arrivals).2.2 ≤
+      4 * (arrivals.length + 2) + potential Item (base := ()) (index := ()) queue := by
+  have dequeueBound := local_amortized Item (base := ()) (index := ()) queue .dequeue
+  have enqueueBound := enqueueMany_account (execute Item queue .dequeue).2.2
+    ((execute Item queue .dequeue).2.1.toList ++ arrivals)
+  have replyLength : (execute Item queue .dequeue).2.1.toList.length ≤ 1 := by
+    cases (execute Item queue .dequeue).2.1 <;> simp
+  change (execute Item queue .dequeue).1 +
+      potential Item (base := ()) (index := ()) (execute Item queue .dequeue).2.2 ≤
+      4 + potential Item (base := ()) (index := ()) queue at dequeueBound
+  simp only [List.length_append] at enqueueBound
+  dsimp only [rotateService]
+  omega
+
+/-- A bounded service slice retains the concrete queue. Its receipt counts
+queue operations only; cursor inspections have their own existing account. -/
+def serviceSlice : Nat → (Nat → List Item) → Queue Item → Nat × (List Item × Queue Item)
+  | 0, _, queue => (0, [], queue)
+  | slots + 1, arrivals, queue =>
+      let first := rotateService queue (arrivals 0)
+      let later := serviceSlice slots (fun i => arrivals (i + 1)) first.2.2
+      (first.1 + later.1, first.2.1.toList ++ later.2.1, later.2.2)
+
+/-- Every bounded concrete run preserves the complete service trace and the
+queue that must be retained for later service, including empty slots. -/
+theorem serviceSlice_refines (slots : Nat) (arrivals : Nat → List Item)
+    (queue : Queue Item) :
+    (serviceSlice slots arrivals queue).2.1 =
+        CooperativeQueue.services slots arrivals (contents Item queue) ∧
+      contents Item (serviceSlice slots arrivals queue).2.2 =
+        CooperativeQueue.remaining slots arrivals (contents Item queue) := by
+  induction slots generalizing arrivals queue with
+  | zero => simp [serviceSlice, CooperativeQueue.services, CooperativeQueue.remaining]
+  | succ slots ih =>
+      have first := rotateService_refines queue (arrivals 0)
+      have later := ih (fun i => arrivals (i + 1)) (rotateService queue (arrivals 0)).2.2
+      dsimp only [serviceSlice]
+      rw [later.1, later.2, first.1, first.2]
+      cases contents Item queue <;>
+        simp [CooperativeQueue.services, CooperativeQueue.remaining, CooperativeQueue.rotate]
+
+/-- Count accepted queue entries in this slice, without imposing a bound on
+future arrivals or charging for a task's own computation. -/
+def arrivalCount : Nat → (Nat → List Item) → Nat
+  | 0, _ => 0
+  | slots + 1, arrivals => (arrivals 0).length + arrivalCount slots (fun i => arrivals (i + 1))
+
+/-- Queue-management work is linear in service slots and arrivals along this
+residual chain. Initial rear credit is counted once, never once per fork. -/
+theorem serviceSlice_amortized (slots : Nat) (arrivals : Nat → List Item)
+    (queue : Queue Item) :
+    (serviceSlice slots arrivals queue).1 +
+        potential Item (base := ()) (index := ()) (serviceSlice slots arrivals queue).2.2 ≤
+      4 * (2 * slots + arrivalCount slots arrivals) +
+        potential Item (base := ()) (index := ()) queue := by
+  induction slots generalizing arrivals queue with
+  | zero => simp [serviceSlice, arrivalCount]
+  | succ slots ih =>
+      have first := rotateService_amortized queue (arrivals 0)
+      have later := ih (fun i => arrivals (i + 1)) (rotateService queue (arrivals 0)).2.2
+      dsimp only [serviceSlice, arrivalCount]
+      omega
 
 /-- Eager immutable append visits and recreates each old cell, then allocates
 the singleton. This implements the slower comparison provider explicitly. -/

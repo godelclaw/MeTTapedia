@@ -481,7 +481,7 @@ open TypeSubst
 
 mutual
 
-private def appliedOutputNormal
+private theorem appliedOutputNormal
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : AppliedReducedTypeMatchRel substitution left right output)
     (normal : substitution.Normal)
@@ -498,7 +498,7 @@ private def appliedOutputNormal
       simpa [leftFixed] using occursClean
   | .expression children => appliedListOutputNormal children normal
 
-private def appliedPresentationOutputNormal
+private theorem appliedPresentationOutputNormal
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : AppliedTypePresentationMatchRel
       substitution left right output)
@@ -509,7 +509,7 @@ private def appliedPresentationOutputNormal
         (by rw [← leftApply]; exact normal.apply_idempotent left)
         (by rw [← rightApply]; exact normal.apply_idempotent right)
 
-private def appliedListOutputNormal
+private theorem appliedListOutputNormal
     {substitution output : TypeSubst} {left right : List Atom}
     (derivation : AppliedReducedTypeListMatchRel
       substitution left right output)
@@ -520,7 +520,7 @@ private def appliedListOutputNormal
       appliedListOutputNormal tail
         (appliedPresentationOutputNormal head normal)
 
-private def reducedOutputNormal
+private theorem reducedOutputNormal
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : ReducedTypePresentationMatchRel
       substitution left right output)
@@ -534,7 +534,7 @@ private def reducedOutputNormal
         (by rw [← leftApply]; exact normal.apply_idempotent left)
         (by rw [← rightApply]; exact normal.apply_idempotent right)
 
-private def reducedListOutputNormal
+private theorem reducedListOutputNormal
     {substitution output : TypeSubst} {left right : List Atom}
     (derivation : ReducedTypePresentationListMatchRel
       substitution left right output)

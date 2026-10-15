@@ -98,7 +98,7 @@ private theorem next_call_returns (bindings : Subst) (before after : State)
       (by decide) (by decide) (by decide) (by decide) _
       (grounded_returns program bindings before (.int 1)) _ (by decide)
     · simpa only [indexCaptured] using variable_returns program bindings before "index"
-    · simp [StdLib.apply, natural, Int.natCast_add]
+    · simp [natural, Int.natCast_add]
   have next := evaluated_argument_returns program bindings before before after (.function "mm0:remove-rows")
     (.expression [.symbol "+", .var "index", .grounded (.int 1)]) (natural (index + 1))
     (boolean true) [.var "size"] [handleValue handle, .expression items] 2
@@ -126,7 +126,7 @@ private theorem remove_body_returns (remaining processed : List Atom) (before : 
         apply if_returns program _ before before before _ _ _ _ _
         · apply native_variable_call_returns program _ before before "<" ["index", "size"]
             (boolean false) (by decide) (by decide) _ (by decide)
-          simp [environment, applySubst, Subst.lookup, StdLib.apply, natural, boolean]
+          simp [environment, applySubst, Subst.lookup, natural, boolean]
         · exact grounded_returns program _ before (.bool true)
       · simpa [without] using represented
   | cons first rest ih =>
@@ -152,20 +152,20 @@ private theorem remove_body_returns (remaining processed : List Atom) (before : 
         · apply native_variable_call_returns program bindings before before "<" ["index", "size"]
             (boolean true) (by decide) (by decide) _ (by decide)
           simp [bindings, environment, items, applySubst, Subst.lookup,
-            StdLib.apply, natural, boolean]
+            natural, boolean]
         · change PureReturns program bindings before loopBody after (boolean true)
           rw [loop_body_shape]
           apply let_returns program bindings withRow before before after (.var "row") _ _ first _
           · apply native_variable_call_returns program bindings before before "index-atom" ["rows", "index"]
               first (by decide) (by decide) _ (by decide)
-            simp [bindings, environment, items, applySubst, Subst.lookup, StdLib.apply,
+            simp [bindings, environment, items, applySubst, Subst.lookup,
               natural]
           · simp [SpaceSemantics.matchValue, matchAtom, bindings, environment, Subst.lookup, withRow]
           · apply let_returns program withRow withErased before middle after (.var "removed") _ _
               (boolean true) _
             · apply native_variable_call_returns program withRow before middle "remove-atom" ["space", "row"]
                 (boolean true) (by decide) (by decide) _ (by decide)
-              simp [withRow, bindings, environment, applySubst, Subst.lookup, StdLib.apply, represented, firstShape, erased]
+              simp [withRow, bindings, environment, applySubst, Subst.lookup, represented, firstShape, erased]
             · simp [SpaceSemantics.matchValue, matchAtom, withRow, bindings, environment,
                 Subst.lookup, withErased]
             · apply next_call_returns withErased middle after handle items processed.length
@@ -218,7 +218,7 @@ private theorem clear_rows_returns (before after : State) (handle : Handle) (ite
       (.expression [.symbol "size-atom", .var "rows"]) before (natural items.length) := by
     apply native_variable_call_returns program bindings before before "size-atom" ["rows"]
       _ (by decide) (by decide) _ (by decide)
-    simp [bindings, clearEnvironment, applySubst, Subst.lookup, StdLib.apply, natural]
+    simp [bindings, clearEnvironment, applySubst, Subst.lookup, natural]
   have last := evaluated_argument_returns program bindings before before after (.function "mm0:remove-rows")
     (.expression [.symbol "size-atom", .var "rows"]) (natural items.length) (boolean true)
     [] [handleValue handle, .expression items, natural 0] 3 (by decide +kernel) size entered
@@ -253,7 +253,7 @@ theorem enumerated_clear_returns (before : State) (handle : Handle) (stored : Li
     · apply collapse_returns program bindings before before _ stored
       apply native_variable_call_answers program bindings before before "get-atoms" ["space"]
         stored (by decide) (by decide) _ (by decide)
-      simp [bindings, clearEnvironment, applySubst, Subst.lookup, StdLib.apply, represented]
+      simp [bindings, clearEnvironment, applySubst, Subst.lookup, represented]
     · simp [SpaceSemantics.matchValue, matchAtom, bindings, clearEnvironment, Subst.lookup, bound]
     · exact clear_rows_returns before after handle stored (by simpa using child)
   · have empty : without stored stored = [] := by
@@ -326,7 +326,7 @@ theorem clear_body_returns (before : State) (handle : Handle) (stored : List Ato
   · apply native_variable_call_returns program bindings before after "remove-atom"
       ["space", "pattern"] (boolean true) (by decide) (by decide) _ (by decide)
     simp [bindings, patternEnvironment, applySubst, Subst.lookup,
-      StdLib.apply, represented, erased]
+      represented, erased]
   · simp [SpaceSemantics.matchValue, matchAtom, bindings, patternEnvironment, bound, Subst.lookup]
   · exact grounded_returns program bound after (.bool true)
 

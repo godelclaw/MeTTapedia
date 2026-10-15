@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Causality.ContextBindings
 import Mettapedia.GSLT.Causality.WeightedResponseTypes
 
@@ -64,12 +65,8 @@ namespace Store
 variable (Key : Type) (Value : Type)
 
 /-- **Stores**: a value at every key.  Nothing steps. -/
-abbrev storeGSLT : GSLT where
-  Term := Key → Value
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev storeGSLT : GSLT :=
+  GSLT.stepFree (Key → Value)
 
 /-- An assignment overrides the keys it assigns. -/
 def storeAction : OverrideAction (storeGSLT Key Value) Key Value where

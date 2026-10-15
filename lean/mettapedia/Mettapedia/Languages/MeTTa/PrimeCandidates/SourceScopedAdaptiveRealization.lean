@@ -1,8 +1,8 @@
 import Mettapedia.Evidence.SourceScoped
 import Mettapedia.GSLT.Dynamics.AnswerDistinctionConservation
-import Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission
+import Mettapedia.GSLT.LanguageDef.OptimizationAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CostLayerIterationBoundary
-import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 /-!
 # Source-scoped adaptive realization
@@ -15,7 +15,7 @@ A prepared realization is semantically admissible only when:
 
 * the retained key supports every declared policy observation;
 * the key conserves the distinctions named by its contract;
-* its NIK execution admission is current;
+* its SemanticService execution admission is current;
 * its source scope remains inspectable; and
 * exact raw fallback still recovers the complete source execution trace.
 
@@ -40,10 +40,10 @@ open Mettapedia.Evidence
 open Mettapedia.GSLT.Dynamics.AnswerEffects
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKOptimizationAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OptimizationAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -70,7 +70,7 @@ structure DistinctionContract
   conserves :
     Distinction.Conserves sourceDistinction keyDistinction key
 
-/-- Currentness is the existing revision-indexed NIK judgment, exposed under
+/-- Currentness is the existing revision-indexed SemanticService judgment, exposed under
 the adaptive-realization vocabulary rather than reconstructed. -/
 def CurrentAt
     {Observation : Type uObservation} {dependencies : DependencySystem}

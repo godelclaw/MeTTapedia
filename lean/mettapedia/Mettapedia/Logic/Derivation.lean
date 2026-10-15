@@ -13,7 +13,7 @@ This module contains the logic-independent syntax of finitary inference:
 * `Derives.exists_derivation` reconstructs a certificate from a derivation when
   the rule predicate has an exact witness interface.
 
-No object logic, operational semantics, GSLT, OSLF, or NIK structure is fixed
+No object logic, operational semantics, GSLT, OSLF, or SemanticService structure is fixed
 here.  Those layers consume this generic closure.
 -/
 

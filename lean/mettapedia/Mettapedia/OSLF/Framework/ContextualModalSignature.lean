@@ -59,7 +59,7 @@ generated modal signatures. -/
   induction items with
   | nil => rfl
   | cons item items inductionHypothesis =>
-      simp [curryType, TypeExpr.mentionsCollection, inductionHypothesis]
+      simp [TypeExpr.mentionsCollection, inductionHypothesis]
 
 /-- Base-name support of a curried carrier is exactly the support of its
 ordered domains followed by the support of its codomain. -/
@@ -375,7 +375,7 @@ private theorem sourceLanguage_valid : sourceLanguage.validate = [] := by
     have equality := List.mem_singleton.mp membership
     subst rewrite
     dsimp only [LanguageDef.validateRewrite, sourceLanguage, contextualRewrite]
-    simp only [List.flatMap_nil, List.nil_append]
+    simp only [List.flatMap_nil]
     simp [
       ternaryTerm, termType, LanguageDef.validatePatternConstructors,
       LanguageDef.validateRulePatterns, LanguageDef.patternFvarNames,

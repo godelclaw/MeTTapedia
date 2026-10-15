@@ -149,9 +149,15 @@ def annLF (cr : List X) (fr pos : Owner) : Src S X → Ann S X
 
 /-! ## The four elaborations are the annotation's -/
 
+section Root
+
+/- The root of the form being elaborated. -/
+variable (R : Owner)
+
 /-- **Rule M's slot elaboration is the annotation's.** -/
 theorem elabMS_eq_slotOf : ∀ (t : Src S X) (E cr : List X) (envI : IEnv X) (fr posI : Owner)
-    (env : REnv X) (posS : Owner), elabMS E env posS t = (annM E cr envI fr posI t).slotOf env posS
+    (env : REnv X) (posS : Owner),
+      elabMS R E env posS t = (annM E cr envI fr posI t).slotOf R env posS
   | .sym _, _, _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _, _, _ => rfl
@@ -198,7 +204,8 @@ theorem elabMS_eq_slotOf : ∀ (t : Src S X) (E cr : List X) (envI : IEnv X) (fr
 
 /-- **Rule M's identity elaboration is the annotation's.** -/
 theorem elabMId_eq_idOf : ∀ (t : Src S X) (E cr : List X) (env : IEnv X) (pv : X → Owner)
-    (fr pos : Owner), elabMId E cr env pv fr pos t = (annM E cr env fr pos t).idOf env pv fr pos
+    (fr pos : Owner),
+      elabMId R E cr env pv fr pos t = (annM E cr env fr pos t).idOf R env pv fr pos
   | .sym _, _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _, _ => rfl
@@ -239,7 +246,7 @@ theorem elabMId_eq_idOf : ∀ (t : Src S X) (E cr : List X) (env : IEnv X) (pv :
 
 /-- **Lexical fresh's slot elaboration is the annotation's.** -/
 theorem elabLF_eq_slotOf : ∀ (t : Src S X) (cr : List X) (fr posI : Owner) (env : REnv X)
-    (posS : Owner), elabLF env cr posS t = (annLF cr fr posI t).slotOf env posS
+    (posS : Owner), elabLF R env cr posS t = (annLF cr fr posI t).slotOf R env posS
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _ => rfl
@@ -279,7 +286,8 @@ theorem elabLF_eq_slotOf : ∀ (t : Src S X) (cr : List X) (fr posI : Owner) (en
 
 /-- **Lexical fresh's identity elaboration is the annotation's.** -/
 theorem elabLFId_eq_idOf : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : X → Owner)
-    (fr pos : Owner), elabLFId cr env pv fr pos t = (annLF cr fr pos t).idOf env pv fr pos
+    (fr pos : Owner),
+      elabLFId R cr env pv fr pos t = (annLF cr fr pos t).idOf R env pv fr pos
   | .sym _, _, _, _, _, _ => rfl
   | .fn _, _, _, _, _, _ => rfl
   | .sv _, _, _, _, _, _ => rfl
@@ -310,6 +318,8 @@ theorem elabLFId_eq_idOf : ∀ (t : Src S X) (cr : List X) (env : IEnv X) (pv : 
   | .form z b, cr, env, pv, fr, pos => by
       simp only [elabLFId, annLF, Ann.idOf]
       rw [elabLFId_eq_idOf b]
+
+end Root
 
 /-! ## What the annotation keeps -/
 
@@ -629,8 +639,8 @@ theorem annM_WF : ∀ (t : Src S X) (E cr : List X) (env : IEnv X) (fr pos : Own
   | .quote _, _, _, _, _, _, _ => trivial
   | .pquote c, _, _, _, _, _, _ => by
       simp only [annM, Ann.WF]
-      intro env envI hB hF
-      exact codeRel_pattern env envI hB hF c
+      intro R env envI hR hB hF
+      exact codeRel_pattern R hR (fun s => ⟨R, s, hR, rfl, rfl⟩) env envI hB hF c
   | .letS p w b none, _, _, _, _, _, h => by
       simp only [Src.patsNewFree, Bool.and_eq_true] at h
       exact ⟨newFree_annM p _ _ _ _ _ h.1.1.1, annM_WF p _ _ _ _ _ h.1.1.2,
@@ -671,8 +681,8 @@ theorem annLF_WF : ∀ (t : Src S X) (cr : List X) (fr pos : Owner),
   | .quote _, _, _, _, _ => trivial
   | .pquote c, _, _, _, _ => by
       simp only [annLF, Ann.WF]
-      intro env envI hB hF
-      exact codeRel_pattern env envI hB hF c
+      intro R env envI hR hB hF
+      exact codeRel_pattern R hR (fun s => ⟨R, s, hR, rfl, rfl⟩) env envI hB hF c
   | .letS p w b _, _, _, _, h => by
       simp only [Src.patsNewFree, Bool.and_eq_true] at h
       simp only [annLF]

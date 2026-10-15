@@ -19,7 +19,7 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.ReproducibleBuild.DiverseDoubleCompilingHosting
 
 open Mettapedia.GSLT.LanguageDef.GSLTHosting
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 open Mettapedia.GSLT.ReproducibleBuild.DiverseDoubleCompiling
 
 /-- Exact DDC equality transports an actually witnessed source production
@@ -61,15 +61,15 @@ its actual forward path map is non-injective. -/
 theorem result_transport_does_not_imply_proof_fibre_fidelity :
     (forall value,
       ProducesObservation
-          Mettapedia.GSLT.LanguageDef.NIKObservedRefinement.FusionCanary.targetObserved
+          Mettapedia.GSLT.LanguageDef.ObservationRefinement.FusionCanary.targetObserved
           (Mettapedia.GSLT.LanguageDef.GSLTHosting.FusionCanary.hosting.compile
             (false, true)) value <->
         ProducesObservation
-          Mettapedia.GSLT.LanguageDef.NIKObservedRefinement.FusionCanary.sourceObserved
+          Mettapedia.GSLT.LanguageDef.ObservationRefinement.FusionCanary.sourceObserved
           (false, true) value) /\
       Not (Function.Injective
         (mapObservationFibre
-          Mettapedia.GSLT.LanguageDef.NIKObservedRefinement.FusionCanary.observedFusion
+          Mettapedia.GSLT.LanguageDef.ObservationRefinement.FusionCanary.observedFusion
           (initial := (false, true)) (value := true))) :=
   Mettapedia.GSLT.ReproducibleBuild.Hosting.Canary.behavioral_result_exact_but_forward_fibre_not_injective
 

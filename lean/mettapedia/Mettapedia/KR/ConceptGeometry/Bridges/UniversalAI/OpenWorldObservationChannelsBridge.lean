@@ -31,9 +31,9 @@ namespace Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI
 namespace OpenWorldObservationChannels
 
 open scoped Classical
-open scoped CategoryTheory
+open scoped _root_.CategoryTheory
 
-open CategoryTheory
+open _root_.CategoryTheory
 open KolmogorovComplexity
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational

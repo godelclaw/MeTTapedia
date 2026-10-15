@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.CapabilityGeneratedObservationDomain
 import Mettapedia.GSLT.Dynamics.IndexedExecutionObservation
 
@@ -34,6 +35,8 @@ open Mettapedia.GSLT.Dynamics.ExecutionPathObservation
 universe uEvent uContainer uValue uState uExecution uOtherValue uScore uDecision
 universe uTerm
 
+-- Independent component universes meet only in the sort of their package.
+set_option linter.checkUnivs false in
 /-- One exact observation architecture over a proof-relevant indexed
 execution family.  The event, container, value, and domain choices are data;
 none is reconstructed from another layer. -/
@@ -409,7 +412,7 @@ the underlying reflexive GSLT execution still exists.  Observation failure is
 therefore not operational rejection. -/
 namespace PartialCollection
 
-abbrev system : GSLT := GSLT.discrete Unit
+abbrev system : GSLT := GSLT.stepFree Unit
 
 def nowhere : GSLTObservation system where
   collection :=

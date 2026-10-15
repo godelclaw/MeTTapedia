@@ -18,7 +18,7 @@ Computable evaluator implementing the 6 mutual inductive relations from
 | `interpretExpression` | `InterpretExpression`  | 3            |
 | `interpretFunction`   | `InterpretFunction`    | 3            |
 | `interpretArgs`       | `InterpretArgs`        | 4            |
-| `interpretTuple`      | `InterpretTuple`       | 4            |
+| `interpretTuple`      | `InterpretTuple`       | 6            |
 | `mettaCall`           | `MettaCall`            | 9            |
 -/
 
@@ -130,8 +130,8 @@ def interpretFunction (space : Space) (dispatch : GroundedDispatch)
           | some argTypes =>
             let tailResults := interpretArgs space dispatch args argTypes headB n
             tailResults.map fun (tailR, tailB) =>
-              if isEmptyOrError tailR then (tailR, tailB)
-              else (.expression (headR :: atomElements tailR), tailB)
+              if argumentsSucceeded tailR = false then (tailR, tailB)
+              else (.expression (headR :: argumentValues tailR), tailB)
           | none => []
     | _ => []
 
@@ -143,7 +143,7 @@ def interpretArgs (space : Space) (dispatch : GroundedDispatch)
   | 0 => []
   | n + 1 =>
     match args, types with
-    | [], [] => [(Atom.unit, b)]
+    | [], [] => [(argumentPacket [], b)]
     | arg :: remainingArgs, t :: remainingTypes =>
       let headResults := evalAtom space dispatch arg t b n
       headResults.flatMap fun (headR, headB) =>
@@ -152,20 +152,21 @@ def interpretArgs (space : Space) (dispatch : GroundedDispatch)
           let tailResults :=
             interpretArgs space dispatch remainingArgs remainingTypes headB n
           tailResults.map fun (tailR, tailB) =>
-            if isEmptyOrError tailR then (tailR, tailB)
-            else (.expression (headR :: atomElements tailR), tailB)
+            if argumentsSucceeded tailR = false then (tailR, tailB)
+            else (argumentPacket (headR :: argumentValues tailR), tailB)
     | _, _ => []
 
 /-- Interpret a tuple (recursive element-wise evaluation).
-    Ref: EvalSpec.InterpretTuple (4 constructors, spec lines 211-233). -/
+    Ref: EvalSpec.InterpretTuple (6 constructors, spec lines 211-233). -/
 def interpretTuple (space : Space) (dispatch : GroundedDispatch)
     (atom : Atom) (b : Bindings) (fuel : Nat) : ResultSet :=
   match fuel with
   | 0 => []
   | n + 1 =>
     match atom with
+    | .expression [] => [(Atom.unit, b)]
     | .expression [single] =>
-      evalAtom space dispatch single Atom.undefinedType b n
+      (evalAtom space dispatch single Atom.undefinedType b n).map tupleSingleton
     | .expression (hd :: hd2 :: rest) =>
       let headResults := evalAtom space dispatch hd Atom.undefinedType b n
       headResults.flatMap fun (headR, headB) =>
@@ -389,11 +390,29 @@ example : mettaCall Space.empty GroundedDispatch.none
 
 example : interpretArgs Space.empty GroundedDispatch.none
     [] [] Bindings.empty 10 =
-    [(Atom.unit, Bindings.empty)] := rfl
+    [(argumentPacket [], Bindings.empty)] := rfl
 
 example : interpretTuple Space.empty GroundedDispatch.none
     (.expression [.symbol "a"]) Bindings.empty 10 =
-    [(.symbol "a", Bindings.empty)] := rfl
+    [(.expression [.symbol "a"], Bindings.empty)] := rfl
+
+/-- A nested final argument remains one element of the outer tuple. -/
+theorem eval_nested_final_tuple :
+    eval Space.empty (.expression [.symbol "f", .expression [.symbol "a", .symbol "b"]]) 20 =
+      [(.expression [.symbol "f", .expression [.symbol "a", .symbol "b"]], Bindings.empty)] := rfl
+
+/-- Singleton applications do not collapse to their head. -/
+theorem eval_singleton_tuple : eval Space.empty (.expression [.symbol "g"]) 10 =
+    [(.expression [.symbol "g"], Bindings.empty)] := rfl
+
+theorem eval_nested_singleton_tuple :
+    eval Space.empty (.expression [.expression [.symbol "a", .symbol "b"]]) 20 =
+      [(.expression [.expression [.symbol "a", .symbol "b"]], Bindings.empty)] := rfl
+
+/-- Failure is not hidden inside a singleton success wrapper. -/
+theorem interpretTuple_singleton_empty :
+    interpretTuple Space.empty GroundedDispatch.none (.expression [Atom.empty]) Bindings.empty 10 =
+      [(Atom.empty, Bindings.empty)] := rfl
 
 example : eval Space.empty (.symbol "a") 10 =
     [(.symbol "a", Bindings.empty)] := rfl
@@ -419,7 +438,7 @@ example : interpretTuple Space.empty GroundedDispatch.none
 
 example : interpretArgs Space.empty GroundedDispatch.none
     [.symbol "a"] [Atom.undefinedType] Bindings.empty 10 =
-    [(.expression [.symbol "a"], Bindings.empty)] := rfl
+    [(argumentPacket [.symbol "a"], Bindings.empty)] := rfl
 
 example : interpretFunction funcSpace GroundedDispatch.none
     (.expression [.symbol "S", .symbol "Z"])

@@ -114,7 +114,7 @@ def dischargedOpenNativeWireAuthority {AuthorityId : Type uAuthority}
 
 /-! ## Native implementations lower to the same authority -/
 
-/-- A NIK for rich OSLF native judgments is trusted only through checked
+/-- A SemanticService for rich OSLF native judgments is trusted only through checked
 lowering to the corresponding CertificateGSLT authority. -/
 abbrev NativeCheckedLowering {AuthorityId : Type uAuthority}
     (authorityId : AuthorityId) {rewriteSystem : RewriteSystem}

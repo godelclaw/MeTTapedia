@@ -276,7 +276,7 @@ state space, a readout supports a complete policy family exactly when every
 pair it identifies is policy-equivalent.
 
 The reverse implication uses classical choice only to assign results to
-unreachable readout values.  A NIK admission record still carries an explicit
+unreachable readout values.  A SemanticService admission record still carries an explicit
 `ReadoutRealization`; this theorem does not synthesize production code. -/
 theorem supportsReadout_iff_compatible
     (family : PolicyFamily.{uState, uPolicy, uResult} State)

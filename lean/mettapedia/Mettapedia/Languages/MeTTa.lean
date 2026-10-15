@@ -70,7 +70,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DataTranslationKernel
 import Mettapedia.Languages.MeTTa.PrimeCandidates.InternalDataTransport
 import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationFactorization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLayeredCrown
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SourceScopedAdaptiveRealization
@@ -97,17 +97,17 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDefAdequacy
 import Mettapedia.Languages.MeTTa.PrimeCandidates.UniversalName
 import Mettapedia.TypeTheory.Calculi.StagedScopedReflective.SuperpositionOccurrencePressure
 import Mettapedia.Languages.MeTTa.PrimeCandidates.MetalogicCriteria
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKSetCoreWaist
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKDependentPiWaist
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKBooleanIdentityWaist
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKAtomlessBooleanWaist
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKGenerativeAtomlessGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKBaseCheckerSetCore
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKSemanticGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKSetOperationWaist
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKBaseCheckerSetOperation
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKSetOperationGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralNIKSetTypeUltrainfiniteWaist
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetCoreComparison
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralDependentPiComparison
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralBooleanIdentityComparison
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralAtomlessBooleanComparison
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralGenerativeAtomlessGrounding
+import Mettapedia.Languages.MeTTa.PrimeComparisons.ModelQualifiedSetCoreChecker
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSemanticGrounding
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetOperationComparison
+import Mettapedia.Languages.MeTTa.PrimeComparisons.ModelQualifiedSetOperationChecker
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetOperationGrounding
+import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetTypeUltrainfiniteComparison
 import Mettapedia.Languages.MeTTa.PrimeCandidates.ScopedIdentityStatus
 import Mettapedia.GSLT.LanguageDef.ScopedProofIrrelevance
 import Mettapedia.GSLT.LanguageDef.IdentityComputationCalibration
@@ -165,6 +165,8 @@ import Mettapedia.Machines.BranchLocalNeed.DependentService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandNeedSimulation
 import Mettapedia.OSLF.Framework.CandidateDTTCheckedIntroduction
 import Mettapedia.OSLF.Framework.CandidateDependentWorldModel
+import Mettapedia.Languages.MeTTa.HE.HOLContract.Guest
+import Mettapedia.Languages.MeTTa.HE.HOLContract.Backend
 
 /-!
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
@@ -176,4 +178,9 @@ open Mettapedia.TypeTheory.UniverseLevel
 - `HE` - Hyperon Experimental MeTTa (authoritative HE spec)
 - `Core` - MeTTa core state machine and language definition
 - `PeTTa` - Prolog-based MeTTa profile
+
+## Bridges
+- `HE.HOLContract.Guest` - the HOL contract of HE's type declarations and the
+  hosted HOL Light checker
+- `HE.HOLContract.Backend` - replaceable backends of the contract
 -/

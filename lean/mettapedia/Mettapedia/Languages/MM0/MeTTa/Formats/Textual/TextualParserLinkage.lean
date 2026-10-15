@@ -173,7 +173,7 @@ theorem actual_pack_start :
 
 theorem actual_pack_digest :
     ParserPackTextArtifact.uniqueField? packSource "pack-digest" =
-      some "36521f92f118f205a8a459034ceae58286601dc0a471630248ed2d8b9cd1b621" := by decide
+      some "f6a0b2b6b61d70b2dd4dd0b026fd321b02ae15ec9bc0385ef0c4ddaa4abf16a3" := by decide
 
 /-- All actual base-pack rows have fixed-head actions in this fragment.
 Guarded span extension rows are not covered by this base-table statement. -/

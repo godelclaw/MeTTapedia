@@ -15,7 +15,7 @@ They must be realized by a richer generated checker rather than silently
 accepted by the M0GC matcher.
 
 Maturity boundary: this is a fully connected proof of concept for the bounded
-applicative M0GC lane, not the endgame NIK template language.  Its semantic
+applicative M0GC lane, not the endgame SemanticService template language.  Its semantic
 commuting theorems are intended to survive replacement, but the binder-free
 carrier and finite rule-profile specialization are explicitly non-final.
 -/

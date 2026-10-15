@@ -25,7 +25,7 @@ import Mettapedia.OSLF.Framework.InitialModalSchema
 import Mettapedia.OSLF.Framework.PureInternalization
 import Mettapedia.OSLF.Framework.ArithmeticEquationCalculus
 import Mettapedia.UniversalAlgebra.OSLF.ModalSemantics
-import Mettapedia.UniversalAlgebra.NIK.Authority
+import Mettapedia.UniversalAlgebra.SemanticService.Authority
 import Mettapedia.OSLF.Framework.InitialityConsistencySeparation
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.LanguageMorphism
@@ -230,7 +230,7 @@ import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitution
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalSubstitutionModels
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalPresheaf
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalClosedInterpretation
-import Mettapedia.OSLF.Syntax.Chapter7ClosedBindingControl
+import Mettapedia.OSLF.Syntax.ClosedBindingControl
 import Mettapedia.OSLF.Syntax.BindingOperationPresheaf
 import Mettapedia.OSLF.Syntax.BindingFunctionArgumentComparison
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelPresheaf
@@ -239,7 +239,7 @@ import Mettapedia.OSLF.Syntax.IntrinsicScopedSharedLocalComparisonControls
 import Mettapedia.OSLF.Syntax.ModelPresheafExtraEventControl
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelHistory
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelModal
-import Mettapedia.OSLF.Syntax.Chapter7LambdaModelHistoryModal
+import Mettapedia.OSLF.Syntax.LambdaModelHistoryModal
 import Mettapedia.OSLF.Syntax.IntrinsicScopedConditionalModelObservation
 import Mettapedia.OSLF.Syntax.ScopedOperationalEvidenceExponential
 import Mettapedia.OSLF.Syntax.CategoricalScopedEventPremise
@@ -247,10 +247,10 @@ import Mettapedia.OSLF.Syntax.ScopedOperationalPremiseModel
 import Mettapedia.OSLF.Syntax.IntrinsicRulePremiseRequest
 import Mettapedia.OSLF.Syntax.IntrinsicRuleActionComparison
 import Mettapedia.OSLF.Syntax.ScopedPremiseEvidenceComparison
-import Mettapedia.OSLF.Syntax.Chapter7LambdaScopedEvidence
+import Mettapedia.OSLF.Syntax.LambdaScopedEvidence
 import Mettapedia.OSLF.Syntax.SecondOrderContextCategory
 import Mettapedia.OSLF.Syntax.SecondOrderEquationUniversal
-import Mettapedia.OSLF.Syntax.Chapter7MonoidSecondOrderEquations
+import Mettapedia.OSLF.Syntax.MonoidSecondOrderEquations
 import Mettapedia.OSLF.Syntax.SecondOrderBindingAlgebraMap
 import Mettapedia.OSLF.Syntax.SecondOrderAuthoredEquationPresentation
 import Mettapedia.OSLF.Syntax.SecondOrderEquationRepresentability
@@ -261,8 +261,8 @@ import Mettapedia.OSLF.Syntax.SecondOrderOperationalEventObject
 import Mettapedia.OSLF.Syntax.SecondOrderOperationalHistory
 import Mettapedia.OSLF.Syntax.SecondOrderOperationalClosedComparison
 import Mettapedia.OSLF.Syntax.SecondOrderOperationalDiagramInterpretation
-import Mettapedia.OSLF.Syntax.Chapter7SecondOrderOperationalInstances
-import Mettapedia.OSLF.Syntax.Chapter7PatternSecondOrderEquations
+import Mettapedia.OSLF.Syntax.SecondOrderOperationalInstances
+import Mettapedia.OSLF.Syntax.PatternSecondOrderEquations
 import Mettapedia.OSLF.Syntax.RhoPayloadPresentation
 import Mettapedia.OSLF.Syntax.RhoPayloadTranslation
 import Mettapedia.OSLF.Syntax.RhoPayloadExecutorComparison
@@ -337,13 +337,13 @@ import Mettapedia.OSLF.Syntax.JsonCollectionRepresentationBoundary
 import Mettapedia.OSLF.Syntax.JsonTaggedDataEncoding
 import Mettapedia.OSLF.Syntax.MonoidEquationRung
 import Mettapedia.OSLF.Syntax.MonoidAuthoredComparison
-import Mettapedia.OSLF.Syntax.Chapter7AlgebraicOperationalInstances
+import Mettapedia.OSLF.Syntax.AlgebraicOperationalInstances
 import Mettapedia.OSLF.Syntax.MonoidFiniteModelBoundary
 import Mettapedia.OSLF.Syntax.LambdaContextualRung
 import Mettapedia.OSLF.Syntax.LambdaAuthoredBoundary
 import Mettapedia.OSLF.Syntax.BinderLocalPremise
 import Mettapedia.OSLF.Syntax.LambdaIntrinsicPresentation
-import Mettapedia.OSLF.Syntax.Chapter7ReductionSubobjectInstances
+import Mettapedia.OSLF.Syntax.ReductionSubobjectInstances
 import Mettapedia.OSLF.Syntax.LambdaReductionSubobject
 import Mettapedia.OSLF.Syntax.LambdaCategoricalModel
 import Mettapedia.OSLF.Syntax.LambdaDerivationGraph
@@ -405,7 +405,7 @@ import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedAuthoredContexts
 import Mettapedia.OSLF.Syntax.FiniteLimitGeneratedWithObjects
 import Mettapedia.OSLF.Syntax.RhoEventQuotientDescentBoundary
 import Mettapedia.OSLF.Syntax.RhoOperationalFiniteLimitCategory
-import Mettapedia.OSLF.Syntax.Chapter6Communication
+import Mettapedia.OSLF.Syntax.ClosedCommunicationInstances
 import Mettapedia.OSLF.Syntax.FreePresheafEventExtension
 import Mettapedia.OSLF.Syntax.FreePresheafEventGeneratorMaps
 import Mettapedia.OSLF.Syntax.StableRewriteRelationBoundary
@@ -514,7 +514,7 @@ import Mettapedia.OSLF.Framework.LogicalMetric
 import Mettapedia.OSLF.Framework.ScopeStratum
 import Mettapedia.OSLF.Framework.ObserverIdempotence
 import Mettapedia.OSLF.Framework.TypeFormerExtension
-import Mettapedia.OSLF.SourceLedger
+import Mettapedia.Documentation.SourceLedgers.FindingMind
 import Mettapedia.OSLF.Syntax.UniqueDecompositionFails
 import Mettapedia.OSLF.Syntax.UniqueDecompositionRepaired
 import Mettapedia.OSLF.Syntax.UnfoldingBreaksDecomposition

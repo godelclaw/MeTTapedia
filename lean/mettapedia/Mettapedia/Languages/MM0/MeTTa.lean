@@ -19,7 +19,7 @@ only its own layer and earlier ones.
   dependencies and free variables, definition unfolding, conversion, and
   supplied proofs. `Proof.certificate_accepted_iff_petta_judgment` and
   `Proof.certificate_accepted_iff_gslt_path` say that a translated certificate
-  of the `formMM0` calculus is accepted exactly when the proof call succeeds.
+  of the `kernelCalculus` calculus is accepted exactly when the proof call succeeds.
 * `Formation`: well-formed sorts, contexts, terms, dummies, definition bodies,
   statements and theorems.
 * `Admission`: the stores allocated at start, and the admission of one

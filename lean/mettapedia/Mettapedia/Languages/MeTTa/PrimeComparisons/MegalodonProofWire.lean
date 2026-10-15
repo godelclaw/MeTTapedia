@@ -1,6 +1,6 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireData
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceService
-import Mettapedia.Languages.Megalodon.NIKNativeProof
+import Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 
 /-!
 # Megalodon guest requests in the shared wire carrier
@@ -121,7 +121,7 @@ structure Request where
   proposition : Tm
   deriving DecidableEq, Repr
 
-def Request.claim (request : Request) (environment : Environment) : NIKNativeProof.Claim :=
+def Request.claim (request : Request) (environment : Environment) : IntrinsicProofChecker.Claim :=
   ⟨environment, request.fuel, request.typeDepth, request.termContext,
     request.proofContext, request.proposition⟩
 

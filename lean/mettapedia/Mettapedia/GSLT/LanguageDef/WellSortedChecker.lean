@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.WellSorted
+import Mettapedia.GSLT.LanguageDef.SchemaTyping
 
 /-!
 # Executable checking for declaration-derived open typing
@@ -510,5 +511,187 @@ theorem checkOpenPatternWellSorted_eq_true_iff
     checkOpenPatternWellSorted language free bound expected pattern = true ↔
       OpenPatternWellSorted language free bound expected pattern :=
   ⟨checkOpenPatternWellSorted_sound, checkOpenPatternWellSorted_complete⟩
+
+/-- Object typing inspects only the free names occurring in its input. -/
+theorem checkHasType_congr_free_of_object (language : LanguageDef)
+    (first second : FreeTypeContext) (bound : List TypeExpr)
+    (pattern : Pattern) (expected : TypeExpr)
+    (object : isObjectPattern pattern = true)
+    (agreement : ∀ name ∈ pattern.freeFvarNames, first name = second name) :
+    checkHasType language first bound pattern expected =
+      checkHasType language second bound pattern expected := by
+  apply Bool.eq_iff_iff.mpr
+  rw [checkHasType_eq_true_iff object, checkHasType_eq_true_iff object]
+  constructor
+  · intro proof
+    exact proof.recontextualizeFree fun {name} {_} occurs lookup => by
+      rw [← agreement name occurs]
+      exact lookup
+  · intro proof
+    exact proof.recontextualizeFree fun {name} {_} occurs lookup => by
+      rw [agreement name occurs]
+      exact lookup
+
+/-- Argument admission retains every representation and sort check when unused
+free-context entries change. -/
+theorem checkArgumentsHaveTypes_congr_free_of_objects (language : LanguageDef)
+    (first second : FreeTypeContext) (bound : List TypeExpr)
+    (arguments : List Pattern) (parameters : List TermParam)
+    (objects : isObjectPatternList arguments = true)
+    (agreement : ∀ name ∈ arguments.flatMap Pattern.freeFvarNames, first name = second name) :
+    checkArgumentsHaveTypes language first bound arguments parameters =
+      checkArgumentsHaveTypes language second bound arguments parameters := by
+  apply Bool.eq_iff_iff.mpr
+  constructor
+  · intro checked
+    have typed := checkArgumentsHaveTypes_sound_of
+      (fun _ _ _ checked => checkHasType_sound checked) checked
+    apply checkArgumentsHaveTypes_complete_of_objects (objects := objects)
+    exact typed.recontextualizeFree fun {name} {_} occurs lookup => by
+      rw [← agreement name occurs]
+      exact lookup
+  · intro checked
+    have typed := checkArgumentsHaveTypes_sound_of
+      (fun _ _ _ checked => checkHasType_sound checked) checked
+    apply checkArgumentsHaveTypes_complete_of_objects (objects := objects)
+    exact typed.recontextualizeFree fun {name} {_} occurs lookup => by
+      rw [agreement name occurs]
+      exact lookup
+
+/-- Collection-element admission depends only on the elements' free names. -/
+theorem checkElementsHaveType_congr_free_of_objects (language : LanguageDef)
+    (first second : FreeTypeContext) (bound : List TypeExpr)
+    (elements : List Pattern) (expected : TypeExpr)
+    (objects : isObjectPatternList elements = true)
+    (agreement : ∀ name ∈ elements.flatMap Pattern.freeFvarNames, first name = second name) :
+    checkElementsHaveType language first bound elements expected =
+      checkElementsHaveType language second bound elements expected := by
+  apply Bool.eq_iff_iff.mpr
+  constructor
+  · intro checked
+    apply checkElementsHaveType_complete_of_objects (objects := objects)
+    exact (checkElementsHaveType_sound checked).recontextualizeFree
+      fun {name} {_} occurs lookup => by
+        rw [← agreement name occurs]
+        exact lookup
+  · intro checked
+    apply checkElementsHaveType_complete_of_objects (objects := objects)
+    exact (checkElementsHaveType_sound checked).recontextualizeFree
+      fun {name} {_} occurs lookup => by
+        rw [agreement name occurs]
+        exact lookup
+
+/-! ## Finite free-context footprints -/
+
+/-- The executable object checker uses only free names present in its input
+pattern, even when the ambient mathematical context is infinite. -/
+theorem checkHasType_finiteFree (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr)
+    (pattern : Pattern) (expected : TypeExpr)
+    (object : isObjectPattern pattern = true) :
+    checkHasType language (FreeTypeContext.ofList (free.entriesOn pattern.freeFvarNames))
+      bound pattern expected = checkHasType language free bound pattern expected := by
+  apply Bool.eq_iff_iff.mpr
+  exact (checkHasType_eq_true_iff object).trans
+    ((HasType.finiteFree_iff language free bound pattern expected).trans
+      (checkHasType_eq_true_iff object).symm)
+
+/-- Full open-object admission has the same finite lookup footprint. The
+object and scope requirements continue to be checked by the original guard. -/
+theorem checkOpenPatternWellSorted_finiteFree (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr)
+    (expected : TypeExpr) (pattern : Pattern) :
+    checkOpenPatternWellSorted language
+      (FreeTypeContext.ofList (free.entriesOn pattern.freeFvarNames)) bound expected pattern =
+      checkOpenPatternWellSorted language free bound expected pattern := by
+  apply Bool.eq_iff_iff.mpr
+  rw [checkOpenPatternWellSorted_eq_true_iff, checkOpenPatternWellSorted_eq_true_iff]
+  unfold OpenPatternWellSorted
+  rw [HasType.finiteFree_iff]
+
+namespace FiniteFreeControls
+
+private def language : LanguageDef :=
+  { name := "FiniteFreeContext", types := ["Expr", "Name"],
+    terms := [], equations := [], rewrites := [] }
+
+private def free : FreeTypeContext := fun name =>
+  if name = "needed" then some (.base "Expr") else some (.base "Name")
+
+/-- A context with a type for every name has a finite view for this one term. -/
+theorem retained_lookup :
+    FreeTypeContext.ofList (free.entriesOn ((.fvar "needed" : Pattern)).freeFvarNames) "needed" =
+      some (.base "Expr") := by
+  simp [FreeTypeContext.ofList_entriesOn, Pattern.freeFvarNames, free]
+
+/-- Unused bindings need not be carried by the runtime context. -/
+theorem unrelated_lookup_absent :
+    FreeTypeContext.ofList (free.entriesOn ((.fvar "needed" : Pattern)).freeFvarNames) "other" = none := by
+  simp [FreeTypeContext.ofList_entriesOn, Pattern.freeFvarNames]
+
+/-- The admitted open term survives materializing its actual lookup footprint. -/
+theorem retained_pattern_admitted :
+    checkOpenPatternWellSorted language
+      (FreeTypeContext.ofList (free.entriesOn ((.fvar "needed" : Pattern)).freeFvarNames)) []
+      (.base "Expr") (.fvar "needed") = true := by
+  rw [checkOpenPatternWellSorted_finiteFree]
+  decide +kernel
+
+/-- Omitting a required free variable changes the verdict to refusal. -/
+theorem required_binding_absence_refused :
+    checkOpenPatternWellSorted language (FreeTypeContext.ofList []) []
+      (.base "Expr") (.fvar "needed") = false := by
+  decide +kernel
+
+end FiniteFreeControls
+
+#print axioms checkHasType_finiteFree
+#print axioms checkOpenPatternWellSorted_finiteFree
+#print axioms FiniteFreeControls.retained_lookup
+#print axioms FiniteFreeControls.unrelated_lookup_absent
+#print axioms FiniteFreeControls.retained_pattern_admitted
+#print axioms FiniteFreeControls.required_binding_absence_refused
+
+end Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.GSLT.LanguageDef.WellSorted
+
+open Mettapedia.GSLT.LanguageDef
+open Mettapedia.OSLF.MeTTaIL.Syntax
+
+theorem check_open_pattern_congr_free (language : LanguageDef)
+    (first second : FreeTypeContext) (bound : List TypeExpr)
+    (expected : TypeExpr) (pattern : Pattern)
+    (agreement : ∀ name ∈ pattern.freeFvarNames, first name = second name) :
+    checkOpenPatternWellSorted language first bound expected pattern =
+      checkOpenPatternWellSorted language second bound expected pattern := by
+  apply Bool.eq_iff_iff.mpr
+  rw [checkOpenPatternWellSorted_eq_true_iff, checkOpenPatternWellSorted_eq_true_iff]
+  have typed : HasType language first bound pattern expected ↔
+      HasType language second bound pattern expected := by
+    constructor
+    · intro proof
+      exact proof.recontextualizeFree fun {name} {_} membership lookup => by
+        rw [← agreement name membership]
+        exact lookup
+    · intro proof
+      exact proof.recontextualizeFree fun {name} {_} membership lookup => by
+        rw [agreement name membership]
+        exact lookup
+  unfold OpenPatternWellSorted
+  rw [typed]
+theorem check_open_pattern_snapshot (language : LanguageDef) (free : FreeTypeContext)
+    (bound : List TypeExpr) (expected : TypeExpr) (pattern : Pattern) (footprint : List String)
+    (covers : ∀ name ∈ pattern.freeFvarNames, name ∈ footprint) :
+    checkOpenPatternWellSorted language (FreeTypeContext.ofList (free.entriesOn footprint))
+      bound expected pattern = checkOpenPatternWellSorted language free bound expected pattern := by
+  apply check_open_pattern_congr_free
+  intro name occurs
+  rw [FreeTypeContext.ofList_entriesOn, if_pos (covers name occurs)]
+
+#print axioms Mettapedia.GSLT.LanguageDef.WellSorted.check_open_pattern_congr_free
+#print axioms Mettapedia.GSLT.LanguageDef.WellSorted.check_open_pattern_snapshot
 
 end Mettapedia.GSLT.LanguageDef.WellSorted

@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateImplementationPolicyTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicyNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicySelection
 
 /-!
 # Implementation-policy transport for native Metamath assertion lookup
@@ -29,17 +29,17 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathImplementationPolicyTransport
 
 open Mettapedia.GSLT.Core
-open Mettapedia.GSLT.LanguageDef.MaximalNativeCalculus
+open Mettapedia.GSLT.LanguageDef.CapabilitySelection
 open Mettapedia.GSLT.LanguageDef.MonotoneUniqueIndexCompilation
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCapabilitySelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCurrentSelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCapabilitySelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCurrentSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathAssertionOptimization
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicyNIKSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedMetamathPolicySelection
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationImplementationModel
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 open Mettapedia.Languages.Metamath.InferenceProjection
 open Mettapedia.Languages.Metamath.InferencePreparedAssertionCompilation
@@ -92,7 +92,7 @@ def artifactStrongestPolicyLookup
     (projection : PrefixProjection) (queries : List String) (revision : Nat)
     (valid : prefixProjectionValid projection = true) :
     (artifactPolicyRequest projection queries revision valid)
-      |>.toCapabilityRequest.StrongestNativeCalculusPrinciple :=
+      |>.toCapabilityRequest.GreatestLicensedSelection :=
   PolicyCapabilityRequest.pullbackStrongestSelection
     (artifactTraceReceipt projection queries revision)
     (policyRequest projection valid) (strongestPolicyLookup projection valid)
@@ -120,7 +120,7 @@ def sourceStrongestPolicyLookup
     (projection : PrefixProjection) (queries : List String) (revision : Nat)
     (valid : prefixProjectionValid projection = true) :
     (sourcePolicyRequest projection queries revision valid)
-      |>.toCapabilityRequest.StrongestNativeCalculusPrinciple :=
+      |>.toCapabilityRequest.GreatestLicensedSelection :=
   Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateImplementationPolicyTransport.AdmittedExecutionModel.pullbackStrongestPolicySelection
     (implementationModel projection queries revision valid)
     (artifactPolicyRequest projection queries revision valid)
@@ -413,7 +413,7 @@ theorem duplicate_projection_never_constructs_transported_selection
     ¬ Exists fun valid : prefixProjectionValid duplicateProjection = true =>
       Nonempty
         ((sourcePolicyRequest duplicateProjection queries revision valid)
-          |>.toCapabilityRequest.StrongestNativeCalculusPrinciple) := by
+          |>.toCapabilityRequest.GreatestLicensedSelection) := by
   rintro ⟨valid, _selection⟩
   rw [duplicate_projection_refused] at valid
   contradiction

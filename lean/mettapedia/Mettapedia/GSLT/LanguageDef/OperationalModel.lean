@@ -1,9 +1,12 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.SemanticImplementation
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.LanguageDef.GSLTILSemanticPredicateInstitution
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 import Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # Operational models of closed theories
@@ -22,7 +25,7 @@ Neither half can impersonate the other.  A theory morphism does not mint an
 operational refinement, and a step-preserving compiler does not by itself
 preserve native mathematical meaning.  Modelled theories form a category with
 separate forgetful functors to the closed theories and to the covered
-operational theories, and a further functor to the semantic NIK objects,
+operational theories, and a further functor to the semantic objects,
 which forgets the operational model.
 
 This is the consequence-level layer.  Model-valued institutions, explicit
@@ -39,7 +42,7 @@ open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 
 universe uSignature uHom uSentence uTerm
@@ -226,12 +229,12 @@ theorem ModelledTheory.no_hom_of_operational_escape
   rintro ⟨route, mapTerm⟩
   exact escape.not_semanticCoveredTranslation ⟨route.operational, mapTerm⟩
 
-/-! ## The semantic NIK reading of a modelled theory -/
+/-! ## The semantic reading of a modelled theory -/
 
 namespace ModelledTheory
 
 /-- Forget a modelled theory to its native closed theory and expose that
-theory as one semantic NIK fibre.  The operational model is not recoverable
+theory as one semantic fibre.  The operational model is not recoverable
 from this reading. -/
 def semanticTargetFunctor
     (institution : PiInstitution.{uSignature, uHom, uSentence} Signature) :
@@ -309,26 +312,26 @@ read the visible component exactly. -/
 
 /-- The visible Boolean operational system used by the source node. -/
 def visibleSystem : ModallyCoveredTheory :=
-  ⟨GSLT.discrete Bool⟩
+  ⟨GSLT.stepFree Bool⟩
 
 /-- A target state carries the visible Boolean together with one private bit. -/
 def hiddenBitTheory : GSLT :=
-  GSLT.discrete (Bool × Bool)
+  GSLT.stepFree (Bool × Bool)
 
 /-- Inject a visible equation class while initializing the private bit. -/
 def insertHiddenBit :
-    SemanticTerm (GSLT.discrete Bool) → SemanticTerm hiddenBitTheory :=
+    SemanticTerm (GSLT.stepFree Bool) → SemanticTerm hiddenBitTheory :=
   Quotient.map (fun visible => (visible, false)) fun _ _ equal =>
     congrArg (fun visible => (visible, false)) equal
 
 /-- Forget the private bit while retaining the visible equation class. -/
 def projectVisible :
-    SemanticTerm hiddenBitTheory → SemanticTerm (GSLT.discrete Bool) :=
+    SemanticTerm hiddenBitTheory → SemanticTerm (GSLT.stepFree Bool) :=
   Quotient.map Prod.fst fun _ _ equal => congrArg Prod.fst equal
 
 @[simp]
 theorem projectVisible_insertHiddenBit
-    (state : SemanticTerm (GSLT.discrete Bool)) :
+    (state : SemanticTerm (GSLT.stepFree Bool)) :
     projectVisible (insertHiddenBit state) = state := by
   induction state using Quotient.inductionOn with
   | _ representative => rfl
@@ -337,7 +340,7 @@ theorem projectVisible_insertHiddenBit
 the only content beyond equation preservation is the nontrivial carrier map. -/
 def hiddenBitCover :
     SemanticCoveredTranslation
-      (semanticTheory (GSLT.discrete Bool))
+      (semanticTheory (GSLT.stepFree Bool))
       (semanticTheory hiddenBitTheory) where
   mapTerm := insertHiddenBit
   mapEquiv := fun equal => congrArg insertHiddenBit equal
@@ -393,7 +396,7 @@ def hiddenBitRoute : ModelledTheory.Hom (equipped visibleSystem) hiddenBitModell
 /-- The target really has private state: setting the hidden bit to true lies
 outside the image of the source representation. -/
 theorem hiddenTrue_not_in_image :
-    ¬ ∃ source : SemanticTerm (GSLT.discrete Bool),
+    ¬ ∃ source : SemanticTerm (GSLT.stepFree Bool),
       insertHiddenBit source =
         Quotient.mk hiddenBitTheory.equations (false, true) := by
   rintro ⟨source, equalClasses⟩
@@ -414,12 +417,12 @@ theorem hiddenBits_have_same_native_reading
   Iff.rfl
 
 /-- Positive and negative control together: the visible and hidden-bit
-modelled theories have one identical semantic NIK image, yet the hidden
+modelled theories have one identical semantic image, yet the hidden
 operational state is not in the image of the visible representation. -/
 theorem same_nik_object_but_private_operational_state :
     (ModelledTheory.semanticTargetFunctor institution).obj (equipped visibleSystem) =
       (ModelledTheory.semanticTargetFunctor institution).obj hiddenBitModelled ∧
-    ¬ ∃ source : SemanticTerm (GSLT.discrete Bool),
+    ¬ ∃ source : SemanticTerm (GSLT.stepFree Bool),
       insertHiddenBit source =
         Quotient.mk hiddenBitTheory.equations (false, true) :=
   ⟨rfl, hiddenTrue_not_in_image⟩

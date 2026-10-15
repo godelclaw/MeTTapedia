@@ -9,7 +9,7 @@ Exports JSON records with SHA-256 checksums.
 
 Does NOT replace MM0Lite (which is a minimal LanguageDef formalization).
 This bundle is not an executable parser, a proof verifier, a language
-authority, or evidence that NIK hosts MM0.
+authority, or evidence that SemanticService hosts MM0.
 -/
 
 namespace Mettapedia.Languages.MM0.ArtifactBundle

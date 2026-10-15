@@ -76,7 +76,7 @@ def LambdaPiEvaluatedConversion
 
 /-- Exact decision procedure for evaluated λΠ conversion. -/
 def lambdaPiDecidedConversion :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.DecidedRelation
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.DecidedRelation
       _ LambdaPiEvaluatedConversion where
   decide := Mettapedia.GSLT.LanguageDef.PureBetaEta.convBool
   correct := by
@@ -139,7 +139,7 @@ structure PatternLambdaPiRealization where
   lambdaPiCode_decodes :
     familiesCwF.el lambdaPiCode =
       (fun _ => Mettapedia.GSLT.LanguageDef.Pure.Expr)
-  conversion : Mettapedia.GSLT.LanguageDef.NIKMetalogic.DecidedRelation
+  conversion : Mettapedia.GSLT.LanguageDef.SemanticEvidence.DecidedRelation
     _ LambdaPiEvaluatedConversion
   carrierFaithful : Function.Injective lambdaPiToLF
   piPreserved : ∀ domain body,
@@ -208,13 +208,13 @@ level `n` is a semantic type at that same stage. -/
 abbrev FamiliesUniverseStatement (level : Nat) : Type 1 :=
   familiesCwF.Ty (familiesCwF.empty (stageOfNat level))
 
-/-- Decoding a universe code at level `n+1` produces a NIK bootstrap contract
+/-- Decoding a universe code at level `n+1` produces a SemanticService bootstrap contract
 whose target is exactly level `n`. -/
 def familiesUniverseLowerContract (level : Nat)
     (code : familiesCwF.Tm (familiesCwF.empty (stageOfNat (level + 1)))
       (familiesCwF.univ
         (familiesCwF.empty (stageOfNat (level + 1))))) :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.LowerContract
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.LowerContract
       FamiliesUniverseStatement (level + 1) where
   targetLevel := ⟨level, Nat.lt_succ_self level⟩
   kind := .modelSound
@@ -235,7 +235,7 @@ theorem firstUniverseLowerContracts_distinct :
       familiesUniverseLowerContract 0 (familiesUnitCode 0) := by
   intro contractsEqual
   let extractStatement :
-      Mettapedia.GSLT.LanguageDef.NIKMetalogic.LowerContract
+      Mettapedia.GSLT.LanguageDef.SemanticEvidence.LowerContract
           FamiliesUniverseStatement 1 →
         FamiliesUniverseStatement 0 := fun contract => by
       have targetIsZero : contract.targetLevel.val = 0 := by
@@ -283,7 +283,7 @@ def NativeConverts (left right : NativeConversionTerm) : Prop :=
 
 /-- Exact computing decision for native intensional conversion. -/
 def nativeDecidedConversion :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.DecidedRelation
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.DecidedRelation
       NativeConversionTerm NativeConverts where
   decide := fun left right => decide (left.normalForm = right.normalForm)
   correct := by
@@ -5874,11 +5874,11 @@ inductive NativeHypotheticalEvidence
       NativeEvidenceDerivation claim →
         NativeHypotheticalEvidence premises claim
 
-/-- The real native typing layer instantiates NIK's proof-relevant
+/-- The real native typing layer instantiates SemanticService's proof-relevant
 set-evidence doctrine.  Its proof objects are native typing derivations with
 retained PLN evidence, not generic Boolean tags. -/
 def nativeTypingEvidenceDoctrine :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.SetEvidenceDoctrine
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.SetEvidenceDoctrine
       NativeTypingClaim where
   Evidence := NativeHypotheticalEvidence
   assumption := NativeHypotheticalEvidence.assumption
@@ -5895,10 +5895,10 @@ def nativeTypingEvidenceDoctrine :
 
 /-- Q6's categorical adjunction on the actual native typing formula
 language: proof-relevant doctrines reflect into their thin, truth-level
-closures.  This is the existing NIK theorem instantiated rather than a second
+closures.  This is the existing SemanticService theorem instantiated rather than a second
 competing notion of proof erasure. -/
 noncomputable def nativeTypingProofErasureAdjunction :=
-  Mettapedia.GSLT.LanguageDef.NIKMetalogic.SetEvidenceDoctrine.proofErasureThinAdjunction
+  Mettapedia.GSLT.LanguageDef.SemanticEvidence.SetEvidenceDoctrine.proofErasureThinAdjunction
     (Formula := NativeTypingClaim)
 
 /-- A proof-relevant bag at every native typing claim.  Repeated entries are
@@ -6395,7 +6395,7 @@ structure TypeTheoryCandidate where
   coherence : ModalCwFCoherence modes spine laws
   ConversionTerm : Type
   Converts : ConversionTerm → ConversionTerm → Prop
-  conversion : Mettapedia.GSLT.LanguageDef.NIKMetalogic.DecidedRelation
+  conversion : Mettapedia.GSLT.LanguageDef.SemanticEvidence.DecidedRelation
     ConversionTerm Converts
 
 /-- The concrete law-complete semantic candidate with executable intensional

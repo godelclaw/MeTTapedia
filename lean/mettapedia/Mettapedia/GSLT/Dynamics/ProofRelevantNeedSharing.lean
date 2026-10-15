@@ -100,8 +100,8 @@ theorem allocatedKeys_coarsening
     coarse.allocatedKeys sites =
       @Finset.image fine.Key coarse.Key coarse.decEq coarsening.mapKey
         (fine.allocatedKeys sites) := by
-  letI := fine.decEq
-  letI := coarse.decEq
+  let := fine.decEq
+  let := coarse.decEq
   ext coarseKey
   constructor
   · intro member
@@ -127,8 +127,8 @@ theorem allocatedKeys_card_mono
     {coarse : SharingScheme.{uSite, uCoarseKey} Site}
     (coarsening : Coarsening fine coarse) (sites : Finset Site) :
     (coarse.allocatedKeys sites).card ≤ (fine.allocatedKeys sites).card := by
-  letI := fine.decEq
-  letI := coarse.decEq
+  let := fine.decEq
+  let := coarse.decEq
   rw [allocatedKeys_coarsening coarsening sites]
   exact @Finset.card_image_le fine.Key coarse.Key
     (fine.allocatedKeys sites) coarsening.mapKey coarse.decEq

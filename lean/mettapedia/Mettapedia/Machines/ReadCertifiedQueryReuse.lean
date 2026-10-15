@@ -68,6 +68,16 @@ theorem populate_recorded (family : Family State Authority Query Key Value Answe
     (state : State) (query : Query) : Recorded family (populate family state query) :=
   ⟨state, rfl, rfl⟩
 
+/-- A captured entry uses the existing historical provenance predicate.
+The proof is erased; no second certificate or runtime payload is introduced.
+Importing external cache contents must establish the same provenance law. -/
+abbrev Captured (family : Family State Authority Query Key Value Answer) :=
+  { entry : Entry Authority Query Key Value Answer // Recorded family entry }
+
+def capture (family : Family State Authority Query Key Value Answer)
+    (state : State) (query : Query) : Captured family :=
+  ⟨populate family state query, populate_recorded family state query⟩
+
 def admissible [DecidableEq Authority] [DecidableEq Query] [DecidableEq Value]
     (family : Family State Authority Query Key Value Answer)
     (state : State) (query : Query) (entry : Entry Authority Query Key Value Answer) : Bool :=
@@ -109,6 +119,19 @@ theorem reuse_exact [DecidableEq Authority] [DecidableEq Query] [DecidableEq Val
     have stable := family.stable old state entry.key retainedAuthority reads
     simpa only [sameQuery] using stable.symm
   · rfl
+
+/-- The typed reuse boundary accepts entries from the captured family.
+Its runtime path is the existing validator, with no proof inspection. -/
+def reuseCaptured [DecidableEq Authority] [DecidableEq Query] [DecidableEq Value]
+    (family : Family State Authority Query Key Value Answer)
+    (state : State) (query : Query) (entry : Captured family) : Answer × Nat :=
+  reuse family state query entry.val
+
+theorem reuseCaptured_exact [DecidableEq Authority] [DecidableEq Query] [DecidableEq Value]
+    (family : Family State Authority Query Key Value Answer)
+    (state : State) (query : Query) (entry : Captured family) :
+    (reuseCaptured family state query entry).1 = (family.observe state query).answer :=
+  reuse_exact family state query entry.val entry.property
 
 /-- Fresh invocation materialization follows reuse of immutable facts. -/
 theorem materialized_exact [DecidableEq Authority] [DecidableEq Query] [DecidableEq Value]
@@ -407,5 +430,103 @@ theorem changed_program_requires_new_authority :
   omega
 
 end Controls
+
+/-- Authority for an immutable program registry. Rule, type and equality
+editions are distinct even when they happen to produce the same answer.
+The registry supplied to `programObserver` must resolve this complete key;
+changing a registry under an unchanged key does not satisfy that interface. -/
+structure SemanticAuthority (Code : Type*) where
+  code : Code
+  rules : Nat
+  types : Nat
+  equality : Nat
+  deriving DecidableEq, Repr
+
+inductive SemanticEdit where
+  | rules
+  | types
+  | equality
+  deriving DecidableEq, Repr
+
+namespace SemanticAuthority
+
+variable {Code : Type*}
+
+def bump (authority : SemanticAuthority Code) : SemanticEdit → SemanticAuthority Code
+  | .rules => { authority with rules := authority.rules + 1 }
+  | .types => { authority with types := authority.types + 1 }
+  | .equality => { authority with equality := authority.equality + 1 }
+
+theorem bump_ne (authority : SemanticAuthority Code) (edit : SemanticEdit) :
+    authority ≠ authority.bump edit := by
+  cases edit <;> intro same
+  · have := congrArg SemanticAuthority.rules same
+    simp only [bump] at this
+    omega
+  · have := congrArg SemanticAuthority.types same
+    simp only [bump] at this
+    omega
+  · have := congrArg SemanticAuthority.equality same
+    simp only [bump] at this
+    omega
+
+end SemanticAuthority
+
+/-- Any governing semantic edit forces a fresh execution. This is independent
+of whether the old read certificate still matches the data store. -/
+theorem semantic_edit_recomputes {Code : Type*} [DecidableEq Code]
+    [DecidableEq Query] [DecidableEq Value]
+    (family : SemanticAuthority Code → Query → Program Key Value Answer)
+    (authority : SemanticAuthority Code) (edit : SemanticEdit) (query : Query)
+    (old current : Key → Value) :
+    reuse family (authority.bump edit) query current (populate family authority query old) =
+      ((run current (family (authority.bump edit) query)).answer, 1) := by
+  have rejected : admissible (authority.bump edit) query current
+      (populate family authority query old) = false := by
+    apply Bool.eq_false_iff.mpr
+    intro accepted
+    have different := authority.bump_ne edit
+    exact different ((admissible_iff _ _ _ _).mp accepted).1
+  change (if admissible (authority.bump edit) query current
+      (populate family authority query old) then
+        ((populate family authority query old).value.answer, 0)
+      else ((run current (family (authority.bump edit) query)).answer, 1)) = _
+  simp only [rejected, Bool.false_eq_true, if_false]
+
+namespace SemanticControls
+
+private def program (authority : SemanticAuthority Nat) (query : Nat) :
+    Program Nat (Option Nat) (Option Nat × Nat × Nat × Nat) :=
+  .read query (fun value => .pure (value, authority.rules, authority.types, authority.equality))
+
+private def original : SemanticAuthority Nat := ⟨5, 0, 0, 0⟩
+private def store : Nat → Option Nat := fun key => if key = 0 then some 7 else none
+
+theorem unchanged_semantics_reuses :
+    reuse program original 0 store (populate program original 0 store) =
+      ((some 7, 0, 0, 0), 0) := by decide
+
+theorem rule_edit_recomputes :
+    reuse program (original.bump .rules) 0 store (populate program original 0 store) =
+      ((some 7, 1, 0, 0), 1) := by decide
+
+theorem type_edit_recomputes :
+    reuse program (original.bump .types) 0 store (populate program original 0 store) =
+      ((some 7, 0, 1, 0), 1) := by decide
+
+theorem equality_edit_recomputes :
+    reuse program (original.bump .equality) 0 store (populate program original 0 store) =
+      ((some 7, 0, 0, 1), 1) := by decide
+
+/-- An absent lookup belongs to the read certificate too. -/
+theorem insertion_invalidates_absence :
+    reuse program original 1 (Function.update store 1 (some 9))
+      (populate program original 1 store) = ((some 9, 0, 0, 0), 1) := by decide
+
+theorem unrelated_insertion_keeps_reuse :
+    reuse program original 0 (Function.update store 1 (some 9))
+      (populate program original 0 store) = ((some 7, 0, 0, 0), 0) := by decide
+
+end SemanticControls
 
 end Mettapedia.Machines.ReadCertifiedQueryReuse

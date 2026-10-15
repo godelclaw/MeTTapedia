@@ -2015,7 +2015,7 @@ structure PhysicalNormalResultRejoinSegment
   resultPermReference : (physicalAssertionRejoinResult context).Perm
     (physicalAssertionRejoinReference context)
 
-def physical_normal_result_rejoin_segment
+theorem physical_normal_result_rejoin_segment
     (context : NormalResultContext)
     (inputMorkNodup : MorkSupportNodup (normalToRejoinSlice context))
     (referenceMorkNodup : MorkSupportNodup

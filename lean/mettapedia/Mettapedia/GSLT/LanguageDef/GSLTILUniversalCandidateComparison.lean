@@ -21,7 +21,9 @@ import Mettapedia.GSLT.LanguageDef.GSLTILRouteFootprintWaveAdmission
 import Mettapedia.GSLT.LanguageDef.GSLTILRouteRebaseBoundary
 import Mettapedia.GSLT.LanguageDef.GSLTILSemanticPredicateInstitution
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalStructure
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # Scope comparison for the universal GSLT-IL candidates
@@ -124,7 +126,7 @@ open Mettapedia.GSLT.LanguageDef.GSLTIL.RecurrentRouteBridge
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteFootprintWaveAdmission
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteRebaseBoundary
 open Mettapedia.GSLT.LanguageDef.GSLTIL.SemanticPredicateInstitution
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.TypeTheory.FreeWhiskeredCell

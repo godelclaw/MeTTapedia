@@ -1,8 +1,8 @@
 import Mathlib.CategoryTheory.Elements
 import Mathlib.CategoryTheory.FiberedCategory.Cocartesian
 import Mathlib.CategoryTheory.Monad.Products
-import Mettapedia.GSLT.LanguageDef.NIK
-import Mettapedia.GSLT.LanguageDef.NIKIndexedOperational
+import Mettapedia.GSLT.LanguageDef.SemanticService
+import Mettapedia.GSLT.LanguageDef.IndexedCheckerOperational
 import Mettapedia.GSLT.LanguageDef.StructuralCategory
 import Mettapedia.GSLT.LanguageDef.WellSorted
 import Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
@@ -21,7 +21,7 @@ The construction keeps three layers distinct:
 * `dataComonad` is the per-language product comonad carrying a selected stamp;
 * `IndexedDataDiagram` transports typed Data values along language morphisms.
 
-Raw syntax admission is not the comonad counit.  NIK's checking modes govern
+Raw syntax admission is not the comonad counit.  SemanticService's checking modes govern
 entry into an admitted Data fibre; the counit then exposes an already-admitted
 payload without an interior replay.
 -/
@@ -35,7 +35,7 @@ open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -452,7 +452,7 @@ instance pushforwardLift_isStronglyCocartesian
 
 end IndexedDataDiagram
 
-/-! ## The four local NIK service faces at a Data boundary -/
+/-! ## The four local SemanticService service faces at a Data boundary -/
 
 /-- Turn an independently stated meaning on claims into an object of the
 common admission algebra. -/
@@ -462,8 +462,8 @@ def claimAdmissionObject {Claim : Type uBase} (Meaning : Claim → Prop) :
   Meaning := Meaning
 
 /-- The four ways in which raw material may earn entry into a typed Data
-fibre.  This is the Data-local view of the canonical `NIK.Service` doctrine,
-not a definition of NIK itself.  These are capabilities, not a global switch:
+fibre.  This is the Data-local view of the canonical `SemanticService.Service` doctrine,
+not a definition of SemanticService itself.  These are capabilities, not a global switch:
 one language may expose several modes at distinct boundaries. -/
 inductive EntryMode (Claim : Type uBase) where
   /-- A total algorithm computes the judgment directly. -/
@@ -545,14 +545,14 @@ theorem admitted_run_preserves
     Meaning (operation.run value) :=
   operation.preserves value meaningful
 
-/-! ### Exact bridge to the canonical NIK service doctrine -/
+/-! ### Exact bridge to the canonical SemanticService service doctrine -/
 
-/-- Every Data-local entry mode is one canonical NIK service over exactly the
+/-- Every Data-local entry mode is one canonical SemanticService service over exactly the
 meaning selected by that mode.  In particular, admitted computation maps to a
 native operation, not to a certificate checker. -/
-def toNIKService {Claim : Type uBase}
+def toQualifiedService {Claim : Type uBase}
     (mode : EntryMode.{uBase, uValue} Claim) :
-    Mettapedia.GSLT.LanguageDef.NIK.Service
+    Mettapedia.GSLT.LanguageDef.SemanticService.Service
       (claimAdmissionObject (Accepted mode)) :=
   match mode with
   | .directDecision _Meaning kernel => .directDecision kernel
@@ -565,10 +565,10 @@ def toNIKService {Claim : Type uBase}
 
 /-- The Data-local discriminator agrees exactly with the canonical service
 discriminator. -/
-@[simp] theorem toNIKService_external_boundary
+@[simp] theorem toQualifiedService_external_boundary
     {Claim : Type uBase} (mode : EntryMode.{uBase, uValue} Claim) :
-    Mettapedia.GSLT.LanguageDef.NIK.Service.hasExternalCertificateBoundary
-        (toNIKService mode) =
+    Mettapedia.GSLT.LanguageDef.SemanticService.Service.hasExternalCertificateBoundary
+        (toQualifiedService mode) =
       requiresCertificate mode := by
   cases mode <;> rfl
 

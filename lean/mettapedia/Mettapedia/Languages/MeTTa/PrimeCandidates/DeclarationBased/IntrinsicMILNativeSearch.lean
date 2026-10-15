@@ -1,6 +1,7 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory.IntrinsicMILSemanticAdequacy
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RelationalEvidence
-import Mettapedia.GSLT.LanguageDef.NIKRepresentedRouteObservation
+import Mettapedia.GSLT.LanguageDef.RepresentedRouteObservation
 
 /-!
 # Exact finite native search for intrinsic relational hypotheses
@@ -19,7 +20,7 @@ exact intermediate target.
 
 Intrinsic hypothesis programs consume this generic capability downstream.
 Their native typing derivation and authored chain tree remain separate from
-the provider, while NIK may retain the resulting represented query operation
+the provider, while SemanticService may retain the resulting represented query operation
 at one dependency revision.  Relations without such a finite capability
 remain meaningful and executable relationally.
 -/
@@ -36,8 +37,8 @@ namespace IntrinsicMILNativeSearch
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteEquipment
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 open Mettapedia.GSLT.Dynamics
 open Mettapedia.GSLT.RelationPresentation
 open Mettapedia.GSLT.ProofRelevantAnswerBag
@@ -302,8 +303,8 @@ discrete typed-query and materialized-result theories. -/
 noncomputable def representedRoute {Source Target : Type u}
     {relation : ProofRel Source Target}
     (provider : FiniteEvidenceProvider relation) :
-    RepresentedOperationalRoute (GSLT.discrete Source)
-      (GSLT.discrete (SearchResult relation)) where
+    RepresentedOperationalRoute (GSLT.stepFree Source)
+      (GSLT.stepFree (SearchResult relation)) where
   related := (provider.searchRelation).toLoose
   representation := Rel.graphRepresentation provider.run
   mapEquiv := fun equal => congrArg provider.run equal
@@ -315,9 +316,9 @@ noncomputable def representedRoute {Source Target : Type u}
     provider.representedRoute.representation.map = provider.run :=
   rfl
 
-/-! ## Revision-indexed NIK admission of the native query operation -/
+/-! ## Revision-indexed SemanticService admission of the native query operation -/
 
-/-- NIK may retain the represented query-to-complete-bag route at one
+/-- SemanticService may retain the represented query-to-complete-bag route at one
 dependency revision.  The output semantics is the exact direct image of the
 selected source fibre; the independently declared observation may inspect
 execution history without replacing that semantic result. -/
@@ -327,7 +328,7 @@ noncomputable def admitObservedAt
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (sourceMeaning : Source → Prop)
     (targetDiscipline : GSLTObservation
-      (GSLT.discrete (SearchResult relation))) :=
+      (GSLT.stepFree (SearchResult relation))) :=
   provider.representedRoute.admitObservedImage dependencies revision
     sourceMeaning targetDiscipline
 
@@ -425,8 +426,8 @@ noncomputable def programNativeSearchRoute
       (source := source) (target := target) term)
     (provider : ProgramFiniteSearchProvider program) :
     RepresentedOperationalRoute
-      (GSLT.discrete (vocabulary.Carrier source))
-      (GSLT.discrete
+      (GSLT.stepFree (vocabulary.Carrier source))
+      (GSLT.stepFree
         (FiniteEvidenceProvider.SearchResult program.denotation)) :=
   provider.representedRoute
 
@@ -468,10 +469,10 @@ def choiceProvider : FiniteEvidenceProvider choice where
 on this discrete native operation it observes zero internal steps, while the
 target meaning and result object retain the complete proof fibre. -/
 def choiceTrace : GSLTObservation
-    (GSLT.discrete (FiniteEvidenceProvider.SearchResult choice)) where
+    (GSLT.stepFree (FiniteEvidenceProvider.SearchResult choice)) where
   collection :=
     { Container := List
-        (GSLT.discrete
+        (GSLT.stepFree
           (FiniteEvidenceProvider.SearchResult choice)).LabeledStep
       collect := some }
   Value := Nat
@@ -500,7 +501,7 @@ theorem choice_search_without_direct_representation :
       choiceProvider, choiceFibre]
   · exact Mettapedia.GSLT.RelationPresentation.Canary.choice_not_representable
 
-/-- After currentness is established, active NIK execution is exactly the
+/-- After currentness is established, active SemanticService execution is exactly the
 native query operation and still returns both proof occurrences. -/
 theorem active_choice_runs_complete_native_search :
     (activeChoice.run ()).answers.card = 2 := by
@@ -593,7 +594,7 @@ def nondeterministicPrimitiveProviders :
     exact choiceProvider
 
 /-- Finite exact enumeration and direct-map compilation are genuinely
-different capabilities.  NIK may license the former without falsely
+different capabilities.  SemanticService may license the former without falsely
 licensing the latter. -/
 theorem finite_search_does_not_imply_direct_representation :
     Nonempty

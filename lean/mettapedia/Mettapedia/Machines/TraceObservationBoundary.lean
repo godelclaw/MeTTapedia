@@ -1,6 +1,8 @@
 import Mettapedia.Algorithms.WellFoundedServices.DependencyAnalysis
 import Mettapedia.Machines.RunObservation
+import Mettapedia.Algebra.WorkSpan
 import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Nodup
 import Mathlib.Logic.Relation
 
 /-!
@@ -41,6 +43,8 @@ structure CausalReceipt (Event : Type uCausal) where
 deriving DecidableEq, Repr
 
 namespace CausalReceipt
+
+variable {Event : Type uCausal}
 
 /-- The occurrence-preserving support currently visible to a flattened trace.
 The order and multiplicity of event occurrences survive; causal edges do not. -/
@@ -391,6 +395,345 @@ theorem flattenedSupport_not_injective :
   exact independentReceipt_ne_dependentReceipt
     (injective (by rfl))
 
+section DependencyFinish
+
+
+universe uEvent
+variable {Event : Type uEvent}
+
+/-- All required predecessor finishes, including repeated predecessor slots. -/
+def predecessorPeak (times : Event → Nat) (causes : List Event) : Nat :=
+  (causes.map times).foldr max 0
+
+theorem predecessorPeak_mono (earlier later : Event → Nat) (causes : List Event)
+    (bounded : ∀ cause ∈ causes, earlier cause ≤ later cause) :
+    predecessorPeak earlier causes ≤ predecessorPeak later causes := by
+  induction causes with
+  | nil => rfl
+  | cons cause rest ih =>
+      exact max_le_max (bounded cause List.mem_cons_self)
+        (ih (fun other present => bounded other (List.mem_cons_of_mem _ present)))
+
+theorem predecessorPeak_congr (first second : Event → Nat) (causes : List Event)
+    (same : ∀ cause ∈ causes, first cause = second cause) :
+    predecessorPeak first causes = predecessorPeak second causes := by
+  induction causes with
+  | nil => rfl
+  | cons cause rest ih =>
+      change max (first cause) (predecessorPeak first rest) =
+        max (second cause) (predecessorPeak second rest)
+      rw [same cause List.mem_cons_self,
+        ih (fun other present => same other (List.mem_cons_of_mem _ present))]
+
+variable [DecidableEq Event]
+
+/-- Install one event's weighted earliest finish; its prerequisites are read
+from the already installed finishes. -/
+def advanceFinish (duration : Event → Nat) (times : Event → Nat)
+    (event : CausalEvent Event) : Event → Nat :=
+  Function.update times event.event
+    (predecessorPeak times event.directCauses + duration event.event)
+
+/-- Dynamic programming over the existing ordered occurrence graph. Boundary
+finishes are supplied by the captured earlier execution, not reconstructed. -/
+def finishTimes (duration : Event → Nat) (initial : Event → Nat) :
+    List (CausalEvent Event) → (Event → Nat)
+  | [] => initial
+  | event :: rest => finishTimes duration (advanceFinish duration initial event) rest
+
+/-- Fresh chronological insertion never rewrites a finish already available
+at the captured boundary. -/
+theorem finishTimes_preserves_available (duration : Event → Nat)
+    (initial : Event → Nat) (available : List Event) (events : List (CausalEvent Event))
+    (ordered : Ordered available events) (identity : Event) (present : identity ∈ available) :
+    finishTimes duration initial events identity = initial identity := by
+  induction events generalizing initial available with
+  | nil => rfl
+  | cons event rest ih =>
+      rcases ordered with ⟨fresh, _, tail⟩
+      rw [finishTimes, ih _ (available ++ [event.event]) tail
+        (List.mem_append_left _ present)]
+      have different : identity ≠ event.event := by
+        rintro rfl
+        exact fresh present
+      simp [advanceFinish, different]
+
+/-- Every installed event satisfies its dependency equation in the completed
+map. Later independent occurrences cannot change its predecessor finishes. -/
+theorem finishTimes_equations (duration : Event → Nat) (initial : Event → Nat)
+    (available : List Event) (events : List (CausalEvent Event))
+    (ordered : Ordered available events) :
+    ∀ event ∈ events, finishTimes duration initial events event.event =
+      predecessorPeak (finishTimes duration initial events) event.directCauses +
+        duration event.event := by
+  induction events generalizing initial available with
+  | nil => intro event present; cases present
+  | cons head rest ih =>
+      rcases ordered with ⟨fresh, causes, tail⟩
+      intro event present
+      rcases List.mem_cons.mp present with same | member
+      · subst event
+        have own := finishTimes_preserves_available duration
+          (advanceFinish duration initial head) (available ++ [head.event]) rest tail
+          head.event (by simp)
+        have prior := predecessorPeak_congr
+          (finishTimes duration (advanceFinish duration initial head) rest)
+          (advanceFinish duration initial head) head.directCauses (by
+            intro cause member
+            exact finishTimes_preserves_available duration _ _ rest tail cause
+              (List.mem_append_left _ (causes cause member)))
+        simp only [finishTimes]
+        rw [own, prior]
+        have earlier := predecessorPeak_congr (advanceFinish duration initial head)
+          initial head.directCauses (by
+            intro cause present
+            have different : cause ≠ head.event := by
+              rintro rfl
+              exact fresh (causes head.event present)
+            simp [advanceFinish, different])
+        rw [earlier]
+        simp only [advanceFinish, Function.update_self]
+      · exact ih (advanceFinish duration initial head) (available ++ [head.event])
+          tail event member
+
+/-- A feasible finish assignment respects every retained immediate edge. -/
+def FeasibleFinishes (duration times : Event → Nat) (events : List (CausalEvent Event)) : Prop :=
+  ∀ event ∈ events,
+    predecessorPeak times event.directCauses + duration event.event ≤ times event.event
+
+/-- The independently specified feasible assignment bounds every step of the
+earliest-finish computation. No chronological-order assumption supplies this
+comparison; feasibility is checked against the actual graph. -/
+theorem finishTimes_le_feasible (duration initial candidate : Event → Nat)
+    (events : List (CausalEvent Event)) (boundaryBound : ∀ event, initial event ≤ candidate event)
+    (feasible : FeasibleFinishes duration candidate events) :
+    ∀ event, finishTimes duration initial events event ≤ candidate event := by
+  induction events generalizing initial with
+  | nil => exact boundaryBound
+  | cons head rest ih =>
+      apply ih (advanceFinish duration initial head)
+      · intro event
+        by_cases same : event = head.event
+        · subst event
+          simp only [advanceFinish, Function.update_self]
+          exact (Nat.add_le_add_right
+            (predecessorPeak_mono initial candidate head.directCauses
+              (fun cause _ => boundaryBound cause)) _).trans
+                (feasible head List.mem_cons_self)
+        · simpa [advanceFinish, same] using boundaryBound event
+      · intro event present
+        exact feasible event (List.mem_cons_of_mem _ present)
+
+/-- The computed map is feasible for the declared ordered dependency graph. -/
+theorem finishTimes_feasible (duration initial : Event → Nat) (available : List Event)
+    (events : List (CausalEvent Event)) (ordered : Ordered available events) :
+    FeasibleFinishes duration (finishTimes duration initial events) events := by
+  intro event present
+  exact le_of_eq (finishTimes_equations duration initial available events ordered event present).symm
+
+/-- Occurrence work is summed once; dependency span reads the weighted
+earliest finishes. Graph validation and native edge authentication are distinct. -/
+def dependencyReadout (receipt : CausalReceipt Event)
+    (cost : Event → Mettapedia.Algebra.WorkSpan) : Mettapedia.Algebra.WorkSpan :=
+  ⟨(receipt.flattenedSupport.map (fun event => (cost event).work)).sum,
+    predecessorPeak (finishTimes (fun event => (cost event).span) (fun _ => 0) receipt.events)
+      receipt.flattenedSupport⟩
+
+/-- With no captured boundary, the dependency span is no larger than any
+feasible finish assignment for this same occurrence graph. This excludes
+scheduling overhead and does not choose a processor allocation. -/
+theorem dependencyReadout_span_le (receipt : CausalReceipt Event)
+    (cost : Event → Mettapedia.Algebra.WorkSpan) (candidate : Event → Nat)
+    (feasible : FeasibleFinishes (fun event => (cost event).span) candidate receipt.events) :
+    (dependencyReadout receipt cost).span ≤ predecessorPeak candidate receipt.flattenedSupport :=
+  predecessorPeak_mono _ _ _ (fun event _ =>
+    finishTimes_le_feasible _ _ _ _ (fun _ => Nat.zero_le _) feasible event)
+
+namespace DependencyControls
+
+def migrating : CausalReceipt Nat :=
+  ⟨[2], [⟨0, []⟩, ⟨1, []⟩, ⟨2, [0, 1]⟩]⟩
+
+def missingOwner : CausalReceipt Nat :=
+  ⟨[2], [⟨0, []⟩, ⟨1, []⟩, ⟨2, [1]⟩]⟩
+
+def missingWorker : CausalReceipt Nat :=
+  ⟨[2], [⟨0, []⟩, ⟨1, []⟩, ⟨2, [0]⟩]⟩
+
+def ownerHeavy (event : Nat) : Mettapedia.Algebra.WorkSpan :=
+  if event = 0 then ⟨5, 5⟩ else if event = 1 then ⟨1, 1⟩ else ⟨2, 2⟩
+
+def workerHeavy (event : Nat) : Mettapedia.Algebra.WorkSpan :=
+  if event = 0 then ⟨2, 2⟩ else if event = 1 then ⟨5, 5⟩ else ⟨2, 2⟩
+
+theorem owner_migration_retains_precedence :
+    check [] migrating = true ∧ dependencyReadout migrating ownerHeavy = ⟨8, 7⟩ ∧
+      dependencyReadout missingOwner ownerHeavy = ⟨8, 5⟩ := by decide +kernel
+
+theorem physical_worker_order_retains_precedence :
+    check [] migrating = true ∧ dependencyReadout migrating workerHeavy = ⟨9, 7⟩ ∧
+      dependencyReadout missingWorker workerHeavy = ⟨9, 5⟩ := by decide +kernel
+
+theorem repeated_predecessor_slots_do_not_repeat_work :
+    let receipt : CausalReceipt Nat := ⟨[1], [⟨0, []⟩, ⟨1, [0, 0]⟩]⟩
+    check [] receipt = true ∧ dependencyReadout receipt ownerHeavy = ⟨6, 6⟩ := by decide +kernel
+
+end DependencyControls
+
+
+end DependencyFinish
+
+section ScheduledDependencies
+
+universe uEvent uOwner uWorker
+
+/-- One supplied execution occurrence and its exclusive owner and worker.
+The log's authenticity is a separate native observation obligation. -/
+structure ScheduledOccurrence (Event : Type uEvent) (Owner : Type uOwner)
+    (Worker : Type uWorker) where
+  identity : Event
+  owner : Owner
+  worker : Worker
+  deriving DecidableEq
+
+variable {Event : Type uEvent} {Owner : Type uOwner} {Worker : Type uWorker}
+
+/-- A reference scan finds the last occurrence of the selected role. -/
+def lastScheduled? {Key : Type*} [DecidableEq Key]
+    (key : ScheduledOccurrence Event Owner Worker → Key) (selected : Key)
+    (previous : List (ScheduledOccurrence Event Owner Worker)) : Option Event :=
+  (previous.reverse.find? (fun event => decide (key event = selected))).map
+    ScheduledOccurrence.identity
+
+theorem lastScheduled?_mem {Key : Type*} [DecidableEq Key]
+    (key : ScheduledOccurrence Event Owner Worker → Key) (selected : Key)
+    (previous : List (ScheduledOccurrence Event Owner Worker)) (identity : Event)
+    (found : lastScheduled? key selected previous = some identity) :
+    identity ∈ previous.map ScheduledOccurrence.identity := by
+  obtain ⟨event, present, same⟩ := Option.map_eq_some_iff.mp found
+  exact List.mem_map.mpr ⟨event, by
+    simpa using List.mem_of_find?_eq_some present, same⟩
+
+theorem lastScheduled?_append_same {Key : Type*} [DecidableEq Key]
+    (key : ScheduledOccurrence Event Owner Worker → Key)
+    (previous : List (ScheduledOccurrence Event Owner Worker))
+    (event : ScheduledOccurrence Event Owner Worker) :
+    lastScheduled? key (key event) (previous ++ [event]) = some event.identity := by
+  simp [lastScheduled?, List.reverse_append]
+
+theorem lastScheduled?_append_other {Key : Type*} [DecidableEq Key]
+    (key : ScheduledOccurrence Event Owner Worker → Key) (selected : Key)
+    (previous : List (ScheduledOccurrence Event Owner Worker))
+    (event : ScheduledOccurrence Event Owner Worker) (different : key event ≠ selected) :
+    lastScheduled? key selected (previous ++ [event]) = lastScheduled? key selected previous := by
+  simp [lastScheduled?, List.reverse_append, different]
+
+variable [DecidableEq Owner] [DecidableEq Worker]
+
+/-- Both roles contribute their preceding occurrence; coincident edges remain
+two slots, while occurrence work is still counted once. -/
+def scheduledCauses (previous : List (ScheduledOccurrence Event Owner Worker))
+    (event : ScheduledOccurrence Event Owner Worker) : List Event :=
+  (lastScheduled? ScheduledOccurrence.owner event.owner previous).toList ++
+    (lastScheduled? ScheduledOccurrence.worker event.worker previous).toList
+
+theorem scheduledCauses_known (previous : List (ScheduledOccurrence Event Owner Worker))
+    (event : ScheduledOccurrence Event Owner Worker) (cause : Event)
+    (present : cause ∈ scheduledCauses previous event) :
+    cause ∈ previous.map ScheduledOccurrence.identity := by
+  rcases List.mem_append.mp present with owner | worker
+  · exact lastScheduled?_mem ScheduledOccurrence.owner event.owner previous cause (by simpa using owner)
+  · exact lastScheduled?_mem ScheduledOccurrence.worker event.worker previous cause (by simpa using worker)
+
+def scheduledEvents (previous : List (ScheduledOccurrence Event Owner Worker)) :
+    List (ScheduledOccurrence Event Owner Worker) → List (CausalEvent Event)
+  | [] => []
+  | event :: rest => ⟨event.identity, scheduledCauses previous event⟩ ::
+      scheduledEvents (previous ++ [event]) rest
+
+theorem scheduledEvents_support (previous pending : List (ScheduledOccurrence Event Owner Worker)) :
+    (scheduledEvents previous pending).map CausalEvent.event = pending.map ScheduledOccurrence.identity := by
+  induction pending generalizing previous with
+  | nil => rfl
+  | cons event rest ih => simp [scheduledEvents, ih]
+
+
+/-- Splitting recording into cohorts preserves the same role dependencies
+when the later cohort receives the complete preceding execution log. -/
+theorem scheduledEvents_append
+    (previous first second : List (ScheduledOccurrence Event Owner Worker)) :
+    scheduledEvents previous (first ++ second) =
+      scheduledEvents previous first ++ scheduledEvents (previous ++ first) second := by
+  induction first generalizing previous with
+  | nil => simp [scheduledEvents]
+  | cons event rest ih => simp [scheduledEvents, ih, List.append_assoc]
+
+theorem scheduledEvents_ordered (previous pending : List (ScheduledOccurrence Event Owner Worker))
+    (distinct : (previous.map ScheduledOccurrence.identity ++
+      pending.map ScheduledOccurrence.identity).Nodup) :
+    Ordered (previous.map ScheduledOccurrence.identity) (scheduledEvents previous pending) := by
+  induction pending generalizing previous with
+  | nil => trivial
+  | cons event rest ih =>
+      have disjoint := List.disjoint_of_nodup_append distinct
+      have fresh : event.identity ∉ previous.map ScheduledOccurrence.identity := by
+        intro present
+        exact (List.disjoint_left.mp disjoint present) (by simp)
+      have nextDistinct : ((previous ++ [event]).map ScheduledOccurrence.identity ++
+          rest.map ScheduledOccurrence.identity).Nodup := by
+        simpa only [List.map_append, List.map_cons, List.map_nil,
+          List.append_assoc, List.singleton_append] using distinct
+      refine ⟨fresh, scheduledCauses_known previous event, ?_⟩
+      simpa only [List.map_append, List.map_cons, List.map_nil] using ih _ nextDistinct
+
+def scheduledReceipt (events : List (ScheduledOccurrence Event Owner Worker)) : CausalReceipt Event :=
+  ⟨events.map ScheduledOccurrence.identity, scheduledEvents [] events⟩
+
+theorem scheduledReceipt_wellFormed (events : List (ScheduledOccurrence Event Owner Worker))
+    (distinct : (events.map ScheduledOccurrence.identity).Nodup) :
+    (scheduledReceipt events).WellFormed [] := by
+  refine ⟨by simp, scheduledEvents_ordered [] events (by simpa using distinct), ?_⟩
+  intro root present
+  simpa only [known, flattenedSupport, scheduledReceipt, List.nil_append,
+    scheduledEvents_support] using present
+
+namespace ScheduledControls
+
+def occurrences : List (ScheduledOccurrence Nat Nat Nat) :=
+  [⟨1, 11, 0⟩, ⟨3, 22, 1⟩, ⟨2, 11, 1⟩, ⟨4, 22, 0⟩]
+
+def units (identity : Nat) : Mettapedia.Algebra.WorkSpan :=
+  let amount := if identity = 1 then 1 else if identity = 2 then 3 else if identity = 3 then 5 else 7
+  ⟨amount, amount⟩
+
+theorem exact_owner_worker_graph :
+    scheduledReceipt occurrences =
+      ⟨[1,3,2,4], [⟨1,[]⟩, ⟨3,[]⟩, ⟨2,[1,3]⟩, ⟨4,[3,1]⟩]⟩ ∧
+    check [] (scheduledReceipt occurrences) = true ∧
+    dependencyReadout (scheduledReceipt occurrences) units = ⟨16,12⟩ := by
+  decide +kernel
+
+theorem duplicate_identity_refused :
+    check [] (scheduledReceipt ([⟨1,11,0⟩,⟨1,22,1⟩] :
+      List (ScheduledOccurrence Nat Nat Nat))) = false := by decide +kernel
+
+theorem coincident_roles_preserve_both_slots :
+    scheduledReceipt ([⟨1,11,0⟩,⟨2,11,0⟩] : List (ScheduledOccurrence Nat Nat Nat)) =
+      ⟨[1,2], [⟨1,[]⟩,⟨2,[1,1]⟩]⟩ := by decide +kernel
+
+
+/-- A graph with forgotten preceding roles can pass the structural checker
+and still understate the execution dependency span. -/
+theorem reset_between_cohorts_loses_dependency_span :
+    let reset : CausalReceipt Nat := ⟨[1,3,2,4],
+      scheduledEvents [] (occurrences.take 2) ++ scheduledEvents [] (occurrences.drop 2)⟩
+    check [] reset = true ∧ dependencyReadout reset units = ⟨16,7⟩ ∧
+      dependencyReadout (scheduledReceipt occurrences) units = ⟨16,12⟩ := by
+  decide +kernel
+
+end ScheduledControls
+end ScheduledDependencies
+
 end CausalReceipt
 
 /-! ## Demand annotations -/
@@ -410,6 +753,8 @@ structure DemandAnnotation (Event ExpectedType : Type) where
 deriving DecidableEq, Repr
 
 namespace DemandAnnotation
+
+variable {Event ExpectedType : Type}
 
 /-- The event-only projection used when role and expected type are absent from
 the wire observation. -/
@@ -463,6 +808,8 @@ structure InterruptedRunWitness (State Answer : Type) where
 deriving DecidableEq, Repr
 
 namespace InterruptedRunWitness
+
+variable {State Answer : Type}
 
 /-- Erase a producer-side interrupted frontier to the public run observation. -/
 def erase (witness : InterruptedRunWitness State Answer) :

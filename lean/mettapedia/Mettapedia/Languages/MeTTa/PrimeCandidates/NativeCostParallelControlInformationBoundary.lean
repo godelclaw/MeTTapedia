@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeObservationControlledCostWaves
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerReceiptPolicyNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerReceiptPolicyAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SelectedCostLayerIterationBoundary
 
 /-!
@@ -30,13 +30,13 @@ open Mettapedia.Algebra
 open Mettapedia.GSLT.Core.ObservationDemandControl
 open Mettapedia.GSLT.Core.ResourceAwareControl
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeObservationControlledCostWaves
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeObservationControlledCostWaves.Examples
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerReceiptObservation
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerReceiptPolicyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCostLayerReceiptPolicyAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
 open Mettapedia.Languages.MeTTa.PrimeCandidates.SelectedCostLayerIterationBoundary
 

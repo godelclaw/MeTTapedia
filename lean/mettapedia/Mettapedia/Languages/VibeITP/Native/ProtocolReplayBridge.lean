@@ -6,7 +6,7 @@ import Mettapedia.GSLT.LanguageDef.BootstrapCell.Replay
 
 /-!
 The completed raw-byte protocol model presents its execution-free theorems to
-NIK's generic certificate replay. Hosted-theory conditions are derived from the
+SemanticService's generic certificate replay. Hosted-theory conditions are derived from the
 run. This bridge requires no physical execution contract for static results.
 It does not prove lowering of the guest's operational functions or a compiled
 checker. Results with execution observations retain the native-operation
@@ -25,7 +25,7 @@ open Mettapedia.GSLT.LanguageDef.BootstrapCell
 theorem derives_iff_replay {theory : Theory} {allocated : Nat}
     (hosted : Hosted theory allocated) (statement : Term) :
     Derives theory statement ↔ ∃ certificate : RawProof,
-      (nikSignature (kernelValidated theory allocated)).replay
+      (calculusReplaySignature (kernelValidated theory allocated)).replay
         (jThm (encTerm theory.sig statement)) certificate = true := by
   constructor
   · intro derived
@@ -63,7 +63,7 @@ theorem completed_static_theorems_replay {ε : Type} (capability : Capability ε
     (eventFree : final.observations = []) :
     ∀ slot statement, final.kernel.theorems slot = some statement →
       ∃ certificate : RawProof,
-        (nikSignature (kernelValidated final.kernel.theory final.kernel.nextFresh)).replay
+        (calculusReplaySignature (kernelValidated final.kernel.theory final.kernel.nextFresh)).replay
           (jThm (encTerm final.kernel.theory.sig statement)) certificate = true := by
   intro slot statement stored
   obtain ⟨certificate, checked⟩ :=

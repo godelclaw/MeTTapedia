@@ -436,10 +436,18 @@ def TypeOperatorDefinitionAdmissible
       request.typeVariables.Nodup ∧
       request.typeVariables.toFinset = predicate.term.typeVariables
 
+/-- OpenTheory closes its equations by function abstraction. HOL Light
+returns the pointwise equations with named free variables; its second result
+has the predicate on the left of Boolean equality. -/
+inductive TypeDefinitionPresentation where
+  | functional
+  | pointwise
+
 /-- Construct the exact outputs after the application view and Boolean result
 type have been established.  The remaining admission conditions restrict when
 this construction may be invoked but do not affect its output. -/
-def makeTypeOperatorDefinition
+def makeTypeOperatorDefinitionWithPresentation
+    (presentation : TypeDefinitionPresentation)
     (request : TypeOperatorDefinitionRequest)
     (predicate witness : CanonicalTerm)
     (application : CanonicalTerm.ApplicationSemantics predicate witness
@@ -478,13 +486,19 @@ def makeTypeOperatorDefinition
     CanonicalTerm.applicationOfFunction abstractionTerm
       representedAbstract abstractType
       (Ty.destFunction?_function representationType abstractType)
-  let abstractionRepresentationLeft :=
-    abstractedRepresentation.abstractFree abstractVariable
-  let abstractionRepresentationRight :=
-    abstractVariableTerm.abstractFree abstractVariable
+  let abstractionRepresentationLeft : CanonicalTerm :=
+    match presentation with
+    | .functional => abstractedRepresentation.abstractFree abstractVariable
+    | .pointwise => abstractedRepresentation
+  let abstractionRepresentationRight : CanonicalTerm :=
+    match presentation with
+    | .functional => abstractVariableTerm.abstractFree abstractVariable
+    | .pointwise => abstractVariableTerm
+  have firstTypes : abstractionRepresentationLeft.ty = abstractionRepresentationRight.ty := by
+    cases presentation <;> rfl
   let abstractionRepresentationEquality :=
     CanonicalTerm.equalityOfSameType abstractionRepresentationLeft
-      abstractionRepresentationRight rfl
+      abstractionRepresentationRight firstTypes
   let abstractionRepresentationTheorem : Theorem :=
     { axioms := request.existence.axioms
       axiomsBoolean := request.existence.axiomsBoolean
@@ -505,16 +519,22 @@ def makeTypeOperatorDefinition
   let representationRoundTripEquality :=
     CanonicalTerm.equalityOfSameType representedAbstraction
       representationVariableTerm rfl
-  let representationAbstractionLeft :=
-    representationRoundTripEquality.abstractFree representationVariable
   let predicateApplication :=
     CanonicalTerm.applicationOfFunction predicate representationVariableTerm
       Ty.bool predicateType
-  let representationAbstractionRight :=
-    predicateApplication.abstractFree representationVariable
+  let representationAbstractionLeft : CanonicalTerm :=
+    match presentation with
+    | .functional => representationRoundTripEquality.abstractFree representationVariable
+    | .pointwise => predicateApplication
+  let representationAbstractionRight : CanonicalTerm :=
+    match presentation with
+    | .functional => predicateApplication.abstractFree representationVariable
+    | .pointwise => representationRoundTripEquality
+  have secondTypes : representationAbstractionLeft.ty = representationAbstractionRight.ty := by
+    cases presentation <;> rfl
   let representationAbstractionEquality :=
     CanonicalTerm.equalityOfSameType representationAbstractionLeft
-      representationAbstractionRight rfl
+      representationAbstractionRight secondTypes
   let representationAbstractionTheorem : Theorem :=
     { axioms := request.existence.axioms
       axiomsBoolean := request.existence.axiomsBoolean
@@ -527,6 +547,33 @@ def makeTypeOperatorDefinition
     abstractionRepresentationTheorem :=
       abstractionRepresentationTheorem
     representationAbstractionTheorem := representationAbstractionTheorem }
+
+/-- The existing OpenTheory output presentation. -/
+def makeTypeOperatorDefinition :=
+  makeTypeOperatorDefinitionWithPresentation .functional
+
+/-- The actual HOL Light pointwise output presentation, using the same
+checked types, provenance and term construction as the functional reading. -/
+def makePointwiseTypeOperatorDefinition :=
+  makeTypeOperatorDefinitionWithPresentation .pointwise
+
+/-- Both presentations retain the exact same declarations and dependencies.
+Only the equations' presentation differs. -/
+theorem makeTypeOperatorDefinitionWithPresentation_metadata
+    (presentation : TypeDefinitionPresentation)
+    (request : TypeOperatorDefinitionRequest) (predicate witness : CanonicalTerm)
+    (application : CanonicalTerm.ApplicationSemantics predicate witness request.existence.sequent.concl)
+    (conclusionBool : request.existence.sequent.concl.IsBool) :
+    let result := makeTypeOperatorDefinitionWithPresentation presentation request predicate witness
+      application conclusionBool
+    result.typeOperator = .mk request.typeName (.defined request.predicateSource request.typeVariables) ∧
+      result.abstractionConstant = .mk request.abstractionName (.abstraction result.typeOperator) ∧
+      result.representationConstant = .mk request.representationName (.representation result.typeOperator) ∧
+      result.abstractionRepresentationTheorem.axioms = request.existence.axioms ∧
+      result.representationAbstractionTheorem.axioms = request.existence.axioms ∧
+      result.abstractionRepresentationTheorem.sequent.hyp = request.existence.sequent.hyp ∧
+      result.representationAbstractionTheorem.sequent.hyp = request.existence.sequent.hyp := by
+  simp [makeTypeOperatorDefinitionWithPresentation]
 
 /-- The construction uses exact OpenTheory provenance constructors and
 preserves the existence theorem's complete axiom provenance. -/
@@ -549,7 +596,7 @@ theorem makeTypeOperatorDefinition_provenance
         request.existence.axioms ∧
       result.representationAbstractionTheorem.axioms =
         request.existence.axioms := by
-  simp [makeTypeOperatorDefinition]
+  simp [makeTypeOperatorDefinition, makeTypeOperatorDefinitionWithPresentation]
 
 /-- Both type-definition theorems retain the exact hypothesis set of the
 existence theorem; admitted requests therefore make both empty. -/
@@ -565,7 +612,7 @@ theorem makeTypeOperatorDefinition_hypotheses
         request.existence.sequent.hyp ∧
       result.representationAbstractionTheorem.sequent.hyp =
         request.existence.sequent.hyp := by
-  simp [makeTypeOperatorDefinition]
+  simp [makeTypeOperatorDefinition, makeTypeOperatorDefinitionWithPresentation]
 
 /-- Check all non-application side conditions once the existence conclusion
 has been decomposed. -/
@@ -690,6 +737,27 @@ def CanonicalTerm.applicationView? (whole : CanonicalTerm) :
           (CanonicalTerm.destApplication?_eq_some_iff _ _ _).mp
             applicationView⟩
 
+/-- A specified application view is returned exactly when its two checked
+components are the canonical decomposition. Proof evidence is retained. -/
+theorem CanonicalTerm.applicationView?_eq_some
+    (whole function argument : CanonicalTerm)
+    (application : CanonicalTerm.ApplicationSemantics function argument whole) :
+    whole.applicationView? = some ⟨function, argument, application⟩ := by
+  have found := (CanonicalTerm.destApplication?_eq_some_iff whole function argument).mpr application
+  rw [CanonicalTerm.applicationView?.eq_1]
+  split
+  · rename_i absent
+    rw [found] at absent
+    cases absent
+  · rename_i otherFunction otherArgument selected
+    have equal : (otherFunction, otherArgument) = (function, argument) :=
+      Option.some.inj (selected.symm.trans found)
+    have functionEqual : otherFunction = function := congrArg Prod.fst equal
+    have argumentEqual : otherArgument = argument := congrArg Prod.snd equal
+    subst otherFunction
+    subst otherArgument
+    rfl
+
 /-- Attaching application evidence does not change whether decomposition
 succeeds. -/
 theorem CanonicalTerm.applicationView?_isSome_eq
@@ -710,6 +778,25 @@ def checkTypeOperatorDefinition (request : TypeOperatorDefinitionRequest) :
   | some view =>
       checkTypeOperatorDefinitionFromApplication request view.function
         view.argument view.semantics
+
+/-- All source guards determine the exact produced declaration and equations,
+not merely that some result was produced. -/
+theorem checkTypeOperatorDefinition_eq_make
+    (request : TypeOperatorDefinitionRequest) (predicate witness : CanonicalTerm)
+    (application : CanonicalTerm.ApplicationSemantics predicate witness request.existence.sequent.concl)
+    (conclusionBool : request.existence.sequent.concl.IsBool)
+    (sourceChecked : request.predicateSource.check = some predicate)
+    (hypothesesEmpty : request.existence.sequent.hyp = ∅)
+    (predicateClosed : predicate.term.HasNoFreeVariables)
+    (variablesNodup : request.typeVariables.Nodup)
+    (variablesExact : request.typeVariables.toFinset = predicate.term.typeVariables) :
+    checkTypeOperatorDefinition request =
+      some (makeTypeOperatorDefinition request predicate witness application conclusionBool) := by
+  unfold checkTypeOperatorDefinition
+  rw [CanonicalTerm.applicationView?_eq_some _ _ _ application]
+  simp [checkTypeOperatorDefinitionFromApplication, sourceChecked, hypothesesEmpty,
+    (CanonicalTerm.isBoolB_eq_true_iff _).mpr conclusionBool,
+    (DBTerm.hasNoFreeVariables_eq_true_iff _).mpr predicateClosed, variablesNodup, variablesExact]
 
 /-- Executable type-operator definition succeeds exactly for the pinned
 definition side conditions. -/
@@ -757,6 +844,36 @@ theorem checkTypeOperatorDefinition_isSome_iff
       subst otherPredicate
       exact ⟨sourceChecked, hypothesesEmpty, conclusionBool,
         predicateClosed, variablesNodup, variablesExact⟩
+
+/-- Every accepted type definition is the actual construction from its checked
+predicate and witness. This exposes its symbols and equations without trusting
+a declaration name or a second description of the output. -/
+theorem checkTypeOperatorDefinition_result
+    {request : TypeOperatorDefinitionRequest} {result : TypeOperatorDefinitionResult}
+    (accepted : checkTypeOperatorDefinition request = some result) :
+    ∃ (predicate witness : CanonicalTerm)
+      (application : CanonicalTerm.ApplicationSemantics predicate witness
+        request.existence.sequent.concl)
+      (conclusionBool : request.existence.sequent.concl.IsBool),
+      request.predicateSource.check = some predicate ∧
+      request.existence.sequent.hyp = ∅ ∧
+      predicate.term.HasNoFreeVariables ∧
+      request.typeVariables.Nodup ∧
+      request.typeVariables.toFinset = predicate.term.typeVariables ∧
+      result = makeTypeOperatorDefinition request predicate witness application conclusionBool := by
+  cases applicationView : request.existence.sequent.concl.applicationView? with
+  | none => simp [checkTypeOperatorDefinition, applicationView] at accepted
+  | some view =>
+      simp only [checkTypeOperatorDefinition, applicationView] at accepted
+      unfold checkTypeOperatorDefinitionFromApplication at accepted
+      repeat' split at accepted <;> try contradiction
+      rename_i sourceChecked hypothesesEmpty conclusionBoolB predicateClosed
+        variablesNodup variablesExact
+      exact ⟨view.function, view.argument, view.semantics,
+        (CanonicalTerm.isBoolB_eq_true_iff _).mp conclusionBoolB,
+        sourceChecked, hypothesesEmpty,
+        (DBTerm.hasNoFreeVariables_eq_true_iff _).mp predicateClosed,
+        variablesNodup, variablesExact, (Option.some.inj accepted).symm⟩
 
 /-- Accepted type definitions preserve all existing axiom provenance and add
 no new axiom tag. -/

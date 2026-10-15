@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.IndexedOperational
 import Mettapedia.GSLT.Core.SemanticTransport
 
@@ -78,7 +79,7 @@ semantically silent: it reveals an answer without changing it. -/
 def answerRealization {World Query Value : Type}
     (observe : World → Query → Value) :
     Mettapedia.GSLT.IndexedOperational.OperationalRealization
-      (theory observe) (GSLT.discrete Value) :=
+      (theory observe) (GSLT.stepFree Value) :=
   (answerInvariant observe).toDiscreteRealization
 
 @[simp] theorem answerRealization_mapTerm {World Query Value : Type}

@@ -1,4 +1,8 @@
 import Mettapedia.Languages.FiniteChoice
+import Mettapedia.Machines.Cursor.SharedFactorCost
+import Mettapedia.Machines.Cursor.ProducerOccurrenceLog
+import Mettapedia.Languages.MeTTa.PeTTa.TableReuse
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.TypeTheory.Models.RevisionedFamilies
 import Mettapedia.Languages.LazyArithPair.Semantics
 import Mettapedia.Logic.ProofSearch
@@ -14,6 +18,7 @@ import Mettapedia.Logic.Query.Coverage
 import Mettapedia.Logic.Query.MultisetAscription
 import Mettapedia.OSLF.Framework.ReductionViewIndexedModalities
 import Mettapedia.OSLF.Framework.GeneratedDependentNativeQualification
+import Mettapedia.OSLF.Framework.OrdinaryFoundation
 import Mettapedia.TypeTheory.UniverseLevel.ZFSetInterpretation
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory
 import Mettapedia.TypeTheory.CompositionalRelationLifting
@@ -181,6 +186,10 @@ import Mettapedia.Logic.StoneGunkDuality
 import Mettapedia.Logic.Metaphysics
 import Mettapedia.Logic.LawsOfForm
 import Mettapedia.Logic.TheoryModel
+import Mettapedia.Logic.GrothendieckInstitution
+import Mettapedia.Logic.InstitutionBorrowing
+import Mettapedia.Logic.HOL.PropositionalSliceRoutes
+import Mettapedia.GSLT.LanguageDef.TheoryGraphProofTransport
 import Mettapedia.Logic.Diagonal
 import Mettapedia.Logic.Propositions
 import Mettapedia.GSLT.LanguageDef.BootstrapCell
@@ -315,6 +324,7 @@ import Mettapedia.Languages.Megalodon.HenkinTransitionInvariantProof
 import Mettapedia.Languages.Megalodon.HenkinProofSoundness
 import Mettapedia.Languages.Megalodon.HenkinProofSoundnessExamples
 import Mettapedia.Languages.Megalodon.HenkinTransitionInvariantImport
+import Mettapedia.Languages.Megalodon.ConversionElaboration
 import Mettapedia.Logic.HOL.Syntax.PartialConstSubstitution
 import Mettapedia.Logic.HOL.ConstantSubstitutionSemantics
 import Mettapedia.Logic.HOL.TypeSubstitutionDerivation
@@ -786,10 +796,15 @@ import Mettapedia.PLN.WorldModel.WMJointEvidencePrimeFamily
 import Mettapedia.TypeTheory.Models.RevisionedFamilies.CapabilityFamilyNaturality
 import Mettapedia.TypeTheory.Models.RevisionedFamilies.ExecutionFamilyBoundary
 import Mettapedia.OSLF.Framework.ConstructorObservationBoundary
+import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceControls
+import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceBranchingControls
+import Mettapedia.Documentation.SourceLedgers.FindingMind
+import Mettapedia.OSLF.NativeTypes
 import Mettapedia.GSLT.Dynamics.ContextualStrategyQualification
 import Mettapedia.GSLT.Dynamics.DemandAgreement
 import Mettapedia.CacheCoherenceAndMatcherInstances
 import Mettapedia.PublicationProductionAccounts
+import Mettapedia.Languages.MM0
 import Mettapedia.Languages.MM0.OrderedAdmission
 import Mettapedia.Languages.MM0.Upstream.Nondependence
 import Mettapedia.GSLT.Distinction.Constructive
@@ -838,13 +853,14 @@ import Mettapedia.GSLT.LanguageDef.InteractiveSemantics
 import Mettapedia.GSLT.Logic.PropositionalFormula
 import Mettapedia.GSLT.Logic.PropositionalResolution
 import Mettapedia.GSLT.Logic.PropositionalResolutionComplete
-import Mettapedia.GSLT.Logic.PropositionalResolutionNIK
+import Mettapedia.GSLT.Logic.PropositionalResolutionAuthority
 import Mettapedia.GSLT.Logic.PropositionalCut
 import Mettapedia.GSLT.Logic.PropositionalMLL
 import Mettapedia.GSLT.Logic.HenkinHOL
+import Mettapedia.GSLT.Bridges.Machines.ReadCertifiedQueryReuse
 import Mettapedia.Logic.Bridges.PropositionalCutTait
 import Mettapedia.Logic.Bridges.PropositionalFragment
-import Mettapedia.Logic.Bridges.PropositionalResolutionNIK
+import Mettapedia.Logic.Bridges.PropositionalResolutionAuthority
 import Mettapedia.Logic.Bridges.PropositionalResolutionTait
 import Mettapedia.GSLT.Causality.SyncTree
 import Mettapedia.GSLT.Dynamics.WeightCost
@@ -872,6 +888,7 @@ import Mettapedia.GSLT.LanguageDef.SequentialBindingDiscipline
 import Mettapedia.GSLT.LanguageDef.ForeignCapabilityLightcone
 import Mettapedia.GSLT.LanguageDef.ErrorObservationCoherence
 import Mettapedia.GSLT.LanguageDef.EmptyDemandCoherence
+import Mettapedia.GSLT.LanguageDef.SortedFirstOrderConversionControls
 import Mettapedia.GSLT.Dynamics.ProofDeterminedGeneralization
 import Mettapedia.GSLT.Synthesis.MainConservation
 import Mettapedia.GSLT.Meredith.GSLT
@@ -946,3 +963,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.Executable
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ExecutableWeakHeadControls
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ExecutableWrittenCheckingControls
 import Mettapedia.TypeTheory.UniverseLevel.AssignmentResolution
+import Mettapedia.GSLT.Poly.SortedSignature
+import Mettapedia.GSLT.Poly.SortedSignatureControls
+import Mettapedia.GSLT.Poly.FirstOrderLanguage
+import Mettapedia.GSLT.Poly.FirstOrderLanguageControls

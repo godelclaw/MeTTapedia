@@ -1,17 +1,17 @@
 import Mettapedia.Machines.SharedContinuation
-import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
+import Mettapedia.Machines.BranchLocalNeed.RepresentationRelation
 
 /-!
 # The branch-local need machine as a shared-continuation program
 
-The receipt-erased need machine of `NeedExecution` is an instance of
+The need execution machine of `NeedExecution`, with optional receipts, is an instance of
 `SharedContinuation.Program`; neither interface is changed.
 
 * Return frames are the need machine's own frames: update frames
   `Frame.commit cell owner` and resume tokens `Frame.resume token`. A task's
   return list is the need control stack, verbatim.
-* A task context is a branch-local world with its work account, so each rule
-  alternative carries its own world.
+* A task context is a branch-local world with its work account and optional
+  causal graph, so each rule alternative carries its own world.
 * Rule alternatives are frontier tasks, in rule order and with multiplicity.
 * `resume` returns through a frame: an update frame checks ownership and writes
   the cache (or resets it after a retryable fault); a resume token continues the
@@ -43,6 +43,18 @@ The receipt-erased need machine of `NeedExecution` is an instance of
   tasks decode to exactly `NeedExecution.step` of the head task.
 * `machines_step_exact`: the shared reference step is thus the depth-first
   schedule `expandFirst` of the need machine on decoded frontiers.
+* `program_of_prefix`, `prefix_of_program`: arbitrary unfinished depth-first
+  runs agree on complete decoded frontiers. One need transition spends at most
+  two shared steps; stopping at the intervening claim retains the same need
+  frontier. An active run has spent at most two steps per need transition plus
+  one pending claim, excluding endless claim administration.
+* `shared_slice_prefix`, `shared_resumption_prefix`: bounded arena execution
+  and split allowance retain those partial frontiers with their actual debits.
+* `recorded_prefix_of_program`, `program_of_recorded_prefix`: in recording mode
+  those prefixes read back to the rich reference state in both directions,
+  including causal node identities and parent edges.
+* `shared_slice_recorded_prefix`, `shared_resumption_recorded_prefix`: that rich
+  readback survives arbitrary arena pauses and split allowances.
 * `Completes.runFrontier`, `completes_of_runFrontier`: completed depth-first
   runs are exactly completed bounded breadth-first runs `NeedExecution.runFrontier`.
 * `runFrontier_eq_of_program`, `program_of_runFrontier`, `answers_eq_of_program`,
@@ -58,9 +70,10 @@ The receipt-erased need machine of `NeedExecution` is an instance of
 
 ## Not covered
 
-* Unfinished runs are related only transition by transition: the shared run
-  follows the depth-first schedule, `runFrontier` the breadth-first one.
-* Receipts are erased; `NeedExecution.step_commutes` relates them.
+* Unfinished breadth-first schedules may expose different prefixes from the
+  depth-first schedule used here.
+* Physical recording costs are not modeled: `Work` counts semantic receipt
+  operations in both modes.
 * Native realization: constant-time arena access, retirement of need frames,
   physical producer/subscriber delivery and native code are separate obligations.
 * `SharedContinuation.Program` is stated in `Type`, so the instance covers need
@@ -129,13 +142,13 @@ def transit (world : CoreWorld Origin Rule Value StableFault RetryableFault Effe
   (⟨world, context.work.bump lookups updates receipts allocations⟩, mode)
 
 /-- A machine-owned retry, published as a retryable outcome. Its receipt append
-is still counted, although the receipt node itself is erased. -/
+is counted in both modes; the node is kept only in recording mode. -/
 def retry (world : CoreWorld Origin Rule Value StableFault RetryableFault Effect)
-    (reason : RetryReason RetryableFault)
+    (cell : CellId) (reason : RetryReason RetryableFault)
     (lookups updates priorReceipts allocations : Nat) :
     Context Origin Rule Value StableFault RetryableFault Effect ×
       Mode Origin Local Value StableFault RetryableFault :=
-  context.transit world (.returned (.retryableFault reason))
+  context.transit (world.record (.retry cell reason)) (.returned (.retryableFault reason))
     lookups updates (priorReceipts + 1) allocations
 
 end Context
@@ -151,20 +164,22 @@ def lookupBranches (context : Context Origin Rule Value StableFault RetryableFau
     List (Context Origin Rule Value StableFault RetryableFault Effect ×
       Mode Origin Local Value StableFault RetryableFault) :=
   match context.world.heap.lookup cell with
-  | none => [context.retry context.world (.outOfScope cell) 1 0 0 0]
+  | none => [context.retry context.world cell (.outOfScope cell) 1 0 0 0]
   | some record =>
       match record.cache with
       | .value value =>
-          [context.transit context.world (.returned (.value value)) 1 0 1 0]
+          [context.transit (context.world.record (.observe cell (.value value)))
+            (.returned (.value value)) 1 0 1 0]
       | .stableFault fault =>
-          [context.transit context.world (.returned (.stableFault fault)) 1 0 1 0]
-      | .evaluating _ => [context.retry context.world (.blackhole cell) 1 0 0 0]
+          [context.transit (context.world.record (.observe cell (.stableFault fault)))
+            (.returned (.stableFault fault)) 1 0 1 0]
+      | .evaluating _ => [context.retry context.world cell (.blackhole cell) 1 0 0 0]
       | .suspended =>
           match spec.alternatives record.origin with
           | [] =>
               [context.retry
-                { context.world with nextEvaluator := context.world.nextEvaluator + 1 }
-                (.noRule cell) 1 0 1 0]
+                (({ context.world with nextEvaluator := context.world.nextEvaluator + 1 }).record
+                  (.evaluate cell context.world.nextEvaluator)) cell (.noRule cell) 1 0 1 0]
           | _ :: _ => [(context, .claim cell context.world.nextEvaluator record)]
 
 /-- One alternative per rule occurrence, in order, each in its own fork of the
@@ -175,11 +190,12 @@ def ruleBranches (context : Context Origin Rule Value StableFault RetryableFault
       List (Context Origin Rule Value StableFault RetryableFault Effect ×
         Mode Origin Local Value StableFault RetryableFault)
   | _, [] => []
-  | index, (_, state) :: rest =>
+  | index, (rule, state) :: rest =>
       context.transit
-          (CoreWorld.setKnownCache
+          (((CoreWorld.setKnownCache
             (CoreWorld.fork { context.world with nextEvaluator := owner + 1 } index)
-            cell record (.evaluating owner))
+            cell record (.evaluating owner)).record (.evaluate cell owner)).record
+              (.chooseRule cell rule))
           (.run state) 1 1 2 0 ::
         ruleBranches context cell owner record (index + 1) rest
 
@@ -195,22 +211,24 @@ def actionBranches (context : Context Origin Rule Value StableFault RetryableFau
   | .allocate origin resume =>
       match context.world.allocate? origin with
       | none =>
-          [context.retry context.world
+          [context.retry context.world (context.world.freshCell 0)
             (.allocationCollision (context.world.freshCell 0)) 1 0 0 0]
       | some (world, cell) =>
           [context.transit world (.run (spec.afterAllocation resume cell)) 1 1 1 1]
   | .resample source resume =>
       match context.world.heap.lookup source with
-      | none => [context.retry context.world (.outOfScope source) 1 0 0 0]
+      | none => [context.retry context.world source (.outOfScope source) 1 0 0 0]
       | some sourceRecord =>
           match context.world.allocate? sourceRecord.origin (source.generation + 1) with
           | none =>
-              [context.retry context.world
+              [context.retry context.world (context.world.freshCell (source.generation + 1))
                 (.allocationCollision (context.world.freshCell (source.generation + 1)))
                 2 0 0 0]
           | some (world, fresh) =>
-              [context.transit world (.run (spec.afterAllocation resume fresh)) 2 1 2 1]
-  | .perform _ next => [context.transit context.world (.run next) 0 0 1 0]
+              [context.transit (world.record (.resample source fresh))
+                (.run (spec.afterAllocation resume fresh)) 2 1 2 1]
+  | .perform effect next =>
+      [context.transit (context.world.record (.effect effect)) (.run next) 0 0 1 0]
 
 /-- Returning through a frame. A resume token continues the demanding state;
 an update frame checks ownership and writes the cache. -/
@@ -222,24 +240,27 @@ def resume (context : Context Origin Rule Value StableFault RetryableFault Effec
       context.transit context.world (.run (spec.afterDemand token outcome)) 0 0 0 0
   | .commit cell owner, outcome =>
       match context.world.heap.lookup cell with
-      | none => context.retry context.world (.outOfScope cell) 1 0 0 0
+      | none => context.retry context.world cell (.outOfScope cell) 1 0 0 0
       | some record =>
           match record.cache with
           | .evaluating actual =>
               if actual = owner then
                 match outcome with
                 | .value value =>
-                    context.transit (context.world.setKnownCache cell record (.value value))
+                    context.transit
+                      ((context.world.setKnownCache cell record (.value value)).record
+                        (.observe cell (.value value)))
                       (.returned (.value value)) 1 1 1 0
                 | .stableFault fault =>
                     context.transit
-                      (context.world.setKnownCache cell record (.stableFault fault))
+                      ((context.world.setKnownCache cell record (.stableFault fault)).record
+                        (.observe cell (.stableFault fault)))
                       (.returned (.stableFault fault)) 1 1 1 0
                 | .retryableFault reason =>
-                    context.retry (context.world.setKnownCache cell record .suspended)
+                    context.retry (context.world.setKnownCache cell record .suspended) cell
                       reason 1 1 0 0
-              else context.retry context.world (.ownershipLost cell owner actual) 1 0 0 0
-          | _ => context.retry context.world (.ownershipLost cell owner 0) 1 0 0 0
+              else context.retry context.world cell (.ownershipLost cell owner actual) 1 0 0 0
+          | _ => context.retry context.world cell (.ownershipLost cell owner 0) 1 0 0 0
 
 /-- Dispatch reads the control only. -/
 def inspect :
@@ -263,7 +284,7 @@ def branches (context : Context Origin Rule Value StableFault RetryableFault Eff
       ruleBranches context cell owner record 0 (spec.alternatives record.origin)
   | .action state => actionBranches spec context state
 
-/-- The receipt-erased need machine as a shared-continuation program. -/
+/-- The need execution machine as a shared-continuation program. -/
 def program :
     Program (Context Origin Rule Value StableFault RetryableFault Effect)
       (Mode Origin Local Value StableFault RetryableFault)
@@ -274,6 +295,50 @@ def program :
   resume := resume spec
 
 end Program
+
+/-- Each actual need-frame return performs a semantic transition. Receipt
+syntax erasure does not erase this work or the ownership/cache operation. -/
+theorem resume_transition_count
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (context : Context Origin Rule Value StableFault RetryableFault Effect)
+    (frame : Frame Resume) (outcome : Produced Value StableFault RetryableFault) :
+    (resume spec context frame outcome).1.work.transitions = context.work.transitions + 1 := by
+  cases frame with
+  | resume token => rfl
+  | commit cell owner =>
+      cases lookup : context.world.heap.lookup cell with
+      | none => simp [resume, lookup, Context.retry, Context.transit, Work.bump]
+      | some record =>
+          cases cache : record.cache with
+          | suspended => simp [resume, lookup, cache, Context.retry, Context.transit, Work.bump]
+          | value value => simp [resume, lookup, cache, Context.retry, Context.transit, Work.bump]
+          | stableFault fault =>
+              simp [resume, lookup, cache, Context.retry, Context.transit, Work.bump]
+          | evaluating actual =>
+              by_cases owned : actual = owner
+              · cases outcome <;>
+                  simp [resume, lookup, cache, owned, Context.retry, Context.transit, Work.bump]
+              · simp [resume, lookup, cache, owned, Context.retry, Context.transit, Work.bump]
+
+/-- Registering an accounted need frame for transparent return elision would
+lose a real semantic debit. Such a registration is excluded by the existing
+program's actual resume function, even when receipts are not recorded. -/
+theorem need_frame_cannot_be_elided
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (law : SharedContinuation.TransparentReturns (program spec))
+    (context : Context Origin Rule Value StableFault RetryableFault Effect)
+    (frame : Frame Resume) (outcome : Produced Value StableFault RetryableFault) :
+    law.erase frame = false := by
+  cases erased : law.erase frame with
+  | false => rfl
+  | true =>
+      have retained := law.resume_context context frame outcome erased
+      have equalWork := congrArg (fun next => next.work.transitions) retained
+      change (resume spec context frame outcome).1.work.transitions =
+        context.work.transitions at equalWork
+      have advanced := resume_transition_count spec context frame outcome
+      omega
+
 
 /-! ## Decoding -/
 
@@ -844,14 +909,25 @@ theorem runFrontier_stable {fuel more : Nat}
   | succ more _ ih =>
       rw [runFrontier_succ_of_all_halted spec more states (ih ▸ halted), ih]
 
-/-- The depth-first schedule: expand the leftmost running machine. -/
-def expandFirst :
-    List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect) →
-      List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)
-  | [] => []
-  | machine :: rest =>
-      if isHalted machine then machine :: expandFirst rest
-      else NeedExecution.step spec machine ++ rest
+/-- The common depth-first schedule instantiated at the Need execution machine. -/
+abbrev expandFirst := (NeedRepresentation.executionSystem spec).expandFirst
+
+/-- Need represents every running branch by a successor or an explicit fault,
+so the common scheduler's stuck-state retention never hides a Need expansion. -/
+theorem expandFirst_cons
+    (machine : CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (rest : List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :
+    expandFirst spec (machine :: rest) =
+      if isHalted machine then machine :: expandFirst spec rest
+      else NeedExecution.step spec machine ++ rest := by
+  change (NeedRepresentation.executionSystem spec).expandFirst (machine :: rest) = _
+  rw [Mettapedia.GSLT.Distinction.OrderedSystem.expandFirst]
+  change (if isHalted machine then _ else _) = _
+  cases halted : isHalted machine with
+  | false =>
+      simp only [Bool.false_eq_true, if_false,
+        NeedRepresentation.executionSystem_advance, advance_of_running spec halted]
+  | true => simp only [if_true]
 
 theorem expandFirst_append_of_all_halted
     {left :
@@ -859,12 +935,8 @@ theorem expandFirst_append_of_all_halted
     (halted : left.all isHalted = true)
     (right :
       List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :
-    expandFirst spec (left ++ right) = left ++ expandFirst spec right := by
-  induction left with
-  | nil => rfl
-  | cons head tail ih =>
-      simp only [List.all_cons, Bool.and_eq_true] at halted
-      simp [expandFirst, halted.1, ih halted.2]
+    expandFirst spec (left ++ right) = left ++ expandFirst spec right :=
+  (NeedRepresentation.executionSystem spec).expandFirst_append_of_all_halted halted right
 
 theorem expandFirst_append_of_running
     {left :
@@ -872,21 +944,15 @@ theorem expandFirst_append_of_running
     (running : left.all isHalted = false)
     (right :
       List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)) :
-    expandFirst spec (left ++ right) = expandFirst spec left ++ right := by
-  induction left with
-  | nil => simp at running
-  | cons head tail ih =>
-      by_cases halted : isHalted head = true
-      · simp only [List.all_cons, halted, Bool.true_and] at running
-        simp [expandFirst, halted, ih running]
-      · simp [expandFirst, halted]
+    expandFirst spec (left ++ right) = expandFirst spec left ++ right :=
+  (NeedRepresentation.executionSystem spec).expandFirst_append_of_running running right
 
 theorem expandFirst_of_all_halted
     {states :
       List (CoreMachine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
     (halted : states.all isHalted = true) :
-    expandFirst spec states = states := by
-  simpa [expandFirst] using expandFirst_append_of_all_halted spec halted []
+    expandFirst spec states = states :=
+  (NeedRepresentation.executionSystem spec).expandFirst_of_all_halted halted
 
 /-- `Completes spec states final count`: the depth-first schedule started at
 `states` halts every machine after exactly `count` expansions, at `final`. -/
@@ -974,7 +1040,7 @@ theorem Completes.runFrontier
       have expanded : expandFirst spec (halts ++ machine :: rest) =
           halts ++ (NeedExecution.step spec machine ++ rest) := by
         rw [expandFirst_append_of_all_halted spec hHalts]
-        simp [expandFirst, hMachine]
+        simp [expandFirst_cons, hMachine]
       rw [expanded, runFrontier_append, runFrontier_append,
         runFrontier_of_all_halted spec _ hHalts] at ih
       have restHalted : (NeedExecution.runFrontier spec count rest).all isHalted = true := by
@@ -1022,7 +1088,7 @@ theorem completes_of_runFrontier (fuel : Nat)
               rw [unfolded] at halted ⊢
               obtain ⟨count, run⟩ := ih _ halted.1
               refine ⟨count + 1, .expand (by simp [running]) ?_⟩
-              simpa [expandFirst, running] using run
+              simpa [expandFirst_cons, running] using run
           obtain ⟨headCount, headRun⟩ := headRun
           exact ⟨headCount + restCount, headRun.append restRun⟩
 
@@ -1098,7 +1164,7 @@ theorem machines_step_exact
       simp [answerMachine, isHalted]
     simp only [machines, List.map_append, List.map_cons]
     rw [expandFirst_append_of_all_halted spec answered]
-    simp only [expandFirst, taskMachine_running, Bool.false_eq_true, ↓reduceIte,
+    simp only [expandFirst_cons, taskMachine_running, Bool.false_eq_true, ↓reduceIte,
       ← hSuccessors, List.append_assoc]
 
 /-- The claim dispatch is invisible at the need level and keeps the task pending. -/
@@ -1146,6 +1212,222 @@ theorem iterate_idle {Ctx Ctl Callee Frm Ans : Type} (P : Program Ctx Ctl Callee
   simp only at idle
   subst idle
   rfl
+
+/-- Every finite depth-first need prefix has a settled shared realization,
+including prefixes that still contain pending alternatives. The allowance is
+at most two shared steps per need step; final configurations spend no more. -/
+theorem program_of_prefix (count : Nat)
+    (state : NeedState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (settled : Settled state) :
+    ∃ steps, steps ≤ 2 * count ∧
+      Settled ((SharedContinuation.step (program spec))^[steps] state) ∧
+      machines ((SharedContinuation.step (program spec))^[steps] state) =
+        (expandFirst spec)^[count] (machines state) := by
+  induction count generalizing state with
+  | zero => exact ⟨0, by omega, settled, rfl⟩
+  | succ count ih =>
+      cases frontier : state.frontier with
+      | nil =>
+          have fixed :
+              (expandFirst spec)^[count + 1] (machines state) = machines state :=
+            Function.iterate_fixed
+              (expandFirst_of_all_halted spec ((machines_all_halted_iff state).2 frontier))
+              (count + 1)
+          exact ⟨0, by omega, settled, fixed.symm⟩
+      | cons task rest =>
+          obtain ⟨settledNext, next⟩ :=
+            machines_step_exact spec state settled task rest frontier
+          obtain ⟨steps, bound, settledFinal, decoded⟩ := ih _ settledNext
+          obtain ⟨_, atMostTwo⟩ := cost_pos_le_two spec task
+          refine ⟨steps + cost spec task, by omega, ?_, ?_⟩
+          · rw [Function.iterate_add_apply]
+            exact settledFinal
+          · rw [Function.iterate_add_apply, decoded, next, Function.iterate_succ_apply]
+
+/-- A pause at any shared step decodes to an actual finite depth-first need
+prefix. In particular a pause after lookup and before claim does not lose the
+selected world, work account, return stack or remaining alternatives. -/
+theorem prefix_of_program (steps : Nat)
+    (state : NeedState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (settled : Settled state) :
+    ∃ count ≤ steps,
+      (((SharedContinuation.step (program spec))^[steps] state).frontier ≠ [] →
+        steps ≤ 2 * count + 1) ∧
+      machines ((SharedContinuation.step (program spec))^[steps] state) =
+        (expandFirst spec)^[count] (machines state) := by
+  induction steps using Nat.strong_induction_on generalizing state with
+  | h steps ih =>
+      rcases state with ⟨frontier, emitted⟩
+      cases frontier with
+      | nil =>
+          rw [iterate_idle _ _ rfl]
+          exact ⟨0, Nat.zero_le _, by simp, rfl⟩
+      | cons task rest =>
+          obtain ⟨positive, atMostTwo⟩ := cost_pos_le_two spec task
+          by_cases enough : cost spec task ≤ steps
+          · obtain ⟨settledNext, next⟩ :=
+              machines_step_exact spec ⟨task :: rest, emitted⟩ settled task rest rfl
+            have split :
+                (SharedContinuation.step (program spec))^[steps] ⟨task :: rest, emitted⟩ =
+                  (SharedContinuation.step (program spec))^[steps - cost spec task]
+                    ((SharedContinuation.step (program spec))^[cost spec task]
+                      ⟨task :: rest, emitted⟩) := by
+              rw [← Function.iterate_add_apply, Nat.sub_add_cancel enough]
+            obtain ⟨count, bound, productive, decoded⟩ :=
+              ih (steps - cost spec task) (by omega) _ settledNext
+            refine ⟨count + 1, by omega, ?_, ?_⟩
+            · intro active
+              rw [split] at active
+              have progress := productive active
+              omega
+            · rw [split, decoded, next, Function.iterate_succ_apply]
+          · have early : steps = 0 ∨ steps = 1 := by omega
+            rcases early with rfl | rfl
+            · exact ⟨0, le_rfl, by omega, rfl⟩
+            · refine ⟨0, Nat.zero_le _, by omega, ?_⟩
+              have unchanged :=
+                (claim_step_silent spec task rest emitted (by omega)).1
+              simpa only [Function.iterate_one, Function.iterate_zero, id_eq] using unchanged
+
+/-- A recorded pause reads back to the rich reference prefix, including causal
+node identities and parent edges. The initial encoding is the only boundary
+premise; the complete intervening execution is established by the step laws. -/
+theorem recorded_prefix_of_program (steps : Nat)
+    (state : NeedState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (settled : Settled state)
+    (initial : List
+      (NeedReference.Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+    (encoded : machines state = initial.map (NeedExecution.projectMachine true)) :
+    ∃ count ≤ steps,
+      (((SharedContinuation.step (program spec))^[steps] state).frontier ≠ [] →
+        steps ≤ 2 * count + 1) ∧
+      (machines ((SharedContinuation.step (program spec))^[steps] state)).mapM
+        NeedExecution.CoreMachine.readback? =
+          some (((NeedRepresentation.needSystem spec).expandFirst)^[count] initial) := by
+  obtain ⟨count, bound, productive, decoded⟩ := prefix_of_program spec steps state settled
+  refine ⟨count, bound, productive, ?_⟩
+  rw [decoded, encoded]
+  exact NeedRepresentation.recording_depthFirst_readback spec count initial
+
+/-- Every rich depth-first prefix has a recorded shared realization, spending
+at most two shared steps per reference expansion and retaining all alternatives. -/
+theorem program_of_recorded_prefix (count : Nat)
+    (state : NeedState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (settled : Settled state)
+    (initial : List
+      (NeedReference.Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+    (encoded : machines state = initial.map (NeedExecution.projectMachine true)) :
+    ∃ steps, steps ≤ 2 * count ∧
+      Settled ((SharedContinuation.step (program spec))^[steps] state) ∧
+      (machines ((SharedContinuation.step (program spec))^[steps] state)).mapM
+        NeedExecution.CoreMachine.readback? =
+          some (((NeedRepresentation.needSystem spec).expandFirst)^[count] initial) := by
+  obtain ⟨steps, bound, finalSettled, decoded⟩ := program_of_prefix spec count state settled
+  refine ⟨steps, bound, finalSettled, ?_⟩
+  rw [decoded, encoded]
+  exact NeedRepresentation.recording_depthFirst_readback spec count initial
+
+/-- Every bounded reference slice retains a genuine need prefix, with no more
+need transitions than the shared transitions actually charged. Unused allowance
+at a final state contributes neither source progress nor a new debit. -/
+theorem reference_slice_prefix (fuel : Nat)
+    (state : NeedState Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (settled : Settled state) :
+    ∃ count ≤ (MachineCore.runSlice (SharedContinuation.referenceCore (program spec))
+        fuel state).2,
+      machines (MachineCore.runSlice (SharedContinuation.referenceCore (program spec))
+        fuel state).1 = (expandFirst spec)^[count] (machines state) := by
+  let used := (MachineCore.runSlice (SharedContinuation.referenceCore (program spec))
+    fuel state).2
+  obtain ⟨count, bound, _, decoded⟩ := prefix_of_program spec used state settled
+  have endpoint :
+      (MachineCore.runSlice (SharedContinuation.referenceCore (program spec))
+        fuel state).1 = (SharedContinuation.step (program spec))^[used] state := by
+    have replay := congrArg Prod.fst
+      (MachineCore.runSlice_replay_used
+        (SharedContinuation.referenceCore (program spec)) fuel state)
+    exact replay.symm.trans (SharedContinuation.reference_slice_iterate (program spec) used state)
+  exact ⟨count, bound, (congrArg machines endpoint).trans decoded⟩
+
+/-- The retained arena has the same partial need readback as the reference
+slice, including worlds, cached values, complete stacks and ordered duplicates. -/
+theorem shared_slice_prefix (fuel : Nat)
+    (state : SharedContinuation.CheckedState
+      (Context Origin Rule Value StableFault RetryableFault Effect)
+      (Mode Origin Local Value StableFault RetryableFault) (Frame Resume)
+      (Produced Value StableFault RetryableFault))
+    (settled : Settled state.1.decode) :
+    ∃ count ≤ (MachineCore.runSlice (SharedContinuation.sharedCore (program spec))
+        fuel state).2,
+      machines (MachineCore.runSlice (SharedContinuation.sharedCore (program spec))
+        fuel state).1.1.decode = (expandFirst spec)^[count] (machines state.1.decode) := by
+  have slices := SharedContinuation.slice_exact (program spec) fuel state
+  obtain ⟨count, bound, decoded⟩ := reference_slice_prefix spec fuel state.1.decode settled
+  have endpoints := congrArg Prod.fst slices
+  have charges := congrArg Prod.snd slices
+  dsimp only at endpoints charges
+  exact ⟨count, charges.symm ▸ bound, (congrArg machines endpoints).trans decoded⟩
+
+/-- Splitting allowance resumes the paid arena, even when the first slice
+stops between lookup and claim. Its readback is a prefix from the initial
+configuration, and its charge is the sum of the two actual debits. -/
+theorem shared_resumption_prefix (first second : Nat)
+    (state : SharedContinuation.CheckedState
+      (Context Origin Rule Value StableFault RetryableFault Effect)
+      (Mode Origin Local Value StableFault RetryableFault) (Frame Resume)
+      (Produced Value StableFault RetryableFault))
+    (settled : Settled state.1.decode) :
+    let earlier := MachineCore.runSlice (SharedContinuation.sharedCore (program spec)) first state
+    let later := MachineCore.runSlice (SharedContinuation.sharedCore (program spec)) second earlier.1
+    ∃ count ≤ earlier.2 + later.2,
+      machines later.1.1.decode = (expandFirst spec)^[count] (machines state.1.decode) := by
+  have exactPrefix := shared_slice_prefix spec (first + second) state settled
+  dsimp only [SharedContinuation.sharedCore] at exactPrefix ⊢
+  rw [MachineCore.runSlice_add] at exactPrefix
+  exact exactPrefix
+
+/-- A checked arena pause retains the rich causal frontier. Its reference
+expansion count is bounded by actual charged steps, not unused allowance. -/
+theorem shared_slice_recorded_prefix (fuel : Nat)
+    (state : SharedContinuation.CheckedState
+      (Context Origin Rule Value StableFault RetryableFault Effect)
+      (Mode Origin Local Value StableFault RetryableFault) (Frame Resume)
+      (Produced Value StableFault RetryableFault))
+    (settled : Settled state.1.decode)
+    (initial : List
+      (NeedReference.Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+    (encoded : machines state.1.decode = initial.map (NeedExecution.projectMachine true)) :
+    ∃ count ≤ (MachineCore.runSlice (SharedContinuation.sharedCore (program spec))
+        fuel state).2,
+      (machines (MachineCore.runSlice (SharedContinuation.sharedCore (program spec))
+        fuel state).1.1.decode).mapM NeedExecution.CoreMachine.readback? =
+          some (((NeedRepresentation.needSystem spec).expandFirst)^[count] initial) := by
+  obtain ⟨count, bound, decoded⟩ := shared_slice_prefix spec fuel state settled
+  refine ⟨count, bound, ?_⟩
+  rw [decoded, encoded]
+  exact NeedRepresentation.recording_depthFirst_readback spec count initial
+
+/-- Splitting an arena allowance preserves the actual causal prefix, even
+across the intermediate claim. The second slice continues the retained state;
+it does not reconstruct history by evaluating the initial producer again. -/
+theorem shared_resumption_recorded_prefix (first second : Nat)
+    (state : SharedContinuation.CheckedState
+      (Context Origin Rule Value StableFault RetryableFault Effect)
+      (Mode Origin Local Value StableFault RetryableFault) (Frame Resume)
+      (Produced Value StableFault RetryableFault))
+    (settled : Settled state.1.decode)
+    (initial : List
+      (NeedReference.Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+    (encoded : machines state.1.decode = initial.map (NeedExecution.projectMachine true)) :
+    let earlier := MachineCore.runSlice (SharedContinuation.sharedCore (program spec)) first state
+    let later := MachineCore.runSlice (SharedContinuation.sharedCore (program spec)) second earlier.1
+    ∃ count ≤ earlier.2 + later.2,
+      (machines later.1.1.decode).mapM NeedExecution.CoreMachine.readback? =
+        some (((NeedRepresentation.needSystem spec).expandFirst)^[count] initial) := by
+  obtain ⟨count, bound, decoded⟩ := shared_resumption_prefix spec first second state settled
+  refine ⟨count, bound, ?_⟩
+  rw [decoded, encoded]
+  exact NeedRepresentation.recording_depthFirst_readback spec count initial
 
 /-- A completed depth-first need run is reached by the shared run, with
 between one and two shared steps per need transition. -/
@@ -1437,7 +1719,7 @@ theorem committed_returnCohort_cache
     task.context.world.heap.lookup cell = some { record with cache := .value value } := by
   obtain ⟨site, _, sameWorld, _⟩ := returnCohort_member spec _ (.value value) sites task member
   rw [sameWorld]
-  simp [resume, present, owned, Context.transit, CoreWorld.setKnownCache]
+  simp [resume, present, owned, Context.transit, CoreWorld.setKnownCache, CoreWorld.record]
 
 theorem mismatched_commit_is_not_value
     (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
@@ -1576,6 +1858,67 @@ example :
     ((SharedContinuation.checkedStep (program demoSpec))^[11]
         (SharedContinuation.encode ⟨[demoTask], []⟩)).1.emitted.map Prod.snd =
       [.value 42] := by
+  decide
+
+/-- Arbitrary pauses, including the intermediate claim, use the general
+partial-run theorem without requiring the producer to have finished. -/
+theorem every_arena_pause_has_need_prefix (fuel : Nat) :
+    ∃ count ≤ (MachineCore.runSlice (SharedContinuation.sharedCore (program demoSpec))
+        fuel (SharedContinuation.encode ⟨[demoTask], []⟩)).2,
+      machines (MachineCore.runSlice (SharedContinuation.sharedCore (program demoSpec))
+        fuel (SharedContinuation.encode ⟨[demoTask], []⟩)).1.1.decode =
+        (expandFirst demoSpec)^[count] [taskMachine demoTask] := by
+  exact shared_slice_prefix demoSpec fuel (SharedContinuation.encode ⟨[demoTask], []⟩)
+    (by rw [SharedContinuation.decode_encode]; exact settled_single demoTask rfl)
+
+/-- A pause at the claim resumes its actual update frame and cached world. -/
+theorem resumption_across_claim_is_complete :
+    let earlier := MachineCore.runSlice (SharedContinuation.sharedCore (program demoSpec))
+      2 (SharedContinuation.encode ⟨[demoTask], []⟩)
+    let later := MachineCore.runSlice (SharedContinuation.sharedCore (program demoSpec))
+      30 earlier.1
+    earlier.2 = 2 ∧ later.2 = 9 ∧ later.1.1.frontier = [] ∧
+      later.1.1.emitted.map Prod.snd = [.value 42] := by
+  decide
+
+/-- Two shared ticks have advanced only one need transition. Treating the
+allowance as a source-transition count would skip the retained claim. -/
+theorem claim_is_not_a_second_need_transition :
+    (demoRun 2).frontier.map (fun task => task.context.work.transitions) = [1] ∧
+      (demoRun 3).frontier.map (fun task => task.context.work.transitions) = [2] := by
+  decide
+
+/-- Three rule occurrences, including a duplicate result, use the existing
+two-demand control. Each selected world keeps its own first value. -/
+def choiceSpec : Spec Unit Code Token Unit Nat Unit Unit Unit :=
+  { demoSpec with alternatives := fun _ => [((), .total 1), ((), .total 2), ((), .total 1)] }
+
+def choiceRun (steps : Nat) : NeedState Unit Code Token Unit Nat Unit Unit Unit :=
+  (SharedContinuation.step (program choiceSpec))^[steps] ⟨[demoTask], []⟩
+
+theorem correlated_choices_keep_order_and_duplicates :
+    (choiceRun 27).frontier = [] ∧
+      (choiceRun 27).emitted.map
+          (fun answer => (answer.1.world.path, answer.2,
+            (answerMachine (Local := Code) (Resume := Token) answer).work.transitions)) =
+        [([0], .value 2, 10), ([1], .value 4, 10), ([2], .value 2, 10)] := by
+  decide
+
+/-- A faulty transfer retains the receiving control and stacks but replaces
+only the first branch's selected world by the pre-selection world. -/
+def lostSelectedWorld : NeedState Unit Code Token Unit Nat Unit Unit Unit :=
+  let paused := choiceRun 6
+  match paused.frontier with
+  | [] => paused
+  | task :: rest =>
+      { paused with frontier := { task with context := { task.context with world := demoWorld } }
+          :: rest }
+
+/-- World loss re-runs the first producer, creating a mixed answer and extra
+occurrences. The pending sibling branches have otherwise been retained. -/
+theorem world_loss_breaks_correlation :
+    ((SharedContinuation.step (program choiceSpec))^[34] lostSelectedWorld).emitted.map
+        Prod.snd = [.value 2, .value 3, .value 2, .value 4, .value 2] := by
   decide
 
 /-! ### Retained return sites -/

@@ -310,7 +310,7 @@ structure DLRQueryOutcomePLNBridgeProfile where
         1 - infiniteMLNQueryEnvelopeWidth M q
 
 /-- Current PLN-facing DLR query-outcome ITV bridge profile. -/
-noncomputable def dlrQueryOutcomePLNBridgeProfile :
+theorem dlrQueryOutcomePLNBridgeProfile :
     DLRQueryOutcomePLNBridgeProfile where
   boolTrueAtomInUnit :=
     boolTrueAtomGamble_mem_Icc

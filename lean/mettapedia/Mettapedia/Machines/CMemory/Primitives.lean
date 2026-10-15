@@ -23,11 +23,13 @@ Seven primitives act on block memory:
 every choice is.  A fresh block is one of which nothing at all is held, header
 or cells; dead blocks keep their header, so they are never chosen again.
 
-Every case the C standard leaves undefined has no defined step: loading an
-indeterminate or unheld cell, writing a cell without the whole permission,
-freeing an interior pointer, freeing twice, freeing or reallocating a block
-not wholly held, `realloc` of a live block to size zero (undefined in C23),
-and comparing a pointer into a dead block.
+The admitted kernel has no defined step for loading an indeterminate or
+unheld cell, writing without whole permission, freeing an interior pointer
+or twice, freeing/reallocating a block not wholly held, resizing a live block
+to zero, or comparing a pointer into a dead block. These are the kernel's
+guards, not a classification of every C11 source operation. In particular,
+resource ownership is an additional execution contract, and C11 zero-size
+allocation/reallocation policies require a separate library adapter.
 
 Each primitive is a local action (`act_local`), and each has an outcome wherever
 it is defined (`act_progress`).  The frame rule therefore holds for every

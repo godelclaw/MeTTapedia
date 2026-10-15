@@ -1,6 +1,6 @@
 import Mettapedia.Languages.VibeITP.Presentation.AdmissionCorrespondence
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.DataEquality
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
 # Native Vibe proof identity and the checked computational entry
@@ -22,7 +22,7 @@ namespace Mettapedia.Languages.VibeITP.Presentation.KernelFormation
 
 open ComputationalData ComputationalShift ComputationalProofs ComputationalAdmission
 open Mettapedia.GSLT.LanguageDef.DeterministicEquations
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 
 def nativeProofSystem (theory : Spec.Theory) : NativeProofSystem Spec.Term where

@@ -25,7 +25,7 @@ open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.Languages.TPTP
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.Languages.TPTP.CheckerAuthority
 open Mettapedia.Languages.TPTP.ProblemAuthority
 open Mettapedia.Languages.TPTP.StatusSemantics
 
@@ -207,7 +207,7 @@ def Objective (submission : Submission) : Prop :=
 
 theorem discharge (submission : Submission)
     (source : GroundCNFAuthority.InitialMatches submission.leafClaim)
-    (localMeaning : NIKAuthority.Meaning ruleFamily submission.derivation)
+    (localMeaning : CheckerAuthority.Meaning ruleFamily submission.derivation)
     (global : GroundCNFAuthority.AllTheoremNodes submission) :
     Objective submission := by
   intro valuation problemSatisfied

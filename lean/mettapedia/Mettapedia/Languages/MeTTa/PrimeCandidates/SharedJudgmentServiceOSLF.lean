@@ -189,13 +189,13 @@ theorem matching_has_emitted_world_iff (assembly : Assembly)
 theorem hol_has_emitted_world_iff (assembly : Assembly)
     (qualified : specification.Satisfies assembly)
     (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length n)
     (body : Code Tower.Head NativeExamples.Operation (n + 1))
     (initial : Bool) (branch : BranchTrace) :
     (∃ world, produces assembly (fun _ _ actual => actual = world)
       (.request ⟨.hol gamma replay environment, body⟩ initial branch)) ↔
-      UniformListChartNIKService.replayAccepted gamma replay = true := by
+      UniformListChartService.replayAccepted gamma replay = true := by
   rw [has_emitted_world_iff]
   exact hol_success_iff qualified gamma replay environment
 
@@ -237,7 +237,7 @@ theorem observed_payload_model_sound (assembly : Assembly)
     (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
     (respects : model.FunctionsRespectEqv)
     {gamma delta : HOL.Ctx BaseSort}
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (substitution : Sub Tower.Head gamma.length delta.length)
     (environment : model.Valuation delta → model.Valuation gamma)
     (components : ∀ {type} (index : HOL.Var gamma type),
@@ -264,7 +264,7 @@ payload fixes its meaning; it does not supply truth of the assumptions. -/
 theorem observed_payload_meaning_unique (assembly : Assembly)
     (model : HOL.HenkinModel.{0, 0, w} BaseSort Symbol)
     {gamma delta : HOL.Ctx BaseSort}
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (substitution : Sub Tower.Head gamma.length delta.length)
     (environment : model.Valuation delta → model.Valuation gamma)
     (components : ∀ {type} (index : HOL.Var gamma type),

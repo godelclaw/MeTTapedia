@@ -207,7 +207,11 @@ theorem mergeBindings_some_of_valued
 /-! ## matchPattern Completeness for isMatchCorrect Patterns -/
 
 private theorem sizeOf_pattern_pos' (p : Pattern) : 0 < sizeOf p := by
-  cases p <;> simp [sizeOf, Pattern._sizeOf_1]
+  cases p <;>
+    simp only [Pattern.bvar.sizeOf_spec, Pattern.fvar.sizeOf_spec,
+      Pattern.apply.sizeOf_spec, Pattern.lambda.sizeOf_spec,
+      Pattern.multiLambda.sizeOf_spec, Pattern.subst.sizeOf_spec,
+      Pattern.collection.sizeOf_spec] <;> omega
 
 private theorem matchPattern_complete_aux (n : Nat) :
     (∀ (pat : Pattern) (bs : Bindings),
@@ -230,7 +234,7 @@ private theorem matchPattern_complete_aux (n : Nat) :
         refine ⟨[], ?_, fun _ _ h => nomatch h⟩
         simp [matchArgs]
       | cons p _ =>
-        exact absurd hle (by simp [sizeOf, List._sizeOf_1])⟩
+        exact absurd hle (by simp [List.cons.sizeOf_spec])⟩
   | succ m ih =>
     obtain ⟨ih_pat, ih_args⟩ := ih
     refine ⟨?_, ?_⟩
@@ -277,7 +281,7 @@ private theorem matchPattern_complete_aux (n : Nat) :
           omega
         have hle_as : sizeOf as ≤ m := by
           have : sizeOf as < sizeOf (a :: as) := by
-            simp [sizeOf, List._sizeOf_1]
+            simp [List.cons.sizeOf_spec]
           omega
         obtain ⟨hb, hhb_mem, hhb_val⟩ := ih_pat a bs hle_a hmc_a
         obtain ⟨tb, htb_mem, htb_val⟩ := ih_args as bs hle_as hmc_as
@@ -316,7 +320,7 @@ private theorem applyBindings_inj_aux (n : Nat) :
       cases pats with
       | nil => intro _ hmem; exact nomatch hmem
       | cons p _ =>
-        exact absurd hle (by simp [sizeOf, List._sizeOf_1])⟩
+        exact absurd hle (by simp [List.cons.sizeOf_spec])⟩
   | succ m ih =>
     obtain ⟨ih_pat, ih_args⟩ := ih
     refine ⟨?_, ?_⟩
@@ -366,7 +370,7 @@ private theorem applyBindings_inj_aux (n : Nat) :
         | inr hpas =>
           have hle_as : sizeOf as ≤ m := by
             have : sizeOf as < sizeOf (a :: as) := by
-              simp [sizeOf, List._sizeOf_1]
+              simp [List.cons.sizeOf_spec]
             omega
           exact ih_args as bs1 bs2 hle_as
             (fun p hp => hmc p (List.mem_cons.mpr (Or.inr hp))) heq_as x
@@ -400,7 +404,7 @@ private theorem applyBindings_dep_aux (n : Nat) :
       cases pats with
       | nil => simp [List.map]
       | cons p _ =>
-        exact absurd hle (by simp [sizeOf, List._sizeOf_1])⟩
+        exact absurd hle (by simp [List.cons.sizeOf_spec])⟩
   | succ m ih =>
     obtain ⟨ih_pat, ih_args⟩ := ih
     refine ⟨?_, ?_⟩
@@ -439,7 +443,7 @@ private theorem applyBindings_dep_aux (n : Nat) :
           omega
         have hle_as : sizeOf as ≤ m := by
           have : sizeOf as < sizeOf (a :: as) := by
-            simp [sizeOf, List._sizeOf_1]
+            simp [List.cons.sizeOf_spec]
           omega
         have heq_a := ih_pat a bs1 bs2 hle_a
           (hmc a (List.mem_cons_self ..))

@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.StdLib
+import Mettapedia.Languages.MeTTa.PeTTa.StdLibCalls
 
 /-!
 # MM0 indexed tables in the PeTTa source store

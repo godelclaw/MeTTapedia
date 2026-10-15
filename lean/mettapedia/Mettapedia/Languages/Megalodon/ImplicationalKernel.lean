@@ -8,7 +8,7 @@ This module isolates the `Imp`, `Hyp`, `PPfAp`, and `PLam` fragment of
 Megalodon's checked `Mathdata` proof terms.  It gives the fragment an authored
 CertificateGSLT definition and compiles its intrinsic proof terms to generic
 external proof articles.  This is a certificate-facing projection of one
-native proof calculus, not a definition of NIK.  The result is an exact
+native proof calculus, not a definition of SemanticService.  The result is an exact
 fragment authority, not a claim of adequacy for the full Megalodon parser,
 dynamic-operator environment, polymorphism, definitions, or HOTG theory.
 -/
@@ -206,7 +206,7 @@ def coGSLTSource : coGSLTDefinition.authoredGSLT.Term :=
   rfl
 
 /-- Elaborating the coGSLT source recovers exactly the calculus later consumed
-by the generic NIK checker. -/
+by the generic SemanticService checker. -/
 @[simp] theorem coGSLT_source_elaborates :
     calculusLayer.elaborate definition.toLanguageDef coGSLTSource =
       some definition.toCalculus :=
@@ -616,7 +616,7 @@ private theorem implicationElimination_instantiates
     ruleId]
 
 /-- Compile an intrinsic fragment proof to its inferred proposition and one
-generic NIK article. -/
+generic SemanticService article. -/
 def compile : (context : List Formula) → Proof → Option (Formula × RawProof)
   | [], .hyp _ => none
   | formula :: context, .hyp 0 =>

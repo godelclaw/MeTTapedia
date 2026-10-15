@@ -1,4 +1,7 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.Logic.Consequence.PiInstitution
+import Mathlib.CategoryTheory.Category.Cat
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # The heterogeneous category of consequence institutions
@@ -16,10 +19,11 @@ namespace Mettapedia.GSLT.LanguageDef.PiInstitutionCategory
 
 open CategoryTheory
 open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
 
 universe uSignature uHom uSentence
 
+-- Signature, hom, and sentence levels remain independent in the projections.
+set_option linter.checkUnivs false in
 structure Object where
   Signature : CategoryTheory.Cat.{uHom, uSignature}
   logic : PiInstitution.{uSignature, uHom, uSentence} Signature

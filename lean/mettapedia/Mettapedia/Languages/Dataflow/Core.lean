@@ -6,8 +6,8 @@ import Mathlib.Tactic
 
 The source language of the dataflow-to-process compilation ladder: finite,
 pure, single-assignment programs over an abstract operator signature.  This
-module fixes the language, an **independent** denotational semantics, a
-small-step operational semantics, and the theorems relating them.
+core fixes the language. `Semantics` gives its denotational interpretation;
+`Operational` gives the small-step semantics and the theorems relating them.
 
 Two semantics are given, and they are deliberately *different algorithms*:
 
@@ -17,15 +17,15 @@ Two semantics are given, and they are deliberately *different algorithms*:
 * `Step` is **data-driven** — Kahn-style forward firing of any instruction
   whose operands are already available, in any order.
 
-Their agreement (`run_result_eq_denote`) is therefore a real theorem rather
+Their agreement (`terminal_result_eq_denote`) is therefore a real theorem rather
 than a restatement: it says eager scheduling in *any* order computes what
 lazy demand specifies.  The same duality reappears one level down when
 these programs are compiled to a process calculus, where forcing-at-
 communication plays the role of demand.
 
 Raw programs may be malformed; nothing here is well-formed by construction.
-`Program.validate` is the executable admission gate and
-`Program.WellFormed` its declarative meaning, proved equivalent.
+`Program.WellFormed` in `Operational` gives the declarative admission
+contract. The raw constructors do not enforce it.
 -/
 
 namespace Mettapedia.Languages.Dataflow

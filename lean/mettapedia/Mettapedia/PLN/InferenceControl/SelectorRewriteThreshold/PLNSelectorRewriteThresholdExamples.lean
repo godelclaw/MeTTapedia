@@ -49,36 +49,36 @@ theorem bool_selector_rewrite_threshold_end_to_end_fixture
         (State := State) (Srt := Srt) (Query := Query) W₁ queryOfAtom₁ a0 p')
     (selectorWitness : Finset Bool → Finset (Unit × Unit)) :
     let G := Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.greedySelect
-      ch13_dependencyBool ch13_checklistBool.topK
-    (ch13_checklistBool.topK ≤ Fintype.card Bool
+      dependencyBool checklistBool.topK
+    (checklistBool.topK ≤ Fintype.card Bool
       ∧ (∀ g' f',
           0 ≤ (Mettapedia.PLN.InferenceControl.PremiseSelection.selectorDefaults_halfGate Bool Bool).gate g' f'
             ∧ (Mettapedia.PLN.InferenceControl.PremiseSelection.selectorDefaults_halfGate Bool Bool).gate g' f' ≤ 1)
-      ∧ Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.BayesOptimalRanking ch13_etaBool
+      ∧ Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.BayesOptimalRanking etaBool
           (Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.perturbedScore
-            (ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true)
-            ch13_deltaZero)
-      ∧ (1 - Real.exp (-1)) * (Nat.min ch13_checklistBool.topK ch13_dependencyBool.card : ℝ) ≤
-          Mettapedia.PLN.InferenceControl.PremiseSelection.dependencyCoverage ch13_dependencyBool G)
-      ∧ ch8ThresholdAccepted
+            (pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true)
+            deltaZero)
+      ∧ (1 - Real.exp (-1)) * (Nat.min checklistBool.topK dependencyBool.card : ℝ) ≤
+          Mettapedia.PLN.InferenceControl.PremiseSelection.dependencyCoverage dependencyBool G)
+      ∧ thresholdAccepted
           (State := State) (Srt := Srt) (Query := Query)
           (i := i) (R := R) (m := m) (ctx := ctx)
           W₂ queryOfAtom₂ a0 p coord tau := by
-  simpa [ch13_deltaZero] using
-    (ch9_selector_rewrite_threshold_end_to_end_of_interval
-      (A := ch13_checklistBool)
-      (η := ch13_etaBool)
-      (globalPrior := ch13_globalPriorBool)
-      (localPrior := ch13_localPriorBool)
-      (likelihood := ch13_likelihoodBool)
+  simpa [deltaZero] using
+    (selector_rewrite_threshold_end_to_end_of_interval
+      (A := checklistBool)
+      (η := etaBool)
+      (globalPrior := globalPriorBool)
+      (localPrior := localPriorBool)
+      (likelihood := likelihoodBool)
       (g := true)
-      ch13_localExchangeabilityBool
-      (δ := ch13_deltaZero) (ε := 0)
-      ch13_twoStageRankingBool
-      (hbound := by intro x; simp [ch13_deltaZero])
-      (hmargin := ch13_marginBool)
-      (htie := by intro x y hxy; simp [ch13_deltaZero])
-      (D := ch13_dependencyBool)
+      localExchangeabilityBool
+      (δ := deltaZero) (ε := 0)
+      twoStageRankingBool
+      (hbound := by intro x; simp [deltaZero])
+      (hmargin := marginBool)
+      (htie := by intro x y hxy; simp [deltaZero])
+      (D := dependencyBool)
       (i := i) (R := R) (m := m) (ctx := ctx)
       (r := r) (W₁ := W₁) (W₂ := W₂)
       (queryOfAtom₁ := queryOfAtom₁) (queryOfAtom₂ := queryOfAtom₂)
@@ -88,7 +88,7 @@ theorem bool_selector_rewrite_threshold_end_to_end_fixture
 /-- Concrete Chapter-8 acceptance fixture:
 instantiate the selector-witness channel with a fixed finite witness and project
 the threshold-acceptance component from the composed selector/rewrite theorem. -/
-theorem ch8_thresholdAccepted_bool_selector_fixture
+theorem thresholdAccepted_bool_selector_fixture
     {State Srt : Type*} {Query : Srt → Type*}
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
     [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
@@ -114,7 +114,7 @@ theorem ch8_thresholdAccepted_bool_selector_fixture
         (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0 (m.mapTerm p') =
       PLNWMOSLFBridgeITVTyped.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₁ queryOfAtom₁ a0 p') :
-    ch8ThresholdAccepted
+    thresholdAccepted
       (State := State) (Srt := Srt) (Query := Query)
       (i := i) (R := R) (m := m) (ctx := ctx)
       W₂ queryOfAtom₂ a0 p coord tau := by

@@ -190,7 +190,7 @@ variable {Revision : Type uRevision} {Item : Type uItem}
 
 /-- Successful checking constructs the only object accepted by the pruning
 transition. -/
-def admission
+theorem admission
     (checker : @Checker Revision Item View Receipt observer)
     {snapshot : Snapshot Revision Item Receipt}
     {proposal : Proposal Revision Item Receipt}

@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Contextual.CwfInhabitationInstitution
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The cumulative tower as a dependent node with a satisfying model
 
@@ -22,7 +24,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.TowerTheoryNode
 
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.CwfInhabitationInstitution
 

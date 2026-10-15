@@ -50,7 +50,7 @@ theorem applies_true_iff {P : Program} {H : Host} {head : String} {arguments : L
 certificate of its witness for its statement. -/
 def ProofAccepted (theory : Theory) (declaration : TheoremDecl) (dummies : List Nat)
     (proof : ProofWitness) : Prop :=
-  ∃ fuel, check formMM0 (family theory).evaluate
+  ∃ fuel, check kernelCalculus (family theory).evaluate
     (derivesJ (Kernel.Admission.proofContext declaration dummies) declaration.hypotheses
       declaration.conclusion)
     (translate theory fuel (Kernel.Admission.proofContext declaration dummies)

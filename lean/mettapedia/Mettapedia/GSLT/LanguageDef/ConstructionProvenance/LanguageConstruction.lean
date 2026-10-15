@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
@@ -90,8 +91,8 @@ def algebra : ManySortedConstructionAlgebra where
 
 namespace Canary
 
-def unitTheory : GSLT := GSLT.discrete Unit
-def boolTheory : GSLT := GSLT.discrete Bool
+def unitTheory : GSLT := GSLT.stepFree Unit
+def boolTheory : GSLT := GSLT.stepFree Bool
 
 def documentRoute : ConstructionTree algebra .operationalTheory :=
   .apply .freeDocument (.cons (.source unitTheory) .nil)

@@ -25,6 +25,16 @@ inductive Preterm where
 
 namespace Preterm
 
+/-- Relocate constructor references; an unresolved source reference is refused. -/
+def relocateTerms? (references : Nat → Option Nat) : Preterm → Option Preterm
+  | .var index => some (.var index)
+  | .term index => (references index).map .term
+  | .app function argument => do
+      let function' ← relocateTerms? references function
+      let argument' ← relocateTerms? references argument
+      pure (.app function' argument')
+
+
 def applyArgs : Preterm → List Preterm → Preterm
   | function, [] => function
   | function, argument :: arguments => applyArgs (.app function argument) arguments
@@ -36,6 +46,18 @@ theorem applyArgs_append (function : Preterm) (first second : List Preterm) :
   induction first generalizing function with
   | nil => rfl
   | cons argument arguments ih => exact ih (.app function argument)
+
+theorem relocateTerms?_applyArgs (references : Nat → Option Nat)
+    (function image : Preterm) (arguments images : List Preterm)
+    (head : relocateTerms? references function = some image)
+    (children : List.Forall₂ (fun source target =>
+      relocateTerms? references source = some target) arguments images) :
+    relocateTerms? references (applyArgs function arguments) = some (applyArgs image images) := by
+  induction children generalizing function image with
+  | nil => exact head
+  | cons first rest ih =>
+      apply ih
+      simp [relocateTerms?, head, first]
 
 /-- Syntactic occurrence, including occurrences under binding term symbols.
 MM0 theorem instantiation needs this distinction from free-variable analysis. -/
@@ -111,6 +133,46 @@ theorem Substitutes.deterministic {substitution : Substitution} {source first se
     (left : Substitutes substitution source first)
     (right : Substitutes substitution source second) : first = second :=
   Option.some.inj (left.eval.symm.trans right.eval)
+
+/-- Simultaneous substitution acts on the head and each ordered argument of
+an application spine. This law is independent of any proof-file format. -/
+theorem Substitutes.applyArgs (substitution : Substitution) (source image : Preterm)
+    (sources images : List Preterm) (head : Substitutes substitution source image)
+    (children : List.Forall₂ (Substitutes substitution) sources images) :
+    Substitutes substitution (applyArgs source sources) (applyArgs image images) := by
+  induction children generalizing source image with
+  | nil => exact head
+  | cons child _ ih => exact ih _ _ (.app head child)
+
+/-- Inverting substitution of a spine recovers the head and every child
+substitution, with exactly the same argument count and order. -/
+theorem substitutes_applyArgs_iff (substitution : Substitution) (function : Preterm)
+    (arguments : List Preterm) (result : Preterm) :
+    Substitutes substitution (applyArgs function arguments) result ↔
+      ∃ head images, result = applyArgs head images ∧
+        Substitutes substitution function head ∧
+        List.Forall₂ (Substitutes substitution) arguments images := by
+  induction arguments generalizing function result with
+  | nil =>
+      constructor
+      · intro substituted
+        exact ⟨result, [], rfl, substituted, .nil⟩
+      · rintro ⟨head, images, same, substituted, children⟩
+        cases children
+        subst result
+        exact substituted
+  | cons argument arguments ih =>
+      rw [applyArgs, ih]
+      constructor
+      · rintro ⟨head, images, same, substituted, children⟩
+        cases substituted with
+        | app functionSubstituted argumentSubstituted =>
+            exact ⟨_, _ :: images, same, functionSubstituted,
+              .cons argumentSubstituted children⟩
+      · rintro ⟨head, images, same, substituted, children⟩
+        cases children with
+        | @cons _ image _ images first rest =>
+            exact ⟨.app head image, images, same, .app substituted first, rest⟩
 
 theorem substitute_none_iff (substitution : Substitution) (source : Preterm) :
     substitute substitution source = none ↔ ¬ ∃ result, Substitutes substitution source result := by

@@ -57,7 +57,7 @@ theorem accessible {context : CoherentCandidateContext n}
 
 /-- Every universe constructor is a semantic term of the normalization
 candidate. -/
-def u0 (context : CoherentCandidateContext n) :
+theorem u0 (context : CoherentCandidateContext n) :
     SemanticTerm (ContextualCandidateType.normalizing context) (.u0 : ScopedTerm n) where
   realizes := by
     intro m environment realized
@@ -193,14 +193,14 @@ theorem renameEnvironment_compSub
   exact rename_subst ρ environment (substitution index)
 
 /-- Identity is a semantic substitution. -/
-def id (context : CoherentCandidateContext n) :
+theorem id (context : CoherentCandidateContext n) :
     SemanticSubstitution context context ids where
   maps := CandidateSubstitution.id context.toCandidateContext
   constantFree := fun index => .var index
 
 /-- The projection from a contextual extension to its base is an internal
 semantic substitution. -/
-def projection
+theorem projection
     {context : CoherentCandidateContext n}
     (domain : ContextualCandidateType context) :
     SemanticSubstitution context (context.extendContextual domain)
@@ -226,7 +226,7 @@ theorem reindex_projection_equivalent
 /-- Extensionally equivalent domain candidates induce a semantic identity map
 between their contextual extensions.  The syntax substitution is literally
 identity; only the proof-relevant realization boundary changes. -/
-def extensionIdentity
+theorem extensionIdentity
     {context : CoherentCandidateContext n}
     (left right : ContextualCandidateType context)
     (equivalent : left.Equivalent right) :
@@ -246,7 +246,7 @@ def extensionIdentity
 /-- Lift a semantic substitution through corresponding contextual extensions.
 The target domain need only be extensionally equivalent to the pullback of the
 source domain; proof-record identity is neither required nor observed. -/
-def lift
+theorem lift
     {source : CoherentCandidateContext n}
     {target : CoherentCandidateContext m} {substitution : Sub n m}
     (domain : ContextualCandidateType source)
@@ -393,7 +393,7 @@ theorem reindex_sigma_equivalent
 
 /-- Semantic comprehension: a base substitution and a term in the pulled-back
 domain form a substitution into the corresponding contextual extension. -/
-def pair
+theorem pair
     {source : CoherentCandidateContext n}
     {target : CoherentCandidateContext m} {substitution : Sub n m}
     (domain : ContextualCandidateType source)
@@ -421,7 +421,7 @@ def pair
 
 /-- Pairing with identity is the semantic singleton substitution used by
 dependent application, pair introduction, and second projection. -/
-def instantiate
+theorem instantiate
     {context : CoherentCandidateContext n}
     (domain : ContextualCandidateType context)
     {term : ScopedTerm n} (head : SemanticTerm domain term) :
@@ -488,7 +488,7 @@ theorem CoherentCandidateContext.liftSub_realizes
 namespace SemanticTerm
 
 /-- Semantic normalization is closed under dependent function codes. -/
-def piCode
+theorem piCode
     {context : CoherentCandidateContext n}
     {domainCode : ScopedTerm n} {codomainCode : ScopedTerm (n + 1)}
     (domain : ContextualCandidateType context)
@@ -512,7 +512,7 @@ def piCode
     codomainNormalizes.constantFree
 
 /-- Semantic normalization is closed under dependent pair codes. -/
-def sigmaCode
+theorem sigmaCode
     {context : CoherentCandidateContext n}
     {domainCode : ScopedTerm n} {codomainCode : ScopedTerm (n + 1)}
     (domain : ContextualCandidateType context)
@@ -536,7 +536,7 @@ def sigmaCode
     codomainNormalizes.constantFree
 
 /-- Semantic normalization is closed under identity codes. -/
-def identityCode
+theorem identityCode
     {context : CoherentCandidateContext n}
     {typeCode left right : ScopedTerm n}
     {type : ContextualCandidateType context}
@@ -575,13 +575,13 @@ structure SemanticConstantFreeConv
 
 namespace SemanticConstantFreeConv
 
-def symm (conversion : SemanticConstantFreeConv context source target) :
+theorem symm (conversion : SemanticConstantFreeConv context source target) :
     SemanticConstantFreeConv context target source where
   converts := .symm conversion.converts
   sourceNormalizes := conversion.targetNormalizes
   targetNormalizes := conversion.sourceNormalizes
 
-def trans (first : SemanticConstantFreeConv context source middle)
+theorem trans (first : SemanticConstantFreeConv context source middle)
     (second : SemanticConstantFreeConv context middle target) :
     SemanticConstantFreeConv context source target where
   converts := .trans first.converts second.converts
@@ -589,7 +589,7 @@ def trans (first : SemanticConstantFreeConv context source middle)
   targetNormalizes := second.targetNormalizes
 
 /-- Semantic conversion is stable under every semantic substitution. -/
-def subst
+theorem subst
     {sourceContext : CoherentCandidateContext n}
     {targetContext : CoherentCandidateContext m}
     {substitution : Sub n m} {source target : ScopedTerm n}
@@ -937,7 +937,7 @@ theorem hiddenSemanticPi_accessible : ReductionAccessible hiddenSemanticPi := by
 
 /-- The hidden dependent function code normalizes uniformly after every
 realizing environment, not merely at the identity substitution. -/
-def hiddenSemanticPi_normalizes :
+theorem hiddenSemanticPi_normalizes :
     SemanticTerm
       (ContextualCandidateType.normalizing CoherentCandidateContext.empty)
       hiddenSemanticPi where
@@ -952,7 +952,7 @@ def hiddenSemanticPi_normalizes :
           ReductionAccessible (.pi .u0 .u0 : ScopedTerm m))
   constantFree := hiddenSemanticPi_constantFree
 
-def hiddenSemanticPiConversion :
+theorem hiddenSemanticPiConversion :
     SemanticConstantFreeConv CoherentCandidateContext.empty hiddenSemanticPi
       (.pi .u0 .u0 : ScopedTerm 0) where
   converts := .rel ⟨hiddenSemanticPi_reduces,

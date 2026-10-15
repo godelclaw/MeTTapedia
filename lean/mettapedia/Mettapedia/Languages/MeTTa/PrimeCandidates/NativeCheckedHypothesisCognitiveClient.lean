@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicyNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicySelection
 import Mettapedia.GSLT.Dynamics.GuardRevision
 
 /-!
@@ -8,7 +8,7 @@ An agent learns a predicate from examples and then keeps using it: it queries
 the predicate, moves a cheap guard ahead of an expensive valuation, serves an
 ongoing stream of query batches, revises its world, and asks new questions of
 the answers.  This module states that workflow over the existing
-native-plus-policy selection of `NativeCheckedHypothesisPolicyNIKSelection`
+native-plus-policy selection of `NativeCheckedHypothesisPolicySelection`
 and proves each step.
 
 The generic part works over any finite fact world:
@@ -19,7 +19,7 @@ The generic part works over any finite fact world:
   chains; it lists every derivation exactly once (`interpret_nodup`,
   `mem_interpret`), so it agrees with every exact native provider as an
   occurrence bag (`nativeAnswers_eq_of_exact`);
-* the facts a hypothesis reads form a NIK dependency view; revalidating a
+* the facts a hypothesis reads form a SemanticService dependency view; revalidating a
   retained native result against a revision is a live meaning whose
   dependencies are adequate (`revalidatedLive_adequate`);
 * hoisting charges no more for every canonically ordered additive cost
@@ -54,15 +54,15 @@ open Mettapedia.GSLT.Core.SearchStreamProductivity
 open Mettapedia.GSLT.Dynamics.GuardedWork
 open Mettapedia.GSLT.Dynamics.GuardRevision
 open Mettapedia.GSLT.Dynamics.ContextualCandidateValuation
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission.PolicyFamilyAdmittedAt
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission.PolicyFamilyAdmittedAt
 open Mettapedia.GSLT.ProofRelevantAnswerBag (AnswerOccurrence AnswerBag)
 open Mettapedia.GSLT.ProofRelevantAnswerBag.AnswerBag (chainOccurrence)
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.IntrinsicMILNativeSearch
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeRelationalSearchNIKSelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyCurrentSelection
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicyNIKSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeRelationalSearchSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyCurrentSelection
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCheckedHypothesisPolicySelection
 open MILSchemaElaboration.Semantic (Vocabulary Hypothesis)
 
 /-! ## Resources of a hoisted guard -/

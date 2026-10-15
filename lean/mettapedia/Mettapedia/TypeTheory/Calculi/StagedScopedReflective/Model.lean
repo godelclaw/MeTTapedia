@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.GSLT.LanguageDef.LF.PureCorrespondence
 import Mettapedia.GSLT.Dynamics.WeightCost
 import Mettapedia.PLN.Evidence.BinEvNat
@@ -1179,7 +1179,7 @@ theorem familiesValidatedLanguageCode_decodes :
 in the selected presentation is part of every value. -/
 def authoredConstructorAdmissionObject
     (presentation : Mettapedia.GSLT.LanguageDef.ValidatedLanguageDef) :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.AdmissionObject where
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.AdmissionObject where
   Carrier := Mettapedia.GSLT.LanguageDef.StructuralMorphism.DeclaredConstructor
     presentation
   Meaning := fun _ => True

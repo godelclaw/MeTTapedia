@@ -390,3 +390,105 @@ theorem substitute_single_eq_instantiateBVar (replacement pattern : Pattern) :
     substitute_lift_single replacement pattern 0
 
 end Mettapedia.OSLF.MeTTaIL.ContextSubstitution
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.ContextSubstitution
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Substitution
+
+theorem lift_assignment_free_empty (assignment : ContextSubstitution.Assignment) (arity : Nat)
+    (empty : ∀ index, (assignment index).freeFvarNames = []) :
+    ∀ index, (ContextSubstitution.lift arity assignment index).freeFvarNames = [] := by
+  intro index
+  simp only [ContextSubstitution.lift]
+  split
+  · simp only [Pattern.freeFvarNames]
+  · rw [lift_free_names, empty]
+
+theorem substitute_free_names (pattern : Pattern) (assignment : ContextSubstitution.Assignment)
+    (empty : ∀ index, (assignment index).freeFvarNames = []) :
+    (ContextSubstitution.substitute assignment pattern).freeFvarNames = pattern.freeFvarNames := by
+  induction pattern using Pattern.inductionOn generalizing assignment with
+  | hbvar index => simpa only [ContextSubstitution.substitute, Pattern.freeFvarNames] using empty index
+  | hfvar name => rfl
+  | happly constructor arguments ih =>
+      simp only [ContextSubstitution.substitute, ContextSubstitution.substituteList_eq_map, Pattern.freeFvarNames, List.flatMap_map]
+      exact List.flatMap_congr (fun pattern member => ih pattern member assignment empty)
+  | hlambda name body ih =>
+      simp only [ContextSubstitution.substitute, Pattern.freeFvarNames]
+      exact ih _ (lift_assignment_free_empty assignment 1 empty)
+  | hmultiLambda arity names body ih =>
+      simp only [ContextSubstitution.substitute, Pattern.freeFvarNames]
+      exact ih _ (lift_assignment_free_empty assignment arity empty)
+  | hsubst body replacement ihBody ihReplacement =>
+      simp only [ContextSubstitution.substitute, Pattern.freeFvarNames]
+      rw [ihBody _ (lift_assignment_free_empty assignment 1 empty), ihReplacement assignment empty]
+  | hcollection kind elements rest ih =>
+      simp only [ContextSubstitution.substitute, ContextSubstitution.substituteList_eq_map, Pattern.freeFvarNames, List.flatMap_map]
+      exact congrArg (· ++ rest.toList) (List.flatMap_congr (fun pattern member => ih pattern member assignment empty))
+theorem lift_assignment_free_within (footprint : List String)
+    (assignment : ContextSubstitution.Assignment) (arity : Nat)
+    (covered : ∀ index, ∀ name ∈ (assignment index).freeFvarNames, name ∈ footprint) :
+    ∀ index, ∀ name ∈ (ContextSubstitution.lift arity assignment index).freeFvarNames,
+      name ∈ footprint := by
+  intro index name occurs
+  simp only [ContextSubstitution.lift] at occurs
+  split at occurs
+  · simp only [Pattern.freeFvarNames, List.not_mem_nil] at occurs
+  · rw [lift_free_names] at occurs
+    exact covered _ name occurs
+
+theorem substitute_free_within (footprint : List String) (pattern : Pattern)
+    (assignment : ContextSubstitution.Assignment)
+    (images : ∀ index, ∀ name ∈ (assignment index).freeFvarNames, name ∈ footprint)
+    (original : ∀ name ∈ pattern.freeFvarNames, name ∈ footprint) :
+    ∀ name ∈ (ContextSubstitution.substitute assignment pattern).freeFvarNames,
+      name ∈ footprint := by
+  induction pattern using Pattern.inductionOn generalizing assignment with
+  | hbvar index => exact images index
+  | hfvar name => simpa only [ContextSubstitution.substitute, Substitution.instantiateBVarAt] using original
+  | happly constructor arguments ih =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [ContextSubstitution.substitute, ContextSubstitution.substituteList_eq_map,
+        Pattern.freeFvarNames, List.flatMap_map, List.mem_flatMap] at occurs
+      rcases occurs with ⟨argument, member, occurs⟩
+      apply ih argument member assignment images _ name occurs
+      intro free present
+      exact original free (List.mem_flatMap.mpr ⟨argument, member, present⟩)
+  | hlambda binder body ih =>
+      simp only [Pattern.freeFvarNames] at original
+      simpa only [ContextSubstitution.substitute, Pattern.freeFvarNames] using
+        ih _ (lift_assignment_free_within footprint assignment 1 images) original
+  | hmultiLambda arity binders body ih =>
+      simp only [Pattern.freeFvarNames] at original
+      simpa only [ContextSubstitution.substitute, Pattern.freeFvarNames] using
+        ih _ (lift_assignment_free_within footprint assignment arity images) original
+  | hsubst body replacement ihBody ihReplacement =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [ContextSubstitution.substitute, Pattern.freeFvarNames, List.mem_append] at occurs
+      rcases occurs with occurs | occurs
+      · exact ihBody _ (lift_assignment_free_within footprint assignment 1 images)
+          (fun free present => original free (List.mem_append_left _ present)) name occurs
+      · exact ihReplacement assignment images
+          (fun free present => original free (List.mem_append_right _ present)) name occurs
+  | hcollection kind elements rest ih =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [ContextSubstitution.substitute, ContextSubstitution.substituteList_eq_map,
+        Pattern.freeFvarNames, List.flatMap_map, List.mem_append, List.mem_flatMap] at occurs
+      rcases occurs with ⟨element, member, occurs⟩ | occurs
+      · apply ih element member assignment images _ name occurs
+        intro free present
+        exact original free (List.mem_append_left _ (List.mem_flatMap.mpr ⟨element, member, present⟩))
+      · exact original name (List.mem_append_right _ occurs)
+
+#print axioms Mettapedia.OSLF.MeTTaIL.ContextSubstitution.lift_assignment_free_empty
+#print axioms Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.ContextSubstitution.lift_assignment_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute_free_within
+
+end Mettapedia.OSLF.MeTTaIL.ContextSubstitution

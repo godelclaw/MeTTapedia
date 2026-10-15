@@ -2,7 +2,7 @@ import Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTInterpretation
 
 /-!
-# Functorial NIK authority generation for semantic CertificateGSLTs
+# Functorial SemanticService authority generation for semantic CertificateGSLTs
 
 A validated calculus by itself determines derivability but not external
 meaning.  This module therefore takes an independently chosen predicate on
@@ -18,7 +18,7 @@ semantic interpretation transports those certificates by recursively mapping
 their derivations.  The resulting checker square commutes exactly, and the
 construction preserves identity and composition.  Hence this is an actual
 functor from a nontrivial category of semantically qualified presentations to
-the heterogeneous NIK authority category.
+the heterogeneous SemanticService authority category.
 
 The claim representation is fixed to ground `Pattern`s in this first theorem.
 Syntax-translating interpretations require an additional claim map and are a
@@ -34,8 +34,8 @@ open scoped CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 
 /-- Semantic preservation required of every primitive rule application in one
@@ -85,7 +85,7 @@ presentations. -/
 induction over the derivation rather than by replaying the checker. -/
 def soundClone (presentation : SoundPresentation Meaning) :
     SoundClone (derivationClone presentation.object) Meaning :=
-  NIKMetalogic.CertificateGSLTCloneCanary.soundClone
+  SemanticEvidence.CertificateGSLTCloneCanary.soundClone
     presentation.object Meaning presentation.rulesSound
 
 end SoundPresentation
@@ -127,7 +127,7 @@ def theory {Meaning : Pattern -> Prop}
 /-- The generated checker is the direct native clone kernel. -/
 def nativeKernel {Meaning : Pattern -> Prop}
     (presentation : SoundPresentation Meaning) :=
-  NIKMetalogic.CertificateGSLTCloneCanary.nativeKernel presentation.object
+  SemanticEvidence.CertificateGSLTCloneCanary.nativeKernel presentation.object
 
 /-- The direct clone checker has exact authority for the generated native
 proof scope. -/
@@ -220,7 +220,7 @@ theorem mapCertificate_comp {Meaning : Pattern -> Prop}
 
 /-! ## The generation functor -/
 
-/-- Semantically qualified CertificateGSLT presentations generate exact NIK
+/-- Semantically qualified CertificateGSLT presentations generate exact SemanticService
 authorities functorially. -/
 def generationFunctor (Meaning : Pattern -> Prop) :
     CategoryTheory.Functor (SoundPresentation Meaning) CertifiedTheory where

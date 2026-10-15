@@ -3,12 +3,13 @@ import Mettapedia.GSLT.LanguageDef.InferenceInstantiationBridge
 /-!
 # First-order rule packages for the generic inference checker
 
-A first-order rule has depth-zero metavariables and schemas built from
-applications and metavariables only.  For such a package, derivations of the
-generic checker coincide with a plain inductive derivability predicate in which
-a rule instance substitutes its argument vector for its metavariables.  The
-bridge is proved once here, so that correspondence proofs for a concrete
-package reason about substitution instances instead of schema instantiation.
+A rule has depth-zero metavariables and schemas in `BindingSchemaFragment`:
+applications, depth-zero metavariables, bound-variable indices and fixed
+collections. Object binders, substitution nodes and collection rests are
+excluded. For such a package, generic checker derivations coincide with an
+inductive relation whose rule instances substitute an argument vector for
+metavariables. This bridge concerns structural instantiation;
+`argumentValidAt 0` checks ground binding structure, not a many-sorted signature.
 -/
 
 set_option autoImplicit false
@@ -28,6 +29,7 @@ structure FORule where
   vars : List String
   premises : List Pattern
   conclusion : Pattern
+  deriving Repr, DecidableEq
 
 namespace FORule
 

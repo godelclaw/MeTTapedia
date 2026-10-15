@@ -37,7 +37,7 @@ open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.Probabilistic.HierarchicalState
 open Mettapedia.Logic.HOL.Probabilistic.ModelSpace
 open Mettapedia.PLN.RuleFamilies.HigherOrder.PLNGuardedHigherOrderSemantics
-open scoped ENNReal ProbabilityTheory
+open scoped ENNReal _root_.ProbabilityTheory
 
 universe u
 

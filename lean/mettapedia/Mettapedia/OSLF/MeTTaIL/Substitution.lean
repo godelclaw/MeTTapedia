@@ -1272,7 +1272,7 @@ theorem applySubst_input (env : SubstEnv) (n : Pattern) (body : Pattern) :
   simp only [applySubst, List.map_cons, List.map_nil]
 
 /-- Helper: applySubst on lambda -/
-theorem applySubst_lambda (env : SubstEnv) (body : Pattern) :
+theorem applySubst_lambda {nm : Option String} (env : SubstEnv) (body : Pattern) :
     applySubst env (.lambda nm body) = .lambda nm (applySubst env body) := by
   simp only [applySubst]
 
@@ -1353,7 +1353,7 @@ theorem isFresh_fvar_neq {x y : String} (h : isFresh x (.fvar y) = true) : x ≠
   exact fun heq => h heq
 
 /-- Freshness for lambda: x fresh in `.lambda body` iff x fresh in body. -/
-theorem isFresh_lambda_iff {x : String} {body : Pattern} :
+theorem isFresh_lambda_iff {_nm : Option String} {x : String} {body : Pattern} :
     isFresh x (.lambda _nm body) = isFresh x body := by
   simp only [isFresh, freeVars]
 
@@ -1689,5 +1689,123 @@ theorem lc_at_openBVar_result {k : Nat} {u body : Pattern}
       simp only [lc_at, lc_at_list, Bool.and_eq_true] at hbody
       exact ⟨ih a List.mem_cons_self hbody.1 hu,
              ihas (fun p hp => ih p (List.mem_cons_of_mem _ hp)) hbody.2⟩
+
+end Mettapedia.OSLF.MeTTaIL.Substitution
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.Substitution
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+
+theorem lift_free_names (pattern : Pattern) (cutoff shift : Nat) :
+    (Substitution.liftBVars cutoff shift pattern).freeFvarNames = pattern.freeFvarNames := by
+  induction pattern using Pattern.inductionOn generalizing cutoff with
+  | hbvar index => simp only [Substitution.liftBVars]; split <;> simp only [Pattern.freeFvarNames]
+  | hfvar name => rfl
+  | happly constructor arguments ih =>
+      simp only [Substitution.liftBVars, Substitution.liftBVarsList_eq_map, Pattern.freeFvarNames, List.flatMap_map]
+      exact List.flatMap_congr (fun pattern member => ih pattern member cutoff)
+  | hlambda name body ih => simp only [Substitution.liftBVars, Pattern.freeFvarNames, ih]
+  | hmultiLambda arity names body ih => simp only [Substitution.liftBVars, Pattern.freeFvarNames, ih]
+  | hsubst body replacement ihBody ihReplacement =>
+      simp only [Substitution.liftBVars, Pattern.freeFvarNames, ihBody, ihReplacement]
+  | hcollection kind elements rest ih =>
+      simp only [Substitution.liftBVars, Substitution.liftBVarsList_eq_map, Pattern.freeFvarNames, List.flatMap_map]
+      exact congrArg (· ++ rest.toList) (List.flatMap_congr (fun pattern member => ih pattern member cutoff))
+theorem instantiate_bvar_at_free_within (footprint : List String)
+    (depth : Nat) (replacement body : Pattern)
+    (inserted : ∀ name ∈ replacement.freeFvarNames, name ∈ footprint)
+    (original : ∀ name ∈ body.freeFvarNames, name ∈ footprint) :
+    ∀ name ∈ (Substitution.instantiateBVarAt depth replacement body).freeFvarNames,
+      name ∈ footprint := by
+  induction body using Pattern.inductionOn generalizing depth with
+  | hbvar index =>
+      intro name occurs
+      simp only [Substitution.instantiateBVarAt] at occurs
+      split at occurs
+      · simp only [Pattern.freeFvarNames, List.not_mem_nil] at occurs
+      · split at occurs
+        · rw [lift_free_names] at occurs
+          exact inserted name occurs
+        · simp only [Pattern.freeFvarNames, List.not_mem_nil] at occurs
+  | hfvar name => simpa only [Substitution.instantiateBVarAt] using original
+  | happly constructor arguments ih =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [Substitution.instantiateBVarAt, Pattern.freeFvarNames,
+        List.flatMap_map, List.mem_flatMap] at occurs
+      rcases occurs with ⟨argument, member, occurs⟩
+      exact ih argument member depth
+        (fun free present => original free (List.mem_flatMap.mpr ⟨argument, member, present⟩)) name occurs
+  | hlambda binder body ih =>
+      simp only [Substitution.instantiateBVarAt, Pattern.freeFvarNames] at original ⊢
+      exact ih _ original
+  | hmultiLambda arity binders body ih =>
+      simp only [Substitution.instantiateBVarAt, Pattern.freeFvarNames] at original ⊢
+      exact ih _ original
+  | hsubst body value ihBody ihValue =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [Substitution.instantiateBVarAt, Pattern.freeFvarNames, List.mem_append] at occurs
+      rcases occurs with occurs | occurs
+      · exact ihBody _ (fun free present => original free (List.mem_append_left _ present)) name occurs
+      · exact ihValue _ (fun free present => original free (List.mem_append_right _ present)) name occurs
+  | hcollection kind elements rest ih =>
+      simp only [Pattern.freeFvarNames] at original
+      intro name occurs
+      simp only [Substitution.instantiateBVarAt, Pattern.freeFvarNames,
+        List.flatMap_map, List.mem_append, List.mem_flatMap] at occurs
+      rcases occurs with ⟨element, member, occurs⟩ | occurs
+      · exact ih element member depth
+          (fun free present => original free (List.mem_append_left _
+            (List.mem_flatMap.mpr ⟨element, member, present⟩))) name occurs
+      · exact original name (List.mem_append_right _ occurs)
+
+theorem instantiate_bvar_free_within (footprint : List String) (replacement body : Pattern)
+    (inserted : ∀ name ∈ replacement.freeFvarNames, name ∈ footprint)
+    (original : ∀ name ∈ body.freeFvarNames, name ∈ footprint) :
+    ∀ name ∈ (Substitution.instantiateBVar replacement body).freeFvarNames,
+      name ∈ footprint :=
+  instantiate_bvar_at_free_within footprint 0 replacement body inserted original
+
+private theorem ground_list_each (depth : Nat) (patterns : List Pattern)
+    (ground : Pattern.isGroundListAt depth patterns = true) :
+    ∀ pattern ∈ patterns, pattern.isGroundAt depth = true := by
+  induction patterns with
+  | nil => intro pattern member; cases member
+  | cons first rest ih =>
+      simp only [Pattern.isGroundListAt, Bool.and_eq_true] at ground
+      intro pattern member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ground.1
+      · exact ih ground.2 pattern member
+
+theorem ground_free_names (pattern : Pattern) (depth : Nat)
+    (ground : pattern.isGroundAt depth = true) : pattern.freeFvarNames = [] := by
+  induction pattern using Pattern.inductionOn generalizing depth with
+  | hbvar index => simp only [Pattern.freeFvarNames]
+  | hfvar name => cases ground
+  | happly constructor arguments ih =>
+      simp only [Pattern.freeFvarNames]
+      apply List.flatMap_eq_nil_iff.mpr
+      intro argument member
+      exact ih argument member depth (ground_list_each depth arguments ground argument member)
+  | hlambda binder body ih => simpa only [Pattern.freeFvarNames] using ih (depth + 1) ground
+  | hmultiLambda arity binders body ih => simpa only [Pattern.freeFvarNames] using ih (depth + arity) ground
+  | hsubst body replacement ihBody ihReplacement =>
+      simp only [Pattern.isGroundAt, Bool.and_eq_true] at ground
+      simp only [Pattern.freeFvarNames, ihBody _ ground.1, ihReplacement _ ground.2, List.append_nil]
+  | hcollection kind elements rest ih =>
+      simp only [Pattern.isGroundAt, Bool.and_eq_true, Option.isNone_iff_eq_none] at ground
+      simp only [Pattern.freeFvarNames, ground.2, Option.toList_none, List.append_nil]
+      apply List.flatMap_eq_nil_iff.mpr
+      intro element member
+      exact ih element member depth (ground_list_each depth elements ground.1 element member)
+
+#print axioms Mettapedia.OSLF.MeTTaIL.Substitution.lift_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.Substitution.instantiate_bvar_at_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.Substitution.instantiate_bvar_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.Substitution.ground_free_names
 
 end Mettapedia.OSLF.MeTTaIL.Substitution

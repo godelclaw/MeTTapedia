@@ -169,10 +169,10 @@ structure ExactImageWitness (occurrences : OccurrenceSource Space Request Answer
         (returnedStepRel occurrences keying)
         (returnedStepRel occurrences keying)).evidence source target
   openDerivations :
-    Mettapedia.GSLT.LanguageDef.NIKMetalogic.CloneEquivalence
+    Mettapedia.GSLT.LanguageDef.SemanticEvidence.CloneEquivalence
       (Clone occurrences keying) (ReturnedClone occurrences keying)
   admissionCommutes :
-    ∀ (rule : Mettapedia.GSLT.LanguageDef.NIKMetalogic.OperationalRule
+    ∀ (rule : Mettapedia.GSLT.LanguageDef.SemanticEvidence.OperationalRule
         (Step occurrences keying))
       (prior : (Clone occurrences keying).Hom [] rule.source),
     toReturned occurrences keying

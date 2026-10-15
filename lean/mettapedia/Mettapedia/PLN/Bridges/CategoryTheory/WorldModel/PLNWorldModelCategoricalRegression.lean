@@ -1,12 +1,15 @@
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
+import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
 
 /-!
 # Chapter-8 WM Categorical Regression Fixture
 
-Concrete theorem-level regression fixture instantiating
-`institution_beckChevalley_endpoint` on an identity pullback square.
+Concrete theorem-level regression fixtures: the evidence-level endpoint
+`institution_beckChevalley_endpoint` on an identity pullback square of any WM
+hyperdoctrine and on a pullback square of the counting hyperdoctrine, and the
+HOL and FOL consequence bridges on fixed states.
 -/
 
 namespace Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalRegression
@@ -26,9 +29,9 @@ abbrev WMHyper (State : Type x) [EvidenceType State] :=
 
 variable {State : Type x} [EvidenceType State]
 
-/-- Ch.8 concrete fixture: instantiate the unified categorical endpoint on the
-identity square at one object. -/
-theorem ch8_institution_beckChevalley_endpoint_id_fixture
+/-- Ch.8 concrete fixture: the evidence-level endpoint on the identity square at
+one object. -/
+theorem institution_beckChevalley_endpoint_id_fixture
     (H : WMHyper State)
     {X : H.Obj} (W : State) (φ : H.query X) :
     Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointStatement
@@ -72,15 +75,9 @@ theorem holFalse_to_true_pointwise :
   intro M hFalse
   exact False.elim ((HenkinModel.models_bot M) hFalse)
 
-/-- Ch.8 concrete HOL fixture:
-consume the categorical HOL wrapper endpoint on a fixed Bool state/query pair. -/
-theorem ch8_hol_categorical_wrapper_bool_fixture
-    (H : WMHyper
-      (Multiset (HenkinModel.{0, 0, 0} HOLFixtureBase HOLFixtureConst)))
-    (hcat :
-      Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.WMCategoricalEndpointContract
-        (Base := HOLFixtureBase) (Const := HOLFixtureConst) (H := H))
-    {X : H.Obj} (φc : H.query X) :
+/-- Ch.8 concrete HOL fixture: pointwise implication `⊥ → ⊤` transported to a
+WM strength inequality on a fixed two-model state. -/
+theorem hol_pointwise_bool_fixture :
     BinaryWorldModel.queryStrength
         (State := Multiset (HenkinModel.{0, 0, 0} HOLFixtureBase HOLFixtureConst))
         (Query := Mettapedia.Logic.HOL.HOLQuery HOLFixtureConst)
@@ -88,59 +85,29 @@ theorem ch8_hol_categorical_wrapper_bool_fixture
       BinaryWorldModel.queryStrength
         (State := Multiset (HenkinModel.{0, 0, 0} HOLFixtureBase HOLFixtureConst))
         (Query := Mettapedia.Logic.HOL.HOLQuery HOLFixtureConst)
-        holFixtureState holTrueQuery := by
-  exact
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_pointwise_categorical
-      (Base := HOLFixtureBase) (Const := HOLFixtureConst)
-      (H := H) (_hcat := hcat) (X := X) (_φc := φc)
-      (W := holFixtureState) (φ := holFalseQuery) (ψ := holTrueQuery)
-      holFalse_to_true_pointwise
+        holFixtureState holTrueQuery :=
+  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_pointwise
+    (Base := HOLFixtureBase) (Const := HOLFixtureConst)
+    (W := holFixtureState) (φ := holFalseQuery) (ψ := holTrueQuery)
+    holFalse_to_true_pointwise
 
-/-- Ch.8 concrete FOL fixture:
-`T ⊨ (φ ➝ ψ)` (here `⊥ ➝ ⊤` under empty theory) transported to a WM inequality
-on a singleton FOL state via the categorical wrapper endpoint. -/
-theorem ch8_fol_categorical_consequence_singleton_fixture
-    {L : Language.{u}}
-    (H : WMHyper (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L))
-    (hcat :
-      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (φc : H.query X)
-    (S : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.PointedFOL L) :
-    BinaryWorldModel.queryStrength
-        (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
-        ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L) ≤
-      BinaryWorldModel.queryStrength
-        (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
-        ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L) := by
-  let T : Theory L := (∅ : Theory L)
-  have hW :
-      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.stateModelsTheory T
-        ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L) := by
-    intro S' hmem
-    simp [T]
-  have hcons :
-      T ⊨ ((⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L) ➝
-        (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)) := by
-    intro S' hST
-    simp
-  exact
-    Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.multiset_strength_le_of_consequence_categorical
-      (H := H) (_hcat := hcat) (X := X) (_φc := φc)
-      (T := T)
-      (W := ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L))
-      (φ := (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L))
-      (ψ := (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L))
-      hW hcons
+/-- Ch.8 concrete counting fixture: the evidence-level endpoint on the pullback
+of `selectTrue` along itself in the counting hyperdoctrine. -/
+theorem counting_endpoint_selectTrue_fixture :
+    Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointStatement
+      (H := Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine.countingHyperdoctrine)
+      (𝟙 _) Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine.selectTrue
+      Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine.selectTrue (𝟙 _)
+      Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine.onePoint
+      (.atom Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCountingHyperdoctrine.isTrue) :=
+  Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.institution_beckChevalley_endpoint
+    _ _ _ _ _ (_root_.CategoryTheory.IsPullback.id_horiz _) _ _
 
 /-- Ch.8 concrete FOL fixture (proof-theoretic path):
 consume `provable_imp_iff_singletonStrengthLEOnTheory` to obtain provability,
 then build and execute a `wmConsequenceRuleOn_of_provable_imp` endpoint on a
 singleton state. -/
-theorem ch8_fol_provable_bridge_rule_singleton_fixture
+theorem fol_provable_bridge_rule_singleton_fixture
     {L : Language.{u}}
     (S : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.PointedFOL L) :
     BinaryWorldModel.queryStrength

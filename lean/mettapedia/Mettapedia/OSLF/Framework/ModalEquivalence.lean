@@ -50,7 +50,7 @@ open Mettapedia.OSLF.Framework.DerivedModalities
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.OSLF.Framework.ToposReduction
-open CategoryTheory
+open _root_.CategoryTheory
 
 /-! ## Set-Level Modal Operators as Change-of-Base
 

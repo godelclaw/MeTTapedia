@@ -894,6 +894,15 @@ def Authenticated (registry : Registry Address Provider)
   handle.store ≠ 0 ∧ handle.store = registry.identity ∧
     handle.row.token ≠ 0 ∧ handle.row ∈ registry.rows
 
+omit [DecidableEq Address] [DecidableEq Provider] in
+/-- Reordering complete issued rows preserves authority. Physical lookup
+positions and their charged work are deliberately absent from this observer. -/
+theorem authentication_of_rows_perm (left right : Registry Address Provider)
+    (identity : left.identity = right.identity) (rows : left.rows.Perm right.rows)
+    (handle : Handle Address Provider) :
+    Authenticated left handle ↔ Authenticated right handle := by
+  simp only [Authenticated, identity, rows.mem_iff]
+
 theorem lookup_authenticates (registry : Registry Address Provider)
     (handle : Handle Address Provider) :
     (lookup registry handle).1 ≠ none ↔ Authenticated registry handle := by
@@ -1012,7 +1021,7 @@ theorem coverage_authentication (registry : Registry Address Provider)
     (handle : Handle Address Provider) :
     Authenticated { registry with rows := proposed } handle ↔ Authenticated registry handle := by
   have complete := (OccurrenceIdentity.coverageCheck_iff Row.occurrence registry.rows proposed).mp checked
-  simp only [Authenticated, complete.1.mem_iff]
+  exact authentication_of_rows_perm {registry with rows := proposed} registry rfl complete.1 handle
 
 /-- Payload root discovery keeps one physical root for aliases without
 forgetting the logical occurrences checked by complete coverage. -/
@@ -1187,6 +1196,68 @@ theorem releaseIssued_selected (registry : Registry Address Provider)
   · simpa only [← selected] using
       extractByLast_permutation index registry.rows pair.1 pair.2 extraction
 
+/-- Every successful release preserves the namespace and removes exactly one
+complete row. This exposes the actual extraction result without repeating its
+lookup proof at each consumer. -/
+theorem releaseIssued_remainder (registry : Registry Address Provider)
+    (handle : Handle Address Provider) (next : Registry Address Provider)
+    (cleared : Handle Address Provider)
+    (released : (releaseIssued registry handle).1 = some (next, cleared)) :
+    next.identity = registry.identity ∧ (handle.row :: next.rows).Perm registry.rows := by
+  cases found : (lookup registry handle).1 with
+  | none =>
+      rw [releaseIssued_refused registry handle found] at released
+      cases released
+  | some index =>
+      obtain ⟨remaining, exactRelease, retained⟩ := releaseIssued_selected registry handle index found
+      rw [exactRelease] at released
+      have same := congrArg Prod.fst (Option.some.inj released)
+      dsimp only at same
+      rw [← same]
+      exact ⟨rfl, retained⟩
+
+/-- When both release orders succeed, their remaining issued rows agree as a
+multiset, with the original namespace. This says neither that the physical
+arrays agree nor that their authentication scans cost the same. -/
+theorem releaseIssued_commute
+    (registry afterFirst afterSecond finalFirst finalSecond : Registry Address Provider)
+    (first second clearedFirst clearedSecond clearedAfterFirst clearedAfterSecond :
+      Handle Address Provider)
+    (firstRelease : (releaseIssued registry first).1 = some (afterFirst, clearedFirst))
+    (secondRelease : (releaseIssued registry second).1 = some (afterSecond, clearedSecond))
+    (thenSecond : (releaseIssued afterFirst second).1 = some (finalFirst, clearedAfterFirst))
+    (thenFirst : (releaseIssued afterSecond first).1 = some (finalSecond, clearedAfterSecond)) :
+    finalFirst.identity = finalSecond.identity ∧ finalFirst.rows.Perm finalSecond.rows := by
+  obtain ⟨firstId, firstRows⟩ := releaseIssued_remainder _ _ _ _ firstRelease
+  obtain ⟨secondId, secondRows⟩ := releaseIssued_remainder _ _ _ _ secondRelease
+  obtain ⟨finalFirstId, finalFirstRows⟩ := releaseIssued_remainder _ _ _ _ thenSecond
+  obtain ⟨finalSecondId, finalSecondRows⟩ := releaseIssued_remainder _ _ _ _ thenFirst
+  refine ⟨(finalFirstId.trans firstId).trans (finalSecondId.trans secondId).symm, ?_⟩
+  have forward := (finalFirstRows.cons first.row).trans firstRows
+  have backward := (finalSecondRows.cons second.row).trans secondRows
+  have reordered := (List.Perm.swap second.row first.row finalSecond.rows).trans backward
+  exact (forward.trans reordered.symm).cons_inv.cons_inv
+
+/-- A release exists exactly when the independently specified issued authority
+is present. Physical row extraction does not add an admission assumption. -/
+theorem releaseIssued_exists_iff (registry : Registry Address Provider)
+    (handle : Handle Address Provider) :
+    (∃ next cleared, (releaseIssued registry handle).1 = some (next, cleared)) ↔
+      Authenticated registry handle := by
+  constructor
+  · rintro ⟨next, cleared, released⟩
+    apply (lookup_authenticates registry handle).mp
+    intro missing
+    rw [releaseIssued_refused registry handle missing] at released
+    cases released
+  · intro authorized
+    have present := (lookup_authenticates registry handle).mpr authorized
+    cases found : (lookup registry handle).1 with
+    | none => exact (present found).elim
+    | some index =>
+      obtain ⟨remaining, released, _⟩ := releaseIssued_selected registry handle index found
+      exact ⟨_, _, congrArg Prod.fst released⟩
+
 theorem releaseIssued_keeps_other (registry : Registry Address Provider)
     (handle survivor : Handle Address Provider)
     (next : Registry Address Provider) (cleared : Handle Address Provider)
@@ -1194,22 +1265,11 @@ theorem releaseIssued_keeps_other (registry : Registry Address Provider)
     (released : releaseIssued registry handle = (some (next, cleared), visits))
     (different : survivor.row ≠ handle.row) :
     Authenticated next survivor ↔ Authenticated registry survivor := by
-  cases found : (lookup registry handle).1 with
-  | none =>
-      have failed := releaseIssued_refused registry handle found
-      rw [failed] at released
-      cases (congrArg (fun result => result.1) released)
-  | some index =>
-      obtain ⟨remaining, exactRelease, retained⟩ := releaseIssued_selected registry handle index found
-      rw [exactRelease] at released
-      have equality := Option.some.inj (congrArg Prod.fst released)
-      have registryEqual := congrArg Prod.fst equality
-      dsimp only at registryEqual
-      have sameMembers : survivor.row ∈ remaining ↔ survivor.row ∈ registry.rows := by
-        simpa only [List.mem_cons, different, false_or] using
-          (retained.mem_iff (a := survivor.row))
-      rw [← registryEqual]
-      simp only [Authenticated, sameMembers]
+  obtain ⟨sameId, retained⟩ :=
+    releaseIssued_remainder registry handle next cleared (congrArg Prod.fst released)
+  have sameMembers : survivor.row ∈ next.rows ↔ survivor.row ∈ registry.rows := by
+    simpa only [List.mem_cons, different, false_or] using retained.mem_iff (a := survivor.row)
+  simp only [Authenticated, sameId, sameMembers]
 
 theorem releaseIssued_removes_unique (registry : Registry Address Provider)
     (handle : Handle Address Provider) (next : Registry Address Provider)
@@ -1217,20 +1277,10 @@ theorem releaseIssued_removes_unique (registry : Registry Address Provider)
     (released : releaseIssued registry handle = (some (next, cleared), visits))
     (unique : registry.rows.Nodup) :
     handle.row ∉ next.rows ∧ next.rows.Nodup ∧ next.rows.length + 1 = registry.rows.length := by
-  cases found : (lookup registry handle).1 with
-  | none =>
-      rw [releaseIssued_refused registry handle found] at released
-      cases (congrArg (fun result => result.1) released)
-  | some index =>
-      obtain ⟨remaining, exactRelease, retained⟩ := releaseIssued_selected registry handle index found
-      rw [exactRelease] at released
-      have equality := Option.some.inj (congrArg Prod.fst released)
-      have registryEqual := congrArg Prod.fst equality
-      dsimp only at registryEqual
-      rw [← registryEqual]
-      have nodup := retained.nodup_iff.mpr unique
-      obtain ⟨removed, survivors⟩ := List.nodup_cons.mp nodup
-      exact ⟨removed, survivors, retained.length_eq⟩
+  obtain ⟨_, retained⟩ :=
+    releaseIssued_remainder registry handle next cleared (congrArg Prod.fst released)
+  obtain ⟨removed, survivors⟩ := List.nodup_cons.mp (retained.nodup_iff.mpr unique)
+  exact ⟨removed, survivors, retained.length_eq⟩
 
 
 
@@ -1280,6 +1330,32 @@ theorem release_preserves_payload_parent_and_provider :
       (releaseIssued source { Controls.first with parent := 999 }).1.map (fun pair => pair.2.parent) =
         some 999 := by decide
 
+private def twoReleases (registry : Registry Nat Nat) (first second : Handle Nat Nat) :
+    Option (Registry Nat Nat × Nat) :=
+  let before := releaseIssued registry first
+  before.1.bind fun intermediate =>
+    let after := releaseIssued intermediate.1 second
+    after.1.map fun result => (result.1, before.2 + after.2)
+
+/-- The same surviving authority can have different physical row orders. -/
+theorem independent_release_order_changes_layout :
+    let fourth : Row Nat Nat := ⟨10, 44, 0, 5⟩
+    let registry : Registry Nat Nat :=
+      ⟨17, [Controls.first.row, Controls.second.row, third, fourth]⟩
+    twoReleases registry Controls.first Controls.second =
+      some (⟨17, [fourth, third]⟩, 3) ∧
+    twoReleases registry Controls.second Controls.first =
+      some (⟨17, [third, fourth]⟩, 3) ∧
+    twoReleases registry Controls.first Controls.second ≠
+      twoReleases registry Controls.second Controls.first := by decide
+
+/-- Even when the final physical registry agrees, scan costs can differ. -/
+theorem independent_release_order_changes_cost :
+    twoReleases source Controls.first ⟨17, 6, third⟩ =
+      some (⟨17, [Controls.second.row]⟩, 2) ∧
+    twoReleases source ⟨17, 6, third⟩ Controls.first =
+      some (⟨17, [Controls.second.row]⟩, 4) := by decide
+
 end EditControls
 
 namespace TransportEditControls
@@ -1320,26 +1396,15 @@ theorem releaseIssued_preserves_validity (registry : Registry Address Provider)
     (valid : registry.Valid)
     (released : releaseIssued registry handle = (some (next, cleared), visits)) :
     next.Valid := by
-  cases found : (lookup registry handle).1 with
-  | none =>
-      rw [releaseIssued_refused registry handle found] at released
-      cases (congrArg (fun result => result.1) released)
-  | some index =>
-      obtain ⟨remaining, exactRelease, retained⟩ := releaseIssued_selected registry handle index found
-      rw [exactRelease] at released
-      have equality := Option.some.inj (congrArg Prod.fst released)
-      have sameRegistry := congrArg Prod.fst equality
-      dsimp only at sameRegistry
-      rw [← sameRegistry]
-      refine ⟨valid.1, ?_, ?_, ?_⟩
-      · have whole := (retained.map Row.occurrence).nodup_iff.mpr valid.2.1
-        exact (List.nodup_cons.mp whole).2
-      · have whole := (retained.map Row.token).nodup_iff.mpr valid.2.2.1
-        exact (List.nodup_cons.mp whole).2
-      · intro row present
-        apply valid.2.2.2 row
-        apply retained.mem_iff.mp
-        exact List.mem_cons_of_mem _ present
+  obtain ⟨sameId, retained⟩ :=
+    releaseIssued_remainder registry handle next cleared (congrArg Prod.fst released)
+  refine ⟨sameId ▸ valid.1, ?_, ?_, ?_⟩
+  · have whole := (retained.map Row.occurrence).nodup_iff.mpr valid.2.1
+    exact (List.nodup_cons.mp whole).2
+  · have whole := (retained.map Row.token).nodup_iff.mpr valid.2.2.1
+    exact (List.nodup_cons.mp whole).2
+  · intro row present
+    exact valid.2.2.2 row (retained.mem_iff.mp (List.mem_cons_of_mem _ present))
 
 theorem releaseIssued_revokes_old_and_cleared (registry : Registry Address Provider)
     (handle : Handle Address Provider) (next : Registry Address Provider)

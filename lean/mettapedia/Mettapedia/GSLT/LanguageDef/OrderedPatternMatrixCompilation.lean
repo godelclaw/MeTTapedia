@@ -24,7 +24,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation
 
-universe uHead uRule uResult
+universe uHead uTarget uRule uResult
 
 variable {Head : Type uHead} {Rule : Type uRule} {Result : Type uResult}
 
@@ -33,10 +33,83 @@ constraints to the canonical rule continuation. -/
 inductive Pattern (Head : Type uHead) where
   | wildcard
   | node (head : Head) (children : List (Pattern Head))
+deriving Repr
 
 /-- Constructor trees observed by the decision program. -/
 inductive Subject (Head : Type uHead) where
   | node (head : Head) (children : List (Subject Head))
+deriving Repr
+
+mutual
+  private def Pattern.decEq [DecidableEq Head] :
+      (a b : Pattern Head) → Decidable (a = b)
+    | .wildcard, .wildcard => isTrue rfl
+    | .wildcard, .node _ _ => isFalse (fun h => by cases h)
+    | .node _ _, .wildcard => isFalse (fun h => by cases h)
+    | .node h₁ cs₁, .node h₂ cs₂ =>
+      if hh : h₁ = h₂ then
+        match Pattern.decEqList cs₁ cs₂ with
+        | isTrue hc => isTrue (by subst hh; subst hc; rfl)
+        | isFalse hc => isFalse (by intro h; cases h; exact hc rfl)
+      else isFalse (by intro h; cases h; exact hh rfl)
+
+  private def Pattern.decEqList [DecidableEq Head] :
+      (a b : List (Pattern Head)) → Decidable (a = b)
+    | [], [] => isTrue rfl
+    | [], _ :: _ => isFalse (fun h => by cases h)
+    | _ :: _, [] => isFalse (fun h => by cases h)
+    | p :: ps, q :: qs =>
+      match Pattern.decEq p q, Pattern.decEqList ps qs with
+      | isTrue hp, isTrue hs => isTrue (by subst hp; subst hs; rfl)
+      | isFalse hp, _ => isFalse (by intro h; cases h; exact hp rfl)
+      | _, isFalse hs => isFalse (by intro h; cases h; exact hs rfl)
+end
+
+/-- Executable equality for the nested pattern carrier, used to intern
+structural subpatterns without merging authored rule occurrences. -/
+instance [DecidableEq Head] : DecidableEq (Pattern Head) := Pattern.decEq
+
+mutual
+  /-- Relabel constructors while preserving the pattern's entire binding-free
+  shape. Wildcards keep their role as structural selection only. -/
+  def Pattern.mapHeads {Target : Type uTarget} (f : Head → Target) :
+      Pattern Head → Pattern Target
+    | .wildcard => .wildcard
+    | .node head children => .node (f head) (Pattern.mapHeadsList f children)
+
+  /-- Relabel an ordered pattern vector without changing its occurrences. -/
+  def Pattern.mapHeadsList {Target : Type uTarget} (f : Head → Target) :
+      List (Pattern Head) → List (Pattern Target)
+    | [] => []
+    | first :: rest => Pattern.mapHeads f first :: Pattern.mapHeadsList f rest
+end
+
+@[simp] theorem Pattern.mapHeadsList_eq_map {Target : Type uTarget}
+    (f : Head → Target) (patterns : List (Pattern Head)) :
+    Pattern.mapHeadsList f patterns = patterns.map (Pattern.mapHeads f) := by
+  induction patterns with
+  | nil => rfl
+  | cons first rest ih => simp [Pattern.mapHeadsList, ih]
+
+mutual
+  /-- Relabel an observed tree without changing its child positions. -/
+  def Subject.mapHeads {Target : Type uTarget} (f : Head → Target) :
+      Subject Head → Subject Target
+    | .node head children => .node (f head) (Subject.mapHeadsList f children)
+
+  /-- Relabel an ordered subject vector. -/
+  def Subject.mapHeadsList {Target : Type uTarget} (f : Head → Target) :
+      List (Subject Head) → List (Subject Target)
+    | [] => []
+    | first :: rest => Subject.mapHeads f first :: Subject.mapHeadsList f rest
+end
+
+@[simp] theorem Subject.mapHeadsList_eq_map {Target : Type uTarget}
+    (f : Head → Target) (subjects : List (Subject Head)) :
+    Subject.mapHeadsList f subjects = subjects.map (Subject.mapHeads f) := by
+  induction subjects with
+  | nil => rfl
+  | cons first rest ih => simp [Subject.mapHeadsList, ih]
 
 mutual
   /-- Direct structural matching for one residual pattern. -/
@@ -57,6 +130,47 @@ mutual
         structuralMatchList patterns subjects
     | _, _ => false
 end
+
+mutual
+  /-- An injective constructor encoding preserves and reflects structural
+  matching. Encoding cannot merge distinct rigid heads. -/
+  theorem structuralMatch_mapHeads {Target : Type uTarget}
+      [DecidableEq Head] [DecidableEq Target] (f : Head → Target)
+      (injective : Function.Injective f) (pattern : Pattern Head) (subject : Subject Head) :
+      structuralMatch (Pattern.mapHeads f pattern) (Subject.mapHeads f subject) =
+        structuralMatch pattern subject := by
+    cases pattern with
+    | wildcard => rfl
+    | node patternHead patternChildren =>
+        cases subject with
+        | node subjectHead subjectChildren =>
+            simp only [Pattern.mapHeads, Subject.mapHeads, structuralMatch, injective.eq_iff]
+            rw [structuralMatchList_mapHeads f injective patternChildren subjectChildren]
+
+  theorem structuralMatchList_mapHeads {Target : Type uTarget}
+      [DecidableEq Head] [DecidableEq Target] (f : Head → Target)
+      (injective : Function.Injective f) (patterns : List (Pattern Head))
+      (subjects : List (Subject Head)) :
+      structuralMatchList (Pattern.mapHeadsList f patterns) (Subject.mapHeadsList f subjects) =
+        structuralMatchList patterns subjects := by
+    cases patterns with
+    | nil => cases subjects <;> rfl
+    | cons pattern patterns =>
+        cases subjects with
+        | nil => rfl
+        | cons subject subjects =>
+            simp only [Pattern.mapHeadsList, Subject.mapHeadsList, structuralMatchList]
+            rw [structuralMatch_mapHeads f injective pattern subject,
+              structuralMatchList_mapHeads f injective patterns subjects]
+end
+
+/- A noninjective encoding can turn an originally refused constructor pair
+into a structural match. The injectivity premise is therefore necessary. -/
+example :
+    structuralMatch (Pattern.mapHeads (fun (_ : Nat) => 0) (.node 0 []))
+      (Subject.mapHeads (fun (_ : Nat) => 0) (.node 1 [])) = true ∧
+      structuralMatch (.node 0 []) (.node 1 []) = false := by
+  constructor <;> decide +kernel
 
 /-- An authored row couples an opaque rule occurrence to its structural
 pattern vector.  Occurrence identity and duplicates remain in the list. -/

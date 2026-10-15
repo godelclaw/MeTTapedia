@@ -4513,13 +4513,13 @@ error-shaped intermediate tuple shells. -/
 private theorem interpretArgs_unify_self_seeded
     {space : Space} {d : GroundedDispatch}
     {target pattern thenBranch elseBranch : Atom} {seed : Bindings}
-    (h_pattern_nerr : pattern ≠ Atom.symbol "Error")
-    (h_then_nerr : thenBranch ≠ Atom.symbol "Error")
-    (h_else_nerr : elseBranch ≠ Atom.symbol "Error") :
+    (_h_pattern_nerr : pattern ≠ Atom.symbol "Error")
+    (_h_then_nerr : thenBranch ≠ Atom.symbol "Error")
+    (_h_else_nerr : elseBranch ≠ Atom.symbol "Error") :
     InterpretArgs space d [target, pattern, thenBranch, elseBranch]
       [Atom.atomType, Atom.atomType, Atom.atomType, Atom.atomType]
       seed
-      (.expression [target, pattern, thenBranch, elseBranch], seed) := by
+      (argumentPacket [target, pattern, thenBranch, elseBranch], seed) := by
   have h_target : EvalAtom space d target Atom.atomType seed (target, seed) :=
     evalAtom_atom_type target seed
   have h_pattern : EvalAtom space d pattern Atom.atomType seed (pattern, seed) :=
@@ -4529,31 +4529,31 @@ private theorem interpretArgs_unify_self_seeded
   have h_else : EvalAtom space d elseBranch Atom.atomType seed (elseBranch, seed) :=
     evalAtom_atom_type elseBranch seed
   have h_tail_else : InterpretArgs space d [elseBranch] [Atom.atomType]
-      seed (.expression [elseBranch], seed) := by
+      seed (argumentPacket [elseBranch], seed) := by
     exact InterpretArgs.cons_ok elseBranch [] Atom.atomType [] seed
-      (elseBranch, seed) (Atom.unit, seed)
+      (elseBranch, seed) (argumentPacket [], seed)
       h_else (Or.inr rfl) InterpretArgs.nil rfl
   have h_tail_then : InterpretArgs space d [thenBranch, elseBranch]
       [Atom.atomType, Atom.atomType] seed
-      (.expression [thenBranch, elseBranch], seed) := by
+      (argumentPacket [thenBranch, elseBranch], seed) := by
     refine InterpretArgs.cons_ok thenBranch [elseBranch] Atom.atomType
       [Atom.atomType] seed
-      (thenBranch, seed) (.expression [elseBranch], seed)
+      (thenBranch, seed) (argumentPacket [elseBranch], seed)
       h_then (Or.inr rfl) h_tail_else ?_
-    exact isEmptyOrError_expr_false [] h_else_nerr
+    simp
   have h_tail_pattern : InterpretArgs space d [pattern, thenBranch, elseBranch]
       [Atom.atomType, Atom.atomType, Atom.atomType] seed
-      (.expression [pattern, thenBranch, elseBranch], seed) := by
+      (argumentPacket [pattern, thenBranch, elseBranch], seed) := by
     refine InterpretArgs.cons_ok pattern [thenBranch, elseBranch] Atom.atomType
       [Atom.atomType, Atom.atomType] seed
-      (pattern, seed) (.expression [thenBranch, elseBranch], seed)
+      (pattern, seed) (argumentPacket [thenBranch, elseBranch], seed)
       h_pattern (Or.inr rfl) h_tail_then ?_
-    exact isEmptyOrError_expr_false [elseBranch] h_then_nerr
+    simp
   refine InterpretArgs.cons_ok target [pattern, thenBranch, elseBranch] Atom.atomType
     [Atom.atomType, Atom.atomType, Atom.atomType] seed
-    (target, seed) (.expression [pattern, thenBranch, elseBranch], seed)
+    (target, seed) (argumentPacket [pattern, thenBranch, elseBranch], seed)
     h_target (Or.inr rfl) h_tail_pattern ?_
-  exact isEmptyOrError_expr_false (thenBranch :: [elseBranch]) h_pattern_nerr
+  simp
 
 /-- The official typed function-path shell for the verbatim upstream `unify`
 source form on the self-evaluating Atom-typed fragment. -/
@@ -4561,7 +4561,7 @@ private theorem interpretFunction_unify_self_seeded
     {space : Space} {d : GroundedDispatch}
     {target pattern thenBranch elseBranch : Atom} {seed : Bindings}
     (h_types : getAtomTypes space (.symbol "unify") = [unifyFunctionType])
-    (h_target_nerr : target ≠ Atom.symbol "Error")
+    (_h_target_nerr : target ≠ Atom.symbol "Error")
     (h_pattern_nerr : pattern ≠ Atom.symbol "Error")
     (h_then_nerr : thenBranch ≠ Atom.symbol "Error")
     (h_else_nerr : elseBranch ≠ Atom.symbol "Error") :
@@ -4574,7 +4574,7 @@ private theorem interpretFunction_unify_self_seeded
   have h_tail : InterpretArgs space d [target, pattern, thenBranch, elseBranch]
       [Atom.atomType, Atom.atomType, Atom.atomType, Atom.atomType]
       seed
-      (.expression [target, pattern, thenBranch, elseBranch], seed) :=
+      (argumentPacket [target, pattern, thenBranch, elseBranch], seed) :=
     interpretArgs_unify_self_seeded
       h_pattern_nerr h_then_nerr h_else_nerr
   refine InterpretFunction.head_ok_tail_ok
@@ -4583,10 +4583,9 @@ private theorem interpretFunction_unify_self_seeded
     (.symbol "unify") [target, pattern, thenBranch, elseBranch]
     [Atom.atomType, Atom.atomType, Atom.atomType, Atom.atomType]
     (.symbol "unify", seed)
-    (.expression [target, pattern, thenBranch, elseBranch], seed)
+    (argumentPacket [target, pattern, thenBranch, elseBranch], seed)
     rfl rfl h_head rfl h_tail ?_
-  exact isEmptyOrError_expr_false
-    (pattern :: thenBranch :: [elseBranch]) h_target_nerr
+  simp
 
 /-- Outer official `unify` shell, relative to the explicit typed-function path
 and a supplied official `MettaCall` witness for the raw branch result. -/
@@ -4780,13 +4779,13 @@ self-evaluation theorem. -/
 private theorem interpretArgs_let_self
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
     {pt value body : Atom}
-    (h_value_nerr : value ≠ Atom.symbol "Error")
-    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (_h_value_nerr : value ≠ Atom.symbol "Error")
+    (_h_body_nerr : body ≠ Atom.symbol "Error")
     (h_value_q : SelfEvalQuiescent space d fuel value) :
     InterpretArgs space d [pt, value, body]
       [Atom.atomType, Atom.undefinedType, Atom.atomType]
       Bindings.empty
-      (.expression [pt, value, body], Bindings.empty) := by
+      (argumentPacket [pt, value, body], Bindings.empty) := by
   have h_pt : EvalAtom space d pt Atom.atomType Bindings.empty
       (pt, Bindings.empty) :=
     evalAtom_atom_type pt Bindings.empty
@@ -4797,23 +4796,23 @@ private theorem interpretArgs_let_self
       (body, Bindings.empty) :=
     evalAtom_atom_type body Bindings.empty
   have h_tail_body : InterpretArgs space d [body] [Atom.atomType]
-      Bindings.empty (.expression [body], Bindings.empty) := by
+      Bindings.empty (argumentPacket [body], Bindings.empty) := by
     exact InterpretArgs.cons_ok body [] Atom.atomType [] Bindings.empty
-      (body, Bindings.empty) (Atom.unit, Bindings.empty)
+      (body, Bindings.empty) (argumentPacket [], Bindings.empty)
       h_body (Or.inr rfl) InterpretArgs.nil rfl
   have h_tail_value : InterpretArgs space d [value, body]
       [Atom.undefinedType, Atom.atomType] Bindings.empty
-      (.expression [value, body], Bindings.empty) := by
+      (argumentPacket [value, body], Bindings.empty) := by
     refine InterpretArgs.cons_ok value [body] Atom.undefinedType
       [Atom.atomType] Bindings.empty
-      (value, Bindings.empty) (.expression [body], Bindings.empty)
+      (value, Bindings.empty) (argumentPacket [body], Bindings.empty)
       h_value (Or.inr rfl) h_tail_body ?_
-    exact isEmptyOrError_expr_false [] h_body_nerr
+    simp
   refine InterpretArgs.cons_ok pt [value, body] Atom.atomType
     [Atom.undefinedType, Atom.atomType] Bindings.empty
-    (pt, Bindings.empty) (.expression [value, body], Bindings.empty)
+    (pt, Bindings.empty) (argumentPacket [value, body], Bindings.empty)
     h_pt (Or.inr rfl) h_tail_value ?_
-  exact isEmptyOrError_expr_false [body] h_value_nerr
+  simp
 
 /-- Seeded companion to `interpretArgs_let_self`: the three `let` arguments
 interpret to themselves under an arbitrary incoming bindings thread when the
@@ -4821,13 +4820,13 @@ value is in the quiescent self-evaluation fragment. -/
 private theorem interpretArgs_let_self_seeded
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
     {pt value body : Atom} {seed : Bindings}
-    (h_value_nerr : value ≠ Atom.symbol "Error")
-    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (_h_value_nerr : value ≠ Atom.symbol "Error")
+    (_h_body_nerr : body ≠ Atom.symbol "Error")
     (h_value_q : SelfEvalQuiescent space d fuel value) :
     InterpretArgs space d [pt, value, body]
       [Atom.atomType, Atom.undefinedType, Atom.atomType]
       seed
-      (.expression [pt, value, body], seed) := by
+      (argumentPacket [pt, value, body], seed) := by
   have h_pt : EvalAtom space d pt Atom.atomType seed (pt, seed) :=
     evalAtom_atom_type pt seed
   have h_value : EvalAtom space d value Atom.undefinedType seed
@@ -4837,23 +4836,23 @@ private theorem interpretArgs_let_self_seeded
       (body, seed) :=
     evalAtom_atom_type body seed
   have h_tail_body : InterpretArgs space d [body] [Atom.atomType]
-      seed (.expression [body], seed) := by
+      seed (argumentPacket [body], seed) := by
     exact InterpretArgs.cons_ok body [] Atom.atomType [] seed
-      (body, seed) (Atom.unit, seed)
+      (body, seed) (argumentPacket [], seed)
       h_body (Or.inr rfl) InterpretArgs.nil rfl
   have h_tail_value : InterpretArgs space d [value, body]
       [Atom.undefinedType, Atom.atomType] seed
-      (.expression [value, body], seed) := by
+      (argumentPacket [value, body], seed) := by
     refine InterpretArgs.cons_ok value [body] Atom.undefinedType
       [Atom.atomType] seed
-      (value, seed) (.expression [body], seed)
+      (value, seed) (argumentPacket [body], seed)
       h_value (Or.inr rfl) h_tail_body ?_
-    exact isEmptyOrError_expr_false [] h_body_nerr
+    simp
   refine InterpretArgs.cons_ok pt [value, body] Atom.atomType
     [Atom.undefinedType, Atom.atomType] seed
-    (pt, seed) (.expression [value, body], seed)
+    (pt, seed) (argumentPacket [value, body], seed)
     h_pt (Or.inr rfl) h_tail_value ?_
-  exact isEmptyOrError_expr_false [body] h_value_nerr
+  simp
 
 /-- The official typed function-path shell for the verbatim upstream `let`
 source form on the certified fragment.  This is the outer function wrapper
@@ -4863,7 +4862,7 @@ theorem interpretFunction_let_self
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
     {pt value body : Atom}
     (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
-    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (_h_pt_nerr : pt ≠ Atom.symbol "Error")
     (h_value_nerr : value ≠ Atom.symbol "Error")
     (h_body_nerr : body ≠ Atom.symbol "Error")
     (h_value_q : SelfEvalQuiescent space d fuel value) :
@@ -4876,16 +4875,16 @@ theorem interpretFunction_let_self
   have h_tail : InterpretArgs space d [pt, value, body]
       [Atom.atomType, Atom.undefinedType, Atom.atomType]
       Bindings.empty
-      (.expression [pt, value, body], Bindings.empty) :=
+      (argumentPacket [pt, value, body], Bindings.empty) :=
     interpretArgs_let_self h_value_nerr h_body_nerr h_value_q
   refine InterpretFunction.head_ok_tail_ok
     (letExpr pt value body) letFunctionType Atom.undefinedType Bindings.empty
     (.symbol "let") [pt, value, body]
     [Atom.atomType, Atom.undefinedType, Atom.atomType]
     (.symbol "let", Bindings.empty)
-    (.expression [pt, value, body], Bindings.empty)
+    (argumentPacket [pt, value, body], Bindings.empty)
     rfl rfl h_head rfl h_tail ?_
-  exact isEmptyOrError_expr_false (value :: [body]) h_pt_nerr
+  simp
 
 /-- Seeded typed function-path shell for the verbatim upstream `let` syntax
 form.  This is the incoming-bindings companion to `interpretFunction_let_self`
@@ -4895,7 +4894,7 @@ theorem interpretFunction_let_self_seeded
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
     {pt value body : Atom} {seed : Bindings}
     (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
-    (h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (_h_pt_nerr : pt ≠ Atom.symbol "Error")
     (h_value_nerr : value ≠ Atom.symbol "Error")
     (h_body_nerr : body ≠ Atom.symbol "Error")
     (h_value_q : SelfEvalQuiescent space d fuel value) :
@@ -4908,16 +4907,16 @@ theorem interpretFunction_let_self_seeded
   have h_tail : InterpretArgs space d [pt, value, body]
       [Atom.atomType, Atom.undefinedType, Atom.atomType]
       seed
-      (.expression [pt, value, body], seed) :=
+      (argumentPacket [pt, value, body], seed) :=
     interpretArgs_let_self_seeded h_value_nerr h_body_nerr h_value_q
   refine InterpretFunction.head_ok_tail_ok
     (letExpr pt value body) letFunctionType Atom.undefinedType seed
     (.symbol "let") [pt, value, body]
     [Atom.atomType, Atom.undefinedType, Atom.atomType]
     (.symbol "let", seed)
-    (.expression [pt, value, body], seed)
+    (argumentPacket [pt, value, body], seed)
     rfl rfl h_head rfl h_tail ?_
-  exact isEmptyOrError_expr_false (value :: [body]) h_pt_nerr
+  simp
 
 /-- Source-progress companion to the quiescent `let` shell: if the bound
 value has already been officially evaluated to a non-empty/non-error atom,
@@ -4927,9 +4926,9 @@ private theorem interpretFunction_let_of_value_eval_ok
     {space : Space} {d : GroundedDispatch}
     {pt value body : Atom} {valueResult : ResultPair}
     (h_types : getAtomTypes space (.symbol "let") = [letFunctionType])
-    (h_pt_nerr : pt ≠ Atom.symbol "Error")
-    (h_value_nerr : valueResult.1 ≠ Atom.symbol "Error")
-    (h_body_nerr : body ≠ Atom.symbol "Error")
+    (_h_pt_nerr : pt ≠ Atom.symbol "Error")
+    (_h_value_nerr : valueResult.1 ≠ Atom.symbol "Error")
+    (_h_body_nerr : body ≠ Atom.symbol "Error")
     (h_value : EvalAtom space d value Atom.undefinedType Bindings.empty valueResult)
     (h_value_ok : isEmptyOrError valueResult.1 = false) :
     InterpretFunction space d (letExpr pt value body)
@@ -4945,31 +4944,31 @@ private theorem interpretFunction_let_of_value_eval_ok
       (body, valueResult.2) :=
     evalAtom_atom_type body valueResult.2
   have h_tail_body : InterpretArgs space d [body] [Atom.atomType]
-      valueResult.2 (.expression [body], valueResult.2) := by
+      valueResult.2 (argumentPacket [body], valueResult.2) := by
     exact InterpretArgs.cons_ok body [] Atom.atomType [] valueResult.2
-      (body, valueResult.2) (Atom.unit, valueResult.2)
+      (body, valueResult.2) (argumentPacket [], valueResult.2)
       h_body (Or.inr rfl) InterpretArgs.nil rfl
   have h_tail_value : InterpretArgs space d [value, body]
       [Atom.undefinedType, Atom.atomType] Bindings.empty
-      (.expression [valueResult.1, body], valueResult.2) := by
+      (argumentPacket [valueResult.1, body], valueResult.2) := by
     refine InterpretArgs.cons_ok value [body] Atom.undefinedType
       [Atom.atomType] Bindings.empty
-      valueResult (.expression [body], valueResult.2)
+      valueResult (argumentPacket [body], valueResult.2)
       h_value (Or.inl h_value_ok) h_tail_body ?_
-    exact isEmptyOrError_expr_false [] h_body_nerr
+    simp
   refine InterpretFunction.head_ok_tail_ok
     (letExpr pt value body) letFunctionType Atom.undefinedType Bindings.empty
     (.symbol "let") [pt, value, body]
     [Atom.atomType, Atom.undefinedType, Atom.atomType]
     (.symbol "let", Bindings.empty)
-    (.expression [pt, valueResult.1, body], valueResult.2)
+    (argumentPacket [pt, valueResult.1, body], valueResult.2)
     rfl rfl h_head rfl ?_ ?_
   · refine InterpretArgs.cons_ok pt [value, body] Atom.atomType
       [Atom.undefinedType, Atom.atomType] Bindings.empty
-      (pt, Bindings.empty) (.expression [valueResult.1, body], valueResult.2)
+      (pt, Bindings.empty) (argumentPacket [valueResult.1, body], valueResult.2)
       h_pt (Or.inr rfl) h_tail_value ?_
-    exact isEmptyOrError_expr_false [body] h_value_nerr
-  · exact isEmptyOrError_expr_false (valueResult.1 :: [body]) h_pt_nerr
+    simp
+  · simp
 
 /-- Error/Empty propagation companion to the quiescent `let` shell: if the
 bound value already officially evaluates to a changed Empty/Error result, the
@@ -5001,12 +5000,12 @@ private theorem interpretFunction_let_of_value_eval_bad
     (.symbol "let") [pt, value, body]
     [Atom.atomType, Atom.undefinedType, Atom.atomType]
     (.symbol "let", Bindings.empty) valueResult
-    rfl rfl h_head rfl ?_ h_value_bad
+    rfl rfl h_head rfl ?_ (argumentsSucceeded_false_of_error h_value_bad)
   exact InterpretArgs.cons_tail_error pt [value, body]
     Atom.atomType [Atom.undefinedType, Atom.atomType]
     Bindings.empty
     (pt, Bindings.empty) valueResult
-    h_pt (Or.inr rfl) h_tail_value h_value_bad
+    h_pt (Or.inr rfl) h_tail_value (argumentsSucceeded_false_of_error h_value_bad)
 
 /-- Generic equation-call wrapper for the verbatim upstream `let` syntax
 form.  Once the typed function-path shell is in place, any official evaluation
@@ -6237,7 +6236,7 @@ private theorem interpretArgs_switch_binary_self
     InterpretArgs space d [scrut, .expression (head :: tail)]
       [Atom.atomType, Atom.expressionType]
       Bindings.empty
-      (.expression [scrut, .expression (head :: tail)], Bindings.empty) := by
+      (argumentPacket [scrut, .expression (head :: tail)], Bindings.empty) := by
   have h_scrut : EvalAtom space d scrut Atom.atomType Bindings.empty
       (scrut, Bindings.empty) :=
     evalAtom_atom_type scrut Bindings.empty
@@ -6247,17 +6246,17 @@ private theorem interpretArgs_switch_binary_self
     evalAtom_expr_type_self head tail Bindings.empty h_head_nerr
   have h_tail : InterpretArgs space d [.expression (head :: tail)]
       [Atom.expressionType] Bindings.empty
-      (.expression [.expression (head :: tail)], Bindings.empty) := by
+      (argumentPacket [.expression (head :: tail)], Bindings.empty) := by
     exact InterpretArgs.cons_ok (.expression (head :: tail)) [] Atom.expressionType []
       Bindings.empty
       (.expression (head :: tail), Bindings.empty)
-      (Atom.unit, Bindings.empty)
+      (argumentPacket [], Bindings.empty)
       h_cases (Or.inr rfl) InterpretArgs.nil rfl
   refine InterpretArgs.cons_ok scrut [.expression (head :: tail)] Atom.atomType
     [Atom.expressionType] Bindings.empty
-    (scrut, Bindings.empty) (.expression [.expression (head :: tail)], Bindings.empty)
+    (scrut, Bindings.empty) (argumentPacket [.expression (head :: tail)], Bindings.empty)
     h_scrut (Or.inr rfl) h_tail ?_
-  exact isEmptyOrError_expr_false [] (by simp)
+  simp
 
 /-- Typed function-path shell for the verbatim upstream `switch-minimal`
 source form on the fragment where the raw-cases expression is non-empty and
@@ -6266,7 +6265,7 @@ theorem interpretFunction_switchMinimal_self
     {space : Space} {d : GroundedDispatch}
     {scrut headBranch : Atom} {tail : List Atom}
     (h_types : getAtomTypes space (.symbol "switch-minimal") = [switchBinaryFunctionType])
-    (h_scrut_nerr : scrut ≠ Atom.symbol "Error")
+    (_h_scrut_nerr : scrut ≠ Atom.symbol "Error")
     (h_head_nerr : headBranch ≠ Atom.symbol "Error") :
     InterpretFunction space d (switchMinimalExpr scrut (headBranch :: tail))
       switchBinaryFunctionType Atom.undefinedType Bindings.empty
@@ -6278,7 +6277,7 @@ theorem interpretFunction_switchMinimal_self
   have h_tail : InterpretArgs space d [scrut, .expression (headBranch :: tail)]
       [Atom.atomType, Atom.expressionType]
       Bindings.empty
-      (.expression [scrut, .expression (headBranch :: tail)], Bindings.empty) :=
+      (argumentPacket [scrut, .expression (headBranch :: tail)], Bindings.empty) :=
     interpretArgs_switch_binary_self h_head_nerr
   refine InterpretFunction.head_ok_tail_ok
     (switchMinimalExpr scrut (headBranch :: tail))
@@ -6286,9 +6285,9 @@ theorem interpretFunction_switchMinimal_self
     (.symbol "switch-minimal") [scrut, .expression (headBranch :: tail)]
     [Atom.atomType, Atom.expressionType]
     (.symbol "switch-minimal", Bindings.empty)
-    (.expression [scrut, .expression (headBranch :: tail)], Bindings.empty)
+    (argumentPacket [scrut, .expression (headBranch :: tail)], Bindings.empty)
     rfl rfl h_head rfl h_tail ?_
-  exact isEmptyOrError_expr_false [.expression (headBranch :: tail)] h_scrut_nerr
+  simp
 
 /-- Typed function-path shell for the verbatim upstream `switch-internal`
 source form on the fragment where the deconsed head branch is itself not the
@@ -6298,7 +6297,7 @@ theorem interpretFunction_switchInternal_self
     {space : Space} {d : GroundedDispatch}
     {scrut headBranch : Atom} {tail : List Atom}
     (h_types : getAtomTypes space (.symbol "switch-internal") = [switchBinaryFunctionType])
-    (h_scrut_nerr : scrut ≠ Atom.symbol "Error")
+    (_h_scrut_nerr : scrut ≠ Atom.symbol "Error")
     (h_head_nerr : headBranch ≠ Atom.symbol "Error") :
     InterpretFunction space d (switchInternalExpr scrut headBranch tail)
       switchBinaryFunctionType Atom.undefinedType Bindings.empty
@@ -6310,7 +6309,7 @@ theorem interpretFunction_switchInternal_self
   have h_tail : InterpretArgs space d [scrut, .expression [headBranch, .expression tail]]
       [Atom.atomType, Atom.expressionType]
       Bindings.empty
-      (.expression [scrut, .expression [headBranch, .expression tail]], Bindings.empty) :=
+      (argumentPacket [scrut, .expression [headBranch, .expression tail]], Bindings.empty) :=
     interpretArgs_switch_binary_self h_head_nerr
   refine InterpretFunction.head_ok_tail_ok
     (switchInternalExpr scrut headBranch tail)
@@ -6318,9 +6317,9 @@ theorem interpretFunction_switchInternal_self
     (.symbol "switch-internal") [scrut, .expression [headBranch, .expression tail]]
     [Atom.atomType, Atom.expressionType]
     (.symbol "switch-internal", Bindings.empty)
-    (.expression [scrut, .expression [headBranch, .expression tail]], Bindings.empty)
+    (argumentPacket [scrut, .expression [headBranch, .expression tail]], Bindings.empty)
     rfl rfl h_head rfl h_tail ?_
-  exact isEmptyOrError_expr_false [.expression [headBranch, .expression tail]] h_scrut_nerr
+  simp
 
 /-- Direct `MettaCall` wrapper for the exact-shape upstream
 `switch-minimal` source form.  After the evaluator-side refactor,

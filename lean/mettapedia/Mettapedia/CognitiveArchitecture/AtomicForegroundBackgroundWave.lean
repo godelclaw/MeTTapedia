@@ -78,7 +78,7 @@ theorem paired_attention_is_conserved_at_commit :
 
 def staleLive : Snapshot Nat Workspace := ⟨12, initialWorkspace⟩
 
-def staleConflict : ¬ Matches spec proposal staleLive := by
+theorem staleConflict : ¬ Matches spec proposal staleLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [staleLive, spec,
@@ -126,7 +126,7 @@ def interveningWorkspace : Workspace :=
 def interveningLive : Snapshot Nat Workspace :=
   ⟨13, interveningWorkspace⟩
 
-def oldProposalConflict : ¬ Matches spec proposal interveningLive := by
+theorem oldProposalConflict : ¬ Matches spec proposal interveningLive := by
   intro current
   have revisionImpossible := current.revision_eq
   norm_num [interveningLive, spec,

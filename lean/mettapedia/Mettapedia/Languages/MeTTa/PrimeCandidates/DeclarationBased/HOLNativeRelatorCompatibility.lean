@@ -1,6 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.OpaqueRelatorExtension
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireRelatorCompatibility
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService
 
 /-!
 # Retained HOL, wire data and native List/J/relator in one rules environment
@@ -301,7 +301,7 @@ theorem hol_sequence_distinct_from_native_list_data :
 /-! ## The unchanged source-proof service in the common formed context -/
 
 open FormationSensitiveHOLInterface FormationSensitiveHOLUniformList
-  UniformListChartNIKService in
+  UniformListChartService in
 /-- The accepted source claim is unchanged. Only its separately formed
 representation is embedded into the shared List/J/relator/wire environment. -/
 theorem produced_source_admission_and_common_formation
@@ -322,7 +322,7 @@ theorem produced_source_admission_and_common_formation
     fun formula member => hol_judgment (premisesFormed formula member)⟩
 
 open FormationSensitiveHOLInterface FormationSensitiveHOLUniformList
-  UniformListChartNIKService Logic.HOL.UniformListInduction in
+  UniformListChartService Logic.HOL.UniformListInduction in
 theorem actual_source_admission_and_common_formation (gamma : Logic.HOL.Ctx BaseSort) :
     (intrinsicKernel gamma).decide (mapLengthClaim gamma) (actualNativeProof gamma) = true ∧
       Logic.HOL.ExtDerivation Symbol (theory (Γ := gamma)) mapLength ∧
@@ -361,14 +361,14 @@ theorem collision_changes_wire_declaration :
         NativeWireData.rules.constantType NativeWireData.dataName := by decide
 
 open FormationSensitiveHOLInterface FormationSensitiveHOLUniformList
-  UniformListChartNIKService Logic.HOL.UniformListInduction in
+  UniformListChartService Logic.HOL.UniformListInduction in
 theorem common_formation_does_not_supply_induction :
     Judgment rules (context types []) rawMapLength (.const `HOLUniformList.prop) ∧
       ¬ ∃ proof, (intrinsicKernel []).decide (equations, mapLength) proof = true :=
   ⟨hol_judgment (mapLength_formed []), missing_induction_has_no_native_proof⟩
 
 open FormationSensitiveHOLInterface FormationSensitiveHOLUniformList
-  UniformListChartNIKService Logic.HOL.UniformListInduction in
+  UniformListChartService Logic.HOL.UniformListInduction in
 theorem common_formation_does_not_change_model_meaning :
     Judgment rules (context types []) rawMapLength (.const `HOLUniformList.prop) ∧
       ¬ (∀ claim : SourceClaim [], JunkModel.model.models claim.2 ↔

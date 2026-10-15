@@ -66,7 +66,7 @@ theorem escapingDistinct_j10 : run .static noProg 3 [2, 0, 1, 0, 2] (Store.empty
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j6]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -80,7 +80,7 @@ theorem escapingDistinct_j11 : run .static noProg 4 [2, 0, 1, 0] (Store.empty) (
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j4]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -124,7 +124,7 @@ theorem escapingDistinct_j18 : run .static noProg 5 [2, 0, 1] (Store.empty) (.ap
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j12]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -175,7 +175,7 @@ theorem escapingDistinct_j27 : run .static noProg 4 [2, 1, 0, 2] ((fun n => if n
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j23]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -189,7 +189,7 @@ theorem escapingDistinct_j28 : run .static noProg 5 [2, 1, 0] ((fun n => if n = 
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j21]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -233,7 +233,7 @@ theorem escapingDistinct_j35 : run .static noProg 6 [2, 1] ((fun n => if n = .in
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j29]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -251,7 +251,7 @@ theorem escapingDistinct_j36 : run .static noProg 7 [2] (Store.empty) (.app (.ap
 theorem escapingDistinct_j37 : run .static noProg 8 [2] (Store.empty) (.letP (.var (.inst [2] (.src ([2], Sp.f)))) (.lam (.src ([], Sp.z)) [] (.app (.lam (.src ([1, 0, 2, 7], Sp.y)) [([1, 0, 2], Sp.y)] (.letP (.var (.src ([1, 0, 2], Sp.y))) (.pvar (.src ([1, 0, 2, 7], Sp.y))) (.lam (.src ([], Sp.w)) [] (.app (.app (.sym Sy.Pair) (.var (.src ([1, 0, 2], Sp.y)))) (.pvar (.src ([], Sp.w))))))) (.pvar (.src ([], Sp.z))))) (.app (.app (.sym Sy.Pair) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n1)) (.sym Sy.n7))) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n2)) (.sym Sy.n8)))) = some [(.app (.app (.sym Sy.Pair) (.app (.app (.sym Sy.Pair) (.var (.inst [2, 0, 1, 0, 2, 2] (.src ([1, 0, 2], Sp.y))))) (.sym Sy.n7))) (.app (.app (.sym Sy.Pair) (.var (.inst [2, 1, 0, 2, 2] (.src ([1, 0, 2], Sp.y))))) (.sym Sy.n8)), (fun n => if n = .inst [2, 1, 0, 2, 2] (.src ([1, 0, 2], Sp.y)) then some (.sym Sy.n2) else if n = .inst [2, 0, 1, 0, 2, 2] (.src ([1, 0, 2], Sp.y)) then some (.sym Sy.n1) else none))] := by
   rw [show run .static noProg 8 [2] (Store.empty) (.letP (.var (.inst [2] (.src ([2], Sp.f)))) (.lam (.src ([], Sp.z)) [] (.app (.lam (.src ([1, 0, 2, 7], Sp.y)) [([1, 0, 2], Sp.y)] (.letP (.var (.src ([1, 0, 2], Sp.y))) (.pvar (.src ([1, 0, 2, 7], Sp.y))) (.lam (.src ([], Sp.w)) [] (.app (.app (.sym Sy.Pair) (.var (.src ([1, 0, 2], Sp.y)))) (.pvar (.src ([], Sp.w))))))) (.pvar (.src ([], Sp.z))))) (.app (.app (.sym Sy.Pair) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n1)) (.sym Sy.n7))) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n2)) (.sym Sy.n8)))) = step .static noProg (run .static noProg 7) [2] (Store.empty) (.letP (.var (.inst [2] (.src ([2], Sp.f)))) (.lam (.src ([], Sp.z)) [] (.app (.lam (.src ([1, 0, 2, 7], Sp.y)) [([1, 0, 2], Sp.y)] (.letP (.var (.src ([1, 0, 2], Sp.y))) (.pvar (.src ([1, 0, 2, 7], Sp.y))) (.lam (.src ([], Sp.w)) [] (.app (.app (.sym Sy.Pair) (.var (.src ([1, 0, 2], Sp.y)))) (.pvar (.src ([], Sp.w))))))) (.pvar (.src ([], Sp.z))))) (.app (.app (.sym Sy.Pair) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n1)) (.sym Sy.n7))) (.app (.app (.var (.inst [2] (.src ([2], Sp.f)))) (.sym Sy.n2)) (.sym Sy.n8)))) from rfl]
   simp only [step, letLam?]
-  simp only [subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none]
+  simp only [GStore.empty_apply, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]
@@ -265,7 +265,7 @@ theorem escapingDistinct_j38 : run .static noProg 9 [] (Store.empty) (.app (.lam
   simp only [bindOpt_some_singleton, bindAll_singleton]
   rw [escapingDistinct_j1]
   simp only [bindOpt_some_singleton, bindAll_singleton]
-  simp only [activate, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
+  simp only [activate, sealRen, renameOwn, subst, Sub.single, Sub.hideOwn, Sub.hideParam, Sub.none, Option.getD_some, Option.getD_none]
   repeat (first | rw [if_pos (by decide)] | rw [if_neg (by decide)])
   try simp only [↓reduceIte]
   simp only [gdSome, gdNone]

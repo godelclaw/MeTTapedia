@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Dynamics.AnswerEffect
-import Mettapedia.GSLT.LanguageDef.NIKServiceInvocation
-import Mettapedia.GSLT.LanguageDef.NIKPropositionBranching
+import Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
+import Mettapedia.GSLT.LanguageDef.EvidenceConditionedBranching
 
 /-!
 # Finite representations and native set-operation services
@@ -10,7 +10,7 @@ is membership in an independently supplied abstract set, not equality of list
 code and not a reduction rule. Append implements union at this relation while
 retaining the original order and duplicate occurrences in its actual result.
 
-The NIK operation has a real source-admission premise: the two input lists
+The SemanticService operation has a real source-admission premise: the two input lists
 must represent the caller's two declared sets. Execution does not inspect that
 proof. A membership decision is complete only for a supplied finite
 representation, with decidable equality on its elements. Neither construction
@@ -29,8 +29,8 @@ namespace Mettapedia.GSLT.LanguageDef.FiniteSetRepresentationService
 
 open Mettapedia.GSLT.Dynamics.AnswerEffects
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.GSLT.LanguageDef.NIKServiceInvocation
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
 
 universe u
 
@@ -83,7 +83,7 @@ def unionOperation (first second : Set α) :
   preserves _ meaningful := represents_append meaningful.1 meaningful.2
 
 def unionService (first second : Set α) :
-    NIK.Service.{u, 0} (representedSet (first ∪ second)) :=
+    SemanticService.Service.{u, 0} (representedSet (first ∪ second)) :=
   .nativeOperation (unionSource first second) (unionOperation first second)
 
 def unionRequest (first second : Set α) (input : List α × List α) :
@@ -133,7 +133,7 @@ def membershipKernel [DecidableEq α] (code : List α) (set : Set α)
     simpa only [List.contains_iff_mem] using represents value
 
 def membershipService [DecidableEq α] (code : List α) (set : Set α)
-    (represents : Represents code set) : NIK.Service.{u, 0} (membershipTarget set) :=
+    (represents : Represents code set) : SemanticService.Service.{u, 0} (membershipTarget set) :=
   .directDecision (membershipKernel code set represents)
 
 def membershipRequest [DecidableEq α] (code : List α) (set : Set α)
@@ -189,7 +189,7 @@ theorem union_then_membership [DecidableEq α] (first second : Set α)
 section Branching
 
 open Mettapedia.GSLT.Dynamics.ContextualEffectHandlers
-open NIKPropositionBranching
+open EvidenceConditionedBranching
 
 universe uState uAnswer uIntent
 
@@ -365,7 +365,7 @@ theorem unadmitted_input_still_computes :
     simp [first, second] at extra
 
 open Mettapedia.GSLT.Dynamics.ContextualEffectHandlers
-open NIKPropositionBranching
+open EvidenceConditionedBranching
 
 /-- The brancher's input code is the actual admitted union's result. Its two
 bodies are the existing state-and-intent controls, now driven by membership
@@ -376,8 +376,8 @@ def branchAfterUnion (value : Nat) :=
       (membershipKernel ((unionOperation first second).run input) (first ∪ second)
         (accepted_union_represents first second input input_admitted
           (union_returns_append first second input))) value)
-    NIKPropositionBranching.Controls.thenEffect
-    NIKPropositionBranching.Controls.elseEffect
+    EvidenceConditionedBranching.Controls.thenEffect
+    EvidenceConditionedBranching.Controls.elseEffect
 
 theorem present_selects_only_then :
     (runWorldsAt (branchAfterUnion 3) 7 [true]).map

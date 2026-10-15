@@ -27,7 +27,7 @@ open Mettapedia.GSLT.LanguageDef.DerivationCheckMachine
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionProblemAuthority
 open Mettapedia.GSLT.LanguageDef.TptpGroundResolutionNamedDAG
 open Mettapedia.Languages.TPTP
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.Languages.TPTP.CheckerAuthority
 open Mettapedia.Languages.TPTP.StatusSemantics
 open Mettapedia.Languages.TPTP.GroundCNFAuthority
 
@@ -158,7 +158,7 @@ def reindexInputs : List Provenance → DenseState → Option DenseState
       }
 
 def reindexNodes :
-    List (NIKAuthority.Node Formula) →
+    List (CheckerAuthority.Node Formula) →
     List ruleFamily.PackedCertificate → DenseState → Option DenseState
   | [], [], state => some state
   | node :: nodes, certificate :: certificates, state => do

@@ -345,14 +345,14 @@ theorem wholeNameSafe_strict_simulation {free : FreeSortContext}
   exact ⟨s, t, hs, ht, hstep⟩
 
 /-- The same admission law applies to the book profile with Drop. -/
-theorem wholeNameSafe_book_simulation {free : FreeSortContext}
+theorem wholeNameSafe_dropExecution_simulation {free : FreeSortContext}
     (hfree : ∀ x, free x ≠ some rhoReflectivePresentation.processSort)
     {source target : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] source)
     (safe : wholeNameSafe source = true)
     (step : RhoCombinedInterpretedStep.RhoStepWithDrop source target) :
     ∃ s t, tProc (Env.empty []) source = some s ∧
-      tProc (Env.empty []) target = some t ∧ Steps bookRules s t := by
+      tProc (Env.empty []) target = some t ∧ Steps dropExecutionRules s t := by
   obtain ⟨s, hs⟩ := closed_admitted_translates_wholeNameSafe hfree typed safe
   obtain ⟨t, ht, hstep⟩ := rhoStepWithDrop_simulation typed step hs
   exact ⟨s, t, hs, ht, hstep⟩
@@ -374,18 +374,18 @@ theorem wholeNameSafe_strict_reflection {free : FreeSortContext}
 
 /-- The corresponding reflection for the book profile retains its
 separately declared Drop rule. -/
-theorem wholeNameSafe_book_reflection {free : FreeSortContext}
+theorem wholeNameSafe_dropExecution_reflection {free : FreeSortContext}
     (hfree : ∀ x, free x ≠ some rhoReflectivePresentation.processSort)
     {source : Pattern}
     (typed : ProcWellSorted rhoReflectivePresentation free [] source)
     (safe : wholeNameSafe source = true) :
     ∃ s, tProc (Env.empty []) source = some s ∧
-      ∀ {u : Term sig [] Srt.pr}, Steps bookRules s u →
+      ∀ {u : Term sig [] Srt.pr}, Steps dropExecutionRules s u →
         ∃ source' target', StructuralCongruence source source' ∧
           RhoCombinedInterpretedStep.RhoStepWithDrop source' target' ∧
           ∃ t, tProc (Env.empty []) target' = some t ∧ cls t = cls u := by
   obtain ⟨s, hs⟩ := closed_admitted_translates_wholeNameSafe hfree typed safe
-  exact ⟨s, hs, fun step => book_reflection typed hs step⟩
+  exact ⟨s, hs, fun step => dropExecution_reflection typed hs step⟩
 
 end Mettapedia.OSLF.Binding.RhoPayloadPresentation
 

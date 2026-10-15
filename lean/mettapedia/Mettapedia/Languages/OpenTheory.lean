@@ -18,8 +18,8 @@ import Mettapedia.Languages.OpenTheory.NominalProvenanceBoundary
 import Mettapedia.Languages.OpenTheory.NominalProvenanceBoundaryCanary
 import Mettapedia.Languages.OpenTheory.CheckedSourceTheorem
 import Mettapedia.Languages.OpenTheory.CheckedSourceTheoremCanary
-import Mettapedia.Languages.OpenTheory.NIKAuthority
-import Mettapedia.Languages.OpenTheory.NIKAuthorityCanary
+import Mettapedia.Languages.OpenTheory.CheckerAuthority
+import Mettapedia.Languages.OpenTheory.CheckerAuthorityControls
 import Mettapedia.Languages.OpenTheory.ExtensionalHOLInterpretation
 import Mettapedia.Languages.OpenTheory.ExcludedMiddleNotDerivable
 import Mettapedia.Languages.OpenTheory.EtaNotDerivable
@@ -45,7 +45,7 @@ its type-preservation theorem.
 
 Theories: axiom policies and least premise closure keep the primitive kernel
 distinct from each selected object theory, with an exact replay interface and,
-for every explicit decidable policy, a concrete NIK least-closure authority
+for every explicit decidable policy, a concrete SemanticService least-closure authority
 whose semantic projection is axiom-provenance authorization, not truth.
 Constant and type-operator definitions have exact executable admission gates
 and provenance theorems.  Package-level printed-name ownership is separate from

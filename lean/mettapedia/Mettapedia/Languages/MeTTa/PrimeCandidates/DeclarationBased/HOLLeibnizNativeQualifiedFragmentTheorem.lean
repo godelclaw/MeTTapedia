@@ -304,7 +304,7 @@ abbrev HOTGOperationalClaim (level : LevelExpr Nat)
       carrierCode.{u} element) : Prop :=
     (HOLLeibnizNativeQualifiedHOTGOperationalIntegration.executionCospan
         level lower x).evidence.proof =
-          NativeHOLRecursiveProofNIKQualification.Controls.retainedMapFusionProof ∧
+          NativeHOLRecursiveProofQualification.Controls.retainedMapFusionProof ∧
       (HOLLeibnizNativeQualifiedHOTGOperationalIntegration.executionCospan
         level lower x).evidence.native = HOLLeibnizMapFusionNative.nativeProof ∧
       (HOLLeibnizNativeQualifiedHOTGIntegration.HOTG.hotgConsumedEndpoint
@@ -358,7 +358,7 @@ abbrev ChangedAssumptionsRejected : Prop :=
       [UniformListCognitiveWorkload.emptySample,
         UniformListCognitiveWorkload.nonemptySample]
       .inputLength HOL.UniformListInduction.equations
-      { UniformListChartNIKService.actualRequest [] with
+      { UniformListChartService.actualRequest [] with
         claim := (HOL.UniformListInduction.equations,
           HOL.UniformListInduction.mapLength) }
       HOL.UniformListInductionRevisionViews.Induction.initialEnvironment =
@@ -373,15 +373,15 @@ structure QualifiedConnectedPackage : Prop where
   fragment : QualifiedFragment carrierCode.{u}
 
   wrongTargetBoundary :
-    NativeHOLRecursiveProofNIKQualification.intrinsicKernel.decide
-        NativeHOLRecursiveProofNIKQualification.Controls.identityClaim
-        NativeHOLRecursiveProofNIKQualification.Controls.retainedMapFusionProof =
+    NativeHOLRecursiveProofQualification.intrinsicKernel.decide
+        NativeHOLRecursiveProofQualification.Controls.identityClaim
+        NativeHOLRecursiveProofQualification.Controls.retainedMapFusionProof =
           false ∧
-      NativeHOLRecursiveProofNIKQualification.intrinsicKernel.decide
-        NativeHOLRecursiveProofNIKQualification.Controls.identityClaim
-        NativeHOLRecursiveProofNIKQualification.Controls.identityProof = true ∧
-      NativeHOLRecursiveProofNIKQualification.sourceTarget.Meaning
-        NativeHOLRecursiveProofNIKQualification.Controls.identityClaim
+      NativeHOLRecursiveProofQualification.intrinsicKernel.decide
+        NativeHOLRecursiveProofQualification.Controls.identityClaim
+        NativeHOLRecursiveProofQualification.Controls.identityProof = true ∧
+      NativeHOLRecursiveProofQualification.sourceTarget.Meaning
+        NativeHOLRecursiveProofQualification.Controls.identityClaim
 
   distinctProofDoesNotQualify :
     ∀ (level : LevelExpr Nat) {n : Nat}
@@ -391,7 +391,7 @@ structure QualifiedConnectedPackage : Prop where
             level)
           (NativeHOLProofFamilyOperationalQualification.ConnectedIntrinsicEvidence.ofIntrinsic
             carrierCode.{u}
-            NativeHOLRecursiveProofNIKQualification.Controls.identityProof)
+            NativeHOLRecursiveProofQualification.Controls.identityProof)
           programs.unfused programs.fused
 
   changedAssumptionsRejected : ChangedAssumptionsRejected
@@ -427,7 +427,7 @@ package.  No new candidate language is selected by this theorem. -/
 theorem connectedPackage : QualifiedConnectedPackage.{u} where
   fragment := current carrierCode.{u}
   wrongTargetBoundary :=
-    NativeHOLRecursiveProofNIKQualification.Controls.wrong_target_rejection_does_not_refute
+    NativeHOLRecursiveProofQualification.Controls.wrong_target_rejection_does_not_refute
   distinctProofDoesNotQualify := fun level {_n} programs =>
     NativeHOLProofFamilyOperationalQualification.Controls.identity_evidence_does_not_qualify_mapFusion
       level carrierCode.{u} programs

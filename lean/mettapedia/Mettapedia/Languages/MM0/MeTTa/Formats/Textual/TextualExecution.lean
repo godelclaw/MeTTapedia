@@ -28,7 +28,7 @@ open scoped ProgramQuotation
 def textualSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/textual.metta"
-    sha256 "72794a8106b8052a1d1130c47b9058cf1a1480db94d1ddf7a26b4029764f4178"
+    sha256 "6589aed43bab6e19a8b73329d292428ae12ce4f0a7b3af2909b8132a69a2ac8d"
 
 def program : Program := MeTTa.program.append textualSource.program
 
@@ -177,7 +177,7 @@ private theorem index_body_returns (state : State) (value : Nat) :
             · simpa [indexBound, applySubst, Subst.lookup] using
                 variable_returns program indexBound state "index"
             · exact grounded_returns program indexBound state (.int 1)
-            · simp [StdLib.apply, natural]
+            · simp [natural]
             · decide
 
 /-- Arbitrarily long unary source indices execute as the existing numeric IDs. -/

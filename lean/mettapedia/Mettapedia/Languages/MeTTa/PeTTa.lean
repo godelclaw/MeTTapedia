@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.PeTTa.TableReuse
 import Mettapedia.Languages.MeTTa.PeTTa.Answers
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Answers
@@ -5,10 +6,25 @@ import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Space
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Commands
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.OperationalGSLT
 import Mettapedia.Languages.MeTTa.PeTTa.OperationalGSLT
+import Mettapedia.Languages.MeTTa.PeTTa.FaultObservation
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationLanguageDef
 import Mettapedia.Languages.MeTTa.PeTTa.UpstreamAgreement
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataNormalizedExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleInstantiationExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RelationPremiseExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RootRuleExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleTraceExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ContextualRuleExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ModuleAssemblyExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationContextExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution
 import Mettapedia.Languages.MeTTa.PeTTa.DispatchCoverage
 import Mettapedia.Languages.MeTTa.PeTTa.BodyClosureFusion
 import Mettapedia.Languages.MeTTa.PeTTa.LPSoundness
@@ -107,6 +123,77 @@ Public import interface for the PeTTa formalization.
 - `Eval`: the executable machine, its adequacy theorem and execution laws.
 - `OperationalGSLT`: the judgment as an OSLF-generating GSLT, with executable
   correspondence and observation laws.
+- `Bridges.MeTTaIL.MatchAutomataExecution`: both retained-source matcher entries
+  compute the exact canonical first-order matches, including occurrence order,
+  bindings and source inspection counters. Root rule execution, equations and
+  contextual permissions remain separate from matching.
+- `Bridges.MeTTaIL.MatchAutomataNormalizedExecution`: the optional source
+  partitions and rebases derivative obligations, interns shared controls and
+  expands them back into their original ordered occurrences. Its full matcher
+  result agrees with canonical matching, with exact completed state and I/O.
+- `Bridges.MeTTaIL.RuleInstantiationExecution`: the retained rule source
+  constructs the full canonical Pattern RHS with exact substitution, retained
+  binders, canonical explicit substitution and checked collection-rest splicing.
+  Captured replacement values remain opaque. Local scoped capture, validated
+  recovery and assignment operations retain dependency and ambient metadata;
+  declaration-site admission and rewrite permission remain separate.
+- `Bridges.MeTTaIL.RelationPremiseExecution`: actual queries and their ordered
+  fold retain preceding bindings, canonical merge order and duplicate witnesses.
+- `Bridges.MeTTaIL.RootRuleExecution`: actual ordered root execution reflects
+  exactly to GSLT steps for admitted equation-free first-order rules with
+  relation-query premises and a literal finite provider; a child match does
+  not authorize a child rewrite. Both matcher strategies feed the actual
+  guarded entry, retaining physical rule and premise-witness occurrences.
+- `Bridges.MeTTaIL.RuleTraceExecution`: a receipt-driven source loop computes
+  each complete ordered frontier, selects a physical occurrence, and re-enters
+  the rules. Its whole-run characterization retains residuals, unread receipts,
+  stopping, refusal and fuel exhaustion, with exact store and I/O observations.
+- `Bridges.MeTTaIL.ContextualRuleExecution`: both retained matcher strategies
+  implement canonical recursive congruence, relation-query and freshness premises, with
+  exact completed frontiers and preservation/reflection to actual GSLT steps.
+  Freshness uses the preceding branch's bindings and retains authored guard
+  order. Scoped and quantified premise profiles remain separate extensions.
+- `Bridges.MeTTaIL.ModuleAssemblyExecution`: the source assembles all four
+  declaration families in order. Explicit coherent-origin and structural-view
+  imports keep the first identical declaration and refuse conflicts. Body rule
+  occurrences remain ordered, including duplicates. Checked imports compose
+  with contextual execution and the actual assembled language's GSLT step.
+- `Bridges.MeTTaIL.PremiseOperationsExecution`: canonical free-variable and
+  freshness operations cover the full Pattern carrier, including binder
+  metadata and collections. Name resolution retains the first binding and
+  refuses non-name replacements. The freshness step has exact completed
+  observations and is used by the shared contextual premise dispatcher.
+- `Bridges.MeTTaIL.EquationExecution`: physical equation receipts retain
+  direction, initial captures, ordered query occurrences, final captures and
+  target. Validation reflects to the canonical equation relation. Equations
+  remain distinct from rewrite permissions and normalization policy.
+- `Bridges.MeTTaIL.EquationContextExecution`: exact physical positions select
+  and replace canonical contexts. Retained-source receipt validation and path
+  replay preserve equation witnesses and reflect to canonical equivalence;
+  supplied reverse predecessors recheck the original forward equation and its
+  current endpoint. Checked paths compose before and after the actual rule
+  frontier, with exact witnessed observations and original-GSLT soundness.
+  Neither receipt acceptance nor structural traversal grants rewrite authority.
+- `Bridges.MeTTaIL.GeneralRuleJobExecution`: the complete original scoped
+  matcher, conditional premise machine and authorized receipt readout for
+  finite typed presentations. Actual bounded execution retains pending work,
+  lexical quantifiers, finite providers, physical unordered choices, captured
+  dependencies and ordered duplicate answers. Machine execution followed by
+  receipt readout preserves and reflects the original authorized receipts;
+  completeness uses the original declaration-stratification check.
+- `Bridges.MeTTaIL.GeneralRuleDriverExecution`: actual MeTTa operations advance
+  and resume the original job scheduler, retaining pending obligations,
+  physical answer cursors, ordered receipts and the original work account.
+- `Bridges.MeTTaIL.GeneralProgramDriverExecution`: native typed occurrence
+  generation selects the original jobs from presentation data, then the
+  authored driver runs and joins them in order. Saturated, stratified,
+  equation-free execution preserves and reflects the original source GSLT
+  successors. Independently observed target output families retain receipt
+  ordinals and full evidence, supporting native membership and universal
+  properties of returned successors. A proved pure readout cache reuses
+  replacement checks while reconstructing each current receipt. Effectful
+  providers, general equation profiles and broader modal transport remain
+  separate integrations.
 
 ## Selected Pattern rewrite view
 

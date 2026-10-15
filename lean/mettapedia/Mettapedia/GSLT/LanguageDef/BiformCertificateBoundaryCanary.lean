@@ -2,6 +2,8 @@ import Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary
 import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 import Mettapedia.Logic.InstitutionCanary
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Proof-sensitive canary for certified biform routes
 
@@ -22,7 +24,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformCertificateBoundaryCanary
 
 open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.GSLT.LanguageDef.ClosedTheorySemanticTarget
 open Mettapedia.GSLT.LanguageDef.BiformCertificateBoundary

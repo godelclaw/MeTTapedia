@@ -7,7 +7,7 @@ import Mettapedia.Languages.Megalodon.SortedABTRefinement
 Megalodon proof replay treats arbitrary named constants as term data and
 uses the two-sorted ABT representation only for structural term identity and
 binder operations.  This module turns the proved ABT lowering into the exact
-endpoint identity required by NIK.
+endpoint identity required by SemanticService.
 
 Publication hashes remain outside this layer.  A `.mg` or `.pfg` document
 codec may wrap canonical content in a verified content envelope, but erasing

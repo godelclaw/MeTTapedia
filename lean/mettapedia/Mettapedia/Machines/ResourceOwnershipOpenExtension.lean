@@ -32,19 +32,17 @@ universe uValue uOwner
 
 variable {Address : Type} {Value : Type uValue} {Owner : Type uOwner}
 
-/-- A local, full-cell condition: every allocated source cell remains unchanged. -/
-def Extends (before after : Heap Address Value) : Prop :=
-  ∀ a c, before.lookup a = some c → after.lookup a = some c
+/-- The same full-cell growth relation used by request borrows. -/
+abbrev Extends (before after : Heap Address Value) : Prop :=
+  before.Extends after
 
-@[refl] theorem Extends.refl (h : Heap Address Value) : Extends h h := by
-  intro _ _ found
-  exact found
+@[refl] theorem Extends.refl (h : Heap Address Value) : Extends h h :=
+  Heap.Extends.refl h
 
 @[trans] theorem Extends.trans {first second third : Heap Address Value}
     (left : Extends first second) (right : Extends second third) :
-    Extends first third := by
-  intro a c found
-  exact right a c (left a c found)
+    Extends first third :=
+  Heap.Extends.trans left right
 
 theorem Extends.allocated_subset {before after : Heap Address Value}
     (extension : Extends before after) : before.allocated ⊆ after.allocated := by
@@ -110,16 +108,8 @@ theorem live_iff {before after : Heap Address Value}
 proof covers unsuccessful paths as well as successful observations. -/
 theorem walk_eq {before after : Heap Address Value}
     (extension : Extends before after) {a : Address} (present : a ∈ before.allocated)
-    (path : List Address) : walk after a path = walk before a path := by
-  induction path generalizing a with
-  | nil => simp only [walk, extension.lookup_old present]
-  | cons b rest ih =>
-      simp only [walk, extension.lookup_old present]
-      obtain ⟨c, found⟩ := (before.allocated_iff a).mp present
-      simp only [found, Option.bind_some]
-      split
-      next reference => exact ih (before.closed a c found b reference)
-      next _ => rfl
+    (path : List Address) : walk after a path = walk before a path :=
+  Heap.Extends.walk_eq extension present path
 
 theorem aliases_iff {before after : Heap Address Value}
     (extension : Extends before after) {a b : Address}
@@ -272,6 +262,44 @@ theorem old_collection :
     (collect after roots).lookup = (collect before roots).lookup := by
   funext a
   exact collect_lookup_eq grows roots roots_valid a
+
+theorem fresh_allocation_preserves_old_census :
+    censusBytes after roots = censusBytes before roots := by
+  rw [censusBytes_eq_retainedBytes after roots (validRoots_extend roots_valid grows),
+    censusBytes_eq_retainedBytes before roots roots_valid]
+  exact retainedBytes_eq grows roots roots_valid
+
+/-- The unchanged root still points to the same owner, but that owner now
+retains the fresh cyclic allocation. Observing the root alone does not
+determine the current transitive storage observation. -/
+def connectedOwner : Heap Nat Nat :=
+  put after 1 ⟨1, {2}, 1⟩ (by
+    intro b member
+    have : b = 2 := Finset.mem_singleton.mp member
+    subst b
+    exact Or.inr (by decide))
+
+theorem same_root_cell_different_census :
+    connectedOwner.lookup 0 = before.lookup 0 ∧
+      censusBytes before roots = 2 ∧ censusBytes connectedOwner roots = 10 := by decide
+
+theorem same_root_cell_different_retained_bytes :
+    connectedOwner.lookup 0 = before.lookup 0 ∧
+      retainedBytes before roots = 2 ∧ retainedBytes connectedOwner roots = 10 := by
+  have valid : ValidRoots connectedOwner roots := by
+    intro pair member
+    have : pair = (0, 0) := Finset.mem_singleton.mp member
+    subst pair
+    decide
+  rw [← censusBytes_eq_retainedBytes before roots roots_valid,
+    ← censusBytes_eq_retainedBytes connectedOwner roots valid]
+  exact same_root_cell_different_census
+
+theorem reachable_owner_change_is_not_extension : ¬ Extends before connectedOwner := by
+  intro extension
+  have same := extension.lookup_old (show 1 ∈ before.allocated by decide)
+  have different : connectedOwner.lookup 1 ≠ before.lookup 1 := by decide
+  exact different same
 
 def moreRoots : Roots Nat Nat := {(0, 0), (1, 2)}
 

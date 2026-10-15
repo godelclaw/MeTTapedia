@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.LanguageDef.GSLTILRouteEquipment
 
 /-!
@@ -280,20 +281,8 @@ theorem represented_pathFunctor_eq_tight
 
 /-! ## Negative control: loose execution strictly exceeds the tight layer -/
 
-/-- A discrete GSLT used only to expose the route-layer boundary. -/
-def discrete (Term : Type uTerm) : GSLT.{uTerm} where
-  Term := Term
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ impossible
-    exact False.elim impossible
-  rewrites_resp_right := by
-    intro _ _ _ impossible _
-    exact False.elim impossible
-
 /-- One loose GSLT route with two distinct possible targets. -/
-def choiceRoute : LooseRoute (discrete Unit) (discrete Bool) :=
+def choiceRoute : LooseRoute (GSLT.stepFree Unit) (GSLT.stepFree Bool) :=
   LooseRelationEquipment.Canary.choice
 
 /-- The choice route executes at both targets. -/

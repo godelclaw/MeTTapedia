@@ -17,6 +17,9 @@ import Mettapedia.TypeTheory.UniverseLevel.NotationComparison
 import Mettapedia.TypeTheory.UniverseLevel.ZFSetTower
 import Mettapedia.TypeTheory.ApplicationExtensionalCollapse
 import Mettapedia.TypeTheory.BehavioralIdentityObserverFactorization
+import Mettapedia.TypeTheory.BubbleConversion
+import Mettapedia.TypeTheory.BubbleSelection
+import Mettapedia.TypeTheory.BubbleWeakness
 import Mettapedia.TypeTheory.CategoryIndexedFamilyCwf
 import Mettapedia.TypeTheory.CategoryIndexedFamilyTypeFormers
 import Mettapedia.TypeTheory.CategoryIndexedFamilyThinDescentTypeFormers

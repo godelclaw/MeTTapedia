@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.HE.ArgumentResult
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
 
@@ -843,7 +844,7 @@ inductive InterpretFunctionRel :
       InterpretArgsRel space dispatch live (typing := typing)
         arguments argumentTypes
         headResult.2 tailResult →
-      IsEmptyOrErrorRel tailResult.1 →
+      (∀ values, tailResult.1 ≠ argumentPacket values) →
       InterpretFunctionRel space dispatch live (typing := typing)
         expression functionType
         returnType bindings tailResult
@@ -862,12 +863,11 @@ inductive InterpretFunctionRel :
       InterpretArgsRel space dispatch live (typing := typing)
         arguments argumentTypes
         headResult.2 tailResult →
-      ¬IsEmptyOrErrorRel tailResult.1 →
+      (∃ values, tailResult.1 = argumentPacket values) →
       InterpretFunctionRel space dispatch live (typing := typing)
         expression functionType
         returnType bindings
-        (.expression (headResult.1 :: match tailResult.1 with
-          | .expression atoms => atoms | atom => [atom]), tailResult.2)
+        (.expression (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Evaluate argument lists left to right. -/
 inductive InterpretArgsRel :
@@ -876,7 +876,7 @@ inductive InterpretArgsRel :
       (typing : EvalTypeService := publishedTypeService) → Prop where
   | nil (bindings : Bindings) :
       InterpretArgsRel space dispatch live (typing := typing) [] [] bindings
-        (Atom.unit, bindings)
+        (argumentPacket [], bindings)
   | headChangedError (argument : Atom) (arguments : List Atom)
       (expectedType : Atom) (expectedTypes : List Atom)
       (bindings : Bindings) (headResult : ResultPair) :
@@ -898,7 +898,7 @@ inductive InterpretArgsRel :
       InterpretArgsRel space dispatch live (typing := typing)
         arguments expectedTypes
         headResult.2 tailResult →
-      IsEmptyOrErrorRel tailResult.1 →
+      (∀ values, tailResult.1 ≠ argumentPacket values) →
       InterpretArgsRel space dispatch live (typing := typing)
         (argument :: arguments) (expectedType :: expectedTypes)
         bindings tailResult
@@ -912,24 +912,31 @@ inductive InterpretArgsRel :
       InterpretArgsRel space dispatch live (typing := typing)
         arguments expectedTypes
         headResult.2 tailResult →
-      ¬IsEmptyOrErrorRel tailResult.1 →
+      (∃ values, tailResult.1 = argumentPacket values) →
       InterpretArgsRel space dispatch live (typing := typing)
         (argument :: arguments) (expectedType :: expectedTypes) bindings
-        (.expression (headResult.1 :: match tailResult.1 with
-          | .expression atoms => atoms | atom => [atom]), tailResult.2)
+        (argumentPacket (headResult.1 :: argumentValues tailResult.1), tailResult.2)
 
 /-- Evaluate tuple elements left to right. -/
 inductive InterpretTupleRel :
     Space → GroundedDispatch → List Atom →
     Atom → Bindings → ResultPair →
       (typing : EvalTypeService := publishedTypeService) → Prop where
+  | nil (bindings : Bindings) :
+      InterpretTupleRel space dispatch live (typing := typing)
+        Atom.unit bindings (Atom.unit, bindings)
   | singleton (atom : Atom) (bindings : Bindings) (result : ResultPair) :
       EvalAtomRawRel space dispatch live (typing := typing)
-        atom Atom.undefinedType bindings
-        result →
+        atom Atom.undefinedType bindings result →
+      ¬IsEmptyOrErrorRel result.1 →
       InterpretTupleRel space dispatch live (typing := typing)
-        (.expression [atom])
-        bindings result
+        (.expression [atom]) bindings (.expression [result.1], result.2)
+  | singletonError (atom : Atom) (bindings : Bindings) (result : ResultPair) :
+      EvalAtomRawRel space dispatch live (typing := typing)
+        atom Atom.undefinedType bindings result →
+      IsEmptyOrErrorRel result.1 →
+      InterpretTupleRel space dispatch live (typing := typing)
+        (.expression [atom]) bindings result
   | headError (head : Atom) (tail : List Atom) (bindings : Bindings)
       (headResult : ResultPair) :
       tail ≠ [] →
@@ -1447,12 +1454,13 @@ private theorem variablePassRaw (name : String) (expectedType : Atom)
   · exact MetaTypeRel.variable name
   · exact Or.inr (Or.inr rfl)
 
-/-- Positive tuple recursion: a singleton tuple delegates to atom evaluation. -/
+/-- Positive tuple recursion: a singleton tuple retains its wrapper. -/
 example : InterpretTupleRel Space.empty noHostDispatch []
     (.expression [.var "x"]) Bindings.empty
-    (.var "x", Bindings.empty) :=
-  InterpretTupleRel.singleton (.var "x") Bindings.empty
+    (.expression [.var "x"], Bindings.empty) := by
+  apply InterpretTupleRel.singleton (.var "x") Bindings.empty
     (.var "x", Bindings.empty) (variablePassRaw "x" Atom.undefinedType)
+  simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]
 
 private def unaryWantedType : Atom :=
   .expression [.symbol "->", .symbol "Wanted", .symbol "Wanted"]
@@ -1460,14 +1468,14 @@ private def unaryWantedType : Atom :=
 private theorem variableArgumentRaw :
     InterpretArgsRel Space.empty noHostDispatch []
       [.var "x"] [.symbol "Wanted"] Bindings.empty
-      (.expression [.var "x"], Bindings.empty) := by
+      (argumentPacket [.var "x"], Bindings.empty) := by
   apply InterpretArgsRel.success
       (.var "x") [] (.symbol "Wanted") [] Bindings.empty
-      (.var "x", Bindings.empty) (Atom.unit, Bindings.empty)
+      (.var "x", Bindings.empty) (argumentPacket [], Bindings.empty)
   · exact variablePassRaw "x" (.symbol "Wanted")
   · exact Or.inr rfl
   · exact InterpretArgsRel.nil Bindings.empty
-  · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty, Atom.unit]
+  · exact ⟨[], rfl⟩
 
 /-- Positive function recursion: variables pass the declared unary function
 and argument types, producing the interpreted call expression. -/
@@ -1481,7 +1489,7 @@ example : InterpretFunctionRel Space.empty noHostDispatch []
       (.symbol "Wanted")
       [.var "x"] [.symbol "Wanted"] Bindings.empty
       (.var "f", Bindings.empty)
-      (.expression [.var "x"], Bindings.empty)
+      (argumentPacket [.var "x"], Bindings.empty)
   · rfl
   · rfl
   · exact variablePassRaw "f" unaryWantedType
@@ -1489,7 +1497,7 @@ example : InterpretFunctionRel Space.empty noHostDispatch []
         (.expression [.var "f", .var "x"]) (.symbol "Wanted"))
   · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]
   · exact variableArgumentRaw
-  · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]
+  · exact ⟨[.var "x"], rfl⟩
 
 /-- Positive type-cast path: an unannotated symbol has `%Undefined%`, which
 matches any expected type. -/

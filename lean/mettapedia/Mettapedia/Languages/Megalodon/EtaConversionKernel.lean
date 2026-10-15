@@ -47,16 +47,7 @@ attribute [local simp]
 private def a (head : String) (arguments : List Pattern := []) : Pattern :=
   .apply head arguments
 
-private def m (name : String) : Pattern := .fvar name
-
 private def ruleId (value : String) : RuleId := ⟨value⟩
-
-private def rule (id : String) (metavariables : List String)
-    (premises : List Pattern) (conclusion : Pattern) : RuleSchema :=
-  { id := ruleId id
-    metavariables := metavariables.map fun name => (name, 0)
-    premises
-    conclusion }
 
 private def reduces (declarations source target : Pattern) : Pattern :=
   a "MDefinitionReduces" [declarations, source, target]
@@ -88,24 +79,7 @@ private def fullProves
   a "MDefinitionProves"
     [environment, typeDepth, termContext, proofContext, proposition]
 
-private def shiftTerm
-    (amount cutoff source target : Pattern) : Pattern :=
-  a "MShiftTerm" [amount, cutoff, source, target]
-
-private def zero : Pattern := a "MNZero"
-private def succ (value : Pattern) : Pattern := a "MNSucc" [value]
-private def termVariable (index : Pattern) : Pattern := a "MTmVar" [index]
-
 /-! ## Eta reduction -/
-
-private def reduceEtaRule : RuleSchema :=
-  rule "megalodon-def-reduce-eta"
-    ["declarations", "type", "function", "result"]
-    [shiftTerm (succ zero) zero (m "result") (m "function")]
-    (reduces (m "declarations")
-      (a "MTmLam"
-        [m "type", a "MTmApp" [m "function", termVariable zero]])
-      (m "result"))
 
 def definition : CalculusLanguageDef :=
   DefinitionConversionKernel.definition
@@ -134,7 +108,7 @@ theorem definition_ruleLookupRefines :
 
 @[simp] private theorem lookup_reduceEtaRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-eta") =
-      some reduceEtaRule := by
+      some DefinitionConversionKernel.reduceEtaRule := by
   rfl
 
 @[simp] private theorem lookup_typeNamedZeroRule :
@@ -249,8 +223,8 @@ theorem compileEtaReduction_checked
   simp only [compileEtaReduction, node, checkRaw, validated,
     instantiateRule?]
   rw [lookup_reduceEtaRule]
-  simp [reduceEtaRule, rule, ruleId, shiftTerm, reduces, zero, succ,
-    termVariable, a, m, argumentsValidAt, argumentValidAt,
+  simp [DefinitionConversionKernel.reduceEtaRule, DefinitionConversionKernel.shiftTerm,
+    reduces, a, argumentsValidAt, argumentValidAt,
     instantiateSchemas?, instantiateSchema?, instantiateSchemasAt?,
     instantiateSchemaAt?, lookupArgumentAt?, RuleSchema.sideConditionsHold,
     checkRawChildren, declarationsGround, declarationsCanonical,

@@ -31,8 +31,8 @@ namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
 
@@ -106,7 +106,7 @@ def contract (presentation : SemanticPresentation) :
     AuthorityContract (theory presentation) :=
   CertificateGSLTAuthorityFunctor.contract presentation.toSoundPresentation
 
-/-- Bundle a semantic presentation and its generated checker as a NIK
+/-- Bundle a semantic presentation and its generated checker as a SemanticService
 authority object. -/
 def generatedAuthority (presentation : SemanticPresentation) :
     CertifiedTheory where
@@ -135,7 +135,7 @@ def mapCertificate {source target : SemanticPresentation}
   cases certificate
   rfl
 
-/-- A heterogeneous semantic embedding generates an exact NIK authority
+/-- A heterogeneous semantic embedding generates an exact SemanticService authority
 translation.  Injectivity reflects the retained-conclusion comparison made by
 the target checker back to the source comparison. -/
 def map {source target : SemanticPresentation}

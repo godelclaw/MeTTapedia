@@ -76,7 +76,7 @@ def erase
   (path execution).erase
 
 /-- Event occurrence count survives endpoint-path erasure even though event
-identity does not.  This is the exact invariant used by the event-count NIK
+identity does not.  This is the exact invariant used by the event-count SemanticService
 refinement below. -/
 @[simp] theorem events_length_eq_erase_length
     {interpretation : EndpointInterpretation theory}

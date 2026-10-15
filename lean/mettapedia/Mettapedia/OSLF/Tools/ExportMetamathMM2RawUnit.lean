@@ -743,7 +743,7 @@ def run (arguments : List String) : IO UInt32 := do
     if path = logicalRoot then some sourceBytes else none
   let owner := stringAtom "metamath-test-unit"
 
-  match transformRawSource owner files bookSpecPolicy logicalRoot with
+  match transformRawSource owner files ignoreCyclicReferencesPolicy logicalRoot with
   | .error _ =>
       IO.eprintln "raw Metamath source transformation rejected the fixture"
       return 1

@@ -4,7 +4,7 @@ import Mettapedia.OSLF.Framework.LogicalMetric
 import Mettapedia.OSLF.Framework.ScopeStratum
 import Mettapedia.OSLF.Framework.ObserverIdempotence
 import Mettapedia.OSLF.Framework.TypeFormerExtension
-import Mettapedia.OSLF.SourceLedger
+import Mettapedia.Documentation.SourceLedgers.FindingMind
 import Mettapedia.GSLT.LanguageDef.AuthoredRuleSorting
 import Mettapedia.GSLT.Examples.AuthoredRuleSorting
 import Mettapedia.GSLT.Meredith.Bisimulation
@@ -375,14 +375,15 @@ example := @GSLT.LanguageDef.AuthoredRuleSorting.metamath_first_rule_sorted_once
 
 /-! ## The source ledger, and the obligations closed against it -/
 
-example := @SourceLedger.ledger_integrity
-example := @SourceLedger.numbered_entered
-example := @SourceLedger.standing_tally
-example := @SourceLedger.audit_coverage
-example := @SourceLedger.tally_is_total
-example := @SourceLedger.refuted_rows_empty
-example := @SourceLedger.proposition_19_1_source_proof_not_cited
-example := @SourceLedger.proposition_19_1_is_constructed_not_proved
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.ledger_integrity
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.numbered_entered
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.standing_tally
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.audit_coverage
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.tally_is_total
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.chapter19_recorded_resolved
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.chapter19_refuted_claims
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.proposition_19_1_source_proof_not_cited
+example := @Mettapedia.Documentation.SourceLedgers.FindingMind.proposition_19_1_recorded_proved
 
 example := @Framework.GeneratedLayerAdjunction.forget_generated
 example := @Framework.GeneratedLayerAdjunction.composite_is_identity
@@ -444,8 +445,8 @@ example := @Framework.RelyPossiblyScheme.FrameMorphism.modality_map
 example := @Framework.RelyPossiblyScheme.transport_is_directed
 
 #print axioms Mettapedia.OSLF.Framework.TypeFormerExtension.extends_a_theory_with_a_site
-#print axioms Mettapedia.OSLF.SourceLedger.ledger_integrity
-#print axioms Mettapedia.OSLF.SourceLedger.standing_tally
+#print axioms Mettapedia.Documentation.SourceLedgers.FindingMind.ledger_integrity
+#print axioms Mettapedia.Documentation.SourceLedgers.FindingMind.standing_tally
 #print axioms Mettapedia.OSLF.Framework.GeneratedLayerAdjunction.reading_one_extends_nothing
 #print axioms Mettapedia.OSLF.Framework.LogicalMetric.ObservationScheme.distance_triangle_nonarch
 #print axioms Mettapedia.OSLF.Framework.ScopeStratum.description_is_cheap

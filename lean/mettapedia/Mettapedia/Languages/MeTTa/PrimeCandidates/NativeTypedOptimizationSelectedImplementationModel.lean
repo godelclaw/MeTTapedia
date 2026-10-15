@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilityNIKSelection
+import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationCapabilitySelection
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationImplementationModel
 
 /-!
@@ -20,10 +20,10 @@ bridge adds no checker, recognizer replay, or second authority.
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates
 namespace NativeTypedOptimizationSelectedImplementationModel
 
-open Mettapedia.GSLT.LanguageDef.NIKMaximalNativeAdmission
+open Mettapedia.GSLT.LanguageDef.MaximalCapabilityAdmission
 open NativeTypedOptimizationAdmission
-open NativeTypedOptimizationNIKBridge
-open NativeTypedOptimizationCapabilityNIKSelection
+open NativeTypedOptimizationBridge
+open NativeTypedOptimizationCapabilitySelection
 open CandidateAbstractImplementationModel
 
 /-! ## One selected operation and one implementation model -/
@@ -147,26 +147,26 @@ namespace MetamathCanary
 open NativeTypedOptimizationInstances.MetamathOperationRecordFusion
 
 abbrev eligible :=
-  NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.eligible
+  NativeTypedOptimizationCapabilitySelection.MetamathCanary.eligible
 
 /-- Current Metamath record fusion emits exactly the abstract model's compiled
-receipt through the request-selected NIK operation. -/
+receipt through the request-selected SemanticService operation. -/
 theorem current_selected_receipt_is_model_receipt :
     (selectedActive spec candidate eligible).run
-        NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input =
+        NativeTypedOptimizationCapabilitySelection.MetamathCanary.input =
       Receipt.compiled
         (implementationReceipt spec candidate eligible
-          NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input) :=
+          NativeTypedOptimizationCapabilitySelection.MetamathCanary.input) :=
   selected_run_eq_model_receipt spec candidate eligible
-    NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input
+    NativeTypedOptimizationCapabilitySelection.MetamathCanary.input
 
 /-- The known revision change disables both views and preserves the exact
 source trace used by raw fallback. -/
 theorem changed_revision_disables_both_and_preserves_fallback :
     let input :=
-      NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input
+      NativeTypedOptimizationCapabilitySelection.MetamathCanary.input
     let nextKey :=
-      NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.nextKey
+      NativeTypedOptimizationCapabilitySelection.MetamathCanary.nextKey
     (¬ (selectedAdmission spec candidate eligible).Active nextKey) ∧
       (¬ (executionModel spec candidate eligible).admission.Active nextKey) ∧
       (executionModel spec candidate eligible).rawCodec.decode
@@ -175,13 +175,13 @@ theorem changed_revision_disables_both_and_preserves_fallback :
         sourceTrace input := by
   exact changed_key_disables_both_and_preserves_fallback
     spec candidate eligible
-    NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.input
-    NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.nextKey
+    NativeTypedOptimizationCapabilitySelection.MetamathCanary.input
+    NativeTypedOptimizationCapabilitySelection.MetamathCanary.nextKey
     (by
       intro equal
       have revisionEqual := congrArg
         (fun key => key.revision) equal
-      simp [NativeTypedOptimizationCapabilityNIKSelection.MetamathCanary.nextKey,
+      simp [NativeTypedOptimizationCapabilitySelection.MetamathCanary.nextKey,
         candidate, KeyedCandidate.ofAuthority, nativeAuthority, nativeKey]
         at revisionEqual)
 

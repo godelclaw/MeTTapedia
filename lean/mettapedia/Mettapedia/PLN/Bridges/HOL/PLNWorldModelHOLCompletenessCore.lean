@@ -20,7 +20,6 @@ open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
-open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open scoped ENNReal
 
 universe u v w
@@ -30,11 +29,6 @@ variable {Base : Type u} {Const : Ty Base → Type v}
 abbrev HOLQuery (Const : Ty Base → Type v) := Mettapedia.Logic.HOL.HOLQuery Const
 abbrev HOLState (Base : Type u) (Const : Ty Base → Type v) :=
   Multiset (HenkinModel.{u, v, w} Base Const)
-
-/-- Alias for the unified categorical endpoint contract, specialized to HOL WM states. -/
-abbrev WMCategoricalEndpointContract
-    (H : WMHyperdoctrine (HOLState Base Const)) : Prop :=
-  Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointContract (H := H)
 
 theorem pointwiseImplies_iff_singletonStrengthLE (φ ψ : HOLQuery Const) :
     (∀ M : HenkinModel.{u, v, w} Base Const,
@@ -183,19 +177,6 @@ theorem multiset_consequence_of_pointwise
       BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W ψ :=
   multiset_strength_le_of_pointwise (Base := Base) (Const := Const) (W := W) (φ := φ) (ψ := ψ) himp
 
-/-- Categorical-aligned HOL implication closure wrapper. -/
-theorem multiset_strength_le_of_pointwise_categorical
-    (H : WMHyperdoctrine (HOLState Base Const))
-    (_hcat : WMCategoricalEndpointContract (Base := Base) (Const := Const) (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (W : Multiset (HenkinModel.{u, v, w} Base Const)) (φ ψ : HOLQuery Const)
-    (himp : ∀ M : HenkinModel.{u, v, w} Base Const,
-      holSatisfies (Base := Base) (Const := Const) M φ →
-        holSatisfies (Base := Base) (Const := Const) M ψ) :
-    BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W φ ≤
-      BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W ψ :=
-  multiset_strength_le_of_pointwise (Base := Base) (Const := Const) (W := W) (φ := φ) (ψ := ψ) himp
-
 /-- Singleton-strength consequence lifts to multiset WM strength inequality. -/
 theorem multiset_strength_le_of_singletonStrengthLE
     (W : Multiset (HenkinModel.{u, v, w} Base Const)) (φ ψ : HOLQuery Const)
@@ -268,22 +249,6 @@ theorem multiset_consequence_of_externalImplication_sound
   multiset_consequence_of_pointwise
     (Base := Base) (Const := Const) (W := W) (φ := φ) (ψ := ψ) (hSound hprov)
 
-/-- Categorical-aligned HOL singleton-strength closure wrapper. -/
-theorem multiset_strength_le_of_singletonStrengthLE_categorical
-    (H : WMHyperdoctrine (HOLState Base Const))
-    (_hcat : WMCategoricalEndpointContract (Base := Base) (Const := Const) (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (W : Multiset (HenkinModel.{u, v, w} Base Const)) (φ ψ : HOLQuery Const)
-    (hsing : ∀ M : HenkinModel.{u, v, w} Base Const,
-      BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const)
-          ({M} : HOLState Base Const) φ ≤
-        BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const)
-          ({M} : HOLState Base Const) ψ) :
-    BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W φ ≤
-      BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W ψ :=
-  multiset_strength_le_of_singletonStrengthLE
-    (Base := Base) (Const := Const) (W := W) (φ := φ) (ψ := ψ) hsing
-
 /-- Implication-closure wrapper: package pointwise HOL implication as a global
 side `WMConsequenceRule`. -/
 def wmConsequenceRule_of_pointwise (φ ψ : HOLQuery Const) :
@@ -320,30 +285,8 @@ noncomputable def wmConsequenceRuleOn_of_pointwise (φ ψ : HOLQuery Const) :
     (wmConsequenceRule_of_pointwise.{u, v, w}
       (Base := Base) (Const := Const) (φ := φ) (ψ := ψ))
 
-/-- Categorical-aligned state-indexed wrapper from HOL pointwise implication. -/
-noncomputable def wmConsequenceRuleOn_of_pointwise_categorical
-    (H : WMHyperdoctrine (HOLState Base Const))
-    (_hcat : WMCategoricalEndpointContract (Base := Base) (Const := Const) (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (φ ψ : HOLQuery Const) :
-    WMConsequenceRuleOn (HOLState Base Const) (HOLQuery Const) :=
-  WMConsequenceRuleOn.ofGlobal
-    (wmConsequenceRule_of_pointwise.{u, v, w}
-      (Base := Base) (Const := Const) (φ := φ) (ψ := ψ))
-
 /-- State-indexed wrapper promoted from singleton-strength side conditions. -/
 noncomputable def wmConsequenceRuleOn_of_singletonStrengthLE (φ ψ : HOLQuery Const) :
-    WMConsequenceRuleOn (HOLState Base Const) (HOLQuery Const) :=
-  WMConsequenceRuleOn.ofGlobal
-    (wmConsequenceRule_of_singletonStrengthLE.{u, v, w}
-      (Base := Base) (Const := Const) (φ := φ) (ψ := ψ))
-
-/-- Categorical-aligned state-indexed wrapper from HOL singleton-strength side conditions. -/
-noncomputable def wmConsequenceRuleOn_of_singletonStrengthLE_categorical
-    (H : WMHyperdoctrine (HOLState Base Const))
-    (_hcat : WMCategoricalEndpointContract (Base := Base) (Const := Const) (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (φ ψ : HOLQuery Const) :
     WMConsequenceRuleOn (HOLState Base Const) (HOLQuery Const) :=
   WMConsequenceRuleOn.ofGlobal
     (wmConsequenceRule_of_singletonStrengthLE.{u, v, w}

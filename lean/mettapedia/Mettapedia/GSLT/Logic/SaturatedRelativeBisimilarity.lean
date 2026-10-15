@@ -44,7 +44,7 @@ open Mettapedia.GSLT
 open Mettapedia.GSLT.HennessyMilner
 open Mettapedia.GSLT.MinimalEnablingContext
 
-universe uS uContext uRule uAtom
+universe uS uContext uRule uAtom uIndex uReading
 
 variable {S : GSLT.{uS}} {rules : ContextualRules.{uContext, uRule} S}
 
@@ -639,6 +639,81 @@ theorem labelledBisimilar_le_relEquiv_of_composes (steps : rules.StepsAreFirings
     (fun _ _ _ admissible bisimilar =>
       bisimilar_plug_labelled A composes respects admissible bisimilar)
     related
+
+end AdmissibleClass
+
+/-! ## Step-free systems
+
+Without reductions the saturated system has no labelled steps.  Its
+bisimilarity is then exactly agreement of every base observation under every
+admissible context: the static observational congruence of the class.  This
+is the form in which finite observational ends and Nerode-style equivalences
+appear as instances. -/
+
+namespace AdmissibleClass
+
+variable (A : AdmissibleClass rules) (observations : ContextualRules.Observations.{uAtom} S)
+
+/-- **Step-free characterization.**  In a GSLT without reductions, the
+`A`-relative equivalence is agreement of every observation under every
+admissible context. -/
+theorem relEquiv_iff_of_stepFree (stepFree : ∀ source target : S.Term, ¬ S.Step source target)
+    {left right : S.Term} :
+    A.RelEquiv observations left right ↔
+      ∀ context, A.Admissible context → ∀ atom : observations.Atom,
+        (observations.observes atom (rules.plug context left) ↔
+          observations.observes atom (rules.plug context right)) := by
+  constructor
+  · intro related context admissible atom
+    exact AdmissibleContextCongruence.bisimilar_observes related (atom, ⟨context, admissible⟩)
+  · intro agree
+    refine ⟨fun first second => ∀ context, A.Admissible context → ∀ atom : observations.Atom,
+        (observations.observes atom (rules.plug context first) ↔
+          observations.observes atom (rules.plug context second)), ⟨?_, ?_, ?_⟩, agree⟩
+    · intro _ _ _ label _ step
+      exact (stepFree _ _ step).elim
+    · intro _ _ _ label _ step
+      exact (stepFree _ _ step).elim
+    · intro _ _ related atom
+      exact related atom.2.1 atom.2.2 atom.1
+
+end AdmissibleClass
+
+/-- Typed readouts as observations: an atom asserts that one readout returns
+one value.  Equated terms must have equal readouts. -/
+def valueObservations {Index : Type uIndex} {Reading : Type uReading}
+    (readings : Index → S.Term → Reading)
+    (respects : ∀ index {left right : S.Term}, S.Equiv left right →
+      readings index left = readings index right) :
+    ContextualRules.Observations.{max uIndex uReading} S where
+  Atom := Index × Reading
+  observes atom term := readings atom.1 term = atom.2
+  observes_resp atom _ _ equivalent := by
+    rw [respects atom.1 equivalent]
+
+namespace AdmissibleClass
+
+variable (A : AdmissibleClass rules)
+
+/-- **Typed readouts in a step-free system.**  The relative equivalence is
+equality of every readout under every admissible context. -/
+theorem relEquiv_valueObservations_iff_of_stepFree {Index : Type uIndex} {Reading : Type uReading}
+    (readings : Index → S.Term → Reading)
+    (respects : ∀ index {left right : S.Term}, S.Equiv left right →
+      readings index left = readings index right)
+    (stepFree : ∀ source target : S.Term, ¬ S.Step source target) {left right : S.Term} :
+    A.RelEquiv (valueObservations readings respects) left right ↔
+      ∀ context, A.Admissible context → ∀ index,
+        readings index (rules.plug context left) = readings index (rules.plug context right) := by
+  rw [A.relEquiv_iff_of_stepFree (valueObservations readings respects) stepFree]
+  constructor
+  · intro agree context admissible index
+    exact ((agree context admissible (index, readings index (rules.plug context left))).mp
+      rfl).symm
+  · intro agree context admissible atom
+    show readings atom.1 (rules.plug context left) = atom.2 ↔
+      readings atom.1 (rules.plug context right) = atom.2
+    rw [agree context admissible atom.1]
 
 end AdmissibleClass
 

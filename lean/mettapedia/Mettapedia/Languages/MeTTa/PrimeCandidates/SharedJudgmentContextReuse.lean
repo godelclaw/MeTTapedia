@@ -1,6 +1,6 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentPublicContext
 import Mettapedia.GSLT.Core.PolicyFamilyTransport
-import Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
+import Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 
 /-!+# Live dependencies of retained service-program observations
 
@@ -28,8 +28,8 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentContextReuse
 
 open Mettapedia.GSLT.Core
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 open PolicyFamilyAdmittedAt
 open SharedJudgmentFragment SharedJudgmentPublicContext
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased

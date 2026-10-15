@@ -1,0 +1,116 @@
+; Authored equations are independent of directed reduction rows.
+; Load gslt_match_automata.metta and gslt_rule_execution.metta first.
+; The admitted equation view has no scoped binding metadata. Literal provider
+; rows are immutable; receipts retain every completed query branch ordinal.
+
+(: gslt:equation:trace-prefix (-> Atom Atom %Undefined%))
+(= (gslt:equation:trace-prefix $index $traces)
+   (case $traces
+     ((LNil LNil)
+      ((LCons (EqPremises $path $bindings) $rest)
+       (let $tail (gslt:equation:trace-prefix $index $rest)
+         (LCons (EqPremises (LCons $index $path) $bindings) $tail))))))
+
+(: gslt:equation:premise-traces (-> Atom Atom Atom %Undefined%))
+(= (gslt:equation:premise-traces $premises $rows $seed)
+   (case $premises
+     ((LNil (LCons (EqPremises LNil $seed) LNil))
+      ((LCons (RelationQuery $relation $arguments) $rest)
+       (let* (($names (gslt:rule:argument-names $arguments))
+              ($choices (gslt:rule:relation-query $relation $names $rows $seed)))
+         (gslt:equation:premise-branches $rest $rows $choices 0))))))
+
+(: gslt:equation:premise-branches (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:premise-branches $premises $rows $choices $index)
+   (case $choices
+     ((LNil LNil)
+      ((LCons $seed $rest)
+       (let* (($continued (gslt:equation:premise-traces $premises $rows $seed))
+              ($head (gslt:equation:trace-prefix $index $continued))
+              ($next (+ $index 1))
+              ($tail (gslt:equation:premise-branches $premises $rows $rest $next)))
+         (gslt:automata:append $head $tail))))))
+
+(: gslt:equation:replay-premises (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:replay-premises $premises $rows $seed $path)
+   (case ($premises $path)
+     (((LNil LNil) (Some $seed))
+      (((LCons (RelationQuery $relation $arguments) $rest) (LCons $index $remaining))
+       (let* (($names (gslt:rule:argument-names $arguments))
+              ($choices (gslt:rule:relation-query $relation $names $rows $seed)))
+         (case (gslt:rule:row-at $index $choices)
+           ((None None)
+            ((Some $next) (gslt:equation:replay-premises $rest $rows $next $remaining))))))
+      ($bad None))))
+
+(: gslt:equation:instance-results (-> Atom Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:instance-results $index $orientation $initial $right $traces)
+   (case $traces
+     ((LNil LNil)
+      ((LCons (EqPremises $path $completed) $rest)
+       (let* (($target (gslt:rule:instantiate $right $completed))
+              ($tail (gslt:equation:instance-results $index $orientation $initial $right $rest)))
+         (LCons (EqInstance $index $orientation $initial $path $completed $target) $tail))))))
+
+(: gslt:equation:apply-sides (-> Atom Atom Atom Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:apply-sides $index $orientation $premises $left $right $rows $subject)
+   (case (gslt:automata:bind $left $subject)
+     ((None LNil)
+      ((Some $initial)
+       (let $traces (gslt:equation:premise-traces $premises $rows $initial)
+         (gslt:equation:instance-results $index $orientation $initial $right $traces))))))
+
+(: gslt:equation:apply-row (-> Atom Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:apply-row $index $orientation $equation $rows $subject)
+   (case ($orientation $equation)
+     (((EqForward (Equation $name $context $premises $left $right))
+       (gslt:equation:apply-sides $index $orientation $premises $left $right $rows $subject))
+      ((EqReverse (Equation $name $context $premises $left $right))
+       (gslt:equation:apply-sides $index $orientation $premises $right $left $rows $subject))
+      ($bad LNil))))
+
+(: gslt:equation:root-at (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:root-at $equations $rows $subject $index)
+   (case $equations
+     ((LNil LNil)
+      ((LCons $equation $rest)
+       (let* (($forward (gslt:equation:apply-row $index EqForward $equation $rows $subject))
+              ($reverse (gslt:equation:apply-row $index EqReverse $equation $rows $subject))
+              ($head (gslt:automata:append $forward $reverse))
+              ($next (+ $index 1))
+              ($tail (gslt:equation:root-at $rest $rows $subject $next)))
+         (gslt:automata:append $head $tail))))))
+
+(: gslt:equation:root (-> Atom Atom Atom %Undefined%))
+(= (gslt:equation:root $equations $rows $subject)
+   (gslt:equation:root-at $equations $rows $subject 0))
+
+; The claimed target alone is insufficient: replay checks every receipt field.
+(: gslt:equation:validate (-> Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:validate $equations $rows $subject $receipt)
+   (case $receipt
+     (((EqInstance $index $orientation $initial $path $completed $target)
+       (case (gslt:rule:row-at $index $equations)
+         ((None None)
+          ((Some $equation)
+           (case ($orientation $equation)
+             (((EqForward (Equation $name $context $premises $left $right))
+               (gslt:equation:validate-sides $premises $left $right $rows $subject $initial $path $completed $target))
+              ((EqReverse (Equation $name $context $premises $left $right))
+               (gslt:equation:validate-sides $premises $right $left $rows $subject $initial $path $completed $target))
+              ($bad None)))))))
+      ($bad None))))
+
+(: gslt:equation:validate-sides (-> Atom Atom Atom Atom Atom Atom Atom Atom Atom %Undefined%))
+(= (gslt:equation:validate-sides $premises $left $right $rows $subject $initial $path $completed $target)
+   (case (gslt:automata:bind $left $subject)
+     ((None None)
+      ((Some $matched)
+       (if (== $matched $initial)
+         (case (gslt:equation:replay-premises $premises $rows $initial $path)
+           ((None None)
+            ((Some $final)
+             (if (== $final $completed)
+               (let $actual (gslt:rule:instantiate $right $final)
+                 (if (== $actual $target) (Some $actual) None)) None))))
+         None)))))

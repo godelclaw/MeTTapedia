@@ -47,7 +47,7 @@ def substitute (substitution : Sub Tower.Head n m) : Request n → Request m
 
 @[simp] theorem substitute_hol (substitution : Sub Tower.Head n m)
     (gamma : Mettapedia.Logic.HOL.Ctx Mettapedia.Logic.HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length n) :
     (Request.hol gamma replay environment).substitute substitution =
       Request.hol gamma replay (subComp substitution environment) := rfl
@@ -307,13 +307,13 @@ theorem squareSubstitution_typed :
   rw [lookup, typeAt_subst]
   exact functionSquare_admitted.typing
 
-def request : Request 1 := .hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) ids
+def request : Request 1 := .hol [mapping] (UniformListChartService.actualRequest [mapping]) ids
 
 def response : Response request :=
-  .holProof (UniformListChartNIKService.actualNativeProof [mapping]) rawMapLength
+  .holProof (UniformListChartService.actualNativeProof [mapping]) rawMapLength
 
 theorem actual_crossing : Invocation common request response :=
-  .holSuccess (UniformListChartNIKService.actual_produced [mapping])
+  .holSuccess (UniformListChartService.actual_produced [mapping])
     (mapLength_represented [mapping])
 
 theorem request_admitted : EnvironmentAdmitted common mappingContext request := by

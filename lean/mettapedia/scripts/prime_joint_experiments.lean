@@ -34,9 +34,9 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceRegistry
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentAssemblyServices
 import Mettapedia.Logic.HOL.ProofSyntax
 import Mettapedia.Logic.HOL.UniformListMapFusion
-import Mettapedia.GSLT.LanguageDef.NIKServiceResumption
-import Mettapedia.GSLT.LanguageDef.NIKPropositionBranching
-import Mettapedia.GSLT.LanguageDef.NIKOutcomeViewControls
+import Mettapedia.GSLT.LanguageDef.SemanticServiceResumption
+import Mettapedia.GSLT.LanguageDef.EvidenceConditionedBranching
+import Mettapedia.GSLT.LanguageDef.OutcomeViewControls
 import Mettapedia.GSLT.LanguageDef.FiniteSetRepresentationService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationEffectTree
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListCognitiveWorkload
@@ -106,7 +106,7 @@ def matching : IO Unit := do
             (NativeWireData.encode wire)) transport.proof) false
 
 def cognitive : IO Unit := do
-  let request := UniformListChartNIKService.actualRequest []
+  let request := UniformListChartService.actualRequest []
   let environment := Mettapedia.Logic.HOL.UniformListInductionRevisionViews.Induction.initialEnvironment
   let samples := [UniformListCognitiveWorkload.emptySample,
     UniformListCognitiveWorkload.nonemptySample]
@@ -462,7 +462,7 @@ def check : IO Unit := do
         match reply.1 with
         | .matching _ _ => false
         | .hol gamma replay _ =>
-            if original then decide (replay.claim = UniformListChartNIKService.mapLengthClaim gamma)
+            if original then decide (replay.claim = UniformListChartService.mapLengthClaim gamma)
             else decide (replay.claim =
               (Mettapedia.Logic.HOL.UniformListInduction.equations (Γ := gamma),
                Mettapedia.Logic.HOL.UniformListInduction.mapLength))
@@ -473,7 +473,7 @@ end RepeatedRunViews
 
 def fourFaceServices : IO Unit := do
   let successful := Mettapedia.GSLT.Dynamics.ServiceResumption.runWorlds
-    NIKServiceResumption.invoke (NIKServiceResumption.PositiveNaturalControl.pipeline 2) 90
+    SemanticServiceResumption.invoke (SemanticServiceResumption.PositiveNaturalControl.pipeline 2) 90
   expect "four-face.success.world-count" successful.length 1
   for result in successful do
     expect "four-face.success.reply-count" result.replies.length 4
@@ -485,7 +485,7 @@ def fourFaceServices : IO Unit := do
     expect (α := Nat) "four-face.success.final-value"
       (match result.world.answer with | .inl _ => 0 | .inr value => value) 3
   let rejected := Mettapedia.GSLT.Dynamics.ServiceResumption.runWorlds
-    NIKServiceResumption.invoke (NIKServiceResumption.PositiveNaturalControl.submittedProof 0) 90
+    SemanticServiceResumption.invoke (SemanticServiceResumption.PositiveNaturalControl.submittedProof 0) 90
   expect "four-face.rejected-proof.world-count" rejected.length 1
   for result in rejected do
     expect "four-face.rejected-proof.prefix-retained" result.replies.length 2
@@ -493,7 +493,7 @@ def fourFaceServices : IO Unit := do
     expect "four-face.rejected-proof.outcome"
       (match result.world.answer with | .inl _ => "stopped" | .inr _ => "value") "stopped"
   let falseClaim := Mettapedia.GSLT.Dynamics.ServiceResumption.runWorlds
-    NIKServiceResumption.invoke (NIKServiceResumption.PositiveNaturalControl.pipeline 0) 90
+    SemanticServiceResumption.invoke (SemanticServiceResumption.PositiveNaturalControl.pipeline 0) 90
   expect "four-face.false-decision.world-count" falseClaim.length 1
   for result in falseClaim do
     expect "four-face.false-decision.only-first-call" result.replies.length 1
@@ -597,8 +597,8 @@ open PrimeCandidates.SharedJudgmentServiceRegistry
 
 /-- The fixed four-face fixtures have actual admission and native
 representation theorems; the IO observations below only execute their calls. -/
-theorem invocation_crown (face : NIK.Face) :
-    (NIKServiceInvocation.invoke (Controls.request face)).acceptedValue =
+theorem invocation_crown (face : SemanticService.Face) :
+    (SemanticServiceInvocation.invoke (Controls.request face)).acceptedValue =
         some (Controls.expected face) ∧
       FormationSensitive.Judgment PrimeCandidates.SharedJudgmentFragment.common.rules
         NativeMatchedTransportDenotation.parameterContext
@@ -612,27 +612,27 @@ def check : IO Unit := do
   let original : NativeWireData.Wire :=
     .application "native-input" [.symbol "opaque-payload", .natural 7]
   let wrapped : NativeWireData.Wire := .application "wrapped" [original]
-  let faces : List (String × NIK.Face) :=
+  let faces : List (String × SemanticService.Face) :=
     [("decision", .directDecision), ("proof", .nativeProof),
      ("operation", .nativeOperation), ("certificate", .certificateBoundary)]
   for (label, face) in faces do
     let expected := if face == .nativeOperation then wrapped else original
-    let returned := (NIKServiceInvocation.invoke (Controls.request face)).acceptedValue.map
+    let returned := (SemanticServiceInvocation.invoke (Controls.request face)).acceptedValue.map
       (NativeWireData.encode (n := 0))
     expect s!"registry.{label}.native-encoded-result"
       (returned == some (NativeWireData.encode expected)) true
-  let badProof : NIKServiceInvocation.Request
+  let badProof : SemanticServiceInvocation.Request
       (Controls.registry.serviceAt Controls.registry_qualified .nativeProof) :=
     .nativeProof original ("other-head", [.natural 7])
-  let badCertificate : NIKServiceInvocation.Request
+  let badCertificate : SemanticServiceInvocation.Request
       (Controls.registry.serviceAt Controls.registry_qualified .certificateBoundary) :=
     .certificateBoundary original ("other-head", [.natural 7])
   expect "registry.malformed-proof.accepted"
-    (NIKServiceInvocation.invoke badProof).acceptedValue.isSome false
+    (SemanticServiceInvocation.invoke badProof).acceptedValue.isSome false
   expect "registry.malformed-certificate.accepted"
-    (NIKServiceInvocation.invoke badCertificate).acceptedValue.isSome false
+    (SemanticServiceInvocation.invoke badCertificate).acceptedValue.isSome false
   let operationResult :=
-    (NIKServiceInvocation.invoke (Controls.request .nativeOperation)).acceptedValue.map
+    (SemanticServiceInvocation.invoke (Controls.request .nativeOperation)).acceptedValue.map
       (NativeWireData.encode (n := 0))
   expect "registry.operation.unchanged-encoded-result"
     (operationResult == some (NativeWireData.encode original)) false
@@ -649,7 +649,7 @@ def check : IO Unit := do
   let original := admittedWire canonical
   let changed := admittedWire changedOutput
   let accepted assembly admission coverage wire :=
-    (NIKServiceInvocation.invoke
+    (SemanticServiceInvocation.invoke
       (receiptRequest assembly admission coverage canonical.request wire)).acceptedValue.isSome
   expect "callbacks.receipt.common" (accepted common common_match_admission common_match_coverage original) true
   expect "callbacks.receipt.alternate"
@@ -665,19 +665,19 @@ def check : IO Unit := do
     (ReceiptControls.droppedMatching.reconstructMatch canonical.request original).isSome false
   expect "callbacks.receipt.unqualified-replay"
     (ReceiptControls.replayedMatching.reconstructMatch canonical.request changed).isSome true
-  expect "callbacks.hol.actual" (holRun? common (UniformListChartNIKService.actualRequest [])).isSome true
+  expect "callbacks.hol.actual" (holRun? common (UniformListChartService.actualRequest [])).isSome true
   expect "callbacks.hol.detour" (holRun? common (UniformListChartProofSyntax.detouredRequest [])).isSome true
   expect "callbacks.hol.changed-premises" (holRun? common (HOLCallbackControls.changedPremises [])).isSome false
   expect "callbacks.hol.valid-proof-ignores-history"
     (holRun? HOLCallbackControls.replayedHOL (HOLCallbackControls.changedPremises [])).isSome true
   expect "callbacks.hol.changed-claim"
     (holRun? HOLCallbackControls.replayedHOL
-      { UniformListChartNIKService.actualRequest [] with
+      { UniformListChartService.actualRequest [] with
         claim := (Mettapedia.Logic.HOL.UniformListInduction.theory,
           Mettapedia.Logic.HOL.UniformListInduction.lengthNil) }).isSome false
   expect "callbacks.hol.missing-induction"
     (holRun? common
-      { UniformListChartNIKService.actualRequest [] with
+      { UniformListChartService.actualRequest [] with
         claim := (Mettapedia.Logic.HOL.UniformListInduction.equations,
           Mettapedia.Logic.HOL.UniformListInduction.mapLength) }).isSome false
 
@@ -694,46 +694,46 @@ private def selection : Option Bool → String
 
 def check : IO Unit := do
   let outcomes : List (String × Option Bool × String) := [
-    ("support", NIKPropositionBranching.Controls.acceptedThen.asBool, "then"),
-    ("bad-proof", NIKPropositionBranching.Controls.badSupport.asBool, "residual"),
-    ("partial-refutation", NIKPropositionBranching.Controls.partialOpposition.asBool, "residual"),
-    ("complete-refutation", NIKPropositionBranching.Controls.acceptedElse.asBool, "else")]
+    ("support", EvidenceConditionedBranching.Controls.acceptedThen.asBool, "then"),
+    ("bad-proof", EvidenceConditionedBranching.Controls.badSupport.asBool, "residual"),
+    ("partial-refutation", EvidenceConditionedBranching.Controls.partialOpposition.asBool, "residual"),
+    ("complete-refutation", EvidenceConditionedBranching.Controls.acceptedElse.asBool, "else")]
   for (label, outcome, wanted) in outcomes do
     expect s!"branch.{label}" (selection outcome) wanted
   let positive := CompletenessSpectrum.SAT.Canary.positiveFormula
   let negative := CompletenessSpectrum.SAT.Canary.contradictionFormula
   expect "branch.empty-search"
-    (selection (NIKPropositionBranching.Controls.sampleAssignments [] positive []).asBool) "residual"
+    (selection (EvidenceConditionedBranching.Controls.sampleAssignments [] positive []).asBool) "residual"
   expect "branch.unsuccessful-search"
-    (selection (NIKPropositionBranching.Controls.sampleAssignments [] positive
+    (selection (EvidenceConditionedBranching.Controls.sampleAssignments [] positive
       [CompletenessSpectrum.SAT.Canary.falseAssignment]).asBool) "residual"
   expect "branch.successful-search"
-    (selection (NIKPropositionBranching.Controls.sampleAssignments [] positive
+    (selection (EvidenceConditionedBranching.Controls.sampleAssignments [] positive
       [CompletenessSpectrum.SAT.Canary.falseAssignment, CompletenessSpectrum.SAT.Canary.trueAssignment]).asBool) "then"
   expect "branch.complete-decision.positive"
-    (selection (NIKPropositionBranching.decideOutcome NIKPropositionBranching.Controls.meaning []
-      (NIKPropositionBranching.Controls.decision []) positive).asBool) "then"
+    (selection (EvidenceConditionedBranching.decideOutcome EvidenceConditionedBranching.Controls.meaning []
+      (EvidenceConditionedBranching.Controls.decision []) positive).asBool) "then"
   expect "branch.complete-decision.negative"
-    (selection (NIKPropositionBranching.decideOutcome NIKPropositionBranching.Controls.meaning []
-      (NIKPropositionBranching.Controls.decision []) negative).asBool) "else"
+    (selection (EvidenceConditionedBranching.decideOutcome EvidenceConditionedBranching.Controls.meaning []
+      (EvidenceConditionedBranching.Controls.decision []) negative).asBool) "else"
   expect "branch.bad-proof.no-effects"
-    ((runWorldsAt (NIKPropositionBranching.branchProgram NIKPropositionBranching.Controls.badSupport
-      NIKPropositionBranching.Controls.thenEffect NIKPropositionBranching.Controls.elseEffect) 7 [true]).map
+    ((runWorldsAt (EvidenceConditionedBranching.branchProgram EvidenceConditionedBranching.Controls.badSupport
+      EvidenceConditionedBranching.Controls.thenEffect EvidenceConditionedBranching.Controls.elseEffect) 7 [true]).map
         (fun world => (world.branch, world.state, world.intents)) == [([true], 7, [])]) true
   expect "branch.empty-search.no-effects"
-    ((runWorldsAt (NIKPropositionBranching.branchProgram
-      (NIKPropositionBranching.Controls.sampleAssignments [] positive [])
-      NIKPropositionBranching.Controls.thenEffect NIKPropositionBranching.Controls.elseEffect) 7 [true]).map
+    ((runWorldsAt (EvidenceConditionedBranching.branchProgram
+      (EvidenceConditionedBranching.Controls.sampleAssignments [] positive [])
+      EvidenceConditionedBranching.Controls.thenEffect EvidenceConditionedBranching.Controls.elseEffect) 7 [true]).map
         (fun world => (world.branch, world.state, world.intents)) == [([true], 7, [])]) true
   expect "branch.support.only-then-effects"
-    ((runWorldsAt (NIKPropositionBranching.branchProgram NIKPropositionBranching.Controls.acceptedThen
-      NIKPropositionBranching.Controls.thenEffect NIKPropositionBranching.Controls.elseEffect) 7 [true]).map
+    ((runWorldsAt (EvidenceConditionedBranching.branchProgram EvidenceConditionedBranching.Controls.acceptedThen
+      EvidenceConditionedBranching.Controls.thenEffect EvidenceConditionedBranching.Controls.elseEffect) 7 [true]).map
         (fun world => (world.branch, world.state, world.intents)) == [([true], 8, ["then"])]) true
   expect "branch.refutation.only-else-effects"
-    ((runWorldsAt (NIKPropositionBranching.branchProgram NIKPropositionBranching.Controls.acceptedElse
-      NIKPropositionBranching.Controls.thenEffect NIKPropositionBranching.Controls.elseEffect) 7 [true]).map
+    ((runWorldsAt (EvidenceConditionedBranching.branchProgram EvidenceConditionedBranching.Controls.acceptedElse
+      EvidenceConditionedBranching.Controls.thenEffect EvidenceConditionedBranching.Controls.elseEffect) 7 [true]).map
         (fun world => (world.branch, world.state, world.intents)) == [([true], 107, ["else"])]) true
-  let result : Option (List Nat) := (NIKServiceInvocation.invoke
+  let result : Option (List Nat) := (SemanticServiceInvocation.invoke
     (FiniteSetRepresentationService.unionRequest FiniteSetRepresentationService.Controls.first
       FiniteSetRepresentationService.Controls.second FiniteSetRepresentationService.Controls.input)).acceptedValue
   expect "finite-set.actual-ordered-code" (result == some [2, 1, 2, 3, 1]) true
@@ -1080,7 +1080,7 @@ end RetainedNativeInstantiation
 namespace InconclusiveViews
 
 open Mettapedia.GSLT.LanguageDef
-open NIKPropositionBranching.Controls CompletenessSpectrum.SAT.Canary
+open EvidenceConditionedBranching.Controls CompletenessSpectrum.SAT.Canary
 open Mettapedia.TypeTheory.AuthorityOutcomeViews
 
 def check : IO Unit := do
@@ -1089,8 +1089,8 @@ def check : IO Unit := do
   let established := sampleAssignments [] positiveFormula [falseAssignment, trueAssignment]
   expect "attempt-view.same-empty-answer" (untouched.asBool == attempted.asBool) true
   expect "attempt-view.same-incomplete-status" (untouched.publicStatus == attempted.publicStatus) true
-  expect "attempt-view.empty-submission" (NIKOutcomeViewControls.sampledReceiptSize [] positiveFormula []) (some 0)
-  expect "attempt-view.rejected-submission" (NIKOutcomeViewControls.sampledReceiptSize [] positiveFormula [falseAssignment]) (some 1)
+  expect "attempt-view.empty-submission" (OutcomeViewControls.sampledReceiptSize [] positiveFormula []) (some 0)
+  expect "attempt-view.rejected-submission" (OutcomeViewControls.sampledReceiptSize [] positiveFormula [falseAssignment]) (some 1)
   expect "attempt-view.retained-submission"
     ((retainedIncompleteReceipt (retainedView attempted)).map List.length) (some 1)
   expect "attempt-view.success" established.asBool (some true)

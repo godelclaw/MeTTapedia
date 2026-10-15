@@ -1,6 +1,6 @@
 import Mettapedia.Languages.MeTTa.PeTTa.CallGuardNativeKernel
 import Mettapedia.Logic.MarkovLogicSocialSmoking
-import Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority
+import Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRavenInductionBridge
 
 /-!
@@ -181,16 +181,16 @@ theorem typed_temporal_derivation :
     (gsltOSLF callGuardGSLT).satisfies
         (⟨claim, .pending⟩ : CallMachine)
         (typedCallNTT claim declaration).pred ∧
-      (Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.nativeKernel.toChecker).check
-          Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.claim
-          Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate = true ∧
-      Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.deriveGSLT.MultiStep
-          ⟨Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.initial,
-            Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate⟩
-          ⟨Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.final, []⟩ :=
+      (Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.nativeKernel.toChecker).check
+          Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.claim
+          Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate = true ∧
+      Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.deriveGSLT.MultiStep
+          ⟨Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.initial,
+            Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate⟩
+          ⟨Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.final, []⟩ :=
   ⟨call_inhabits_generated_ntt,
-    Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate_accepted,
-    Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate_has_oslf_trace⟩
+    Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate_accepted,
+    Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate_has_oslf_trace⟩
 
 def untypedResultSnapshot : Snapshot :=
   ⟨300, [declaration], [⟨301, initialValue, stateType⟩], ["PLN.Derive"]⟩
@@ -204,13 +204,13 @@ theorem missing_result_annotation_separates_authorities :
     ¬ (gsltOSLF callGuardGSLT).satisfies
         (⟨untypedResultClaim, .pending⟩ : CallMachine)
         (typedCallNTT untypedResultClaim declaration).pred ∧
-      (Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.nativeKernel.toChecker).check
-          Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.claim
-          Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate = true := by
+      (Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.nativeKernel.toChecker).check
+          Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.claim
+          Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate = true := by
   constructor
   · rw [satisfies_typedCallNTT_iff]
     decide
-  · exact Mettapedia.PLN.Bridges.GSLT.PLNDeriveNIKAuthority.TemporalCanary.certificate_accepted
+  · exact Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority.TemporalCanary.certificate_accepted
 
 end Derive
 

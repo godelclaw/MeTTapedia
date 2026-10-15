@@ -191,8 +191,6 @@ theorem liftTypingRule_locallyValid (carrier : String) :
     ContextualInferenceCanonicalContext.sequent,
     ContextualInferenceCanonicalContext.claim,
     typingClaim, claimLabel, ClaimKind.tag, bridgeRuleName,
-    RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
-    RuleSchema.occurrences, RuleSchema.patterns,
     patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
     patternHasNoCollectionRest, patternsHaveNoCollectionRest,
     Pattern.isWellScoped, Pattern.isWellScopedAt,

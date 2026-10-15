@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.GSLT
 import Mettapedia.Logic.HOL.Derivation
 
@@ -31,16 +32,8 @@ def Packed (Base : Type) (Const : Ty Base → Type) : Type :=
 
 /-- HOL language as a GSLT: terms, definitional equality, no computational
 rewrites.  Inference is `Derivation`, not this relation. -/
-def holTermGSLT (Base : Type) (Const : Ty Base → Type) : GSLT where
-  Term := Packed Base Const
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def holTermGSLT (Base : Type) (Const : Ty Base → Type) : GSLT :=
+  GSLT.stepFree (Packed Base Const)
 
 theorem holTerm_no_step {Base : Type} {Const : Ty Base → Type}
     (source target : Packed Base Const) :
@@ -54,16 +47,8 @@ abbrev SeedFormula : Type := Formula SeedConst []
 
 /-- Closed HOL formulas as a GSLT.  Empty rewrites: tautology is a property
 of `Derivation`, not a one-step relation. -/
-def holFormulaGSLT : GSLT where
-  Term := SeedFormula
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def holFormulaGSLT : GSLT :=
+  GSLT.stepFree (SeedFormula)
 
 theorem holFormula_no_step (source target : SeedFormula) :
     ¬ holFormulaGSLT.Step source target :=

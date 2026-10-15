@@ -8,7 +8,7 @@ exact `RuleWitness`.  The witness is the pinned primitive request itself; the
 Boolean root test checks the exact ordered premise list, the policy obligation,
 and the complete structural theorem result including axiom provenance.
 
-This is the generic NIK-facing boundary.  It does not designate any policy as
+This is the generic SemanticService-facing boundary.  It does not designate any policy as
 HOL, and it does not add the still-missing definition or article-machine
 layers.
 -/

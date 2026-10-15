@@ -86,11 +86,15 @@ def lamPlain : Src S X → Bool
 
 variable [DecidableEq X]
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 /-! ## The policies coincide on explicit text -/
 
 /-- **Rule M on explicit text is the query-wide policy.** -/
 theorem elabMS_explicit : ∀ (t : Src S X) (E : List X) (env : REnv X) (pos : Owner),
-    explicit t = true → elabMS E env pos t = elabQ env pos t
+    explicit t = true → elabMS R E env pos t = elabQ R env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -142,7 +146,7 @@ theorem elabMS_explicit : ∀ (t : Src S X) (E : List X) (env : REnv X) (pos : O
 
 /-- **Explicit capture on explicit text is the query-wide policy.** -/
 theorem elabEC_explicit : ∀ (t : Src S X) (env : REnv X) (pos : Owner),
-    explicit t = true → elabEC env pos t = elabQ env pos t
+    explicit t = true → elabEC R env pos t = elabQ R env pos t
   | .sym _, _, _, _ => rfl
   | .fn _, _, _, _ => rfl
   | .sv _, _, _, _ => rfl
@@ -195,7 +199,7 @@ theorem elabEC_explicit : ∀ (t : Src S X) (env : REnv X) (pos : Owner),
 /-- **Lexical fresh on explicit text is the query-wide policy**, whatever names
 are in force. -/
 theorem elabLF_explicit : ∀ (t : Src S X) (env : REnv X) (cr : List X) (pos : Owner),
-    explicit t = true → elabLF env cr pos t = elabQ env pos t
+    explicit t = true → elabLF R env cr pos t = elabQ R env pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -249,13 +253,13 @@ theorem elabLF_explicit : ∀ (t : Src S X) (env : REnv X) (cr : List X) (pos : 
 theorem elabForm_explicit (o o' : Ownership) (root : Owner) {t : Src S X}
     (h : explicit t = true) : elabForm o root t = elabForm o' root t := by
   have toQ : ∀ ownership : Ownership,
-      elabForm ownership root t = elabQ (fun _ => root) root t := by
+      elabForm ownership root t = elabQ root (fun _ => root) root t := by
     intro ownership
     cases ownership
     · rfl
-    · exact elabMS_explicit t _ _ _ h
-    · exact elabLF_explicit t _ _ _ h
-    · exact elabEC_explicit t _ _ h
+    · exact elabMS_explicit root t _ _ _ h
+    · exact elabLF_explicit root t _ _ _ h
+    · exact elabEC_explicit root t _ _ h
   rw [toQ o, toQ o']
 
 /-- The same under every lifetime, with the slots exported. -/
@@ -592,7 +596,7 @@ theorem names_explicateEC : ∀ t : Src S X, Src.names (explicateEC t) = Src.nam
 /-- **Writing out what explicit capture inferred changes no elaboration**, on
 every text and in every context. -/
 theorem elabEC_explicateEC : ∀ (t : Src S X) (env : REnv X) (pos : Owner),
-    elabEC env pos (explicateEC t) = elabEC env pos t
+    elabEC R env pos (explicateEC t) = elabEC R env pos t
   | .sym _, _, _ => rfl
   | .fn _, _, _ => rfl
   | .sv _, _, _ => rfl

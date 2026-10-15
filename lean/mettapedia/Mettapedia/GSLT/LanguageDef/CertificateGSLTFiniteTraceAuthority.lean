@@ -263,7 +263,7 @@ theorem finiteTraceAuthority_correspondence
       checkTraceFrom_complete stepAuthority complete meaningful
     exact ⟨⟨links⟩, accepted⟩
 
-/-- The native NIK obligation for a finite GSLT trace: every native
+/-- The native SemanticService obligation for a finite GSLT trace: every native
 acceptance lowers to the generated trace authority. -/
 abbrev FiniteTraceCheckedLowering
     {AuthorityId : Type uAuthority} {theory : GSLT}

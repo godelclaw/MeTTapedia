@@ -1243,7 +1243,7 @@ theorem witnessInstanceLimitUsing_levelWitnessSupply_avoids_future_layers
     AvoidsParamLayersFrom (Base := Base) (Const := Const) (ℓ + 1)
       (witnessInstanceLimitUsing (levelWitnessSupply ℓ) T enum) := by
   intro ψ hψ σ m k hm
-  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψT | ⟨n, hψn⟩
   · exact hT ψ hψT σ m k hm
   · exact witnessInstanceChainUsing_levelWitnessSupply_avoids_future_layers
@@ -1365,7 +1365,7 @@ theorem witnessInstanceLimitUsing_stageWitnessSupply_avoids_future_layers
     AvoidsParamLayersFrom (Base := Base) (Const := Const) (ℓ + 1)
       (witnessInstanceLimitUsing (stageWitnessSupply ℓ s) T enum) := by
   intro ψ hψ σ m k hm
-  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψT | ⟨n, hψn⟩
   · exact hT ψ hψT σ m k hm
   · exact witnessInstanceChainUsing_stageWitnessSupply_avoids_future_layers
@@ -1381,7 +1381,7 @@ theorem witnessInstanceLimitUsing_stageWitnessSupply_avoids_future_stages
     AvoidsParamStagesFrom (Base := Base) (Const := Const) ℓ (s + 1)
       (witnessInstanceLimitUsing (stageWitnessSupply ℓ s) T enum) := by
   intro ψ hψ σ r k hrs
-  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessInstanceLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψT | ⟨n, hψn⟩
   · exact hT ψ hψT σ r k hrs
   · exact witnessInstanceChainUsing_stageWitnessSupply_avoids_future_stages
@@ -4444,7 +4444,7 @@ theorem witnessLimitUsing_levelWitnessSupply_avoids_future_layers
     AvoidsParamLayersFrom (Base := Base) (Const := Const) (ℓ + 1)
       (witnessLimitUsing (levelWitnessSupply ℓ) T enum) := by
   intro ψ hψ σ m k hm
-  simp only [witnessLimitUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψT | ⟨n, hψn⟩
   · exact hT ψ hψT σ m k hm
   · exact witnessChainUsing_levelWitnessSupply_avoids_future_layers
@@ -4460,7 +4460,7 @@ theorem witnessLimitUsing_stageWitnessSupply_avoids_future_stages
     AvoidsParamStagesFrom (Base := Base) (Const := Const) ℓ (s + 1)
       (witnessLimitUsing (stageWitnessSupply ℓ s) T enum) := by
   intro ψ hψ σ r k hrs
-  simp only [witnessLimitUsing, Set.mem_union, Set.mem_setOf_eq] at hψ
+  simp only [witnessLimitUsing, Set.mem_union, Set.mem_ofPred_eq] at hψ
   rcases hψ with hψT | ⟨n, hψn⟩
   · exact hT ψ hψT σ r k hrs
   · exact witnessChainUsing_stageWitnessSupply_avoids_future_stages

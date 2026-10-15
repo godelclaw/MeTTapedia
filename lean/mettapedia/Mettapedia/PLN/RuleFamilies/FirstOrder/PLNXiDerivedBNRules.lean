@@ -428,6 +428,9 @@ private lemma eventEq_true_eq_eventTrue (v : Three) :
 
 /-! ### Bridge lemmas: queryProb → jointMeasure -/
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 /-- queryProb for prop at `true` = marginal measure μ(event). -/
 private lemma queryProb_prop_true_eq
     (cpt : ChainBN.DiscreteCPT) (v : Three) :
@@ -437,6 +440,9 @@ private lemma queryProb_prop_true_eq
   rw [propProbVE_eq_jointMeasure_eventEq, eventEq_true_eq_eventTrue]
   rfl
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 /-- queryProb for link at `true` = conditional probability ratio μ(a∩b)/μ(a). -/
 private lemma queryProb_link_true_eq
     (cpt : ChainBN.DiscreteCPT) (a b : Three)
@@ -453,11 +459,17 @@ private lemma queryProb_link_true_eq
 
 /-! ### Probability bounds (needed by singleton bridge) -/
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 private lemma queryProb_prop_true_le_one
     (cpt : ChainBN.DiscreteCPT) (v : Three) :
     queryProb (bn := chainBN) cpt (AtomQuery.prop ⟨v, true⟩) ≤ 1 := by
   rw [queryProb_prop_true_eq]; exact prob_le_one
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 private lemma queryProb_link_true_le_one
     (cpt : ChainBN.DiscreteCPT) (a b : Three) :
     queryProb (bn := chainBN) cpt (AtomQuery.link ⟨a, true⟩ ⟨b, true⟩) ≤ 1 := by
@@ -471,6 +483,9 @@ private lemma queryProb_link_true_le_one
 
 /-! ### ENNReal → ℝ bridge: queryStrength.toReal = μ.real -/
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 /-- Singleton prop queryStrength.toReal = μ.real(event). -/
 private lemma queryStrength_singleton_prop_toReal
     (cpt : ChainBN.DiscreteCPT) (v : Three) :
@@ -482,6 +497,9 @@ private lemma queryStrength_singleton_prop_toReal
   rw [queryProb_prop_true_eq]
   simp [Measure.real]
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 /-- Singleton link queryStrength.toReal = μ.real(b∩a)/μ.real(a).
 Note: intersection order is b∩a (not a∩b) to match Tier B convention. -/
 private lemma queryStrength_singleton_link_toReal
@@ -501,6 +519,9 @@ private lemma queryStrength_singleton_link_toReal
 
 /-! ### Composition theorem -/
 
+omit [(v : Three) → Inhabited (chainBN.stateSpace v)]
+  [∀ (v : Three), StandardBorelSpace (chainBN.stateSpace v)]
+  [StandardBorelSpace chainBN.JointSpace] in
 /-- **Tier A→B Composition**: For the chain BN with singleton CPT state,
 the PLN deduction probability identity holds at the queryStrength level:
 
@@ -689,12 +710,7 @@ variable
   [StandardBorelSpace forkBN.JointSpace]
 
 /-- All CPTs in the fork BN satisfy the local Markov property. -/
-abbrev ForkBNLocalMarkovAll
-    [∀ v : Three, Fintype (forkBN.stateSpace v)]
-    [∀ v : Three, DecidableEq (forkBN.stateSpace v)]
-    [∀ v : Three, Inhabited (forkBN.stateSpace v)]
-    [∀ v : Three, StandardBorelSpace (forkBN.stateSpace v)]
-    [StandardBorelSpace forkBN.JointSpace] :=
+abbrev ForkBNLocalMarkovAll :=
   ∀ cpt : forkBN.DiscreteCPT, HasLocalMarkovProperty forkBN cpt.jointMeasure
 
 /-! ### Shape 1: Side condition derivation -/
@@ -1060,12 +1076,7 @@ variable
   [StandardBorelSpace colliderBN.JointSpace]
 
 /-- All CPTs in the collider BN satisfy the local Markov property. -/
-abbrev ColliderBNLocalMarkovAll
-    [∀ v : Three, Fintype (colliderBN.stateSpace v)]
-    [∀ v : Three, DecidableEq (colliderBN.stateSpace v)]
-    [∀ v : Three, Inhabited (colliderBN.stateSpace v)]
-    [∀ v : Three, StandardBorelSpace (colliderBN.stateSpace v)]
-    [StandardBorelSpace colliderBN.JointSpace] :=
+abbrev ColliderBNLocalMarkovAll :=
   ∀ cpt : colliderBN.DiscreteCPT, HasLocalMarkovProperty colliderBN cpt.jointMeasure
 
 /-! ### Shape 1: Side condition derivation -/
@@ -1469,7 +1480,7 @@ noncomputable def wmRewriteRuleToSigmaUnit
 
 /-- Constant-family typed WM adapter from an untyped WM.
 This is kept as a non-instance to avoid global instance-coherence pressure. -/
-def worldModelSigmaConstFromUntyped
+@[instance_reducible] def worldModelSigmaConstFromUntyped
     (State Srt Query : Type*)
     [EvidenceType State] [BinaryWorldModel State Query] :
     WorldModelSigma State Srt (fun _ : Srt => Query) where
@@ -1530,7 +1541,7 @@ def ofIndex {Srt Query : Type} (s : Srt) (q : Query) : IndexedQuery Srt Query s 
 end IndexedQuery
 
 /-- Local dependent WMΣ adapter over an arbitrary sort index from an untyped WM. -/
-def worldModelSigmaIndexedFromUntyped
+@[instance_reducible] def worldModelSigmaIndexedFromUntyped
     (State Srt Query : Type)
     [EvidenceType State] [BinaryWorldModel State Query] :
     WorldModelSigma State Srt (IndexedQuery Srt Query) where
@@ -1600,7 +1611,7 @@ def ofSort {Query : Type} (s : Three) (q : Query) : ThreeNativeQueryFamily Query
 end ThreeNativeQueryFamily
 
 /-- Native `WorldModelSigma` over `ThreeNativeQueryFamily` (prototype, no erase). -/
-def worldModelSigmaThreeNativeFromUntyped
+@[instance_reducible] def worldModelSigmaThreeNativeFromUntyped
     (State Query : Type)
     [EvidenceType State] [BinaryWorldModel State Query] :
     WorldModelSigma State Three (ThreeNativeQueryFamily Query) where
@@ -1684,7 +1695,7 @@ def ofSort {Query : Type} (s : Three) (q : Query) : ThreeNativeTaggedQueryFamily
 end ThreeNativeTaggedQueryFamily
 
 /-- Native `WorldModelSigma` over `ThreeNativeTaggedQueryFamily` (no erase bridge). -/
-def worldModelSigmaThreeNativeTaggedFromUntyped
+@[instance_reducible] def worldModelSigmaThreeNativeTaggedFromUntyped
     (State Query : Type)
     [EvidenceType State] [BinaryWorldModel State Query] :
     WorldModelSigma State Three (ThreeNativeTaggedQueryFamily Query) where
@@ -1795,7 +1806,7 @@ def ofSort {Query : Type} (s : MeTTaSortTag) (q : Query) : SortTaggedQuery Query
 end SortTaggedQuery
 
 /-- Local dependent WMΣ adapter over OSLF sort tags from an untyped WM. -/
-def worldModelSigmaSortTaggedFromUntyped
+@[instance_reducible] def worldModelSigmaSortTaggedFromUntyped
     (State Query : Type)
     [EvidenceType State] [BinaryWorldModel State Query] :
     WorldModelSigma State MeTTaSortTag (SortTaggedQuery Query) where
@@ -2325,7 +2336,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag_applyITV_bayesExa
         ((xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag
           (s0 := s0) (valA := valA) (valB := valB) (valC := valC) hLMarkov).derive W)) := by
   intro W hSide hW
-  letI : WorldModelSigma
+  let : WorldModelSigma
       (BNWorldModel.State (bn := chainBN))
       MeTTaSortTag
       (SortTaggedQuery (AtomQuery (BNQuery.Atom (bn := chainBN)))) :=
@@ -2372,7 +2383,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag_applyITV_walleyID
         ((xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag
           (s0 := s0) (valA := valA) (valB := valB) (valC := valC) hLMarkov).derive W)) := by
   intro W hSide hW
-  letI : WorldModelSigma
+  let : WorldModelSigma
       (BNWorldModel.State (bn := chainBN))
       MeTTaSortTag
       (SortTaggedQuery (AtomQuery (BNQuery.Atom (bn := chainBN)))) :=

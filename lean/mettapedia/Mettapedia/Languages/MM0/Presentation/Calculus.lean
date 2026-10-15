@@ -9,7 +9,7 @@ import Mettapedia.Languages.MM0.Presentation.AdmissionData
 import Mettapedia.GSLT.LanguageDef.FirstOrderRules
 
 /-!
-# MM0 proof checking as a calculus
+# MM0 kernel inference calculus
 
 The calculus is fixed, and a theory enters only as data. Its judgments are
 derivability of an expression from local hypotheses, derivability of a list of
@@ -146,8 +146,9 @@ def definition : CalculusLanguageDef :=
 theorem definition_valid : definition.isValid = true := by
   decide +kernel
 
-/-- **The MM0 calculus.** -/
-def formMM0 : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
+/-- The MM0 kernel’s inference rules, validated as a calculus presentation.
+The theory varies as data through `family`; this object fixes the rule schemas. -/
+def kernelCalculus : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
 
 theorem rules_foPackage : FOPackage rules := by
   have hn : rules.all (fun r => decide r.vars.Nodup) = true := by decide +kernel
@@ -159,7 +160,7 @@ theorem rules_foPackage : FOPackage rules := by
     fun r hr => bindingSchemasFragment_of_check ((List.all_eq_true.mp hp) r hr),
     fun r hr => bindingSchemaFragment_of_check ((List.all_eq_true.mp hc) r hr)⟩
 
-theorem presents : Presents formMM0 rules := ⟨rules_foPackage, rfl⟩
+theorem presents : Presents kernelCalculus rules := ⟨rules_foPackage, rfl⟩
 
 /-! ## The kernel operations of a theory -/
 
@@ -608,7 +609,7 @@ theorem rules_meaningSound {r : FORule} (member : r ∈ rules) (args : List Patt
 /-- **Soundness**: everything derivable from the rules and the facts of a
 theory has its kernel meaning. -/
 theorem meaning_of_factDerivation {p : Pattern}
-    (derived : FactDerivation formMM0 (family T).Fact p) : Meaning T p := by
+    (derived : FactDerivation kernelCalculus (family T).Fact p) : Meaning T p := by
   induction derived with
   | fact holds => exact fact_meaning holds
   | byRule ruleInstance application _ ih =>
@@ -619,7 +620,7 @@ theorem meaning_of_factDerivation {p : Pattern}
       simp only at sameId
       subst sameId
       obtain ⟨length, -, hpremises, hconclusion⟩ :=
-        (ruleApplication_iff formMM0 rules presents.package r member (presents.lookup member)
+        (ruleApplication_iff kernelCalculus rules presents.package r member (presents.lookup member)
           args _ _).mp application
       subst hpremises hconclusion
       exact rules_meaningSound member args length ih
@@ -628,15 +629,15 @@ theorem meaning_of_factDerivation {p : Pattern}
 
 theorem applyRule {Fact : Pattern → Prop} {r : FORule} (member : r ∈ rules) (args : List Pattern)
     (length : args.length = r.vars.length) (valid : ∀ a ∈ args, argumentValidAt 0 a = true)
-    (children : ∀ p ∈ r.instPremises args, FactDerivation formMM0 Fact p) :
-    FactDerivation formMM0 Fact (r.instConclusion args) :=
+    (children : ∀ p ∈ r.instPremises args, FactDerivation kernelCalculus Fact p) :
+    FactDerivation kernelCalculus Fact (r.instConclusion args) :=
   .byRule ⟨⟨r.id⟩, args⟩
-    ((ruleApplication_iff formMM0 rules presents.package r member (presents.lookup member) args _ _).mpr
+    ((ruleApplication_iff kernelCalculus rules presents.package r member (presents.lookup member) args _ _).mpr
       ⟨length, valid, rfl, rfl⟩)
     children
 
 theorem hypothesis_derived {expression : Preterm} : ∀ {hypotheses : List Preterm},
-    expression ∈ hypotheses → FactDerivation formMM0 (family T).Fact (hypothesisJ expression hypotheses)
+    expression ∈ hypotheses → FactDerivation kernelCalculus (family T).Fact (hypothesisJ expression hypotheses)
   | _ :: rest, .head _ => by
       have derived := applyRule (Fact := (family T).Fact) (r := rHypothesisHere) (by simp [rules])
         [expressionPattern expression, itemsPattern (rest.map encode)] rfl
@@ -664,7 +665,7 @@ mutual
 and the facts of the theory. -/
 theorem derived_of_derives {context : Context} {hypotheses : List Preterm} : ∀ {expression : Preterm},
     Derives T.termSignature T.definitionSignature T.theoremSignature context hypotheses expression →
-      FactDerivation formMM0 (family T).Fact (derivesJ context hypotheses expression)
+      FactDerivation kernelCalculus (family T).Fact (derivesJ context hypotheses expression)
   | expression, .hypothesis member => by
       have child := hypothesis_derived (T := T) member
       have derived := applyRule (Fact := (family T).Fact) (r := rHypothesis) (by simp [rules])
@@ -681,10 +682,10 @@ theorem derived_of_derives {context : Context} {hypotheses : List Preterm} : ∀
   | _,
       .theoremApp (index := index) (declaration := declaration) (arguments := arguments)
         (instantiation := result) found instantiated premises => by
-      have lookupFact : FactDerivation formMM0 (family T).Fact (theoremJ index declaration) :=
+      have lookupFact : FactDerivation kernelCalculus (family T).Fact (theoremJ index declaration) :=
         .fact ((family_fact_iff T _).mpr (.inl ⟨index, declaration, found, rfl⟩))
       have instanceFact :
-          FactDerivation formMM0 (family T).Fact (instanceJ context declaration arguments result) :=
+          FactDerivation kernelCalculus (family T).Fact (instanceJ context declaration arguments result) :=
         .fact ((family_fact_iff T _).mpr
           (.inr (.inl ⟨context, declaration, arguments, result, instantiated, rfl⟩)))
       have children := derived_of_derivesList premises
@@ -708,7 +709,7 @@ theorem derived_of_derives {context : Context} {hypotheses : List Preterm} : ∀
       converted derivedLeft => by
       obtain ⟨witness, checks⟩ := converted.certificate_exists
       have conversionFact :
-          FactDerivation formMM0 (family T).Fact (convertsJ context ⟨left, right, sort⟩) :=
+          FactDerivation kernelCalculus (family T).Fact (convertsJ context ⟨left, right, sort⟩) :=
         .fact ((family_fact_iff T _).mpr (.inr (.inr ⟨context, witness, ⟨left, right, sort⟩, checks, rfl⟩)))
       have child := derived_of_derives derivedLeft
       have derived := applyRule (Fact := (family T).Fact) (r := rConversion) (by simp [rules])
@@ -729,7 +730,7 @@ theorem derived_of_derives {context : Context} {hypotheses : List Preterm} : ∀
 theorem derived_of_derivesList {context : Context} {hypotheses : List Preterm} :
     ∀ {expressions : List Preterm},
     DerivesList T.termSignature T.definitionSignature T.theoremSignature context hypotheses expressions →
-      FactDerivation formMM0 (family T).Fact (allJ context hypotheses expressions)
+      FactDerivation kernelCalculus (family T).Fact (allJ context hypotheses expressions)
   | _, .nil => by
       have derived := applyRule (Fact := (family T).Fact) (r := rAllNil) (by simp [rules])
         [contextPattern context, expressionsPattern hypotheses] rfl
@@ -760,14 +761,14 @@ end
 /-- **Adequacy**: a derivability judgment follows from the rules and the facts
 of a theory exactly when the MM0 kernel derives it in that theory. -/
 theorem factDerivation_iff (context : Context) (hypotheses : List Preterm) (expression : Preterm) :
-    FactDerivation formMM0 (family T).Fact (derivesJ context hypotheses expression) ↔
+    FactDerivation kernelCalculus (family T).Fact (derivesJ context hypotheses expression) ↔
       Derives T.termSignature T.definitionSignature T.theoremSignature context hypotheses expression :=
   ⟨fun derived => (meaning_of_factDerivation derived).1 _ _ _ rfl, derived_of_derives⟩
 
 variable (T) in
-/-- **The MM0 tier of a theory**: the fixed calculus with the theory's kernel
-operations. -/
-def mm0 : AuthoredCalculus := ⟨formMM0, family T⟩
+/-- The theory-parametrized MM0 checker presentation, with the fixed kernel
+rules and this theory's authored kernel operations. -/
+def mm0 : AuthoredCalculus := ⟨kernelCalculus, family T⟩
 
 /-- **The shared checker accepts a certificate for `context ⊢ expression`
 exactly when the MM0 kernel derives it.** Computed leaves run the MM0 lookup,
@@ -784,7 +785,7 @@ about the implementation is assumed. -/
 theorem implementation_derives {Query : Type} {implementation : Query → Option Pattern}
     (trusted : (mm0 T).ReturnsFacts implementation) {context : Context}
     {hypotheses : List Preterm} {expression : Preterm} {proof : CompactProof Query}
-    (accepted : check formMM0 implementation (derivesJ context hypotheses expression) proof = true) :
+    (accepted : check kernelCalculus implementation (derivesJ context hypotheses expression) proof = true) :
     Derives T.termSignature T.definitionSignature T.theoremSignature context hypotheses expression :=
   (factDerivation_iff context hypotheses expression).mp
     (AuthoredCalculus.implementation_sound trusted accepted)

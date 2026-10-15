@@ -29,30 +29,6 @@ open NamedValueContexts
 
 variable {Op Value : Type}
 
-/-- Operand evaluation depends only on the bindings it actually names. -/
-theorem evalOperands_eq_of_agreement (left right : List (CellId × Value))
-    (operands : List CellId)
-    (agrees : ∀ cell ∈ operands, lookup left cell = lookup right cell) :
-    evalOperands left operands = evalOperands right operands := by
-  induction operands with
-  | nil => rfl
-  | cons cell cells inductionHypothesis =>
-      have head := agrees cell (by simp)
-      have tail := inductionHypothesis (fun observed member => agrees observed (by simp [member]))
-      simp only [evalOperands, head, tail]
-
-/-- The existing readiness evaluator is a concrete footprint-sensitive
-consumer. This theorem covers every source instruction and operator spec. -/
-theorem readyValue_eq_of_agreement (spec : PureOperatorSpec Op Value)
-    (left right : List (CellId × Value)) (instruction : Instruction Op Value)
-    (agrees : ∀ cell ∈ instruction.operands, lookup left cell = lookup right cell) :
-    readyValue spec left instruction = readyValue spec right instruction := by
-  cases instruction with
-  | const _ _ => rfl
-  | apply destination operator operands =>
-      have same := evalOperands_eq_of_agreement left right operands agrees
-      simp only [readyValue, same]
-
 theorem readyValue_eq_of_inspection (spec : PureOperatorSpec Op Value)
     (left right : List (CellId × Value)) (instruction : Instruction Op Value)
     (same : inspectBindings (lookup left) instruction.operands =

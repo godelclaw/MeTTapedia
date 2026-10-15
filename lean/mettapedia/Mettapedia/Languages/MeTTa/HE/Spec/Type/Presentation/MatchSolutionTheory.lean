@@ -80,7 +80,7 @@ private theorem reducedTypeConsistent_undefinedRight
 
 mutual
 
-private def appliedSolutions
+private theorem appliedSolutions
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : AppliedReducedTypeMatchRel substitution left right output)
     (normal : substitution.Normal)
@@ -115,7 +115,7 @@ private def appliedSolutions
       simpa [applyTypeValuation] using
         appliedListSolutions children normal valuation
 
-private def appliedPresentationSolutions
+private theorem appliedPresentationSolutions
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : AppliedTypePresentationMatchRel
       substitution left right output)
@@ -168,7 +168,7 @@ private def appliedPresentationSolutions
           _ = applyTypeValuation valuation resolvedRight :=
             congrArg (applyTypeValuation valuation) rightApply
 
-private def appliedListSolutions
+private theorem appliedListSolutions
     {substitution output : TypeSubst} {left right : List Atom}
     (derivation : AppliedReducedTypeListMatchRel
       substitution left right output)
@@ -199,7 +199,7 @@ private def appliedListSolutions
         exact ⟨headTheory.mpr ⟨incomingSatisfied, allEquations.1⟩,
           allEquations.2⟩
 
-private def reducedSolutions
+private theorem reducedSolutions
     {substitution output : TypeSubst} {left right : Atom}
     (derivation : ReducedTypePresentationMatchRel
       substitution left right output)
@@ -235,7 +235,7 @@ private def reducedSolutions
         valuation left right leafShape leftNotUndefined rightNotUndefined]
       exact appliedPresentationSolutions ordinary normal valuation
 
-private def reducedListSolutions
+private theorem reducedListSolutions
     {substitution output : TypeSubst} {left right : List Atom}
     (derivation : ReducedTypePresentationListMatchRel
       substitution left right output)

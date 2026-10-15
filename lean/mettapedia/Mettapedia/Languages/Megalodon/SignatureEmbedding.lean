@@ -14,9 +14,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.Megalodon.SignatureEmbedding
 
-open Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView
+open Mettapedia.GSLT.LanguageDef.TheoryProfileView
 open Mettapedia.Languages.Megalodon.MathdataKernel
-open Mettapedia.Languages.Megalodon.NIKNativeProof
+open Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 open Mettapedia.Languages.Megalodon.SelectedTheoryProfile
 
 /-- The structural part of a selected-theory signature map.  Type variables
@@ -1146,7 +1146,7 @@ theorem checkProof_map (embedding : Embedding source target)
       exact embedding.checkNormalizedProof_map fuel typeDepth termContext
         proofContext proof normalized
 
-/-! ## Induced selected-theory and NIK views -/
+/-! ## Induced selected-theory and SemanticService views -/
 
 def mapProfileClaim (embedding : Embedding source target)
     (claim : ProfileClaim) : ProfileClaim where
@@ -1173,7 +1173,7 @@ def mapProfileClaim (embedding : Embedding source target)
       mapTm embedding.map claim.proposition :=
   rfl
 
-/-- An exact heterogeneous signature embedding is a proof-carrying NIK view.
+/-- An exact heterogeneous signature embedding is a proof-carrying SemanticService view.
 The map changes the selected theory's primitive and base-type indices without
 changing the native Boolean judgment. -/
 def authorityView (embedding : Embedding source target) :
@@ -1463,7 +1463,7 @@ theorem source_profile_accepts :
     (contract.checker sourceEnvironment).check sourceClaim proof = true := by
   exact source_accepts
 
-/-- The same positive control through NIK's selected-theory authority waist. -/
+/-- The same positive control through SemanticService's selected-theory authority waist. -/
 theorem transported_profile_accepts :
     (contract.checker targetEnvironment).check
         (heterogeneousEmbedding.mapProfileClaim sourceClaim)

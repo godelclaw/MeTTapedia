@@ -212,7 +212,7 @@ inductive State where
   deriving DecidableEq, Repr
 
 /-- The only reduction is from the target to the sink. -/
-def inertGSLT : GSLT where
+def activationGSLT : GSLT where
   Term := State
   equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
   rewrites := fun source next => source = .target ∧ next = .sink
@@ -227,12 +227,12 @@ def inertGSLT : GSLT where
 
 /-- The one nontrivial context sends the first source to the target and fixes
 everything else; every context shape is admitted as minimal. -/
-def activate : GSLTContext inertGSLT where
+def activate : GSLTContext activationGSLT where
   plug := fun state => match state with
     | .first => .target
     | other => other
 
-instance : HasMinimalContexts inertGSLT where
+instance : HasMinimalContexts activationGSLT where
   IsOneHole := fun _ => True
   IsReactive := fun _ => True
   IsMinimal := fun _ => True
@@ -242,13 +242,13 @@ instance : HasMinimalContexts inertGSLT where
   minimal_reactive := fun _ => trivial
   minimal_oneHole := fun _ => trivial
 
-theorem plugResp : PlugRespectsEquiv inertGSLT := by
+theorem plugResp : PlugRespectsEquiv activationGSLT := by
   intro K left right equal
   cases equal
   exact rfl
 
 /-- Neither source reduces, so they are reduction bisimilar. -/
-theorem first_second_bisimilar : inertGSLT.Bisimilar .first .second := by
+theorem first_second_bisimilar : activationGSLT.Bisimilar .first .second := by
   refine ⟨fun left right => (left = .first ∧ right = .second) ∨ (left = .second ∧ right = .first),
     ⟨?_, ?_⟩, Or.inl ⟨rfl, rfl⟩⟩
   · rintro left right (⟨rfl, rfl⟩ | ⟨rfl, rfl⟩) _ step
@@ -260,12 +260,12 @@ theorem first_second_bisimilar : inertGSLT.Bisimilar .first .second := by
 
 /-- Yet the activating context separates them: `⟨activate⟩⊤` holds of the
 first source and fails on the second. -/
-theorem not_hmlEquiv : ¬ HMLFormula.hmlEquiv inertGSLT .first .second := by
+theorem not_hmlEquiv : ¬ HMLFormula.hmlEquiv activationGSLT .first .second := by
   intro equivalent
-  have holds : HMLFormula.satisfies inertGSLT .first
+  have holds : HMLFormula.satisfies activationGSLT .first
       (.diamond ⟨activate, trivial⟩ .top) :=
     ⟨.sink, ⟨rfl, rfl⟩, trivial⟩
-  have fails : ¬ HMLFormula.satisfies inertGSLT .second
+  have fails : ¬ HMLFormula.satisfies activationGSLT .second
       (.diamond ⟨activate, trivial⟩ .top) := by
     rintro ⟨_, step, _⟩
     exact State.noConfusion step.1
@@ -274,12 +274,12 @@ theorem not_hmlEquiv : ¬ HMLFormula.hmlEquiv inertGSLT .first .second := by
 /-- So reduction bisimilarity does not imply context-HML equivalence; the
 adequacy statement must use context-labeled bisimilarity. -/
 theorem reduction_bisimilarity_insufficient :
-    inertGSLT.Bisimilar .first .second ∧ ¬ HMLFormula.hmlEquiv inertGSLT .first .second :=
+    activationGSLT.Bisimilar .first .second ∧ ¬ HMLFormula.hmlEquiv activationGSLT .first .second :=
   ⟨first_second_bisimilar, not_hmlEquiv⟩
 
 /-- The transcription of the paper's adequacy statement with reduction
 bisimilarity is refuted. -/
-theorem not_adequacy_sound : ¬ GSLT.adequacy_sound inertGSLT :=
+theorem not_adequacy_sound : ¬ GSLT.adequacy_sound activationGSLT :=
   fun sound => not_hmlEquiv (sound first_second_bisimilar)
 
 #print axioms not_adequacy_sound

@@ -126,4 +126,84 @@ theorem krivine_machine_computes_tKO :
     ∃ st, Krivine.KSteps ⟨tKO, [], []⟩ st ∧ Krivine.Presents (.lit 7) [] st :=
   Krivine.eval_to_machine 6 [] tKO (.lit 7) rfl []
 
+/-! ## Checked code loading and instruction validity -/
+
+namespace MachineCore
+
+variable {Term Image : Type}
+
+/-- Load a code image only after its decoder supplies a source question.
+Decoder refusal creates no machine configuration. -/
+def loadCode (core : MachineCore Term) (decode : Image → Option Term)
+    (image : Image) : Option core.State :=
+  (decode image).map core.load
+
+theorem loadCode_some_iff (core : MachineCore Term) (decode : Image → Option Term)
+    (image : Image) (state : core.State) :
+    core.loadCode decode image = some state ↔
+      ∃ question, decode image = some question ∧ core.load question = state := by
+  cases decoded : decode image <;> simp [loadCode, decoded]
+
+@[simp] theorem loadCode_none_iff (core : MachineCore Term) (decode : Image → Option Term)
+    (image : Image) : core.loadCode decode image = none ↔ decode image = none := by
+  cases decoded : decode image <;> simp [loadCode, decoded]
+
+@[simp] theorem loadCode_identity (core : MachineCore Term) (question : Term) :
+    core.loadCode some question = some (core.load question) := rfl
+
+/-- Loading through two partial readers obeys their ordered composition.
+A failure in either reader cannot be replaced by a fabricated input. -/
+theorem loadCode_comp {Outer : Type} (core : MachineCore Term)
+    (decode : Image → Option Term) (outer : Outer → Option Image) (image : Outer) :
+    core.loadCode (fun packet => (outer packet).bind decode) image =
+      (outer image).bind (core.loadCode decode) := by
+  cases decoded : outer image <;> simp [loadCode, decoded]
+
+/-- A constructed compiler/readback inverse supplies exact canonical loading. -/
+theorem loadCode_encode (core : MachineCore Term) (encode : Term → Image)
+    (decode : Image → Option Term)
+    (roundtrip : ∀ question, decode (encode question) = some question) (question : Term) :
+    core.loadCode decode (encode question) = some (core.load question) := by
+  simp [loadCode, roundtrip]
+
+/-- A VM's fetched instruction must be legal in its actual retained state.
+Instances relate this independent legality judgment to their executable step;
+code admission alone does not supply this contract. -/
+structure InstructionContract (core : MachineCore Term) (Opcode : Type) where
+  fetch : core.State → Option Opcode
+  Legal : core.State → Opcode → Prop
+  enabled_iff : ∀ state,
+    (∃ next, core.step state = some next) ↔
+      ∃ opcode, fetch state = some opcode ∧ Legal state opcode
+
+namespace InstructionContract
+
+variable {Opcode : Type} {core : MachineCore Term}
+
+/-- Every executed instruction carries the instance's legality witness. -/
+theorem executed (contract : InstructionContract core Opcode)
+    {state next : core.State} (advanced : core.step state = some next) :
+    ∃ opcode, contract.fetch state = some opcode ∧ contract.Legal state opcode :=
+  (contract.enabled_iff state).mp ⟨next, advanced⟩
+
+/-- A missing or illegal fetched instruction has no outgoing core step.
+Answer and fault observers still decide how the stopped state is reported. -/
+theorem invalid_stops (contract : InstructionContract core Opcode)
+    {state : core.State}
+    (invalid : ¬ ∃ opcode, contract.fetch state = some opcode ∧ contract.Legal state opcode) :
+    core.step state = none := by
+  cases advanced : core.step state with
+  | none => rfl
+  | some next => exact False.elim (invalid (contract.executed advanced))
+
+/-- A legal fetched instruction constructs an executable successor. -/
+theorem legal_advances (contract : InstructionContract core Opcode)
+    {state : core.State} {opcode : Opcode}
+    (fetched : contract.fetch state = some opcode) (legal : contract.Legal state opcode) :
+    ∃ next, core.step state = some next :=
+  (contract.enabled_iff state).mpr ⟨opcode, fetched, legal⟩
+
+end InstructionContract
+end MachineCore
+
 end Mettapedia.Machines

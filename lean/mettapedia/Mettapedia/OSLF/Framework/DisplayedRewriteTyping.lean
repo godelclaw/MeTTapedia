@@ -278,7 +278,7 @@ private theorem positiveLanguage_valid : positiveLanguage.validate = [] := by
       LanguageDef.patternBinderNames, Pattern.constructorRefs,
       Pattern.constructorRefsList, Pattern.freeFvarNames,
       Pattern.isWellScoped, Pattern.isWellScopedAt,
-      Pattern.isWellScopedListAt, LanguageDef.typeNames, TypeDecl.plain]
+      Pattern.isWellScopedListAt, TypeDecl.plain]
 
 private theorem negativeLanguage_valid : negativeLanguage.validate = [] := by
   apply LanguageDef.validate_eq_nil_of_constructorAndRewrites
@@ -303,7 +303,7 @@ private theorem negativeLanguage_valid : negativeLanguage.validate = [] := by
       LanguageDef.patternBinderNames, Pattern.constructorRefs,
       Pattern.constructorRefsList, Pattern.freeFvarNames,
       Pattern.isWellScoped, Pattern.isWellScopedAt,
-      Pattern.isWellScopedListAt, LanguageDef.typeNames, TypeDecl.plain]
+      Pattern.isWellScopedListAt, TypeDecl.plain]
 
 private def positiveDefinition : ValidatedLanguageDef :=
   ⟨positiveLanguage, positiveLanguage_valid⟩

@@ -1,7 +1,7 @@
 import Mettapedia.Languages.TPTP.StatusSemantics
-import Mettapedia.Languages.TPTP.NIKAuthority
+import Mettapedia.Languages.TPTP.CheckerAuthority
 import Mettapedia.Languages.TPTP.ProblemAuthority
-import Mettapedia.Languages.TPTP.NIKDefault
+import Mettapedia.Languages.TPTP.SubmissionProfile
 import Mettapedia.Languages.TPTP.GroundCNFAuthority
 import Mettapedia.GSLT.LanguageDef.TptpOfficialFofToNamedAgreement
 import Mettapedia.GSLT.LanguageDef.TptpNamedFofToResolvedAgreement

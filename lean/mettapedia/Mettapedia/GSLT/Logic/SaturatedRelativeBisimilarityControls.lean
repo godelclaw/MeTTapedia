@@ -1,4 +1,6 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Logic.ObserverDetermination
+import Mettapedia.GSLT.Dynamics.UnfoldingTraversal
 
 /-!
 # Controls for saturated relative bisimilarity and observer determination
@@ -333,12 +335,8 @@ inductive Point where
   | d
   deriving DecidableEq
 
-abbrev pointGSLT : GSLT where
-  Term := Point
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev pointGSLT : GSLT :=
+  GSLT.stepFree (Point)
 
 /-- Every function on points is a context. -/
 abbrev pointRules : ContextualRules pointGSLT where
@@ -536,5 +534,107 @@ theorem determined_not_monotone :
   exact collapse_not_preserves_splitting (le collapse collapse_preserves_bottom)
 
 end MixedVariance
+
+/-! ## Equal complete answer bags do not identify choice structure -/
+
+namespace AnswerBagBranching
+
+inductive State where
+  | shared
+  | split
+  | both
+  | onlyLeft
+  | onlyRight
+  | answerLeft
+  | answerRight
+  deriving DecidableEq, Repr
+
+def successors : State → List State
+  | .shared => [.both]
+  | .split => [.onlyLeft, .onlyRight]
+  | .both => [.answerLeft, .answerRight]
+  | .onlyLeft => [.answerLeft]
+  | .onlyRight => [.answerRight]
+  | .answerLeft | .answerRight => []
+
+def answers : State → List Bool
+  | .answerLeft => [true]
+  | .answerRight => [false]
+  | _ => []
+
+def unfolding : Nat → State → Mettapedia.GSLT.Dynamics.UnfoldingTraversal.Unfold Bool
+  | 0, state => .node (answers state) []
+  | fuel + 1, state => .node (answers state) ((successors state).map (unfolding fuel))
+
+def systemGSLT : GSLT where
+  Term := State
+  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
+  rewrites source target := target ∈ successors source
+  rewrites_resp_left := by
+    intro source other target same step
+    subst same
+    exact ⟨target, step, rfl⟩
+  rewrites_resp_right := by
+    intro source target other step same
+    subst same
+    exact step
+
+def observed : System systemGSLT where
+  Atom := Bool
+  observes value state := state = if value then .answerLeft else .answerRight
+  observes_resp := by intro value left right same; cases same; rfl
+  Label := Unit
+  act _ source target := target ∈ successors source
+  act_resp_left := by
+    intro label left right target same step
+    cases same
+    exact ⟨target, step, rfl⟩
+  act_resp_right := by
+    intro label source target other step same
+    cases same
+    exact step
+
+def distinguishes : Formula Bool Unit :=
+  .dia () (.conj (.dia () (.atom true)) (.dia () (.atom false)))
+
+/-- Exhaustive traversal gives the same ordered answers, hence the same bag. -/
+theorem equal_complete_answers :
+    Mettapedia.GSLT.Dynamics.UnfoldingTraversal.preOrder (unfolding 3 .shared) =
+      Mettapedia.GSLT.Dynamics.UnfoldingTraversal.preOrder (unfolding 3 .split) := by
+  simp [Mettapedia.GSLT.Dynamics.UnfoldingTraversal.preOrder, unfolding, answers, successors]
+
+theorem shared_keeps_both_options : observed.sat distinguishes .shared := by
+  refine ⟨.both, by simp [observed, systemGSLT, successors], ?_, ?_⟩
+  · exact ⟨.answerLeft, by simp [observed, systemGSLT, successors], rfl⟩
+  · exact ⟨.answerRight, by simp [observed, systemGSLT, successors], rfl⟩
+
+theorem split_loses_one_option_after_choosing : ¬ observed.sat distinguishes .split := by
+  rintro ⟨next, step, left, right⟩
+  have choice : next = .onlyLeft ∨ next = .onlyRight := by
+    change next ∈ [State.onlyLeft, State.onlyRight] at step
+    rcases List.mem_cons.mp step with selected | remaining
+    · exact Or.inl selected
+    · exact Or.inr (List.mem_singleton.mp remaining)
+  rcases choice with rfl | rfl
+  · obtain ⟨target, step, result⟩ := right
+    have selected : target = .answerLeft := by
+      change target ∈ [State.answerLeft] at step
+      exact List.mem_singleton.mp step
+    subst selected
+    exact State.noConfusion result
+  · obtain ⟨target, step, result⟩ := left
+    have selected : target = .answerRight := by
+      change target ∈ [State.answerRight] at step
+      exact List.mem_singleton.mp step
+    subst selected
+    exact State.noConfusion result
+
+/-- Bag agreement cannot justify a merge under the branching observer. -/
+theorem not_branching_bisimilar : ¬ observed.Bisimilar .shared .split := by
+  intro related
+  exact split_loses_one_option_after_choosing
+    ((observed.logicallyEquivalent_of_bisimilar related distinguishes).mp shared_keeps_both_options)
+
+end AnswerBagBranching
 
 end Mettapedia.GSLT.AdmissibleContextCongruence.SaturatedControls

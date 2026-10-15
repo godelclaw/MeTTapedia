@@ -1,6 +1,6 @@
 import Mettapedia.Logic.HOL.ProofSyntaxStructural
 import Mettapedia.Logic.HOL.Embedding.GroundUnaryEquationalProofSyntax
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService
 
 /-!
 # Submitted uniform-list certificates produce retained HOL derivations
@@ -207,10 +207,10 @@ def mapLengthFromCertificates
     theory, equations, inductionPrinciple, inductionStep, mapNil, mapCons,
     lengthNil, lengthCons, cons, nil, succ] using atSequence
 
-def reconstruct (request : UniformListChartNIKService.ReplayRequest Γ)
-    (accepted : UniformListChartNIKService.replayAccepted Γ request = true) :
+def reconstruct (request : UniformListChartService.ReplayRequest Γ)
+    (accepted : UniformListChartService.replayAccepted Γ request = true) :
     ProofSyntax Symbol request.claim.1 request.claim.2 := by
-  have facts := (UniformListChartNIKService.replayAccepted_iff Γ request).mp accepted
+  have facts := (UniformListChartService.replayAccepted_iff Γ request).mp accepted
   have claim := facts.1
   have basePremises := facts.2.1
   have stepPremises := facts.2.2.1
@@ -221,53 +221,53 @@ def reconstruct (request : UniformListChartNIKService.ReplayRequest Γ)
   rw [claim]
   exact mapLengthFromCertificates Γ request.baseProof request.stepProof baseAccepted stepAccepted
 
-def produce? (request : UniformListChartNIKService.ReplayRequest Γ) :
+def produce? (request : UniformListChartService.ReplayRequest Γ) :
     Option (ProofSyntax Symbol request.claim.1 request.claim.2) :=
-  if accepted : UniformListChartNIKService.replayAccepted Γ request = true then
+  if accepted : UniformListChartService.replayAccepted Γ request = true then
     some (reconstruct Γ request accepted)
   else none
 
-theorem reconstruct_meaning (request : UniformListChartNIKService.ReplayRequest Γ)
-    (accepted : UniformListChartNIKService.replayAccepted Γ request = true) :
-    (UniformListChartNIKService.sourceTarget Γ).Meaning request.claim :=
+theorem reconstruct_meaning (request : UniformListChartService.ReplayRequest Γ)
+    (accepted : UniformListChartService.replayAccepted Γ request = true) :
+    (UniformListChartService.sourceTarget Γ).Meaning request.claim :=
   (reconstruct Γ request accepted).erase
 
 /-- The old result is exactly the coarse erasure of this retained producer.
 Equality here identifies intrinsic admissions, not intensional proof trees. -/
-theorem produce_erasure (request : UniformListChartNIKService.ReplayRequest Γ) :
+theorem produce_erasure (request : UniformListChartService.ReplayRequest Γ) :
     (produce? Γ request).map ProofSyntax.intrinsicAdmission =
-      UniformListChartNIKService.produce? Γ request := by
-  unfold produce? UniformListChartNIKService.produce?
+      UniformListChartService.produce? Γ request := by
+  unfold produce? UniformListChartService.produce?
   split <;> rfl
 
-theorem reconstruct_native_accepted (request : UniformListChartNIKService.ReplayRequest Γ)
-    (accepted : UniformListChartNIKService.replayAccepted Γ request = true) :
-    (UniformListChartNIKService.intrinsicKernel Γ).decide request.claim
+theorem reconstruct_native_accepted (request : UniformListChartService.ReplayRequest Γ)
+    (accepted : UniformListChartService.replayAccepted Γ request = true) :
+    (UniformListChartService.intrinsicKernel Γ).decide request.claim
       (reconstruct Γ request accepted).intrinsicAdmission = true := by
-  apply (UniformListChartNIKService.intrinsicKernel Γ).correct _ _ |>.mpr
+  apply (UniformListChartService.intrinsicKernel Γ).correct _ _ |>.mpr
   rfl
 
-theorem rejected_no_tree (request : UniformListChartNIKService.ReplayRequest Γ)
-    (rejected : UniformListChartNIKService.replayAccepted Γ request = false) :
+theorem rejected_no_tree (request : UniformListChartService.ReplayRequest Γ)
+    (rejected : UniformListChartService.replayAccepted Γ request = false) :
     produce? Γ request = none := by simp [produce?, rejected]
 
 def actualProof : ProofSyntax Symbol (theory (Γ := Γ)) mapLength :=
-  reconstruct Γ (UniformListChartNIKService.actualRequest Γ)
-    (UniformListChartNIKService.actual_replay_accepted Γ)
+  reconstruct Γ (UniformListChartService.actualRequest Γ)
+    (UniformListChartService.actual_replay_accepted Γ)
 
 theorem actual_produced :
-    produce? Γ (UniformListChartNIKService.actualRequest Γ) = some (actualProof Γ) := rfl
+    produce? Γ (UniformListChartService.actualRequest Γ) = some (actualProof Γ) := rfl
 
 theorem malformed_rejected : produce? Γ
-    { UniformListChartNIKService.actualRequest Γ with stepProof := malformedCertificate Γ } =
+    { UniformListChartService.actualRequest Γ with stepProof := malformedCertificate Γ } =
       none := rfl
 
 theorem changed_premise_rejected : produce? Γ
-    { UniformListChartNIKService.actualRequest Γ with stepPremises := alteredStepAssumptions Γ } =
+    { UniformListChartService.actualRequest Γ with stepPremises := alteredStepAssumptions Γ } =
       none := rfl
 
 theorem missing_induction_rejected : produce? Γ
-    { UniformListChartNIKService.actualRequest Γ with claim := (equations, mapLength) } =
+    { UniformListChartService.actualRequest Γ with claim := (equations, mapLength) } =
       none := rfl
 
 /-! ## Two accepted submitted strategies remain inspectably different -/
@@ -281,11 +281,11 @@ def detouredBaseCertificate : Certificate (baseChart Γ) (baseSystem Γ) :=
       (.symm (atom (baseChart Γ) 0) (atom (baseChart Γ) 2)) 1
       (fun _ => baseCertificate Γ))
 
-def detouredRequest : UniformListChartNIKService.ReplayRequest Γ :=
-  { UniformListChartNIKService.actualRequest Γ with baseProof := detouredBaseCertificate Γ }
+def detouredRequest : UniformListChartService.ReplayRequest Γ :=
+  { UniformListChartService.actualRequest Γ with baseProof := detouredBaseCertificate Γ }
 
 theorem detoured_accepted :
-    UniformListChartNIKService.replayAccepted Γ (detouredRequest Γ) = true := rfl
+    UniformListChartService.replayAccepted Γ (detouredRequest Γ) = true := rfl
 
 def detouredProof : ProofSyntax Symbol (theory (Γ := Γ)) mapLength :=
   reconstruct Γ (detouredRequest Γ) (detoured_accepted Γ)
@@ -322,7 +322,7 @@ theorem retained_observations_distinct : (actualProof []).observe ≠ (detouredP
   omega
 
 theorem no_decoder_of_intrinsic_admission :
-    ¬ ∃ decode : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject →
+    ¬ ∃ decode : (UniformListChartService.intrinsicProofSystem []).ProofObject →
         ProofSyntax Symbol (theory (Γ := [])) mapLength,
       decode (actualProof []).intrinsicAdmission = actualProof [] ∧
       decode (detouredProof []).intrinsicAdmission = detouredProof [] :=

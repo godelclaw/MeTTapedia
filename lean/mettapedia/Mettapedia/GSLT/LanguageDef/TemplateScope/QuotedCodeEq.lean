@@ -46,22 +46,41 @@ private theorem same_slot_code (o₁ o₂ : Owner) (y₁ y₂ : X) :
       exact decide_eq_of_iff hiff
 
 omit [DecidableEq S] [DecidableEq X] in
+/-- A slot read as an identity: a name of code (a binder, or a free parameter)
+keeps its owner as a code name; any other owner is a scope's head slot, so a
+hole of sealed code is the head slot of the form that wrote the code. -/
 private def codeFwd : Nm (Slot X) → Nm (BId X)
-  | .src ([], y) => .src (.slot ⟨y, [], [], .head⟩)
-  | .src ((n :: o), y) => .src (.code y (n :: o))
+  | .src (o, y) =>
+      if codeBound o = true ∨ o = codeFreeParam then .src (.code y o)
+      else .src (.slot ⟨y, o, o, .head⟩)
   | .inst ρ n => .inst ρ (codeFwd n)
 
 omit [DecidableEq S] [DecidableEq X] in
 private def codeBack : Nm (BId X) → Nm (Slot X)
-  | .src (.slot k) => .src ([], k.spell)
+  | .src (.slot k) => .src (k.frame, k.spell)
   | .src (.code y o) => .src (o, y)
   | .src (.par z _) => .src ([], z)
   | .inst ρ n => .inst ρ (codeBack n)
 
 omit [DecidableEq S] [DecidableEq X] in
+private theorem codeFwd_code {o : Owner} {y : X} (h : codeBound o = true ∨ o = codeFreeParam) :
+    codeFwd (.src (o, y)) = .src (.code y o) := by
+  simp only [codeFwd, if_pos h]
+
+omit [DecidableEq S] [DecidableEq X] in
+private theorem codeFwd_scope {o : Owner} {y : X}
+    (h : ¬ (codeBound o = true ∨ o = codeFreeParam)) :
+    codeFwd (.src (o, y)) = .src (.slot ⟨y, o, o, .head⟩) := by
+  simp only [codeFwd, if_neg h]
+
+omit [DecidableEq S] [DecidableEq X] in
 private theorem codeBack_codeFwd : ∀ n : Nm (Slot X), codeBack (codeFwd n) = n
-  | .src ([], _) => rfl
-  | .src ((_ :: _), _) => rfl
+  | .src (o, y) => by
+      by_cases h : codeBound o = true ∨ o = codeFreeParam
+      · rw [codeFwd_code h]
+        rfl
+      · rw [codeFwd_scope h]
+        rfl
   | .inst _ n => by simp only [codeFwd, codeBack, codeBack_codeFwd n]
 
 omit [DecidableEq S] [DecidableEq X] in
@@ -74,122 +93,100 @@ private theorem codeFwd_eq_iff (n₁ n₂ : Nm (Slot X)) :
 
 omit [DecidableEq S] [DecidableEq X] in
 private theorem codeFwd_binder (pos : Owner) (z : X) :
-    codeFwd (.src (codeBinder pos, z)) = .src (.code z (codeBinder pos)) := by
-  simp only [codeBinder]
+    codeFwd (.src (codeBinder pos, z)) = .src (.code z (codeBinder pos)) :=
+  codeFwd_code (Or.inl rfl)
+
+omit [DecidableEq S] in
+/-- Two slots that are not both names of code compare as written. -/
+private theorem same_slot_plain {o₁ o₂ : Owner} {y₁ y₂ : X}
+    (h : ¬ (codeBound o₁ = true ∨ o₁ = codeFreeParam) ∨
+      ¬ (codeBound o₂ = true ∨ o₂ = codeFreeParam)) :
+    CodeId.same (.src (o₁, y₁) : Nm (Slot X)) (.src (o₂, y₂)) =
+      decide ((.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂)) := by
+  have hb : (codeBound o₁ && codeBound o₂) = false := by
+    rcases h with h | h
+    · have h' : codeBound o₁ = false := by
+        cases hc : codeBound o₁
+        · rfl
+        · exact absurd (Or.inl hc) h
+      rw [h', Bool.false_and]
+    · have h' : codeBound o₂ = false := by
+        cases hc : codeBound o₂
+        · rfl
+        · exact absurd (Or.inl hc) h
+      rw [h', Bool.and_false]
+  have hf : (decide (o₁ = codeFreeParam) && decide (o₂ = codeFreeParam)) = false := by
+    rcases h with h | h
+    · rw [decide_eq_false (fun e => h (Or.inr e)), Bool.false_and]
+    · rw [decide_eq_false (fun e => h (Or.inr e)), Bool.and_false]
+  simp only [CodeId.same]
+  simp_rw [hb, hf]
   rfl
 
 omit [DecidableEq S] in
-private theorem bound_nil_and (o : Owner) :
-    (codeBound ([] : Owner) && codeBound o) = false := by
-  simp [codeBound]
+/-- An identity slot compares as written, on either side. -/
+private theorem same_slot_left (k : SlotId X) (b : Nm (BId X)) :
+    CodeId.same (.src (.slot k) : Nm (BId X)) b = decide (.src (.slot k) = b) := by
+  cases b with
+  | src b => cases b <;> rfl
+  | inst _ _ => rfl
 
 omit [DecidableEq S] in
-private theorem and_bound_nil (o : Owner) :
-    (codeBound o && codeBound ([] : Owner)) = false := by
-  simp [codeBound]
+private theorem same_slot_right (a : Nm (BId X)) (k : SlotId X) :
+    CodeId.same a (.src (.slot k) : Nm (BId X)) = decide (a = .src (.slot k)) := by
+  cases a with
+  | src a => cases a <;> rfl
+  | inst _ _ => rfl
 
 omit [DecidableEq S] in
-private theorem free_nil_and (o : Owner) :
-    (decide (([] : Owner) = codeFreeParam) && decide (o = codeFreeParam)) = false := by
-  simp [codeFreeParam]
-
-omit [DecidableEq S] in
-private theorem and_free_nil (o : Owner) :
-    (decide (o = codeFreeParam) && decide (([] : Owner) = codeFreeParam)) = false := by
-  simp [codeFreeParam]
-
-omit [DecidableEq S] in
-private theorem bslot_ne_code (k : SlotId X) (y : X) (o : Owner) :
-    CodeId.same (.src (.slot k) : Nm (BId X)) (.src (.code y o)) = false :=
-  decide_eq_false fun h => by cases h
-
-omit [DecidableEq S] in
-private theorem same_root_slots (y₁ y₂ : X) :
-    CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src ([], y₂)) =
-      CodeId.same (.src (.slot ⟨y₁, [], [], .head⟩) : Nm (BId X))
-        (.src (.slot ⟨y₂, [], [], .head⟩)) := by
-  simp only [CodeId.same]
-  simp_rw [bound_nil_and, free_nil_and]
-  exact decide_eq_of_iff <| by
-    simp only [Nm.src.injEq, Prod.mk.injEq, BId.slot.injEq, SlotId.mk.injEq,
-      and_true, true_and]
-
-omit [DecidableEq S] in
-private theorem same_root_cons (y₁ y₂ : X) (n : ℕ) (o : List ℕ) :
-    CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src (n :: o, y₂)) =
-      CodeId.same (.src (.slot ⟨y₁, [], [], .head⟩) : Nm (BId X))
-        (.src (.code y₂ (n :: o))) := by
-  have hL : CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src (n :: o, y₂)) = false := by
-    simp only [CodeId.same]
-    simp_rw [bound_nil_and (n :: o), free_nil_and (n :: o)]
-    rfl
-  rw [hL, bslot_ne_code]
-
-omit [DecidableEq S] in
-private theorem same_cons_root (y₁ y₂ : X) (n : ℕ) (o : List ℕ) :
-    CodeId.same (.src (n :: o, y₁) : Nm (Slot X)) (.src ([], y₂)) =
-      CodeId.same (.src (.code y₁ (n :: o)) : Nm (BId X))
-        (.src (.slot ⟨y₂, [], [], .head⟩)) := by
-  have hL : CodeId.same (.src (n :: o, y₁) : Nm (Slot X)) (.src ([], y₂)) = false := by
-    simp only [CodeId.same]
-    simp_rw [and_bound_nil (n :: o), and_free_nil (n :: o)]
-    rfl
-  have hR : CodeId.same (.src (.code y₁ (n :: o)) : Nm (BId X))
-      (.src (.slot ⟨y₂, [], [], .head⟩)) = false :=
-    decide_eq_false fun h => by cases h
-  rw [hL, hR]
+/-- The images of two slots that are not both names of code compare as the
+slots are written. -/
+private theorem same_fwd_plain {o₁ o₂ : Owner} {y₁ y₂ : X}
+    (h : ¬ (codeBound o₁ = true ∨ o₁ = codeFreeParam) ∨
+      ¬ (codeBound o₂ = true ∨ o₂ = codeFreeParam)) :
+    CodeId.same (codeFwd (.src (o₁, y₁))) (codeFwd (.src (o₂, y₂)) : Nm (BId X)) =
+      decide ((.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂)) := by
+  rcases h with h | h
+  · rw [codeFwd_scope (y := y₁) h, same_slot_left, ← codeFwd_scope (y := y₁) h]
+    exact decide_eq_of_iff (codeFwd_eq_iff _ _)
+  · rw [codeFwd_scope (y := y₂) h, same_slot_right, ← codeFwd_scope (y := y₂) h]
+    exact decide_eq_of_iff (codeFwd_eq_iff _ _)
 
 omit [DecidableEq S] in
 private theorem same_fwd (n₁ n₂ : Nm (Slot X)) :
     CodeId.same n₁ n₂ = CodeId.same (codeFwd n₁) (codeFwd n₂) := by
   cases n₁ with
   | src p =>
+      obtain ⟨o₁, y₁⟩ := p
       cases n₂ with
       | src q =>
-          cases p with
-          | mk o₁ y₁ =>
-              cases q with
-              | mk o₂ y₂ =>
-                  cases o₁ with
-                  | nil =>
-                      cases o₂ with
-                      | nil =>
-                          simp only [codeFwd]
-                          exact same_root_slots y₁ y₂
-                      | cons n o =>
-                          simp only [codeFwd]
-                          exact same_root_cons y₁ y₂ n o
-                  | cons n o =>
-                      cases o₂ with
-                      | nil =>
-                          simp only [codeFwd]
-                          exact same_cons_root y₁ y₂ n o
-                      | cons m t =>
-                          simp only [codeFwd]
-                          exact same_slot_code (n :: o) (m :: t) y₁ y₂
-      | inst _ _ =>
-          cases p with
-          | mk o _ =>
-              cases o with
-              | nil =>
-                  simp only [CodeId.same, codeFwd]
-                  exact decide_eq_of_iff (Iff.intro (fun h => nomatch h) (fun h => nomatch h))
-              | cons _ _ =>
-                  simp only [CodeId.same, codeFwd]
-                  exact decide_eq_of_iff (Iff.intro (fun h => nomatch h) (fun h => nomatch h))
-  | inst _ _ =>
+          obtain ⟨o₂, y₂⟩ := q
+          by_cases h₁ : codeBound o₁ = true ∨ o₁ = codeFreeParam
+          · by_cases h₂ : codeBound o₂ = true ∨ o₂ = codeFreeParam
+            · rw [codeFwd_code h₁, codeFwd_code h₂]
+              exact same_slot_code o₁ o₂ y₁ y₂
+            · rw [same_slot_plain (Or.inr h₂), same_fwd_plain (Or.inr h₂)]
+          · rw [same_slot_plain (Or.inl h₁), same_fwd_plain (Or.inl h₁)]
+      | inst ρ m =>
+          show CodeId.same (.src (o₁, y₁) : Nm (Slot X)) (.inst ρ m) =
+            CodeId.same (codeFwd (.src (o₁, y₁))) (.inst ρ (codeFwd m))
+          by_cases h₁ : codeBound o₁ = true ∨ o₁ = codeFreeParam
+          · rw [codeFwd_code h₁]
+            rfl
+          · rw [codeFwd_scope h₁]
+            rfl
+  | inst ρ n =>
       cases n₂ with
       | src q =>
-          cases q with
-          | mk o _ =>
-              cases o with
-              | nil =>
-                  simp only [CodeId.same, codeFwd]
-                  exact decide_eq_of_iff (Iff.intro (fun h => nomatch h) (fun h => nomatch h))
-              | cons _ _ =>
-                  simp only [CodeId.same, codeFwd]
-                  exact decide_eq_of_iff (Iff.intro (fun h => nomatch h) (fun h => nomatch h))
-      | inst _ _ =>
+          obtain ⟨o₂, y₂⟩ := q
+          show CodeId.same (.inst ρ n : Nm (Slot X)) (.src (o₂, y₂)) =
+            CodeId.same (.inst ρ (codeFwd n)) (codeFwd (.src (o₂, y₂)))
+          by_cases h₂ : codeBound o₂ = true ∨ o₂ = codeFreeParam
+          · rw [codeFwd_code h₂]
+            rfl
+          · rw [codeFwd_scope h₂]
+            rfl
+      | inst ρ' m =>
           simp only [CodeId.same, codeFwd]
           exact decide_eq_of_iff (codeFwd_eq_iff _ _).symm
 
@@ -300,9 +297,9 @@ private theorem mapC_seal {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
   rw [mapC_fold, paramOcc_mapC hf]
 
 omit [DecidableEq S] in
-private theorem codeAt_ownEmpty (holes : Option (X → Owner))
+private theorem codeAt_ownEmpty (R : Owner) (holes : Option (X → Owner))
     (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X) :
-    ownEmpty (codeAt holes penv senv pos s) := by
+    ownEmpty (codeAt R holes penv senv pos s) := by
   induction s generalizing holes penv senv pos with
   | sym _ => simp [codeAt, ownEmpty]
   | fn _ => simp [codeAt, ownEmpty]
@@ -341,19 +338,15 @@ private theorem codeAt_ownEmpty (holes : Option (X → Owner))
   | new _ _ ih =>
       simpa [codeAt] using ih holes penv senv (pos ++ [0])
 
-omit [DecidableEq S] in
-private theorem codeBinder_ne_nil (pos : Owner) : codeBinder pos ≠ [] :=
-  List.cons_ne_nil 9 (1 :: pos)
-
 omit [DecidableEq S] [DecidableEq X] in
-private theorem nil_owners : ∀ p ∈ ([] : List (X × Owner)), p.2 ≠ [] := by
+private theorem nil_bound : ∀ p ∈ ([] : List (X × Owner)), codeBound p.2 = true := by
   intro _ h
   simp at h
 
 omit [DecidableEq S] [DecidableEq X] in
-private theorem cons_owners {z : X} {o : Owner} {l : List (X × Owner)}
-    (ho : o ≠ []) (hl : ∀ p ∈ l, p.2 ≠ []) :
-    ∀ p ∈ (z, o) :: l, p.2 ≠ [] := by
+private theorem cons_bound {z : X} {o : Owner} {l : List (X × Owner)}
+    (ho : codeBound o = true) (hl : ∀ p ∈ l, codeBound p.2 = true) :
+    ∀ p ∈ (z, o) :: l, codeBound p.2 = true := by
   intro p hp
   simp only [List.mem_cons] at hp
   rcases hp with rfl | hp
@@ -361,23 +354,23 @@ private theorem cons_owners {z : X} {o : Owner} {l : List (X × Owner)}
   · exact hl p hp
 
 omit [DecidableEq S] [DecidableEq X] in
-private theorem append_owners {l₁ l₂ : List (X × Owner)}
-    (h₁ : ∀ p ∈ l₁, p.2 ≠ []) (h₂ : ∀ p ∈ l₂, p.2 ≠ []) :
-    ∀ p ∈ l₁ ++ l₂, p.2 ≠ [] := by
+private theorem append_bound {l₁ l₂ : List (X × Owner)}
+    (h₁ : ∀ p ∈ l₁, codeBound p.2 = true) (h₂ : ∀ p ∈ l₂, codeBound p.2 = true) :
+    ∀ p ∈ l₁ ++ l₂, codeBound p.2 = true := by
   intro p hp
   rcases List.mem_append.1 hp with hp | hp
   · exact h₁ p hp
   · exact h₂ p hp
 
 omit [DecidableEq S] in
-private theorem codeLookup_ne {l : List (X × Owner)} (hl : ∀ p ∈ l, p.2 ≠ [])
-    {y : X} {o : Owner} (h : codeLookup l y = some o) : o ≠ [] := by
+private theorem lookup_bound {l : List (X × Owner)} (hl : ∀ p ∈ l, codeBound p.2 = true)
+    {y : X} {o : Owner} (h : codeLookup l y = some o) : codeBound o = true := by
   induction l with
   | nil => simp [codeLookup] at h
   | cons p rest ih =>
       obtain ⟨z, oz⟩ := p
-      have hoz : oz ≠ [] := hl (z, oz) (List.mem_cons_self ..)
-      have hrest : ∀ q ∈ rest, q.2 ≠ [] := fun q hq => hl q (List.mem_cons_of_mem _ hq)
+      have hoz : codeBound oz = true := hl (z, oz) (List.mem_cons_self ..)
+      have hrest : ∀ q ∈ rest, codeBound q.2 = true := fun q hq => hl q (List.mem_cons_of_mem _ hq)
       simp only [codeLookup] at h
       by_cases hz : z = y
       · simp only [hz, if_true, Option.some.injEq] at h
@@ -386,93 +379,96 @@ private theorem codeLookup_ne {l : List (X × Owner)} (hl : ∀ p ∈ l, p.2 ≠
         exact ih hrest h
 
 omit [DecidableEq S] [DecidableEq X] in
-private theorem svBinds_ne (pos : Owner) :
-    ∀ (s : Src S X), ∀ p ∈ svBinds pos s, p.2 ≠ []
+private theorem binds_bound (pos : Owner) :
+    ∀ (s : Src S X), ∀ p ∈ svBinds pos s, codeBound p.2 = true
   | .sv _, _, h => by
       simp only [svBinds, List.mem_singleton] at h
       subst h
-      exact codeBinder_ne_nil pos
+      rfl
   | .app f a, _, h => by
       simp only [svBinds, List.mem_append] at h
       rcases h with h | h
-      · exact svBinds_ne (pos ++ [0]) f _ h
-      · exact svBinds_ne (pos ++ [1]) a _ h
+      · exact binds_bound (pos ++ [0]) f _ h
+      · exact binds_bound (pos ++ [1]) a _ h
   | .alt t₁ t₂, _, h => by
       simp only [svBinds, List.mem_append] at h
       rcases h with h | h
-      · exact svBinds_ne (pos ++ [0]) t₁ _ h
-      · exact svBinds_ne (pos ++ [1]) t₂ _ h
+      · exact binds_bound (pos ++ [0]) t₁ _ h
+      · exact binds_bound (pos ++ [1]) t₂ _ h
   | .sym _, _, h | .fn _, _, h | .par _, _, h | .lam _ _ _, _, h | .quote _, _, h
     | .pquote _, _, h | .letS _ _ _ _, _, h | .unify _ _ _, _, h | .new _ _, _, h
     | .form _ _, _, h => by
       simp [svBinds] at h
 
 omit [DecidableEq S] in
-private theorem codeIAt_eq_map (penv senv : List (X × Owner)) (pos : Owner)
-    (hpenv : ∀ p ∈ penv, p.2 ≠ []) (hsenv : ∀ p ∈ senv, p.2 ≠ []) :
+/-- Sealed code written in a form rooted at a scope owner `R`, read in the
+identity model, is its slot elaboration with every name read by `codeFwd`. -/
+private theorem codeIAt_eq_map (R : Owner) (hR : scopeOwner R)
+    (penv senv : List (X × Owner)) (pos : Owner)
+    (hpenv : ∀ p ∈ penv, codeBound p.2 = true) (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
     ∀ s : Src S X,
-      mapC codeFwd (codeAt none penv senv pos s) = codeIAt none penv senv pos s
+      mapC codeFwd (codeAt R none penv senv pos s) = codeIAt R none penv senv pos s
   | .sym _ => rfl
   | .fn _ => rfl
   | .sv y => by
       simp only [codeAt, codeIAt]
       cases h : codeLookup senv y with
-      | none => rfl
+      | none =>
+          simp only [mapC, iVar]
+          rw [codeFwd_scope (not_code_of_scopeOwner hR)]
       | some p =>
-          have hp : p ≠ [] := codeLookup_ne hsenv h
-          cases p with
-          | nil => exact absurd rfl hp
-          | cons _ _ => rfl
+          simp only [mapC]
+          rw [codeFwd_code (Or.inl (lookup_bound hsenv h))]
   | .par z => by
       simp only [codeAt, codeIAt]
       cases h : codeLookup penv z with
-      | none => rfl
+      | none =>
+          simp only [mapC]
+          rw [codeFwd_code (Or.inr rfl)]
       | some p =>
-          have hp : p ≠ [] := codeLookup_ne hpenv h
-          cases p with
-          | nil => exact absurd rfl hp
-          | cons _ _ => rfl
+          simp only [mapC]
+          rw [codeFwd_code (Or.inl (lookup_bound hpenv h))]
   | .lam z _ b => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map ((z, codeBinder pos) :: penv) senv (pos ++ [0])
-          (cons_owners (codeBinder_ne_nil pos) hpenv) hsenv b]
+        codeIAt_eq_map R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+          (cons_bound rfl hpenv) hsenv b]
       rw [codeFwd_binder]
   | .form z b => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map ((z, codeBinder pos) :: penv) senv (pos ++ [0])
-          (cons_owners (codeBinder_ne_nil pos) hpenv) hsenv b]
+        codeIAt_eq_map R hR ((z, codeBinder pos) :: penv) senv (pos ++ [0])
+          (cons_bound rfl hpenv) hsenv b]
       rw [codeFwd_binder]
   | .app f a => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map penv senv (pos ++ [0]) hpenv hsenv f,
-        codeIAt_eq_map penv senv (pos ++ [1]) hpenv hsenv a]
+        codeIAt_eq_map R hR penv senv (pos ++ [0]) hpenv hsenv f,
+        codeIAt_eq_map R hR penv senv (pos ++ [1]) hpenv hsenv a]
   | .quote c => by
       simp only [codeAt, codeIAt, mapC]
       rw [mapC_seal codeFwd_injective]
       exact congrArg Tm.quote (congrArg sealParams
-        (codeIAt_eq_map [] [] [] nil_owners nil_owners c))
+        (codeIAt_eq_map R hR [] [] [] nil_bound nil_bound c))
   | .pquote c => by
-      simp only [codeAt, codeIAt, mapC, codeIAt_eq_map [] [] [] nil_owners nil_owners c]
+      simp only [codeAt, codeIAt, mapC, codeIAt_eq_map R hR [] [] [] nil_bound nil_bound c]
   | .letS p w b _ => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) p,
-        codeIAt_eq_map penv senv (pos ++ [1]) hpenv hsenv w,
-        codeIAt_eq_map penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) b]
+        codeIAt_eq_map R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
+          (append_bound (binds_bound (pos ++ [0]) p) hsenv) p,
+        codeIAt_eq_map R hR penv senv (pos ++ [1]) hpenv hsenv w,
+        codeIAt_eq_map R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
+          (append_bound (binds_bound (pos ++ [0]) p) hsenv) b]
   | .unify p w b => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) p,
-        codeIAt_eq_map penv senv (pos ++ [1]) hpenv hsenv w,
-        codeIAt_eq_map penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) b]
+        codeIAt_eq_map R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
+          (append_bound (binds_bound (pos ++ [0]) p) hsenv) p,
+        codeIAt_eq_map R hR penv senv (pos ++ [1]) hpenv hsenv w,
+        codeIAt_eq_map R hR penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
+          (append_bound (binds_bound (pos ++ [0]) p) hsenv) b]
   | .alt t₁ t₂ => by
       simp only [codeAt, codeIAt, mapC,
-        codeIAt_eq_map penv senv (pos ++ [0]) hpenv hsenv t₁,
-        codeIAt_eq_map penv senv (pos ++ [1]) hpenv hsenv t₂]
+        codeIAt_eq_map R hR penv senv (pos ++ [0]) hpenv hsenv t₁,
+        codeIAt_eq_map R hR penv senv (pos ++ [1]) hpenv hsenv t₂]
   | .new _ b => by
-      simp only [codeAt, codeIAt, codeIAt_eq_map penv senv (pos ++ [0]) hpenv hsenv b]
+      simp only [codeAt, codeIAt, codeIAt_eq_map R hR penv senv (pos ++ [0]) hpenv hsenv b]
 
 private theorem codeEq_map (t₁ t₂ : Tm S (Slot X)) (h₁ : ownEmpty t₁) (h₂ : ownEmpty t₂) :
     codeEq t₁ t₂ = codeEq (mapC codeFwd t₁) (mapC codeFwd t₂) := by
@@ -562,34 +558,38 @@ private theorem codeEq_map (t₁ t₂ : Tm S (Slot X)) (h₁ : ownEmpty t₁) (h
   | ctx _ _ _ => cases t₂ <;> simp [codeEq, mapC]
 
 /-- `codeEq` gives the same answer for the slot elaboration and the identity
-elaboration of two pieces of code, at any quotation-relative positions.
-A `new` block contributes the code of its body. -/
-theorem codeEq_at (penv₁ penv₂ senv₁ senv₂ : List (X × Owner)) (pos₁ pos₂ : Owner)
-    (hp₁ : ∀ p ∈ penv₁, p.2 ≠ []) (hp₂ : ∀ p ∈ penv₂, p.2 ≠ [])
-    (hs₁ : ∀ p ∈ senv₁, p.2 ≠ []) (hs₂ : ∀ p ∈ senv₂, p.2 ≠ [])
+elaboration of two pieces of code, at any quotation-relative positions, written
+in forms rooted at scope owners `R₁` and `R₂`, when every binder in force is a
+binder of code.  A `new` block contributes the code of its body. -/
+theorem codeEq_at (R₁ R₂ : Owner) (hR₁ : scopeOwner R₁) (hR₂ : scopeOwner R₂)
+    (penv₁ penv₂ senv₁ senv₂ : List (X × Owner)) (pos₁ pos₂ : Owner)
+    (hp₁ : ∀ p ∈ penv₁, codeBound p.2 = true) (hp₂ : ∀ p ∈ penv₂, codeBound p.2 = true)
+    (hs₁ : ∀ p ∈ senv₁, codeBound p.2 = true) (hs₂ : ∀ p ∈ senv₂, codeBound p.2 = true)
     (s s' : Src S X) :
-    codeEq (codeAt none penv₁ senv₁ pos₁ s) (codeAt none penv₂ senv₂ pos₂ s') =
-      codeEq (codeIAt none penv₁ senv₁ pos₁ s) (codeIAt none penv₂ senv₂ pos₂ s') := by
-  rw [← codeIAt_eq_map penv₁ senv₁ pos₁ hp₁ hs₁ s,
-    ← codeIAt_eq_map penv₂ senv₂ pos₂ hp₂ hs₂ s']
-  exact codeEq_map (codeAt none penv₁ senv₁ pos₁ s) (codeAt none penv₂ senv₂ pos₂ s')
-    (codeAt_ownEmpty none penv₁ senv₁ pos₁ s) (codeAt_ownEmpty none penv₂ senv₂ pos₂ s')
+    codeEq (codeAt R₁ none penv₁ senv₁ pos₁ s) (codeAt R₂ none penv₂ senv₂ pos₂ s') =
+      codeEq (codeIAt R₁ none penv₁ senv₁ pos₁ s) (codeIAt R₂ none penv₂ senv₂ pos₂ s') := by
+  rw [← codeIAt_eq_map R₁ hR₁ penv₁ senv₁ pos₁ hp₁ hs₁ s,
+    ← codeIAt_eq_map R₂ hR₂ penv₂ senv₂ pos₂ hp₂ hs₂ s']
+  exact codeEq_map (codeAt R₁ none penv₁ senv₁ pos₁ s) (codeAt R₂ none penv₂ senv₂ pos₂ s')
+    (codeAt_ownEmpty R₁ none penv₁ senv₁ pos₁ s) (codeAt_ownEmpty R₂ none penv₂ senv₂ pos₂ s')
 
-/-- Sealed code agrees: `(lam w w)` and `(lam z z)` compare alike in both models. -/
-theorem codeEq_codeOf_codeI (s s' : Src S X) :
-    codeEq (codeOf s) (codeOf s') = codeEq (codeI s) (codeI s') := by
+/-- Sealed code agrees: `(lam w w)` and `(lam z z)` compare alike in both models,
+for quotations written in forms rooted at scope owners `R` and `R'`. -/
+theorem codeEq_codeOf_codeI (R R' : Owner) (hR : scopeOwner R) (hR' : scopeOwner R')
+    (s s' : Src S X) :
+    codeEq (codeOf R s) (codeOf R' s') = codeEq (codeI R s) (codeI R' s') := by
   simp only [codeOf, codeI]
-  have hs : mapC codeFwd (sealParams (codeAt none [] [] [] s)) =
-      sealParams (codeIAt none [] [] [] s) := by
+  have hs : mapC codeFwd (sealParams (codeAt R none [] [] [] s)) =
+      sealParams (codeIAt R none [] [] [] s) := by
     rw [mapC_seal codeFwd_injective]
-    exact congrArg sealParams (codeIAt_eq_map [] [] [] nil_owners nil_owners s)
-  have hs' : mapC codeFwd (sealParams (codeAt none [] [] [] s')) =
-      sealParams (codeIAt none [] [] [] s') := by
+    exact congrArg sealParams (codeIAt_eq_map R hR [] [] [] nil_bound nil_bound s)
+  have hs' : mapC codeFwd (sealParams (codeAt R' none [] [] [] s')) =
+      sealParams (codeIAt R' none [] [] [] s') := by
     rw [mapC_seal codeFwd_injective]
-    exact congrArg sealParams (codeIAt_eq_map [] [] [] nil_owners nil_owners s')
+    exact congrArg sealParams (codeIAt_eq_map R' hR' [] [] [] nil_bound nil_bound s')
   rw [← hs, ← hs']
   exact codeEq_map _ _
-    (ownEmpty_seal (codeAt_ownEmpty none [] [] [] s))
-    (ownEmpty_seal (codeAt_ownEmpty none [] [] [] s'))
+    (ownEmpty_seal (codeAt_ownEmpty R none [] [] [] s))
+    (ownEmpty_seal (codeAt_ownEmpty R' none [] [] [] s'))
 
 end Mettapedia.GSLT.LanguageDef.TemplateScope

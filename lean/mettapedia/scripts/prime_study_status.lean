@@ -22,7 +22,7 @@ def freshSourceGates : IO (List String) := do
 
 def reportStudy : IO Unit := do
   let gates ← freshSourceGates
-  IO.println "Active objective: integrated higher-order MeTTa mathematics through HOL/HOTG, DTT, OSLF/GSLT-IL and NIK. The metatheory paper states the mathematical scope; working notes are maintained separately."
+  IO.println "Active objective: integrated higher-order MeTTa mathematics through HOL/HOTG, DTT, OSLF/GSLT-IL and SemanticService. The metatheory paper states the mathematical scope; working notes are maintained separately."
   IO.println "The following is the broad Prime specification inventory, not a prerequisite checklist or completion percentage for HO experimentation. Unsettled global binding/evaluation defaults do not block a pinned, qualified fragment."
   IO.println s!"Broad specification inventory {version}: {(closedIds gates).length}/{obligations.length} scoped rows closed."
   let theoremRows := obligations.countP fun row =>

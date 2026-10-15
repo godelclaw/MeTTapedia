@@ -6,3 +6,4 @@ import Mettapedia.CognitiveArchitecture.GodelClaw.EpistemicResolve
 import Mettapedia.CognitiveArchitecture.GodelClaw.MetaMoBridge
 import Mettapedia.CognitiveArchitecture.GodelClaw.EpistemicLove
 import Mettapedia.CognitiveArchitecture.GodelClaw.ToolBroker
+import Mettapedia.CognitiveArchitecture.GodelClaw.GlobalWorkspace

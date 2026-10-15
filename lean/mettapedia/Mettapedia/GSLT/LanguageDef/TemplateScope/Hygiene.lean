@@ -452,6 +452,70 @@ theorem untag_elabTopMI (t : Tm S X) (h : t.Authored = true) : untag (elabTopMI 
 
 /-! ### Scoping of the identities -/
 
+omit [DecidableEq X] in
+/-- Sealed code keeps its names at the form level. -/
+theorem codeVars_tagCode : ∀ (c : Tm S X) (n : Nm (Lv × X)), n ∈ codeVars (tagCode c) →
+    ∃ y, n = .src y ∧ y.1 = .top
+  | .var m, n, h => by
+      simp only [tagCode, codeVars, List.mem_singleton] at h
+      exact ⟨_, h, rfl⟩
+  | .lam _ _ b, n, h => by
+      simp only [tagCode, codeVars] at h
+      exact codeVars_tagCode b n h
+  | .app f a, n, h => by
+      simp only [tagCode, codeVars, List.mem_append] at h
+      exact h.elim (codeVars_tagCode f n) (codeVars_tagCode a n)
+  | .quote c, n, h => by
+      simp only [tagCode, codeVars] at h
+      exact codeVars_tagCode c n h
+  | .ctx _ c, n, h => by
+      simp only [tagCode, codeVars] at h
+      exact codeVars_tagCode c n h
+  | .pquote c, n, h => by
+      simp only [tagCode, codeVars] at h
+      exact codeVars_tagCode c n h
+  | .letP p w b, n, h => by
+      simp only [tagCode, codeVars, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact codeVars_tagCode p n h
+      · exact codeVars_tagCode w n h
+      · exact codeVars_tagCode b n h
+  | .alt t₁ t₂, n, h => by
+      simp only [tagCode, codeVars, List.mem_append] at h
+      exact h.elim (codeVars_tagCode t₁ n) (codeVars_tagCode t₂ n)
+  | .sym _, _, h | .fn _, _, h | .pvar _, _, h => by simp [tagCode, codeVars] at h
+
+/-- **The sealed code of an identity-tagged term is at the form level**: no lambda
+owns a name written there. -/
+theorem sealedVars_elabMI : ∀ (t : Tm S X) (E : List X) (lv pv : X → Lv) (d : ℕ) (n : Nm (Lv × X)),
+    n ∈ sealedVars (elabMI E lv pv d t) → ∃ y, n = .src y ∧ y.1 = .top
+  | .quote c, _, _, _, _, n, h => by
+      simp only [elabMI, sealedVars] at h
+      exact codeVars_tagCode c n h
+  | .ctx _ c, _, _, _, _, n, h => by
+      simp only [elabMI, sealedVars] at h
+      exact codeVars_tagCode c n h
+  | .lam _ _ b, E, lv, pv, d, n, h => by
+      simp only [elabMI, sealedVars] at h
+      exact sealedVars_elabMI b _ _ _ _ n h
+  | .app f a, E, lv, pv, d, n, h => by
+      simp only [elabMI, sealedVars, List.mem_append] at h
+      exact h.elim (sealedVars_elabMI f E lv pv d n) (sealedVars_elabMI a E lv pv d n)
+  | .pquote c, E, lv, pv, d, n, h => by
+      simp only [elabMI, sealedVars] at h
+      exact sealedVars_elabMI c E lv pv d n h
+  | .letP p w b, E, lv, pv, d, n, h => by
+      simp only [elabMI, sealedVars, List.mem_append] at h
+      rcases h with (h | h) | h
+      · exact sealedVars_elabMI p E lv pv d n h
+      · exact sealedVars_elabMI w E lv pv d n h
+      · exact sealedVars_elabMI b E lv pv d n h
+  | .alt t₁ t₂, E, lv, pv, d, n, h => by
+      simp only [elabMI, sealedVars, List.mem_append] at h
+      exact h.elim (sealedVars_elabMI t₁ E lv pv d n) (sealedVars_elabMI t₂ E lv pv d n)
+  | .sym _, _, _, _, _, _, h | .fn _, _, _, _, _, _, h | .var _, _, _, _, _, _, h
+  | .pvar _, _, _, _, _, _, h => by simp [elabMI, sealedVars] at h
+
 /-- Every free name of an identity-tagged term is a spelling at the level
 the environment gives it. -/
 theorem freeNames_elabMI : ∀ (t : Tm S X) (E : List X) (lv pv : X → Lv) (d : ℕ),
@@ -555,7 +619,8 @@ def LamAt (k : ℕ) (L : Tm S (Lv × X)) : Prop :=
   ∃ z own b, L = .lam (.src (.par k, z)) own b ∧ (∀ y ∈ own, y.1 = .own k) ∧
     (∀ n ∈ freeNames L, ∃ y, n = .src y ∧ (y.1 = .top ∨ ∃ j, 1 ≤ j ∧ j < k ∧ y.1 = .own j)) ∧
     (∀ p ∈ freeParams L, ∃ y, p = .src y ∧ ∃ j, j < k ∧ y.1 = .par j) ∧
-    (∀ p ∈ freeParams b, ∃ y, p = .src y ∧ ∃ j, y.1 = .par j)
+    (∀ p ∈ freeParams b, ∃ y, p = .src y ∧ ∃ j, y.1 = .par j) ∧
+    (∀ n ∈ sealedVars L, ∃ y, n = .src y ∧ y.1 = .top)
 
 theorem LvOK.update {d : ℕ} {lv : X → Lv} (h : LvOK d lv) (ys : List X) :
     LvOK (d + 1) (lvUpdate lv ys (.own (d + 1))) := by
@@ -588,7 +653,7 @@ theorem lams_elabMI : ∀ (t : Tm S X) (E : List X) (lv pv : X → Lv) (d : ℕ)
   | .lam x _ b, E, lv, pv, d, hlv, hpv, L, h => by
       simp only [elabMI, lams, List.mem_cons] at h
       rcases h with rfl | h
-      · refine ⟨d + 1, by omega, by simp [lamDepth], x.spell, _, _, rfl, ?_, ?_, ?_, ?_⟩
+      · refine ⟨d + 1, by omega, by simp [lamDepth], x.spell, _, _, rfl, ?_, ?_, ?_, ?_, ?_⟩
         · intro y hy
           simp only [List.mem_map] at hy
           obtain ⟨_, _, rfl⟩ := hy
@@ -620,6 +685,9 @@ theorem lams_elabMI : ∀ (t : Tm S X) (E : List X) (lv pv : X → Lv) (d : ℕ)
           refine ⟨_, rfl, ?_⟩
           obtain ⟨j, -, h2⟩ := (hpv.update [x.spell]) z
           exact ⟨j, h2⟩
+        · intro n hn
+          simp only [sealedVars] at hn
+          exact sealedVars_elabMI b _ _ _ _ n hn
       · obtain ⟨k, h1, h2, h3⟩ :=
           lams_elabMI b _ _ _ (d + 1) (hlv.update _) (hpv.update _) L h
         exact ⟨k, by omega, by simp only [lamDepth]; omega, h3⟩
@@ -757,14 +825,14 @@ theorem tableMI_wf (hIn : ∀ L, InProg L → ∃ k, 1 ≤ k ∧ k ≤ B ∧ Lam
   have key : ∀ κ r, (tableMI name B InProg).rule κ = some r →
       ∃ k z, 1 ≤ k ∧ k ≤ B ∧ r.x = .src (.par k, z) ∧ (∀ y ∈ r.own, y.1 = .own k) ∧
         (tableMI name B InProg).rank κ = B - k ∧ ∃ L, defunRule name L = some r ∧
-          ∃ x own b, L = .lam x own b := by
+          (∀ n ∈ sealedVars L, ∃ y, n = .src y ∧ y.1 = .top) ∧ ∃ x own b, L = .lam x own b := by
     intro κ r h
     obtain ⟨L, hL, -, hr, hk⟩ := tableMI_rule_some h
-    obtain ⟨k, hk1, hkB, z, own, b, rfl, hown, -⟩ := hIn L hL
+    obtain ⟨k, hk1, hkB, z, own, b, rfl, hown, -, -, -, hseal⟩ := hIn L hL
     simp only [defunRule, Option.some.injEq] at hr
     subst hr
-    exact ⟨k, z, hk1, hkB, rfl, hown, by simpa [lamLevel] using hk, _, rfl, _, _, _, rfl⟩
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+    exact ⟨k, z, hk1, hkB, rfl, hown, by simpa [lamLevel] using hk, _, rfl, hseal, _, _, _, rfl⟩
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
   · intro κ r h y hy
     obtain ⟨k, z, hk1, -, -, hown, hk, -⟩ := key κ r h
     have := hown y hy
@@ -777,14 +845,19 @@ theorem tableMI_wf (hIn : ∀ L, InProg L → ∃ k, 1 ≤ k ∧ k ≤ B ∧ Lam
     show (if k = 0 then none else some (B - k)) = _
     rw [if_neg (by omega)]
   · intro κ r h
-    obtain ⟨-, -, -, -, -, -, -, L, hr, x, own, b, rfl⟩ := key κ r h
+    obtain ⟨-, -, -, -, -, -, -, L, hr, -, x, own, b, rfl⟩ := key κ r h
     exact (defunRule_wf name x own b hr).1
   · intro κ r h
-    obtain ⟨-, -, -, -, -, -, -, L, hr, x, own, b, rfl⟩ := key κ r h
+    obtain ⟨-, -, -, -, -, -, -, L, hr, -, x, own, b, rfl⟩ := key κ r h
     exact (defunRule_wf name x own b hr).2.1
   · intro κ r h
-    obtain ⟨-, -, -, -, -, -, -, L, hr, x, own, b, rfl⟩ := key κ r h
+    obtain ⟨-, -, -, -, -, -, -, L, hr, -, x, own, b, rfl⟩ := key κ r h
     exact (defunRule_wf name x own b hr).2.2
+  · intro κ r h n hn
+    obtain ⟨-, -, -, -, -, -, -, L, hr, hseal, x, own, b, rfl⟩ := key κ r h
+    obtain ⟨y, rfl, hy⟩ := hseal n (defunRule_sealed name x own b hr n hn)
+    show (match y.1 with | .own k => some (B - k) | _ => none) = none
+    rw [hy]
 
 /-- **Every identity-tagged form defunctionalizes under the table**: its
 lambdas are program lambdas at levels from 1 to `B`, its symbols name no
@@ -833,7 +906,7 @@ theorem tableMI_defunctionalizes
         simp only [CloTable.rankOK, hrank, decide_eq_true_eq]
         omega
   · intro L hL
-    obtain ⟨k, -, -, z, own, b, rfl, -, hfn, -, hpb⟩ := hlev L hL
+    obtain ⟨k, -, -, z, own, b, rfl, -, hfn, -, hpb, -⟩ := hlev L hL
     simp only [apartB, List.all_eq_true, decide_eq_true_eq]
     intro c hc hcb
     obtain ⟨y, rfl, hy⟩ := hfn _ (List.mem_dedup.1 hc)
@@ -878,6 +951,10 @@ theorem tableMI_good (name : Tm S (Lv × X) → S) (B : ℕ) (InProg : Tm S (Lv 
   · intro p hp
     obtain ⟨z, rfl⟩ := freeParams_elabMI t _ _ _ _ p hp
     rfl
+  · intro n hn
+    obtain ⟨y, rfl, hy⟩ := sealedVars_elabMI t _ _ _ _ n hn
+    show (match y.1 with | .own k => some (B - k) | _ => none) = none
+    rw [hy]
 
 /-- **Defunctionalization holds for every program elaborated with binder
 identities, with no hygiene hypothesis.**  The query and the equations are

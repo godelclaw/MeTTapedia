@@ -371,7 +371,7 @@ theorem evidenceChecker_complete :
       ⟨ledger, resolved, totalEquality⟩
   simp [evidenceChecker, nodup, computed]
 
-/-- The revision-pinned count checker is an exact NIK-style authority for its
+/-- The revision-pinned count checker is an exact SemanticService-style authority for its
 independently stated finite meaning. -/
 theorem evidenceChecker_authority :
     (evidenceChecker (StoreId := StoreId) (Revision := Revision)).Authority

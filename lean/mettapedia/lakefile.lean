@@ -13,6 +13,9 @@ require ordered_semigroups from "../externals/ordered_semigroups"
 
 require Foundation from "../externals/Foundation"
 
+-- Polynomial functors and lenses (Spivak–Niu Poly); its cslib dependency is ../externals/cslib.
+require PolyFun from "../externals/PolyFun"
+
 require exchangeability from "../externals/exchangeability"
 
 require provenance from "../externals/provenance"
@@ -58,6 +61,106 @@ input_dir primeMotivationSources where
 lean_lib PrimeMotivationQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateMotivationProgramPackages]
   needs := #[`@/primeMotivationSources]
+
+input_dir holLightMeTTaSources where
+  path := "../../../hyperon/cetta-prime-2.0-draft-20260910/lib/hol_light"
+  text := true
+  filter := .extension "metta"
+
+lean_lib HOLLightMeTTaQuotation where
+  roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
+  needs := #[`@/holLightMeTTaSources]
+
+-- The GSLT execution library lives beside these proofs in `metta/gslt/lib`.
+-- Every quoted file is an input of the module that quotes it.
+input_file gsltMatchAutomataSource where
+  path := "../../metta/gslt/lib/gslt_match_automata.metta"
+  text := false
+
+lean_lib GSLTMatchAutomataQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataProgram]
+  needs := #[`@/gsltMatchAutomataSource]
+
+input_file gsltRuleExecutionSource where
+  path := "../../metta/gslt/lib/gslt_rule_execution.metta"
+  text := false
+
+input_file gsltPremiseOperationsSource where
+  path := "../../metta/gslt/lib/gslt_premise_operations.metta"
+  text := false
+
+input_file gsltScopedExecutionSource where
+  path := "../../metta/gslt/lib/gslt_scoped_execution.metta"
+  text := false
+
+lean_lib GSLTRuleExecutionQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleExecutionProgram]
+  needs := #[`@/gsltRuleExecutionSource, `@/gsltPremiseOperationsSource,
+    `@/gsltScopedExecutionSource]
+
+input_file gsltMatchNormalizedSource where
+  path := "../../metta/gslt/lib/gslt_match_normalized.metta"
+  text := false
+
+lean_lib GSLTMatchNormalizedQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataNormalizedExecution]
+  needs := #[`@/gsltMatchNormalizedSource]
+
+input_file gsltEquationExecutionSource where
+  path := "../../metta/gslt/lib/gslt_equation_execution.metta"
+  text := false
+
+lean_lib GSLTEquationExecutionQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationExecutionProgram]
+  needs := #[`@/gsltEquationExecutionSource]
+
+input_file gsltEquationContextsSource where
+  path := "../../metta/gslt/lib/gslt_equation_contexts.metta"
+  text := false
+
+lean_lib GSLTEquationContextsQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationContextExecutionProgram]
+  needs := #[`@/gsltEquationContextsSource]
+
+input_file gsltModuleSource where
+  path := "../../metta/gslt/lib/gslt_module.metta"
+  text := false
+
+lean_lib GSLTModuleQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ModuleAssemblyExecution]
+  needs := #[`@/gsltModuleSource]
+
+input_file gsltTypedSitesSource where
+  path := "../../metta/gslt/lib/gslt_typed_sites.metta"
+  text := false
+
+lean_lib GSLTTypedSitesQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Program]
+  needs := #[`@/gsltTypedSitesSource]
+
+input_file gsltRuleReadoutCacheSource where
+  path := "../../metta/gslt/lib/gslt_rule_readout_cache.metta"
+  text := false
+
+lean_lib GSLTRuleReadoutCacheQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleReadoutCache]
+  needs := #[`@/gsltRuleReadoutCacheSource]
+
+input_file gsltExecutionDriverSource where
+  path := "../../metta/gslt/lib/gslt_execution_driver.metta"
+  text := false
+
+lean_lib GSLTExecutionDriverQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecution.Program]
+  needs := #[`@/gsltExecutionDriverSource]
+
+input_file gsltProgramDriverSource where
+  path := "../../metta/gslt/lib/gslt_program_driver.metta"
+  text := false
+
+lean_lib GSLTProgramDriverQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution]
+  needs := #[`@/gsltProgramDriverSource]
 
 -- Concrete MM2 execution examples are an explicit proof audit, not a
 -- dependency of the routine language umbrellas or the default library.
@@ -174,8 +277,8 @@ lean_lib MM0MMBQuotation where
 
 lean_exe mettapedia where root := `Main
 
-lean_exe metamathNIKAudit where
-  root := `Mettapedia.Languages.Metamath.DatabaseNIKAudit
+lean_exe metamathCheckerAudit where
+  root := `Mettapedia.Languages.Metamath.DatabaseCheckerAudit
 
 lean_exe checkRFC8259NativeForestExact where
   root := `Mettapedia.GSLT.Tools.CheckRFC8259NativeForestExact
@@ -185,3 +288,6 @@ lean_exe sumoNativeSourceCheck where
 
 lean_exe pettaRun where
   root := `Mettapedia.Languages.MeTTa.PeTTa.Main
+
+lean_exe holLightExportReplay where
+  root := `scripts.check_hol_light_export

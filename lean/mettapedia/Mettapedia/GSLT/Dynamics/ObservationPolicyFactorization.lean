@@ -169,7 +169,7 @@ theorem IncompatibleDecisionFiber.no_readoutPolicyRealization
     IsEmpty (ReadoutPolicyRealization discipline Admissible policy) := by
   constructor
   intro realizes
-  letI := fiber.incompatible (policy (discipline.readout fiber.left))
+  let := fiber.incompatible (policy (discipline.readout fiber.left))
   exact isEmptyElim
     (⟨realizes fiber.left,
         by simpa only [fiber.sameReadout] using realizes fiber.right⟩ :
@@ -188,7 +188,7 @@ theorem IncompatibleDecisionFiber.realizingPolicy_not_supported
     ¬ discipline.SupportsPolicy policy := by
   apply not_supportsPolicy_of_collision discipline policy fiber.sameReadout
   intro sameDecision
-  letI := fiber.incompatible (policy fiber.left)
+  let := fiber.incompatible (policy fiber.left)
   exact isEmptyElim
     (⟨realizes fiber.left,
         by simpa only [sameDecision] using realizes fiber.right⟩ :

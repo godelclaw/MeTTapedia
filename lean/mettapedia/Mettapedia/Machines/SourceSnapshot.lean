@@ -134,6 +134,24 @@ def attempt (provider : Provider Byte Operation Value) (acquired : Option (List 
   | none => (current, [])
   | some snapshot => captured provider snapshot current steps
 
+/-- A pure source query returns the current world unchanged. The loader still
+performs every visit; purity is a property of this constructed provider. -/
+def pureProvider (query : Operation → List Byte → Value) : Provider Byte Operation Value :=
+  fun operation source current => (current, query operation source)
+
+/-- A pinned execution agrees with fresh queries over the retained source,
+even when writes occur between visits. The two sides traverse different data:
+an execution log on the left and a plain list of operations on the right. -/
+theorem captured_pure_values (query : Operation → List Byte → Value)
+    (snapshot current : List Byte) (steps : List (Step Byte Operation)) :
+    ((captured (pureProvider query) snapshot current steps).2.map
+      (fun reading => (reading.operation, reading.value))) =
+      (operations steps).map (fun operation => (operation, query operation snapshot)) := by
+  induction steps generalizing current with
+  | nil => rfl
+  | cons step rest ih =>
+      cases step <;> simp only [captured, pureProvider, operations, List.map_cons, ih]
+
 theorem failed_capture_prevents_visits (provider : Provider Byte Operation Value)
     (current : List Byte) (steps : List (Step Byte Operation)) :
     attempt provider none current steps = (current, []) := by

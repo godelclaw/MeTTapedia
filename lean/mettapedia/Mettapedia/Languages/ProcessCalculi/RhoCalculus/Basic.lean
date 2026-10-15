@@ -1536,7 +1536,9 @@ theorem substProc_drop_quote_opaque (s : Subst) (p : Proc) :
   simp [substProc]
 
 example : optionProcEq (firstStep pingProc) (some (Proc.send out hello)) = true := by
-  native_decide
+  simp [pingProc, pingBody, firstStep, matchPat, checkedSubstProc,
+    substProc, substName, substData, lookup, procWF, dataWF, nameWF,
+    optionProcEq, procEq, dataEq, nameEq, ch, out, hello]
 
 example :
     optionProcEq (firstStep (Proc.drop (Proc.quote (Proc.send out hello))))
@@ -1563,14 +1565,16 @@ example :
       (checkedSubstProc [(0, Data.name out)]
         (Proc.send (Name.var 0) hello))
       (some (Proc.send out hello)) = true := by
-  native_decide
+  simp [checkedSubstProc, substProc, substName, substData, lookup,
+    procWF, dataWF, nameWF, optionProcEq, procEq, dataEq, nameEq, out, hello]
 
 example :
     optionProcEq
       (checkedSubstProc [(0, Data.atom "not-name")]
         (Proc.send (Name.var 0) hello))
       none = true := by
-  native_decide
+  simp [checkedSubstProc, substProc, substName, substData, lookup,
+    procWF, dataWF, nameWF, optionProcEq, hello]
 
 example :
     optionProcEq
@@ -1579,7 +1583,10 @@ example :
         [(ch, Data.name out)]
         (Proc.send (Name.var 0) hello))
       (some (Proc.send out hello)) = true := by
-  native_decide
+  simp [joinBodyAfterMessages, matchJoinMessages, matchPat, mergeSubst,
+    extendConsistent, checkedSubstProc, substProc, substName, substData,
+    lookup, procWF, dataWF, nameWF, optionProcEq, procEq, dataEq, nameEq,
+    ch, out, hello]
 
 example :
     optionProcEq
@@ -1588,7 +1595,9 @@ example :
         [(ch, Data.atom "not-name")]
         (Proc.send (Name.var 0) hello))
       none = true := by
-  native_decide
+  simp [joinBodyAfterMessages, matchJoinMessages, matchPat, mergeSubst,
+    extendConsistent, checkedSubstProc, substProc, substName, substData,
+    lookup, procWF, dataWF, nameWF, optionProcEq, nameEq, ch, hello]
 
 example :
     procWF [] (Proc.send (Name.var 0) hello) = false := rfl
@@ -1612,18 +1621,19 @@ example :
     nameTermSort [] (NameTerm.quotedProc
       (Proc.recv ch (Pat.bind 0) (Proc.send out (Data.var 0)))) =
     NameTermSort.quotedProc := by
-  native_decide
+  simp [nameTermSort, procWF, nameWF, dataWF, patWF, patVars, ch, out]
 
 example :
     nameTermSort [] (NameTerm.quotedProc
       (Proc.send out (Data.var 0))) =
     NameTermSort.invalid := by
-  native_decide
+  simp [nameTermSort, procWF, nameWF, dataWF, out]
 
 example :
     nameTermIndexable [] (NameTerm.quotedProc
       (Proc.recv ch (Pat.bind 0) (Proc.send out (Data.var 0)))) = false := by
-  native_decide
+  simp [nameTermIndexable, nameTermDirectIndexable, nameTermSort,
+    procWF, nameWF, dataWF, patWF, patVars, ch, out]
 
 example :
     nameIndexable [] freshOne = true := rfl
@@ -1654,7 +1664,9 @@ example :
     optionProcEq (firstStep persistentProc)
       (some (Proc.par [Proc.contract ch (Pat.bind 0) (Proc.send out (Data.var 0)),
                        Proc.send out hello])) = true := by
-  native_decide
+  simp [persistentProc, firstStep, matchPat, checkedSubstProc,
+    substProc, substName, substData, lookup, procWF, dataWF, nameWF,
+    optionProcEq, procEq, procListEq, dataEq, patEq, nameEq, ch, out, hello]
 
 def joinProc : Proc :=
   Proc.par
@@ -1666,7 +1678,10 @@ def joinProc : Proc :=
 example :
     optionProcEq (firstStep joinProc)
       (some (Proc.send out (Data.tuple [Data.atom "knife", Data.atom "spoon"]))) = true := by
-  native_decide
+  simp [joinProc, firstStep, matchPat, mergeSubst, extendConsistent,
+    checkedSubstProc, substProc, substName, substData, lookup,
+    procWF, dataWF, dataListWF, nameWF, optionProcEq, procEq,
+    dataEq, dataListEq, nameEq, left, right, out]
 
 def sameChannelJoinProc : Proc :=
   Proc.par
@@ -1678,7 +1693,10 @@ def sameChannelJoinProc : Proc :=
 example :
     optionProcEq (firstStep sameChannelJoinProc)
       (some (Proc.send out (Data.tuple [firstMsg, secondMsg]))) = true := by
-  native_decide
+  simp [sameChannelJoinProc, firstStep, matchPat, mergeSubst, extendConsistent,
+    checkedSubstProc, substProc, substName, substData, lookup,
+    procWF, dataWF, dataListWF, nameWF, optionProcEq, procEq,
+    dataEq, dataListEq, nameEq, ch, out, firstMsg, secondMsg]
 
 def sameChannelJoinClauses : List JoinClause :=
   [{ channel := ch, pattern := Pat.bind 0 },
@@ -1703,7 +1721,11 @@ example :
         [(ch, firstMsg), (ch, secondMsg)]
         (Proc.send out (Data.tuple [Data.var 0, Data.var 1])))
       (some (Proc.send out (Data.tuple [firstMsg, secondMsg]))) = true := by
-  native_decide
+  simp [joinBodyAfterMessages, sameChannelJoinClauses, matchJoinMessages,
+    matchPat, mergeSubst, extendConsistent, checkedSubstProc,
+    substProc, substName, substData, lookup, procWF, dataWF, dataListWF,
+    nameWF, optionProcEq, procEq, dataEq, dataListEq,
+    nameEq, ch, out, firstMsg, secondMsg]
 
 theorem sameChannelJoinBodyAfterMessages :
     joinBodyAfterMessages sameChannelJoinClauses
@@ -1753,15 +1775,19 @@ example :
 
 example :
     procWF [] sameChannelArbitraryJoinProc = true := by
-  native_decide
+  simp [sameChannelArbitraryJoinProc, sameChannelJoinClauses, procWF, procListWF,
+    joinClausesWF, joinClauseWF, joinBodyCtx, joinClausesVars, joinClauseVars,
+    patWF, patVars, nameWF, dataWF, dataListWF, ch, out, firstMsg, secondMsg]
 
 example :
     procWF [] sameChannelArbitraryPJoinProc = true := by
-  native_decide
+  simp [sameChannelArbitraryPJoinProc, sameChannelJoinClauses, procWF, procListWF,
+    joinClausesWF, joinClauseWF, joinBodyCtx, joinClausesVars, joinClauseVars,
+    patWF, patVars, nameWF, dataWF, dataListWF, ch, out, firstMsg, secondMsg]
 
 example :
     procWF [] (Proc.send out (Data.tuple [firstMsg, secondMsg])) = true := by
-  native_decide
+  simp [procWF, dataWF, dataListWF, nameWF, out, firstMsg, secondMsg]
 
 example :
     procWF []
@@ -1776,7 +1802,9 @@ example :
       (body := Proc.send out (Data.tuple [Data.var 0, Data.var 1]))
       (result := Proc.send out (Data.tuple [firstMsg, secondMsg]))
       sameChannelJoinBodyAfterMessages
-  · native_decide
+  · simp [sameChannelJoinClauses, procWF, procListWF,
+      joinClausesWF, joinClauseWF, joinBodyCtx, joinClausesVars, joinClauseVars,
+      patWF, patVars, nameWF, dataWF, dataListWF, ch, out, firstMsg, secondMsg]
 
 def sameChannelComponents : List Proc :=
   [Proc.send ch firstMsg, Proc.send ch secondMsg, Proc.send out hello]

@@ -1,6 +1,6 @@
 import Mettapedia.OSLF.Syntax.IntrinsicScopedAuthoredTermsOnlyControls
 import Mettapedia.OSLF.Syntax.MonoidAuthoredComparison
-import Mettapedia.OSLF.Syntax.Chapter7MonoidSecondOrderEquations
+import Mettapedia.OSLF.Syntax.MonoidSecondOrderEquations
 
 /-!
 # The authored monoid through operational classification

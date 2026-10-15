@@ -1,15 +1,15 @@
 import Mettapedia.GSLT.LanguageDef.GSLTILObservationSelection
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.TypeTheory.UnityIsNotUIP
 
 /-!
 # Scoped proof irrelevance and observer-indexed elaboration admission
 
 This module states the boundary that a layered MeTTa type theory needs from
-NIK.  Exact Boolean checking, exact preservation of native proof objects, and
+SemanticService.  Exact Boolean checking, exact preservation of native proof objects, and
 proof-irrelevance of a selected proof fibre are three different properties.
 
-An exact NIK certificate boundary transports proof-fibre thinness in both
+An exact SemanticService certificate boundary transports proof-fibre thinness in both
 directions.  It does not manufacture thinness.  In particular:
 
 * a computable theoremhood decision may coexist with two native proofs;
@@ -31,7 +31,7 @@ namespace Mettapedia.GSLT.LanguageDef.ScopedProofIrrelevance
 
 open Mettapedia.Cybernetics
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.GSLTIL
 open Mettapedia.GSLT.LanguageDef.GSLTIL.Syntax
 open Mettapedia.GSLT.LanguageDef.GSLTIL.ElaborationSelection
@@ -83,7 +83,7 @@ theorem acceptedThinAt_iff_nativeThinAt
     exact (nativeThin claim member).allEq
       (fibreEquiv first) (fibreEquiv second)
 
-/-- The complete evidence needed to expose one NIK proof boundary as a
+/-- The complete evidence needed to expose one SemanticService proof boundary as a
 proof-irrelevant bubble.  Exact proof-fibre correspondence and native
 thinness are separate fields because neither implies the other. -/
 structure ScopedProofIrrelevanceAdmission
@@ -96,7 +96,7 @@ structure ScopedProofIrrelevanceAdmission
 
 namespace ScopedProofIrrelevanceAdmission
 
-/-- An admitted native-thin scope is equally thin at its exact NIK
+/-- An admitted native-thin scope is equally thin at its exact SemanticService
 certificate boundary. -/
 theorem acceptedThin
     {Claim : Type uClaim} {Certificate : Type uCertificate}
@@ -109,7 +109,7 @@ theorem acceptedThin
 
 end ScopedProofIrrelevanceAdmission
 
-/-! ## A real positive NIK bubble -/
+/-! ## A real positive SemanticService bubble -/
 
 namespace ThinBoundaryCanary
 

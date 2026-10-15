@@ -330,15 +330,15 @@ theorem parallelAcceptanceCertificate {bytes : ByteArray} {files : FileMap}
       label formula
 
 /-- The parallel certificate at the book include policy. -/
-theorem parallelAcceptanceCertificate_bookSpec
+theorem parallelAcceptanceCertificate_ignoreCyclicReferences
     {bytes : ByteArray} {files : FileMap}
     {root : String} {fuel : Nat} {state : SourceState}
     {obligations : List TheoremObligation}
-    (accepted : runSource files bookSpecPolicy root fuel =
+    (accepted : runSource files ignoreCyclicReferencesPolicy root fuel =
       .ok state obligations)
     (output : CheckedParserOutput bytes)
     (pos : Metamath.Verify.Pos) :
-    ParallelAcceptanceCertificate bytes files bookSpecPolicy root fuel state
+    ParallelAcceptanceCertificate bytes files ignoreCyclicReferencesPolicy root fuel state
       obligations pos :=
   parallelAcceptanceCertificate accepted output pos
 
@@ -456,7 +456,7 @@ def declarationFixtureFiles : FileMap := fun n =>
 
 /-- Positive: the composed pipeline accepts the fixture database at
 the book include policy. -/
-example : (match runSource declarationFixtureFiles bookSpecPolicy "root" 100 with
+example : (match runSource declarationFixtureFiles ignoreCyclicReferencesPolicy "root" 100 with
     | .ok _ _ => true
     | .error _ => false) = true := by rfl
 
@@ -470,7 +470,7 @@ example : (match runSource declarationFixtureFiles mmLean4CompatPolicy "root" 10
 realized by the shipped declaration operations. -/
 example (pos : Metamath.Verify.Pos) :
     ∃ state obligations,
-      runSource declarationFixtureFiles bookSpecPolicy "root" 100 =
+      runSource declarationFixtureFiles ignoreCyclicReferencesPolicy "root" 100 =
         .ok state obligations ∧
       ∃ payloads : List LocalPayload,
         applyLocalPayloads? payloads initialState = some state ∧
@@ -479,19 +479,19 @@ example (pos : Metamath.Verify.Pos) :
             (fun d payload => runtimeApplyPayload pos payload d)
             (default : RuntimeDB))
           state := by
-  match h : runSource declarationFixtureFiles bookSpecPolicy "root" 100 with
+  match h : runSource declarationFixtureFiles ignoreCyclicReferencesPolicy "root" 100 with
   | .ok state obligations =>
       exact ⟨state, obligations, rfl,
         runSource_declarationState_coevolution h pos⟩
   | .error e =>
       exact absurd h (by
         intro hcontra
-        have : (match runSource declarationFixtureFiles bookSpecPolicy "root" 100
+        have : (match runSource declarationFixtureFiles ignoreCyclicReferencesPolicy "root" 100
             with
             | .ok _ _ => true
             | .error _ => false) = false := by
           rw [hcontra]
-        rw [show (match runSource declarationFixtureFiles bookSpecPolicy "root" 100
+        rw [show (match runSource declarationFixtureFiles ignoreCyclicReferencesPolicy "root" 100
             with
             | .ok _ _ => true
             | .error _ => false) = true from rfl] at this
@@ -527,7 +527,7 @@ example {bytes : ByteArray} (output : CheckedParserOutput bytes)
 
 /-- Negative: a missing include target is rejected with include
 provenance retained. -/
-example : (match runSource (fun _ => none) bookSpecPolicy "root" 100
+example : (match runSource (fun _ => none) ignoreCyclicReferencesPolicy "root" 100
     with
     | .ok _ _ => false
     | .error (.include _) => true
@@ -543,7 +543,7 @@ def missingFloatFiles : FileMap := fun n =>
       102, 102, 32, 120, 32, 36, 46])
   else none
 
-example : (match runSource missingFloatFiles bookSpecPolicy "root" 100
+example : (match runSource missingFloatFiles ignoreCyclicReferencesPolicy "root" 100
     with
     | .ok _ _ => false
     | .error (.fold _) => true

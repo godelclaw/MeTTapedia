@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.SnapshotPreservation
 import Mettapedia.Languages.MeTTa.HE.BindingCacheSoundness
 import Mettapedia.Languages.MeTTa.HE.VariantQueryCorrectness
+import Mettapedia.Machines.ReadCertifiedQueryReuse
+import Mettapedia.Machines.SourceSnapshot
 
 /-!
 # Incremental Table Semantics
@@ -178,5 +180,124 @@ def upsert (ts : TableStore) (q : Atom) (te : TableEntry) : TableStore :=
   ⟨(q, te) :: ts.entries.filter (fun (k, _) => !(k == q))⟩
 
 end TableStore
+
+/-! ## Conservative complete-read instance
+
+The existing HE table is a query-equation table, not a general evaluator
+cache. Its conservative dependency is the complete captured space, including
+failed queries. The authority additionally distinguishes source revisions.
+Equality checking of this certificate has no constant-cost claim.
+-/
+
+namespace TableEntry
+
+open Mettapedia.Machines.ReadOnlyQuery
+open Mettapedia.Machines.ReadCertifiedQueryReuse
+
+/-- A complete space read supports the existing ordered query operation. -/
+def queryFamily : Supported.Family RevisionedSpace Nat (Atom × Nat) Unit Space
+    (List (Atom × Bindings)) where
+  authority := RevisionedSpace.revision
+  memory := fun source _ => source.space
+  observe := fun source query =>
+    ⟨queryEquations source.space query.1 query.2, [((), source.space)]⟩
+  certifies := by
+    intro source query read present
+    simp only [List.mem_singleton] at present
+    subst present
+    rfl
+  stable := by
+    intro first second query _ reads
+    have sameSpace : second.space = first.space := reads ((), first.space) (by simp)
+    exact congrArg (fun space => queryEquations space query.1 query.2) sameSpace
+
+def captureRead (source : RevisionedSpace) (query : Atom) (fuel : Nat) :
+    Supported.Captured queryFamily :=
+  Supported.capture queryFamily source (query, fuel)
+
+theorem captureRead_recorded (source : RevisionedSpace) (query : Atom) (fuel : Nat) :
+    Supported.Recorded queryFamily (captureRead source query fuel).val :=
+  (captureRead source query fuel).property
+
+/-- Population in the older table representation and in the shared dependency
+interface agree on their complete ordered answer records. -/
+theorem captureRead_answers (source : RevisionedSpace) (query : Atom) (fuel : Nat) :
+    (captureRead source query fuel).val.value.answer = (populateExact source query fuel).answers := rfl
+
+def reuseRead (current : RevisionedSpace) (query : Atom) (fuel : Nat)
+    (entry : Supported.Captured queryFamily) :
+    List (Atom × Bindings) × Nat :=
+  Supported.reuseCaptured queryFamily current (query, fuel) entry
+
+/-- The validator and the fresh query take different paths. Their ordered
+answers coincide for every genuinely captured entry, including absence. -/
+theorem reuseRead_exact (old current : RevisionedSpace) (query : Atom) (fuel : Nat) :
+    (reuseRead current query fuel (captureRead old query fuel)).1 =
+      queryEquations current.space query fuel :=
+  Supported.reuseCaptured_exact queryFamily current (query, fuel) (captureRead old query fuel)
+
+theorem unchangedRead_reuses (source : RevisionedSpace) (query : Atom) (fuel : Nat) :
+    reuseRead source query fuel (captureRead source query fuel) =
+      (queryEquations source.space query fuel, 0) :=
+  Supported.unchanged_reuses queryFamily source (query, fuel)
+
+/-- Any revision edit refuses the old authority, independently of its reads. -/
+theorem addAtom_recomputes (source : RevisionedSpace) (atom query : Atom) (fuel : Nat) :
+    reuseRead (source.addAtom atom) query fuel (captureRead source query fuel) =
+      (queryEquations (source.addAtom atom).space query fuel, 1) := by
+  have rejected : Supported.admissible queryFamily (source.addAtom atom) (query, fuel)
+      (captureRead source query fuel).val = false := by
+    apply Bool.eq_false_iff.mpr
+    intro accepted
+    have same := ((Supported.admissible_iff _ _ _ _).mp accepted).1
+    change source.revision = (source.addAtom atom).revision at same
+    simp only [RevisionedSpace.addAtom] at same
+    omega
+  unfold reuseRead Supported.reuseCaptured Supported.reuse
+  rw [if_neg (by rw [rejected]; decide)]
+  rfl
+
+/-- Retained readers query their captured HE space. Writes alter the current
+world without changing that reader's ordered query answers. -/
+theorem pinned_queries_exact (snapshot current : Space)
+    (steps : List (Mettapedia.Machines.SourceSnapshot.Step Atom (Atom × Nat))) :
+    ((Mettapedia.Machines.SourceSnapshot.captured
+      (Mettapedia.Machines.SourceSnapshot.pureProvider
+        (fun query atoms => queryEquations ⟨atoms⟩ query.1 query.2))
+      snapshot.atoms current.atoms steps).2.map (fun reading => (reading.operation, reading.value))) =
+    (Mettapedia.Machines.SourceSnapshot.operations steps).map
+      (fun query => (query, queryEquations snapshot query.1 query.2)) :=
+  Mettapedia.Machines.SourceSnapshot.captured_pure_values _ snapshot.atoms current.atoms steps
+
+end TableEntry
+
+namespace TableReadControls
+
+open Mettapedia.Machines.SourceSnapshot
+
+private def query : Atom := .expression [.symbol "f"]
+private def rule : Atom := .expression [.symbol "=", query, .symbol "answer"]
+private def changed : Space := Space.ofList [rule]
+private def operation : Atom × Nat := (query, 8)
+private def provider : Provider Atom (Atom × Nat) (List (Atom × Bindings)) :=
+  pureProvider (fun query atoms => queryEquations ⟨atoms⟩ query.1 query.2)
+
+/-- A failed captured query remains empty across a write. Reopening reads
+the new equation instead; snapshot retention and cache validation are distinct. -/
+theorem pinned_absence_and_reopened_insertion_differ :
+    ((captured provider [] [] [.visit operation, .write changed.atoms, .visit operation]).2.map
+      (fun reading => reading.value.map Prod.fst)) = [[], []] ∧
+    ((reopened provider [] [.visit operation, .write changed.atoms, .visit operation]).2.map
+      (fun reading => reading.value.map Prod.fst)) = [[], [.symbol "answer"]] := by decide
+
+/-- The conservative current-world cache refuses that same absent read after
+the source revision changes, and returns the fresh ordered answer. -/
+theorem absent_read_invalidates_on_matching_insertion :
+    (TableEntry.reuseRead ((⟨Space.empty, 0⟩ : RevisionedSpace).addAtom rule) query 8
+      (TableEntry.captureRead ⟨Space.empty, 0⟩ query 8)).1.map Prod.fst = [.symbol "answer"] ∧
+    (TableEntry.reuseRead ((⟨Space.empty, 0⟩ : RevisionedSpace).addAtom rule) query 8
+      (TableEntry.captureRead ⟨Space.empty, 0⟩ query 8)).2 = 1 := by decide
+
+end TableReadControls
 
 end Mettapedia.Languages.MeTTa.HE

@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding
 import Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-import Mettapedia.GSLT.LanguageDef.NIKBaseChecker
+import Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker
 
 /-!
 # Exact finite-stage grounding in the base checker
@@ -24,11 +24,11 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.GenerativeCantorBootstrapGrounding
 
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
-open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
 open Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 private abbrev finiteStageTheory :=
   Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding.stagedTheory
@@ -37,10 +37,10 @@ private abbrev finiteStageContract :=
   Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding.stagedContract
 
 private abbrev baseCheckerTheory :=
-  Mettapedia.GSLT.LanguageDef.NIKBaseChecker.layer.toTheoryFamily
+  Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.layer.toTheoryFamily
 
 private abbrev baseCheckerContract :=
-  Mettapedia.GSLT.LanguageDef.NIKBaseChecker.layer.toAuthorityContract
+  Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.layer.toAuthorityContract
 
 /-! ## Exact translation into `modelSound` -/
 
@@ -55,7 +55,7 @@ def stagedToBaseCheckerModel :
     cases kind
     rfl
   mapClaim := fun _kind formula =>
-    Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim formula
+    Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim formula
   mapCertificate := fun _kind _certificate => .semanticDecision
   check_commutes := by
     intro kind formula certificate
@@ -71,7 +71,7 @@ def stagedToBaseCheckerModel :
 
 @[simp] theorem stagedToBaseCheckerModel_mapClaim (formula : Formula 0) :
     stagedToBaseCheckerModel.mapClaim () formula =
-      Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim
+      Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim
         formula :=
   rfl
 
@@ -99,7 +99,7 @@ theorem stagedToBaseCheckerModel_conservative :
 theorem stagedToBaseCheckerModel_check_commutes (formula : Formula 0)
     (certificate : finiteStageContract.Certificate ()) :
     (baseCheckerContract.checker ()).check
-        (Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim
+        (Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim
           formula)
         .semanticDecision =
       (finiteStageContract.checker ()).check formula certificate :=
@@ -108,7 +108,7 @@ theorem stagedToBaseCheckerModel_check_commutes (formula : Formula 0)
 /-- Base-checker `modelSound` meaning is exactly finite-stage meaning on the image. -/
 theorem baseCheckerModelMeaning_iff_stagedMeaning (formula : Formula 0) :
     baseCheckerTheory.Meaning ()
-        (Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim
+        (Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim
           formula) <->
       finiteStageTheory.Meaning () formula :=
   TheoryTranslation.meaning_iff_of_conservative
@@ -119,7 +119,7 @@ theorem baseCheckerModelMeaning_iff_stagedMeaning (formula : Formula 0) :
 define it. -/
 theorem baseCheckerModelAccepts_iff_stagedMeaning (formula : Formula 0) :
     (baseCheckerContract.checker ()).check
-        (Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim
+        (Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim
           formula)
         .semanticDecision = true <->
       finiteStageTheory.Meaning () formula := by
@@ -134,7 +134,7 @@ open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision.Canary
 
 theorem properPart_accepted_by_base_checker :
     (baseCheckerContract.checker ()).check
-        (Mettapedia.GSLT.LanguageDef.NIKBaseChecker.modelClaim
+        (Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.modelClaim
           properPartSentence)
         .semanticDecision = true := by
   rw [stagedToBaseCheckerModel_check_commutes properPartSentence ()]
@@ -146,7 +146,7 @@ cannot appear in the source-soundness lane. -/
 theorem sourceSound_not_in_image (formula : Formula 0) :
     Not (exists stagedFormula : Formula 0,
       stagedToBaseCheckerModel.mapClaim () stagedFormula =
-        Mettapedia.GSLT.LanguageDef.NIKBaseChecker.sourceSoundClaim
+        Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.sourceSoundClaim
           formula) := by
   rintro ⟨stagedFormula, equalClaims⟩
   have equalKinds := congrArg
@@ -161,7 +161,7 @@ theorem refinementEvidence_not_in_certificate_image
     (evidence : RefinementMetaAuthority.Certificate) :
     Not (exists certificate : finiteStageContract.Certificate (),
       stagedToBaseCheckerModel.mapCertificate () certificate =
-        Mettapedia.GSLT.LanguageDef.NIKBaseChecker.Certificate.refinementEvidence
+        Mettapedia.GSLT.LanguageDef.ModelQualifiedChecker.Certificate.refinementEvidence
           evidence) := by
   rintro ⟨certificate, equalCertificates⟩
   cases certificate

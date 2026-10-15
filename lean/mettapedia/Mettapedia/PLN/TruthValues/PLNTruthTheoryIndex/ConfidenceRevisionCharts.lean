@@ -154,7 +154,7 @@ law; tanh has the Einstein-style transported law; arctan is a reconstructive
 non-Mobius chart.  Rigidity is included only under the explicit additive,
 continuous or monotone, normalized, nonsingular confidence-odds hypotheses on
 the nonnegative evidence-weight axis, together with PLN non-vacuity witnesses. -/
-noncomputable def confidenceRevisionChartProfile : ConfidenceRevisionChartProfile where
+theorem confidenceRevisionChartProfile : ConfidenceRevisionChartProfile where
   confidenceOddsPLNWeight := by
     intro k n hk hn
     exact confidenceOdds_plnOddsCoordinate_encode_eq_weight_div hk hn
@@ -269,7 +269,7 @@ structure ConfidenceChartTorsorProfile where
 reparametrizations: differences between charts are canonical, but no chart is
 distinguished without an extra law such as Walley width complement or
 canonical confidence-odds additivity. -/
-noncomputable def confidenceChartTorsorProfile : ConfidenceChartTorsorProfile where
+theorem confidenceChartTorsorProfile : ConfidenceChartTorsorProfile where
   chartDifferenceTransitive :=
     reparametrizeChart_chartDifference
   chartActionFree :=
@@ -312,7 +312,7 @@ structure GenericITVProfile where
             Mettapedia.PLN.TruthValues.PLNForcedQueries.ITVSelector.eval .upper itv
 
 /-- The generic ITV profile is fully witnessed by explicit canaries. -/
-def genericITVProfile : GenericITVProfile where
+theorem genericITVProfile : GenericITVProfile where
   widthDoesNotForceCredibility :=
     generic_itv_width_does_not_force_credibility
   credibilityDoesNotForceWidth :=
@@ -449,7 +449,7 @@ structure StrengthProjectionProfile where
         |strength - mean| < ε
 
 /-- Current strength projection profile. -/
-def strengthProjectionProfile : StrengthProjectionProfile where
+theorem strengthProjectionProfile : StrengthProjectionProfile where
   lowerMidpointUpperNotForced :=
     generic_itv_does_not_force_point_projection
   typedITVLowerLeMidpoint :=
@@ -513,7 +513,7 @@ structure BayesCredibleProfile where
 
 /-- Bayesian credible profile: evidence concentration forces credibility, not
 the interval backend. -/
-def bayesCredibleProfile : BayesCredibleProfile where
+theorem bayesCredibleProfile : BayesCredibleProfile where
   credibilityConcentration :=
     typed_bayes_credible_credibility_is_evidence_concentration
   credibilityIndependentOfBackendLevel :=
@@ -537,7 +537,7 @@ structure WalleyBinaryProfile where
 
 /-- Walley binary profile: generic reconstructivity is not enough; the
 width-complement law is the forcing hypothesis. -/
-def walleyBinaryProfile : WalleyBinaryProfile where
+theorem walleyBinaryProfile : WalleyBinaryProfile where
   typedWidthComplement :=
     typed_walley_binary_has_width_complement
   widthComplementForcesPLNOdds := by
@@ -576,7 +576,7 @@ structure WalleyCategoricalProfile where
 
 /-- Walley categorical profile: multinomial IDM as typed ITV plus credal
 envelope agreement. -/
-def walleyCategoricalProfile : WalleyCategoricalProfile where
+theorem walleyCategoricalProfile : WalleyCategoricalProfile where
   typedWidthComplement :=
     typed_walley_categorical_has_width_complement
   typedCredibilityPrecision :=

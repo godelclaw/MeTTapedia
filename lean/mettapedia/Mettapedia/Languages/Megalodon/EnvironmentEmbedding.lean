@@ -19,9 +19,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.Megalodon.EnvironmentEmbedding
 
-open Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView
+open Mettapedia.GSLT.LanguageDef.TheoryProfileView
 open Mettapedia.Languages.Megalodon.MathdataKernel
-open Mettapedia.Languages.Megalodon.NIKNativeProof
+open Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 open Mettapedia.Languages.Megalodon.SelectedTheoryProfile
 
 /-! ## Renaming the material presentation -/
@@ -868,7 +868,7 @@ theorem checkProof_rename (embedding : Embedding source target)
       exact embedding.checkNormalizedProof_rename fuel typeDepth termContext
         proofContext proof normalized
 
-/-! ## Induced selected-theory and NIK views -/
+/-! ## Induced selected-theory and SemanticService views -/
 
 /-- Transport the environment-local part of a selected Megalodon query. -/
 def mapProfileClaim (embedding : Embedding source target)
@@ -891,7 +891,7 @@ def mapProfileClaim (embedding : Embedding source target)
   rfl
 
 /-- A declaration-bearing environment embedding induces an exact
-proof-carrying NIK theory-profile view. -/
+proof-carrying SemanticService theory-profile view. -/
 def authorityView (embedding : Embedding source target) :
     AuthorityView contract source target where
   mapClaim := embedding.mapProfileClaim
@@ -930,7 +930,7 @@ def theoryView (embedding : Embedding source target) :
     TheoryView theory source target :=
   embedding.authorityView.toTheoryView
 
-/-- The same theorem mechanically supplies NIK's covered operational
+/-- The same theorem mechanically supplies SemanticService's covered operational
 translation, including target-step lifting on translated states. -/
 def operationalView (embedding : Embedding source target) :=
   embedding.authorityView.toCoveredTranslation

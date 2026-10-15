@@ -45,11 +45,17 @@ theorem tuple_swap_atom {space : Space} {d : GroundedDispatch} {fuel : Nat}
       ∃ rb, InterpretTuple space d (.expression (pre ++ x :: post)) b (r.1, rb)
   | [], post, r, l, h_eq, h_pre, h_post, h_last, h_nes, h => by
       cases h with
-      | singleton a _ _ h_eval =>
+      | nil => simp at h_eq
+      | singleton a _ hr h_eval h_ok =>
+          injection h_eq.symm with h1 h2
+          cases h1; cases h2
+          obtain ⟨rb, h_ev⟩ := h_sub hr h_eval
+          exact ⟨rb, InterpretTuple.singleton x b (hr.1, rb) h_ev h_ok⟩
+      | singleton_error a _ _ h_eval h_error =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           obtain ⟨rb, h_ev⟩ := h_sub r h_eval
-          exact ⟨rb, InterpretTuple.singleton x b (r.1, rb) h_ev⟩
+          exact ⟨rb, InterpretTuple.singleton_error x b (r.1, rb) h_ev h_error⟩
       | @head_error _ _ _ _ h_ne h_ev h_isErr =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
@@ -67,11 +73,16 @@ theorem tuple_swap_atom {space : Space} {d : GroundedDispatch} {fuel : Nat}
               cases ps with
               | nil =>
                   cases h_tail with
-                  | @singleton _ _ _ h_ev_p =>
+                  | @singleton _ _ _ h_ev_p _ =>
                       have hp := selfEval_unique p (h_post p (by simp)) h_ev_p
-                      have h_ok := (h_post p (by simp)).not_empty_or_error
                       rw [hp] at h_terr
+                      have h_ok := isEmptyOrError_expr_false [] (h_nes p (by simp))
                       simp [h_terr] at h_ok
+                  | @singleton_error _ _ _ h_ev_p h_error =>
+                      have hp := selfEval_unique p (h_post p (by simp)) h_ev_p
+                      rw [hp] at h_error
+                      have h_ok := (h_post p (by simp)).not_empty_or_error
+                      simp [h_error] at h_ok
                   | @head_error _ _ _ _ h_ne' _ _ => exact h_ne' rfl
                   | @tail_error _ _ _ _ _ h_ne' _ _ _ _ => exact h_ne' rfl
                   | @success _ _ _ _ _ h_ne' _ _ _ _ => exact h_ne' rfl
@@ -93,7 +104,7 @@ theorem tuple_swap_atom {space : Space} {d : GroundedDispatch} {fuel : Nat}
               cases ps with
               | nil =>
                   cases h_tl with
-                  | @singleton _ _ _ h_ev_p =>
+                  | @singleton _ _ _ h_ev_p _ =>
                       have hp := selfEval_unique p (h_post p (by simp)) h_ev_p
                       subst hp
                       refine ⟨rb, ?_⟩
@@ -101,10 +112,16 @@ theorem tuple_swap_atom {space : Space} {d : GroundedDispatch} {fuel : Nat}
                           (p, rb) :=
                         selfEval_of_quiescent p (h_post p (by simp)) rb
                       have h_comb := InterpretTuple.success x [p] b
-                        (hr.1, rb) (p, rb) (by simp) h_ev' h_hok
-                        (InterpretTuple.singleton p rb (p, rb) h_p_src)
-                        ((h_post p (by simp)).not_empty_or_error)
+                        (hr.1, rb) (.expression [p], rb) (by simp) h_ev' h_hok
+                        (InterpretTuple.singleton p rb (p, rb) h_p_src
+                          ((h_post p (by simp)).not_empty_or_error))
+                        (isEmptyOrError_expr_false [] (h_nes p (by simp)))
                       simpa using h_comb
+                  | @singleton_error _ _ _ h_ev_p h_error =>
+                      have hp := selfEval_unique p (h_post p (by simp)) h_ev_p
+                      rw [hp] at h_error
+                      have h_ok := (h_post p (by simp)).not_empty_or_error
+                      simp [h_error] at h_ok
                   | @head_error _ _ _ _ h_ne' _ _ => exact absurd rfl h_ne'
                   | @tail_error _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
                   | @success _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
@@ -128,7 +145,8 @@ theorem tuple_swap_atom {space : Space} {d : GroundedDispatch} {fuel : Nat}
                   simpa using h_comb
   | p :: ps, post, r, l, h_eq, h_pre, h_post, h_last, h_nes, h => by
       cases h with
-      | singleton a _ _ h_eval =>
+      | nil => simp at h_eq
+      | singleton a _ _ h_eval _ | singleton_error a _ _ h_eval _ =>
           exfalso
           injection h_eq.symm with h1 h2
           exact absurd h2.symm (by simp)
@@ -181,7 +199,8 @@ theorem tuple_result_shape {space : Space} {d : GroundedDispatch}
     r.1 = Atom.empty ∨ isErrorAtom r.1 = true ∨
       ∃ tailAtoms, r.1 = .expression (p :: tailAtoms) := by
   cases h with
-  | singleton _ _ _ h_eval => exact absurd rfl h_tl
+  | singleton _ _ _ h_eval _ | singleton_error _ _ _ h_eval _ =>
+      exact absurd rfl h_tl
   | @head_error _ _ _ _ h_ne h_ev h_isErr =>
       have hp := selfEval_unique p h_p h_ev
       have h_ok := h_p.not_empty_or_error
@@ -269,7 +288,7 @@ theorem evalAtom_swap_atom {space : Space} {d : GroundedDispatch}
       cases h_interp with
       | function_path => simp_all [isFunctionType, Atom.undefinedType]
       | op_type_error => simp_all [isFunctionType, Atom.undefinedType]
-      | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc =>
+      | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
           obtain ⟨rb1, h_src_tuple⟩ := tuple_swap_atom h_sub (p :: ps) rfl
             h_pre h_post h_post_last h_post_nes h_tuple
           have h_shape_A := tuple_result_shape (h_pre p (by simp))
@@ -323,7 +342,7 @@ theorem evalAtom_swap_atom {space : Space} {d : GroundedDispatch}
               (InterpretExpression.tuple_path _ _ _
                 (tupleResult.1, rb1) (tupleResult.1, rb1)
                 ⟨Atom.undefinedType, by simp [h_head_untyped], Or.inr rfl⟩
-                h_src_tuple h_src_call)
+                h_src_tuple h_src_call (by simp [Atom.unit]))
               hAerr⟩
           · exact ⟨rb1, EvalAtom.interpret_success _ _ _ _ h_src_ok
               (by simp [getMetaType, Atom.undefinedType, Atom.atomType,
@@ -333,13 +352,13 @@ theorem evalAtom_swap_atom {space : Space} {d : GroundedDispatch}
               (InterpretExpression.tuple_path _ _ _
                 (tupleResult.1, rb1) (tupleResult.1, rb1)
                 ⟨Atom.undefinedType, by simp [h_head_untyped], Or.inr rfl⟩
-                h_src_tuple h_src_call)
+                h_src_tuple h_src_call (by simp [Atom.unit]))
               (by simpa using hAerr)⟩
   | interpret_error _ _ _ _ _ _ h_expr h_not_unit h_interp h_is_error =>
       cases h_interp with
       | function_path => simp_all [isFunctionType, Atom.undefinedType]
       | op_type_error => simp_all [isFunctionType, Atom.undefinedType]
-      | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc =>
+      | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
           obtain ⟨rb1, h_src_tuple⟩ := tuple_swap_atom h_sub (p :: ps) rfl
             h_pre h_post h_post_last h_post_nes h_tuple
           have h_shape_A := tuple_result_shape (h_pre p (by simp))
@@ -392,7 +411,7 @@ theorem evalAtom_swap_atom {space : Space} {d : GroundedDispatch}
             (InterpretExpression.tuple_path _ _ _
               (tupleResult.1, rb1) (tupleResult.1, rb1)
               ⟨Atom.undefinedType, by simp [h_head_untyped], Or.inr rfl⟩
-              h_src_tuple h_src_call)
+              h_src_tuple h_src_call (by simp [Atom.unit]))
             h_is_error⟩
 
 /-- **The certified fragment** (design note S3): coarse steps whose
@@ -504,7 +523,7 @@ theorem evalAtom_absorbs_fragStep {space : Space} {d : GroundedDispatch}
         InterpretExpression.tuple_path _ _ _
           (.expression (op :: args), Bindings.empty) r
           ⟨Atom.undefinedType, by simpa using h_op_untyped, Or.inr rfl⟩
-          h_tuple h_call
+          h_tuple h_call (by simp [Atom.unit])
       by_cases hRerr : isErrorAtom r.1 = true
       · exact ⟨r.2, EvalAtom.interpret_error _ _ _ _ h_src_ok
           (by simp [getMetaType, Atom.undefinedType, Atom.atomType,
@@ -556,7 +575,7 @@ theorem evalAtom_absorbs_fragStep {space : Space} {d : GroundedDispatch}
               (.expression (op :: e2 :: rest), Bindings.empty)
               (qb.applyFull rhs (n + 1), qb)
               (by simpa using h_op_has)
-              h_tuple h_call)
+              h_tuple h_call (by simp [Atom.unit]))
             ?_⟩
           have h_ok := h_applied_q.not_empty_or_error
           simp only [isEmptyOrError, Bool.or_eq_false_iff] at h_ok

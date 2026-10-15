@@ -7,7 +7,7 @@ import Mettapedia.GSLT.LanguageDef.BootstrapCell.Replay
 `Logic.HOL.ReplayCore` presents certificate replay as a theory of
 higher-order logic in the deep embedding (seven axioms) and derives
 `∀ c g. acc g c → der g` in the object logic.  This module gives that theory
-its standard model: NIK's raw certificates with acceptance by replay.
+its standard model: SemanticService's raw certificates with acceptance by replay.
 
 **The standard model** (`model σ meaning`), for a replay signature `σ` and a
 meaning of goals:
@@ -140,7 +140,7 @@ def constant (meaning : σ.Goal → Prop) :
   | _, .der => fun goal => ⟨meaning goal.down⟩
   | _, .ders => fun premises => ⟨∀ premise ∈ premises.down, meaning premise⟩
 
-/-- The standard model: full predicate domains over NIK's raw certificates,
+/-- The standard model: full predicate domains over SemanticService's raw certificates,
 with acceptance by replay. -/
 def model (meaning : σ.Goal → Prop) : HenkinModel.{0, 0, u} BaseSort Symbol :=
   HenkinModel.standard (carrier σ) (constant σ meaning)
@@ -313,9 +313,9 @@ theorem replay_derivable_of_derivation {goal : σ.Goal} {certificate : RawProof}
 inference checker. -/
 theorem acc_iff_checkRaw (definition : ValidatedCalculusLanguageDef)
     (meaning : Pattern → Prop) (goal : Pattern) (certificate : RawProof) :
-    ((model (nikSignature definition) meaning).constDen Symbol.acc ⟨goal⟩ ⟨certificate⟩).down ↔
+    ((model (calculusReplaySignature definition) meaning).constDen Symbol.acc ⟨goal⟩ ⟨certificate⟩).down ↔
       checkRaw definition goal certificate = true := by
-  change (nikSignature definition).replay goal certificate = true ↔ _
+  change (calculusReplaySignature definition).replay goal certificate = true ↔ _
   rw [checkRaw_eq_replay]
 
 /-- Every certificate the generic inference checker accepts has a derivation
@@ -325,7 +325,7 @@ theorem checkRaw_derivable_of_derivation (definition : ValidatedCalculusLanguage
     (accepted : checkRaw definition goal certificate = true) :
     Nonempty (Derivation definition goal) := by
   rw [checkRaw_eq_replay] at accepted
-  obtain ⟨derivation⟩ := replay_derivable_of_derivation (nikSignature definition) accepted
+  obtain ⟨derivation⟩ := replay_derivable_of_derivation (calculusReplaySignature definition) accepted
   exact ⟨(derivationEquiv definition goal).symm derivation⟩
 
 /-! ## Controls -/

@@ -227,7 +227,7 @@ theorem toyWitness_objective : brgiObjective toyBRGI toyWitness = 2 := by
 
 /-- Concrete Chapter-9 BRGI optimization theorem:
 for the finite fixture, feasible global optimum value is exactly `2`. -/
-theorem ch9_brgi_toy_optimal_value :
+theorem brgi_toy_optimal_value :
     ∃ S, S ∈ feasibleSets toyBRGI
       ∧ brgiObjective toyBRGI S = 2
       ∧ ∀ T, T ∈ feasibleSets toyBRGI →
@@ -261,12 +261,12 @@ theorem toyBRG_toProblem_eq_toyBRGI :
 
 /-- Graph-object refinement canary:
 the graph-level instance preserves the same optimum characterization as `toyBRGI`. -/
-theorem ch9_brg_graph_toy_optimal_value :
+theorem brg_graph_toy_optimal_value :
     ∃ S, S ∈ brgFeasibleSets toyBRGInstance
       ∧ brgObjective toyBRGInstance S = 2
       ∧ ∀ T, T ∈ brgFeasibleSets toyBRGInstance →
           brgObjective toyBRGInstance T ≤ brgObjective toyBRGInstance S := by
   simpa [brgFeasibleSets, brgObjective, toyBRG_toProblem_eq_toyBRGI] using
-    ch9_brgi_toy_optimal_value
+    brgi_toy_optimal_value
 
 end Mettapedia.PLN.InferenceControl.PremiseSelection

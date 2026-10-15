@@ -1,5 +1,5 @@
 import Foundation.FirstOrder.Incompleteness.Second
-import Mettapedia.Logic.Bridges.FoundationNIKAuthority
+import Mettapedia.Logic.Bridges.FoundationProofAuthority
 
 /-!
 # Second incompleteness at an exact certificate authority
@@ -26,7 +26,7 @@ namespace Mettapedia.Logic.Bridges.FoundationSecondIncompletenessAuthority
 open LO.Entailment
 open LO.FirstOrder LO.FirstOrder.Arithmetic
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.Logic.Bridges.FoundationNIKAuthority
+open Mettapedia.Logic.Bridges.FoundationProofAuthority
 
 variable (T : Theory ℒₒᵣ) [T.Δ₁] [𝗜𝚺₁ ⪯ T]
 

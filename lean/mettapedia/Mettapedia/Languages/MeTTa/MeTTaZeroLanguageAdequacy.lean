@@ -630,7 +630,7 @@ theorem executeNativePlanned_query (relEnv : RelationEnv)
       evaluationRequestPattern, queryRequestPattern, matchPatternForRule,
       matchPatternForRuleUsing,
       OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
-      matchingPresentationForRule?, substitutionPresentationForRule?, reflectiveRuleForRule?, matchPattern]
+      matchingPresentationForRule?, reflectiveRuleForRule?, matchPattern]
 
 /-- The evaluation head index removes only the impossible query rule. -/
 theorem executeNativePlanned_evaluate (relEnv : RelationEnv)
@@ -646,7 +646,7 @@ theorem executeNativePlanned_evaluate (relEnv : RelationEnv)
       queryRequestPattern, evaluationRequestPattern, matchPatternForRule,
       matchPatternForRuleUsing,
       OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
-      matchingPresentationForRule?, substitutionPresentationForRule?, reflectiveRuleForRule?, matchPattern]
+      matchingPresentationForRule?, reflectiveRuleForRule?, matchPattern]
 
 /-- The fallback path is definitionally the complete generic engine. -/
 theorem executeNativePlanned_unknown (relEnv : RelationEnv) :
@@ -1319,7 +1319,7 @@ noncomputable def semanticAuthority {AuthorityId : Type}
     (spaceTerm : Pattern) :=
   openWireAuthority authorityId (openAdequacy model space spaceTerm)
 
-/-- The concrete NIK obligation for Zero: native acceptance must lower to an
+/-- The concrete SemanticService obligation for Zero: native acceptance must lower to an
 open article replayed by `semanticAuthority`. -/
 abbrev CheckedNativeLowering {AuthorityId : Type}
     (authorityId : AuthorityId) (model : Model) (space : model.Space)
@@ -1327,7 +1327,7 @@ abbrev CheckedNativeLowering {AuthorityId : Type}
   OpenNativeCheckedLowering authorityId
     (openAdequacy model space spaceTerm) NativeEvidence
 
-/-- Any concrete Zero NIK satisfying the replay obligation preserves the
+/-- Any concrete Zero SemanticService satisfying the replay obligation preserves the
 OSLF-native claim once its explicit row/capability premises are discharged. -/
 theorem CheckedNativeLowering.satisfies
     {AuthorityId : Type} {authorityId : AuthorityId}

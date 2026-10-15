@@ -2,5 +2,15 @@ import Mettapedia.DocText.LogicReadmeCompositional
 
 open Mettapedia.DocText.LogicReadmeCompositional
 
-def main : IO Unit := do
-  IO.FS.writeFile "Mettapedia/Logic/README.md" logicReadmeMarkdown
+def main (args : List String) : IO UInt32 := do
+  match args with
+  | [] =>
+      IO.print logicReadmeMarkdown
+      return 0
+  | [output] =>
+      IO.FS.writeFile output logicReadmeMarkdown
+      return 0
+  | _ =>
+      IO.eprintln "Usage: GenerateLogicReadme.lean [OUTPUT]"
+      return 2
+

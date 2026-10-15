@@ -486,7 +486,7 @@ theorem toyObservation_penguinBird_prior_eq_generated_ve_ratio :
         toyObservationPenguinBirdTable
         [⟨MembershipConcept.witness, true⟩] : ℝ) /
         FiniteWitnessFeatureTable.veWeight toyObservationPenguinBirdTable [] := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
+  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
     Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finitePriorProb_inducedContext_eq_veWeight_ratio
@@ -510,7 +510,7 @@ theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
           toyObservationPenguinBirdTable
           (FiniteWitnessFeatureTable.ttJointAssign toyObservationPenguinBirdTable) : ℝ) /
           FiniteWitnessFeatureTable.featureMessage toyObservationPenguinBirdTable true := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
+  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
     Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finiteExtensionalProb_inducedContext_eq_bp_ratio
@@ -543,7 +543,7 @@ theorem toyObservation_birdFly_score_eq_generated_ve_query_score :
             toyObservationBirdFlyTable
             [⟨MembershipConcept.witness, true⟩] : ℝ) /
           FiniteWitnessFeatureTable.veWeight toyObservationBirdFlyTable []) := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
+  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
     Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finitePointwiseLogRatioBits_inducedContext_eq_ve_query_score

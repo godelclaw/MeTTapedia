@@ -26,9 +26,9 @@ namespace Mettapedia.Languages.Megalodon.SetCoreSemanticAuthority
 
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Languages.Megalodon.MathdataKernel
-open Mettapedia.Languages.Megalodon.NIKNativeProof
+open Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 open Mettapedia.Languages.Megalodon.SelectedTheoryProfile
 
 /-! ## Intrinsic set-core formulas -/

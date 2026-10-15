@@ -164,6 +164,39 @@ theorem check_iff (sorts : SortSignature) (signature : TermSignature) (declarati
   exact ⟨fun ⟨⟨context, hypotheses⟩, conclusion⟩ => ⟨context, hypotheses, conclusion⟩,
     fun admitted => ⟨⟨admitted.context, admitted.hypotheses⟩, admitted.conclusion⟩⟩
 
+/-- Admitted arguments instantiate every expression in a well-formed theorem
+payload. This supplies the actual substituted hypotheses and conclusion. -/
+theorem Admissible.instantiates {sorts : SortSignature} {signature : TermSignature}
+    {declaration : TheoremDecl} {target : Context} {arguments : List Preterm}
+    (declarationAdmitted : Admissible sorts signature declaration)
+    (argumentsAdmitted : Substitution.Admissible signature declaration.arguments target arguments) :
+    ∃ instantiation, Instantiates signature target declaration arguments instantiation := by
+  have substituteStatement : ∀ expression,
+      Preterm.IsStatement sorts signature declaration.arguments expression →
+      ∃ image, Preterm.Substitutes (Substitution.ofList arguments) expression image := by
+    intro expression statement
+    obtain ⟨_, _, typed, _, _⟩ := statement
+    obtain ⟨image, instantiated⟩ := argumentsAdmitted.instantiate_defined typed
+    exact ⟨image, ((Substitution.instantiate_eq_some_iff _ _ _ _ _ _).mp instantiated).2⟩
+  have substituteHypotheses : ∀ hypotheses : List Preterm,
+      (∀ expression ∈ hypotheses,
+        Preterm.IsStatement sorts signature declaration.arguments expression) →
+      ∃ images, List.Forall₂ (Preterm.Substitutes (Substitution.ofList arguments)) hypotheses images := by
+    intro hypotheses
+    induction hypotheses with
+    | nil => exact fun _ => ⟨[], .nil⟩
+    | cons first rest ih =>
+        intro statements
+        obtain ⟨image, firstSubstituted⟩ := substituteStatement first (statements first (by simp))
+        obtain ⟨images, restSubstituted⟩ :=
+          ih (fun expression member => statements expression (List.mem_cons_of_mem _ member))
+        exact ⟨image :: images, .cons firstSubstituted restSubstituted⟩
+  obtain ⟨hypotheses, hypothesesSubstituted⟩ :=
+    substituteHypotheses declaration.hypotheses declarationAdmitted.hypotheses
+  obtain ⟨conclusion, conclusionSubstituted⟩ :=
+    substituteStatement declaration.conclusion declarationAdmitted.conclusion
+  exact ⟨⟨hypotheses, conclusion⟩, argumentsAdmitted, hypothesesSubstituted, conclusionSubstituted⟩
+
 end TheoremDecl
 
 end Mettapedia.Languages.MM0.Kernel

@@ -6,7 +6,7 @@ import Mettapedia.GSLT.LanguageDef.CalculusOSLFSemantics
 
 The admitted Vibe calculus induces a GSLT of ordered proof obligations.
 Its generated OSLF reachability type agrees with the independent static
-kernel and with accepted NIK articles. The source-specific content comes
+kernel and with accepted SemanticService articles. The source-specific content comes
 from the existing complete kernel correspondence; the proof-search and
 native-type constructions are shared. These results do not assert native C
 correspondence or include machine-code execution.

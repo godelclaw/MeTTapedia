@@ -55,7 +55,10 @@ private def runStream (program : SpaceSemantics.Program) (fuel : Nat)
       if !remaining.isEmpty then throw (IO.userError "unconsumed input")
       for answer in printed ++ answers do printAnswer answer
       return 0
-  | .fault fault => IO.eprintln s!"fault: {repr fault}"; return 1
+  | .fault fault configuration =>
+      for line in configuration.output do printAnswer line
+      IO.eprintln s!"fault: {repr fault}"
+      return 1
   | .exhausted configuration =>
       IO.eprintln s!"exhausted: {repr configuration.control}"
       return 2
@@ -68,7 +71,10 @@ private def runRequests (program : SpaceSemantics.Program) (fuel : Nat)
     | .complete after answers _ printed =>
         for answer in printed ++ answers do printAnswer answer
         state := after
-    | .fault fault => IO.eprintln s!"fault: {repr fault}"; return 1
+    | .fault fault configuration =>
+        for line in configuration.output do printAnswer line
+        IO.eprintln s!"fault: {repr fault}"
+        return 1
     | .exhausted configuration =>
         IO.eprintln s!"exhausted: {repr configuration.control}"
         return 2

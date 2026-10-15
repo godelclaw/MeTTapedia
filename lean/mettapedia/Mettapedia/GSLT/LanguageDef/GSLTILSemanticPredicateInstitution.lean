@@ -1,5 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.GSLTILModalDoctrineAttachment
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # Semantic predicate institution for the OSLF modal base
@@ -24,7 +26,7 @@ open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.GSLTIL.ModalDoctrineAttachment
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.OSLF.Framework.LanguageIndexedModalFunctor
 
 universe uState uTerm

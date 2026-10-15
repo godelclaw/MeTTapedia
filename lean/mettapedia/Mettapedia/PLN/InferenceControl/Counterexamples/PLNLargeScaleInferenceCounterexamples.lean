@@ -24,33 +24,33 @@ open Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDynamicsCounte
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 
-theorem ch9_ie_sameFirstTwo_differentUnion :
+theorem ie_sameFirstTwo_differentUnion :
     ieTerm1 A1 B1 C1 = ieTerm1 A2 B2 C2
       ∧ ieTerm2 A1 B1 C1 = ieTerm2 A2 B2 C2
       ∧ unionCard A1 B1 C1 ≠ unionCard A2 B2 C2 :=
   same_first_two_terms_different_union
 
-theorem ch9_ie_noUniversalPredictor :
+theorem ie_noUniversalPredictor :
     ¬ ∃ F : Nat → Nat → Nat,
         ∀ A B C : Finset Omega, unionCard A B C = F (ieTerm1 A B C) (ieTerm2 A B C) :=
   no_universal_union_predictor_from_first_two_terms
 
-theorem ch9_ie_noSingleAdditiveCorrection :
+theorem ie_noSingleAdditiveCorrection :
     ¬ ∃ xi : Nat,
         unionCard A1 B1 C1 = ieTwoTermApprox A1 B1 C1 + xi
           ∧ unionCard A2 B2 C2 = ieTwoTermApprox A2 B2 C2 + xi :=
   no_single_additive_correction_for_both_models
 
-theorem ch9_trailFree_notEventualConstant (x0 : TVState) :
+theorem trailFree_notEventualConstant (x0 : TVState) :
     ¬ EventuallyConstant x0 :=
   orbit_not_eventually_constant x0
 
-theorem ch9_poolingAxioms_notUnique
+theorem poolingAxioms_notUnique
     {Goal Fact : Type*} [Nonempty Goal] [Nonempty Fact] :
     (maxPoolingOperator (Goal := Goal) (Fact := Fact)).pool ≠ fuse :=
   maxPoolingOperator_ne_fuse
 
-theorem ch9_poolingUnique_of_externalBayes_totalAdd
+theorem poolingUnique_of_externalBayes_totalAdd
     (poolE : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
       Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
       Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
@@ -59,13 +59,13 @@ theorem ch9_poolingUnique_of_externalBayes_totalAdd
     ∀ x y, poolE x y = x + y :=
   poolE_eq_hplus_of_externalBayes_totalAdd poolE hexBayes htotal
 
-theorem ch9_coverageCard_not_sufficient_for_risk :
+theorem coverageCard_not_sufficient_for_risk :
     dependencyCoverage D_cov S_cov_lowRisk = dependencyCoverage D_cov S_cov_highRisk
       ∧ S_cov_lowRisk.card = S_cov_highRisk.card
       ∧ falsePositiveRisk D_cov S_cov_lowRisk ≠ falsePositiveRisk D_cov S_cov_highRisk :=
   sameCoverageAndCard_differentFalsePositiveRisk
 
-theorem ch9_noUniversalRiskPredictor_fromCoverageCard :
+theorem noUniversalRiskPredictor_fromCoverageCard :
     ¬ ∃ F : Nat → Nat → Nat,
         ∀ S : Finset Fact3,
           falsePositiveRisk D_cov S = F (dependencyCoverage D_cov S) S.card :=

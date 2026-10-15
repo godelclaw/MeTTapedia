@@ -150,7 +150,7 @@ namespace SelectedOccurrenceStep
 
 /-- Forgetting occurrence identity yields an ordinary step of the cold
 authored language. -/
-def toStepAt {source : ValidatedLanguageDef} {relations : RelationEnv}
+theorem toStepAt {source : ValidatedLanguageDef} {relations : RelationEnv}
     {typing : DisplayedRewriteTyping source} {before after : Pattern}
     (step : SelectedOccurrenceStep relations typing before after) :
     StepAt (engineBasePremises relations) source.language
@@ -398,17 +398,13 @@ private def exactMiddleStep :
       DisplayedRewriteSite.rewrite, source, sourceLanguage,
       contextualRewrite, ternaryTerm, middleBefore, exactBindings,
       leftValue, focusValue, rightValue, matchPattern, matchArgs,
-      mergeBindings, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
-      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
-      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
-      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?]
+      mergeBindings, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty]
   premises := .nil exactBindings
   result := by
     simp [applyBindingsForRule, applyBindingsForRuleUsing, applyRuleBindings, middleTyping,
       middleSite, DisplayedRewriteSite.rewrite, source, sourceLanguage,
       contextualRewrite, exactBindings, leftValue, focusValue, rightValue,
       applyBindings, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
-      Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
       Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?]
 
@@ -434,7 +430,6 @@ theorem middle_occurrence_cannot_invent_left_result :
         leftValue, focusValue, rightValue, matchPattern, matchArgs,
         mergeBindings, premisesUsing, applyBindingsForRule,
         applyBindingsForRuleUsing, applyRuleBindings, applyBindings, Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile.empty,
-        Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.matchingPresentationForRule?,
         Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.substitutionPresentationForRule?,
         Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.reflectiveRuleForRule?] at member
 

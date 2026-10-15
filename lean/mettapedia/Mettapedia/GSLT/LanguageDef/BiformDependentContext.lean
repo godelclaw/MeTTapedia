@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.BiformTheory
 import Mettapedia.TypeTheory.ProofRelevantPathContextFunctor
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Dependent operational contexts of biform theories
 
@@ -18,7 +20,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformDependentContext
 
 open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.TypeTheory.ProofRelevantPathContextFunctor
 

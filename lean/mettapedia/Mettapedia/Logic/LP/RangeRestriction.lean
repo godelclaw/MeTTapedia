@@ -107,7 +107,7 @@ theorem T_P_LP_const_of_unit {σ : LPSignature} (kb : KnowledgeBase σ)
     T_P_LP kb I = T_P_LP kb J := by
   obtain ⟨hdb, hprog⟩ := hunit
   ext a
-  simp only [T_P_LP, Set.mem_union, Set.mem_setOf_eq]
+  simp only [T_P_LP, Set.mem_union, Set.mem_ofPred_eq]
   constructor <;> {
     rintro (ha | ⟨c, g, hc, hhead, hbody⟩)
     · simp_all
@@ -131,7 +131,7 @@ theorem T_P_unit_empty_le_lhm {σ : LPSignature} (kb : KnowledgeBase σ)
     T_P_LP kb ∅ ⊆ leastHerbrandModel kb := by
   obtain ⟨hdb, hprog⟩ := hunit
   intro a ha
-  simp only [T_P_LP, Set.mem_union, Set.mem_setOf_eq] at ha
+  simp only [T_P_LP, Set.mem_union, Set.mem_ofPred_eq] at ha
   rcases ha with ha | ⟨c, g, hc, hhead, _⟩
   · simp [hdb] at ha
   · exact hhead ▸ leastHerbrandModel_clause kb c hc g (fun b hb => by
@@ -171,7 +171,7 @@ theorem lhm_unit_mem_iff {σ : LPSignature} (kb : KnowledgeBase σ)
   constructor
   · intro h
     rw [lhm_eq_T_P_empty_of_unit kb ⟨hdb, hprog⟩] at h
-    simp only [T_P_LP, Set.mem_union, Set.mem_setOf_eq] at h
+    simp only [T_P_LP, Set.mem_union, Set.mem_ofPred_eq] at h
     rcases h with h | ⟨c, g, hc, hhead, _⟩
     · simp [hdb] at h
     · exact ⟨c, hc, g, hhead⟩

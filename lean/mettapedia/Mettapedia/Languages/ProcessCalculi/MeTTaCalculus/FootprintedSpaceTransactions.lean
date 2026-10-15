@@ -1,5 +1,7 @@
 import Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.SpaceInteraction
 import Mettapedia.GSLT.Logic.SeparationAlgebra
+import Mettapedia.GSLT.Dynamics.IndexedQueryRevision
+import Mettapedia.GSLT.Dynamics.EventValuation
 import Mathlib.Data.Fintype.EquivFin
 
 /-!
@@ -21,6 +23,16 @@ final state; a chronology-sensitive observer still tells the two orders apart.
 It is not a scheduler, does not make same-location competition parallel, and
 says nothing about a representation: allocation, indexes, intern tables,
 counters and queues owe their own synchronization or ownership argument.
+
+The same read/write certificate joins the query/revision history interface.
+Every actual two-step path can be reordered inside an arbitrary prefix and
+suffix while retaining its complete final world. This does not erase grades,
+derivation occurrences or chronological observations.
+
+The selected graded observer admits a finite trace rearrangement only
+when the local resource composition succeeds and agrees in both orders.
+Additive accounts satisfy that law; chronological grades need not.
+Two rejected merges do not grant parallel resource authority.
 
 The certificate is deliberately relational.  Primitive located requests have
 one automatically, while a richer guarded transaction may provide one after
@@ -201,9 +213,133 @@ def IndependentEffects [DecidableEq Location]
   Disjoint firstWrites (secondReads ∪ secondWrites) ∧
   Disjoint secondWrites (firstReads ∪ firstWrites)
 
+/-- Transport that retains distinct resource identities preserves and reflects
+the read/write independence test. This transports the declared dependency
+sets; the transition's frame certificate and held services still need their
+own realization comparison. -/
+theorem IndependentEffects.image_iff [DecidableEq Location]
+    {Destination : Type w} [DecidableEq Destination]
+    (address : Location → Destination) (injective : Function.Injective address)
+    (firstReads firstWrites secondReads secondWrites : Finset Location) :
+    IndependentEffects (firstReads.image address) (firstWrites.image address)
+        (secondReads.image address) (secondWrites.image address) ↔
+      IndependentEffects firstReads firstWrites secondReads secondWrites := by
+  simp only [IndependentEffects, ← Finset.image_union, Finset.disjoint_image injective]
+
+/-- Rechecking the complete mapped dependencies can refuse a newly introduced
+alias conflict. Even a noninjective map cannot hide an original conflict when
+all four dependency sets are transported and the image check succeeds. -/
+theorem IndependentEffects.of_image [DecidableEq Location]
+    {Destination : Type w} [DecidableEq Destination]
+    (address : Location → Destination)
+    {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (independent : IndependentEffects (firstReads.image address) (firstWrites.image address)
+      (secondReads.image address) (secondWrites.image address)) :
+    IndependentEffects firstReads firstWrites secondReads secondWrites := by
+  have reflect {writes reads : Finset Location}
+      (apart : Disjoint (writes.image address) (reads.image address)) :
+      Disjoint writes reads := by
+    apply Finset.disjoint_left.mpr
+    intro location written read
+    exact Finset.disjoint_left.mp apart
+      (Finset.mem_image.mpr ⟨location, written, rfl⟩)
+      (Finset.mem_image.mpr ⟨location, read, rfl⟩)
+  exact ⟨reflect (by simpa only [Finset.image_union] using independent.1),
+    reflect (by simpa only [Finset.image_union] using independent.2)⟩
+
+/-- A nonidentity renaming retains a shared read and a disjoint write. Shared
+reads do not need to be made exclusive merely to move the dependency view. -/
+theorem shared_reads_survive_nonidentity_transport :
+    IndependentEffects ({true} : Finset Bool) {false} {true} ∅ ∧
+      IndependentEffects (({true} : Finset Bool).image Bool.not)
+        (({false} : Finset Bool).image Bool.not)
+        (({true} : Finset Bool).image Bool.not) ((∅ : Finset Bool).image Bool.not) := by
+  simp [IndependentEffects]
+
+/-- Identifying two independent write locations creates a conflict. A source
+licence cannot simply be carried across this quotient without revalidation. -/
+theorem identified_resources_destroy_independence :
+    IndependentEffects (∅ : Finset Bool) {false} ∅ {true} ∧
+      ¬ IndependentEffects ((∅ : Finset Bool).image fun _ => false)
+        (({false} : Finset Bool).image fun _ => false)
+        ((∅ : Finset Bool).image fun _ => false)
+        (({true} : Finset Bool).image fun _ => false) := by
+  simp [IndependentEffects]
+
 namespace EffectFootprinted
 
 variable [DecidableEq Location]
+
+/-- A source transition relocated into a larger located state. Its original
+addresses are read through `address`; every other destination cell, including
+cells outside that image, is framed by the transported write footprint. -/
+def Relocated {Destination : Type w} [DecidableEq Destination]
+    (address : Location → Destination) (writes : Finset Location)
+    (relation : (Location → Value) → (Location → Value) → Prop) :
+    (Destination → Value) → (Destination → Value) → Prop :=
+  fun source target =>
+    relation (source ∘ address) (target ∘ address) ∧
+      PreservesOutside (writes.image address) source target
+
+private theorem extend_preserves {Destination : Type w} [DecidableEq Destination]
+    (address : Location → Destination) (injective : Function.Injective address)
+    (writes : Finset Location) (source : Destination → Value) (target : Location → Value)
+    (preserves : PreservesOutside writes (source ∘ address) target) :
+    PreservesOutside (writes.image address) source (Function.extend address target source) := by
+  classical
+  intro destination outside
+  by_cases inImage : ∃ location, address location = destination
+  · obtain ⟨location, rfl⟩ := inImage
+    have notWritten : location ∉ writes := by
+      intro written
+      exact outside (Finset.mem_image.mpr ⟨location, written, rfl⟩)
+    simpa only [injective.extend_apply, Function.comp_apply] using preserves location notWritten
+  · exact Function.extend_apply' target source destination inImage
+
+/-- Every source outcome has a relocated outcome. The construction copies the
+complete source target through the injective address map and retains the
+actual destination state elsewhere; it does not erase an extra cell. -/
+theorem relocated_step {Destination : Type w} [DecidableEq Destination]
+    {relation : (Location → Value) → (Location → Value) → Prop}
+    {reads writes : Finset Location}
+    (certified : EffectFootprinted relation reads writes)
+    (address : Location → Destination) (injective : Function.Injective address)
+    (source : Destination → Value) (target : Location → Value)
+    (step : relation (source ∘ address) target) :
+    Relocated address writes relation source (Function.extend address target source) := by
+  have restriction : (Function.extend address target source) ∘ address = target := by
+    funext location
+    exact injective.extend_apply target source location
+  refine ⟨?_, extend_preserves address injective writes source target (certified.preserves step)⟩
+  simpa only [restriction] using step
+
+/-- Relocation transports the transition's frame certificate as well as its
+dependency sets. Replaying on another destination frame uses the source frame
+law, then extends the replayed target with that actual surrounding state. -/
+theorem relocated_certified {Destination : Type w} [DecidableEq Destination]
+    {relation : (Location → Value) → (Location → Value) → Prop}
+    {reads writes : Finset Location}
+    (certified : EffectFootprinted relation reads writes)
+    (address : Location → Destination) (injective : Function.Injective address) :
+    EffectFootprinted (Relocated address writes relation)
+      (reads.image address) (writes.image address) where
+  preserves step := step.2
+  frame := by
+    intro source target step framedSource agreement
+    have sourceAgreement :
+        AgreesOn (reads ∪ writes) (source ∘ address) (framedSource ∘ address) := by
+      intro location dependent
+      apply agreement (address location)
+      rw [← Finset.image_union]
+      exact Finset.mem_image.mpr ⟨location, dependent, rfl⟩
+    obtain ⟨framedTarget, replayed, localResult, framed⟩ :=
+      certified.frame step.1 (framedSource ∘ address) sourceAgreement
+    refine ⟨Function.extend address framedTarget framedSource,
+      certified.relocated_step address injective framedSource framedTarget replayed, ?_,
+      extend_preserves address injective writes framedSource framedTarget framed⟩
+    intro destination written
+    obtain ⟨location, sourceWritten, rfl⟩ := Finset.mem_image.mp written
+    simpa only [injective.extend_apply, Function.comp_apply] using localResult location sourceWritten
 
 private theorem agreesOn_of_preserves_disjoint
     {writes dependencies : Finset Location}
@@ -274,6 +410,533 @@ theorem independent_commute
             (firstFrame location inFirstWrite).symm
   refine ⟨joinedForward, secondAfterFirst, ?_⟩
   simpa [joinedEqual] using firstAfterSecond
+
+/-- Swap an actual sequential execution, preserving its chosen final state.
+The frame law transports the second actual outcome back to the source; an
+existential initial square alone would not justify this construction. -/
+theorem independent_swap_actual
+    {firstRelation secondRelation : (Location → Value) → (Location → Value) → Prop}
+    {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted firstRelation firstReads firstWrites)
+    (secondCertified : EffectFootprinted secondRelation secondReads secondWrites)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    {source afterFirst target : Location → Value}
+    (firstStep : firstRelation source afterFirst)
+    (secondStep : secondRelation afterFirst target) :
+    ∃ afterSecond, secondRelation source afterSecond ∧ firstRelation afterSecond target := by
+  have firstPreserves := firstCertified.preserves firstStep
+  have secondPreserves := secondCertified.preserves secondStep
+  have secondAgreement : AgreesOn (secondReads ∪ secondWrites) afterFirst source := by
+    intro location dependency
+    have notFirst : location ∉ firstWrites := by
+      intro written
+      exact (Finset.disjoint_left.mp independent.1) written dependency
+    exact firstPreserves location notFirst
+  obtain ⟨afterSecond, secondFromSource, secondLocal, secondFrame⟩ :=
+    secondCertified.frame secondStep source secondAgreement
+  have firstAgreement : AgreesOn (firstReads ∪ firstWrites) source afterSecond := by
+    intro location dependency
+    have notSecond : location ∉ secondWrites := by
+      intro written
+      exact (Finset.disjoint_left.mp independent.2) written dependency
+    exact (secondFrame location notSecond).symm
+  obtain ⟨reverseTarget, firstAfterSecond, firstLocal, firstFrame⟩ :=
+    firstCertified.frame firstStep afterSecond firstAgreement
+  have reverseTargetEqual : reverseTarget = target := by
+    funext location
+    by_cases firstWritten : location ∈ firstWrites
+    · have notSecond : location ∉ secondWrites := by
+        intro secondWritten
+        exact (Finset.disjoint_left.mp independent.1) firstWritten
+          (Finset.mem_union_right secondReads secondWritten)
+      exact (firstLocal location firstWritten).symm.trans
+        (secondPreserves location notSecond).symm
+    · calc
+        reverseTarget location = afterSecond location := firstFrame location firstWritten
+        _ = target location := by
+          by_cases secondWritten : location ∈ secondWrites
+          · exact (secondLocal location secondWritten).symm
+          · calc
+              afterSecond location = source location := secondFrame location secondWritten
+              _ = afterFirst location := (firstPreserves location firstWritten).symm
+              _ = target location := (secondPreserves location secondWritten).symm
+  exact ⟨afterSecond, secondFromSource, by simpa only [reverseTargetEqual] using firstAfterSecond⟩
+
+/-- Independent certified transitions have exactly the same two-step final
+state relation in both orders. This is a relational target statement, not
+equality of weighted proof bags or permission to erase event chronology. -/
+theorem independent_twoStep_iff
+    {firstRelation secondRelation : (Location → Value) → (Location → Value) → Prop}
+    {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted firstRelation firstReads firstWrites)
+    (secondCertified : EffectFootprinted secondRelation secondReads secondWrites)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    (source target : Location → Value) :
+    (∃ afterFirst, firstRelation source afterFirst ∧ secondRelation afterFirst target) ↔
+      (∃ afterSecond, secondRelation source afterSecond ∧ firstRelation afterSecond target) := by
+  constructor
+  · rintro ⟨afterFirst, firstStep, secondStep⟩
+    exact independent_swap_actual firstCertified secondCertified independent firstStep secondStep
+  · rintro ⟨afterSecond, secondStep, firstStep⟩
+    exact independent_swap_actual secondCertified firstCertified
+      ⟨independent.2, independent.1⟩ secondStep firstStep
+
+
+/-- Every pair of relocated outcomes has the transported commuting diamond.
+The source certificates and injective resource map jointly provide the
+authority; relocating dependency sets alone is insufficient. -/
+theorem relocated_independent_commute {Destination : Type w} [DecidableEq Destination]
+    {firstRelation secondRelation : (Location → Value) → (Location → Value) → Prop}
+    {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted firstRelation firstReads firstWrites)
+    (secondCertified : EffectFootprinted secondRelation secondReads secondWrites)
+    (address : Location → Destination) (injective : Function.Injective address)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    {source afterFirst afterSecond : Destination → Value}
+    (firstStep : Relocated address firstWrites firstRelation source afterFirst)
+    (secondStep : Relocated address secondWrites secondRelation source afterSecond) :
+    ∃ joined,
+      Relocated address secondWrites secondRelation afterFirst joined ∧
+      Relocated address firstWrites firstRelation afterSecond joined :=
+  independent_commute
+    (firstCertified.relocated_certified address injective)
+    (secondCertified.relocated_certified address injective)
+    ((IndependentEffects.image_iff address injective
+      firstReads firstWrites secondReads secondWrites).mpr independent)
+    firstStep secondStep
+
+section RevisionHistory
+
+universe uEvent uQuery uObservation
+
+variable {Event : Type uEvent} {Query : Type uQuery} {Observation : Type uObservation}
+
+/-- Located transitions and an independently selected query become one
+revision theory. The source relations and entire located worlds are retained. -/
+def revisionTheory
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation) :
+    Mettapedia.GSLT.Dynamics.QueryRevision.Theory where
+  World := Location → Value
+  Revision := Event
+  Query := Query
+  Observation := Observation
+  Step := relation
+  query := observe
+
+
+/-- Local frame certificates join every pair of actual initial outcomes,
+including nondeterministic ones; one selected square is not the premise. -/
+theorem revisionTheory_allInitialOutcomesJoin
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    {first second : Event} {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted (relation first) firstReads firstWrites)
+    (secondCertified : EffectFootprinted (relation second) secondReads secondWrites)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    (source : Location → Value) :
+    (revisionTheory relation observe).AllInitialOutcomesJoin first second source := by
+  intro afterFirst afterSecond firstStep secondStep
+  exact independent_commute firstCertified secondCertified independent firstStep secondStep
+
+/-- Enablement remains explicit: a disabled event is not admitted merely
+because its footprint is disjoint. -/
+theorem revisionTheory_allOutcomeCoexecutible
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    {first second : Event} {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted (relation first) firstReads firstWrites)
+    (secondCertified : EffectFootprinted (relation second) secondReads secondWrites)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    (source : Location → Value)
+    (firstEnabled : ∃ target, relation first source target)
+    (secondEnabled : ∃ target, relation second source target) :
+    (revisionTheory relation observe).AllOutcomeCoexecutible first second source :=
+  ⟨firstEnabled, secondEnabled,
+    revisionTheory_allInitialOutcomesJoin relation observe firstCertified secondCertified independent source⟩
+
+/-- Reorder an actual firing pair inside a complete history, retaining its
+chosen final world and the same suffix rather than choosing new suffix data. -/
+theorem revisionTheory_history_swap
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    {first second : Event} {firstReads firstWrites secondReads secondWrites : Finset Location}
+    (firstCertified : EffectFootprinted (relation first) firstReads firstWrites)
+    (secondCertified : EffectFootprinted (relation second) secondReads secondWrites)
+    (independent : IndependentEffects firstReads firstWrites secondReads secondWrites)
+    (preceding suffix : List Event) {source target : Location → Value}
+    (steps : (revisionTheory relation observe).HistoryStep
+      (preceding ++ first :: second :: suffix) source target) :
+    (revisionTheory relation observe).HistoryStep
+      (preceding ++ second :: first :: suffix) source target := by
+  exact Mettapedia.GSLT.Dynamics.QueryRevision.Theory.HistoryStep.swap_adjacent
+    (theory := revisionTheory relation observe) (first := first) (second := second)
+    (fun firstStep secondStep =>
+      independent_swap_actual firstCertified secondCertified independent firstStep secondStep)
+    preceding suffix steps
+
+/-- The generated trace relation preserves every actual final world of
+frame-certified events. This is not equality of derivation bags, grades or
+chronological event observations. -/
+theorem revisionTheory_trace_iff
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    (reads writes : Event → Finset Location)
+    (certified : ∀ event, EffectFootprinted (relation event) (reads event) (writes event))
+    {first second : List Event}
+    (equivalent : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      (fun a b => IndependentEffects (reads a) (writes a) (reads b) (writes b)) first second)
+    (source target : Location → Value) :
+    (revisionTheory relation observe).HistoryStep first source target ↔
+      (revisionTheory relation observe).HistoryStep second source target := by
+  apply Mettapedia.GSLT.Dynamics.QueryRevision.Theory.HistoryStep.traceEquiv_iff
+    (theory := revisionTheory relation observe)
+    (fun a b => IndependentEffects (reads a) (writes a) (reads b) (writes b))
+    (fun independent => ⟨independent.2, independent.1⟩) _ equivalent source target
+  intro a b source middle target independent firstStep secondStep
+  exact independent_swap_actual (certified a) (certified b) independent firstStep secondStep
+
+open Mettapedia.GSLT.Dynamics.QueryRevision
+open Mettapedia.GSLT.Dynamics.IndexedQueryRevision
+
+section RelocationHistory
+
+variable {Destination : Type w} [DecidableEq Destination]
+
+/-- Frame-certified source revisions embed into the existing relocated
+transition relation. Exact reflection retains every destination cell outside
+the image and every named source revision; held services need their own law. -/
+noncomputable def relocationExactTranslation
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    (reads writes : Event → Finset Location)
+    (certified : ∀ event, EffectFootprinted (relation event) (reads event) (writes event))
+    (address : Location → Destination) (injective : Function.Injective address)
+    (surrounding : Destination → Value) :
+    ExactTranslation (revisionTheory relation observe)
+      (revisionTheory (fun event => Relocated address (writes event) (relation event))
+        (fun world query => observe (world ∘ address) query)) where
+  mapWorld world := Function.extend address world surrounding
+  mapRevision := id
+  mapQuery := id
+  mapObservation := id
+  step_map := by
+    change ∀ {event : Event} {source target : Location → Value},
+      relation event source target → Relocated address (writes event) (relation event)
+        (Function.extend address source surrounding) (Function.extend address target surrounding)
+    intro event source target step
+    refine ⟨?_, ?_⟩
+    · simpa only [Function.extend_comp injective] using step
+    · intro destination outside
+      by_cases inImage : ∃ location, address location = destination
+      · obtain ⟨location, rfl⟩ := inImage
+        have notWritten : location ∉ writes event := by
+          intro written
+          exact outside (Finset.mem_image.mpr ⟨location, written, rfl⟩)
+        simpa only [injective.extend_apply] using (certified event).preserves step location notWritten
+      · simp only [Function.extend_apply' target surrounding destination inImage,
+          Function.extend_apply' source surrounding destination inImage]
+  query_natural := by
+    change ∀ (world : Location → Value) (query : Query),
+      observe ((Function.extend address world surrounding) ∘ address) query = observe world query
+    intro world query
+    rw [Function.extend_comp injective]
+  liftStep := by
+    change ∀ {source : Location → Value} {target : Destination → Value} {event : Event},
+      Relocated address (writes event) (relation event) (Function.extend address source surrounding) target →
+      ∃ originalEvent originalTarget, relation originalEvent source originalTarget ∧
+        originalEvent = event ∧ Function.extend address originalTarget surrounding = target
+    intro source target event step
+    have sourceEq : (Function.extend address source surrounding) ∘ address = source :=
+      Function.extend_comp injective source surrounding
+    refine ⟨event, target ∘ address, ?_, rfl, ?_⟩
+    · simpa only [sourceEq] using step.1
+    · funext destination
+      by_cases inImage : ∃ location, address location = destination
+      · obtain ⟨location, rfl⟩ := inImage
+        exact injective.extend_apply (target ∘ address) surrounding location
+      · have outside : destination ∉ (writes event).image address := by
+          rintro present
+          obtain ⟨location, _, same⟩ := Finset.mem_image.mp present
+          exact inImage ⟨location, same⟩
+        rw [Function.extend_apply' (target ∘ address) surrounding destination inImage]
+        exact ((step.2 destination outside).trans
+          (Function.extend_apply' source surrounding destination inImage)).symm
+
+/-- Exact relocation covers and reflects full histories at their original
+event list and entire chosen final state, including the retained outside frame. -/
+theorem relocated_history_iff
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    (reads writes : Event → Finset Location)
+    (certified : ∀ event, EffectFootprinted (relation event) (reads event) (writes event))
+    (address : Location → Destination) (injective : Function.Injective address)
+    (surrounding : Destination → Value)
+    (events : List Event) (source target : Location → Value) :
+    (revisionTheory (fun event => Relocated address (writes event) (relation event))
+        (fun world query => observe (world ∘ address) query)).HistoryStep events
+        (Function.extend address source surrounding) (Function.extend address target surrounding) ↔
+      (revisionTheory relation observe).HistoryStep events source target := by
+  let translation := relocationExactTranslation relation observe reads writes certified address injective surrounding
+  have moved := translation.history_iff (Function.extend_injective injective surrounding) Function.injective_id
+    events source target
+  change (revisionTheory (fun event => Relocated address (writes event) (relation event))
+      (fun world query => observe (world ∘ address) query)).HistoryStep (events.map (id : Event → Event))
+      (Function.extend address source surrounding) (Function.extend address target surrounding) ↔
+    (revisionTheory relation observe).HistoryStep events source target at moved
+  simpa only [revisionTheory, List.map_id] using moved
+
+omit [DecidableEq Location] in
+/-- Every relocated history retains cells outside the address image. This
+uses the actual frame at each step, without a deterministic-step assumption. -/
+theorem relocated_history_preserves_outside_image
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Destination → Value) → Query → Observation)
+    (writes : Event → Finset Location) (address : Location → Destination)
+    {events : List Event} {source target : Destination → Value}
+    (steps : (revisionTheory (fun event => Relocated address (writes event) (relation event))
+      observe).HistoryStep events source target)
+    (destination : Destination) (outside : ¬ ∃ location, address location = destination) :
+    target destination = source destination := by
+  apply Theory.HistoryStep.observation_preserved
+    (theory := revisionTheory (fun event => Relocated address (writes event) (relation event)) observe)
+    (fun (world : Destination → Value) => world destination) _ steps
+  intro event source target first
+  apply first.2 destination
+  intro present
+  obtain ⟨location, _, same⟩ := Finset.mem_image.mp present
+  exact outside ⟨location, same⟩
+
+end RelocationHistory
+
+namespace RevisionControls
+
+/-- A genuine branching local action: any natural value may be written to
+the selected cell; the complete other cell is retained. -/
+def chooseAt (event : Bool) (source target : Bool → Nat) : Prop :=
+  ∃ value, target = Function.update source event value
+
+theorem chooseAt_certified (event : Bool) :
+    EffectFootprinted (chooseAt event) ∅ {event} where
+  preserves := by
+    rintro source target ⟨value, rfl⟩ location outside
+    have different : location ≠ event := by simpa only [Finset.mem_singleton] using outside
+    simp [Function.update, different]
+  frame := by
+    rintro source target ⟨value, rfl⟩ framedSource _agreement
+    refine ⟨Function.update framedSource event value, ⟨value, rfl⟩, ?_, ?_⟩
+    · intro location written
+      have same : location = event := by simpa only [Finset.mem_singleton] using written
+      subst location
+      simp
+    · intro location outside
+      have different : location ≠ event := by simpa only [Finset.mem_singleton] using outside
+      simp [Function.update, different]
+
+/-- Distinct cells permit every branching outcome pair without a
+deterministic-step hypothesis. -/
+theorem branching_cells_cover_all_outcomes (source : Bool → Nat) :
+    (revisionTheory chooseAt (fun world (_ : Unit) => world)).AllOutcomeCoexecutible
+      false true source :=
+  revisionTheory_allOutcomeCoexecutible chooseAt (fun world (_ : Unit) => world)
+    (chooseAt_certified false) (chooseAt_certified true)
+    (by simp [IndependentEffects]) source ⟨Function.update source false 5, 5, rfl⟩
+    ⟨Function.update source true 9, 9, rfl⟩
+
+/-- A shared write is refused by the footprint rule even when individual
+actions each carry a valid frame certificate. -/
+theorem overlapping_cells_declined :
+    ¬ IndependentEffects (∅ : Finset Bool) {false} ∅ {false} := by
+  simp [IndependentEffects]
+
+/-- Two distinct event names still compete when they write the same cell. -/
+def contested (event : Bool) (source target : Bool → Nat) : Prop :=
+  target = Function.update source false (if event then 9 else 5)
+
+/-- Their selected complete state distinguishes the two execution orders. -/
+theorem contested_history_not_reorderable :
+    let theory := revisionTheory contested (fun world (_ : Unit) => world)
+    let source : Bool → Nat := fun _ => 0
+    let target := Function.update source false 9
+    theory.HistoryStep [false, true] source target ∧
+      ¬ theory.HistoryStep [true, false] source target := by
+  dsimp only
+  constructor
+  · apply Mettapedia.GSLT.Dynamics.QueryRevision.Theory.HistoryStep.two_iff.mpr
+    refine ⟨Function.update (fun _ : Bool => 0) false 5, rfl, ?_⟩
+    simp [revisionTheory, contested]
+  · intro steps
+    obtain ⟨middle, _, last⟩ :=
+      Mettapedia.GSLT.Dynamics.QueryRevision.Theory.HistoryStep.two_iff.mp steps
+    have atFalse := congrFun last false
+    simp [Function.update] at atFalse
+
+/-- A two-event branching history embeds into a larger, differently addressed
+state. Both independent orders retain the chosen values and the extra cell. -/
+theorem relocated_history_with_frame :
+    let source : Bool → Nat := fun _ => 0
+    let target := Function.update (Function.update source false 5) true 9
+    let surrounding : Option Bool → Nat := fun _ => 17
+    let relocatedTheory := revisionTheory
+      (fun event => Relocated some ({event} : Finset Bool) (chooseAt event))
+      (fun world (_ : Unit) => world ∘ some)
+    let initial := Function.extend some source surrounding
+    let final := Function.extend some target surrounding
+    relocatedTheory.HistoryStep [false, true] initial final ∧
+      relocatedTheory.HistoryStep [true, false] initial final ∧
+      final none = 17 ∧ final (some false) = 5 ∧ final (some true) = 9 := by
+  dsimp only
+  let source : Bool → Nat := fun _ => 0
+  let target := Function.update (Function.update source false 5) true 9
+  have original : (revisionTheory chooseAt (fun world (_ : Unit) => world)).HistoryStep
+      [false, true] source target := by
+    apply Theory.HistoryStep.two_iff.mpr
+    exact ⟨Function.update source false 5, ⟨5, rfl⟩, ⟨9, rfl⟩⟩
+  have reverse : (revisionTheory chooseAt (fun world (_ : Unit) => world)).HistoryStep
+      [true, false] source target := by
+    have swapped := revisionTheory_history_swap chooseAt (fun world (_ : Unit) => world)
+      (chooseAt_certified false) (chooseAt_certified true)
+      (by simp [IndependentEffects]) [] [] original
+    exact swapped
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · exact (relocated_history_iff chooseAt (fun world (_ : Unit) => world)
+      (fun _ => ∅) (fun event => {event}) chooseAt_certified some
+      (Option.some_injective Bool) (fun _ => 17) [false, true] source target).mpr original
+  · exact (relocated_history_iff chooseAt (fun world (_ : Unit) => world)
+      (fun _ => ∅) (fun event => {event}) chooseAt_certified some
+      (Option.some_injective Bool) (fun _ => 17) [true, false] source target).mpr reverse
+  · simp
+  · simp [Function.update]
+  · simp
+
+/-- Matching the original addresses is insufficient: a purported destination
+history that overwrites an extra cell is refused by the retained frame law. -/
+theorem relocated_history_extra_write_rejected :
+    let source : Bool → Nat := fun _ => 0
+    let target := Function.update (Function.update source false 5) true 9
+    let surrounding : Option Bool → Nat := fun _ => 17
+    let relocatedTheory := revisionTheory
+      (fun event => Relocated some ({event} : Finset Bool) (chooseAt event))
+      (fun world (_ : Unit) => world ∘ some)
+    let initial := Function.extend some source surrounding
+    let badFinal := Function.update (Function.extend some target surrounding) none 23
+    ¬ relocatedTheory.HistoryStep [false, true] initial badFinal := by
+  dsimp only
+  intro steps
+  have frame := relocated_history_preserves_outside_image chooseAt
+    (fun world (_ : Unit) => world ∘ some) (fun event => {event}) some steps none
+    (by rintro ⟨location, same⟩; cases same)
+  simp at frame
+
+end RevisionControls
+
+section GradedRevisionHistory
+
+universe uGrade
+
+open Mettapedia.GSLT.Dynamics.IndexedEventValuation
+open Mettapedia.GSLT.Distinction.CausalGluing
+
+/-- The selected observer licenses only swaps that retain its actual partial
+successful composition as well as the locations read and written. A successful merge
+alone does not license forgetting its order. -/
+def GradedIndependent (reads writes : Event → Finset Location)
+    (valuation : Valuation.{uEvent, uGrade} Event) (first second : Event) : Prop :=
+  IndependentEffects (reads first) (writes first) (reads second) (writes second) ∧
+    valuation.Compatible first second ∧
+    valuation.combine? first second = valuation.combine? second first
+
+/-- One finite generated trace quotient retains every chosen final world,
+the selected partial grade (including failure), and occurrence multiplicity.
+The world law comes from the frame certificates; the algebra law comes from
+the successful two-event compositions. Neither supplies the other. -/
+theorem revisionTheory_graded_trace
+    (relation : Event → (Location → Value) → (Location → Value) → Prop)
+    (observe : (Location → Value) → Query → Observation)
+    (reads writes : Event → Finset Location)
+    (certified : ∀ event, EffectFootprinted (relation event) (reads event) (writes event))
+    (valuation : Valuation.{uEvent, uGrade} Event)
+    {first second : List Event}
+    (equivalent : TraceEquiv (GradedIndependent reads writes valuation) first second)
+    (source target : Location → Value) :
+    ((revisionTheory relation observe).HistoryStep first source target ↔
+      (revisionTheory relation observe).HistoryStep second source target) ∧
+      valuation.historyGrade first = valuation.historyGrade second ∧ first.Perm second := by
+  refine ⟨revisionTheory_trace_iff relation observe reads writes certified
+    (equivalent.mono (fun _ _ related => related.1)) source target, ?_, equivalent.perm⟩
+  exact valuation.historyGrade_traceEquiv (GradedIndependent reads writes valuation)
+    (fun _ _ related => related.2.2) equivalent
+
+/-- Additive commutative accounts need no extra ordering restriction beyond
+the real read/write certificate. This concerns event charges, not physical
+duration or a proof that the runtime measured every instruction. -/
+theorem additive_gradedIndependent_iff {Grade : Type uGrade} [AddCommMonoid Grade]
+    (reads writes : Event → Finset Location) (cost : Event → Grade)
+    (first second : Event) :
+    GradedIndependent reads writes (additive cost) first second ↔
+      IndependentEffects (reads first) (writes first) (reads second) (writes second) := by
+  have accepted : (additive cost).Compatible first second := by rfl
+  simp only [GradedIndependent, accepted, additive_composition_swap, and_true]
+
+namespace RevisionControls
+
+/-- Both branches are genuine arbitrary writes. Any event-local natural
+account survives an admitted finite reordering of their actual histories. -/
+theorem branching_trace_preserves_work (cost : Bool → Nat)
+    {first second : List Bool}
+    (equivalent : TraceEquiv (· ≠ ·) first second) (source target : Bool → Nat) :
+    ((revisionTheory chooseAt (fun world (_ : Unit) => world)).HistoryStep first source target ↔
+      (revisionTheory chooseAt (fun world (_ : Unit) => world)).HistoryStep second source target) ∧
+      (additive cost).historyGrade first = (additive cost).historyGrade second ∧
+      first.Perm second := by
+  apply revisionTheory_graded_trace chooseAt (fun world (_ : Unit) => world)
+    (fun _ => ∅) (fun event => {event}) chooseAt_certified (additive cost) _ source target
+  apply equivalent.mono
+  intro a b different
+  rw [additive_gradedIndependent_iff]
+  simp [IndependentEffects, different, Ne.symm different]
+
+/-- The exact same independent state updates have compatible chronological
+grades in both orders, yet their graded observer refuses to equate the order.
+The retained grades are nonempty and contain both distinct occurrences. -/
+theorem branching_chronology_declines_swap :
+    IndependentEffects (∅ : Finset Bool) {false} ∅ {true} ∧
+      (chronological (id : Bool → Bool)).Compatible false true ∧
+      (chronological (id : Bool → Bool)).Compatible true false ∧
+      ¬ GradedIndependent (fun _ : Bool => (∅ : Finset Bool))
+        (fun event => {event}) (chronological (id : Bool → Bool)) false true ∧
+      (chronological (id : Bool → Bool)).historyGrade [false, true] = some [false, true] ∧
+      (chronological (id : Bool → Bool)).historyGrade [true, false] = some [true, false] := by
+  refine ⟨by simp [IndependentEffects], ?_, ?_, ?_, ?_, ?_⟩
+  · rfl
+  · rfl
+  · intro related
+    exact chronological_composition_cannot_swap false true (by decide) related.2.2
+  · simp only [chronological_historyGrade, List.map_id]
+  · simp only [chronological_historyGrade, List.map_id]
+
+/-- Equality of two refused merges is not parallel resource authority.
+The actions have distinct written cells, but both claim the same exclusive
+capability. The existing partial resource algebra rejects both orders. -/
+theorem branching_resource_composition_declines_swap :
+    IndependentEffects (∅ : Finset Bool) {false} ∅ {true} ∧
+      Mettapedia.GSLT.Dynamics.EventValuation.Canary.exclusiveValuation.combine?
+        false true = none ∧
+      Mettapedia.GSLT.Dynamics.EventValuation.Canary.exclusiveValuation.combine?
+        true false = none ∧
+      ¬ GradedIndependent (fun _ : Bool => (∅ : Finset Bool))
+        (fun event => {event})
+        Mettapedia.GSLT.Dynamics.EventValuation.Canary.exclusiveValuation false true := by
+  refine ⟨by simp [IndependentEffects], rfl, rfl, ?_⟩
+  intro related
+  exact Mettapedia.GSLT.Dynamics.EventValuation.Canary.exclusive_events_not_compatible
+    false true related.2.1
+
+end RevisionControls
+
+end GradedRevisionHistory
+
+end RevisionHistory
 
 end EffectFootprinted
 
@@ -691,6 +1354,25 @@ theorem addAtom_fires_iff (location : Location) (atom : Atom)
   · rintro rfl
     exact ⟨trivial, source, fun _ => trivial, fun _ => trivial,
       by simp [addAtom, LocalRule.unguarded], by simp [addAtom, LocalRule.unguarded, add_comm]⟩
+
+/-- Relocating an actual bag addition into `Option Bool` retains the extra
+`none` cell and adds exactly one occurrence at `some false`. The source can
+already contain repeated occurrences; no set conversion is involved. -/
+theorem relocated_add_retains_extra (source : Option Bool → Multiset Nat) :
+    let sourceTarget := (source ∘ some) + Pi.single false ({7} : Multiset Nat)
+    let target := Function.extend some sourceTarget source
+    EffectFootprinted.Relocated some (addAtom false (7 : Nat)).writes
+        (addAtom false (7 : Nat)).Fires source target ∧
+      target none = source none ∧
+      target (some false) = source (some false) + {7} := by
+  dsimp only
+  refine ⟨?_, ?_, ?_⟩
+  · apply (addAtom false (7 : Nat)).effectFootprinted.relocated_step
+      some (Option.some_injective Bool)
+    exact (addAtom_fires_iff false (7 : Nat) _ _).mpr rfl
+  · simp
+  · rw [(Option.some_injective Bool).extend_apply]
+    rfl
 
 /-- Positive control: adding at one space and removing at another are
 independent, so they commute. -/

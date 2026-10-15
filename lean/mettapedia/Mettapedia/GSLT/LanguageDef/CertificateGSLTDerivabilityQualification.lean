@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.Whiskering
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
-import Mettapedia.GSLT.LanguageDef.NIKDerivabilitySemanticQualification
+import Mettapedia.GSLT.LanguageDef.DerivabilitySemanticQualification
 
 /-!
 # Factoring generated authority through derivability and semantic qualification
@@ -30,11 +30,11 @@ open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTAuthorityFunctor
-open Mettapedia.GSLT.LanguageDef.NIKDerivabilitySemanticQualification
+open Mettapedia.GSLT.LanguageDef.DerivabilitySemanticQualification
 
 /-! ## The factorization -/
 

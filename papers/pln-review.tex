@@ -340,7 +340,7 @@ the book, not a rejection of the book's ideas.
 \section{Counterexamples}
 
 \begin{itemize}
-\item \code{canary\_ch11\_rule4\_not\_equivalent\_itvPath}: certain ITV
+\item \code{canary\_existentialConjunction\_not\_equivalent\_itvPath}: certain ITV
   transport paths are not equivalent, demonstrating that conflating
   interval semantics can produce different results.
 \end{itemize}
@@ -887,7 +887,7 @@ strength.
 \item Fuzzy-to-ITV bridge ---
   \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyITVBridge.lean}
 \item End-to-end canaries:
-  \code{canary\_ch11\_rule\_family\_end\_to\_end\_ext},
+  \code{canary\_rule\_family\_end\_to\_end\_ext},
   \code{fuzzyIntervalHolds\_strength\_of\_lower\_upper}
 \item Regression target:
   \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean}
@@ -902,7 +902,7 @@ infinitary semantic layer already exists in Lean.
 \section{Counterexamples}
 
 \begin{itemize}
-\item \code{canary\_ch11\_rule4\_not\_equivalent\_itvPath}: certain ITV
+\item \code{canary\_existentialConjunction\_not\_equivalent\_itvPath}: certain ITV
   transport paths are not equivalent, demonstrating that some book-era
   assumptions about ITV composition are too strong.
 \end{itemize}
@@ -1025,9 +1025,9 @@ constructive no-go theorem retiring the old binary law.
   \code{pat\_channel\_nontrivial}.
 \item \textbf{Concrete mixed projections and their divergence are explicit.}
   \textsc{Proved}.  Endpoints:
-  \code{canary\_ch12\_mixed\_extensional\_projection},
-  \code{canary\_ch12\_mixed\_assoc\_projection}, and
-  \code{canary\_ch12\_mixed\_projection\_non\_equivalent}.
+  \code{canary\_mixed\_extensional\_projection},
+  \code{canary\_mixed\_assoc\_projection}, and
+  \code{canary\_mixed\_projection\_non\_equivalent}.
 \item \textbf{Typed ASSOC/PAT semantic packaging has selector-specialized
   end-to-end endpoints.} \textsc{Proved}.  Endpoints:
   \code{mixedPolicy\_assocPat},
@@ -1218,12 +1218,12 @@ Key entry points:
 
 Chapter-specific regression scripts:
 \begin{itemize}
-\item \codepath{scripts/check\_ch8\_neighborhood.sh}
-\item \codepath{scripts/check\_ch9\_positive.sh}
-\item \codepath{scripts/check\_ch11\_quantifiers.sh}
-\item \codepath{scripts/check\_ch11\_fuzzy\_syllogism.sh}
-\item \codepath{scripts/check\_ch12\_intensional.sh}
-\item \codepath{scripts/check\_ch13\_inference\_control.sh}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence} \codepath{Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalRegression}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression} \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}
+\item \code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression}
 \end{itemize}
 
 

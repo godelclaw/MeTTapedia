@@ -3,7 +3,7 @@ import Mettapedia.GSLT.LanguageDef.KernelAuthority
 /-!
 # Indexed families of checker authorities
 
-One NIK entry point need not impose one claim language or one certificate
+One SemanticService entry point need not impose one claim language or one certificate
 format.  An indexed authority family retains a distinct dependent claim,
 certificate, exact certificate scope, and projected meaning for every
 judgment kind.  Packing the family gives a single fail-closed dispatcher.
@@ -20,6 +20,8 @@ universe uKind uClaim uCertificate
 universe uLeftKind uRightKind uLeftClaim uRightClaim
   uLeftCertificate uRightCertificate
 
+-- Claim and certificate carriers have independent universe levels.
+set_option linter.checkUnivs false in
 /-- A dependent family of independently exact certificate scopes, each with
 a proved projection into its guest semantic meaning. -/
 structure AuthorityFamily (Kind : Type uKind) where
@@ -110,7 +112,7 @@ theorem packedCertified_implies_meaning
 
 /-- The single packed dispatcher retains the authority-projection guarantee
 of every component. -/
-def packedAuthorityProjection [DecidableEq Kind] :
+theorem packedAuthorityProjection [DecidableEq Kind] :
     family.packedChecker.AuthorityProjection
       family.packedCertified family.packedMeaning where
   authority := family.packedChecker_authority

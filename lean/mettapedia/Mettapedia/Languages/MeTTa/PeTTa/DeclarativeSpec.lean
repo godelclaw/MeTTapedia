@@ -316,7 +316,7 @@ inductive Runs (program : Program) : Configuration → Outcome → Prop where
       Runs program source (.complete source.state answers source.input source.output)
   | fault {source : Configuration} {reason : Fault}
       (control : source.control = .fault reason) :
-      Runs program source (.fault reason)
+      Runs program source (.fault reason source)
   | next {source target : Configuration} {result : Outcome}
       (transition : Transition program source target) (rest : Runs program target result) :
       Runs program source result

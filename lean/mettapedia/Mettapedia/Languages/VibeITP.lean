@@ -42,8 +42,8 @@ import Mettapedia.Languages.VibeITP.Presentation.KernelControls
 # Vibe-ITP
 
 An independent specification of the Vibe-ITP proof kernel and its binary
-checker protocol (`Spec`), and the kernel as an admitted NIK rule package
+checker protocol (`Spec`), and the kernel as an admitted SemanticService rule package
 with soundness, constructive completeness, exact term-operation correspondence
 and raw-article controls (`Presentation`). Static kernel derivability is
-equivalent to acceptance by the actual theory-extended NIK checker.
+equivalent to acceptance by the actual theory-extended SemanticService checker.
 -/

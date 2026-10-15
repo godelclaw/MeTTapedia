@@ -82,9 +82,10 @@ theorem root_rules_on_root_some_empty
       priorObligation : Pattern)
     (membership : sourceRule ∈ [
       DerivationCheckMachineLanguageDef.rootFaultTransition,
-      DerivationCheckMachineLanguageDef.rootAcceptTransition]) :
+      DerivationCheckMachineLanguageDef.rootAcceptTransition])
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId
         (DerivationCheckMachineLanguageDef.rootSome priorId priorFormula
           priorObligation)
@@ -129,9 +130,10 @@ theorem finish_shape_rules_on_input_record_root_some_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:input"
-          [id, formula, provenance, relevance])) :
+          [id, formula, provenance, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId
         (DerivationCheckMachineLanguageDef.rootSome priorId priorFormula
@@ -218,9 +220,10 @@ theorem finish_root_some_rules_on_input_record_root_some_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:input"
-          [id, formula, provenance, relevance])) :
+          [id, formula, provenance, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId
         (DerivationCheckMachineLanguageDef.rootSome priorId priorFormula
@@ -409,9 +412,9 @@ theorem input_record_rewriteAt_partition_root_some
           (recordsPattern remainingRecords)) nodes nextIdPattern root
           serviceStatePattern)) = _
   rw [show language.rewrites = transitions by rfl]
-  simp only [transitions, liftedTransitions,
-    DerivationCheckMachineLanguageDef.transitions, List.map_cons,
-    List.map_nil, List.flatMap_cons, List.flatMap_nil]
+  simp only [transitions, liftedTransitions_eq_admitted_map,
+    DerivationCheckMachineLanguageDef.transitions,
+    List.map_attach_eq_pmap, List.pmap, List.flatMap_cons, List.flatMap_nil]
   rw [malformed_record_applyRule_empty host (wordsPattern record)
     (recordsPattern remainingRecords) nodes nextIdPattern root
     serviceStatePattern

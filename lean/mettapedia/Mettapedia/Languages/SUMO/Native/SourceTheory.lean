@@ -1,4 +1,4 @@
-import Mettapedia.Languages.SUMO.Native.NIKAuthority
+import Mettapedia.Languages.SUMO.Native.CheckerAuthority
 import Mettapedia.Languages.SUMO.Native.DomainGuardElaboration
 
 /-!
@@ -12,7 +12,7 @@ elaborated.  Every lexical, structural, declaration, elaboration, and
 unresolved-domain failure remains an explicit source-located issue.
 
 The resulting ordered sentence list is the exact assumption context consumed
-by the contextual native SUMO NIK authority.  Source membership licenses the
+by the contextual native SUMO SemanticService authority.  Source membership licenses the
 hypothesis rule; it does not assert consistency or intended truth.
 -/
 
@@ -65,7 +65,7 @@ structure Theory where
 namespace Theory
 
 /-- The exact ordered context consumed by native derivations. -/
-def assumptions (theory : Theory) : List NIKAuthority.Claim :=
+def assumptions (theory : Theory) : List CheckerAuthority.Claim :=
   theory.entries.map Entry.sentence
 
 /-- Whether every supplied source passed every assembly phase. -/
@@ -73,8 +73,8 @@ def clean (theory : Theory) : Bool :=
   theory.issues.isEmpty
 
 /-- Ask for one consequence of this exact finite source theory. -/
-def entailmentClaim (theory : Theory) (conclusion : NIKAuthority.Claim) :
-    NIKAuthority.EntailmentClaim :=
+def entailmentClaim (theory : Theory) (conclusion : CheckerAuthority.Claim) :
+    CheckerAuthority.EntailmentClaim :=
   { assumptions := theory.assumptions
     conclusion := conclusion }
 
@@ -88,9 +88,9 @@ its source theory retained as the exact context. -/
 theorem entry_has_native_nikEvidence
     {theory : Theory} {entry : Entry} (member : entry ∈ theory.entries) :
     Nonempty
-      (NIKAuthority.EntailmentNIKEvidence
+      (CheckerAuthority.EntailmentCheckedEvidence
         (theory.entailmentClaim entry.sentence)) := by
-  apply (NIKAuthority.nonempty_entailmentEvidence_iff_derivable _).mpr
+  apply (CheckerAuthority.nonempty_entailmentEvidence_iff_derivable _).mpr
   exact .hypothesis (entry_sentence_mem_assumptions member)
 
 end Theory
@@ -170,15 +170,15 @@ def assemble (sources : List SourceText) : Theory :=
 
 /-! ## Negative control -/
 
-def emptyClaim : NIKAuthority.EntailmentClaim :=
+def emptyClaim : CheckerAuthority.EntailmentClaim :=
   { assumptions := []
     conclusion := .top }
 
 /-- A hypothesis certificate cannot manufacture an assumption in an empty
 source theory. -/
 theorem empty_source_hypothesis_rejected :
-    NIKAuthority.entailmentChecker.check emptyClaim
-      (.hypothesis 0 : NIKAuthority.Evidence) = false := by
+    CheckerAuthority.entailmentChecker.check emptyClaim
+      (.hypothesis 0 : CheckerAuthority.Evidence) = false := by
   decide
 
 end Mettapedia.Languages.SUMO.Native.SourceTheory

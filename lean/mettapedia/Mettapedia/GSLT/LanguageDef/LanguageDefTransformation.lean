@@ -116,7 +116,7 @@ function inputs.
 -/
 
 open Mettapedia.GSLT.LanguageDef.GSLTHosting
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 
 universe uValue uIntermediate uLowered
 

@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartNIKService
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.UniformListChartService
 import Mettapedia.Logic.HOL.UniformListInductionRevisionViews
 
 /-!
@@ -182,7 +182,7 @@ theorem zero_overfits : fits .zero emptySample = true ∧ fits .zero nonemptySam
 /-! ## Assumption-indexed model discrimination -/
 
 def Refutes (model : HenkinModel BaseSort Symbol)
-    (claim : UniformListChartNIKService.SourceClaim []) : Prop :=
+    (claim : UniformListChartService.SourceClaim []) : Prop :=
   (∀ formula ∈ claim.1, model.models formula) ∧ ¬ model.models claim.2
 
 /-- The ordinary full-theory model refutes the overfitted zero hypothesis,
@@ -235,7 +235,7 @@ source assumption list remains separately bound by the submitted claim. -/
 def proofDependencies : RevisionDependencySet Nat Nat :=
   premiseDependencies (Induction.stepStore [] 0)
 
-def recognized (fuel : Nat) (request : UniformListChartNIKService.ReplayRequest []) : Bool :=
+def recognized (fuel : Nat) (request : UniformListChartService.ReplayRequest []) : Bool :=
   (reifyAssumptions (stepChart []) fuel request.stepPremises).isSome &&
     eligible (stepChart []) fuel (stepGoal [])
 
@@ -245,37 +245,37 @@ inductive Consumption where
   | claimMismatch
   | recognitionMiss
   | proofRejected
-  | current (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject)
-  | historical (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject)
+  | current (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject)
+  | historical (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject)
 
 /-- Reconstruct the submitted chart leaves first. A historical result still
 contains that admitted proof; invalidation changes its reuse status only. -/
 def importStatus (environment : RevisionEnvironment Nat Nat)
-    (request : UniformListChartNIKService.ReplayRequest []) : Consumption :=
-  match UniformListChartNIKService.produce? [] request with
+    (request : UniformListChartService.ReplayRequest []) : Consumption :=
+  match UniformListChartService.produce? [] request with
   | none => .proofRejected
   | some proof =>
       if dependenciesCurrent environment proofDependencies then .current proof else .historical proof
 
 theorem importStatus_current_iff (environment : RevisionEnvironment Nat Nat)
-    (request : UniformListChartNIKService.ReplayRequest [])
-    (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject) :
+    (request : UniformListChartService.ReplayRequest [])
+    (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject) :
     importStatus environment request = .current proof ↔
-      UniformListChartNIKService.produce? [] request = some proof ∧
+      UniformListChartService.produce? [] request = some proof ∧
       RevisionDependencySet.ValidAt environment proofDependencies := by
   rw [← dependenciesCurrent_iff]
-  cases produced : UniformListChartNIKService.produce? [] request <;>
+  cases produced : UniformListChartService.produce? [] request <;>
     by_cases current : dependenciesCurrent environment proofDependencies = true <;>
     simp [importStatus, produced, current]
 
 theorem importStatus_historical_iff (environment : RevisionEnvironment Nat Nat)
-    (request : UniformListChartNIKService.ReplayRequest [])
-    (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject) :
+    (request : UniformListChartService.ReplayRequest [])
+    (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject) :
     importStatus environment request = .historical proof ↔
-      UniformListChartNIKService.produce? [] request = some proof ∧
+      UniformListChartService.produce? [] request = some proof ∧
       ¬ RevisionDependencySet.ValidAt environment proofDependencies := by
   rw [← dependenciesCurrent_iff]
-  cases produced : UniformListChartNIKService.produce? [] request <;>
+  cases produced : UniformListChartService.produce? [] request <;>
     by_cases current : dependenciesCurrent environment proofDependencies = true <;>
     simp [importStatus, produced, current]
 
@@ -283,7 +283,7 @@ theorem importStatus_historical_iff (environment : RevisionEnvironment Nat Nat)
 revision currentness are separate executable checks on this one request. -/
 def consume (generationFuel recognitionFuel : Nat) (samples : List Sample)
     (expression : CountExpression) (assumptions : List (Sentence []))
-    (request : UniformListChartNIKService.ReplayRequest [])
+    (request : UniformListChartService.ReplayRequest [])
     (environment : RevisionEnvironment Nat Nat) : Consumption :=
   if expression ∈ CountExpression.enumerate generationFuel then
     if samples.all (fits expression) then
@@ -297,13 +297,13 @@ def consume (generationFuel recognitionFuel : Nat) (samples : List Sample)
 /-- Enumerate and filter before attempting import for each surviving source
 hypothesis. The same submitted proof request is independently bound each time. -/
 def learnAndImport (generationFuel recognitionFuel : Nat) (samples : List Sample)
-    (assumptions : List (Sentence [])) (request : UniformListChartNIKService.ReplayRequest [])
+    (assumptions : List (Sentence [])) (request : UniformListChartService.ReplayRequest [])
     (environment : RevisionEnvironment Nat Nat) : List (CountExpression × Consumption) :=
   (survivors generationFuel samples).map fun expression =>
     (expression, consume generationFuel recognitionFuel samples expression assumptions request environment)
 
 theorem mem_learnAndImport (generationFuel recognitionFuel : Nat) (samples : List Sample)
-    (assumptions : List (Sentence [])) (request : UniformListChartNIKService.ReplayRequest [])
+    (assumptions : List (Sentence [])) (request : UniformListChartService.ReplayRequest [])
     (environment : RevisionEnvironment Nat Nat) (expression : CountExpression) (result : Consumption) :
     (expression, result) ∈ learnAndImport generationFuel recognitionFuel samples assumptions request environment ↔
       expression ∈ survivors generationFuel samples ∧
@@ -323,15 +323,15 @@ private theorem survivor_membership (fuel : Nat) (samples : List Sample)
 
 theorem consume_current_iff (generationFuel recognitionFuel : Nat) (samples : List Sample)
     (expression : CountExpression) (assumptions : List (Sentence []))
-    (request : UniformListChartNIKService.ReplayRequest [])
+    (request : UniformListChartService.ReplayRequest [])
     (environment : RevisionEnvironment Nat Nat)
-    (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject) :
+    (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject) :
     consume generationFuel recognitionFuel samples expression assumptions request environment =
         .current proof ↔
       expression ∈ survivors generationFuel samples ∧
       request.claim = (assumptions, hypothesis expression) ∧
       recognized recognitionFuel request = true ∧
-      UniformListChartNIKService.produce? [] request = some proof ∧
+      UniformListChartService.produce? [] request = some proof ∧
       RevisionDependencySet.ValidAt environment proofDependencies := by
   rw [survivor_membership]
   unfold consume
@@ -339,15 +339,15 @@ theorem consume_current_iff (generationFuel recognitionFuel : Nat) (samples : Li
 
 theorem consume_historical_iff (generationFuel recognitionFuel : Nat) (samples : List Sample)
     (expression : CountExpression) (assumptions : List (Sentence []))
-    (request : UniformListChartNIKService.ReplayRequest [])
+    (request : UniformListChartService.ReplayRequest [])
     (environment : RevisionEnvironment Nat Nat)
-    (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject) :
+    (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject) :
     consume generationFuel recognitionFuel samples expression assumptions request environment =
         .historical proof ↔
       expression ∈ survivors generationFuel samples ∧
       request.claim = (assumptions, hypothesis expression) ∧
       recognized recognitionFuel request = true ∧
-      UniformListChartNIKService.produce? [] request = some proof ∧
+      UniformListChartService.produce? [] request = some proof ∧
       ¬ RevisionDependencySet.ValidAt environment proofDependencies := by
   rw [survivor_membership]
   unfold consume
@@ -357,9 +357,9 @@ theorem consume_historical_iff (generationFuel recognitionFuel : Nat) (samples :
 under its exact submitted assumptions; only currentness differs. -/
 theorem consumed_proof_derivation {generationFuel recognitionFuel : Nat} {samples : List Sample}
     {expression : CountExpression} {assumptions : List (Sentence [])}
-    {request : UniformListChartNIKService.ReplayRequest []}
+    {request : UniformListChartService.ReplayRequest []}
     {environment : RevisionEnvironment Nat Nat}
-    {proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject}
+    {proof : (UniformListChartService.intrinsicProofSystem []).ProofObject}
     (consumed : consume generationFuel recognitionFuel samples expression assumptions request environment =
         .current proof ∨
       consume generationFuel recognitionFuel samples expression assumptions request environment =
@@ -367,31 +367,31 @@ theorem consumed_proof_derivation {generationFuel recognitionFuel : Nat} {sample
     proof.1 = (assumptions, hypothesis expression) ∧
       ExtDerivation Symbol assumptions (hypothesis expression) := by
   have binding : request.claim = (assumptions, hypothesis expression) ∧
-      UniformListChartNIKService.produce? [] request = some proof := by
+      UniformListChartService.produce? [] request = some proof := by
     rcases consumed with current | historical
     · obtain ⟨_, bound, _, produced, _⟩ := (consume_current_iff _ _ _ _ _ _ _ _).mp current
       exact ⟨bound, produced⟩
     · obtain ⟨_, bound, _, produced, _⟩ := (consume_historical_iff _ _ _ _ _ _ _ _).mp historical
       exact ⟨bound, produced⟩
-  have same := (UniformListChartNIKService.produce_binds_request [] request proof binding.2).trans binding.1
+  have same := (UniformListChartService.produce_binds_request [] request proof binding.2).trans binding.1
   exact ⟨same, by simpa only [same] using proof.property⟩
 
 /-- Currentness connects the imported proof's step premises to the actual
 live acquisition. Stale fallback is not substituted for current source data. -/
 theorem current_import_live_premises {generationFuel recognitionFuel : Nat} {samples : List Sample}
     {expression : CountExpression} {assumptions : List (Sentence [])}
-    {request : UniformListChartNIKService.ReplayRequest []}
+    {request : UniformListChartService.ReplayRequest []}
     {environment : RevisionEnvironment Nat Nat}
-    {proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject}
+    {proof : (UniformListChartService.intrinsicProofSystem []).ProofObject}
     (consumed : consume generationFuel recognitionFuel samples expression assumptions request environment =
       .current proof) :
     request.stepPremises =
       (Induction.currentAcquisition [] environment).lease.entries.map
         RevisionBoundProgramView.ProgramEntry.source := by
   obtain ⟨_, _, _, produced, valid⟩ := (consume_current_iff _ _ _ _ _ _ _ _).mp consumed
-  have accepted := (UniformListChartNIKService.produce_isSome_iff [] request).mp
+  have accepted := (UniformListChartService.produce_isSome_iff [] request).mp
     (by rw [produced]; rfl)
-  have binding := ((UniformListChartNIKService.replayAccepted_iff [] request).mp accepted).2.2.1
+  have binding := ((UniformListChartService.replayAccepted_iff [] request).mp accepted).2.2.1
   have revision : environment.current 0 = 0 :=
     valid Induction.originalHypothesisOccurrence (Induction.original_hypothesis_dependency [])
   rw [Induction.current_acquisition_sources]
@@ -399,30 +399,30 @@ theorem current_import_live_premises {generationFuel recognitionFuel : Nat} {sam
 
 theorem consumed_native_accepted {generationFuel recognitionFuel : Nat} {samples : List Sample}
     {expression : CountExpression} {assumptions : List (Sentence [])}
-    {request : UniformListChartNIKService.ReplayRequest []}
+    {request : UniformListChartService.ReplayRequest []}
     {environment : RevisionEnvironment Nat Nat}
-    {proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject}
+    {proof : (UniformListChartService.intrinsicProofSystem []).ProofObject}
     (consumed : consume generationFuel recognitionFuel samples expression assumptions request environment =
         .current proof ∨
       consume generationFuel recognitionFuel samples expression assumptions request environment =
         .historical proof) :
-    (UniformListChartNIKService.intrinsicKernel []).decide
+    (UniformListChartService.intrinsicKernel []).decide
       (assumptions, hypothesis expression) proof = true :=
-  ((UniformListChartNIKService.intrinsicKernel []).correct _ _).mpr
+  ((UniformListChartService.intrinsicKernel []).correct _ _).mpr
     (consumed_proof_derivation consumed).1
 
 /-- An actual output of the enumeration/import pipeline carries both its
 finite generation/sample provenance and admission of the same source claim. -/
 theorem learned_current_sound {generationFuel recognitionFuel : Nat} {samples : List Sample}
     {expression : CountExpression} {assumptions : List (Sentence [])}
-    {request : UniformListChartNIKService.ReplayRequest []}
+    {request : UniformListChartService.ReplayRequest []}
     {environment : RevisionEnvironment Nat Nat}
-    {proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject}
+    {proof : (UniformListChartService.intrinsicProofSystem []).ProofObject}
     (returned : (expression, Consumption.current proof) ∈
       learnAndImport generationFuel recognitionFuel samples assumptions request environment) :
     expression.depth < generationFuel ∧
       (∀ sample ∈ samples, fits expression sample = true) ∧
-      (UniformListChartNIKService.intrinsicKernel []).decide
+      (UniformListChartService.intrinsicKernel []).decide
         (assumptions, hypothesis expression) proof = true ∧
       ExtDerivation Symbol assumptions (hypothesis expression) ∧
       RevisionDependencySet.ValidAt environment proofDependencies := by
@@ -435,73 +435,73 @@ theorem learned_current_sound {generationFuel recognitionFuel : Nat} {samples : 
 /-! ## One connected induction workload and distinct outcomes -/
 
 theorem uniform_import_current (fuel : Nat) (positive : 0 < fuel) (samples : List Sample) :
-    consume fuel 2 samples .inputLength theory (UniformListChartNIKService.actualRequest [])
-      Induction.initialEnvironment = .current (UniformListChartNIKService.actualNativeProof []) := by
+    consume fuel 2 samples .inputLength theory (UniformListChartService.actualRequest [])
+      Induction.initialEnvironment = .current (UniformListChartService.actualNativeProof []) := by
   apply (consume_current_iff _ _ _ _ _ _ _ _).mpr
   exact ⟨inputLength_survives fuel positive samples, rfl, rfl,
-    UniformListChartNIKService.actual_produced [], Induction.original_dependencies_current []⟩
+    UniformListChartService.actual_produced [], Induction.original_dependencies_current []⟩
 
 theorem learning_imports_mapLength :
     learnAndImport 1 2 [emptySample, nonemptySample] theory
-      (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment =
-      [(.inputLength, .current (UniformListChartNIKService.actualNativeProof []))] := by
+      (UniformListChartService.actualRequest []) Induction.initialEnvironment =
+      [(.inputLength, .current (UniformListChartService.actualNativeProof []))] := by
   rw [learnAndImport, nonempty_sample_eliminates_zero]
   simp only [List.map_cons, List.map_nil, uniform_import_current 1 (by decide)]
 
 theorem uniform_import_historical (fuel : Nat) (positive : 0 < fuel) (samples : List Sample) :
-    consume fuel 2 samples .inputLength theory (UniformListChartNIKService.actualRequest [])
+    consume fuel 2 samples .inputLength theory (UniformListChartService.actualRequest [])
       (Induction.initialEnvironment.update 0 1) =
-        .historical (UniformListChartNIKService.actualNativeProof []) := by
+        .historical (UniformListChartService.actualNativeProof []) := by
   apply (consume_historical_iff _ _ _ _ _ _ _ _).mpr
   exact ⟨inputLength_survives fuel positive samples, rfl, rfl,
-    UniformListChartNIKService.actual_produced [], Induction.consulted_revision_invalidates_dependencies []⟩
+    UniformListChartService.actual_produced [], Induction.consulted_revision_invalidates_dependencies []⟩
 
 theorem unrelated_revision_keeps_current (fuel : Nat) (positive : 0 < fuel)
     (samples : List Sample) (revision : Nat) :
-    consume fuel 2 samples .inputLength theory (UniformListChartNIKService.actualRequest [])
+    consume fuel 2 samples .inputLength theory (UniformListChartService.actualRequest [])
       (Induction.initialEnvironment.update 1 revision) =
-        .current (UniformListChartNIKService.actualNativeProof []) := by
+        .current (UniformListChartService.actualNativeProof []) := by
   apply (consume_current_iff _ _ _ _ _ _ _ _).mpr
   exact ⟨inputLength_survives fuel positive samples, rfl, rfl,
-    UniformListChartNIKService.actual_produced [],
+    UniformListChartService.actual_produced [],
     Induction.unrelated_revision_preserves_dependencies [] revision⟩
 
 theorem generation_miss :
     consume 0 2 [emptySample, nonemptySample] .inputLength theory
-      (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment = .generationMiss := rfl
+      (UniformListChartService.actualRequest []) Induction.initialEnvironment = .generationMiss := rfl
 
 theorem recognition_miss :
     consume 1 1 [emptySample, nonemptySample] .inputLength theory
-      (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment = .recognitionMiss := rfl
+      (UniformListChartService.actualRequest []) Induction.initialEnvironment = .recognitionMiss := rfl
 
 theorem malformed_proof_rejected :
     consume 1 2 [emptySample, nonemptySample] .inputLength theory
-      { UniformListChartNIKService.actualRequest [] with stepProof := malformedCertificate [] }
+      { UniformListChartService.actualRequest [] with stepProof := malformedCertificate [] }
       Induction.initialEnvironment = .proofRejected := rfl
 
 theorem nonempty_sample_rejects_zero :
     consume 1 2 [emptySample, nonemptySample] .zero theory
-      { UniformListChartNIKService.actualRequest [] with claim := (theory, hypothesis .zero) }
+      { UniformListChartService.actualRequest [] with claim := (theory, hypothesis .zero) }
       Induction.initialEnvironment = .sampleRejected := rfl
 
 /-- Passing the empty-list sample does not import a proof for zero: the
 same independent chart reconstruction rejects the changed source formula. -/
 theorem overfit_is_not_imported :
     consume 1 2 [emptySample] .zero theory
-      { UniformListChartNIKService.actualRequest [] with claim := (theory, hypothesis .zero) }
+      { UniformListChartService.actualRequest [] with claim := (theory, hypothesis .zero) }
       Induction.initialEnvironment = .proofRejected := rfl
 
 theorem changed_assumptions_rejected :
     consume 1 2 [emptySample, nonemptySample] .inputLength equations
-      { UniformListChartNIKService.actualRequest [] with claim := (equations, mapLength) }
+      { UniformListChartService.actualRequest [] with claim := (equations, mapLength) }
       Induction.initialEnvironment = .proofRejected := rfl
 
 /-- This rules out every submitted proof and either admitted status under
 the equations-only assumptions, not merely one unsuccessful proposal. -/
 theorem equations_only_cannot_import {generationFuel recognitionFuel : Nat} {samples : List Sample}
-    {request : UniformListChartNIKService.ReplayRequest []}
+    {request : UniformListChartService.ReplayRequest []}
     {environment : RevisionEnvironment Nat Nat}
-    (proof : (UniformListChartNIKService.intrinsicProofSystem []).ProofObject) :
+    (proof : (UniformListChartService.intrinsicProofSystem []).ProofObject) :
     ¬ (consume generationFuel recognitionFuel samples .inputLength equations request environment =
         .current proof ∨
       consume generationFuel recognitionFuel samples .inputLength equations request environment =
@@ -512,9 +512,9 @@ theorem equations_only_cannot_import {generationFuel recognitionFuel : Nat} {sam
 a countermodel of that claim under the full source theory. -/
 theorem bounded_and_malformed_are_not_countermodels :
     consume 1 1 [emptySample, nonemptySample] .inputLength theory
-        (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment = .recognitionMiss ∧
+        (UniformListChartService.actualRequest []) Induction.initialEnvironment = .recognitionMiss ∧
       consume 1 2 [emptySample, nonemptySample] .inputLength theory
-        { UniformListChartNIKService.actualRequest [] with stepProof := malformedCertificate [] }
+        { UniformListChartService.actualRequest [] with stepProof := malformedCertificate [] }
         Induction.initialEnvironment = .proofRejected ∧
       ExtDerivation Symbol theory (hypothesis .inputLength) ∧
       ¬ Refutes StandardListModel.model (theory, hypothesis .inputLength) := by
@@ -527,12 +527,12 @@ theorem bounded_and_malformed_are_not_countermodels :
 historical mathematics. The consulted revision changes reuse status, and
 the rebuilt live premise table rejects that proof's original step certificate. -/
 theorem revision_connected_workload (fuel : Nat) (positive : 0 < fuel) (samples : List Sample) :
-    let request := UniformListChartNIKService.actualRequest []
-    let proof := UniformListChartNIKService.actualNativeProof []
+    let request := UniformListChartService.actualRequest []
+    let proof := UniformListChartService.actualNativeProof []
     consume fuel 2 samples .inputLength theory request Induction.initialEnvironment = .current proof ∧
       consume fuel 2 samples .inputLength theory request
         (Induction.initialEnvironment.update 0 1) = .historical proof ∧
-      (UniformListChartNIKService.intrinsicKernel []).decide (theory, hypothesis .inputLength) proof = true ∧
+      (UniformListChartService.intrinsicKernel []).decide (theory, hypothesis .inputLength) proof = true ∧
       ExtDerivation Symbol theory (hypothesis .inputLength) ∧
       ¬ RevisionDependencySet.ValidAt (Induction.initialEnvironment.update 0 1) proofDependencies ∧
       accepts (stepChart []) 2
@@ -558,16 +558,16 @@ def Consumption.label : Consumption → String
 #eval survivors 1 [emptySample]
 #eval survivors 1 [emptySample, nonemptySample]
 #eval (learnAndImport 1 2 [emptySample, nonemptySample] theory
-  (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment).map
+  (UniformListChartService.actualRequest []) Induction.initialEnvironment).map
     (fun result => (result.1, result.2.label))
 #eval (consume 1 2 [emptySample, nonemptySample] .inputLength theory
-  (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment).label
+  (UniformListChartService.actualRequest []) Induction.initialEnvironment).label
 #eval (consume 1 2 [emptySample, nonemptySample] .inputLength theory
-  (UniformListChartNIKService.actualRequest []) (Induction.initialEnvironment.update 0 1)).label
+  (UniformListChartService.actualRequest []) (Induction.initialEnvironment.update 0 1)).label
 #eval (consume 1 1 [emptySample, nonemptySample] .inputLength theory
-  (UniformListChartNIKService.actualRequest []) Induction.initialEnvironment).label
+  (UniformListChartService.actualRequest []) Induction.initialEnvironment).label
 #eval (consume 1 2 [emptySample, nonemptySample] .inputLength theory
-  { UniformListChartNIKService.actualRequest [] with stepProof := malformedCertificate [] }
+  { UniformListChartService.actualRequest [] with stepProof := malformedCertificate [] }
   Induction.initialEnvironment).label
 
 #print axioms CountExpression.mem_enumerate

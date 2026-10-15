@@ -313,9 +313,12 @@ structure Configuration where
   input : List Atom := []
   output : List Atom := []
 
+/-- A run ends in one of three ways. A fault keeps the configuration in which it
+occurred, so the output printed, the input consumed and the store changed before
+it remain observable, as they are on the native engines. -/
 inductive Outcome where
   | complete (state : State) (answers : Answers) (input output : List Atom)
   | exhausted (configuration : Configuration)
-  | fault (reason : Fault)
+  | fault (reason : Fault) (configuration : Configuration)
 
 end Mettapedia.Languages.MeTTa.PeTTa.Eval

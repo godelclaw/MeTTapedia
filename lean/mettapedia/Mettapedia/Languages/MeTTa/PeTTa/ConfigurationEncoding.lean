@@ -376,9 +376,14 @@ theorem failed_primitive_support {state : State} {head : String}
     {arguments : List Atom} {reason : Effects.Fault} (names : List String)
     (failed : StdLib.apply state head arguments = .error reason) :
     primitiveCellSupport head arguments names = names := by
+  have successfulWrite (name : String) (value : Atom) :
+      StdLib.apply state "change-state!" [.symbol name, value] =
+        .ok (state.putCell name value, [.grounded (.bool true)]) := rfl
   unfold primitiveCellSupport
   split
-  · simp_all [StdLib.apply]
+  · rename_i name value headEq argumentsEq
+    rw [successfulWrite] at failed
+    cases failed
   · rfl
 
 theorem primitiveCellSupport_contains (head : String) (arguments : List Atom)

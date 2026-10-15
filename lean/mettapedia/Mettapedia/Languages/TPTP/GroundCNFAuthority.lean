@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+import Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 import Mettapedia.Languages.TPTP.ProblemAuthority
 
 /-!
@@ -27,8 +27,8 @@ namespace Mettapedia.Languages.TPTP.GroundCNFAuthority
 
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
-open Mettapedia.Languages.TPTP.NIKAuthority
+open Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
+open Mettapedia.Languages.TPTP.CheckerAuthority
 open Mettapedia.Languages.TPTP.ProblemAuthority
 open Mettapedia.Languages.TPTP.StatusSemantics
 
@@ -552,7 +552,7 @@ theorem discharge
     {Atom : Type uAtom} [DecidableEq Atom]
     (submission : Submission (ParsedProblem Atom) (Formula Atom))
     (source : InitialMatches submission.leafClaim)
-    (localMeaning : NIKAuthority.Meaning
+    (localMeaning : CheckerAuthority.Meaning
       (ruleFamily (Atom := Atom)) submission.derivation)
     (global : AllTheoremNodes submission) :
     Objective submission := by
@@ -595,7 +595,7 @@ def compositeChecker {Atom : Type uAtom} [DecidableEq Atom] :=
   ProblemAuthority.checker (ruleFamily (Atom := Atom))
     (leafAuthority (Atom := Atom)) (globalAuthority (Atom := Atom))
 
-/-- One default-NIK authority fibre for an admitted parsed ground-CNF
+/-- One default-SemanticService authority fibre for an admitted parsed ground-CNF
 problem and its TSTP proof DAG. -/
 def authorityFamily {Atom : Type uAtom} [DecidableEq Atom] :
     AuthorityFamily Unit where
@@ -667,7 +667,7 @@ theorem refutation_establishes_unsatisfiable_objective :
     (global := globalAuthority (Atom := Atom))
     (bridge := objectiveBridge (Atom := Atom)) submission certified
 
-theorem refutation_has_default_NIK_acceptance :
+theorem refutation_has_submissionProfile_acceptance :
     (Frontend.typed (authorityFamily (Atom := Atom))).run
       ⟨(), submission, evidence⟩ =
         .accepted ⟨(), submission⟩ := by

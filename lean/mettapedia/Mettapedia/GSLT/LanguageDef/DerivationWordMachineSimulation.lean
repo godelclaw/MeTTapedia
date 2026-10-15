@@ -500,7 +500,7 @@ theorem input_accept_step_mem
             (.nil final))))
   apply mem_rewriteAt_iff_stepAt.mpr
   exact .rule
-    (by simp [language, transitions, liftedTransitions,
+    (by simp [language, transitions, liftedTransitions_eq_admitted_map,
       DerivationCheckMachineLanguageDef.transitions])
     (by
       rw [show
@@ -934,12 +934,13 @@ theorem generic_lifted_record_rule_empty_of_decode_mismatch
     (recordDecoded :
       decodeDecision host record = decoded actualInstruction)
     (mismatchAtStart :
-      matchPattern (decoded expectedInstruction) (decoded actualInstruction) = []) :
+      matchPattern (decoded expectedInstruction) (decoded actualInstruction) = [])
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId root serviceState) = [] := by
   apply generic_record_rule_empty_of_decode_mismatch host
-    (liftRewrite sourceRule) record rest nodes nextId root serviceState
+    (liftRewrite sourceRule unannotated) record rest nodes nextId root serviceState
     expectedInstruction actualInstruction (sourceRule.premises.map liftPremise)
   · simp [liftRewrite, sourceInstructionExact]
   · simpa [liftRewrite] using leftExact
@@ -1063,9 +1064,10 @@ theorem input_index_fault_excludes_later_rule
     (indexFaulted :
       indexDecision expectedId actualId =
         DerivationCheckMachineLanguageDef.decisionFault
-          faultPatternValue) :
+          faultPatternValue)
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextIdPattern root
         serviceStatePattern) = [] := by
   simp only [inputIndexSuccessSourceRules, List.mem_cons, List.mem_nil_iff,
@@ -1226,9 +1228,10 @@ theorem input_relevance_fault_excludes_later_rule
     (relevanceFaulted :
       relevanceDecision actualId relevance =
         DerivationCheckMachineLanguageDef.decisionFault
-          faultPatternValue) :
+          faultPatternValue)
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextIdPattern root
         serviceStatePattern) = [] := by
   simp only [inputRelevanceSuccessSourceRules, List.mem_cons,
@@ -1459,9 +1462,10 @@ theorem generic_non_input_lifted_rule_empty
     (recordDecoded :
       decodeDecision host record =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:input"
-          [id, formula, provenance, relevance])) :
+          [id, formula, provenance, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId root serviceState) = [] := by
   simp only [genericNonInputSourceRules, List.mem_cons, List.mem_nil_iff,
     or_false] at membership
@@ -1718,9 +1722,10 @@ theorem root_rules_on_input_record_empty
     (recordDecoded :
       decodeDecision host record =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:input"
-          [id, formula, provenance, relevance])) :
+          [id, formula, provenance, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId
         DerivationCheckMachineLanguageDef.rootNone serviceState) = [] := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at membership
@@ -1765,9 +1770,10 @@ theorem finish_root_some_rules_on_root_none_empty
     (membership : sourceRule ∈ [
       DerivationCheckMachineLanguageDef.finishRelevanceFaultTransition,
       DerivationCheckMachineLanguageDef.finishRootFaultTransition,
-      DerivationCheckMachineLanguageDef.finishVerifiedTransition]) :
+      DerivationCheckMachineLanguageDef.finishVerifiedTransition])
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons record rest) nodes nextId
         DerivationCheckMachineLanguageDef.rootNone serviceState) = [] := by
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at membership
@@ -1823,9 +1829,10 @@ theorem finish_shape_rules_on_input_record_empty
     (recordDecoded :
       decodeDecision host (wordsPattern record) =
         decoded (DerivationCheckMachineLanguageDef.a "dcm:input"
-          [id, formula, provenance, relevance])) :
+          [id, formula, provenance, relevance]))
+    (unannotated : sourceRule.bindings = none := by first | rfl | assumption) :
     applyRuleUsing (engineBasePremises (relationEnv host)) language
-      (fun _ => []) (liftRewrite sourceRule)
+      (fun _ => []) (liftRewrite sourceRule unannotated)
       (run (recordsCons (wordsPattern record) (recordsPattern remainingRecords))
         nodes nextId DerivationCheckMachineLanguageDef.rootNone serviceState) =
       [] := by
@@ -1943,9 +1950,9 @@ theorem input_record_rewriteAt_partition
           DerivationCheckMachineLanguageDef.rootNone
           serviceStatePattern)) = _
   rw [show language.rewrites = transitions by rfl]
-  simp only [transitions, liftedTransitions,
-    DerivationCheckMachineLanguageDef.transitions, List.map_cons,
-    List.map_nil, List.flatMap_cons, List.flatMap_nil]
+  simp only [transitions, liftedTransitions_eq_admitted_map,
+    DerivationCheckMachineLanguageDef.transitions,
+    List.map_attach_eq_pmap, List.pmap, List.flatMap_cons, List.flatMap_nil]
   rw [malformed_record_applyRule_empty host (wordsPattern record)
     (recordsPattern remainingRecords) nodes nextIdPattern
     DerivationCheckMachineLanguageDef.rootNone serviceStatePattern
@@ -2666,9 +2673,9 @@ theorem input_accept_rewriteAt_exact
           DerivationCheckMachineLanguageDef.rootNone
           serviceStatePattern)) = _
   rw [show language.rewrites = transitions by rfl]
-  simp only [transitions, liftedTransitions,
-    DerivationCheckMachineLanguageDef.transitions, List.map_cons,
-    List.map_nil, List.flatMap_cons, List.flatMap_nil]
+  simp only [transitions, liftedTransitions_eq_admitted_map,
+    DerivationCheckMachineLanguageDef.transitions,
+    List.map_attach_eq_pmap, List.pmap, List.flatMap_cons, List.flatMap_nil]
   rw [malformed_record_applyRule_empty host (wordsPattern record)
     (recordsPattern remainingRecords) nodes nextIdPattern
     DerivationCheckMachineLanguageDef.rootNone serviceStatePattern
@@ -2954,7 +2961,7 @@ theorem halted_rewriteAt_exact
       applyRuleUsing (engineBasePremises (relationEnv host)) language
         (fun _ => []) rule (halted outcome nodes)) = []
   rw [show language.rewrites = transitions by rfl]
-  simp [transitions, liftedTransitions,
+  simp [transitions, liftedTransitions_eq_admitted_map,
     DerivationCheckMachineLanguageDef.transitions, applyRuleUsing,
     malformedRecordTransition, liftRewrite, liftLeft, liftPattern,
     DerivationCheckMachineLanguageDef.missingFinishTransition,

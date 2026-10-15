@@ -52,8 +52,8 @@ def sumProduct : Program ArithOp Nat where
   instructions := [addNode, mulNode, joinNode]
   result := 12
 
-/-- The returned cell denotes 47. -/
-theorem sumProduct_denotes : Denotes arith sumProduct 12 47 := by
+private theorem sumProduct_producers_denote :
+    Denotes arith sumProduct 10 12 ∧ Denotes arith sumProduct 11 35 := by
   have input1 : sumProduct.inputValue? 1 = some 5 := rfl
   have input2 : sumProduct.inputValue? 2 = some 7 := rfl
   have denote10 : Denotes arith sumProduct 10 12 :=
@@ -64,8 +64,14 @@ theorem sumProduct_denotes : Denotes arith sumProduct 12 47 := by
     Denotes.apply (c := 11) rfl rfl rfl
       (DenotesList.cons (Denotes.input input1)
         (DenotesList.cons (Denotes.input input2) DenotesList.nil))
-  exact Denotes.apply (c := 12) rfl rfl rfl
-    (DenotesList.cons denote10 (DenotesList.cons denote11 DenotesList.nil))
+  exact ⟨denote10, denote11⟩
+
+/-- The returned cell denotes 47. -/
+theorem sumProduct_denotes : Denotes arith sumProduct 12 47 :=
+  Denotes.apply (spec := arith) (p := sumProduct) (c := 12)
+    (op := ArithOp.add) rfl rfl rfl
+    (DenotesList.cons sumProduct_producers_denote.1
+      (DenotesList.cons sumProduct_producers_denote.2 DenotesList.nil))
 
 /-! ### Two genuinely different schedules
 
@@ -115,6 +121,84 @@ theorem schedules_differ_but_agree :
       lookup ([(12, 47), (10, 12), (11, 35)] ++ envStart) 12 := by
   refine ⟨by simp, rfl⟩
 
+/-- The general dependency square applies to the two ready arithmetic
+instructions and retains the still-pending join in both orders. -/
+theorem sumProduct_ready_fork_join :
+    Step arith ⟨(10, 12) :: envStart, [mulNode, joinNode]⟩
+      ⟨(11, 35) :: (10, 12) :: envStart, [joinNode]⟩ ∧
+    Step arith ⟨(11, 35) :: envStart, [addNode, joinNode]⟩
+      ⟨(10, 12) :: (11, 35) :: envStart, [joinNode]⟩ ∧
+    ∀ cell, lookup ((11, 35) :: (10, 12) :: envStart) cell =
+      lookup ((10, 12) :: (11, 35) :: envStart) cell := by
+  have square := ready_pair_diamond arith envStart [] [] [joinNode]
+    addNode mulNode 12 35 (by decide) rfl rfl rfl rfl
+  exact ⟨square.2.2.1, square.2.2.2.1, square.2.2.2.2⟩
+
+/-- A dependent join cannot enter the ready batch with its producers.
+One completed producer is insufficient; both values make it ready. -/
+theorem sumProduct_join_waits_for_both :
+    readyValue arith envStart joinNode = none ∧
+    readyValue arith ((10, 12) :: envStart) joinNode = none ∧
+    readyValue arith ((11, 35) :: (10, 12) :: envStart) joinNode = some 47 :=
+  ⟨rfl, rfl, rfl⟩
+
+/-- The positive example supplies the full admission contract used by the
+general reachability and delayed-readiness laws. -/
+theorem sumProduct_wellFormed : sumProduct.WellFormed arith where
+  writersUnique := by decide
+  inputsUnique := by decide
+  inputsNotWritten := by
+    intro instruction member
+    simp only [sumProduct, List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl | rfl <;> rfl
+  aritiesOk := by
+    intro instruction member
+    simp only [sumProduct, List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl | rfl <;> rfl
+  destinationsDenote := by
+    intro instruction member
+    simp only [sumProduct, List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with rfl | rfl | rfl
+    · exact ⟨12, sumProduct_producers_denote.1⟩
+    · exact ⟨35, sumProduct_producers_denote.2⟩
+    · exact ⟨47, sumProduct_denotes⟩
+  resultDenotes := ⟨47, sumProduct_denotes⟩
+
+/-- A held product computation keeps its value across every reachable
+schedule prefix, including prefixes that have already finished the join. -/
+theorem sumProduct_ready_survives_every_run (state : State ArithOp Nat)
+    (run : Steps arith sumProduct.initialState state) :
+    readyValue arith state.computed mulNode = some 35 :=
+  (Invariant.initial sumProduct_wellFormed).ready_preserved_steps
+    sumProduct_wellFormed run rfl
+
+/-- The executable policy skips an unavailable join and retains it exactly. -/
+theorem executable_scheduler_retains_waiting_join :
+    (readyMachine arith).step ⟨envStart, [joinNode, addNode, mulNode]⟩ =
+      some ⟨(10, 12) :: envStart, [joinNode, mulNode]⟩ := rfl
+
+/-- A one-firing pause retains both unfinished instructions. Resuming that
+state finishes in two more firings, with no restart of the completed sum. -/
+theorem executable_split_preserves_residual :
+    (readyMachine arith).runSlice 1 sumProduct.initialState =
+      (⟨(10, 12) :: envStart, [mulNode, joinNode]⟩, 1) ∧
+    (readyMachine arith).runSlice 2
+        ((readyMachine arith).runSlice 1 sumProduct.initialState).1 =
+      (⟨[(12, 47), (11, 35), (10, 12)] ++ envStart, []⟩, 2) := ⟨rfl, rfl⟩
+
+/-- Excess allowance does not charge fictitious transitions after completion. -/
+theorem executable_completion_charges_three :
+    (readyMachine arith).runSlice 20 sumProduct.initialState =
+      (⟨[(12, 47), (11, 35), (10, 12)] ++ envStart, []⟩, 3) := rfl
+
+/-- Readiness alone does not protect a delayed computation from an overwrite.
+The unrestricted step relation permits this malformed input-writer pair. -/
+theorem overwriting_an_input_changes_ready_value :
+    readyValue arith [(1, 5)] (.apply 2 .add [1, 1]) = some 10 ∧
+    Step arith ⟨[(1, 5)], [.const 1 8]⟩ ⟨[(1, 8), (1, 5)], []⟩ ∧
+    readyValue arith [(1, 8), (1, 5)] (.apply 2 .add [1, 1]) = some 16 := by
+  exact ⟨rfl, Step.fire (pre := []) (post := []) rfl, rfl⟩
+
 /-! ## Negative: two writers for one cell -/
 
 def twoWriters : Program ArithOp Nat where
@@ -127,12 +211,38 @@ theorem twoWriters_not_wellFormed : ¬ twoWriters.WellFormed arith := by
   have := wf.writersUnique
   simp [twoWriters, Instruction.dst] at this
 
+/-- Readiness alone does not license reordering: these two ready writers
+overwrite the same cell, and actual operational runs disagree. -/
+theorem twoWriters_order_changes_result :
+    Steps arith twoWriters.initialState ⟨[(7, 2), (7, 1), (1, 5)], []⟩ ∧
+    Steps arith twoWriters.initialState ⟨[(7, 1), (7, 2), (1, 5)], []⟩ ∧
+    lookup [(7, 2), (7, 1), (1, 5)] 7 ≠ lookup [(7, 1), (7, 2), (1, 5)] 7 := by
+  refine ⟨?_, ?_, by decide⟩
+  · refine Relation.ReflTransGen.head
+      (Step.fire (computed := [(1, 5)]) (pre := [])
+        (post := [.const 7 2]) (i := .const 7 1) rfl) ?_
+    exact Relation.ReflTransGen.single
+      (Step.fire (pre := []) (post := []) (i := .const 7 2) rfl)
+  · refine Relation.ReflTransGen.head
+      (Step.fire (computed := [(1, 5)]) (pre := [.const 7 1])
+        (post := []) (i := .const 7 2) rfl) ?_
+    exact Relation.ReflTransGen.single
+      (Step.fire (pre := []) (post := []) (i := .const 7 1) rfl)
+
 /-! ## Negative: an operand with no writer and no input -/
 
 def danglingOperand : Program ArithOp Nat where
   inputs := [(1, 5)]
   instructions := [.apply 0 .add [1, 9]]
   result := 0
+
+/-- A malformed program can be machine-final while work remains. No missing
+dependency is silently discarded or reported as a completed result. -/
+theorem executable_stuck_retains_pending :
+    (readyMachine arith).runSlice 20 danglingOperand.initialState =
+      (danglingOperand.initialState, 0) ∧
+    danglingOperand.initialState.pending ≠ [] := by
+  exact ⟨rfl, by decide⟩
 
 /-- Cell 9 is supplied by nothing, so it denotes at no budget. -/
 theorem dangling_cell_never_denotes :
@@ -221,5 +331,106 @@ theorem wrongArity_not_wellFormed : ¬ wrongArity.WellFormed arith := by
   intro wf
   have := wf.aritiesOk (.apply 0 .add [1, 2, 3]) (by simp [wrongArity])
   simp [Instruction.arityOk, arith] at this
+
+/-! ## Independent retained children and their ordered parent join -/
+
+namespace Retained
+
+open Mettapedia.Machines
+
+def sumChild : OwnedPullDriver.Program Nat Nat :=
+  .child (.emit 1 (.done 2)) (fun value => .emit 1 (.emit 3 (.done (value + 10))))
+
+def productChild : OwnedPullDriver.Program Nat Nat := .emit 9 (.done 35)
+
+theorem sumChild_runs : OwnedPullDriver.CostedRuns sumChild [1, 1, 3] 12 1 1 :=
+  .child (resume := fun value => .emit 1 (.emit 3 (.done (value + 10))))
+    (.emit (.done (value := 2))) (.emit (.emit .done))
+
+theorem productChild_runs : OwnedPullDriver.CostedRuns productChild [9] 35 0 0 :=
+  .emit .done
+
+def pool : CellId → Nat × OwnedPullDriver.State Nat Nat := fun cell =>
+  if cell = 10 then (2, ⟨sumChild, []⟩)
+  else if cell = 11 then (7, ⟨productChild, []⟩)
+  else (0, ⟨.done 0, []⟩)
+
+private def kernel := OwnedPullDriver.paidKernel CellId Nat Nat
+
+theorem partial_child_cannot_supply_internal_return :
+    let paused := kernel.run () (fun _ => ()) pool [(10, 2), (11, 1)]
+    (paused 10).2.work = .done 2 ∧
+      OwnedPullDriver.completedValue (paused 10).2 = none ∧
+      RetainedChildren.completedCells [10, 11] paused = [(11, 35)] ∧
+      readyValue arith
+        (RetainedChildren.completedCells [10, 11] paused ++ envStart) joinNode = none := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+/-- The product finishes first; the parent still reads sum, product, sum.
+Repeated operand occurrences remain repeated in the ordered result. -/
+theorem resumed_children_keep_parent_order_and_paid_work :
+    let finished := kernel.run () (fun _ => ()) pool [(10, 2), (11, 1), (10, 3)]
+    finished 10 = (7, ⟨.done 12, []⟩) ∧
+      finished 11 = (8, ⟨.done 35, []⟩) ∧
+      evalOperands (RetainedChildren.completedCells [11, 10] finished) [10, 11, 10] =
+        some [12, 35, 12] ∧
+      readyValue arith
+        (RetainedChildren.completedCells [11, 10] finished ++ envStart) joinNode = some 47 := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem two_child_interleavings_keep_complete_pool :
+    kernel.run () (fun _ => ()) pool [(10, 2), (11, 1), (10, 3)] =
+      kernel.run () (fun _ => ()) pool [(11, 1), (10, 2), (10, 3)] := by
+  apply OwnedPullDriver.paidKernel_interleaving
+  intro owner
+  by_cases atSum : 10 = owner
+  · subst owner; decide
+  · by_cases atProduct : 11 = owner
+    · subst owner; decide
+    · simp [atSum, atProduct]
+
+/-- This instantiates the general implementation-to-ready-firing theorem,
+using real child derivations and reversed worker completion. -/
+theorem completed_children_realize_parent_firings :
+    let result := kernel.partitioned () (fun _ => ()) pool [[(11, 1)], [(10, 5)]]
+    result 10 = (7, ⟨.done 12, []⟩) ∧
+      result 11 = (8, ⟨.done 35, []⟩) ∧
+      Steps arith sumProduct.initialState
+        ⟨RetainedChildren.completedCells [10, 11] result ++ envStart, [joinNode]⟩ ∧
+      ∀ observer, readyValue arith
+          (RetainedChildren.completedCells [10, 11] result ++ envStart) observer =
+        readyValue arith
+          (RetainedChildren.completedCells [11, 10] result ++ envStart) observer := by
+  exact RetainedChildren.completed_pair_fires arith envStart [] [] [joinNode]
+    addNode mulNode 12 35 sumChild productChild [1, 1, 3] [9]
+    1 1 0 0 2 7 0 0 sumChild_runs productChild_runs
+    (by decide) rfl rfl rfl rfl pool rfl rfl [[(11, 1)], [(10, 5)]] (by decide)
+
+theorem parent_instruction_allowance_does_not_complete_child :
+    OwnedPullDriver.completedValue
+        (OwnedPullDriver.paidSlice sumProduct.instructions.length
+          (0, ⟨OwnedPullDriver.nested 10, []⟩)).2 = none := rfl
+
+theorem completed_children_do_not_charge_unused_quanta :
+    let before := kernel.run () (fun _ => ()) pool [(10, 5), (11, 1)]
+    kernel.run () (fun _ => ()) before [(11, 50), (10, 50)] = before := by
+  funext cell
+  by_cases atSum : cell = 10
+  · subst cell; rfl
+  · by_cases atProduct : cell = 11
+    · subst cell; rfl
+    · simp [kernel, OwnedPullDriver.paidKernel, SnapshotBatch.Kernel.run,
+        SnapshotBatch.Kernel.step, atSum, atProduct]
+
+/-- Starting both quanta from one snapshot silently loses the first prefix.
+The kernel's disjoint-owner condition excludes this mistaken parallelization. -/
+theorem preparing_one_child_twice_loses_progress :
+    (kernel.batch () (fun _ => ()) pool [(10, 2), (10, 3)] 10).1 = 5 ∧
+      (kernel.run () (fun _ => ()) pool [(10, 2), (10, 3)] 10).1 = 7 ∧
+      OwnedPullDriver.completedValue
+        (kernel.batch () (fun _ => ()) pool [(10, 2), (10, 3)] 10).2 = none := by
+  exact ⟨rfl, rfl, rfl⟩
+
+end Retained
 
 end Mettapedia.Languages.Dataflow.Canary

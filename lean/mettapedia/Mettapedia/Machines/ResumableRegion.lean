@@ -28,6 +28,21 @@ def runSlice (machine : MachineCore Term) : Nat → machine.State → machine.St
           let remaining := runSlice machine fuel next
           (remaining.1, remaining.2 + 1)
 
+/-- A bounded region reaches its retained endpoint by actual machine steps. -/
+theorem runSlice_steps (machine : MachineCore Term) (fuel : Nat)
+    (state : machine.State) : machine.Steps state (runSlice machine fuel state).1 := by
+  induction fuel generalizing state with
+  | zero => exact Relation.ReflTransGen.refl
+  | succ fuel ih =>
+      cases advanced : machine.step state with
+      | none =>
+          simpa only [runSlice, advanced] using
+            (Relation.ReflTransGen.refl : machine.Steps state state)
+      | some next =>
+          have step : machine.StepRel state next := advanced
+          simpa only [runSlice, advanced] using
+            Relation.ReflTransGen.head step (ih next)
+
 theorem runSlice_of_final (machine : MachineCore Term) (state : machine.State)
     (final : machine.step state = none) (fuel : Nat) :
     runSlice machine fuel state = (state, 0) := by
@@ -60,6 +75,21 @@ theorem runSlice_used_le (machine : MachineCore Term) (fuel : Nat)
       cases transition : machine.step state with
       | none => simp [runSlice, transition]
       | some next => simpa [runSlice, transition] using Nat.add_le_add_right (ih next) 1
+
+/-- The actual debit replays exactly the retained endpoint and debit, even
+when the supplied allowance extends beyond a final state. -/
+theorem runSlice_replay_used (machine : MachineCore Term) (fuel : Nat)
+    (state : machine.State) :
+    runSlice machine (runSlice machine fuel state).2 state =
+      runSlice machine fuel state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      cases transition : machine.step state with
+      | none => simp only [runSlice, transition]
+      | some next =>
+          simp only [runSlice, transition]
+          rw [ih]
 
 /-- Stopping strictly before the supplied budget certifies no further step.
 Using the whole budget alone cannot establish that conclusion. -/
@@ -100,5 +130,69 @@ theorem runSlice_decode (source : MachineCore Term) (target : MachineCore OtherT
           have states := congrArg Prod.fst exactRun
           have counts := congrArg Prod.snd exactRun
           exact Prod.ext states (congrArg (· + 1) counts)
+
+
+/-- A zero-or-one step readback preserves the actual bounded endpoint. Its
+source debit may be smaller than the implementation debit. -/
+theorem runSlice_decode_stuttering (source : MachineCore Term)
+    (target : MachineCore OtherTerm) (decode : target.State → source.State)
+    (readStep : ∀ state next, target.step state = some next →
+      decode next = decode state ∨ source.step (decode state) = some (decode next))
+    (fuel : Nat) (state : target.State) :
+    ∃ used, used ≤ (runSlice target fuel state).2 ∧
+      runSlice source used (decode state) =
+        (decode (runSlice target fuel state).1, used) := by
+  induction fuel generalizing state with
+  | zero => exact ⟨0, Nat.le_refl 0, rfl⟩
+  | succ fuel ih =>
+      cases transition : target.step state with
+      | none => exact ⟨0, by simp [runSlice, transition], by simp [runSlice, transition]⟩
+      | some next =>
+          obtain ⟨used, bound, exactRun⟩ := ih next
+          rcases readStep state next transition with unchanged | advanced
+          · refine ⟨used, ?_, ?_⟩
+            · simp only [runSlice, transition]
+              omega
+            · simpa only [runSlice, transition, unchanged] using exactRun
+          · refine ⟨used + 1, ?_, ?_⟩
+            · simp only [runSlice, transition]
+              omega
+            · simp only [runSlice, advanced, transition]
+              rw [exactRun]
+
+/-- Composing genuine finite implementations of source steps preserves every
+bounded source endpoint. Only transitions actually taken are charged; a source
+that stops early does not compel extra implementation steps. -/
+theorem runSlice_realizes (source : MachineCore Term)
+    (target : MachineCore OtherTerm) (decode : target.State → source.State)
+    (realizeStep : ∀ state next, source.step (decode state) = some next →
+      ∃ ticks, 0 < ticks ∧ (runSlice target ticks state).2 = ticks ∧
+        decode (runSlice target ticks state).1 = next)
+    (fuel : Nat) (state : target.State) :
+    ∃ ticks, (runSlice source fuel (decode state)).2 ≤ ticks ∧
+      (runSlice target ticks state).2 = ticks ∧
+      decode (runSlice target ticks state).1 =
+        (runSlice source fuel (decode state)).1 := by
+  induction fuel generalizing state with
+  | zero => exact ⟨0, Nat.le_refl 0, rfl, rfl⟩
+  | succ fuel ih =>
+      cases transition : source.step (decode state) with
+      | none => exact ⟨0, by simp [runSlice, transition], rfl,
+          by simp [runSlice, transition]⟩
+      | some next =>
+          obtain ⟨first, positive, firstPaid, firstEndpoint⟩ :=
+            realizeStep state next transition
+          obtain ⟨later, laterBound, laterPaid, laterEndpoint⟩ :=
+            ih (runSlice target first state).1
+          simp only [firstEndpoint] at laterBound laterEndpoint
+          refine ⟨first + later, ?_, ?_, ?_⟩
+          · simp only [runSlice, transition]
+            omega
+          · rw [runSlice_add]
+            change (runSlice target first state).2 +
+              (runSlice target later (runSlice target first state).1).2 = first + later
+            rw [firstPaid, laterPaid]
+          · rw [runSlice_add]
+            simpa only [runSlice, transition] using laterEndpoint
 
 end Mettapedia.Machines.MachineCore

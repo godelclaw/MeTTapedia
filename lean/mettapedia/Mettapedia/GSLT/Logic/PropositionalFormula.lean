@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.GSLT
 
 /-!
@@ -51,16 +52,8 @@ inductive BoolEq : Formula → Formula → Prop where
   | or_assoc (A B C : Formula) :
       BoolEq (.or (.or A B) C) (.or A (.or B C))
 
-def propositionalEqGSLT : GSLT where
-  Term := Formula
-  equations := ⟨BoolEq, ⟨BoolEq.refl, BoolEq.symm, BoolEq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def propositionalEqGSLT : GSLT :=
+  GSLT.equationOnly (Formula) (⟨BoolEq, ⟨BoolEq.refl, BoolEq.symm, BoolEq.trans⟩⟩)
 
 theorem eqGSLT_no_step (A B : Formula) :
     ¬ propositionalEqGSLT.Step A B :=

@@ -3,6 +3,8 @@ import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 import Mathlib.CategoryTheory.Bicategory.Functor.LocallyDiscrete
 import Mathlib.CategoryTheory.FiberedCategory.Grothendieck
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Satisfying models fibred over the theory graph
 
@@ -31,7 +33,7 @@ namespace Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 
 open Mettapedia.Logic
 open _root_.CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe uSignature uSignatureHom uSentence uModel uModelHom
 

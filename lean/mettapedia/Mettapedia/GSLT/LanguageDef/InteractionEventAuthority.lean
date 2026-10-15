@@ -2,7 +2,7 @@ import Mettapedia.GSLT.Core.InteractionEvent
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTFiniteTraceAuthority
 
 /-!
-# NIK authorities generated from proof-relevant interaction events
+# SemanticService authorities generated from proof-relevant interaction events
 
 An interaction presentation exposes occurrence-specific evidence for semantic
 steps.  This module turns that evidence into the local authority expected by
@@ -80,7 +80,7 @@ theorem checkEventCertificateByIdentity_sound {theory : GSLT}
     (accepted :
       checkEventCertificateByIdentity identity claim certificate = true) :
     claim.Meaning := by
-  letI := identity.decEq
+  let := identity.decEq
   have endpointIdentities :
       identity.identify claim.source =
           identity.identify certificate.source ∧
@@ -117,7 +117,7 @@ theorem checkEventCertificate_sound {theory : GSLT}
   rw [endpoints.1, endpoints.2]
   exact certificate.event.step
 
-/-- Every proof-relevant interaction presentation induces a local NIK step
+/-- Every proof-relevant interaction presentation induces a local SemanticService step
 authority. -/
 def stepAuthority {AuthorityId : Type uAuthority} (authorityId : AuthorityId)
     {theory : GSLT} [DecidableEq theory.Term]
@@ -174,7 +174,7 @@ theorem stepAuthorityByIdentity_complete {AuthorityId : Type uAuthority}
         { site := site
           target := claim.target
           evidence := evidence } }
-  letI := identity.decEq
+  let := identity.decEq
   exact ⟨certificate, by
     simp [stepAuthorityByIdentity, checkEventCertificateByIdentity,
       certificate]⟩
@@ -223,7 +223,7 @@ theorem finiteTraceAuthorityByIdentity_correspondence
           presentation).Certificate =>
       (finiteTraceAuthorityByIdentity authorityId identity presentation).check
         claim certificate = true) ↔ claim.Meaning := by
-  letI := identity.termDecidableEq
+  let := identity.termDecidableEq
   exact CertificateGSLT.finiteTraceAuthority_correspondence
     (stepAuthorityByIdentity authorityId identity presentation)
     (stepAuthorityByIdentity_complete authorityId identity complete) claim

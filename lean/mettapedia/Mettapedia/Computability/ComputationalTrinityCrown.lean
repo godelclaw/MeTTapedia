@@ -1,6 +1,6 @@
 import Mettapedia.Computability.FragmentwiseComputationalTrinity
 import Mettapedia.GSLT.Core.StructuralIsomorphism
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-!
 # Intentional fragmentwise computational trinity
@@ -34,7 +34,7 @@ open CategoryTheory
 open scoped CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.GSLT
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Computability.ComputationalTrinity
 open Mettapedia.Computability.FragmentwiseComputationalTrinity
 
@@ -127,6 +127,9 @@ end MaterialPresentation
 
 /-! ## Independent ambient authority -/
 
+-- Claim syntax and proof objects may inhabit independently chosen universes;
+-- the enclosing authority necessarily lives at their maximum.
+set_option linter.checkUnivs false in
 /-- A nonempty subfragment of a spatial face checked by a native proof
 system whose judgment is stated independently of the trinity comparison.
 
@@ -192,6 +195,8 @@ structure Crown
   logicMaterial : MaterialPresentation comparison.logic
   spaceMaterial : MaterialPresentation comparison.space
 
+-- Preserve the authority's independently chosen claim and proof universes.
+set_option linter.checkUnivs false in
 /-- A crown with a genuine, nonempty independently checked ambient section.
 The section is scoped inside the selected spatial fragment rather than
 silently promoted to a global universe claim. -/

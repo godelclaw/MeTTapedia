@@ -1,7 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.TheoryGraphModels
-import Mettapedia.GSLT.LanguageDef.NIKServiceFamily
+import Mettapedia.GSLT.LanguageDef.SemanticServiceFamily
 import Mettapedia.Languages.Megalodon.SetOperationSemanticAuthority
 import Mettapedia.Languages.Megalodon.SelectedTheoryProfile
+
+open Mettapedia.Logic.Consequence
 
 /-!
 # The set-operation fragment of the HOTG preamble as a vertical specimen
@@ -17,7 +19,7 @@ Four objects, kept apart:
 * a **satisfying model**: Mathlib's ZFC sets, as an object of the fibre of
   satisfying models over that node;
 * the **native proof service**: Megalodon's Mathdata kernel at the explicit
-  environment declaring the five principles, entering NIK through the native
+  environment declaring the five principles, entering SemanticService through the native
   proof face and nothing else.
 
 Then the maps and the separations: a derived theorem, subset reflexivity
@@ -35,7 +37,7 @@ namespace Mettapedia.Languages.Megalodon.PreambleFragmentVertical
 open _root_.CategoryTheory
 open Mettapedia.Logic
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.TheoryGraphModels
 open Mettapedia.Languages.Megalodon.MathdataKernel
 open Mettapedia.Languages.Megalodon.SetOperationSemanticAuthority
@@ -115,12 +117,12 @@ theorem zfcObject_node : toNode.obj zfcObject = fragmentNode :=
 /-! ## The native proof service -/
 
 /-- Megalodon's Mathdata kernel at the environment declaring the principles,
-as a NIK service.  Its target is native theoremhood in that environment. -/
+as a SemanticService service.  Its target is native theoremhood in that environment. -/
 def nativeProofService :
-    NIK.Service (SelectedTheoryProfile.profileTarget environment) :=
+    SemanticService.Service (SelectedTheoryProfile.profileTarget environment) :=
   SelectedTheoryProfile.nativeService environment
 
-theorem nativeProofService_face : nativeProofService.face = NIK.Face.nativeProof :=
+theorem nativeProofService_face : nativeProofService.face = SemanticService.Face.nativeProof :=
   rfl
 
 /-- The service's target is intrinsic theoremhood, not validity: the two

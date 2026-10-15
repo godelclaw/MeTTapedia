@@ -52,7 +52,7 @@ variable {observe : State -> View}
 
 /-- The appraisal carried by a transition constraint is exactly visible at
 the named execution observer. -/
-def visible (constraint : TransitionConstraint.{uState, uView, uAppraisal}
+theorem visible (constraint : TransitionConstraint.{uState, uView, uAppraisal}
     observe) :
     AppraisalVisibleAt constraint.appraisal ({ observe := observe } :
       Observer State View) :=

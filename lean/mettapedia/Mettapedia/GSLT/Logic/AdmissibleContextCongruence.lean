@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Logic.MinimalEnablingContext
 
 /-!
@@ -344,14 +345,8 @@ inductive Wrapped where
   deriving DecidableEq
 
 /-- No term rewrites to anything. -/
-abbrev inertGSLT : GSLT where
-  Term := Wrapped
-  equations :=
-    { r := Eq
-      iseqv := { refl := Eq.refl, symm := Eq.symm, trans := Eq.trans } }
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by intro _ _ _ _ step; exact step.elim
-  rewrites_resp_right := by intro _ _ _ step _; exact step.elim
+abbrev wrappedBooleanGSLT : GSLT :=
+  GSLT.stepFree (Wrapped)
 
 /-- Contexts either leave a term alone or wrap it. -/
 inductive WrapContext where
@@ -365,7 +360,7 @@ def wrapPlug : WrapContext → Wrapped → Wrapped
   | .wrap, .plain flag => .wrap flag
   | .wrap, .wrap flag => .wrap flag
 
-abbrev inertRules : ContextualRules inertGSLT where
+abbrev inertRules : ContextualRules wrappedBooleanGSLT where
   Context := WrapContext
   identity := .id
   compose := fun outer inner =>
@@ -385,7 +380,7 @@ abbrev inertRules : ContextualRules inertGSLT where
   fires_step := by intro _ _ _ fires; exact fires.elim
 
 /-- The observation sees a wrapped true flag and nothing else. -/
-abbrev seesWrappedTrue : ContextualRules.Observations inertGSLT where
+abbrev seesWrappedTrue : ContextualRules.Observations wrappedBooleanGSLT where
   Atom := Unit
   observes := fun _ term => term = .wrap true
   observes_resp := by intro _ _ _ equal; subst equal; exact Iff.rfl

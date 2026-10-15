@@ -27,7 +27,7 @@ namespace Mettapedia.GSLT.LanguageDef.CertificateGSLTStoneUltraBasisBridge
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTHeterogeneousAuthority
 open Mettapedia.GSLT.LanguageDef.CertificateGSLTUltrafilterSemanticAuthority

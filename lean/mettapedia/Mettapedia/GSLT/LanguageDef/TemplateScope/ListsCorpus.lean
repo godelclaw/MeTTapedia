@@ -34,12 +34,15 @@ open Mettapedia.GSLT.LanguageDef.TemplateScope.SpectrumCorpus
 
 /-- A query elaborated under a profile: the query quantifies what it writes
 directly. -/
-def elabTopWith (P : Profile Sy Sp) (t : A) : T := elabWith P (Src.direct t) [] (fun _ => []) [] t
+def elabTopWith (P : Profile Sy Sp) (t : A) : T := elabWith [] P (Src.direct t) [] (fun _ => []) [] t
 
 /-- An equation clause elaborated under a profile, as `clauseOf` does. -/
 def clauseWith (P : Profile Sy Sp) (body : A) : T :=
-  .app (.lam (.src ([5] ++ [9], .u)) ((rootSpellings body).map fun m => ([5], m))
-      (elabWith P (Src.direct body) [] (fun _ => [5]) [5] body))
+  .app (.lam (.src ([5] ++ [9], .u))
+      ((rootSpellings body ++
+        holeSpellings [5] (elabWith [5] P (Src.direct body) [] (fun _ => [5]) [5] body)).map
+          fun m => ([5], m))
+      (elabWith [5] P (Src.direct body) [] (fun _ => [5]) [5] body))
     (.sym .unit)
 
 /-- The program of a profile. -/
@@ -61,10 +64,10 @@ theorem ansP_M (cl : Sy → Option A) (t : A) : ansP profM .static cl t = ans cf
     | some body =>
         simp only [Option.map_some, clauseWith, clauseOf, elabCfgX, elabCfg, cfgM, elabForm,
           List.append_nil]
-        rw [elabMS_eq body (Src.direct body) []]
+        rw [elabMS_eq [5] body (Src.direct body) []]
   simp only [ansP, ans, answersCfg, hprog, elabTopWith, elabCfg, elabCfgX, cfgM, elabForm,
     Config.disc]
-  rw [elabMS_eq t (Src.direct t) []]
+  rw [elabMS_eq [] t (Src.direct t) []]
 
 theorem ansP_EC (cl : Sy → Option A) (t : A) : ansP profEC .static cl t = ans cfgEC cl t := by
   have hprog : progP profEC cl = progOf cfgEC cl := by
@@ -75,10 +78,10 @@ theorem ansP_EC (cl : Sy → Option A) (t : A) : ansP profEC .static cl t = ans 
     | some body =>
         simp only [Option.map_some, clauseWith, clauseOf, elabCfgX, elabCfg, cfgEC, elabForm,
           List.append_nil]
-        rw [elabEC_eq body (Src.direct body) []]
+        rw [elabEC_eq [5] body (Src.direct body) []]
   simp only [ansP, ans, answersCfg, hprog, elabTopWith, elabCfg, elabCfgX, cfgEC, elabForm,
     Config.disc]
-  rw [elabEC_eq t (Src.direct t) []]
+  rw [elabEC_eq [] t (Src.direct t) []]
 
 theorem ansP_Q (cl : Sy → Option A) (t : A) : ansP profQ .static cl t = ans cfgQ cl t := by
   have hprog : progP profQ cl = progOf cfgQ cl := by
@@ -89,10 +92,10 @@ theorem ansP_Q (cl : Sy → Option A) (t : A) : ansP profQ .static cl t = ans cf
     | some body =>
         simp only [Option.map_some, clauseWith, clauseOf, elabCfgX, elabCfg, cfgQ, elabForm,
           List.append_nil]
-        rw [elabQ_eq body (Src.direct body) [] (fun _ => [5]) [5]]
+        rw [elabQ_eq [5] body (Src.direct body) [] (fun _ => [5]) [5]]
   simp only [ansP, ans, answersCfg, hprog, elabTopWith, elabCfg, elabCfgX, cfgQ, elabForm,
     Config.disc]
-  rw [elabQ_eq t (Src.direct t) [] (fun _ => []) []]
+  rw [elabQ_eq [] t (Src.direct t) [] (fun _ => []) []]
 
 theorem ansP_LF (cl : Sy → Option A) (t : A) : ansP profLF .static cl t = ans cfgLF cl t := by
   have hprog : progP profLF cl = progOf cfgLF cl := by
@@ -103,10 +106,10 @@ theorem ansP_LF (cl : Sy → Option A) (t : A) : ansP profLF .static cl t = ans 
     | some body =>
         simp only [Option.map_some, clauseWith, clauseOf, elabCfgX, elabCfg, cfgLF, elabForm,
           List.append_nil]
-        rw [elabLF_eq body (Src.direct body)]
+        rw [elabLF_eq [5] body (Src.direct body)]
   simp only [ansP, ans, answersCfg, hprog, elabTopWith, elabCfg, elabCfgX, cfgLF, elabForm,
     Config.disc]
-  rw [elabLF_eq t (Src.direct t)]
+  rw [elabLF_eq [] t (Src.direct t)]
 
 /-! ## Lexical inventory (ii): explicit introduction -/
 
@@ -161,9 +164,9 @@ theorem metadata_determines_meaning :
 /-- The general theorem, applied to row 1: same lists, same observation, for
 every readout, program and fuel. -/
 theorem row1_M_EC_same (d : Disc) (prog : Sy → Option T) (n : ℕ) :
-    answers d prog n (elabWith profM (Src.direct row1) [] (fun _ => []) [] row1) =
-      answers d prog n (elabWith profEC (Src.direct row1) [] (fun _ => []) [] row1) :=
-  answers_eq_of_agree profM profEC row1 _ _ _ _ (by decide +kernel) d prog n
+    answers d prog n (elabWith [] profM (Src.direct row1) [] (fun _ => []) [] row1) =
+      answers d prog n (elabWith [] profEC (Src.direct row1) [] (fun _ => []) [] row1) :=
+  answers_eq_of_agree [] profM profEC row1 _ _ _ _ (by decide +kernel) d prog n
 
 /-! ## Lexical inventory: region names and crossing spellings -/
 
@@ -376,15 +379,15 @@ crossing set, so even lexical fresh elaborates it as rule M does
 theorem written_profile_independent (E : List Sp) :
     elabTopWith profM row4ii = elabTopWith profEC row4ii ∧
     elabTopWith profM row4ii = elabTopWith profQ row4ii ∧
-    elabWith profM E [] (fun _ => []) [] row4ii = elabTopWith profM row4ii ∧
+    elabWith [] profM E [] (fun _ => []) [] row4ii = elabTopWith profM row4ii ∧
     elabTopWith profM row23cw = elabTopWith profLF row23cw ∧
     six clauses row23cw = List.replicate 6 (some [pairT (kT .n1) (kT .n2)]) := by
   have hw : row4ii.FullyWritten = true := by decide
   have ha : row23cw.AllWritten = true := by decide
-  refine ⟨elabWith_fullyWritten_profile _ _ (fun _ _ => rfl) _ _ _ _ _ hw,
-    elabWith_fullyWritten_profile _ _ (fun _ _ => rfl) _ _ _ _ _ hw,
-    elabWith_fullyWritten_context _ _ _ _ _ _ _ hw,
-    elabWith_allWritten_profile _ _ _ _ _ _ _ ha, by decide +kernel⟩
+  refine ⟨elabWith_fullyWritten_profile _ _ _ (fun _ _ => rfl) _ _ _ _ _ hw,
+    elabWith_fullyWritten_profile _ _ _ (fun _ _ => rfl) _ _ _ _ _ hw,
+    elabWith_fullyWritten_context _ _ _ _ _ _ _ _ hw,
+    elabWith_allWritten_profile _ _ _ _ _ _ _ _ ha, by decide +kernel⟩
 
 /-! ## Lifetime as replication and restriction (remark)
 
@@ -392,7 +395,8 @@ Lybech (2024, section 4) separates `P₁ = !(ν z)u⟨z⟩`, a fresh name per
 replica, from `P₂ = (ν z)!u⟨z⟩`, one name shared by all replicas.  The
 lifetime axis is the same distinction, with a closure's calls as the
 replicas.  Per call, the own binder stays on the lambda and every activation
-renames it to the copy tagged by its own path (`activate_static_own`), so
+renames it to the copy tagged by its own path, inside sealed code too
+(`activate_static_own`, `activate_static_own_sealed`), so
 two calls send different names, as in `P₁`.  Per closure, `hoistOwn` moves
 the binder to the scope that creates the closure (`hoistOwn_lam`): the
 restriction sits outside the replication, as in `P₂`, and all calls share
@@ -400,8 +404,18 @@ one name.  Row 1 separates them (`lifetime_separation`). -/
 
 theorem activate_static_own (σ : GStore Sy (Slot Sp)) (ρ : Path) (x : Nm (Slot Sp))
     (own : List (Slot Sp)) (body arg : T) :
-    activate .static σ ρ x own body arg = subst (renameOwn ρ own) (Sub.single x arg) body :=
+    activate .static σ ρ x own body arg =
+      subst (renameOwn ρ own) (Sub.single x arg) (sealRen ρ own body) :=
   rfl
+
+/-- The renaming inside sealed code is part of a call's activation: on a
+quotation whose hole the frame owns, the activation is not the renaming and
+substitution of the body alone. -/
+theorem activate_static_own_sealed (σ : GStore Sy (Slot Sp)) (ρ : Path) (x : Nm (Slot Sp))
+    (y : Slot Sp) (arg : T) :
+    activate .static σ ρ x [y] (.quote (.var (.src y))) arg ≠
+      subst (renameOwn ρ [y]) (Sub.single x arg) (.quote (.var (.src y))) := by
+  simp [activate, sealRen, renCode, ownKey, subst]
 
 theorem hoistOwn_lam (x : Nm (Slot Sp)) (own : List (Slot Sp)) (b : T) :
     hoistOwn (Tm.lam x own b) = (Tm.lam x (hoistOwn b).2 (hoistOwn b).1, own) := rfl
@@ -422,8 +436,8 @@ and a `unify` alike.  The model has no operation that opens code, so no answer
 depends on it; a lossless quotation needs code values that are authored
 syntax. -/
 theorem quotation_forgets_crossing :
-    Lec ≠ L ∧ (codeOf Lec : T) = codeOf L ∧
-    (codeOf (lts .y (k .n1) (sv .y) []) : T) = codeOf (un .y (k .n1) (sv .y)) := by
+    Lec ≠ L ∧ (codeOf [] Lec : T) = codeOf [] L ∧
+    (codeOf [] (lts .y (k .n1) (sv .y) []) : T) = codeOf [] (un .y (k .n1) (sv .y)) := by
   decide
 
 end Mettapedia.GSLT.LanguageDef.TemplateScope.ListsCorpus

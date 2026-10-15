@@ -43,14 +43,14 @@ inductive LogicClaim where
   | moduleFormalizesPlnAndBridges
   | moduleConnectsProbabilityHeytingQuantaleAndSolomonoff
   | semanticsDecisionTreePath
-  | chapter11RegressionHasOneCommand
-  | chapter11RegressionHasCheckScripts
-  | chapter11RegressionHasPrimaryModules
-  | chapter11RegressionHasCanarySuite
-  | chapter12RegressionHasOneCommand
-  | chapter12RegressionHasWrappersAndCanaries
-  | chapter13RegressionHasOneCommand
-  | chapter13RegressionHasSelectorCoverageCanaries
+  | quantifierRegressionHasOneCommand
+  | quantifierRegressionHasBuildTargets
+  | quantifierRegressionHasPrimaryModules
+  | quantifierRegressionHasCanarySuite
+  | intensionalInheritanceRegressionHasOneCommand
+  | intensionalInheritanceRegressionHasWrappersAndCanaries
+  | inferenceControlRegressionHasOneCommand
+  | inferenceControlRegressionHasSelectorCoverageCanaries
   | unificationThesisStatesEvidenceUnifiesFrameworks
   | unificationThesisStatesExchangeableCollapse
   | criticalTheoremsSectionSummarizesAnchors
@@ -83,33 +83,33 @@ def renderLogicClaim : LogicClaim → String
   | .semanticsDecisionTreePath =>
       mkPresPos (properNameNP "The semantics decision tree")
         (copulaNP (properNameNP "`Mettapedia/PLN/Comparisons/SemanticsDecisionTree.lean`"))
-  | .chapter11RegressionHasOneCommand =>
-      mkPresPos (properNameNP "Chapter 11 quantifier regression")
+  | .quantifierRegressionHasOneCommand =>
+      mkPresPos (properNameNP "Quantifier regression")
         (copulaNP (properNameNP "a one-command build target"))
-  | .chapter11RegressionHasCheckScripts =>
-      mkPresPos (properNameNP "Chapter 11 quantifier regression")
+  | .quantifierRegressionHasBuildTargets =>
+      mkPresPos (properNameNP "Quantifier regression")
         (complV2 (mkV2 (regV "include"))
-          (properNameNP "`check_ch11_quantifiers.sh` and `check_ch11_fuzzy_syllogism.sh`"))
-  | .chapter11RegressionHasPrimaryModules =>
-      mkPresPos (properNameNP "Chapter 11 quantifier regression")
+          (properNameNP "quantifier and fuzzy-syllogism build targets"))
+  | .quantifierRegressionHasPrimaryModules =>
+      mkPresPos (properNameNP "Quantifier regression")
         (complV2 (mkV2 (regV "track"))
           (properNameNP "primary modules for quantifier, fuzzy, and ITV bridges"))
-  | .chapter11RegressionHasCanarySuite =>
-      mkPresPos (properNameNP "Chapter 11 quantifier regression")
+  | .quantifierRegressionHasCanarySuite =>
+      mkPresPos (properNameNP "Quantifier regression")
         (complV2 (mkV2 (regV "track"))
           (linDetCN aIndefArt (linAdjCN (linPositA (regA "broad")) (linUseN canary_N))))
-  | .chapter12RegressionHasOneCommand =>
-      mkPresPos (properNameNP "Chapter 12 intensional inheritance regression")
+  | .intensionalInheritanceRegressionHasOneCommand =>
+      mkPresPos (properNameNP "Intensional inheritance regression")
         (copulaNP (properNameNP "a one-command build target"))
-  | .chapter12RegressionHasWrappersAndCanaries =>
-      mkPresPos (properNameNP "Chapter 12 intensional inheritance regression")
+  | .intensionalInheritanceRegressionHasWrappersAndCanaries =>
+      mkPresPos (properNameNP "Intensional inheritance regression")
         (complV2 (mkV2 (regV "include"))
           (properNameNP "selector-specialized one-call final-bundle wrappers with mixed-policy non-equivalence canaries"))
-  | .chapter13RegressionHasOneCommand =>
-      mkPresPos (properNameNP "Chapter 13 inference-control regression")
+  | .inferenceControlRegressionHasOneCommand =>
+      mkPresPos (properNameNP "Inference-control regression")
         (copulaNP (properNameNP "a one-command build target"))
-  | .chapter13RegressionHasSelectorCoverageCanaries =>
-      mkPresPos (properNameNP "Chapter 13 inference-control regression")
+  | .inferenceControlRegressionHasSelectorCoverageCanaries =>
+      mkPresPos (properNameNP "Inference-control regression")
         (complV2 (mkV2 (regV "include"))
           (properNameNP "selector, ranking, and coverage theorems with composed core modules and positive and negative canaries"))
   | .unificationThesisStatesEvidenceUnifiesFrameworks =>
@@ -178,14 +178,14 @@ def allLogicClaims : List LogicClaim :=
   [ .moduleFormalizesPlnAndBridges
   , .moduleConnectsProbabilityHeytingQuantaleAndSolomonoff
   , .semanticsDecisionTreePath
-  , .chapter11RegressionHasOneCommand
-  , .chapter11RegressionHasCheckScripts
-  , .chapter11RegressionHasPrimaryModules
-  , .chapter11RegressionHasCanarySuite
-  , .chapter12RegressionHasOneCommand
-  , .chapter12RegressionHasWrappersAndCanaries
-  , .chapter13RegressionHasOneCommand
-  , .chapter13RegressionHasSelectorCoverageCanaries
+  , .quantifierRegressionHasOneCommand
+  , .quantifierRegressionHasBuildTargets
+  , .quantifierRegressionHasPrimaryModules
+  , .quantifierRegressionHasCanarySuite
+  , .intensionalInheritanceRegressionHasOneCommand
+  , .intensionalInheritanceRegressionHasWrappersAndCanaries
+  , .inferenceControlRegressionHasOneCommand
+  , .inferenceControlRegressionHasSelectorCoverageCanaries
   , .unificationThesisStatesEvidenceUnifiesFrameworks
   , .unificationThesisStatesExchangeableCollapse
   , .criticalTheoremsSectionSummarizesAnchors
@@ -206,17 +206,39 @@ def allLogicClaims : List LogicClaim :=
   , .referencesSectionListsSources
   ]
 
+private theorem find_rendered_isSome {Label : Type} (labels : List Label)
+    (render : Label → String) (label : Label) (listed : label ∈ labels) :
+    (labels.find? (fun candidate => render candidate = render label)).isSome = true := by
+  exact List.find?_isSome.mpr ⟨label, listed, by simp⟩
+
+private theorem claim_listed (claim : LogicClaim) : claim ∈ allLogicClaims := by
+  cases claim <;> simp [allLogicClaims]
+
+/-- Exact generated clauses are admitted directly; terminal punctuation is
+also accepted by the fallback lookup. -/
 def parseLogicClaimLine? (line : String) : Option LogicClaim :=
-  let norm := stripTerminalPeriod line
-  allLogicClaims.find? (fun c => renderLogicClaim c = norm)
+  match allLogicClaims.find? (fun claim => renderLogicClaim claim = line) with
+  | some claim => some claim
+  | none =>
+      let normalized := stripTerminalPeriod line
+      allLogicClaims.find? (fun claim => renderLogicClaim claim = normalized)
+
+private theorem parse_render_claim_isSome (claim : LogicClaim) :
+    (parseLogicClaimLine? (renderLogicClaim claim)).isSome = true := by
+  have found := find_rendered_isSome allLogicClaims renderLogicClaim claim (claim_listed claim)
+  unfold parseLogicClaimLine?
+  cases equation : allLogicClaims.find? (fun candidate =>
+      renderLogicClaim candidate = renderLogicClaim claim) with
+  | none => simp [equation] at found
+  | some value => rfl
 
 inductive LogicHeading where
   | title
   | moduleOverview
   | semanticsDecisionTree
-  | chapter11QuantifierRegression
-  | chapter12IntensionalInheritanceRegression
-  | chapter13InferenceControlRegression
+  | quantifierRegression
+  | intensionalInheritanceRegression
+  | inferenceControlRegression
   | unificationThesis
   | criticalProvenTheorems
   | proofsForNbAndKnn
@@ -243,12 +265,12 @@ def renderLogicHeading : LogicHeading → String
       headingNP (linUseN overview_N)
   | .semanticsDecisionTree =>
       headingNP (linAdjCN (linPositA (regA "semantics")) (linUseN tree_N))
-  | .chapter11QuantifierRegression =>
-      headingNP (linAdjCN (linPositA (compoundA "Chapter-11")) (linAdjCN (linPositA (regA "quantifier")) (linUseN regression_N)))
-  | .chapter12IntensionalInheritanceRegression =>
-      headingNP (linAdjCN (linPositA (compoundA "Chapter-12")) (linAdjCN (linPositA (regA "intensional")) (linAdjCN (linPositA (regA "inheritance")) (linUseN regression_N))))
-  | .chapter13InferenceControlRegression =>
-      headingNP (linAdjCN (linPositA (compoundA "Chapter-13")) (linAdjCN (linPositA (compoundA "inference-control")) (linUseN regression_N)))
+  | .quantifierRegression =>
+      headingNP (linAdjCN (linPositA (regA "quantifier")) (linUseN regression_N))
+  | .intensionalInheritanceRegression =>
+      headingNP (linAdjCN (linPositA (regA "intensional")) (linAdjCN (linPositA (regA "inheritance")) (linUseN regression_N)))
+  | .inferenceControlRegression =>
+      headingNP (linAdjCN (linPositA (compoundA "inference-control")) (linUseN regression_N))
   | .unificationThesis =>
       headingNP (linAdjCN (linPositA (regA "unification")) (linUseN thesis_N))
   | .criticalProvenTheorems =>
@@ -278,9 +300,9 @@ def allLogicHeadings : List LogicHeading :=
   [ .title
   , .moduleOverview
   , .semanticsDecisionTree
-  , .chapter11QuantifierRegression
-  , .chapter12IntensionalInheritanceRegression
-  , .chapter13InferenceControlRegression
+  , .quantifierRegression
+  , .intensionalInheritanceRegression
+  , .inferenceControlRegression
   , .unificationThesis
   , .criticalProvenTheorems
   , .proofsForNbAndKnn
@@ -295,7 +317,28 @@ def allLogicHeadings : List LogicHeading :=
   ]
 
 def parseLogicHeadingLine? (line : String) : Option LogicHeading :=
-  allLogicHeadings.find? (fun h => renderLogicHeading h = line)
+  allLogicHeadings.find? (fun heading => renderLogicHeading heading = line)
+
+private theorem heading_listed (heading : LogicHeading) : heading ∈ allLogicHeadings := by
+  cases heading <;> simp [allLogicHeadings]
+
+private theorem parse_render_heading_isSome (heading : LogicHeading) :
+    (parseLogicHeadingLine? (renderLogicHeading heading)).isSome = true :=
+  find_rendered_isSome allLogicHeadings renderLogicHeading heading (heading_listed heading)
+
+private theorem parse_render_heading_image (heading : LogicHeading) :
+    (match parseLogicHeadingLine? (renderLogicHeading heading) with
+    | some found => decide (renderLogicHeading found = renderLogicHeading heading)
+    | none => false) = true := by
+  cases equation : parseLogicHeadingLine? (renderLogicHeading heading) with
+  | none =>
+      have found := parse_render_heading_isSome heading
+      simp [equation] at found
+  | some found =>
+      change decide (renderLogicHeading found = renderLogicHeading heading) = true
+      exact List.find?_some (p := fun candidate =>
+        decide (renderLogicHeading candidate = renderLogicHeading heading))
+        (a := found) (l := allLogicHeadings) equation
 
 private def claimBullet (c : LogicClaim) : ClaimBullet :=
   { text := renderLogicClaim c }
@@ -312,17 +355,17 @@ def logicReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderLogicHeading .semanticsDecisionTree)
   , .claimBullets [claimBullet .semanticsDecisionTreePath]
   , .pathItems [{path := "Mettapedia/PLN/Comparisons/SemanticsDecisionTree.lean"}]
-  , .heading 2 (renderLogicHeading .chapter11QuantifierRegression)
+  , .heading 2 (renderLogicHeading .quantifierRegression)
   , .claimBullets
-      [ claimBullet .chapter11RegressionHasOneCommand
-      , claimBullet .chapter11RegressionHasCheckScripts
-      , claimBullet .chapter11RegressionHasPrimaryModules
-      , claimBullet .chapter11RegressionHasCanarySuite
+      [ claimBullet .quantifierRegressionHasOneCommand
+      , claimBullet .quantifierRegressionHasBuildTargets
+      , claimBullet .quantifierRegressionHasPrimaryModules
+      , claimBullet .quantifierRegressionHasCanarySuite
       ]
   , .codeBlock "bash"
-      "cd lean/mettapedia\nlake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression"
+      "lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression"
   , .codeBlock "bash"
-      "cd lean/mettapedia\n./scripts/check_ch11_quantifiers.sh\n./scripts/check_ch11_fuzzy_syllogism.sh"
+      "lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin"
   , .pathItems
       [ {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierSemantics.lean"}
       , {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyQuantifierSemantics.lean"}
@@ -330,31 +373,31 @@ def logicReadmeBlocks : List ReadmeBlock :=
       , {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierCanary.lean"}
       , {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean"}
       ]
-  , .heading 2 (renderLogicHeading .chapter12IntensionalInheritanceRegression)
+  , .heading 2 (renderLogicHeading .intensionalInheritanceRegression)
   , .claimBullets
-      [ claimBullet .chapter12RegressionHasOneCommand
-      , claimBullet .chapter12RegressionHasWrappersAndCanaries
+      [ claimBullet .intensionalInheritanceRegressionHasOneCommand
+      , claimBullet .intensionalInheritanceRegressionHasWrappersAndCanaries
       ]
   , .codeBlock "bash"
-      "cd lean/mettapedia\nlake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression"
+      "lake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression"
   , .codeBlock "bash"
-      "cd lean/mettapedia\n./scripts/check_ch12_intensional.sh"
+      "lake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalCanary"
   , .pathItems
-      [ {path := "Mettapedia/Logic/PLNIntensionalWorldModel.lean"}
-      , {path := "Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean"}
+      [ {path := "Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean"}
+      , {path := "Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean"}
       , {path := "Mettapedia/PLN/Core/PLNCanonicalAPI.lean"}
-      , {path := "Mettapedia/Logic/PLNIntensionalCanary.lean"}
-      , {path := "Mettapedia/Logic/PLNIntensionalRegression.lean"}
+      , {path := "Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean"}
+      , {path := "Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean"}
       ]
-  , .heading 2 (renderLogicHeading .chapter13InferenceControlRegression)
+  , .heading 2 (renderLogicHeading .inferenceControlRegression)
   , .claimBullets
-      [ claimBullet .chapter13RegressionHasOneCommand
-      , claimBullet .chapter13RegressionHasSelectorCoverageCanaries
+      [ claimBullet .inferenceControlRegressionHasOneCommand
+      , claimBullet .inferenceControlRegressionHasSelectorCoverageCanaries
       ]
   , .codeBlock "bash"
-      "cd lean/mettapedia\nlake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression"
+      "lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression"
   , .codeBlock "bash"
-      "cd lean/mettapedia\n./scripts/check_ch13_inference_control.sh"
+      "lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCanary"
   , .pathItems
       [ {path := "Mettapedia/PLN/InferenceControl/PremiseSelection/SelectorSpec.lean"}
       , {path := "Mettapedia/PLN/InferenceControl/PremiseSelection/Optimality.lean"}
@@ -411,7 +454,7 @@ def logicReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderLogicHeading .dependencyGraph)
   , .claimBullets [claimBullet .dependencyGraphSectionExists]
   , .codeBlock ""
-      "Foundations -> Core inference -> Algebraic semantics -> Bridges\n                      \\-> Quantifier regression -> Chapter 11 canaries\n                      \\-> Intensional regression -> Chapter 12 canaries\n                      \\-> Inference-control regression -> Chapter 13 canaries"
+      "Foundations -> Core inference -> Algebraic semantics -> Bridges\n                      \\-> Quantifier regression -> Quantifier canaries\n                      \\-> Intensional regression -> Inheritance canaries\n                      \\-> Inference-control regression -> Selector canaries"
   , .heading 2 (renderLogicHeading .keyInsight)
   , .claimBullets [claimBullet .keyInsightDistinguishesEvidenceAndInterval]
   , .heading 3 (renderLogicHeading .weightSpaceBugFix)
@@ -419,7 +462,7 @@ def logicReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderLogicHeading .build)
   , .claimBullets [claimBullet .buildSectionListsCommands]
   , .codeBlock "bash"
-      "cd lean/mettapedia\n# Quantifier regression\nlake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression\n# Intensional inheritance regression\nlake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression\n# Inference-control regression\nlake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression\n# Core files\nlake build Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetInference Mettapedia.PLN.InferenceControl.PremiseSelection.KNN_PLNBridge\n# Build all (slow)\nlake build"
+      "# Quantifier regression\nlake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression\n# Intensional inheritance regression\nlake build Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression\n# Inference-control regression\nlake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression\n# Core files\nlake build Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetInference Mettapedia.PLN.InferenceControl.PremiseSelection.KNN_PLNBridge\n# Build all (slow)\nlake build"
   , .heading 2 (renderLogicHeading .references)
   , .claimBullets [claimBullet .referencesSectionListsSources]
   , .codeBlock ""
@@ -462,14 +505,18 @@ def logicHardAuditPasses : Bool :=
 
 theorem logic_hard_audit :
     logicHardAuditPasses = true := by
-  native_decide
+  simp [logicHardAuditPasses, logicReadmeBlocks, blockPassesHardAuditWith,
+    claimBullet, parse_render_claim_isSome, parse_render_heading_isSome]
 
 def logicHeadingImageCheck : Bool :=
   headingRenderImageCheck parseLogicHeadingLine? renderLogicHeading logicReadmeBlocks
 
 theorem logic_heading_images :
     logicHeadingImageCheck = true := by
-  native_decide
+  simp [logicHeadingImageCheck, headingRenderImageCheck, logicReadmeBlocks,
+    headingEntries]
+  repeat' constructor
+  all_goals exact parse_render_heading_image _
 
 theorem logic_heading_image_witness
     {lvl : Nat} {txt : String}

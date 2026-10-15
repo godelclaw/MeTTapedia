@@ -23,7 +23,7 @@ modalities in every fibre.
 This is a declarative-calculus integration, not an operational reduction or
 a Lean kernel realization.  Directed reduction is supplied separately.
 Inductives, recursors, quotient installation, executable checking,
-proof-relevant derivation occurrences, and NIK admission remain separate
+proof-relevant derivation occurrences, and SemanticService admission remain separate
 obligations.
 -/
 

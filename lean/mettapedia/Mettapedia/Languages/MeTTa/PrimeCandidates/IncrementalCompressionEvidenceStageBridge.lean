@@ -323,13 +323,13 @@ theorem strict_growth_transports_semantics_and_rejects_stale_guidance :
         (↑laterSources : Set Bool))
       (growthCanaryExperiment.implicationGSLTAt
         (↑earlySources : Set Bool))) ∧
-      validateAndPrepare NativeTypedOptimizationNIKBridge.DispatchCanary.spec
+      validateAndPrepare NativeTypedOptimizationBridge.DispatchCanary.spec
         laterRequest model
         IncrementalCompressionExternalGuidanceReceipt.Canary.calibration
         { order := ranking.order
           complete := ranking.complete }
         (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-          NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
+          NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
         none = .source := by
   exact semantic_growth_and_stale_guidance_fallback
     growthCanaryExperiment 17 earlySources_subset_laterSources
@@ -339,8 +339,8 @@ theorem strict_growth_transports_semantics_and_rejects_stale_guidance :
       { order := ranking.order
         complete := ranking.complete }
       (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-        NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
-      NativeTypedOptimizationNIKBridge.DispatchCanary.spec none
+        NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
+      NativeTypedOptimizationBridge.DispatchCanary.spec none
 
 /-- The raw persisted form has the same strict-growth behavior: semantic steps
 transport forward, while stale learned guidance fails open. -/
@@ -350,11 +350,11 @@ theorem strict_growth_transports_semantics_and_rejects_stale_raw_artifact :
         (↑laterSources : Set Bool))
       (growthCanaryExperiment.implicationGSLTAt
         (↑earlySources : Set Bool))) ∧
-      ingestAndPrepare NativeTypedOptimizationNIKBridge.DispatchCanary.spec
+      ingestAndPrepare NativeTypedOptimizationBridge.DispatchCanary.spec
         laterRequest model
         IncrementalCompressionExternalArtifactChecker.Canary.rawArtifact
         (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-          NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
+          NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
         none = .source := by
   exact semantic_growth_and_stale_raw_guidance_fallback
     growthCanaryExperiment 17 earlySources_subset_laterSources
@@ -362,8 +362,8 @@ theorem strict_growth_transports_semantics_and_rejects_stale_raw_artifact :
       IncrementalCompressionExternalGuidanceReceipt.Canary.family model rfl
       IncrementalCompressionExternalArtifactChecker.Canary.rawArtifact
       (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-        NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
-      NativeTypedOptimizationNIKBridge.DispatchCanary.spec none
+        NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
+      NativeTypedOptimizationBridge.DispatchCanary.spec none
 
 /-- The combined indexed result: strict evidence growth has its lawful lax
 modal pullback, while a bounded artifact tied to the old stage cannot guide
@@ -377,12 +377,12 @@ theorem strict_growth_has_lax_modal_map_and_rejects_stale_bounded_artifact :
         (growthCanaryExperiment.implicationGSLTAt
           (↑laterSources : Set Bool)))) ∧
       produceIngestAndPrepareWithinBound uint64MaxNat
-        NativeTypedOptimizationNIKBridge.DispatchCanary.spec
+        NativeTypedOptimizationBridge.DispatchCanary.spec
         laterRequest model
         IncrementalCompressionRankingArtifact.Canary.measuredArtifact
         (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-          NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
-        (some NativeTypedOptimizationNIKBridge.DispatchCanary.authority.authority) =
+          NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
+        (some NativeTypedOptimizationBridge.DispatchCanary.authority.authority) =
           .source := by
   exact semantic_growth_has_lax_modal_pullback_and_stale_bounded_fallback
     growthCanaryExperiment 17 earlySources_subset_laterSources
@@ -391,20 +391,20 @@ theorem strict_growth_has_lax_modal_map_and_rejects_stale_bounded_artifact :
       uint64MaxNat
       IncrementalCompressionRankingArtifact.Canary.measuredArtifact
       (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-        NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
-      NativeTypedOptimizationNIKBridge.DispatchCanary.spec
-      (some NativeTypedOptimizationNIKBridge.DispatchCanary.authority.authority)
+        NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
+      NativeTypedOptimizationBridge.DispatchCanary.spec
+      (some NativeTypedOptimizationBridge.DispatchCanary.authority.authority)
 
 /-- Representation overflow is an independent fail-open boundary even at the
 current evidence stage and in the presence of exact runtime authority. -/
 theorem current_stage_uint64_overflow_falls_back :
     produceIngestAndPrepareWithinBound uint64MaxNat
-      NativeTypedOptimizationNIKBridge.DispatchCanary.spec
+      NativeTypedOptimizationBridge.DispatchCanary.spec
       earlyRequest model
       IncrementalCompressionBoundedRanking.Canary.hugeMeasuredArtifact
       (IncrementalCompressionOptimizationSelection.Canary.finiteGuidance
-        NativeTypedOptimizationNIKBridge.DispatchCanary.candidate.source)
-      (some NativeTypedOptimizationNIKBridge.DispatchCanary.authority.authority) =
+        NativeTypedOptimizationBridge.DispatchCanary.candidate.source)
+      (some NativeTypedOptimizationBridge.DispatchCanary.authority.authority) =
         .source := by
   apply produceIngestAndPrepareWithinBound_of_production_rejected
   exact IncrementalCompressionBoundedRanking.Canary.huge_exact_tie_rejects_uint64

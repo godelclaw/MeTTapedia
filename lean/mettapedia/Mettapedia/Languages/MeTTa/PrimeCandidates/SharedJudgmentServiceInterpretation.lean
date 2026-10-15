@@ -1,13 +1,13 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentInterpretation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireDataDenotation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveContextSourceObstruction
-import Mettapedia.GSLT.LanguageDef.NIKServiceInvocation
+import Mettapedia.GSLT.LanguageDef.SemanticServiceInvocation
 
 /-!
 # Raw service operations attached to the same native interpretation
 
 The four raw faces contain operations, not their correctness laws. Their
-qualification reconstructs the existing NIK service at the unchanged target;
+qualification reconstructs the existing SemanticService service at the unchanged target;
 erasing that reconstruction recovers the submitted operations exactly. The
 target and its meaning are supplied independently. An application must still
 pin the intended request, theory, revision and required service scopes there;
@@ -17,7 +17,7 @@ A native attachment supplies actual claim-indexed context, payload and type
 representations, together with semantic type/value sections indexed by formed
 contexts in the same assembly's interpretation. Rejected and unfinished raw
 contexts remain representable. Native admission and meaning compatibility are independent
-requirements. Accepted-response transport uses the original NIK invocation
+requirements. Accepted-response transport uses the original SemanticService invocation
 and its exact returned artifact, retaining the source premise for operations.
 Formed native substitutions then transport both judgments and semantic values.
 Only a qualified direct decision turns rejection into target falsity; failure
@@ -41,7 +41,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceInterpretation
 
 open Mettapedia.GSLT.LanguageDef
-open KernelAuthority NIKMetalogic
+open KernelAuthority SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation Presentation.FormationSensitive
@@ -49,7 +49,7 @@ open SharedJudgmentFragment SharedJudgmentInterpretation
 
 universe uArtifact uEvidence u v w w'
 
-/-- Operational data for the four existing NIK faces. The native guest's
+/-- Operational data for the four existing SemanticService faces. The native guest's
 judgment is stated independently of its submitted Boolean checker. -/
 inductive RawService (target : AdmissionObject.{uArtifact}) :
     Type (max (uArtifact + 1) (uEvidence + 1)) where
@@ -80,7 +80,7 @@ def Qualified : RawService.{uArtifact, uEvidence} target → Prop
 /-- Reconstruct the existing service, keeping its fixed target and all raw
 functions. No claim predicate is inferred from acceptance. -/
 def toService (raw : RawService.{uArtifact, uEvidence} target)
-    (qualified : raw.Qualified) : NIK.Service.{uArtifact, uEvidence} target :=
+    (qualified : raw.Qualified) : SemanticService.Service.{uArtifact, uEvidence} target :=
   match raw with
   | .directDecision decide => .directDecision ⟨decide, qualified⟩
   | .nativeProof guest check =>
@@ -89,8 +89,8 @@ def toService (raw : RawService.{uArtifact, uEvidence} target)
   | .certificateBoundary Certificate checker =>
       .certificateBoundary Certificate checker qualified
 
-/-- Forget only the laws carried by an existing NIK service. -/
-def erase : NIK.Service.{uArtifact, uEvidence} target → RawService target
+/-- Forget only the laws carried by an existing SemanticService service. -/
+def erase : SemanticService.Service.{uArtifact, uEvidence} target → RawService target
   | .directDecision kernel => .directDecision kernel.decide
   | .nativeProof guest kernel _ => .nativeProof guest kernel.decide
   | .nativeOperation source operation => .nativeOperation source operation.run
@@ -100,7 +100,7 @@ theorem erase_toService (raw : RawService.{uArtifact, uEvidence} target)
     (qualified : raw.Qualified) : erase (raw.toService qualified) = raw := by
   cases raw <;> rfl
 
-theorem erased_qualified (service : NIK.Service.{uArtifact, uEvidence} target) :
+theorem erased_qualified (service : SemanticService.Service.{uArtifact, uEvidence} target) :
     (erase service).Qualified := by
   cases service with
   | directDecision kernel => exact kernel.correct
@@ -170,12 +170,12 @@ theorem accepted_native_and_meaning
     (raw : RawService.{uArtifact, uEvidence} target) (qualified : raw.Qualified)
     (attachment : NativeAttachment target interpretation)
     (native : attachment.NativeAdmitted) (meaning : attachment.MeaningCompatible)
-    (request : NIKServiceInvocation.Request (raw.toService qualified))
-    (input : NIKServiceInvocation.InputAdmission request)
+    (request : SemanticServiceInvocation.Request (raw.toService qualified))
+    (input : SemanticServiceInvocation.InputAdmission request)
     {claim : target.Carrier}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim) :
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim) :
     let context := attachment.admittedContext native claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)
+      (SemanticServiceInvocation.accepted_meaning request input accepted)
     Judgment assembly.rules (attachment.context claim)
       (attachment.payload claim) (attachment.nativeType claim) ∧
     interpretation.ty context (attachment.nativeType claim)
@@ -183,7 +183,7 @@ theorem accepted_native_and_meaning
     interpretation.term context (attachment.payload claim)
       (attachment.nativeType claim) (attachment.semanticType claim context.formed)
       (attachment.value claim context.formed) := by
-  have meaningful := NIKServiceInvocation.accepted_meaning request input accepted
+  have meaningful := SemanticServiceInvocation.accepted_meaning request input accepted
   exact ⟨native claim meaningful, meaning claim (native claim meaningful).context meaningful⟩
 
 /-- Accepted payloads commute with an actual formed native environment and
@@ -194,20 +194,20 @@ theorem accepted_substitution
     (attachment : NativeAttachment target interpretation)
     (native : attachment.NativeAdmitted) (meaning : attachment.MeaningCompatible)
     (stable : SubstitutionStable interpretation)
-    (request : NIKServiceInvocation.Request (raw.toService qualified))
-    (input : NIKServiceInvocation.InputAdmission request)
+    (request : SemanticServiceInvocation.Request (raw.toService qualified))
+    (input : SemanticServiceInvocation.InputAdmission request)
     {claim : target.Carrier}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim)
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim)
     {m : Nat} (context : Context assembly m)
     (sigma : Sub Tower.Head (attachment.scope claim) m)
     (semantic : C.Sub (interpretation.ctx context)
       (interpretation.ctx (attachment.admittedContext native claim
-        (NIKServiceInvocation.accepted_meaning request input accepted))))
+        (SemanticServiceInvocation.accepted_meaning request input accepted))))
     (typed : FormationSensitive.CtxMor assembly.rules (attachment.context claim) context sigma)
     (related : interpretation.sub (attachment.admittedContext native claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)) context sigma semantic) :
+      (SemanticServiceInvocation.accepted_meaning request input accepted)) context sigma semantic) :
     let source := attachment.admittedContext native claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)
+      (SemanticServiceInvocation.accepted_meaning request input accepted)
     Judgment assembly.rules context (subst sigma (attachment.payload claim))
       (subst sigma (attachment.nativeType claim)) ∧
     interpretation.ty context (subst sigma (attachment.nativeType claim))
@@ -227,7 +227,7 @@ end NativeAttachment
 namespace HOLControls
 
 open Mettapedia.Logic HOL HOL.UniformListInduction
-open UniformListChartNIKService
+open UniformListChartService
 
 def raw (gamma : HOL.Ctx BaseSort) : RawService (sourceTarget gamma) :=
   .nativeProof (intrinsicProofSystem gamma) (intrinsicKernel gamma).decide
@@ -241,15 +241,15 @@ theorem service_unchanged (gamma : HOL.Ctx BaseSort) :
 /-- The actual induction proof, reconstructed from the submitted equational
 leaves, is accepted by the recovered intrinsic service at its full claim. -/
 theorem actual_accepted (gamma : HOL.Ctx BaseSort) :
-    (NIKServiceInvocation.invoke
-      (NIKServiceInvocation.Request.nativeProof
+    (SemanticServiceInvocation.invoke
+      (SemanticServiceInvocation.Request.nativeProof
         (target := sourceTarget gamma)
         (guest := intrinsicProofSystem gamma)
         (kernel := ⟨(intrinsicKernel gamma).decide, (qualified gamma).1⟩)
         (exactMeaning := (qualified gamma).2)
         (mapLengthClaim gamma) (actualNativeProof gamma))).acceptedValue =
       some (mapLengthClaim gamma) := by
-  simp only [NIKServiceInvocation.invoke, NIKServiceInvocation.Response.acceptedValue,
+  simp only [SemanticServiceInvocation.invoke, SemanticServiceInvocation.Response.acceptedValue,
     actual_native_accepted, ↓reduceIte]
   rfl
 
@@ -347,11 +347,11 @@ theorem attachment_meaning {n : Nat} (context : Tower.Ctx n) :
 def actualWire : NativeWireData.Wire :=
   .application "native-input" [.symbol "opaque-payload", .natural 7]
 
-def actualRequest : NIKServiceInvocation.Request (raw.toService qualified) :=
+def actualRequest : SemanticServiceInvocation.Request (raw.toService qualified) :=
   .directDecision actualWire
 
 theorem actual_accepted :
-    (NIKServiceInvocation.invoke actualRequest).acceptedValue = some actualWire := rfl
+    (SemanticServiceInvocation.invoke actualRequest).acceptedValue = some actualWire := rfl
 
 /-- Nonempty acceptance, actual native admission and retained constructor
 meaning occur together in the existing mixed HOL/wire/List/J context. -/
@@ -370,8 +370,8 @@ theorem actual_native_and_meaning :
 /-- This is a genuinely rejected but still natively admitted Data payload.
 Admission of its representation does not establish the service predicate. -/
 theorem nonapplication_rejected_but_admitted :
-    (NIKServiceInvocation.invoke
-      (NIKServiceInvocation.Request.directDecision
+    (SemanticServiceInvocation.invoke
+      (SemanticServiceInvocation.Request.directDecision
         (target := applicationTarget)
         (kernel := ⟨applicationDecision, qualified⟩) (.natural 7))).acceptedValue = none ∧
     Judgment common.rules OpaqueRelatorScopedComputation.Common.context

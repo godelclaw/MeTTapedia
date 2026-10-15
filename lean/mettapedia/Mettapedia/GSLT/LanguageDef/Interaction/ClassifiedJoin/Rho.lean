@@ -48,8 +48,8 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.Binding
 open Mettapedia.OSLF.Binding.RhoPayloadPresentation
 open Mettapedia.OSLF.Binding.IntrinsicScopedRhoClassifiedInstance
-  (strictLocalRules bookLocalRules extension_iff_steps comm_classified parCong_classified
-    drop_book_classified)
+  (strictLocalRules dropExecutionLocalRules extension_iff_steps comm_classified parCong_classified
+    drop_dropExecution_classified)
 open Mettapedia.OSLF.Binding.IntrinsicScopedSharedLocalPolynomialComparison (localRules)
 open Mettapedia.OSLF.Binding.IntrinsicScopedAuthoredClassifiedReduction (ExtendedReduction)
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -395,9 +395,9 @@ theorem interpretedWithDrop_step_classified {free : FreeSortContext} {bound : Li
     {sourceTerm : Term sig [] Srt.pr}
     (translated : tProc (Env.empty []) source = some sourceTerm) :
     ∃ targetTerm, tProc (Env.empty []) target = some targetTerm ∧
-      ExtendedReduction bookLocalRules equations sourceTerm targetTerm := by
+      ExtendedReduction dropExecutionLocalRules equations sourceTerm targetTerm := by
   obtain ⟨targetTerm, htarget, steps⟩ := rhoStepWithDrop_simulation typed step translated
-  exact ⟨targetTerm, htarget, (extension_iff_steps bookRules _ _).mpr steps⟩
+  exact ⟨targetTerm, htarget, (extension_iff_steps dropExecutionRules _ _).mpr steps⟩
 
 end Interpreted
 
@@ -670,11 +670,11 @@ theorem runReceived_not_classified :
 /-- **Nor of the classifier of the profile with the Drop rule.**  The Drop
 rule contracts the residue the authored rule leaves; it does not make the
 authored step one event. -/
-theorem runReceived_not_classified_book :
-    ¬ ExtendedReduction bookLocalRules equations runReceivedSource runReceivedTarget := by
+theorem runReceived_not_classified_dropExecution :
+    ¬ ExtendedReduction dropExecutionLocalRules equations runReceivedSource runReceivedTarget := by
   intro event
   rcases steps_inversion (rest := [drop]) (.inr rfl)
-      ((extension_iff_steps bookRules _ _).mp event) with shape | ⟨-, shape⟩
+      ((extension_iff_steps dropExecutionRules _ _).mp event) with shape | ⟨-, shape⟩
   · exact runReceived_not_commShape shape
   · exact runReceived_not_dropShape shape
 
@@ -682,9 +682,9 @@ theorem runReceived_not_classified_book :
 rule, the translated authored contractum reduces to the target of the
 classifier's event. -/
 theorem runReceived_residue_drops :
-    ExtendedReduction bookLocalRules equations runReceivedTarget nilT :=
-  classified_of_equiv (rules := bookRules) (.refl _) (parT_nil nilT)
-    (parCong_classified [drop] nilT (drop_book_classified nilT))
+    ExtendedReduction dropExecutionLocalRules equations runReceivedTarget nilT :=
+  classified_of_equiv (rules := dropExecutionRules) (.refl _) (parT_nil nilT)
+    (parCong_classified [drop] nilT (drop_dropExecution_classified nilT))
 
 /-- **The obstruction.**  Some step of the interactive theory, between terms
 that both translate, is not an event of either classifier on their
@@ -695,10 +695,10 @@ theorem step_not_always_classified :
       tProc (Env.empty []) source.1 = some sourceTerm ∧
       tProc (Env.empty []) target.1 = some targetTerm ∧
       ¬ ExtendedReduction strictLocalRules equations sourceTerm targetTerm ∧
-      ¬ ExtendedReduction bookLocalRules equations sourceTerm targetTerm :=
+      ¬ ExtendedReduction dropExecutionLocalRules equations sourceTerm targetTerm :=
   ⟨runReceivedTerm, runReceivedReductTerm, runReceivedSource, runReceivedTarget,
     runReceived_step, runReceived_translation, runReceivedReduct_translation,
-    runReceived_not_classified, runReceived_not_classified_book⟩
+    runReceived_not_classified, runReceived_not_classified_dropExecution⟩
 
 section Interpreted
 

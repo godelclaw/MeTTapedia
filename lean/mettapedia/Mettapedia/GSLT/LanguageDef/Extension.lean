@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.Composition
 import Mettapedia.GSLT.Core.NonFactorization
 
@@ -360,6 +361,8 @@ deriving Repr
 
 namespace DeclarationDocument
 
+variable {Declaration : Type uTerm}
+
 mutual
 
 def values : DeclarationDocument Declaration → List Declaration
@@ -403,6 +406,8 @@ abbrev DeclarationAuthoringGSLT (Payload : Type uFiber) :=
 
 namespace ExactDeclarationCodec
 
+variable {Syntax : Type uTerm} {Payload : Type uFiber}
+
 /-- Elaborate a declaration document by decoding and flattening it. -/
 def elaborate (codec : ExactDeclarationCodec Syntax Payload)
     (source : DeclarationDocument Syntax) : List Payload :=
@@ -442,22 +447,14 @@ def DeclarationDocumentEquiv (source target : DeclarationDocument Syntax) : Prop
 bundle trees with the same ordered declarations; it has no primitive semantic
 rewrite.  Component-specific sugar can layer rewrites before this canonical
 document language. -/
-def documentGSLT (Syntax : Type) : GSLT where
-  Term := DeclarationDocument Syntax
-  equations :=
+def documentGSLT (Syntax : Type) : GSLT :=
+  GSLT.equationOnly (DeclarationDocument Syntax)
     { r := DeclarationDocumentEquiv
       iseqv := ⟨fun _ => rfl, Eq.symm, Eq.trans⟩ }
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ impossible
-    exact False.elim impossible
-  rewrites_resp_right := by
-    intro _ _ _ impossible _
-    exact False.elim impossible
 
 /-- Codec elaboration is well defined on the declaration-document
 equations. -/
-theorem elaborate_equation (codec : ExactDeclarationCodec Syntax Payload)
+theorem elaborate_equation {Syntax : Type} (codec : ExactDeclarationCodec Syntax Payload)
     {source target : DeclarationDocument Syntax}
     (equivalent : (documentGSLT Syntax).Equiv source target) :
     codec.elaborate source = codec.elaborate target := by

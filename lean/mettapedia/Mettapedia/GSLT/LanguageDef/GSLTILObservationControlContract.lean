@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Dynamics.ObservationControlDiscipline
 import Mettapedia.GSLT.LanguageDef.GSLTILObservationTransport
 
@@ -163,7 +164,7 @@ theorem pullbackContract_comp_observe
 
 namespace Canary
 
-abbrev contractSystem : GSLT := GSLT.discrete Bool
+abbrev contractSystem : GSLT := GSLT.stepFree Bool
 
 def emptyStreamContract :
     GSLTContract contractSystem Unit (List contractSystem.LabeledStep) where

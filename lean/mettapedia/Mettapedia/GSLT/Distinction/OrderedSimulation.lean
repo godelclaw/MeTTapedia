@@ -1,12 +1,15 @@
 import Mathlib.Data.List.Forall2
 import Mathlib.Logic.Relation
+import Mathlib.Logic.Function.Iterate
 
 /-!
 # Ordered relations between nondeterministic machines
 
 A nondeterministic machine whose step returns its successor occurrences as an
-ordered list, with a halting test, runs a frontier: every live occurrence
-advances in place, and a halted occurrence stays.  Two such machines are
+ordered list, with a halting test, runs a frontier: every occurrence advances
+in place, an occurrence without successors stays, and an entirely halted
+frontier stays. Individual halted occurrences are inert under the explicit
+halting-stability premise used by `runFrontier_distribute`. Two such machines are
 compared on their actual states, not on answer sets or endpoints.
 
 * **Ordered simulations** (`OrderedSimulation`).  Related states agree on
@@ -24,6 +27,9 @@ compared on their actual states, not on answer sets or endpoints.
 * **Functional instances** (`OrderedSimulation.ofMap`,
   `OrderedSimulation.runFrontier_map`): a map that commutes with the step lists
   and the halting test is the graph special case.
+* **Depth-first prefixes** (`OrderedSystem.expandFirst`,
+  `OrderedSimulation.expandFirst_iterate`): the same simulation transports
+  every unfinished prefix, retaining stuck occurrences and ordered alternatives.
 -/
 
 set_option autoImplicit false
@@ -53,6 +59,108 @@ def runFrontier : ℕ → List State → List State
   | 0, states => states
   | fuel + 1, states =>
       if states.all system.halted then states else runFrontier fuel (states.flatMap system.advance)
+
+/-- Expand the first running occurrence, retaining the halted prefix and the
+remaining alternatives in order. As in `runFrontier`, a running occurrence
+without successors stays visible; it cannot disappear as a successful return. -/
+def expandFirst : List State → List State
+  | [] => []
+  | state :: rest =>
+      if system.halted state then state :: expandFirst rest
+      else system.advance state ++ rest
+
+theorem expandFirst_append_of_all_halted {left : List State}
+    (halted : left.all system.halted = true) (right : List State) :
+    system.expandFirst (left ++ right) = left ++ system.expandFirst right := by
+  induction left with
+  | nil => rfl
+  | cons head tail ih =>
+      simp only [List.all_cons, Bool.and_eq_true] at halted
+      simp [expandFirst, halted.1, ih halted.2]
+
+theorem expandFirst_append_of_running {left : List State}
+    (running : left.all system.halted = false) (right : List State) :
+    system.expandFirst (left ++ right) = system.expandFirst left ++ right := by
+  induction left with
+  | nil => simp at running
+  | cons head tail ih =>
+      by_cases halted : system.halted head = true
+      · simp only [List.all_cons, halted, Bool.true_and] at running
+        simp [expandFirst, halted, ih running]
+      · simp [expandFirst, halted]
+
+theorem expandFirst_of_all_halted {states : List State}
+    (halted : states.all system.halted = true) : system.expandFirst states = states := by
+  simpa [expandFirst] using system.expandFirst_append_of_all_halted halted []
+
+/-- The complete frontier, including halted and pending occurrences, is the
+residual. Splitting a budget continues that frontier rather than reloading its
+initial states. -/
+theorem runFrontier_add (first second : ℕ) (states : List State) :
+    system.runFrontier (first + second) states =
+      system.runFrontier second (system.runFrontier first states) := by
+  induction first generalizing states with
+  | zero => simp only [Nat.zero_add, runFrontier]
+  | succ first ih =>
+      rw [show first + 1 + second = (first + second) + 1 by omega]
+      by_cases stopped : states.all system.halted = true
+      · cases second <;> simp only [runFrontier, stopped, if_true]
+      · simp [runFrontier, stopped, ih]
+
+theorem runFrontier_halted (fuel : ℕ) (states : List State)
+    (halted : states.all system.halted = true) : system.runFrontier fuel states = states := by
+  cases fuel <;> simp only [runFrontier, halted, if_true]
+
+/-- Local halting must have no successors to justify distributing a synchronous
+frontier across independently serviced blocks. `OrderedSystem` itself does not
+silently impose that condition. -/
+theorem halted_frontier_advance
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (states : List State) (halted : states.all system.halted = true) :
+    states.flatMap system.advance = states := by
+  induction states with
+  | nil => rfl
+  | cons state states ih =>
+      simp only [List.all_cons, Bool.and_eq_true] at halted
+      simp only [List.flatMap_cons, advance, stable state halted.1, List.singleton_append,
+        ih halted.2]
+
+theorem runFrontier_succ
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (states : List State) :
+    system.runFrontier (fuel + 1) states =
+      system.runFrontier fuel (states.flatMap system.advance) := by
+  by_cases halted : states.all system.halted = true
+  · rw [halted_frontier_advance system stable states halted]
+    rw [runFrontier_halted system _ states halted, runFrontier_halted system _ states halted]
+  · simp [runFrontier, halted]
+
+theorem runFrontier_append
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (first second : List State) :
+    system.runFrontier fuel (first ++ second) =
+      system.runFrontier fuel first ++ system.runFrontier fuel second := by
+  induction fuel generalizing first second with
+  | zero => rfl
+  | succ fuel ih =>
+      simp only [runFrontier_succ system stable, List.flatMap_append, ih]
+
+@[simp] theorem runFrontier_nil (fuel : ℕ) : system.runFrontier fuel [] = [] := by
+  cases fuel <;> simp only [runFrontier, List.all_nil, if_true]
+
+/-- Independent local runs reproduce the synchronous frontier precisely when
+halted states are inert. Blocks stay in source order and duplicates remain. -/
+theorem runFrontier_distribute
+    (stable : ∀ state, system.halted state = true → system.step state = [])
+    (fuel : ℕ) (states : List State) :
+    system.runFrontier fuel states =
+      states.flatMap (fun state => system.runFrontier fuel [state]) := by
+  induction states with
+  | nil => exact runFrontier_nil system fuel
+  | cons state states ih =>
+      rw [show state :: states = [state] ++ states from rfl,
+        runFrontier_append system stable, ih]
+      rfl
 
 end OrderedSystem
 
@@ -95,6 +203,32 @@ theorem all_halted (simulation : OrderedSimulation source target related) {state
   induction lists with
   | nil => rfl
   | cons head _ ih => simp [List.all_cons, simulation.halted head, ih]
+
+/-- The first running occurrence is selected at the same position on both
+sides, including equal-looking alternatives at distinct positions. -/
+theorem expandFirst (simulation : OrderedSimulation source target related)
+    {states : List S} {states' : List T} (lists : List.Forall₂ related states states') :
+    List.Forall₂ related (source.expandFirst states) (target.expandFirst states') := by
+  induction lists with
+  | nil => exact .nil
+  | cons head rest ih =>
+      simp only [OrderedSystem.expandFirst, simulation.halted head]
+      split
+      · exact .cons head ih
+      · exact List.rel_append (simulation.advance head) rest
+
+/-- Ordered simulation preserves every depth-first prefix, without requiring
+that either computation terminates. -/
+theorem expandFirst_iterate (simulation : OrderedSimulation source target related)
+    (count : ℕ) {states : List S} {states' : List T}
+    (lists : List.Forall₂ related states states') :
+    List.Forall₂ related ((source.expandFirst)^[count] states)
+      ((target.expandFirst)^[count] states') := by
+  induction count generalizing states states' with
+  | zero => exact lists
+  | succ count ih =>
+      simp only [Function.iterate_succ_apply]
+      exact ih (simulation.expandFirst lists)
 
 /-- **Complete frontiers are related at every fuel**, position by position. -/
 theorem runFrontier (simulation : OrderedSimulation source target related) (fuel : ℕ)
@@ -190,6 +324,23 @@ theorem ofMap (map : S → T) (steps : ∀ state, target.step (map state) = (sou
     rw [steps, List.forall₂_map_right_iff]
     exact List.forall₂_same.mpr fun _ _ => rfl
 
+private theorem graph_frontier_eq (map : S → T) {left : List S} {right : List T}
+    (lists : List.Forall₂ (fun state state' => state' = map state) left right) :
+    right = left.map map := by
+  induction lists with
+  | nil => rfl
+  | cons head _ ih => rw [head, ih, List.map_cons]
+
+/-- The graph instance transports every depth-first prefix. -/
+theorem expandFirst_iterate_map (map : S → T)
+    (steps : ∀ state, target.step (map state) = (source.step state).map map)
+    (halts : ∀ state, target.halted (map state) = source.halted state) (count : ℕ)
+    (states : List S) :
+    (target.expandFirst)^[count] (states.map map) =
+      ((source.expandFirst)^[count] states).map map := by
+  exact graph_frontier_eq map ((ofMap map steps halts).expandFirst_iterate count
+    (List.forall₂_map_right_iff.mpr (List.forall₂_same.mpr fun _ _ => rfl)))
+
 /-- The graph instance recovers the functional frontier equation. -/
 theorem runFrontier_map (map : S → T)
     (steps : ∀ state, target.step (map state) = (source.step state).map map)
@@ -199,13 +350,7 @@ theorem runFrontier_map (map : S → T)
   have related := (ofMap map steps halts).runFrontier fuel
     (states := states) (states' := states.map map)
     (List.forall₂_map_right_iff.mpr (List.forall₂_same.mpr fun _ _ => rfl))
-  have functional : ∀ {left : List S} {right : List T},
-      List.Forall₂ (fun state state' => state' = map state) left right → right = left.map map := by
-    intro left right lists
-    induction lists with
-    | nil => rfl
-    | cons head _ ih => rw [head, ih, List.map_cons]
-  exact functional related
+  exact graph_frontier_eq map related
 
 end OrderedSimulation
 

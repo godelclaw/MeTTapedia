@@ -82,13 +82,13 @@ theorem writesOut_elabForm {c : Config} {first second : Src S X} (step : WritesO
   | emptyBlock s => cases c.ownership <;> rfl
   | explicitCapture _ policy _ =>
       rw [policy]
-      exact elabEC_explicateEC first (fun _ => root) root
+      exact elabEC_explicateEC root first (fun _ => root) root
   | queryWide _ policy plain _ =>
       rw [policy]
-      exact elabQ_explicateQ first (fun _ => root) root plain
+      exact elabQ_explicateQ root first (fun _ => root) root plain
   | lexicalFresh _ policy plain _ =>
       rw [policy]
-      exact elabLF_explicateLF first (fun _ => root) [] [] root plain
+      exact elabLF_explicateLF root first (fun _ => root) [] [] root plain
 
 /-- **Elaboration does not see a step**: a policy elaborates a form and what it
 is written out to alike, at every root, under every lifetime and readout. -/

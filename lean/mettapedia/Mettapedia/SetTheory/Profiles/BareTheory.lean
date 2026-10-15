@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.HOLTypeDerivedConsequence
 import Mettapedia.Logic.HOL.LindenbaumSet
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The bare profile as an empty higher-order theory
 
@@ -20,7 +22,7 @@ namespace Mettapedia.SetTheory.Profiles
 
 open Mettapedia.Logic.HOL
 open Mettapedia.GSLT.LanguageDef.HOLTypeDerivedConsequence
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-- A signature with one base sort and no constants. -/
 def bareSignature : TypeDerivedSignature.{0} :=

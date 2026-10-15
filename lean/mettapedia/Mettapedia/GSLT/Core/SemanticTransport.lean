@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.OperationalRealization
 import Mettapedia.GSLT.Core.SemanticInvariant
 
@@ -30,8 +31,8 @@ namespace IndexedOperational
 /-- A path in a discrete GSLT can only be reflexive.  In particular, its
 endpoints are equal. -/
 theorem discreteExecutionPath_eq {Term : Type uMeaning}
-    {source target : (GSLT.discrete Term).Term}
-    (path : ExecutionPath (GSLT.discrete Term) source target) :
+    {source target : (GSLT.stepFree Term).Term}
+    (path : ExecutionPath (GSLT.stepFree Term) source target) :
     source = target := by
   cases path with
   | refl => rfl
@@ -39,8 +40,8 @@ theorem discreteExecutionPath_eq {Term : Type uMeaning}
 
 /-- A path in a discrete GSLT performs no primitive rewrites. -/
 @[simp] theorem discreteExecutionPath_length {Term : Type uMeaning}
-    {source target : (GSLT.discrete Term).Term}
-    (path : ExecutionPath (GSLT.discrete Term) source target) :
+    {source target : (GSLT.stepFree Term).Term}
+    (path : ExecutionPath (GSLT.stepFree Term) source target) :
     path.length = 0 := by
   cases path with
   | refl => rfl
@@ -48,16 +49,16 @@ theorem discreteExecutionPath_eq {Term : Type uMeaning}
 
 /-- Equality of endpoints supplies the unique path in a discrete GSLT. -/
 def discreteExecutionPath_of_eq {Term : Type uMeaning}
-    {source target : (GSLT.discrete Term).Term}
+    {source target : (GSLT.stepFree Term).Term}
     (equal : source = target) :
-    ExecutionPath (GSLT.discrete Term) source target :=
+    ExecutionPath (GSLT.stepFree Term) source target :=
   equal ▸ .refl source
 
 /-- Proof-relevant paths become unique only after the target dynamics have
 been explicitly selected to be discrete. -/
 instance discreteExecutionPath_subsingleton {Term : Type uMeaning}
-    {source target : (GSLT.discrete Term).Term} :
-    Subsingleton (ExecutionPath (GSLT.discrete Term) source target) where
+    {source target : (GSLT.stepFree Term).Term} :
+    Subsingleton (ExecutionPath (GSLT.stepFree Term) source target) where
   allEq first second := by
     cases first with
     | refl =>
@@ -72,7 +73,7 @@ namespace OperationalRealization
 The target has no steps, so there is no hidden path choice in `mapStep`. -/
 theorem ext_mapTerm
     {source : GSLT.{uSource}} {Meaning : Type uMeaning}
-    {first second : OperationalRealization source (GSLT.discrete Meaning)}
+    {first second : OperationalRealization source (GSLT.stepFree Meaning)}
     (equal : first.mapTerm = second.mapTerm) : first = second := by
   cases first with
   | mk firstMap firstEquiv firstStep =>
@@ -112,7 +113,7 @@ maps to the reflexive target path licensed by conservation. -/
 def toDiscreteRealization {system : GSLT.{uSource}}
     {Meaning : Type uMeaning}
     (invariant : SemanticInvariant system Meaning) :
-    OperationalRealization system (GSLT.discrete Meaning) where
+    OperationalRealization system (GSLT.stepFree Meaning) where
   mapTerm := invariant.denote
   mapEquiv := invariant.equation
   mapStep := fun step =>
@@ -123,7 +124,7 @@ def toDiscreteRealization {system : GSLT.{uSource}}
 exactly that the realization's term map is conserved. -/
 def ofDiscreteRealization {system : GSLT.{uSource}}
     {Meaning : Type uMeaning}
-    (realization : OperationalRealization system (GSLT.discrete Meaning)) :
+    (realization : OperationalRealization system (GSLT.stepFree Meaning)) :
     SemanticInvariant system Meaning where
   denote := realization.mapTerm
   equation := realization.mapEquiv
@@ -136,7 +137,7 @@ the boundary between evolving operational state and conserved meaning. -/
 def discreteRealizationEquiv {system : GSLT.{uSource}}
     {Meaning : Type uMeaning} :
     SemanticInvariant system Meaning ≃
-      OperationalRealization system (GSLT.discrete Meaning) where
+      OperationalRealization system (GSLT.stepFree Meaning) where
   toFun := toDiscreteRealization
   invFun := ofDiscreteRealization
   left_inv := fun invariant => by
@@ -210,15 +211,14 @@ structure DenotationSquare
 namespace DenotationSquare
 
 /-- Identity computation and identity meaning form a semantic square. -/
-def id {system : GSLT.{uSource}} {Meaning : Type uMeaning}
+theorem id {system : GSLT.{uSource}} {Meaning : Type uMeaning}
     (denotation : SemanticInvariant system Meaning) :
     DenotationSquare (OperationalRealization.id system)
-      denotation denotation _root_.id where
-  commutes := fun _term => rfl
+      denotation denotation _root_.id := ⟨fun _term => rfl⟩
 
 /-- Semantic squares compose in the same order as their operational
 realizations and meaning maps. -/
-def comp
+theorem comp
     {source : GSLT.{uSource}} {middle : GSLT.{uMiddle}}
     {target : GSLT.{uTarget}}
     {SourceMeaning : Type uMeaning}
@@ -236,23 +236,22 @@ def comp
     (laterSquare : DenotationSquare later middleDenotation
       targetDenotation mapLater) :
     DenotationSquare (earlier.comp later) sourceDenotation targetDenotation
-      (mapLater ∘ mapEarlier) where
-  commutes := by
-    intro term
-    change targetDenotation.denote
-        (later.mapTerm (earlier.mapTerm term)) =
-      mapLater (mapEarlier (sourceDenotation.denote term))
-    rw [laterSquare.commutes, earlierSquare.commutes]
+      (mapLater ∘ mapEarlier) := by
+  constructor
+  intro term
+  change targetDenotation.denote
+      (later.mapTerm (earlier.mapTerm term)) =
+    mapLater (mapEarlier (sourceDenotation.denote term))
+  rw [laterSquare.commutes, earlierSquare.commutes]
 
 /-- Pullback is the canonical square whose meaning map is identity. -/
-def ofPullback
+theorem ofPullback
     {source : GSLT.{uSource}} {target : GSLT.{uTarget}}
     {Meaning : Type uMeaning}
     (targetDenotation : SemanticInvariant target Meaning)
     (realization : OperationalRealization source target) :
     DenotationSquare realization (targetDenotation.pullback realization)
-      targetDenotation _root_.id where
-  commutes := fun _term => rfl
+      targetDenotation _root_.id := ⟨fun _term => rfl⟩
 
 /-- The square and source invariance agree along every complete source path.
 This is the path-level semantic commuting law used by realizations. -/
@@ -278,7 +277,7 @@ end DenotationSquare
 
 namespace DenotationSquareCanary
 
-def booleanSystem : GSLT := GSLT.discrete Bool
+def booleanSystem : GSLT := GSLT.stepFree Bool
 
 /-- The selected denotation observes the Boolean term itself. -/
 def booleanDenotation : SemanticInvariant booleanSystem Bool where
@@ -294,9 +293,8 @@ def flip : OperationalRealization booleanSystem booleanSystem where
   mapStep := fun impossible => impossible.elim
 
 /-- The flip has the correct semantic square when meanings are also negated. -/
-def flipNegationSquare :
-    DenotationSquare flip booleanDenotation booleanDenotation Bool.not where
-  commutes := fun _term => rfl
+theorem flipNegationSquare :
+    DenotationSquare flip booleanDenotation booleanDenotation Bool.not := ⟨fun _term => rfl⟩
 
 /-- Operational validity alone does not license the identity semantic map. -/
 theorem noFlipIdentitySquare :
@@ -323,7 +321,7 @@ def constantInvariant : SemanticInvariant togglingSystem Unit where
 /-- The positive control: the constant invariant gives a realization into a
 discrete semantic target. -/
 def constantRealization :
-    OperationalRealization togglingSystem (GSLT.discrete Unit) :=
+    OperationalRealization togglingSystem (GSLT.stepFree Unit) :=
   constantInvariant.toDiscreteRealization
 
 /-- The transition from `false` to `true` prevents Boolean identity from
@@ -342,7 +340,7 @@ theorem noIdentityInvariant :
 system into the discrete Boolean GSLT. -/
 theorem noIdentityDiscreteRealization :
     ¬ ∃ realization :
-        OperationalRealization togglingSystem (GSLT.discrete Bool),
+        OperationalRealization togglingSystem (GSLT.stepFree Bool),
       realization.mapTerm = _root_.id := by
   rintro ⟨realization, equal⟩
   exact noIdentityInvariant

@@ -146,7 +146,7 @@ private def expressionEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% pett
       sha256 "2a72b6e18c981dc8c25c4574d9d551db08c7d7ec187e3a4de8f68cf1566ba5bd"
 private def assertionEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
       "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/assertion_environment_v1.metta"
-      sha256 "760a3bd9b3f171ef220139d73872aa626409745d7b4238042d1b2e2068e25fe7"
+      sha256 "61c48a11c8a1825b0b383432aadac951959e89e764f52428283fb46917931d70"
 
 def sourceSyntax : List SExpr := [groundCapabilitySyntax, groundProviderSyntax,
   sourceFoldSyntax, sortEnvironmentSyntax, termEnvironmentSyntax, secondaryLexerSyntax,

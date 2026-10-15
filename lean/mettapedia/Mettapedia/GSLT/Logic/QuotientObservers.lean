@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.NonFactorization
 import Mettapedia.GSLT.Logic.EliminatorObservers
 import Mettapedia.TypeTheory.Calculi.BooleanSTLC.ProofRelevance
@@ -114,12 +115,8 @@ section Bubble
 variable (X : Type u)
 
 /-- Points of `X` up to identity; nothing reduces. -/
-def pointGSLT : GSLT where
-  Term := X
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ step => step.elim
-  rewrites_resp_right := fun step _ => step.elim
+def pointGSLT : GSLT :=
+  GSLT.stepFree (X)
 
 theorem pointGSLT_inert (source target : X) : ¬ (pointGSLT X).Step source target :=
   fun step => step

@@ -722,6 +722,31 @@ theorem rawApplication_eq_some_strictApplication
     rw [hresult] at hchecked
     contradiction
 
+/-- Type instantiation with no term replacements acts as the identity when
+its type component is empty, on open and closed canonical syntax. -/
+theorem typeInstance_identity (term : DBTerm) :
+    (TermSubst.mk TypeSubst.empty []).applyDB term = term := by
+  induction term with
+  | const constant annotation => simp only [applyDB_const, TypeSubst.apply_empty]
+  | free sourceVar => simp [applyDB, lookup, TypeSubst.applyVar]
+  | bound index => simp only [applyDB_bound]
+  | app function argument functionIH argumentIH =>
+      simp only [applyDB_app, functionIH, argumentIH]
+  | abs domain body bodyIH => simp only [applyDB_abs, TypeSubst.apply_empty, bodyIH]
+
+/-- Sequential type instances are the actual composed source substitution;
+constant identities and all bound-variable positions remain intact. -/
+theorem typeInstance_composition (first second : TypeSubst) (term : DBTerm) :
+    (TermSubst.mk second []).applyDB ((TermSubst.mk first []).applyDB term) =
+      (TermSubst.mk (first.compose second) []).applyDB term := by
+  induction term with
+  | const constant annotation => simp only [applyDB_const, TypeSubst.apply_compose]
+  | free sourceVar => simp [applyDB, lookup, TypeSubst.applyVar, TypeSubst.apply_compose]
+  | bound index => simp only [applyDB_bound]
+  | app function argument functionIH argumentIH =>
+      simp only [applyDB_app, functionIH, argumentIH]
+  | abs domain body bodyIH => simp only [applyDB_abs, TypeSubst.apply_compose, bodyIH]
+
 end TermSubst
 
 /-! ## Executable source-fidelity examples -/

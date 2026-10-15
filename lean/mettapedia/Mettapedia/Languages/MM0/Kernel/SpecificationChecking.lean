@@ -12,6 +12,24 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.MM0.Kernel.SpecificationAdmission
 
+/-- A fully supplied admission determines its public specification entry.
+The proof witness is retained by the command and is not part of its statement. -/
+def entryOfAdmission : Admission → SpecificationEntry
+  | .sort index info => .sort index info
+  | .term index declaration => .term index declaration
+  | .definition index declaration body => .definition index declaration (some body)
+  | .axiomDecl index declaration => .axiomDecl index declaration
+  | .theoremDecl index declaration _ _ => .theoremDecl index declaration
+
+theorem entryOfAdmission_matches (admission : Admission) :
+    SpecificationEntry.Matches (entryOfAdmission admission) admission := by
+  cases admission with
+  | sort => exact .sort _ _
+  | term => exact .term _ _
+  | definition => exact .definition _ _ _ _ (Or.inr rfl)
+  | axiomDecl => exact .axiomDecl _ _
+  | theoremDecl => exact .theoremDecl _ _ _ _
+
 inductive Runs : State → List ProofDeclaration → State → Prop where
   | nil (state : State) : Runs state [] state
   | cons {before middle after : State} {head : ProofDeclaration} {tail : List ProofDeclaration} :
@@ -48,12 +66,32 @@ theorem run_eq_some_iff (before after : State) (declarations : List ProofDeclara
         | cons first rest =>
             simp [run?, (step_eq_some_iff _ _ _).mpr first, (ih _).mpr rest]
 
+theorem run_append (initial : State) (first second : List ProofDeclaration) :
+    run? initial (first ++ second) = (run? initial first).bind (fun next => run? next second) := by
+  induction first generalizing initial with
+  | nil => rfl
+  | cons head tail ih =>
+      simp only [List.cons_append, run?]
+      cases next : step? initial head <;> simp [ih]
+
 theorem Runs.theory_run {before after : State} {declarations : List ProofDeclaration}
     (runs : Runs before declarations after) :
     Theory.Runs before.theory (declarations.map ProofDeclaration.admission) after.theory := by
   induction runs with
   | nil state => exact .nil state.theory
   | cons step _ ih => exact .cons step.theory_step ih
+
+/-- Matching does not supply admission: this direction uses a previously
+checked sequential theory run and consumes its matching public entries. -/
+theorem of_theory_run {before after : Theory} {admissions : List Admission}
+    (checked : Theory.Runs before admissions after) (remaining : List SpecificationEntry) :
+    Runs ⟨before, admissions.map entryOfAdmission ++ remaining⟩
+      (admissions.map fun admission => (⟨admission, false⟩ : ProofDeclaration))
+      ⟨after, remaining⟩ := by
+  induction checked with
+  | nil theory => simpa using Runs.nil ⟨theory, remaining⟩
+  | @cons before middle after head tail step rest ih =>
+      exact .cons (.publicDecl (entryOfAdmission_matches head) step) ih
 
 def specificationAxioms : List SpecificationEntry → List (Nat × TheoremDecl)
   | [] => []

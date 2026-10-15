@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.CostedOperational
 import Mettapedia.GSLT.Core.SemanticTransport
 import Mettapedia.GraphTheory.Representation.RevisionPortfolio
@@ -120,7 +121,7 @@ inductive GradedStep {n : Nat} : State n → State n → Resources → Type wher
         (toMatrixResources (.csr graph))
 
 /-- Forget only the resource grade of one rule occurrence. -/
-def GradedStep.toStep {n : Nat} {source target : State n}
+theorem GradedStep.toStep {n : Nat} {source target : State n}
     {resources : Resources} :
     GradedStep source target resources → Step source target
   | .edgeListToMatrix graph => .edgeListToMatrix graph
@@ -252,7 +253,7 @@ theorem finalAccount_eq {n : Nat} (before : Resources) :
       rw [finalAccount, finalAccount_eq, resources, Resources.seq_assoc]
 
 /-- Lift one proof-relevant graded occurrence into the writer GSLT. -/
-def toCostedStep {n : Nat} {source target : State n}
+theorem toCostedStep {n : Nat} {source target : State n}
     {cost : Resources} (before : Resources)
     (step : GradedStep source target cost) :
     (costedTheory n).Step (source, before) (target, before.seq cost) := by
@@ -381,14 +382,14 @@ theorem erase_convertPathCosted {n : Nat} (source : State n)
 GSLT of mathematical graph meanings. -/
 def graphMeaningRealization (n : Nat) :
     OperationalRealization (theory n)
-      (GSLT.discrete (SimpleGraph (Fin n))) :=
+      (GSLT.stepFree (SimpleGraph (Fin n))) :=
   (SemanticInvariant.graphMeaning n).toDiscreteRealization
 
 /-- The complete costed-to-mathematical chain is the composition of natural
 cost erasure with the graph-denotation realization. -/
 def costedMeaningRealization (n : Nat) :
     OperationalRealization (costedTheory n)
-      (GSLT.discrete (SimpleGraph (Fin n))) :=
+      (GSLT.stepFree (SimpleGraph (Fin n))) :=
   (OperationalRealization.ofTranslation (eraseTranslation n)).comp
     (graphMeaningRealization n)
 

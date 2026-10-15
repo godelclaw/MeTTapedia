@@ -803,7 +803,7 @@ def RegularPatternTypingClaim.Meaning
   RegularPatternPublicChecks claim.context claim.policy claim.environment
     claim.termPattern claim.expectedPattern
 
-/-- The Pattern checker is a generic NIK direct-decision authority. -/
+/-- The Pattern checker is a generic SemanticService direct-decision authority. -/
 def regularPatternTypingDecisionKernel :
     Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker.DecisionKernel
       RegularPatternTypingClaim RegularPatternTypingClaim.Meaning where

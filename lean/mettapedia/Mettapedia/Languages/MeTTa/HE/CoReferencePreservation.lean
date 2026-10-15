@@ -193,7 +193,7 @@ private theorem sizeOf_mem_lt_expression (a : Atom) (es : List Atom) (ha : a ∈
   exact Nat.lt_of_lt_of_le (List.sizeOf_lt_of_mem ha) (Nat.le_add_left _ _)
 
 /-- `applyAtomTotal` with injective renaming is injective. -/
-noncomputable def applyAtomTotal_injective_aux (r : VarRenaming) (hr : r.Injective) :
+theorem applyAtomTotal_injective_aux (r : VarRenaming) (hr : r.Injective) :
     (a₁ : Atom) → ∀ a₂, applyAtomTotal r a₁ = applyAtomTotal r a₂ → a₁ = a₂ :=
   WellFounded.fix (measure (sizeOf (α := Atom))).wf fun a₁ ih a₂ h => by
     match a₁, a₂, h with

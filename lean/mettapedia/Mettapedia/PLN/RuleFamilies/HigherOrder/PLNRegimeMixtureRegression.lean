@@ -134,7 +134,7 @@ theorem regimeMixture_regression_sameWM_differentRegimes_differentAdmissibleDisc
 /-- Chapter-11-facing compatibility package: the concrete higher-order leaky
 mixture theorem and the WM-side regime-sensitive admissibility witness can be
 quoted together without changing either layer's semantics. -/
-theorem regimeMixture_regression_chapter11_semantic_and_wm_split
+theorem regimeMixture_regression_semantic_and_wm_split
     {σ : Multiset AgentObservation}
     (hσ : σ ≠ 0) :
     mixtureVariance

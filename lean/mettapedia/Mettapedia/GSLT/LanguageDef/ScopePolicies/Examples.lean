@@ -109,14 +109,14 @@ inferred is not exact.**  The inner lambda now shares `$a`, and the own list of
 the outer lambda changes its order. -/
 theorem explicateQ_needs_plain :
     lamPlain mixedLambdas = false ∧
-      elabQ (fun _ => []) [] (explicateQ mixedLambdas) ≠ elabQ (fun _ => []) [] mixedLambdas := by
+      elabQ [] (fun _ => []) [] (explicateQ mixedLambdas) ≠ elabQ [] (fun _ => []) [] mixedLambdas := by
   refine ⟨?_, ?_⟩ <;> decide
 
 /-- Positive, on the same text: writing out what explicit capture inferred is
 exact. -/
 theorem explicateEC_mixedLambdas :
-    elabEC (fun _ => []) [] (explicateEC mixedLambdas) = elabEC (fun _ => []) [] mixedLambdas :=
-  elabEC_explicateEC mixedLambdas _ _
+    elabEC [] (fun _ => []) [] (explicateEC mixedLambdas) = elabEC [] (fun _ => []) [] mixedLambdas :=
+  elabEC_explicateEC [] mixedLambdas _ _
 
 /-- `(form z (let $a z $a))`: a lambda formed at run time around a `let` that
 carries no crossing set. -/

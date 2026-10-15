@@ -1,19 +1,19 @@
-import Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView
-import Mettapedia.Languages.Megalodon.NIKNativeProof
+import Mettapedia.GSLT.LanguageDef.TheoryProfileView
+import Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 
 /-!
-# Megalodon selected theories as NIK authority profiles
+# Megalodon selected theories as SemanticService authority profiles
 
 Megalodon's Mathdata kernel is shared by several selected theories.  The
 selected environment is therefore authority data, not an incidental field to
 erase.  This module factors the existing native claim into a theory-profile
 index and a profile-local query, then reconstructs the same Mathdata decision
-inside a dependent NIK authority family.
+inside a dependent SemanticService authority family.
 
 The canonical service below remains an intrinsic native-proof kernel.  The
 later `AuthorityContract` is a separate certificate-facing projection for
 clients that actually need a packed external boundary; it is not the identity
-of NIK or of the Mathdata kernel.
+of SemanticService or of the Mathdata kernel.
 
 The resulting profile family does not assert HOTG validity or identify the
 Egal, Mizar, HF, and HOAS theories.  Such claims require source-theory
@@ -27,10 +27,10 @@ namespace Mettapedia.Languages.Megalodon.SelectedTheoryProfile
 
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIK
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticService
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Languages.Megalodon.MathdataKernel
-open Mettapedia.Languages.Megalodon.NIKNativeProof
+open Mettapedia.Languages.Megalodon.IntrinsicProofChecker
 
 /-- The part of a native Megalodon query that is local to a selected theory
 environment. -/
@@ -97,16 +97,16 @@ def profileProofSystem (environment : Environment) :
     NativeProofSystem ProfileClaim where
   ProofObject := Pf
   Judges proof claim :=
-    NIKNativeProof.Judges proof (attach environment claim)
+    IntrinsicProofChecker.Judges proof (attach environment claim)
 
 /-- Specialization of the executable Mathdata proof kernel preserves its exact
 native proof judgment. -/
 def profileNativeKernel (environment : Environment) :
     NativeProofKernel (profileProofSystem environment) where
   decide claim proof :=
-    NIKNativeProof.nativeKernel.decide (attach environment claim) proof
+    IntrinsicProofChecker.nativeKernel.decide (attach environment claim) proof
   correct claim proof :=
-    NIKNativeProof.nativeKernel.correct (attach environment claim) proof
+    IntrinsicProofChecker.nativeKernel.correct (attach environment claim) proof
 
 /-- Intrinsic theoremhood target for one selected environment. -/
 def profileTarget (environment : Environment) : AdmissionObject where
@@ -117,13 +117,13 @@ def profileTarget (environment : Environment) : AdmissionObject where
 /-- The selected Mathdata environment is served directly by its native proof
 kernel. -/
 def nativeService (environment : Environment) :
-    Mettapedia.GSLT.LanguageDef.NIK.Service (profileTarget environment) :=
+    Mettapedia.GSLT.LanguageDef.SemanticService.Service (profileTarget environment) :=
   .nativeProof (profileProofSystem environment)
     (profileNativeKernel environment) (fun _ => Iff.rfl)
 
 @[simp] theorem nativeService_has_no_external_boundary
     (environment : Environment) :
-    Mettapedia.GSLT.LanguageDef.NIK.Service.hasExternalCertificateBoundary
+    Mettapedia.GSLT.LanguageDef.SemanticService.Service.hasExternalCertificateBoundary
       (nativeService environment) = false :=
   rfl
 
@@ -241,9 +241,9 @@ theorem packed_wrong_profile_rejected :
 
 /-- Every selected environment has its identity proof-carrying view. -/
 def identityView (environment : Environment) :
-    Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView.AuthorityView
+    Mettapedia.GSLT.LanguageDef.TheoryProfileView.AuthorityView
       contract environment environment :=
-  Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView.AuthorityView.identity
+  Mettapedia.GSLT.LanguageDef.TheoryProfileView.AuthorityView.identity
     environment
 
 /-- Environment equality transports profile-local evidence without changing
@@ -252,7 +252,7 @@ monotonicity/adequacy theorems and are intentionally not inferred from the
 shared Mathdata representation. -/
 def viewOfEnvironmentEq {source target : Environment}
     (equalEnvironment : source = target) :
-    Mettapedia.GSLT.LanguageDef.NIKTheoryProfileView.AuthorityView
+    Mettapedia.GSLT.LanguageDef.TheoryProfileView.AuthorityView
       contract source target := by
   subst target
   exact identityView source

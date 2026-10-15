@@ -1,4 +1,4 @@
-import Mettapedia.Languages.SUMO.Native.NIKAuthority
+import Mettapedia.Languages.SUMO.Native.CheckerAuthority
 import Mettapedia.Languages.SUMO.Native.SourceElaboration
 import Mettapedia.Languages.SUMO.Native.SourceTheory
 
@@ -61,17 +61,17 @@ private def assertedFormulaVariable : Sentence String String :=
 private def implicationIdentityCertificate : Certificate String String 0 0 :=
   .implicationIntroduction selfApplication (.hypothesis 0)
 
-/-- A complete source-to-native-NIK receipt.  Source elaboration and proof
+/-- A complete source-to-native-SemanticService receipt.  Source elaboration and proof
 checking are independent computations: the former resolves SUO-KIF syntax and
 scope, while the latter reconstructs a conclusion solely from native rules. -/
-private def sourceToNativeNIKReceipt : Bool :=
+private def sourceToNativeAdmissionReceipt : Bool :=
   match elaborateSource emptySignature
       "(=> (instance instance BinaryPredicate) (instance instance BinaryPredicate))" with
   | .ok sourceFormula =>
-      NIKAuthority.checker.check sourceFormula implicationIdentityCertificate
+      CheckerAuthority.checker.check sourceFormula implicationIdentityCertificate
   | .error _ => false
 
-private def sourceMortalEntailment : Option NIKAuthority.EntailmentClaim :=
+private def sourceMortalEntailment : Option CheckerAuthority.EntailmentClaim :=
   match elaborateSource emptySignature
       "(=> (instance instance BinaryPredicate) (mortal Socrates))",
       elaborateSource emptySignature "(instance instance BinaryPredicate)",
@@ -80,20 +80,20 @@ private def sourceMortalEntailment : Option NIKAuthority.EntailmentClaim :=
       some { assumptions := [rule, premise], conclusion := conclusion }
   | _, _, _ => none
 
-private def sourceContextualNIKReceipt : Bool :=
+private def sourceContextualAdmissionReceipt : Bool :=
   match sourceMortalEntailment with
   | some claim =>
-      NIKAuthority.entailmentChecker.check claim NIKAuthority.mortalCertificate
+      CheckerAuthority.entailmentChecker.check claim CheckerAuthority.mortalCertificate
   | none => false
 
 private def reversedSourceModusPonensRejected : Bool :=
   match sourceMortalEntailment with
   | some claim =>
-      !NIKAuthority.entailmentChecker.check claim
+      !CheckerAuthority.entailmentChecker.check claim
         (.implicationElimination (.hypothesis 1) (.hypothesis 0))
   | none => false
 
-private def assembledSourceTheoryNIKReceipt : Bool :=
+private def assembledSourceTheoryAdmissionReceipt : Bool :=
   let theory := SourceTheory.assemble
     [{ sourceId := "modus-ponens-source"
        text :=
@@ -102,8 +102,8 @@ private def assembledSourceTheoryNIKReceipt : Bool :=
   match elaborateSource emptySignature "(mortal Socrates)" with
   | .ok conclusion =>
       theory.clean && theory.entries.length == 2 &&
-        NIKAuthority.entailmentChecker.check
-          (theory.entailmentClaim conclusion) NIKAuthority.mortalCertificate
+        CheckerAuthority.entailmentChecker.check
+          (theory.entailmentClaim conclusion) CheckerAuthority.mortalCertificate
   | .error _ => false
 
 private def checks : List (String × Bool) :=
@@ -128,10 +128,10 @@ private def checks : List (String × Bool) :=
     ("formula variable assertion",
       decide (elaborateSource emptySignature "(not ?FORMULA)" =
         .ok assertedFormulaVariable)),
-    ("source to native NIK receipt", sourceToNativeNIKReceipt),
-    ("source contextual NIK modus ponens", sourceContextualNIKReceipt),
+    ("source to native SemanticService receipt", sourceToNativeAdmissionReceipt),
+    ("source contextual SemanticService modus ponens", sourceContextualAdmissionReceipt),
     ("reject reversed source modus ponens", reversedSourceModusPonensRejected),
-    ("assembled source theory to contextual NIK", assembledSourceTheoryNIKReceipt),
+    ("assembled source theory to contextual SemanticService", assembledSourceTheoryAdmissionReceipt),
     ("reject malformed implication",
       match elaborateSource emptySignature "(=> (P) (Q) (R))" with
       | .error (.elaboration

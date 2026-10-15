@@ -47,6 +47,18 @@ def privateWriteSquare (state : Id → Value) (first second : Item)
   secondAfterFirst := rfl
   firstAfterSecond := kernel.step_commute snapshot seeds state first second distinct
 
+/-- Actual private writes cover every initial successor, because each kernel
+step is deterministic and the constructed square preserves the full store. -/
+theorem privateWrite_allOutcomeCoexecutible (state : Id → Value) (first second : Item)
+    (distinct : kernel.destination first ≠ kernel.destination second) :
+    (deterministicTheory (kernel.step snapshot seeds) observe).AllOutcomeCoexecutible
+      first second state := by
+  apply (privateWriteSquare kernel snapshot seeds observe state first second distinct).allOutcomeCoexecutible
+  · intro left right leftStep rightStep
+    exact leftStep.trans rightStep.symm
+  · intro left right leftStep rightStep
+    exact leftStep.trans rightStep.symm
+
 /-- The executable destination inequality is conservative semantic admission
 for the full state observer, hence for any projection of that observer. -/
 def privateWriteBackend :
@@ -110,6 +122,12 @@ theorem distinct_private_owners_admitted :
       (0 : Fin 3) (1 : Fin 3) (fun _ => 0) := by
   change (0 : Fin 3) ≠ 1
   decide
+
+theorem distinct_private_owners_cover_all_initial_outcomes :
+    (deterministicTheory (privateKernel.step 10 (fun item => item.val + 1)) id).AllOutcomeCoexecutible
+      (0 : Fin 3) (1 : Fin 3) (fun _ => 0) :=
+  privateWrite_allOutcomeCoexecutible privateKernel 10 (fun item => item.val + 1)
+    id (fun _ => 0) 0 1 (by decide)
 
 theorem aliased_owners_declined :
     ¬ (privateWriteBackend aliasedKernel () (fun _ => ()) id).Admits

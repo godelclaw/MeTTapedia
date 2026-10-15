@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 import Mettapedia.Logic.HOL.HenkinInstitutionDerivation
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The property-explicit Henkin simple-type-theory node of the theory graph
 
@@ -21,11 +23,11 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.HOLHenkinTheoryNode
 
 open Mettapedia.Logic
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.HenkinInstitution
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InstitutionConsequence
 

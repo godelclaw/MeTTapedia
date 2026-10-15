@@ -30,6 +30,8 @@ abbrev PhysicalSlot (Value : Type uValue) := Nat × Option Value
 abbrev StampedBuffer (width : Nat) (Value : Type uValue) :=
   Fin width → PhysicalSlot Value
 
+variable {width : Nat} {Value : Type uValue}
+
 /-- A stale physical entry is logically absent in the current epoch. -/
 def read (epoch : Nat) (buffer : StampedBuffer width Value) :
     Buffer width Value :=

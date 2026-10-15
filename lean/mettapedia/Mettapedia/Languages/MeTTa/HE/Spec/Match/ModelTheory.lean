@@ -183,7 +183,7 @@ theorem dependencyOrder_wellFounded
     {bindings : Bindings}
     (hloopFree : Spec.Match.Merge.SemanticLoopFree bindings) :
     WellFounded (DependencyOrder bindings) := by
-  letI : IsStrictOrder (DependencyNode bindings)
+  let : IsStrictOrder (DependencyNode bindings)
       (DependencyOrder bindings) := {
     irrefl := fun node hcycle => hloopFree node.1 hcycle
     trans := fun left middle right hleft hright =>

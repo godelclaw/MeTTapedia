@@ -9,7 +9,7 @@
 ;   Mettapedia.GSLT.LanguageDef.ChronologicalArticleCompilation.Builder
 ;   Mettapedia.GSLT.LanguageDef.ChronologicalArticleCompilation.
 ;     Builder.finish?_closed_sound
-;   Mettapedia.GSLT.LanguageDef.NIKGSLT.Family.
+;   Mettapedia.GSLT.LanguageDef.CheckerGSLT.Family.
 ;     acceptance_implies_certified
 
 (= (proof-step start hyp-A) have-A)

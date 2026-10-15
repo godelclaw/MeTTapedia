@@ -85,7 +85,7 @@ private theorem next_returns (bindings : Subst) (before after : State)
       (natural index) (.grounded (.int 1)) _ (by decide) (by decide) (by decide) (by decide) _
       (grounded_returns program bindings before (.int 1)) _ (by decide)
     · simpa only [indexCaptured] using variable_returns program bindings before "index"
-    · simp [StdLib.apply, natural, Int.natCast_add]
+    · simp [natural, Int.natCast_add]
   have next := evaluated_argument_returns program bindings before before after (.function "mm0:vector-load")
     (.expression [.symbol "+", .var "index", .grounded (.int 1)]) (natural (index + 1)) _
     [.var "size"] [handleValue handle, .expression items] 2 (by decide +kernel) increment last
@@ -112,7 +112,7 @@ private theorem load_body_returns (remaining processed : List Atom) (before : St
       apply if_returns program _ before before before _ _ _ _ _
       · apply native_variable_call_returns program _ before before "<" ["index", "size"]
           (boolean false) (by decide) (by decide) _ (by decide)
-        simp [environment, applySubst, Subst.lookup, StdLib.apply, natural, boolean]
+        simp [environment, applySubst, Subst.lookup, natural, boolean]
       · simpa [environment, applySubst, Subst.lookup, vectorValue, List.append_nil, boolean] using
           constructor_variables_return program (environment handle processed processed.length)
             before "MM0:Vector" ["space", "size"] vector_is_data_constructor (by decide)
@@ -132,20 +132,20 @@ private theorem load_body_returns (remaining processed : List Atom) (before : St
         · apply native_variable_call_returns program bindings before before "<" ["index", "size"]
             (boolean true) (by decide) (by decide) _ (by decide)
           simp [bindings, environment, items, applySubst, Subst.lookup,
-            StdLib.apply, natural, boolean]
+            natural, boolean]
         · change PureReturns program bindings before loopBody after (vectorValue handle items.length)
           rw [loop_body_shape]
           apply let_returns program bindings withValue before before after (.var "value") _ _ first _
           · apply native_variable_call_returns program bindings before before "index-atom" ["items", "index"]
               first (by decide) (by decide) _ (by decide)
-            simp [bindings, environment, items, applySubst, Subst.lookup, StdLib.apply, natural]
+            simp [bindings, environment, items, applySubst, Subst.lookup, natural]
           · simp [SpaceSemantics.matchValue, matchAtom, bindings, environment, Subst.lookup, withValue]
           · apply let_returns program withValue withDone before middle after (.var "done") _ _
               (boolean true) _ _ _ _
             · apply call_returns program withValue before middle "add-atom" _ _ (by decide) _ (by decide)
               have insertedPath := native_function_arguments_return program withValue before middle "add-atom"
                 [handleValue handle, row (processed.length, first)] 2 (boolean true)
-                (by decide) (by decide) (by simp [StdLib.apply, inserted])
+                (by decide) (by decide) (by simp [inserted])
               have last := raw_argument_answers program withValue before middle "add-atom"
                 (.expression [.var "index", .var "value"]) [] [handleValue handle] 1 [boolean true]
                 (by decide) (by simpa [withValue, bindings, environment, row, applySubst,
@@ -205,7 +205,7 @@ private theorem load_returns (bindings : Subst) (before after : State) (handle :
       before (natural items.length) := by
     apply native_variable_call_returns program bindings before before "size-atom" ["items"] _
       (by decide) (by decide) _ (by decide)
-    simp [itemsCaptured, StdLib.apply, natural]
+    simp [itemsCaptured, natural]
   have last := evaluated_argument_returns program bindings before before after (.function "mm0:vector-load")
     (.expression [.symbol "size-atom", .var "items"]) (natural items.length) _
     [] [handleValue handle, .expression items, natural 0] 3 (by decide +kernel) size entered
@@ -248,7 +248,7 @@ theorem vector_body_returns (before : State) (handle : Handle) (stored items : L
     · apply native_unary_call_returns program bindings before before before "get-state"
         (.symbol "mm0-proof-store") _ _ (by decide) (by decide) (by decide)
         (symbol_returns program bindings before "mm0-proof-store") _ (by decide)
-      simp [StdLib.apply, current]
+      simp [current]
     · simp [SpaceSemantics.matchValue, matchAtom, bindings, vectorEnvironment, Subst.lookup, withSpace]
     · rw [cleared_body_shape]
       apply let_returns program withSpace withCleared before middle after (.var "cleared") _ _

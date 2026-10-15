@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceInterpretation
-import Mettapedia.GSLT.LanguageDef.NIKServiceFamily
+import Mettapedia.GSLT.LanguageDef.SemanticServiceFamily
 
 /-!
 # Required services on one candidate interpretation
@@ -35,7 +35,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceRegistry
 
 open Mettapedia.GSLT.LanguageDef
-open KernelAuthority NIKMetalogic
+open KernelAuthority SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.TypeTheory.DesignStudy
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
@@ -50,7 +50,7 @@ variable {Index : Type uIndex} {assembly : Assembly} {C : Cwf.{u, v, w, w'}}
 
 /-- The existing face classifier, applied before correctness is supplied. -/
 def rawFace {target : AdmissionObject.{uArtifact}} :
-    RawService.{uArtifact, uEvidence} target → NIK.Face
+    RawService.{uArtifact, uEvidence} target → SemanticService.Face
   | .directDecision _ => .directDecision
   | .nativeProof .. => .nativeProof
   | .nativeOperation .. => .nativeOperation
@@ -79,7 +79,7 @@ inductive Interface (target : AdmissionObject.{uArtifact}) :
   | certificateBoundary (Certificate : Type uEvidence)
 
 def Interface.face {target : AdmissionObject.{uArtifact}} :
-    Interface.{uArtifact, uEvidence} target → NIK.Face
+    Interface.{uArtifact, uEvidence} target → SemanticService.Face
   | .directDecision => .directDecision
   | .nativeProof _ => .nativeProof
   | .nativeOperation _ => .nativeOperation
@@ -141,7 +141,7 @@ def Contract.restrict (contract : Contract.{uIndex, uArtifact, uEvidence} target
   request index := contract.request (select index)
   surface index := contract.surface (select index)
 
-def FacesMatch (requiredFace : Index → NIK.Face)
+def FacesMatch (requiredFace : Index → SemanticService.Face)
     (registry : Data.{uIndex, uArtifact, uEvidence} targets interpretation) : Prop :=
   ∀ index, rawFace (registry.service index) = requiredFace index
 
@@ -163,7 +163,7 @@ inductive Requirement
 
 /-- The requirement collection is fixed outside the proposed operations. -/
 def specification (targets : Index → AdmissionObject.{uArtifact})
-    (requiredFace : Index → NIK.Face)
+    (requiredFace : Index → SemanticService.Face)
     (interpretation : SharedJudgmentInterpretation.Data assembly C) :
     Specification (Data.{uIndex, uArtifact, uEvidence} targets interpretation) Requirement where
   holds
@@ -173,7 +173,7 @@ def specification (targets : Index → AdmissionObject.{uArtifact})
     | .meaning => MeaningCompatible
   required := [.faces, .services, .native, .meaning]
 
-theorem satisfies_iff (requiredFace : Index → NIK.Face)
+theorem satisfies_iff (requiredFace : Index → SemanticService.Face)
     (registry : Data.{uIndex, uArtifact, uEvidence} targets interpretation) :
     (specification targets requiredFace interpretation).Satisfies registry ↔
       FacesMatch requiredFace registry ∧ ServicesQualified registry ∧
@@ -248,12 +248,12 @@ theorem required_satisfies_iff (contract : Contract.{uIndex, uArtifact, uEvidenc
 namespace Data
 
 variable (registry : Data.{uIndex, uArtifact, uEvidence} targets interpretation)
-  {requiredFace : Index → NIK.Face}
+  {requiredFace : Index → SemanticService.Face}
 
-/-- Recover the existing NIK service at the original required target. -/
+/-- Recover the existing SemanticService service at the original required target. -/
 def serviceAt
     (qualified : (specification targets requiredFace interpretation).Satisfies registry)
-    (index : Index) : NIK.Service.{uArtifact, uEvidence} (targets index) :=
+    (index : Index) : SemanticService.Service.{uArtifact, uEvidence} (targets index) :=
   (registry.service index).toService (((satisfies_iff requiredFace registry).mp qualified).2.1
     index)
 
@@ -274,12 +274,12 @@ def admittedContext
 
 theorem accepted_native_and_meaning
     (qualified : (specification targets requiredFace interpretation).Satisfies registry)
-    (index : Index) (request : NIKServiceInvocation.Request (registry.serviceAt qualified index))
-    (input : NIKServiceInvocation.InputAdmission request)
+    (index : Index) (request : SemanticServiceInvocation.Request (registry.serviceAt qualified index))
+    (input : SemanticServiceInvocation.InputAdmission request)
     {claim : (targets index).Carrier}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim) :
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim) :
     let context := registry.admittedContext qualified index claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)
+      (SemanticServiceInvocation.accepted_meaning request input accepted)
     Judgment assembly.rules ((registry.attachment index).context claim)
       ((registry.attachment index).payload claim) ((registry.attachment index).nativeType claim) ∧
     interpretation.ty context
@@ -296,21 +296,21 @@ theorem accepted_native_and_meaning
 theorem accepted_substitution
     (qualified : (specification targets requiredFace interpretation).Satisfies registry)
     (stable : SharedJudgmentInterpretation.SubstitutionStable interpretation)
-    (index : Index) (request : NIKServiceInvocation.Request (registry.serviceAt qualified index))
-    (input : NIKServiceInvocation.InputAdmission request)
+    (index : Index) (request : SemanticServiceInvocation.Request (registry.serviceAt qualified index))
+    (input : SemanticServiceInvocation.InputAdmission request)
     {claim : (targets index).Carrier}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim)
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim)
     {m : Nat} (context : SharedJudgmentInterpretation.Context assembly m)
     (sigma : Sub Tower.Head ((registry.attachment index).scope claim) m)
     (semantic : C.Sub (interpretation.ctx context)
       (interpretation.ctx (registry.admittedContext qualified index claim
-        (NIKServiceInvocation.accepted_meaning request input accepted))))
+        (SemanticServiceInvocation.accepted_meaning request input accepted))))
     (typed : FormationSensitive.CtxMor assembly.rules
       ((registry.attachment index).context claim) context sigma)
     (related : interpretation.sub (registry.admittedContext qualified index claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)) context sigma semantic) :
+      (SemanticServiceInvocation.accepted_meaning request input accepted)) context sigma semantic) :
     let source := registry.admittedContext qualified index claim
-      (NIKServiceInvocation.accepted_meaning request input accepted)
+      (SemanticServiceInvocation.accepted_meaning request input accepted)
     Judgment assembly.rules context (subst sigma ((registry.attachment index).payload claim))
       (subst sigma ((registry.attachment index).nativeType claim)) ∧
     interpretation.ty context (subst sigma ((registry.attachment index).nativeType claim))
@@ -432,16 +432,16 @@ theorem authority : checker.Authority WireControls.applicationTarget.Meaning whe
     exact ⟨proof, (check_exact claim proof).mpr judged⟩
 
 /-- All four required faces have the same nontrivial constructor target. -/
-def targets (_ : NIK.Face) : AdmissionObject := WireControls.applicationTarget
+def targets (_ : SemanticService.Face) : AdmissionObject := WireControls.applicationTarget
 
-def raw : (face : NIK.Face) → RawService.{0, 0} (targets face)
+def raw : (face : SemanticService.Face) → RawService.{0, 0} (targets face)
   | .directDecision => WireControls.raw
   | .nativeProof => .nativeProof guest check
   | .nativeOperation => .nativeOperation WireControls.applicationTarget
       (fun input => .application "wrapped" [input])
   | .certificateBoundary => .certificateBoundary guest.ProofObject checker
 
-theorem raw_qualified (face : NIK.Face) : (raw face).Qualified := by
+theorem raw_qualified (face : SemanticService.Face) : (raw face).Qualified := by
   cases face with
   | directDecision => exact WireControls.qualified
   | nativeProof => exact ⟨check_exact, meaning_exact⟩
@@ -481,9 +481,9 @@ theorem required_registry_qualified :
   intro face
   cases face <;> constructor
 
-/-- Four actual request forms run through the unchanged NIK dispatcher. -/
-def request : (face : NIK.Face) →
-    NIKServiceInvocation.Request (registry.serviceAt registry_qualified face)
+/-- Four actual request forms run through the unchanged SemanticService dispatcher. -/
+def request : (face : SemanticService.Face) →
+    SemanticServiceInvocation.Request (registry.serviceAt registry_qualified face)
   | .directDecision => .directDecision WireControls.actualWire
   | .nativeProof => .nativeProof WireControls.actualWire
       ("native-input", [.symbol "opaque-payload", .natural 7])
@@ -491,11 +491,11 @@ def request : (face : NIK.Face) →
   | .certificateBoundary => .certificateBoundary WireControls.actualWire
       ("native-input", [.symbol "opaque-payload", .natural 7])
 
-def expected : NIK.Face → Wire
+def expected : SemanticService.Face → Wire
   | .nativeOperation => .application "wrapped" [WireControls.actualWire]
   | _ => WireControls.actualWire
 
-theorem request_input (face : NIK.Face) : NIKServiceInvocation.InputAdmission (request face) := by
+theorem request_input (face : SemanticService.Face) : SemanticServiceInvocation.InputAdmission (request face) := by
   cases face with
   | directDecision => exact .directDecision
   | nativeProof => exact .nativeProof
@@ -504,11 +504,11 @@ theorem request_input (face : NIK.Face) : NIKServiceInvocation.InputAdmission (r
         ⟨"native-input", [.symbol "opaque-payload", .natural 7], rfl⟩
   | certificateBoundary => exact .certificateBoundary
 
-theorem four_invocations (face : NIK.Face) :
-    (NIKServiceInvocation.invoke (request face)).acceptedValue = some (expected face) := by
+theorem four_invocations (face : SemanticService.Face) :
+    (SemanticServiceInvocation.invoke (request face)).acceptedValue = some (expected face) := by
   cases face <;> rfl
 
-theorem four_native_representations (face : NIK.Face) :
+theorem four_native_representations (face : SemanticService.Face) :
     Judgment common.rules NativeMatchedTransportDenotation.parameterContext
       (WireControls.parameterPayload (expected face)) NativeWireData.dataType :=
   (registry.accepted_native_and_meaning registry_qualified face (request face)
@@ -545,9 +545,9 @@ theorem wrong_face_not_qualified :
 
 /-- One successful face test cannot qualify the untested required faces. -/
 theorem incomplete_subfamily_passes :
-    (specification (targets ∘ fun _ : Bool => NIK.Face.directDecision)
-      (id ∘ fun _ : Bool => NIK.Face.directDecision) WireControls.interpretation).Satisfies
-      (wrongFace.restrict (fun _ : Bool => NIK.Face.directDecision)) := by
+    (specification (targets ∘ fun _ : Bool => SemanticService.Face.directDecision)
+      (id ∘ fun _ : Bool => SemanticService.Face.directDecision) WireControls.interpretation).Satisfies
+      (wrongFace.restrict (fun _ : Bool => SemanticService.Face.directDecision)) := by
   apply (satisfies_iff _ _).mpr
   exact ⟨fun _ => rfl, fun _ => WireControls.qualified,
     fun _ => WireControls.parameter_native, fun _ => WireControls.parameter_meaning⟩

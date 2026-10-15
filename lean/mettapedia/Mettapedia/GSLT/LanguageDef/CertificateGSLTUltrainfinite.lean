@@ -22,7 +22,7 @@ There are four deliberately separate layers.
    neither field participates in evidence acceptance.
 4. A `CheckedLowering` lets a compact executable representation reach a
    semantic authority only by replaying its lowered evidence there.  This is
-   the abstract obligation of a native inference kernel relative to MIK.
+   the preservation obligation relating that representation to the checker.
 
 The concrete `wireArticleAuthority` instantiates the first layer with the
 actual versioned `WireArticle` checker.  No new proof semantics or private
@@ -167,7 +167,7 @@ theorem EvidenceAttempt.resourceExhaustion_without_evidence
         score := score }) = false := by
   rfl
 
-/-! ## Checked lowering: the NIK-to-MIK obligation -/
+/-! ## Checked lowering: the SemanticService-to-MIK obligation -/
 
 /-- A compact executable representation is inside an authority's trusted
 waist only when every native acceptance replays as acceptance of explicitly

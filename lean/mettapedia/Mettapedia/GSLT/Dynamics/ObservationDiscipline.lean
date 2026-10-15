@@ -100,6 +100,8 @@ def ofValuation {Event : Type uEvent}
 
 end WitnessCollector
 
+-- The bundled carriers retain independent universe levels through their projections.
+set_option linter.checkUnivs false in
 /-- An observation discipline factors event histories through a witness
 container `S` before reading a value in `V`. -/
 structure ObservationDiscipline (Event : Type uEvent) where
@@ -107,11 +109,15 @@ structure ObservationDiscipline (Event : Type uEvent) where
   Value : Type uValue
   readout : collection.Container -> Value
 
+-- The bundled carriers retain independent universe levels through their projections.
+set_option linter.checkUnivs false in
 /-- A discipline over the proof-relevant one-step occurrences of a GSLT.
 The GSLT remains a parameter, so adding a discipline cannot add a rewrite. -/
 abbrev GSLTObservation (system : GSLT) :=
   ObservationDiscipline system.LabeledStep
 
+-- The bundled carriers retain independent universe levels through their projections.
+set_option linter.checkUnivs false in
 /-- A proof-relevant event presentation over a fixed GSLT, together with an
 observation discipline on those richer events.  Several events may erase to
 the same base step, retaining occurrence identity or authority evidence that

@@ -433,7 +433,7 @@ theorem decodeExpr_definition_unifies (signature : TermSignature) (context : Con
                           have equalImages : childImages = values := Option.some.inj (valuesRead.symm.trans imageRead)
                           subst childImages
                           exact ⟨Preterm.applyArgs (.term term) values, sorts, indices, dummies, parentRead,
-                            substitution_application _ (.term term) (.term term) sources values (.term term) substituted,
+                            Preterm.Substitutes.applyArgs _ (.term term) (.term term) sources values (.term term) substituted,
                             fresh, afterStack, afterSlots, afterUnsaved, afterMain, afterHyps⟩
           | termSave term =>
               cases countRead : arity term with
@@ -476,7 +476,7 @@ theorem decodeExpr_definition_unifies (signature : TermSignature) (context : Con
                           subst childImages
                           have parentSubstitution : Preterm.Substitutes (Substitution.ofList (images ++ indices.map Preterm.var))
                               body (Preterm.applyArgs (.term term) values) :=
-                            substitution_application _ (.term term) (.term term) sources values (.term term) substituted
+                            Preterm.Substitutes.applyArgs _ (.term term) (.term term) sources values (.term term) substituted
                           obtain ⟨extraSlots, _, slotsRead, _, _⟩ :=
                             Soundness.decodeExprs_source_order arity arguments fuel count reserved next (commandsBefore ++ rest) rest sources children
                           have reservation : next.slots[sourceBefore.slots.length]? = some none := by

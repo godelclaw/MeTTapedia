@@ -111,7 +111,7 @@ theorem guardedRootViews_isSome
 
 /-- Complete source-computed premise profile.  It records decoder success and
 contains no relation result. -/
-def guardProfile : SelectedNativeTypeBoundRelationClaim.Profile demand where
+theorem guardProfile : SelectedNativeTypeBoundRelationClaim.Profile demand where
   supported := by
     intro slot
     rw [typingAt_eq_rootTyping]
@@ -149,7 +149,7 @@ theorem guardView_sourceBound (slot : Occurrence demand)
 
 /-- Exact decoded guard arguments inherit top-level admission from their
 source-bound authored variables. -/
-def guardArgumentAdmission (slot : Occurrence demand) :
+theorem guardArgumentAdmission (slot : Occurrence demand) :
     SelectedNativeTypeGuardedSourceIndexedIntroduction.GuardArgumentAdmission
       guardProfile slot where
   argument premise pattern membership := by

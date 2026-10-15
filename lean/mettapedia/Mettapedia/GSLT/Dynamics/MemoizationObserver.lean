@@ -405,4 +405,59 @@ theorem stale_limit_control :
 
 end Retention
 
+/-! ## Demand identity is not syntax
+
+Two demands can share their source syntax while being different choice
+instances.  A memo keyed by the source alone then answers the second demand
+with the choice the first one made.  A key that also carries the demand's
+origin and whether its input is already evaluated is sound: this is the key
+under which a completed shared demand may be reused. -/
+
+namespace DemandIdentity
+
+/-- A demand: its source syntax, the origin of its choice instance, and
+whether its input is already evaluated. -/
+structure Demand where
+  source : Nat
+  origin : Nat
+  ready : Bool
+  deriving DecidableEq
+
+/-- The observed result of a demand: the choice made by its origin (two
+origins, two independent choices) together with its readiness. -/
+def result (demand : Demand) : Bool × Bool := (demand.origin % 2 == 0, demand.ready)
+
+/-- The syntax-only key. -/
+def sourceKey (demand : Demand) : Nat := demand.source
+
+/-- The key of source, demand origin and ready role. -/
+def demandKey (demand : Demand) : Nat × Nat × Bool := (demand.source, demand.origin, demand.ready)
+
+/-- Equal syntax does not determine the result of a choice. -/
+theorem sourceKey_unsound : ¬ SoundKey sourceKey result := by
+  intro sound
+  have same := sound ⟨1, 0, true⟩ ⟨1, 1, true⟩ rfl
+  simp [result] at same
+
+/-- The demand key is sound. -/
+theorem demandKey_sound : SoundKey demandKey result := by
+  intro first second equal
+  simp only [demandKey, Prod.mk.injEq] at equal
+  simp [result, equal.2.1, equal.2.2]
+
+/-- The concrete wrong answer: a memo keyed by syntax returns the first
+demand's choice for the second demand. -/
+theorem source_memo_returns_other_choice :
+    lookupOrCompute sourceKey result (store sourceKey result Table.empty ⟨1, 0, true⟩)
+        ⟨1, 1, true⟩ ≠ result ⟨1, 1, true⟩ := by
+  decide
+
+/-- The demand-keyed memo answers both demands correctly. -/
+theorem demand_memo_correct :
+    lookupOrCompute demandKey result (store demandKey result Table.empty ⟨1, 0, true⟩)
+        ⟨1, 1, true⟩ = result ⟨1, 1, true⟩ := by
+  decide
+
+end DemandIdentity
+
 end Mettapedia.GSLT.Dynamics.MemoizationObserver

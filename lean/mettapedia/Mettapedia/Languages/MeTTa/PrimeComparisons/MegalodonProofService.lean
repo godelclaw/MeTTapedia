@@ -57,7 +57,7 @@ def checkPacket (environment : Environment) (current : Scope) (expected : Reques
     (packet : Packet) : Verdict :=
   if expected.scope ≠ current then .stale
   else if packet.request ≠ expected then .wrongRequest
-  else .checked (NIKNativeProof.nativeKernel.decide (expected.claim environment) packet.proof)
+  else .checked (IntrinsicProofChecker.nativeKernel.decide (expected.claim environment) packet.proof)
 
 def evaluate (environment : Environment) (current : Scope) (expected : Request) (input : Wire) : Verdict :=
   match decodePacket input with
@@ -77,7 +77,7 @@ theorem checkPacket_admitted_iff (environment : Environment) (current : Scope)
         expected.proofContext packet.proof expected.proposition = true := by
   by_cases scope : expected.scope = current
   · by_cases request : packet.request = expected
-    · simp [checkPacket, scope, request, NIKNativeProof.nativeKernel, Request.claim]
+    · simp [checkPacket, scope, request, IntrinsicProofChecker.nativeKernel, Request.claim]
     · simp [checkPacket, scope, request]
   · simp [checkPacket, scope]
 

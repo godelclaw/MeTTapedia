@@ -23,26 +23,26 @@ open IntrinsicScopedAuthoredClassifiedInstance (algebra)
 open IntrinsicScopedAuthoredClassifiedReduction (ExtendedReduction)
 
 abbrev strictLocalRules := localRules strictRules
-abbrev bookLocalRules := localRules bookRules
+abbrev dropExecutionLocalRules := localRules dropExecutionRules
 
 abbrev strictModel := IntrinsicScopedAuthoredClassifiedInstance.model strictLocalRules equations
-abbrev bookModel := IntrinsicScopedAuthoredClassifiedInstance.model bookLocalRules equations
+abbrev dropExecutionModel := IntrinsicScopedAuthoredClassifiedInstance.model dropExecutionLocalRules equations
 abbrev strictClassified := IntrinsicScopedAuthoredClassifiedInstance.classified strictLocalRules equations
-abbrev bookClassified := IntrinsicScopedAuthoredClassifiedInstance.classified bookLocalRules equations
+abbrev dropExecutionClassified := IntrinsicScopedAuthoredClassifiedInstance.classified dropExecutionLocalRules equations
 abbrev strictInterpretation := IntrinsicScopedAuthoredClassifiedInstance.interpretation strictLocalRules equations
-abbrev bookInterpretation := IntrinsicScopedAuthoredClassifiedInstance.interpretation bookLocalRules equations
+abbrev dropExecutionInterpretation := IntrinsicScopedAuthoredClassifiedInstance.interpretation dropExecutionLocalRules equations
 abbrev strictRestrictionIso := IntrinsicScopedAuthoredClassifiedInstance.restrictionIso strictLocalRules equations
-abbrev bookRestrictionIso := IntrinsicScopedAuthoredClassifiedInstance.restrictionIso bookLocalRules equations
+abbrev dropExecutionRestrictionIso := IntrinsicScopedAuthoredClassifiedInstance.restrictionIso dropExecutionLocalRules equations
 abbrev strictRecoveredModelIso := IntrinsicScopedAuthoredClassifiedInstance.recoveredModelIso strictLocalRules equations
-abbrev bookRecoveredModelIso := IntrinsicScopedAuthoredClassifiedInstance.recoveredModelIso bookLocalRules equations
+abbrev dropExecutionRecoveredModelIso := IntrinsicScopedAuthoredClassifiedInstance.recoveredModelIso dropExecutionLocalRules equations
 
 /-- Both original profiles retain the complete payload continuation telescope. -/
 theorem strict_rule_inventory : strictLocalRules = [⟨metas, comm⟩, ⟨metas, parCong⟩] := rfl
-theorem book_rule_inventory : bookLocalRules = [⟨metas, comm⟩, ⟨metas, parCong⟩, ⟨metas, drop⟩] := rfl
+theorem dropExecution_rule_inventory : dropExecutionLocalRules = [⟨metas, comm⟩, ⟨metas, parCong⟩, ⟨metas, drop⟩] := rfl
 
 /-- The original ordered child of parallel congruence is retained. -/
 theorem ordered_premise_binders :
-    bookLocalRules.map (fun declaration => declaration.2.premises.map (fun premise => premise.binders)) =
+    dropExecutionLocalRules.map (fun declaration => declaration.2.premises.map (fun premise => premise.binders)) =
       [[], [[]], []] := rfl
 
 /-- All four actual authored equations are part of this same classified presentation. -/
@@ -87,9 +87,9 @@ theorem parCong_classified (rest : List (IntrinsicScopedConditionalPolynomial.Ru
     (steps_parCong rest other ((extension_iff_steps _ _ _).mp child))
 
 /-- The book Drop firing is present in the actual interpreted profile. -/
-theorem drop_book_classified {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
-    ExtendedReduction bookLocalRules equations (drpT (quoT code)) code :=
-  (extension_iff_steps _ _ _).mpr (drop_runs_book code)
+theorem drop_dropExecution_classified {Γ : Ctx sig} (code : Term sig Γ Srt.pr) :
+    ExtendedReduction dropExecutionLocalRules equations (drpT (quoT code)) code :=
+  (extension_iff_steps _ _ _).mpr (drop_runs_dropExecution code)
 
 /-- The same redex has no strict-profile interpreted reduction, to any target class. -/
 theorem drop_strict_not_classified {Γ : Ctx sig} (code target : Term sig Γ Srt.pr) :

@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
 import Mettapedia.OSLF.Framework.GSLTQuotientCoherence
 import Mettapedia.OSLF.StructuralModal.Formula
@@ -71,18 +72,8 @@ theorem true_box_without_positive_certificate :
 
 /-- The discrete-equation companion to `equationOnlyGSLT`; both theories
 have the same empty rewrite relation. -/
-def discreteNoRewriteGSLT : GSLT where
-  Term := Bool
-  equations :=
-    { r := Eq
-      iseqv := ⟨Eq.refl, Eq.symm, Eq.trans⟩ }
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+def discreteNoRewriteGSLT : GSLT :=
+  GSLT.stepFree (Bool)
 
 /-- The two theories have the same underlying diamond and box maps on raw
 predicates because their rewrite graphs are equal.  This is not an equality

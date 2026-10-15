@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Group.Basic
 import Mathlib.Algebra.BigOperators.Group.List.Basic
 import Mettapedia.GSLT.Core.Composition
+import Mettapedia.GSLT.Distinction.CausalGluing
 
 /-!
 # Compositional valuations of proof-relevant events
@@ -88,6 +89,45 @@ theorem combine_eq_historyGrade {Event : Type uEvent} (valuation : Valuation Eve
     (first second : Event) :
     valuation.combine? first second = valuation.historyGrade [first, second] := by
   simp [combine?, historyGrade_cons, historyGrade_nil, valuation.algebra.op_unit]
+
+/-- Local agreement of the two actual grade compositions lifts through
+arbitrary chronological context, including partial composition failures. -/
+theorem historyGrade_swap_adjacent {Event : Type uEvent}
+    (valuation : Valuation.{uEvent, uGrade} Event) {first second : Event}
+    (orderAgrees : valuation.combine? first second = valuation.combine? second first)
+    (preceding following : List Event) :
+    valuation.historyGrade (preceding ++ first :: second :: following) =
+      valuation.historyGrade (preceding ++ second :: first :: following) := by
+  change valuation.historyGrade (preceding ++ ([first, second] ++ following)) =
+    valuation.historyGrade (preceding ++ ([second, first] ++ following))
+  simp only [historyGrade_append, ← combine_eq_historyGrade, orderAgrees]
+
+/-- Successful composition and its result are retained together; merely
+succeeding in both orders is not the same statement. -/
+theorem compatible_swap_of_composition_agrees {Event : Type uEvent}
+    (valuation : Valuation.{uEvent, uGrade} Event) {first second : Event}
+    (orderAgrees : valuation.combine? first second = valuation.combine? second first) :
+    valuation.Compatible first second ↔ valuation.Compatible second first := by
+  simp only [Compatible, orderAgrees]
+
+
+/-- The existing generated trace equivalence preserves a partial valuation
+exactly when its declared local swaps preserve their actual compositions.
+The result includes failures and retains repeated event occurrences. -/
+theorem historyGrade_traceEquiv {Event : Type uEvent}
+    (valuation : Valuation.{uEvent, uGrade} Event)
+    (independent : Event → Event → Prop)
+    (lawful : ∀ first second, independent first second →
+      valuation.combine? first second = valuation.combine? second first)
+    {first second : List Event}
+    (equivalent : Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv
+      independent first second) :
+    valuation.historyGrade first = valuation.historyGrade second :=
+  Mettapedia.GSLT.Distinction.CausalGluing.TraceEquiv.invariant
+    valuation.historyGrade
+    (fun preceding following a b related =>
+      valuation.historyGrade_swap_adjacent (lawful a b related) preceding following)
+    equivalent
 
 /-- Product valuation is exactly the product of the two independent history
 valuations.  In particular, neither coordinate may silently stand in for a
@@ -253,5 +293,25 @@ theorem chronological_isTotal {Event : Type uEvent} {Item : Type uGrade}
       (chronologicalListPartialMonoid Item).op left right = some result
     intro left right
     exact ⟨left ++ right, rfl⟩
+
+/-- Commutative additive work satisfies the local composition law without
+making every other grade axis commutative. -/
+theorem additive_composition_swap {Event : Type uEvent} {Grade : Type uGrade}
+    [AddCommMonoid Grade] (grade : Event → Grade) (first second : Event) :
+    (additive grade).combine? first second = (additive grade).combine? second first := by
+  change some (grade first + grade second) = some (grade second + grade first)
+  rw [add_comm]
+
+/-- Keeping actual chronology forbids erasing a swap of distinct events,
+even though both histories are accepted by this total algebra. -/
+theorem chronological_composition_cannot_swap {Event : Type uEvent}
+    (first second : Event) (distinct : first ≠ second) :
+    (chronological id).combine? first second ≠ (chronological id).combine? second first := by
+  rw [Valuation.combine_eq_historyGrade, Valuation.combine_eq_historyGrade,
+    chronological_historyGrade, chronological_historyGrade]
+  intro equation
+  have pairs : [first, second] = [second, first] := Option.some.inj equation
+  exact distinct (List.cons.inj pairs).1
+
 
 end Mettapedia.GSLT.Dynamics.IndexedEventValuation

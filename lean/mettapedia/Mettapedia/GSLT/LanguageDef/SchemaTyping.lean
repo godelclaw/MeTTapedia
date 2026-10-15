@@ -44,7 +44,79 @@ theorem ofList_mapTypeContext (symbols : LanguageDefSymbolMap)
           FreeTypeContext.map]
         exact inductionHypothesis
 
+/-- Materialize exactly the supplied finite lookup footprint. Repeated names
+retain their source order; every retained row comes from the same context. -/
+def entriesOn (context : FreeTypeContext) (names : List String) : List (String × TypeExpr) :=
+  names.filterMap fun name => (context name).map (name, ·)
+
+/-- Finite materialization preserves precisely the requested lookups. -/
+theorem ofList_entriesOn (context : FreeTypeContext) (names : List String) (name : String) :
+    ofList (context.entriesOn names) name =
+      if name ∈ names then context name else none := by
+  induction names with
+  | nil => rfl
+  | cons first rest ih =>
+      cases value : context first with
+      | none =>
+          have tail : context.entriesOn (first :: rest) = context.entriesOn rest := by
+            simp [entriesOn, value]
+          rw [tail, ih]
+          by_cases equal : first = name
+          · subst first
+            simp [value]
+          · simp only [List.mem_cons, Ne.symm equal, false_or]
+      | some type =>
+          have tail : context.entriesOn (first :: rest) =
+              (first, type) :: context.entriesOn rest := by
+            simp [entriesOn, value]
+          rw [tail]
+          by_cases equal : first = name
+          · subst first
+            simp [ofList, value]
+          · simp only [ofList, equal, if_false, ih, List.mem_cons,
+              Ne.symm equal, false_or]
+
+/-- A finite view reads an existing context; it assigns no new types. -/
+theorem entriesOn_mem_iff (context : FreeTypeContext) (names : List String)
+    (name : String) (type : TypeExpr) :
+    (name, type) ∈ context.entriesOn names ↔ name ∈ names ∧ context name = some type := by
+  simp only [entriesOn, List.mem_filterMap]
+  constructor
+  · rintro ⟨other, member, encoded⟩
+    cases value : context other with
+    | none => simp [value] at encoded
+    | some result =>
+        simp only [value, Option.map_some, Option.some.injEq, Prod.mk.injEq] at encoded
+        rcases encoded with ⟨rfl, rfl⟩
+        exact ⟨member, value⟩
+  · rintro ⟨member, value⟩
+    exact ⟨name, member, by simp [value]⟩
+
+#print axioms ofList_entriesOn
+#print axioms entriesOn_mem_iff
+
 end WellSorted.FreeTypeContext
+
+namespace WellSorted
+
+/-- Typing one pattern is unchanged by retaining only the free names that
+occur in that pattern. This uses the existing free-context transport theorem. -/
+theorem HasType.finiteFree_iff (language : LanguageDef)
+    (free : FreeTypeContext) (bound : List TypeExpr)
+    (pattern : Pattern) (expected : TypeExpr) :
+    HasType language (FreeTypeContext.ofList (free.entriesOn pattern.freeFvarNames))
+      bound pattern expected ↔ HasType language free bound pattern expected := by
+  constructor
+  · intro typed
+    exact typed.recontextualizeFree fun member lookup => by
+      simpa only [FreeTypeContext.ofList_entriesOn, if_pos member] using lookup
+  · intro typed
+    exact typed.recontextualizeFree fun member lookup => by
+      simpa only [FreeTypeContext.ofList_entriesOn, if_pos member] using lookup
+
+#print axioms HasType.finiteFree_iff
+
+end WellSorted
 
 /-- Two schema patterns inhabit one common type under the declaration's
 authored metavariable context. -/

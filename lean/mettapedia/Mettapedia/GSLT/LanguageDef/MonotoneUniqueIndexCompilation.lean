@@ -22,6 +22,8 @@ accounting belong to the concrete realization refinement.
 
 namespace Mettapedia.GSLT.LanguageDef.MonotoneUniqueIndexCompilation
 
+universe uKey uValue
+
 /-- Effects declared locally for the table selected by storage analysis. -/
 inductive Effect where
   | lookup
@@ -62,6 +64,10 @@ structure SourceProgram (Key Value : Type) where
   shape : TableShape
   entries : List (Key × Value)
   queries : List Key
+
+section Lookup
+
+variable {Key : Type uKey} {Value : Type uValue}
 
 /-- The clear source specification scans entries in authored order. -/
 def sourceLookup [BEq Key] (query : Key) :
@@ -118,6 +124,10 @@ theorem size_compileIndex_of_nodup [BEq Key] [Hashable Key]
         rw [Std.HashMap.mem_iff_contains, contains_compileIndex]
         simpa [List.contains_iff_mem] using absent
       simp [notMem, inductionHypothesis tailDistinct]
+
+end Lookup
+
+variable {Key Value : Type}
 
 /-- Generated physical artifact.  The concrete C refinement realizes this
 map with an append-only open-addressed table and rejects duplicate insertion. -/
@@ -317,6 +327,10 @@ theorem compiled_size [BEq Key] [Hashable Key]
 
 /-! ## Abstract operation-cost certificate -/
 
+section LookupCosts
+
+variable {Key : Type uKey} {Value : Type uValue}
+
 /-- Association-list cells inspected by one source lookup. -/
 def sourceLookupCost [BEq Key] (query : Key) :
     List (Key × Value) → Nat
@@ -338,6 +352,8 @@ theorem indexedLookupOperationCost_le_sourceLookupCost [BEq Key]
       simp only [indexedLookupOperationCost, List.isEmpty_cons,
         Bool.false_eq_true, ↓reduceIte, sourceLookupCost]
       split <;> omega
+
+end LookupCosts
 
 def sourceRunCost [BEq Key] (source : SourceProgram Key Value) : Nat :=
   (source.queries.map fun query =>

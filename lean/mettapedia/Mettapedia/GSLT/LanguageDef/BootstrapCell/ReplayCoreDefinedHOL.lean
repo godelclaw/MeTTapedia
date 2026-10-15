@@ -6,7 +6,7 @@ import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCoreHOL
 
 `Logic.HOL.ReplayCoreDefined` defines acceptance and derivability as least
 predicates over the certificate constructors and the rule relation.  This
-module gives that theory its standard model on NIK's raw certificates and
+module gives that theory its standard model on SemanticService's raw certificates and
 reads the object derivations off in it.
 
 **The standard model** (`model σ`), for a replay signature `σ`: the carriers
@@ -57,7 +57,7 @@ variable (σ : ReplaySignature.{u})
 
 /-! ## The standard model -/
 
-/-- Constants: NIK's certificate constructors, list constructors, and the
+/-- Constants: SemanticService's certificate constructors, list constructors, and the
 graph of the local rule map. -/
 def constant : {τ : Ty BaseSort} → Symbol τ → Ty.denote.{0, u} (ReplayCoreHOL.carrier σ) τ
   | _, .node => fun label children => ⟨.node label.down children.down⟩
@@ -68,7 +68,7 @@ def constant : {τ : Ty BaseSort} → Symbol τ → Ty.denote.{0, u} (ReplayCore
   | _, .rule => fun label premises conclusion =>
       ⟨σ.step label.down = some (premises.down, conclusion.down)⟩
 
-/-- The standard model: full predicate domains over NIK's raw certificates. -/
+/-- The standard model: full predicate domains over SemanticService's raw certificates. -/
 def model : HenkinModel.{0, 0, u} BaseSort Symbol :=
   HenkinModel.standard (ReplayCoreHOL.carrier σ) (constant σ)
 
@@ -397,7 +397,7 @@ theorem replay_sound_as_solution {goal : σ.Goal} {certificate : RawProof}
 generic inference checker. -/
 theorem leastAcc_iff_checkRaw (definition : ValidatedCalculusLanguageDef) (goal : Pattern)
     (certificate : RawProof) :
-    StandardSemantics.LeastAcc (constant (nikSignature definition)) ⟨goal⟩ ⟨certificate⟩ ↔
+    StandardSemantics.LeastAcc (constant (calculusReplaySignature definition)) ⟨goal⟩ ⟨certificate⟩ ↔
       checkRaw definition goal certificate = true := by
   rw [leastAcc_iff, checkRaw_eq_replay]
 
@@ -407,7 +407,7 @@ theorem checkRaw_derivable_of_derivation (definition : ValidatedCalculusLanguage
     (accepted : checkRaw definition goal certificate = true) :
     Nonempty (Derivation definition goal) := by
   rw [checkRaw_eq_replay] at accepted
-  obtain ⟨derivation⟩ := replay_derivable_of_derivation (nikSignature definition) accepted
+  obtain ⟨derivation⟩ := replay_derivable_of_derivation (calculusReplaySignature definition) accepted
   exact ⟨(derivationEquiv definition goal).symm derivation⟩
 
 /-- Completeness of the generic inference checker, read off the object
@@ -416,7 +416,7 @@ theorem checkRaw_complete_of_derivation (definition : ValidatedCalculusLanguageD
     {goal : Pattern} (derivable : Nonempty (Derivation definition goal)) :
     ∃ certificate, checkRaw definition goal certificate = true := by
   obtain ⟨derivation⟩ := derivable
-  obtain ⟨certificate, accepted⟩ := replay_complete_of_derivation (nikSignature definition)
+  obtain ⟨certificate, accepted⟩ := replay_complete_of_derivation (calculusReplaySignature definition)
     ⟨derivationEquiv definition goal derivation⟩
   exact ⟨certificate, by rw [checkRaw_eq_replay]; exact accepted⟩
 

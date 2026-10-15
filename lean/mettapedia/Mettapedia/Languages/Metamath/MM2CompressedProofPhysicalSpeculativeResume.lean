@@ -1782,7 +1782,7 @@ theorem speculativeResumeSpace_exact_physical_match
 
 /-- The canonical compiler-selected slice is an instance of the reusable
 physical intermediate boundary. -/
-def canonicalPhysicalSpeculativeResumeBoundary (context : RejoinContext) :
+theorem canonicalPhysicalSpeculativeResumeBoundary (context : RejoinContext) :
     PhysicalSpeculativeResumeBoundary context
       (speculativeResumeSpace context) := by
   refine

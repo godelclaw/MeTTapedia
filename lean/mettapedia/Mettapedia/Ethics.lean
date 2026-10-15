@@ -22,11 +22,13 @@ import Mettapedia.Ethics.CommunicationLanguage
 import Mettapedia.Ethics.MetaEthicsOntology
 import Mettapedia.Ethics.SourceHierarchyConcordance
 import Mettapedia.Ethics.SourceTaxonomyInference
-import Mettapedia.Ethics.FormalEthicsNativeNIK
+import Mettapedia.Ethics.FormalEthicsNativeConsequences
 import Mettapedia.Ethics.EthicalCommunicationBisimulation
 import Mettapedia.Ethics.EthicalCommunicationConceptFormation
 import Mettapedia.Ethics.EthicalCommunicationTrinity
 import Mettapedia.Ethics.TargetCenteredVirtue
+import Mettapedia.Ethics.RecipientCenteredCare
+import Mettapedia.Ethics.CareScopeDynamics
 import Mettapedia.Ethics.MoralParadigmEquivalence
 import Mettapedia.Ethics.ParadigmPluralism
 import Mettapedia.Ethics.OptimizerVirtueBridge

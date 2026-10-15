@@ -1,0 +1,10 @@
+import Mathlib
+#check Nat.add_lt_add_iff_left
+#check Nat.add_lt_add_iff_right
+#check Nat.lt_sub_iff_add_lt
+#check Nat.add_lt_iff_lt_sub
+#check Nat.sub_pos_iff_lt
+#check Nat.mul_le_mul_left
+#check List.sum_replicate
+#check List.sum_append
+#check List.max?_eq_some_iff

@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraph
 import Mettapedia.GSLT.LanguageDef.BiformTheoryGraphCanary
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # Cross-logic certificate replay canary
 
@@ -20,9 +22,9 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraphCanary
 
-open CategoryTheory
-open scoped CategoryTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open _root_.CategoryTheory
+open scoped _root_.CategoryTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.CertifiedBiformTheoryGraph
 open Mettapedia.GSLT.LanguageDef.BiformTheoryGraphCanary
 

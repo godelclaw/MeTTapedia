@@ -22,14 +22,14 @@ import Mettapedia.UniversalAlgebra.Mathlib.FirstOrder
 import Mettapedia.UniversalAlgebra.Ultrapower
 import Mettapedia.UniversalAlgebra.GSLT.ContextualRewriting
 import Mettapedia.UniversalAlgebra.OSLF.ModalSemantics
-import Mettapedia.UniversalAlgebra.NIK.Authority
-import Mettapedia.UniversalAlgebra.NIK.RejectedCertificate
-import Mettapedia.UniversalAlgebra.NIK.ConsequenceInvariance
-import Mettapedia.UniversalAlgebra.NIK.Simulation
-import Mettapedia.UniversalAlgebra.NIK.TheoryEquivalence
-import Mettapedia.UniversalAlgebra.NIK.ClassicalCertifiedTranslation
-import Mettapedia.UniversalAlgebra.NIK.ConstructiveCertifiedTranslation
-import Mettapedia.UniversalAlgebra.NIK.Interpretation
+import Mettapedia.UniversalAlgebra.SemanticService.Authority
+import Mettapedia.UniversalAlgebra.SemanticService.RejectedCertificate
+import Mettapedia.UniversalAlgebra.SemanticService.ConsequenceInvariance
+import Mettapedia.UniversalAlgebra.SemanticService.Simulation
+import Mettapedia.UniversalAlgebra.SemanticService.TheoryEquivalence
+import Mettapedia.UniversalAlgebra.SemanticService.ClassicalCertifiedTranslation
+import Mettapedia.UniversalAlgebra.SemanticService.ConstructiveCertifiedTranslation
+import Mettapedia.UniversalAlgebra.SemanticService.Interpretation
 import Mettapedia.UniversalAlgebra.Instances.Monoid
 import Mettapedia.UniversalAlgebra.Instances.MonoidConservativeExtension
 import Mettapedia.UniversalAlgebra.Instances.MonoidCertificateTranslation
@@ -45,5 +45,5 @@ import Mettapedia.UniversalAlgebra.Instances.MonoidUltrapower
 Finitary one-sorted signatures, occurrence-bearing equation systems, their
 models and equational consequence, conservative extension, exact Mathlib
 correspondence, ultrapower invariance, oriented contextual rewriting, OSLF
-modal semantics, and NIK replay authorities.
+modal semantics, and SemanticService replay authorities.
 -/

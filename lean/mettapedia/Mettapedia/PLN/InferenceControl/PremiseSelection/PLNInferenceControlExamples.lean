@@ -18,19 +18,19 @@ open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorit
 noncomputable section
 
 /-- Finite fixture scorer emphasizing `true` over `false`. -/
-def ch13_globalPriorBool : Scorer Bool Bool :=
+def globalPriorBool : Scorer Bool Bool :=
   ⟨fun _ f => if f then ⟨4, 1⟩ else ⟨1, 4⟩⟩
 
 /-- Finite fixture local scorer with weaker but aligned bias. -/
-def ch13_localPriorBool : Scorer Bool Bool :=
+def localPriorBool : Scorer Bool Bool :=
   ⟨fun _ f => if f then ⟨3, 1⟩ else ⟨1, 3⟩⟩
 
 /-- Finite fixture likelihood scorer. -/
-def ch13_likelihoodBool : Scorer Bool Bool :=
+def likelihoodBool : Scorer Bool Bool :=
   ⟨fun _ f => if f then ⟨5, 1⟩ else ⟨1, 5⟩⟩
 
 /-- Explicit checklist for the finite Bool fixture. -/
-def ch13_checklistBool : PriorNBAssumptionChecklist Bool Bool Bool where
+def checklistBool : PriorNBAssumptionChecklist Bool Bool Bool where
   inBin := fun g => g
   finitePool_nonempty := by decide
   localExchangeabilityInBin := True
@@ -39,111 +39,111 @@ def ch13_checklistBool : PriorNBAssumptionChecklist Bool Bool Bool where
   topK_le_pool := by decide
   surrogateCoverageObjective := True
 
-def ch13_dependencyBool : Finset Bool := {true}
+def dependencyBool : Finset Bool := {true}
 
 /-- Use pooled chapter-13 score as the Bayes surrogate on the worked fixture. -/
-def ch13_etaBool : Bool → ℝ :=
-  ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true
+def etaBool : Bool → ℝ :=
+  pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true
 
-def ch13_deltaZero : Bool → ℝ := fun _ => 0
+def deltaZero : Bool → ℝ := fun _ => 0
 
-lemma ch13_localExchangeabilityBool :
-    ch13_checklistBool.localExchangeabilityInBin := by
+lemma localExchangeabilityBool :
+    checklistBool.localExchangeabilityInBin := by
   trivial
 
-lemma ch13_pooledRankingBool :
-    BayesOptimalRanking ch13_etaBool
-      (ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true) := by
+lemma pooledRankingBool :
+    BayesOptimalRanking etaBool
+      (pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true) := by
   intro x y
-  simp [ch13_etaBool]
+  simp [etaBool]
 
-lemma ch13_twoStageRankingBool :
-    BayesOptimalRanking ch13_etaBool
-      (ch13ScoreTwoStage ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true) := by
+lemma twoStageRankingBool :
+    BayesOptimalRanking etaBool
+      (twoStageSelectorScore globalPriorBool localPriorBool likelihoodBool true) := by
   have hSel :=
-    ch13_selector_default_ranking_iff
-      (A := ch13_checklistBool) (η := ch13_etaBool)
-      (globalPrior := ch13_globalPriorBool) (localPrior := ch13_localPriorBool)
-      (likelihood := ch13_likelihoodBool) (g := true)
-      ch13_localExchangeabilityBool
-  exact hSel.2.2.mp ch13_pooledRankingBool
+    selector_default_ranking_iff
+      (A := checklistBool) (η := etaBool)
+      (globalPrior := globalPriorBool) (localPrior := localPriorBool)
+      (likelihood := likelihoodBool) (g := true)
+      localExchangeabilityBool
+  exact hSel.2.2.mp pooledRankingBool
 
-lemma ch13_marginBool :
-    ∀ x y, ch13_etaBool x < ch13_etaBool y →
-      ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true y
-        - ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true x
+lemma marginBool :
+    ∀ x y, etaBool x < etaBool y →
+      pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true y
+        - pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true x
           > 2 * (0 : ℝ) := by
   intro x y hlt
   have hpos :
-      ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true y
-        - ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true x
+      pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true y
+        - pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true x
           > 0 := by
-    exact sub_pos.mpr (by simpa [ch13_etaBool] using hlt)
+    exact sub_pos.mpr (by simpa [etaBool] using hlt)
   simpa using hpos
 
 /-- Worked Chapter-13 theorem:
 explicit finite checklist + scorers imply the full algorithmic end-to-end guarantee. -/
-theorem ch13_bool_end_to_end_algorithmic :
-    let G := greedySelect ch13_dependencyBool ch13_checklistBool.topK
-    ch13_checklistBool.topK ≤ Fintype.card Bool
+theorem bool_end_to_end_algorithmic :
+    let G := greedySelect dependencyBool checklistBool.topK
+    checklistBool.topK ≤ Fintype.card Bool
       ∧ (∀ g' f',
           0 ≤ (selectorDefaults_halfGate Bool Bool).gate g' f'
             ∧ (selectorDefaults_halfGate Bool Bool).gate g' f' ≤ 1)
-      ∧ BayesOptimalRanking ch13_etaBool
+      ∧ BayesOptimalRanking etaBool
           (perturbedScore
-            (ch13ScorePooled ch13_globalPriorBool ch13_localPriorBool ch13_likelihoodBool true)
-            ch13_deltaZero)
+            (pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true)
+            deltaZero)
       ∧ (1 - Real.exp (-1))
-          * (Nat.min ch13_checklistBool.topK ch13_dependencyBool.card : ℝ)
-          ≤ dependencyCoverage ch13_dependencyBool G := by
-  simpa [ch13_deltaZero] using
-    (ch13_inferenceControl_end_to_end_algorithmic
-      (A := ch13_checklistBool) (η := ch13_etaBool)
-      (globalPrior := ch13_globalPriorBool) (localPrior := ch13_localPriorBool)
-      (likelihood := ch13_likelihoodBool) (g := true)
-      ch13_localExchangeabilityBool
-      (δ := ch13_deltaZero) (ε := 0)
-      ch13_twoStageRankingBool
-      (hbound := by intro x; simp [ch13_deltaZero])
-      (hmargin := ch13_marginBool)
-      (htie := by intro x y hxy; simp [ch13_deltaZero])
-      (D := ch13_dependencyBool))
+          * (Nat.min checklistBool.topK dependencyBool.card : ℝ)
+          ≤ dependencyCoverage dependencyBool G := by
+  simpa [deltaZero] using
+    (inferenceControl_end_to_end_algorithmic
+      (A := checklistBool) (η := etaBool)
+      (globalPrior := globalPriorBool) (localPrior := localPriorBool)
+      (likelihood := likelihoodBool) (g := true)
+      localExchangeabilityBool
+      (δ := deltaZero) (ε := 0)
+      twoStageRankingBool
+      (hbound := by intro x; simp [deltaZero])
+      (hmargin := marginBool)
+      (htie := by intro x y hxy; simp [deltaZero])
+      (D := dependencyBool))
 
 /-- Concrete coverage corollary on the fixture:
 with one true dependency and `topK = 1`, the greedy selector covers it exactly. -/
-theorem ch13_bool_coverage_exact_one :
-    dependencyCoverage ch13_dependencyBool
-      (greedySelect ch13_dependencyBool ch13_checklistBool.topK) = 1 := by
+theorem bool_coverage_exact_one :
+    dependencyCoverage dependencyBool
+      (greedySelect dependencyBool checklistBool.topK) = 1 := by
   have hchain :
-      GreedyChain ch13_dependencyBool ch13_checklistBool.topK
-        (greedySelect ch13_dependencyBool ch13_checklistBool.topK) :=
+      GreedyChain dependencyBool checklistBool.topK
+        (greedySelect dependencyBool checklistBool.topK) :=
     greedySelect_chain_of_le_card
-      (D := ch13_dependencyBool) (k := ch13_checklistBool.topK)
-      ch13_checklistBool.topK_le_pool
+      (D := dependencyBool) (k := checklistBool.topK)
+      checklistBool.topK_le_pool
   have hcov :
-      dependencyCoverage ch13_dependencyBool
-        (greedySelect ch13_dependencyBool ch13_checklistBool.topK)
-        = Nat.min ch13_checklistBool.topK ch13_dependencyBool.card :=
+      dependencyCoverage dependencyBool
+        (greedySelect dependencyBool checklistBool.topK)
+        = Nat.min checklistBool.topK dependencyBool.card :=
     greedyChain_coverage_eq_min
-      (D := ch13_dependencyBool)
-      (S := greedySelect ch13_dependencyBool ch13_checklistBool.topK)
-      (i := ch13_checklistBool.topK) hchain
-  simpa [ch13_dependencyBool, ch13_checklistBool] using hcov
+      (D := dependencyBool)
+      (S := greedySelect dependencyBool checklistBool.topK)
+      (i := checklistBool.topK) hchain
+  simpa [dependencyBool, checklistBool] using hcov
 
 /-- Finite-3 fixture scorer emphasizing `{0,1}` over `2`. -/
-def ch13_globalPriorFin3 : Scorer Unit (Fin 3) :=
+def globalPriorFin3 : Scorer Unit (Fin 3) :=
   ⟨fun _ f => if f = (0 : Fin 3) ∨ f = (1 : Fin 3) then ⟨6, 1⟩ else ⟨1, 6⟩⟩
 
 /-- Finite-3 local scorer, aligned with the same preference. -/
-def ch13_localPriorFin3 : Scorer Unit (Fin 3) :=
+def localPriorFin3 : Scorer Unit (Fin 3) :=
   ⟨fun _ f => if f = (0 : Fin 3) ∨ f = (1 : Fin 3) then ⟨5, 1⟩ else ⟨1, 5⟩⟩
 
 /-- Finite-3 likelihood scorer, aligned with the same preference. -/
-def ch13_likelihoodFin3 : Scorer Unit (Fin 3) :=
+def likelihoodFin3 : Scorer Unit (Fin 3) :=
   ⟨fun _ f => if f = (0 : Fin 3) ∨ f = (1 : Fin 3) then ⟨7, 1⟩ else ⟨1, 7⟩⟩
 
 /-- Explicit `topK = 2` checklist on `Fin 3`. -/
-def ch13_checklistFin3 : PriorNBAssumptionChecklist Unit (Fin 3) Unit where
+def checklistFin3 : PriorNBAssumptionChecklist Unit (Fin 3) Unit where
   inBin := fun _ => ()
   finitePool_nonempty := by decide
   localExchangeabilityInBin := True
@@ -152,93 +152,93 @@ def ch13_checklistFin3 : PriorNBAssumptionChecklist Unit (Fin 3) Unit where
   topK_le_pool := by decide
   surrogateCoverageObjective := True
 
-def ch13_dependencyFin3 : Finset (Fin 3) := ({0, 1} : Finset (Fin 3))
+def dependencyFin3 : Finset (Fin 3) := ({0, 1} : Finset (Fin 3))
 
-def ch13_etaFin3 : Fin 3 → ℝ :=
-  ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 ()
+def etaFin3 : Fin 3 → ℝ :=
+  pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 ()
 
-def ch13_deltaZeroFin3 : Fin 3 → ℝ := fun _ => 0
+def deltaZeroFin3 : Fin 3 → ℝ := fun _ => 0
 
-lemma ch13_localExchangeabilityFin3 :
-    ch13_checklistFin3.localExchangeabilityInBin := by
+lemma localExchangeabilityFin3 :
+    checklistFin3.localExchangeabilityInBin := by
   trivial
 
-lemma ch13_pooledRankingFin3 :
-    BayesOptimalRanking ch13_etaFin3
-      (ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 ()) := by
+lemma pooledRankingFin3 :
+    BayesOptimalRanking etaFin3
+      (pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 ()) := by
   intro x y
-  simp [ch13_etaFin3]
+  simp [etaFin3]
 
-lemma ch13_twoStageRankingFin3 :
-    BayesOptimalRanking ch13_etaFin3
-      (ch13ScoreTwoStage ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 ()) := by
+lemma twoStageRankingFin3 :
+    BayesOptimalRanking etaFin3
+      (twoStageSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 ()) := by
   have hSel :=
-    ch13_selector_default_ranking_iff
-      (A := ch13_checklistFin3) (η := ch13_etaFin3)
-      (globalPrior := ch13_globalPriorFin3) (localPrior := ch13_localPriorFin3)
-      (likelihood := ch13_likelihoodFin3) (g := ())
-      ch13_localExchangeabilityFin3
-  exact hSel.2.2.mp ch13_pooledRankingFin3
+    selector_default_ranking_iff
+      (A := checklistFin3) (η := etaFin3)
+      (globalPrior := globalPriorFin3) (localPrior := localPriorFin3)
+      (likelihood := likelihoodFin3) (g := ())
+      localExchangeabilityFin3
+  exact hSel.2.2.mp pooledRankingFin3
 
-lemma ch13_marginFin3 :
-    ∀ x y, ch13_etaFin3 x < ch13_etaFin3 y →
-      ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 () y
-        - ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 () x
+lemma marginFin3 :
+    ∀ x y, etaFin3 x < etaFin3 y →
+      pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 () y
+        - pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 () x
           > 2 * (0 : ℝ) := by
   intro x y hlt
   have hpos :
-      ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 () y
-        - ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 () x
+      pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 () y
+        - pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 () x
           > 0 := by
-    exact sub_pos.mpr (by simpa [ch13_etaFin3] using hlt)
+    exact sub_pos.mpr (by simpa [etaFin3] using hlt)
   simpa using hpos
 
 /-- Worked Chapter-13 theorem with nontrivial budget `topK = 2`. -/
-theorem ch13_fin3_end_to_end_algorithmic_topK2 :
-    let G := greedySelect ch13_dependencyFin3 ch13_checklistFin3.topK
-    ch13_checklistFin3.topK ≤ Fintype.card (Fin 3)
+theorem fin3_end_to_end_algorithmic_topK2 :
+    let G := greedySelect dependencyFin3 checklistFin3.topK
+    checklistFin3.topK ≤ Fintype.card (Fin 3)
       ∧ (∀ g' f',
           0 ≤ (selectorDefaults_halfGate Unit (Fin 3)).gate g' f'
             ∧ (selectorDefaults_halfGate Unit (Fin 3)).gate g' f' ≤ 1)
-      ∧ BayesOptimalRanking ch13_etaFin3
+      ∧ BayesOptimalRanking etaFin3
           (perturbedScore
-            (ch13ScorePooled ch13_globalPriorFin3 ch13_localPriorFin3 ch13_likelihoodFin3 ())
-            ch13_deltaZeroFin3)
+            (pooledSelectorScore globalPriorFin3 localPriorFin3 likelihoodFin3 ())
+            deltaZeroFin3)
       ∧ (1 - Real.exp (-1))
-          * (Nat.min ch13_checklistFin3.topK ch13_dependencyFin3.card : ℝ)
-          ≤ dependencyCoverage ch13_dependencyFin3 G := by
-  simpa [ch13_deltaZeroFin3] using
-    (ch13_inferenceControl_end_to_end_algorithmic
-      (A := ch13_checklistFin3) (η := ch13_etaFin3)
-      (globalPrior := ch13_globalPriorFin3) (localPrior := ch13_localPriorFin3)
-      (likelihood := ch13_likelihoodFin3) (g := ())
-      ch13_localExchangeabilityFin3
-      (δ := ch13_deltaZeroFin3) (ε := 0)
-      ch13_twoStageRankingFin3
-      (hbound := by intro x; simp [ch13_deltaZeroFin3])
-      (hmargin := ch13_marginFin3)
-      (htie := by intro x y hxy; simp [ch13_deltaZeroFin3])
-      (D := ch13_dependencyFin3))
+          * (Nat.min checklistFin3.topK dependencyFin3.card : ℝ)
+          ≤ dependencyCoverage dependencyFin3 G := by
+  simpa [deltaZeroFin3] using
+    (inferenceControl_end_to_end_algorithmic
+      (A := checklistFin3) (η := etaFin3)
+      (globalPrior := globalPriorFin3) (localPrior := localPriorFin3)
+      (likelihood := likelihoodFin3) (g := ())
+      localExchangeabilityFin3
+      (δ := deltaZeroFin3) (ε := 0)
+      twoStageRankingFin3
+      (hbound := by intro x; simp [deltaZeroFin3])
+      (hmargin := marginFin3)
+      (htie := by intro x y hxy; simp [deltaZeroFin3])
+      (D := dependencyFin3))
 
 /-- Concrete `topK = 2` coverage corollary on the `Fin 3` fixture. -/
-theorem ch13_fin3_coverage_exact_two :
-    dependencyCoverage ch13_dependencyFin3
-      (greedySelect ch13_dependencyFin3 ch13_checklistFin3.topK) = 2 := by
+theorem fin3_coverage_exact_two :
+    dependencyCoverage dependencyFin3
+      (greedySelect dependencyFin3 checklistFin3.topK) = 2 := by
   have hchain :
-      GreedyChain ch13_dependencyFin3 ch13_checklistFin3.topK
-        (greedySelect ch13_dependencyFin3 ch13_checklistFin3.topK) :=
+      GreedyChain dependencyFin3 checklistFin3.topK
+        (greedySelect dependencyFin3 checklistFin3.topK) :=
     greedySelect_chain_of_le_card
-      (D := ch13_dependencyFin3) (k := ch13_checklistFin3.topK)
-      ch13_checklistFin3.topK_le_pool
+      (D := dependencyFin3) (k := checklistFin3.topK)
+      checklistFin3.topK_le_pool
   have hcov :
-      dependencyCoverage ch13_dependencyFin3
-        (greedySelect ch13_dependencyFin3 ch13_checklistFin3.topK)
-        = Nat.min ch13_checklistFin3.topK ch13_dependencyFin3.card :=
+      dependencyCoverage dependencyFin3
+        (greedySelect dependencyFin3 checklistFin3.topK)
+        = Nat.min checklistFin3.topK dependencyFin3.card :=
     greedyChain_coverage_eq_min
-      (D := ch13_dependencyFin3)
-      (S := greedySelect ch13_dependencyFin3 ch13_checklistFin3.topK)
-      (i := ch13_checklistFin3.topK) hchain
-  simpa [ch13_checklistFin3, ch13_dependencyFin3] using hcov
+      (D := dependencyFin3)
+      (S := greedySelect dependencyFin3 checklistFin3.topK)
+      (i := checklistFin3.topK) hchain
+  simpa [checklistFin3, dependencyFin3] using hcov
 
 end
 

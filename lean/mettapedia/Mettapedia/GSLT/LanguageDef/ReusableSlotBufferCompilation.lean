@@ -17,7 +17,7 @@ ordered snapshots.  Omitting the reset is exhibited as a negative canary.
 
 namespace Mettapedia.GSLT.LanguageDef.ReusableSlotBufferCompilation
 
-universe uValue
+universe uValue uObservation
 
 /-- A finite dense scratch buffer. -/
 abbrev Buffer (width : Nat) (Value : Type uValue) :=
@@ -26,6 +26,8 @@ abbrev Buffer (width : Nat) (Value : Type uValue) :=
 /-- One transaction writes a finite sequence of dense slots. -/
 abbrev Transaction (width : Nat) (Value : Type uValue) :=
   List (Fin width × Value)
+
+variable {width : Nat} {Value : Type uValue} {Observation : Type uObservation}
 
 def emptyBuffer : Buffer width Value := fun _ => none
 
@@ -862,10 +864,11 @@ def compileGeneratedCall?
     (operation : String) (actionIndex : Nat)
     (machine carrier region : String)
     (source : SequenceObservableProgram Value Observation) :
-    Option (ReusableSequenceObservableProgram Value Observation) := do
-  let plan ← admitGeneratedCallPlan? callFields workspaceFields operation
-    actionIndex machine carrier region
-  compileSequenceObservable? plan source
+    Option (ReusableSequenceObservableProgram Value Observation) :=
+  match admitGeneratedCallPlan? callFields workspaceFields operation
+      actionIndex machine carrier region with
+  | none => none
+  | some plan => compileSequenceObservable? plan source
 
 theorem compileGeneratedCall?_exact
     (callFields workspaceFields : List CallPlanField)

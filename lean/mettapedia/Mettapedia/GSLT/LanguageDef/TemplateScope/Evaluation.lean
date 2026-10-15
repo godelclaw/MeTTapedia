@@ -12,13 +12,22 @@ relational semantics: `AnswerBag d prog t bag`.
 * The environment is applied lazily: a store-name occurrence evaluates to
   itself; the store is consulted when a `let` matches and at the answer,
   where the final store is applied (`act`).
-* A `let` whose value is a lambda written in place is performed by
-  substitution of that lambda into the body, at the same path: the evaluator
-  itself performs `C[f := L]`.  A ground value refines the store (8/07).  A
-  non-ground value bound to a single name is substituted into the body: the
-  ground model has no aliasing, so a name bound this way is not visible
-  outside the `let` body.
-* Activation (`activate`) depends on the discipline:
+* A `let` whose pattern is one name that is unbound in the store, and whose
+  value is a lambda written in place, is performed by substitution of that
+  lambda into the body, at the same path: the evaluator itself performs
+  `C[f := L]`.  A ground value refines the store (8/07).  A non-ground value
+  bound to a single unbound name is substituted into the body: the ground
+  model has no aliasing, so a name bound this way is not visible outside the
+  `let` body.
+* A `let` whose pattern is one name that already holds a value is a match of
+  the stored value against the new one.  A ground value refines the store, as
+  for any pattern.  A lambda written in place, or a value that is not ground,
+  gives no answer: this matcher fills no name of the value.
+* Activation (`activate`) first renames the lambda's own names inside the
+  sealed code of its body (`sealRen`): a hole of a quotation is a name of the
+  frame that writes it, so the activation that renames the frame renames the
+  hole.  Substitution still never enters sealed code.  Then it depends on the
+  discipline:
   * `static` renames the lambda's recorded own names to fresh copies tagged
     by the activation path, and instantiates the parameter.  Rules M and A
     are `static` evaluation of `elabTopM` and `elabTopA` elaborations.
@@ -28,7 +37,8 @@ relational semantics: `AnswerBag d prog t bag`.
 ## Main results
 
 * `run_mono` — fuel monotonicity; `AnswerBag.unique`.
-* `run_letP_lam` — the evaluator's `let` of a lambda is the substitution.
+* `run_letP_lam` — the evaluator's `let` of a lambda on an unbound name is the
+  substitution; `run_letP_lam_bound` — on a bound name it gives no answer.
 * `run_lifted_call` — **Theorem 1 (lifting)**: calling the lambda-lifted
   equation equals applying the lambda, on the whole observation (bag of
   results with final stores), for any arguments.
@@ -63,12 +73,385 @@ def copyUnbound (σ : GStore S X) (ρ : Path) : Sub S X :=
     | Option.none => some (.var (.inst ρ n))
     | some _ => Option.none
 
-/-- Activation of `lam x own body` on the argument `arg`, at path `ρ`. -/
+/-- Rename the own names `own` to their copies at `ρ` inside sealed code.  A
+store name inside code is a hole: no binder of the code binds it, so every
+occurrence is renamed, in contextual code too.  Binders and parameters of the
+code are not store names and are left alone. -/
+def renCode (ρ : Path) (own : List X) : Tm S X → Tm S X
+  | .var n => if ownKey own n then .var (.inst ρ n) else .var n
+  | .lam x o b => .lam x o (renCode ρ own b)
+  | .app f a => .app (renCode ρ own f) (renCode ρ own a)
+  | .quote c => .quote (renCode ρ own c)
+  | .ctx ks c => .ctx ks (renCode ρ own c)
+  | .pquote c => .pquote (renCode ρ own c)
+  | .letP p w b => .letP (renCode ρ own p) (renCode ρ own w) (renCode ρ own b)
+  | .alt t u => .alt (renCode ρ own t) (renCode ρ own u)
+  | t => t
+
+/-- **The renaming of a frame's own names inside the sealed code of its body.**
+Each sealed quotation of the body, and each piece of contextual code, has its
+holes among `own` renamed to their copies at `ρ` (`renCode`).  A nested lambda
+that owns a name hides it, as it does for substitution; a pattern quotation is
+entered for the sealed code it holds.  Nothing outside sealed code changes. -/
+def sealRen (ρ : Path) (own : List X) : Tm S X → Tm S X
+  | .lam x o b => .lam x o (sealRen ρ (own.filter fun y => decide (y ∉ o)) b)
+  | .app f a => .app (sealRen ρ own f) (sealRen ρ own a)
+  | .quote c => .quote (renCode ρ own c)
+  | .ctx ks c => .ctx ks (renCode ρ own c)
+  | .pquote c => .pquote (sealRen ρ own c)
+  | .letP p w b => .letP (sealRen ρ own p) (sealRen ρ own w) (sealRen ρ own b)
+  | .alt t u => .alt (sealRen ρ own t) (sealRen ρ own u)
+  | t => t
+
+/-- Activation of `lam x own body` on the argument `arg`, at path `ρ`: the
+frame's own names are renamed inside the sealed code of the body (`sealRen`),
+then the discipline's renaming and the instantiation of the parameter are
+applied.  The argument is inserted after the sealed renaming, so the caller's
+quotations it carries are not renamed. -/
 def activate (d : Disc) (σ : GStore S X) (ρ : Path) (x : Nm X) (own : List X)
     (body arg : Tm S X) : Tm S X :=
   match d with
-  | .static => subst (renameOwn ρ own) (Sub.single x arg) body
-  | .copyAtCall => subst (copyUnbound σ ρ) (Sub.single x arg) body
+  | .static => subst (renameOwn ρ own) (Sub.single x arg) (sealRen ρ own body)
+  | .copyAtCall => subst (copyUnbound σ ρ) (Sub.single x arg) (sealRen ρ own body)
+
+omit [DecidableEq S] in
+/-- With no own names, the sealed renaming is the identity on code. -/
+theorem renCode_nil (ρ : Path) : ∀ c : Tm S X, renCode ρ ([] : List X) c = c
+  | .sym _ => rfl
+  | .fn _ => rfl
+  | .var n => by cases n <;> simp [renCode, ownKey]
+  | .pvar _ => rfl
+  | .lam x o b => by simp only [renCode, renCode_nil ρ b]
+  | .app f a => by simp only [renCode, renCode_nil ρ f, renCode_nil ρ a]
+  | .quote c => by simp only [renCode, renCode_nil ρ c]
+  | .ctx _ c => by simp only [renCode, renCode_nil ρ c]
+  | .pquote c => by simp only [renCode, renCode_nil ρ c]
+  | .letP p w b => by simp only [renCode, renCode_nil ρ p, renCode_nil ρ w, renCode_nil ρ b]
+  | .alt t u => by simp only [renCode, renCode_nil ρ t, renCode_nil ρ u]
+
+omit [DecidableEq S] in
+/-- With no own names, the sealed renaming of a body is the identity. -/
+@[simp] theorem sealRen_nil (ρ : Path) : ∀ t : Tm S X, sealRen ρ ([] : List X) t = t
+  | .sym _ => rfl
+  | .fn _ => rfl
+  | .var _ => rfl
+  | .pvar _ => rfl
+  | .lam x o b => by simp only [sealRen, List.filter_nil, sealRen_nil ρ b]
+  | .app f a => by simp only [sealRen, sealRen_nil ρ f, sealRen_nil ρ a]
+  | .quote c => by simp only [sealRen, renCode_nil ρ c]
+  | .ctx _ c => by simp only [sealRen, renCode_nil ρ c]
+  | .pquote c => by simp only [sealRen, sealRen_nil ρ c]
+  | .letP p w b => by simp only [sealRen, sealRen_nil ρ p, sealRen_nil ρ w, sealRen_nil ρ b]
+  | .alt t u => by simp only [sealRen, sealRen_nil ρ t, sealRen_nil ρ u]
+
+omit [DecidableEq S] in
+/-- The sealed renaming keeps the free store names: it acts inside sealed code
+only. -/
+theorem freeNames_sealRen (ρ : Path) : ∀ (own : List X) (t : Tm S X),
+    freeNames (sealRen ρ own t) = freeNames t
+  | _, .sym _ => rfl
+  | _, .fn _ => rfl
+  | _, .var _ => rfl
+  | _, .pvar _ => rfl
+  | own, .lam x o b => by simp only [sealRen, freeNames, freeNames_sealRen ρ _ b]
+  | own, .app f a => by simp only [sealRen, freeNames, freeNames_sealRen ρ own f,
+      freeNames_sealRen ρ own a]
+  | _, .quote _ => rfl
+  | _, .ctx _ _ => rfl
+  | own, .pquote c => by simp only [sealRen, freeNames, freeNames_sealRen ρ own c]
+  | own, .letP p w b => by simp only [sealRen, freeNames, freeNames_sealRen ρ own p,
+      freeNames_sealRen ρ own w, freeNames_sealRen ρ own b]
+  | own, .alt t u => by simp only [sealRen, freeNames, freeNames_sealRen ρ own t,
+      freeNames_sealRen ρ own u]
+
+/-- Every store name written in code, at any depth: inside code a store name
+is a hole. -/
+def codeVars : Tm S X → List (Nm X)
+  | .var n => [n]
+  | .lam _ _ b => codeVars b
+  | .app f a => codeVars f ++ codeVars a
+  | .quote c => codeVars c
+  | .ctx _ c => codeVars c
+  | .pquote c => codeVars c
+  | .letP p w b => codeVars p ++ codeVars w ++ codeVars b
+  | .alt t u => codeVars t ++ codeVars u
+  | _ => []
+
+/-- **The store names written inside sealed code** of a term: the holes of its
+quotations and of its contextual code, at any depth. -/
+def sealedVars : Tm S X → List (Nm X)
+  | .quote c => codeVars c
+  | .ctx _ c => codeVars c
+  | .lam _ _ b => sealedVars b
+  | .app f a => sealedVars f ++ sealedVars a
+  | .pquote c => sealedVars c
+  | .letP p w b => sealedVars p ++ sealedVars w ++ sealedVars b
+  | .alt t u => sealedVars t ++ sealedVars u
+  | _ => []
+
+/-- **The names of sealed code free in a term**: the holes of its quotations
+and contextual code that no enclosing lambda of the term owns.  These are the
+names an activation of a frame around the term can rename. -/
+def sealedFree : Tm S X → List (Nm X)
+  | .quote c => codeVars c
+  | .ctx _ c => codeVars c
+  | .lam _ own b => (sealedFree b).filter fun n => !ownKey own n
+  | .app f a => sealedFree f ++ sealedFree a
+  | .pquote c => sealedFree c
+  | .letP p w b => sealedFree p ++ sealedFree w ++ sealedFree b
+  | .alt t u => sealedFree t ++ sealedFree u
+  | _ => []
+
+omit [DecidableEq S] in
+/-- A free name of sealed code is a name of sealed code. -/
+theorem sealedVars_of_sealedFree : ∀ (t : Tm S X) {n : Nm X}, n ∈ sealedFree t → n ∈ sealedVars t
+  | .quote _, _, h => h
+  | .ctx _ _, _, h => h
+  | .lam _ _ b, n, h => by
+      simp only [sealedFree, List.mem_filter] at h
+      exact sealedVars_of_sealedFree b h.1
+  | .app f a, n, h => by
+      simp only [sealedFree, sealedVars, List.mem_append] at h ⊢
+      exact h.imp (sealedVars_of_sealedFree f) (sealedVars_of_sealedFree a)
+  | .pquote c, _, h => sealedVars_of_sealedFree c h
+  | .letP p w b, n, h => by
+      simp only [sealedFree, sealedVars, List.mem_append] at h ⊢
+      exact h.imp (fun h => h.imp (sealedVars_of_sealedFree p) (sealedVars_of_sealedFree w))
+        (sealedVars_of_sealedFree b)
+  | .alt t u, n, h => by
+      simp only [sealedFree, sealedVars, List.mem_append] at h ⊢
+      exact h.imp (sealedVars_of_sealedFree t) (sealedVars_of_sealedFree u)
+  | .sym _, _, h | .fn _, _, h | .var _, _, h | .pvar _, _, h => by simp [sealedFree] at h
+
+omit [DecidableEq S] in
+/-- Code that mentions none of `own` is not renamed. -/
+theorem renCode_eq_self (ρ : Path) (own : List X) :
+    ∀ c : Tm S X, (∀ n ∈ codeVars c, ownKey own n = false) → renCode ρ own c = c
+  | .sym _, _ => rfl
+  | .fn _, _ => rfl
+  | .var n, h => by simp [renCode, h n (by simp [codeVars])]
+  | .pvar _, _ => rfl
+  | .lam x o b, h => by
+      simp only [renCode, renCode_eq_self ρ own b (fun n hn => h n (by simpa [codeVars] using hn))]
+  | .app f a, h => by
+      simp only [codeVars, List.mem_append] at h
+      simp only [renCode, renCode_eq_self ρ own f (fun n hn => h n (Or.inl hn)),
+        renCode_eq_self ρ own a (fun n hn => h n (Or.inr hn))]
+  | .quote c, h => by
+      simp only [renCode, renCode_eq_self ρ own c (fun n hn => h n (by simpa [codeVars] using hn))]
+  | .ctx _ c, h => by
+      simp only [renCode, renCode_eq_self ρ own c (fun n hn => h n (by simpa [codeVars] using hn))]
+  | .pquote c, h => by
+      simp only [renCode, renCode_eq_self ρ own c (fun n hn => h n (by simpa [codeVars] using hn))]
+  | .letP p w b, h => by
+      simp only [codeVars, List.mem_append] at h
+      simp only [renCode, renCode_eq_self ρ own p (fun n hn => h n (Or.inl (Or.inl hn))),
+        renCode_eq_self ρ own w (fun n hn => h n (Or.inl (Or.inr hn))),
+        renCode_eq_self ρ own b (fun n hn => h n (Or.inr hn))]
+  | .alt t u, h => by
+      simp only [codeVars, List.mem_append] at h
+      simp only [renCode, renCode_eq_self ρ own t (fun n hn => h n (Or.inl hn)),
+        renCode_eq_self ρ own u (fun n hn => h n (Or.inr hn))]
+
+omit [DecidableEq S] in
+/-- **A body whose sealed code mentions none of the frame's own names is not
+renamed** by the frame's activation. -/
+theorem sealRen_eq_self (ρ : Path) :
+    ∀ (own : List X) (t : Tm S X), (∀ n ∈ sealedVars t, ownKey own n = false) →
+      sealRen ρ own t = t
+  | _, .sym _, _ => rfl
+  | _, .fn _, _ => rfl
+  | _, .var _, _ => rfl
+  | _, .pvar _, _ => rfl
+  | own, .lam x o b, h => by
+      have h' : ∀ n ∈ sealedVars b, ownKey (own.filter fun y => decide (y ∉ o)) n = false := by
+        intro n hn
+        have hk := h n (by simpa [sealedVars] using hn)
+        cases n with
+        | src y =>
+            simp only [ownKey, List.contains_eq_mem, decide_eq_false_iff_not, List.mem_filter,
+              not_and] at hk ⊢
+            exact fun hy => absurd hy hk
+        | inst _ _ => rfl
+      simp only [sealRen, sealRen_eq_self ρ _ b h']
+  | own, .app f a, h => by
+      simp only [sealedVars, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self ρ own f (fun n hn => h n (Or.inl hn)),
+        sealRen_eq_self ρ own a (fun n hn => h n (Or.inr hn))]
+  | own, .quote c, h => by
+      simp only [sealRen, renCode_eq_self ρ own c (fun n hn => h n (by simpa [sealedVars] using hn))]
+  | own, .ctx _ c, h => by
+      simp only [sealRen, renCode_eq_self ρ own c (fun n hn => h n (by simpa [sealedVars] using hn))]
+  | own, .pquote c, h => by
+      simp only [sealRen, sealRen_eq_self ρ own c (fun n hn => h n (by simpa [sealedVars] using hn))]
+  | own, .letP p w b, h => by
+      simp only [sealedVars, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self ρ own p (fun n hn => h n (Or.inl (Or.inl hn))),
+        sealRen_eq_self ρ own w (fun n hn => h n (Or.inl (Or.inr hn))),
+        sealRen_eq_self ρ own b (fun n hn => h n (Or.inr hn))]
+  | own, .alt t u, h => by
+      simp only [sealedVars, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self ρ own t (fun n hn => h n (Or.inl hn)),
+        sealRen_eq_self ρ own u (fun n hn => h n (Or.inr hn))]
+
+omit [DecidableEq S] in
+/-- **A body whose free sealed names are none of the frame's own names is not
+renamed** by the frame's activation: a name an inner lambda owns is hidden from
+the renaming. -/
+theorem sealRen_eq_self_of_free (ρ : Path) :
+    ∀ (own : List X) (t : Tm S X), (∀ n ∈ sealedFree t, ownKey own n = false) →
+      sealRen ρ own t = t
+  | _, .sym _, _ => rfl
+  | _, .fn _, _ => rfl
+  | _, .var _, _ => rfl
+  | _, .pvar _, _ => rfl
+  | own, .lam x o b, h => by
+      have h' : ∀ n ∈ sealedFree b, ownKey (own.filter fun y => decide (y ∉ o)) n = false := by
+        intro n hn
+        cases n with
+        | src y =>
+            simp only [ownKey, List.contains_eq_mem, decide_eq_false_iff_not, List.mem_filter,
+              decide_eq_true_eq, not_and, not_not]
+            intro hy
+            by_contra hyo
+            have hk := h (.src y) (by
+              simp only [sealedFree, List.mem_filter]
+              exact ⟨hn, by simp [ownKey, hyo]⟩)
+            simp [ownKey, hy] at hk
+        | inst _ _ => rfl
+      simp only [sealRen, sealRen_eq_self_of_free ρ _ b h']
+  | own, .app f a, h => by
+      simp only [sealedFree, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self_of_free ρ own f (fun n hn => h n (Or.inl hn)),
+        sealRen_eq_self_of_free ρ own a (fun n hn => h n (Or.inr hn))]
+  | own, .quote c, h => by
+      simp only [sealRen, renCode_eq_self ρ own c (fun n hn => h n (by simpa [sealedFree] using hn))]
+  | own, .ctx _ c, h => by
+      simp only [sealRen, renCode_eq_self ρ own c (fun n hn => h n (by simpa [sealedFree] using hn))]
+  | own, .pquote c, h => by
+      simp only [sealRen, sealRen_eq_self_of_free ρ own c
+        (fun n hn => h n (by simpa [sealedFree] using hn))]
+  | own, .letP p w b, h => by
+      simp only [sealedFree, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self_of_free ρ own p (fun n hn => h n (Or.inl (Or.inl hn))),
+        sealRen_eq_self_of_free ρ own w (fun n hn => h n (Or.inl (Or.inr hn))),
+        sealRen_eq_self_of_free ρ own b (fun n hn => h n (Or.inr hn))]
+  | own, .alt t u, h => by
+      simp only [sealedFree, List.mem_append] at h
+      simp only [sealRen, sealRen_eq_self_of_free ρ own t (fun n hn => h n (Or.inl hn)),
+        sealRen_eq_self_of_free ρ own u (fun n hn => h n (Or.inr hn))]
+
+omit [DecidableEq S] in
+/-- **A hole of renamed code** is a hole of the code that `own` does not own, or
+the copy at `ρ` of one it owns. -/
+theorem mem_codeVars_renCode (ρ : Path) (own : List X) :
+    ∀ (c : Tm S X) {m : Nm X}, m ∈ codeVars (renCode ρ own c) →
+      (m ∈ codeVars c ∧ ownKey own m = false) ∨
+        ∃ n ∈ codeVars c, ownKey own n = true ∧ m = .inst ρ n
+  | .sym _, _, h => by simp [renCode, codeVars] at h
+  | .fn _, _, h => by simp [renCode, codeVars] at h
+  | .var n, m, h => by
+      by_cases hk : ownKey own n = true
+      · simp only [renCode, hk, if_true, codeVars, List.mem_singleton] at h
+        exact Or.inr ⟨n, by simp [codeVars], hk, h⟩
+      · have hk' : ownKey own n = false := by simpa using hk
+        simp only [renCode, hk, Bool.false_eq_true, if_false, codeVars, List.mem_singleton] at h
+        subst h
+        exact Or.inl ⟨by simp [codeVars], hk'⟩
+  | .pvar _, _, h => by simp [renCode, codeVars] at h
+  | .lam x o b, m, h => by
+      simp only [renCode, codeVars] at h ⊢
+      exact mem_codeVars_renCode ρ own b h
+  | .app f a, m, h => by
+      simp only [renCode, codeVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · rcases mem_codeVars_renCode ρ own f h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inl h, hk⟩
+        · exact Or.inr ⟨n, Or.inl hn, hk, e⟩
+      · rcases mem_codeVars_renCode ρ own a h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inr h, hk⟩
+        · exact Or.inr ⟨n, Or.inr hn, hk, e⟩
+  | .quote c, m, h => by
+      simp only [renCode, codeVars] at h ⊢
+      exact mem_codeVars_renCode ρ own c h
+  | .ctx _ c, m, h => by
+      simp only [renCode, codeVars] at h ⊢
+      exact mem_codeVars_renCode ρ own c h
+  | .pquote c, m, h => by
+      simp only [renCode, codeVars] at h ⊢
+      exact mem_codeVars_renCode ρ own c h
+  | .letP p w b, m, h => by
+      simp only [renCode, codeVars, List.mem_append] at h ⊢
+      rcases h with (h | h) | h
+      · rcases mem_codeVars_renCode ρ own p h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inl (Or.inl h), hk⟩
+        · exact Or.inr ⟨n, Or.inl (Or.inl hn), hk, e⟩
+      · rcases mem_codeVars_renCode ρ own w h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inl (Or.inr h), hk⟩
+        · exact Or.inr ⟨n, Or.inl (Or.inr hn), hk, e⟩
+      · rcases mem_codeVars_renCode ρ own b h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inr h, hk⟩
+        · exact Or.inr ⟨n, Or.inr hn, hk, e⟩
+  | .alt t u, m, h => by
+      simp only [renCode, codeVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · rcases mem_codeVars_renCode ρ own t h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inl h, hk⟩
+        · exact Or.inr ⟨n, Or.inl hn, hk, e⟩
+      · rcases mem_codeVars_renCode ρ own u h with ⟨h, hk⟩ | ⟨n, hn, hk, e⟩
+        · exact Or.inl ⟨Or.inr h, hk⟩
+        · exact Or.inr ⟨n, Or.inr hn, hk, e⟩
+
+omit [DecidableEq S] in
+/-- A name of the sealed code of a renamed body is a name of the body's sealed
+code or a copy made at `ρ`. -/
+theorem mem_sealedVars_sealRen (ρ : Path) :
+    ∀ (own : List X) (t : Tm S X) {m : Nm X}, m ∈ sealedVars (sealRen ρ own t) →
+      m ∈ sealedVars t ∨ ∃ n, m = .inst ρ n
+  | _, .sym _, _, h => by simp [sealRen, sealedVars] at h
+  | _, .fn _, _, h => by simp [sealRen, sealedVars] at h
+  | _, .var _, _, h => by simp [sealRen, sealedVars] at h
+  | _, .pvar _, _, h => by simp [sealRen, sealedVars] at h
+  | own, .lam x o b, m, h => by
+      simp only [sealRen, sealedVars] at h ⊢
+      exact mem_sealedVars_sealRen ρ _ b h
+  | own, .app f a, m, h => by
+      simp only [sealRen, sealedVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · exact (mem_sealedVars_sealRen ρ own f h).imp_left Or.inl
+      · exact (mem_sealedVars_sealRen ρ own a h).imp_left Or.inr
+  | own, .quote c, m, h => by
+      simp only [sealRen, sealedVars] at h ⊢
+      rcases mem_codeVars_renCode ρ own c h with ⟨h, -⟩ | ⟨n, -, -, e⟩
+      · exact Or.inl h
+      · exact Or.inr ⟨n, e⟩
+  | own, .ctx _ c, m, h => by
+      simp only [sealRen, sealedVars] at h ⊢
+      rcases mem_codeVars_renCode ρ own c h with ⟨h, -⟩ | ⟨n, -, -, e⟩
+      · exact Or.inl h
+      · exact Or.inr ⟨n, e⟩
+  | own, .pquote c, m, h => by
+      simp only [sealRen, sealedVars] at h ⊢
+      exact mem_sealedVars_sealRen ρ own c h
+  | own, .letP p w b, m, h => by
+      simp only [sealRen, sealedVars, List.mem_append] at h ⊢
+      rcases h with (h | h) | h
+      · exact (mem_sealedVars_sealRen ρ own p h).imp_left (fun h => Or.inl (Or.inl h))
+      · exact (mem_sealedVars_sealRen ρ own w h).imp_left (fun h => Or.inl (Or.inr h))
+      · exact (mem_sealedVars_sealRen ρ own b h).imp_left Or.inr
+  | own, .alt t u, m, h => by
+      simp only [sealRen, sealedVars, List.mem_append] at h ⊢
+      rcases h with h | h
+      · exact (mem_sealedVars_sealRen ρ own t h).imp_left Or.inl
+      · exact (mem_sealedVars_sealRen ρ own u h).imp_left Or.inr
+
+omit [DecidableEq S] in
+/-- **Activation on a quotation renames the quotation's holes among the frame's
+own names, and nothing else**, under either discipline. -/
+theorem activate_quote (d : Disc) (σ : GStore S X) (ρ : Path) (x : Nm X) (own : List X)
+    (c arg : Tm S X) :
+    activate d σ ρ x own (.quote c) arg = .quote (renCode ρ own c) := by
+  cases d <;> rfl
 
 /-- How names are compared inside code.  The default compares them as written.
 A model whose quoted binders carry positions supplies its own comparison:
@@ -587,7 +970,18 @@ def bindOpt {α β : Type*} (o : Option (List α)) (g : α → Option (List β))
 abbrev Runner (S : Type u) (X : Type v) :=
   Path → GStore S X → Tm S X → Option (Result S X)
 
-/-- One unfolding of the evaluator, with `rec` for the sub-evaluations. -/
+omit [DecidableEq S] [DecidableEq X] [CodeId X] in
+/-- The empty store binds no name. -/
+theorem GStore.empty_apply (n : Nm X) : (Store.empty : GStore S X) n = Option.none := rfl
+
+/-- One unfolding of the evaluator, with `rec` for the sub-evaluations.
+
+A `let` whose pattern is one name `f` substitutes its value for `f` in the body
+in two cases, and in both only while `f` is unbound in the store at that point:
+the value is a lambda written in place, or the value is not ground.  When `f`
+already holds a value, the `let` is a match of the stored value against the
+new one, and in these two cases it gives no answer; a ground value is matched
+by `matchT`, bound or not. -/
 def step (d : Disc) (prog : S → Option (Tm S X)) (rec : Runner S X) : Runner S X :=
   fun π σ t =>
     match t with
@@ -604,7 +998,10 @@ def step (d : Disc) (prog : S → Option (Tm S X)) (rec : Runner S X) : Runner S
           | fv => some [(.app fv r₂.1, r₂.2)]
     | .letP p w b =>
         match letLam? p w with
-        | some f => rec π σ (subst (Sub.single f w) Sub.none b)
+        | some f =>
+            match σ f with
+            | Option.none => rec π σ (subst (Sub.single f w) Sub.none b)
+            | some _ => some []
         | Option.none =>
             bindOpt (rec (π ++ [0]) σ w) fun r₁ =>
               match (act r₁.2 r₁.1).toGVal? with
@@ -614,7 +1011,11 @@ def step (d : Disc) (prog : S → Option (Tm S X)) (rec : Runner S X) : Runner S
                   | Option.none => some []
               | Option.none =>
                   match p with
-                  | .var f => rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+                  | .var f =>
+                      match r₁.2 f with
+                      | Option.none =>
+                          rec (π ++ [1]) r₁.2 (subst (Sub.single f r₁.1) Sub.none b)
+                      | some _ => some []
                   | _ => some []
     | .alt t₁ t₂ =>
         match rec (π ++ [0]) σ t₁, rec (π ++ [1]) σ t₂ with
@@ -694,7 +1095,12 @@ theorem step_mono (d : Disc) (prog : S → Option (Tm S X)) {r r' : Runner S X}
   | letP p w b =>
       simp only [step] at hL ⊢
       cases hl : letLam? p w with
-      | some f => rw [hl] at hL; exact h _ _ _ _ hL
+      | some f =>
+          rw [hl] at hL
+          simp only at hL ⊢
+          cases hf : σ f with
+          | none => rw [hf] at hL; exact h _ _ _ _ hL
+          | some _ => rw [hf] at hL; exact hL
       | none =>
           rw [hl] at hL
           simp only at hL ⊢
@@ -711,7 +1117,11 @@ theorem step_mono (d : Disc) (prog : S → Option (Tm S X)) {r r' : Runner S X}
               rw [hg] at hM
               simp only at hM ⊢
               cases p with
-              | var f => exact h _ _ _ _ hM
+              | var f =>
+                  simp only at hM ⊢
+                  cases hf : r₁.2 f with
+                  | none => rw [hf] at hM; exact h _ _ _ _ hM
+                  | some _ => rw [hf] at hM; exact hM
               | _ => exact hM
   | alt t₁ t₂ =>
       simp only [step] at hL ⊢
@@ -796,12 +1206,23 @@ theorem AnswerBag.congr_of_run {d d' : Disc} {prog prog' : S → Option (Tm S X)
 
 /-! ## The evaluator performs the inlining substitution -/
 
-/-- A `let` of a lambda written in place is the substitution of that lambda
-into the body, at the same path. -/
+/-- A `let` of a lambda written in place, on a name that is unbound in the
+store, is the substitution of that lambda into the body, at the same path. -/
 theorem run_letP_lam (d : Disc) (prog : S → Option (Tm S X)) (n : ℕ) (π : Path)
-    (σ : GStore S X) (f x : Nm X) (own : List X) (body C : Tm S X) :
+    (σ : GStore S X) (f x : Nm X) (own : List X) (body C : Tm S X) (hf : σ f = Option.none) :
     run d prog (n + 1) π σ (.letP (.var f) (.lam x own body) C) =
-      run d prog n π σ (subst (Sub.single f (.lam x own body)) Sub.none C) := rfl
+      run d prog n π σ (subst (Sub.single f (.lam x own body)) Sub.none C) := by
+  show step d prog (run d prog n) π σ _ = _
+  simp only [step, letLam?, hf]
+
+/-- A `let` of a lambda written in place, on a name that already holds a value,
+gives no answer: the stored value is ground, and a lambda is not. -/
+theorem run_letP_lam_bound (d : Disc) (prog : S → Option (Tm S X)) (n : ℕ) (π : Path)
+    (σ : GStore S X) (f x : Nm X) (own : List X) (body C : Tm S X) {g : GVal S X}
+    (hf : σ f = some g) :
+    run d prog (n + 1) π σ (.letP (.var f) (.lam x own body) C) = some [] := by
+  show step d prog (run d prog n) π σ _ = _
+  simp only [step, letLam?, hf]
 
 /-- Answers agree when one run is the other with one more unit of fuel. -/
 theorem AnswerBag.congr_of_run_succ {d d' : Disc} {prog prog' : S → Option (Tm S X)}
@@ -1039,7 +1460,7 @@ theorem run_spine (prog : S → Option (Tm S X)) (Lf : S) (cs : List (Nm X))
       simp only
       rw [run_var, bindOpt_some_singleton]
       simp only [lifted, List.foldr_cons]
-      simp only [activate, renameOwn_nil]
+      simp only [activate, renameOwn_nil, sealRen_nil]
       rw [subst_single_foldr_lam _ rest _ hcrest, subst_single_absP _ _ hcL]
       have habs : (absP fun n => decide (n ∈ c :: rest) && decide (n ≠ c) : Sub S X) =
           absP fun n => decide (n ∈ rest) := by
@@ -1136,18 +1557,20 @@ theorem lifted_closed (L : Tm S X) : freeNames (lifted (captured L) L) = [] := b
 /-! ## Theorem 2: inlining at the query -/
 
 /-- **Theorem 2 (inlining, rule M).**  Under the hygiene hypothesis of
-`elabTopM_inline`, the elaborated `let f := L in C` runs exactly as the
-elaborated inlined text `C[f := L]`, with one unit of fuel for the `let`. -/
+`elabTopM_inline`, and from a store in which the `let`'s name is unbound, the
+elaborated `let f := L in C` runs exactly as the elaborated inlined text
+`C[f := L]`, with one unit of fuel for the `let`. -/
 theorem run_elabTopM_inline (prog : S → Option (Tm S X)) (n : ℕ) (π : Path)
     (σ : GStore S X) (fx : X) (x : Nm X) (body C : Tm S X)
     (hC : bare C = true) (hfL : fx ∉ names body)
     (hhyg : hygM fx (names body)
-      (elabM (direct (.letP (.var (.src fx)) (.lam x [] body) C)) C) = true) :
+      (elabM (direct (.letP (.var (.src fx)) (.lam x [] body) C)) C) = true)
+    (hf : σ (.src fx) = Option.none) :
     run .static prog (n + 1) π σ (elabTopM (.letP (.var (.src fx)) (.lam x [] body) C)) =
       run .static prog n π σ
         (elabTopM (subst (Sub.single (.src fx) (.lam x [] body)) Sub.none C)) := by
   rw [elabTopM_letP_lam, elabTopM_inline fx x body C hC hfL hhyg]
-  rfl
+  exact run_letP_lam .static prog n π σ (.src fx) x _ _ _ hf
 
 /-- Theorem 2 on answer bags. -/
 theorem answerBag_elabTopM_inline (prog : S → Option (Tm S X)) (fx : X) (x : Nm X)
@@ -1159,6 +1582,6 @@ theorem answerBag_elabTopM_inline (prog : S → Option (Tm S X)) (fx : X) (x : N
       AnswerBag .static prog
         (elabTopM (subst (Sub.single (.src fx) (.lam x [] body)) Sub.none C)) bag :=
   AnswerBag.congr_of_run_succ
-    (fun n => run_elabTopM_inline prog n [] Store.empty fx x body C hC hfL hhyg) bag
+    (fun n => run_elabTopM_inline prog n [] Store.empty fx x body C hC hfL hhyg rfl) bag
 
 end Mettapedia.GSLT.LanguageDef.TemplateScope

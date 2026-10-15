@@ -16,7 +16,7 @@ them when the records agree.  A checker built on a schema can distinguish
 exactly the executions that schema separates — so any attribute the schema
 omits is an attribute replay cannot check.
 
-The practical reading, for the Prime/NIK replay path: a receipt that omits
+The practical reading, for the Prime/SemanticService replay path: a receipt that omits
 colour, declaration identity, boundary evidence, or elaboration path
 cannot detect a swap in that field.  The provenance-swap fixture is
 therefore a genuine tamper test, not a formality.

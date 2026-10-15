@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.Cost.Elaboration.Total
 import Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
 
 /-!
 # Transport of cost-layer iteration implementation keys
@@ -23,14 +23,14 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyTransport
 open _root_.CategoryTheory
 open Mettapedia.GSLT.Core
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CostElaborationKeyContract
 open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyObservationFamilyBridge
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NIKPolicyFamilyTransport
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyFamilyTransport
 
 universe uPolicy uValue
 
@@ -137,10 +137,10 @@ theorem compactPolicy_transport_comp_agrees
             (compactCarrierKey first.toLayer.source.toCIGSLT fiber))) := by
   rw [compactCarrierKey_transportFiber, compactCarrierKey_transportFiber]
 
-/-! ## NIK admission is stable under policy pullback -/
+/-! ## SemanticService admission is stable under policy pullback -/
 
 /-- Pulling a target compact observation back along displayed transport gives
-a policy-only NIK admission over the source compact key. -/
+a policy-only SemanticService admission over the source compact key. -/
 def transportedCompactPolicyAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     {source target : CostElaborationBase} (morphism : source ⟶ target)
@@ -233,7 +233,7 @@ def pullbackCompactPolicyAdmission
           (Cost.Elaboration.Total.transportFiber morphism fiber) }
   replay := fun impossible => False.elim impossible
 
-/-- The generic NIK route gives the same Cost pullback in two conceptual
+/-- The generic SemanticService route gives the same Cost pullback in two conceptual
 steps: transport the admitted policy family along semantic state, then refine
 the transported compact key to the source compact key. -/
 def pullbackCompactPolicyAdmissionViaGeneric

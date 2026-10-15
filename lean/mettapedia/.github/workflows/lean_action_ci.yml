@@ -24,12 +24,12 @@ jobs:
       - uses: leanprover/lean-action@v1
       - name: SimpleHE conformance gate
         run: ./scripts/conformance/check_simplehe_conformance.sh
-      - name: Chapter 11 quantifier regression
-        run: ./scripts/check_ch11_quantifiers.sh
-      - name: Chapter 11 fuzzy syllogism regression
-        run: ./scripts/check_ch11_fuzzy_syllogism.sh
-      - name: Chapter 13 inference-control regression
-        run: ./scripts/check_ch13_inference_control.sh
+      - name: Quantifier regression
+        run: lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression
+      - name: Fuzzy syllogism regression
+        run: lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin
+      - name: Inference-control regression
+        run: lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression
       - name: Install SWI-Prolog (conformance gate)
         run: |
           sudo apt-get update

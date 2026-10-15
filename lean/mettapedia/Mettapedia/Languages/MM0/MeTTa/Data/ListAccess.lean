@@ -90,12 +90,19 @@ private theorem list_condition_returns (state : State) (values : List Atom) (ind
       (.expression [.symbol "size-atom", .var "values"]) state (natural values.length) := by
     apply native_variable_call_returns program bindings state state "size-atom" ["values"]
       (natural values.length) (by decide) (by decide) _ (by decide)
-    simp [bindings, listEnvironment, environment, applySubst, Subst.lookup,
-      StdLib.apply, natural]
+    change StdLib.apply state "size-atom" [.expression values] = .ok (state, [natural values.length])
+    rfl
   apply call_returns program bindings state state "<" _ _ (by decide) _ (by decide)
   have native := native_function_arguments_return program bindings state state "<"
     [natural index, natural values.length] 2 (boolean (index < values.length))
-    (by decide) (by decide) (by simp [StdLib.apply, natural, boolean])
+    (by decide) (by decide) (by
+      change (Except.ok (state, [boolean ((index : Int) < (values.length : Int))]) : Effects.Result) =
+        .ok (state, [boolean (index < values.length)])
+      have same : decide ((index : Int) < (values.length : Int)) = decide (index < values.length) := by
+        apply Bool.eq_iff_iff.mpr
+        simp only [decide_eq_true_eq]
+        omega
+      rw [same])
   have last := evaluated_argument_returns program bindings state state state (.function "<")
     _ (natural values.length) (boolean (index < values.length)) [] [natural index] 1
     (by decide) size native
@@ -119,8 +126,10 @@ private theorem list_found_returns (state : State) (values : List Atom) (index :
       (.expression [.symbol "index-atom", .var "values", .var "index"]) state value := by
     apply native_variable_call_returns program bindings state state "index-atom" ["values", "index"]
       value (by decide) (by decide) _ (by decide)
-    simp [bindings, listEnvironment, environment, applySubst, Subst.lookup,
-      StdLib.apply, natural, value, List.getElem?_eq_getElem bounded]
+    change ((if (index : Int) < 0 then Except.ok (state, []) else
+      Except.ok (state, (values[(index : Int).toNat]?).toList)) : Effects.Result) = .ok (state, [value])
+    rw [if_neg (by omega), Int.toNat_natCast, List.getElem?_eq_getElem bounded]
+    rfl
   have matched : SpaceSemantics.matchValue bindings (.var "value") value =
       some (("value", value) :: bindings) := by
     simp [SpaceSemantics.matchValue, matchAtom, bindings, listEnvironment, environment, Subst.lookup]
@@ -304,7 +313,9 @@ theorem cons_body_returns (state : State) (first : Atom) (rest : List Atom) :
       (.expression (first :: rest)) _
     · apply native_variable_call_returns program bound state state "cons" ["item", "rest"] _
         (by decide) (by decide) _ (by decide)
-      simp [StdLib.apply, bound, bindings, consEnvironment, applySubst, Subst.lookup]
+      change StdLib.apply state "cons" [first, .expression rest] =
+        .ok (state, [.expression (first :: rest)])
+      rfl
     · simp [SpaceSemantics.matchValue, matchAtom, wrapped, bound, bindings, consEnvironment, Subst.lookup]
     · simpa [wrapped, listValue, applySubst, Subst.lookup] using
         unary_constructor_returns program wrapped state "MM0:L" "items" list_is_data_constructor (by decide)

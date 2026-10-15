@@ -18,7 +18,7 @@ soundness, injectivity, exact instruction layouts, and a negative control for
 an unguarded partial operation.  The universal section then proves the
 request-local source/target operational square, including preservation and
 no-invention for both completion outcomes and exact ordered receipts.  C data
-structures, emitted C, GMP, linked execution, and NIK admission remain
+structures, emitted C, GMP, linked execution, and SemanticService admission remain
 separate realization boundaries.
 -/
 

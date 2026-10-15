@@ -19,7 +19,7 @@ namespace Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Regular
 
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Syntax
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Context
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-- The accessibility normalizer covers every subject and type admitted by the
 regular kernel.  This is the exact coupling between the logical-relations

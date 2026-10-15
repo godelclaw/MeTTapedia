@@ -69,7 +69,7 @@ theorem checkRaw_sound_presented {T : Theory} {n : Nat} (h : Hosted T n)
   derives_of_foDerivable h
     ((checkRaw_exists_iff_foDerivable presents _).mp ⟨article, accepted⟩)
 
-/-- The actual theory-extended, validated NIK kernel checker accepts only
+/-- The actual theory-extended, validated SemanticService kernel checker accepts only
 statements derivable in the independently specified Vibe-ITP kernel. -/
 theorem checkRaw_kernel_sound {T : Theory} {n : Nat} (h : Hosted T n)
     {φ : Term} {article : RawProof}

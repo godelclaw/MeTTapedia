@@ -33,7 +33,7 @@ open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlChainer
 open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples
 
-/-! ## A triggered Chapter-13 premise selector -/
+/-! ## A triggered forward premise selector -/
 
 inductive ResidentService where
   | premiseSelector
@@ -54,19 +54,19 @@ theorem selectorInvocation_generated (cycle : Nat) :
     selectorSpace.Generated heartbeat cycle (selectorInvocation cycle) :=
   selectorSpace.generated_occurrenceAt heartbeat cycle () .premiseSelector rfl rfl
 
-/-- The actual finite Chapter-13 forward selector used by the service. -/
+/-- The finite forward selector used by the service. -/
 def selectedPremises : Finset Bool :=
-  forwardSearch ch13_dependencyBool ch13_checklistBool.topK
+  forwardSearch dependencyBool checklistBool.topK
 
-/-- The executable Chapter-13 selector selects the unique required premise. -/
+/-- The executable forward selector selects the unique required premise. -/
 theorem requiredPremise_selected : true ∈ selectedPremises := by
   have coverage :
-      dependencyCoverage ch13_dependencyBool selectedPremises = 1 := by
-    simpa [selectedPremises, forwardSearch] using ch13_bool_coverage_exact_one
+      dependencyCoverage dependencyBool selectedPremises = 1 := by
+    simpa [selectedPremises, forwardSearch] using bool_coverage_exact_one
   by_contra missing
   have zeroCoverage :
-      dependencyCoverage ch13_dependencyBool selectedPremises = 0 := by
-    simp [dependencyCoverage, ch13_dependencyBool, missing]
+      dependencyCoverage dependencyBool selectedPremises = 0 := by
+    simp [dependencyCoverage, dependencyBool, missing]
   omega
 
 /-- A recommendation is only data: which triggered call proposed which finite
@@ -76,7 +76,7 @@ structure Recommendation where
   selected : Bool
 
 /-- An algorithmic receipt additionally proves that the selected premise came
-from the declared Chapter-13 selector and that the service invocation existed. -/
+from the declared forward selector and that the service invocation existed. -/
 structure SelectionReceipt where
   recommendation : Recommendation
   generated : selectorSpace.Generated heartbeat
@@ -91,11 +91,11 @@ def selectionReceiptAt (cycle : Nat) : SelectionReceipt where
 /-- Store admission is a separate policy proof.  The current policy admits
 only premises belonging to the authored dependency set. -/
 structure Authorization (recommendation : Recommendation) where
-  allowed : recommendation.selected ∈ ch13_dependencyBool
+  allowed : recommendation.selected ∈ dependencyBool
 
-def selectionAuthorizationAt (cycle : Nat) :
+theorem selectionAuthorizationAt (cycle : Nat) :
     Authorization (selectionReceiptAt cycle).recommendation where
-  allowed := by simp [selectionReceiptAt, ch13_dependencyBool]
+  allowed := by simp [selectionReceiptAt, dependencyBool]
 
 /-- A recommendation outside the authored dependency policy cannot acquire an
 admission witness merely by being present as advice. -/
@@ -106,7 +106,7 @@ theorem distractorAdvice_not_authorized :
     IsEmpty (Authorization distractorAdvice) := by
   constructor
   intro authorization
-  simpa [Authorization, distractorAdvice, ch13_dependencyBool] using
+  simpa [Authorization, distractorAdvice, dependencyBool] using
     authorization.allowed
 
 /-! ## The foreground given-clause workload -/
@@ -201,7 +201,7 @@ def StoreAllows (selection : AuthorizedSelection)
     (occurrence : ClauseOccurrence) : Prop :=
   occurrence = admittedOccurrence selection.receipt selection.authorization
 
-def storeAdmission (selection : AuthorizedSelection) :
+theorem storeAdmission (selection : AuthorizedSelection) :
     AdmissionWitness StoreAllows selection
       (admittedOccurrence selection.receipt selection.authorization) where
   authorized := rfl

@@ -3495,7 +3495,7 @@ private theorem uniformCounterMapping_find?
         simp [uniformCounterMapping]
       · have hbeq : (x == v) = false := by
           simp [hx]
-        simpa [uniformCounterMapping, hbeq] using ih
+        simp [uniformCounterMapping, hbeq]
 
 /-- LeaTTa's substitution lookup for the runtime freshening substitution is the
 expected variable lookup with the uniform counter suffix. -/

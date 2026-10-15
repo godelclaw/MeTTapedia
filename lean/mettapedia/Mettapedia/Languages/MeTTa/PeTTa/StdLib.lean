@@ -17,6 +17,8 @@ derive.
 
 The closed-value profile also includes eager list operations, metatype queries,
 ground scalar type queries, and the string operations used by source readers.
+Closed string-list sorting retains repeated occurrences, as PeTTa's `msort` does;
+the order of mixed values is outside this primitive fragment.
 Strings retain their exact bytes through the shared ByteString image. Open
 membership and non-scalar type inference remain outside this primitive profile.
 -/
@@ -31,11 +33,27 @@ open Effects
 open SpaceSemantics (query)
 
 def known (head : String) : Bool :=
-  head ∈ ["+", "-", "*", "%", "<", "<=", "==", "and", "or", "cons", "size-atom",
+  head ∈ ["+", "-", "*", "%", "<", "<=", ">", ">=", "==", "and", "or", "cons", "size-atom",
     "index-atom", "new-space", "add-atom", "remove-atom", "get-atoms", "match",
     "get-state", "change-state!", "reverse", "is-member", "get-metatype", "get-type",
     "str:byte-length", "str:byte-slice", "str:concat", "str:join", "str:from-codepoints",
-    "parse"]
+    "parse", "cons-atom", "sort-atom"]
+
+/-- Recognize exactly the closed string-list fragment of native sorting. -/
+def strings : List Atom → Option (List String)
+  | [] => some []
+  | .grounded (.string first) :: rest => (first :: ·) <$> strings rest
+  | _ => none
+
+def stringAtoms (items : List String) : List Atom := items.map (.grounded ∘ .string)
+
+theorem strings_string_atoms (items : List String) : strings (stringAtoms items) = some items := by
+  induction items with
+  | nil => rfl
+  | cons first rest ih =>
+      change (first :: ·) <$> strings (stringAtoms rest) = some (first :: rest)
+      rw [ih]
+      rfl
 
 /-- Native argument demand: patterns, templates and stored data are values;
 numeric operands and locations are evaluated. -/
@@ -167,8 +185,16 @@ def apply (state : State) (head : String) (arguments : List Atom) : Result :=
         if right = 0 then .error .zeroDivisor else answer (.grounded (.int (left.fmod right)))
     | "<", [.grounded (.int left), .grounded (.int right)] => answer (boolean (left < right))
     | "<=", [.grounded (.int left), .grounded (.int right)] => answer (boolean (left ≤ right))
+    | ">", [.grounded (.int left), .grounded (.int right)] => answer (boolean (left > right))
+    | ">=", [.grounded (.int left), .grounded (.int right)] => answer (boolean (left ≥ right))
     | "==", [left, right] => answer (boolean (left == right))
     | "cons", [first, .expression rest] => answer (.expression (first :: rest))
+    | "cons-atom", [first, .expression rest] => answer (.expression (first :: rest))
+    | "sort-atom", [.expression items] =>
+        match strings items with
+        | some texts => answer (.expression (stringAtoms (texts.mergeSort (· ≤ ·))))
+        | none => bad
+    | "sort-atom", [.symbol _] | "sort-atom", [.grounded _] => answer (.expression [])
     | "size-atom", [.expression items] => answer (.grounded (.int items.length))
     | "size-atom", [_] => answer (.expression [])
     | "index-atom", [.expression items, .grounded (.int index)] =>
@@ -225,6 +251,43 @@ def apply (state : State) (head : String) (arguments : List Atom) : Result :=
 
 /-! ## Positive and negative primitive controls -/
 
+theorem structural_equality (state : State) (left right : Atom) :
+    apply state "==" [left, right] = .ok (state, [boolean (left == right)]) := rfl
+
+theorem native_cons (state : State) (first : Atom) (rest : List Atom) :
+    apply state "cons-atom" [first, .expression rest] = .ok (state, [.expression (first :: rest)]) := rfl
+
+theorem string_list_sort (state : State) (items : List String) :
+    apply state "sort-atom" [.expression (stringAtoms items)] =
+      .ok (state, [.expression (stringAtoms (items.mergeSort (· ≤ ·)))]) := by
+  simp [apply, strings_string_atoms]
+
+theorem sorting_and_native_cons_registered : known "sort-atom" = true ∧ known "cons-atom" = true := by decide
+
+theorem integer_addition (state : State) (left right : Int) :
+    apply state "+" [.grounded (.int left), .grounded (.int right)] =
+      .ok (state, [.grounded (.int (left + right))]) := rfl
+
+theorem greater_comparison (state : State) (left right : Int) :
+    apply state ">" [.grounded (.int left), .grounded (.int right)] =
+      .ok (state, [boolean (left > right)]) := rfl
+
+theorem greater_equal_comparison (state : State) (left right : Int) :
+    apply state ">=" [.grounded (.int left), .grounded (.int right)] =
+      .ok (state, [boolean (left ≥ right)]) := rfl
+
+theorem greater_comparisons_registered : known ">" = true ∧ known ">=" = true := by decide
+
+theorem strict_comparison_distinguishes_equality (state : State) (value : Int) :
+    apply state ">" [.grounded (.int value), .grounded (.int value)] = .ok (state, [boolean false]) ∧
+      apply state ">=" [.grounded (.int value), .grounded (.int value)] = .ok (state, [boolean true]) := by
+  constructor <;> simp [apply, boolean]
+
+theorem malformed_comparisons_fault (state : State) :
+    apply state ">" [.symbol "not-a-number", .grounded (.int 0)] = .error (.invalidArguments ">") ∧
+      apply state ">=" [.grounded (.int 0)] = .error (.invalidArguments ">=") := by
+  constructor <;> rfl
+
 theorem boolean_and (state : State) (left right : Bool) :
     apply state "and" [boolean left, boolean right] = .ok (state, [boolean (left && right)]) := rfl
 
@@ -246,6 +309,9 @@ theorem expression_metatype (state : State) (items : List Atom) :
 
 theorem integer_type_is_number (state : State) (value : Int) :
     apply state "get-type" [.grounded (.int value)] = .ok (state, [.symbol "Number"]) := rfl
+
+theorem string_type_is_string (state : State) (value : String) :
+    apply state "get-type" [.grounded (.string value)] = .ok (state, [.symbol "String"]) := rfl
 
 theorem empty_membership_is_false (state : State) (value : Atom) :
     apply state "is-member" [value, .expression []] = .ok (state, [boolean false]) := rfl
@@ -353,6 +419,21 @@ theorem natural_remainder (state : State) (left right : Nat) (positive : 0 < rig
 /-! ## Cell support of successful primitives -/
 
 open NamedSpaces.Store
+
+/-- Successful calls outside the four mutable primitives retain the entire
+store, including all private spaces and named cells. -/
+theorem successful_apply_state {state after : State} {head : String}
+    {arguments answers : List Atom}
+    (notNew : head ≠ "new-space") (notAdd : head ≠ "add-atom")
+    (notRemove : head ≠ "remove-atom") (notChange : head ≠ "change-state!")
+    (returned : apply state head arguments = .ok (after, answers)) : after = state := by
+  unfold apply booleanBinary at returned
+  repeat' first
+    | split at returned
+    | contradiction
+    | solve
+        | cases returned
+          rfl
 
 theorem successful_apply_cell_update {state after : State} {head : String}
     {arguments answers : List Atom}

@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.GSLTILRouteEquipment
 import Mettapedia.GSLT.LanguageDef.GSLTILWireCells
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 import Mettapedia.GSLT.Dynamics.RevisionedOccurrenceExactImage
 
 /-!
@@ -22,7 +22,7 @@ determines:
 * a structural action on language-indexed `Data`;
 * an exact companion representation of that action;
 * capture-avoiding substitution coherence; and
-* an observation-preserving, revision-admissible NIK refinement.
+* an observation-preserving, revision-admissible SemanticService refinement.
 
 Composition retains the intermediate value and both relation witnesses in
 the loose layer while the represented action executes by ordinary function
@@ -41,7 +41,7 @@ open Mettapedia.GSLT.Dynamics
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LooseRelationEquipment
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteEquipment
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 open Mettapedia.Languages.MeTTa.Experimental.StagedReflective
 open Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflectiveInstances
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language (needRevisionKeying)
@@ -50,7 +50,7 @@ open Mettapedia.Languages.MeTTa.PrimeCandidates.DataFibration.ValidatedLanguageD
 open Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationFactorization
-open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.DeclarationSemantics
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Syntax
 open Mettapedia.OSLF.MeTTaIL.Substitution
@@ -145,7 +145,7 @@ language-operation program.  Every field is indexed by that same program, so
 the typing, structural action, operational route, and admitted observation
 cannot silently select different transformations. -/
 structure SelectedRouteRealization
-    (model : LanguageOperationNIKAdmission.CandidateModel)
+    (model : LanguageOperationAdmission.CandidateModel)
     (decoded : currentOperationSignature.DecodedProgram) where
   typed :
     HasTypeDecl operationDeclEnv .nil (encodeProgram decoded.program)
@@ -174,7 +174,7 @@ structure SelectedRouteRealization
 
 /-- Construct the full selected-fragment realization without a second
 checker, route hierarchy, or execution semantics. -/
-def realize (model : LanguageOperationNIKAdmission.CandidateModel)
+def realize (model : LanguageOperationAdmission.CandidateModel)
     (decoded : currentOperationSignature.DecodedProgram) :
     SelectedRouteRealization model decoded where
   typed := encodeProgram_typed decoded.program

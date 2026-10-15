@@ -35,7 +35,7 @@ open Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardCompileTyped
 
 /-- The flat typed language has no equations, so its real relation environment
 induces a lawful object GSLT without any extra semantic assumption. -/
-def reductionLaws : ReductionRespectsEquationsUsing relationEnv
+theorem reductionLaws : ReductionRespectsEquationsUsing relationEnv
     generated.1.toLanguageDef :=
   ReductionRespectsEquationsUsing.of_equation_free relationEnv
     flatTyped_equationFree
@@ -172,7 +172,7 @@ theorem empty_cold_has_no_step :
   rw [empty_root_executor_stuck] at member
   exact List.not_mem_nil member
 
-def emptyReductionLaws : ReductionRespectsEquations
+theorem emptyReductionLaws : ReductionRespectsEquations
     generated.1.toLanguageDef :=
   ReductionRespectsEquations.of_equation_free flatTyped_equationFree
 

@@ -27,7 +27,7 @@ open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILInteractionTransport
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationComposition
 open Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
-open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 
 universe uSite uEvent

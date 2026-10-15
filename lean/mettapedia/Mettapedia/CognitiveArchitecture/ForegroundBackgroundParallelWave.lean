@@ -334,7 +334,7 @@ theorem useful_pair_admitted_by_parallel_backend :
   exact ⟨parallelTarget, ⟨certified⟩⟩
 
 /-- The intrusive pair cannot enter even the semantic backend.  An executable
-NIK article will additionally need a replayable checker and physical receipt;
+SemanticService article will additionally need a replayable checker and physical receipt;
 this bridge does not manufacture either. -/
 theorem intrusive_pair_refused_by_parallel_backend :
     ¬ parallelBackend.Admits .foregroundBridge .intrusiveRewind
@@ -424,7 +424,7 @@ theorem useful_event_claim_is_admitted :
   replayableAdmission.authority.sound usefulEventClaim ()
     useful_event_claim_replays
 
-/-! ## A revision-bound operator article for the ordinary NIK frontend -/
+/-! ## A revision-bound operator article for the ordinary SemanticService frontend -/
 
 /-- The finite physical view distinguishes authored work from the emitted
 workspace observation. -/
@@ -506,14 +506,14 @@ theorem physical_article_has_declared_meaning :
   (authorityProjection replayableAdmission).sound physicalClaim ()
     physical_article_accepted
 
-/-- The same article enters the ordinary statusful NIK frontend; parallel
+/-- The same article enters the ordinary statusful SemanticService frontend; parallel
 execution does not require a privileged evaluator branch. -/
-theorem physical_article_defaultNIK_accepts :
+theorem physical_article_submissionProfile_accepts :
     (typedFrontend replayableAdmission).run
         ((typedFrontend replayableAdmission).encode
           (submission replayableAdmission physicalClaim ())) =
-      Mettapedia.GSLT.LanguageDef.NIKDefaultProfile.SubmissionOutcome.accepted
-        (Mettapedia.GSLT.LanguageDef.NIKDefaultProfile.TypedSubmission.claim
+      Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile.SubmissionOutcome.accepted
+        (Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile.TypedSubmission.claim
           (submission replayableAdmission physicalClaim ())) :=
   accepted_defaultRun replayableAdmission physicalClaim ()
     physical_article_accepted
@@ -553,7 +553,7 @@ theorem reordered_physical_article_rejected :
 #print axioms useful_event_claim_is_admitted
 #print axioms physical_article_accepted
 #print axioms physical_article_has_declared_meaning
-#print axioms physical_article_defaultNIK_accepts
+#print axioms physical_article_submissionProfile_accepts
 #print axioms stale_physical_article_rejected
 #print axioms reordered_physical_article_rejected
 

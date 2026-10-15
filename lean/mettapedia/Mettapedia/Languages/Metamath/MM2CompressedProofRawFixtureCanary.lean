@@ -100,7 +100,7 @@ def atomHasHead (name : String) : Atom → Bool
   | _ => false
 
 def fixtureExactStatementsCheck : Bool :=
-  match transformRawSource fixtureOwner fixtureFiles bookSpecPolicy
+  match transformRawSource fixtureOwner fixtureFiles ignoreCyclicReferencesPolicy
       fixtureRoot with
   | .error _ => false
   | .ok artifact => artifact.statements == fixtureStatements

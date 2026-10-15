@@ -9,7 +9,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.SelectedCostLayerIterationBoun
 
 The revision-indexed typed COMM cell retains a strict occurrence and its
 literal rho endpoints.  This module carries that same closed communication
-through exact NIK authority, a funded operational Cost1 step, the generated
+through exact SemanticService authority, a funded operational Cost1 step, the generated
 Cost1 grammar and reduction, and one selected Cost2 displayed fibre.
 
 The endpoints commute after the already-declared rho equations.  The
@@ -72,7 +72,7 @@ def rhoProcessIdentity : ExactEndpointIdentity RhoProcess where
   identify := Subtype.val
   identify_injective := Subtype.val_injective
 
-/-- The local NIK authority generated from the exact typed-COMM event family. -/
+/-- The local SemanticService authority generated from the exact typed-COMM event family. -/
 abbrev typedCommunicationAuthority :=
   stepAuthorityByIdentity AuthorityId.typedCommunication rhoProcessIdentity
     (interaction typedCommProtocol)
@@ -120,7 +120,7 @@ theorem zeroCommunicationCertificate_rejects_forged_target :
   apply Subtype.ext
   exact samePattern
 
-/-- The generated NIK authority is complete for every typed protocol step,
+/-- The generated SemanticService authority is complete for every typed protocol step,
 not only for the closed control occurrence. -/
 theorem typedCommunicationAuthority_complete :
     typedCommunicationAuthority.Complete :=

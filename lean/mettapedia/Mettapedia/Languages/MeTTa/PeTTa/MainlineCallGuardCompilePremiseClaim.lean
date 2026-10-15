@@ -45,7 +45,7 @@ theorem selectedViews?_isSome
 
 /-- Exact source-computed premise profile consumed by shared claim generation.
 It contains only decoder-success evidence, never query truth. -/
-def premiseProfile : Profile demand where
+theorem premiseProfile : Profile demand where
   supported := selectedViews?_isSome
 
 /-- Both universe endpoints inherit the same authored premise count. -/

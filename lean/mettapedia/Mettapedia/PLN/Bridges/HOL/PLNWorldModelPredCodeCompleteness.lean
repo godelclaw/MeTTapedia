@@ -15,13 +15,7 @@ open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCode
-open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open scoped ENNReal
-
-/-- Alias for the unified categorical endpoint contract, specialized to predicate-code WM states. -/
-abbrev WMCategoricalEndpointContract {U : Type*}
-    (H : WMHyperdoctrine (PredCodeState U)) : Prop :=
-  Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine.EndpointContract (H := H)
 
 /-- Pointwise predicate-code implication between query predicates. -/
 def pointwiseImplies {U : Type*} (q₁ q₂ : PredCodeQuery U) : Prop :=
@@ -60,17 +54,6 @@ theorem multiset_strength_le_of_pointwise {U : Type*}
 
 /-- Naming alias: transfer from pointwise implication to multiset consequence. -/
 theorem multiset_consequence_of_pointwise {U : Type*}
-    (W : PredCodeState U) (q₁ q₂ : PredCodeQuery U)
-    (himp : pointwiseImplies q₁ q₂) :
-    BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₁ ≤
-      BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₂ :=
-  multiset_strength_le_of_pointwise (W := W) (q₁ := q₁) (q₂ := q₂) himp
-
-/-- Categorical-aligned predicate-code implication closure wrapper. -/
-theorem multiset_strength_le_of_pointwise_categorical {U : Type*}
-    (H : WMHyperdoctrine (PredCodeState U))
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
     (W : PredCodeState U) (q₁ q₂ : PredCodeQuery U)
     (himp : pointwiseImplies q₁ q₂) :
     BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₁ ≤
@@ -122,17 +105,6 @@ theorem multiset_consequence_of_externalImplication_sound {U : Type*}
       BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₂ :=
   multiset_consequence_of_pointwise (W := W) (q₁ := q₁) (q₂ := q₂) (hSound hprov)
 
-/-- Categorical-aligned predicate-code singleton-strength closure wrapper. -/
-theorem multiset_strength_le_of_singletonStrengthLE_categorical {U : Type*}
-    (H : WMHyperdoctrine (PredCodeState U))
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (W : PredCodeState U) (q₁ q₂ : PredCodeQuery U)
-    (hsing : singletonStrengthLE q₁ q₂) :
-    BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₁ ≤
-      BinaryWorldModel.queryStrength (State := PredCodeState U) (Query := PredCodeQuery U) W q₂ :=
-  multiset_strength_le_of_singletonStrengthLE (W := W) (q₁ := q₁) (q₂ := q₂) hsing
-
 /-- Implication-closure wrapper: package pointwise predicate-code implication as a
 global-side `WMConsequenceRule`. -/
 def wmConsequenceRule_of_pointwise {U : Type*} (q₁ q₂ : PredCodeQuery U) :
@@ -162,29 +134,10 @@ noncomputable def wmConsequenceRuleOn_of_pointwise {U : Type*} (q₁ q₂ : Pred
   WMConsequenceRuleOn.ofGlobal
     (wmConsequenceRule_of_pointwise (q₁ := q₁) (q₂ := q₂))
 
-/-- Categorical-aligned state-indexed wrapper from predicate-code pointwise implication. -/
-noncomputable def wmConsequenceRuleOn_of_pointwise_categorical {U : Type*}
-    (H : WMHyperdoctrine (PredCodeState U))
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (q₁ q₂ : PredCodeQuery U) :
-    WMConsequenceRuleOn (PredCodeState U) (PredCodeQuery U) :=
-  wmConsequenceRuleOn_of_pointwise (q₁ := q₁) (q₂ := q₂)
-
 /-- State-indexed wrapper promoted from singleton-strength side conditions. -/
 noncomputable def wmConsequenceRuleOn_of_singletonStrengthLE {U : Type*} (q₁ q₂ : PredCodeQuery U) :
     WMConsequenceRuleOn (PredCodeState U) (PredCodeQuery U) :=
   WMConsequenceRuleOn.ofGlobal
     (wmConsequenceRule_of_singletonStrengthLE (q₁ := q₁) (q₂ := q₂))
-
-/-- Categorical-aligned state-indexed wrapper from predicate-code singleton-strength side
-conditions. -/
-noncomputable def wmConsequenceRuleOn_of_singletonStrengthLE_categorical {U : Type*}
-    (H : WMHyperdoctrine (PredCodeState U))
-    (_hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (_φc : H.query X)
-    (q₁ q₂ : PredCodeQuery U) :
-    WMConsequenceRuleOn (PredCodeState U) (PredCodeQuery U) :=
-  wmConsequenceRuleOn_of_singletonStrengthLE (q₁ := q₁) (q₂ := q₂)
 
 end Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeCompleteness

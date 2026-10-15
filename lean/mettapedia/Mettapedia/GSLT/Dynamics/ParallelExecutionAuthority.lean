@@ -1,15 +1,15 @@
 import Mettapedia.GSLT.Dynamics.EventValuation
 import Mettapedia.GSLT.Dynamics.OperatorRealization
-import Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+import Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 
 /-!
-# Parallel execution articles as a NIK authority
+# Parallel execution articles as a SemanticService authority
 
 This module connects three independently useful boundaries:
 
 * query-relative commutation and resource compatibility of revision events;
 * revision-bound operator plans, deltas, and execution receipts;
-* the open, fail-closed NIK authority family.
+* the open, fail-closed SemanticService authority family.
 
 A backend admission predicate is semantic policy, not executable evidence by
 itself.  `AdmissionAuthority` therefore requires a two-sided checker for the
@@ -30,7 +30,7 @@ open Mettapedia.GSLT.Dynamics.EventValuation
 open Mettapedia.GSLT.Dynamics.OperatorRealization
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKDefaultProfile
+open Mettapedia.GSLT.LanguageDef.SubmissionOutcomeProfile
 
 set_option autoImplicit false
 
@@ -80,7 +80,7 @@ theorem selectedObservationPreserved_of_queryCoexecutible
     observationAgrees := congrFun square.observationAgrees claim.request }⟩
 
 /-- An independently replayable checker for a backend's exact admission
-predicate.  This is the backend-specific input to the generic NIK article;
+predicate.  This is the backend-specific input to the generic SemanticService article;
 the generic checker never guesses admission from a scheduler decision. -/
 structure AdmissionAuthority {theory : Theory}
     (backend : ParallelBackend theory) where
@@ -275,9 +275,9 @@ theorem meaning_preserves_authored_occurrences
     claim.receipt.authoredOccurrences = claim.plan.authoredOccurrences :=
   accepted_authored_order meaning.2.2.1
 
-/-! ## Admission into the open NIK family -/
+/-! ## Admission into the open SemanticService family -/
 
-/-- Parallel execution replay as one ordinary NIK authority fibre. -/
+/-- Parallel execution replay as one ordinary SemanticService authority fibre. -/
 def family (admission : AdmissionAuthority.{uCertificate} backend) :
     AuthorityFamily Unit where
   Claim := fun _ => Claim theory Backend StoreRevision Payload PlanId DeltaId
@@ -294,7 +294,7 @@ def family (admission : AdmissionAuthority.{uCertificate} backend) :
   projection := fun _ => authorityProjection admission
 
 /-- Add parallel execution articles to any existing guest authority family
-without adding a privileged branch to the NIK evaluator. -/
+without adding a privileged branch to the SemanticService evaluator. -/
 def withParallelExecution
     {Kind : Type uKind}
     (guest : AuthorityFamily.{uKind, uClaim, uGuestCertificate} Kind)
@@ -311,7 +311,7 @@ def typedFrontend (admission : AdmissionAuthority.{uCertificate} backend) :=
       (StoreRevision := StoreRevision) (Payload := Payload)
       (PlanId := PlanId) (DeltaId := DeltaId) admission)
 
-/-- Package one parallel article for the ordinary NIK frontend. -/
+/-- Package one parallel article for the ordinary SemanticService frontend. -/
 def submission (admission : AdmissionAuthority.{uCertificate} backend)
     (claim : Claim theory Backend StoreRevision Payload PlanId DeltaId)
     (certificate : admission.Certificate) :
@@ -321,7 +321,7 @@ def submission (admission : AdmissionAuthority.{uCertificate} backend)
         (PlanId := PlanId) (DeltaId := DeltaId) admission) :=
   ⟨(), claim, certificate⟩
 
-/-- An accepted parallel article is processed by the ordinary statusful NIK
+/-- An accepted parallel article is processed by the ordinary statusful SemanticService
 frontend, not by a concurrency-specific evaluator. -/
 theorem accepted_defaultRun
     (admission : AdmissionAuthority.{uCertificate} backend)
@@ -465,8 +465,8 @@ theorem stale_article_rejected :
     (replayChecker sameClassAdmission).check staleClaim () = false := by
   decide
 
-/-- The accepted article genuinely enters the default statusful NIK. -/
-theorem positive_article_defaultNIK_accepts :
+/-- The accepted article genuinely enters the default statusful SemanticService. -/
+theorem positive_article_submissionProfile_accepts :
     (typedFrontend sameClassAdmission).run
         ((typedFrontend sameClassAdmission).encode
           (submission sameClassAdmission positiveClaim ())) =

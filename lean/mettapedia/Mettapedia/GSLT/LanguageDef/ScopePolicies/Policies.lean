@@ -395,10 +395,14 @@ theorem policy_rewrites_done (c : Config) (u : X) (unit : S) (bag : Result S (Sl
 
 /-! ## The image -/
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 omit [DecidableEq S] in
 /-- Query-wide elaboration never writes contextual code at its root. -/
 theorem elabQ_ne_ctx : ∀ (t : Src S X) (env : REnv X) (pos : Owner) (ks : List (Nm (Slot X)))
-    (body : Tm S (Slot X)), elabQ env pos t ≠ .ctx ks body
+    (body : Tm S (Slot X)), elabQ R env pos t ≠ .ctx ks body
   | .sym _, _, _, _, _ => by simp [elabQ]
   | .fn _, _, _, _, _ => by simp [elabQ]
   | .sv _, _, _, _, _ => by simp [elabQ, slotVar]
@@ -420,7 +424,7 @@ theorem elabQ_ne_ctx : ∀ (t : Src S X) (env : REnv X) (pos : Owner) (ks : List
 omit [DecidableEq S] in
 /-- Rule M never writes contextual code at its root. -/
 theorem elabMS_ne_ctx : ∀ (t : Src S X) (E : List X) (env : REnv X) (pos : Owner)
-    (ks : List (Nm (Slot X))) (body : Tm S (Slot X)), elabMS E env pos t ≠ .ctx ks body
+    (ks : List (Nm (Slot X))) (body : Tm S (Slot X)), elabMS R E env pos t ≠ .ctx ks body
   | .sym _, _, _, _, _, _ => by simp [elabMS]
   | .fn _, _, _, _, _, _ => by simp [elabMS]
   | .sv _, _, _, _, _, _ => by simp [elabMS, slotVar]
@@ -442,7 +446,7 @@ theorem elabMS_ne_ctx : ∀ (t : Src S X) (E : List X) (env : REnv X) (pos : Own
 omit [DecidableEq S] in
 /-- Explicit capture never writes contextual code at its root. -/
 theorem elabEC_ne_ctx : ∀ (t : Src S X) (env : REnv X) (pos : Owner) (ks : List (Nm (Slot X)))
-    (body : Tm S (Slot X)), elabEC env pos t ≠ .ctx ks body
+    (body : Tm S (Slot X)), elabEC R env pos t ≠ .ctx ks body
   | .sym _, _, _, _, _ => by simp [elabEC]
   | .fn _, _, _, _, _ => by simp [elabEC]
   | .sv _, _, _, _, _ => by simp [elabEC, slotVar]
@@ -464,7 +468,7 @@ theorem elabEC_ne_ctx : ∀ (t : Src S X) (env : REnv X) (pos : Owner) (ks : Lis
 omit [DecidableEq S] in
 /-- Lexical fresh never writes contextual code at its root. -/
 theorem elabLF_ne_ctx : ∀ (t : Src S X) (env : REnv X) (cr : List X) (pos : Owner)
-    (ks : List (Nm (Slot X))) (body : Tm S (Slot X)), elabLF env cr pos t ≠ .ctx ks body
+    (ks : List (Nm (Slot X))) (body : Tm S (Slot X)), elabLF R env cr pos t ≠ .ctx ks body
   | .sym _, _, _, _, _, _ => by simp [elabLF]
   | .fn _, _, _, _, _, _ => by simp [elabLF]
   | .sv _, _, _, _, _, _ => by simp [elabLF, slotVar]
@@ -488,10 +492,10 @@ omit [DecidableEq S] in
 theorem elabForm_ne_ctx (ownership : Ownership) (root : Owner) (t : Src S X)
     (ks : List (Nm (Slot X))) (body : Tm S (Slot X)) : elabForm ownership root t ≠ .ctx ks body := by
   cases ownership
-  · exact elabQ_ne_ctx t _ _ ks body
-  · exact elabMS_ne_ctx t _ _ _ ks body
-  · exact elabLF_ne_ctx t _ _ _ ks body
-  · exact elabEC_ne_ctx t _ _ ks body
+  · exact elabQ_ne_ctx root t _ _ ks body
+  · exact elabMS_ne_ctx root t _ _ _ ks body
+  · exact elabLF_ne_ctx root t _ _ _ ks body
+  · exact elabEC_ne_ctx root t _ _ ks body
 
 omit [DecidableEq S] [DecidableEq X] in
 /-- Hoisting own lists keeps the root of a term. -/

@@ -12,7 +12,7 @@ weakening that boundary:
   category with one nonidentity forward route;
 * the live Zero-to-candidate operational translation is the image of that route;
 * route application is simultaneously a GSLT-IL command step and a
-  certificate-free arrow in NIK's common admission algebra;
+  certificate-free arrow in SemanticService's common admission algebra;
 * an occurrence request can cross the language boundary, enter candidate Need,
   and then use the already-proved correct-by-construction Need proof flow;
 * no reverse route exists, and the returned fragment still cannot decode all
@@ -33,7 +33,7 @@ open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.Ultrainfinite
 open Mettapedia.GSLT.Dynamics.OccurrenceSemantics
 open Mettapedia.GSLT.Dynamics
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.Languages.MeTTa.Experimental.StagedReflective
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language
 open Mettapedia.Languages.MeTTa.PrimeCandidates.StagedReflectiveInstances
@@ -179,7 +179,7 @@ def applyPromotion (model : QueryFirstModel)
       (promotedState model state) :=
   .applyVia promote state
 
-/-! ## The same route in NIK's certificate-free admission algebra -/
+/-! ## The same route in SemanticService's certificate-free admission algebra -/
 
 /-- A source semantic predicate and its direct image under the selected
 language-changing map.  The image remembers both the source witness and its
@@ -215,7 +215,7 @@ def promotionPushforwardAdmission (model : QueryFirstModel)
     intro source meaningful
     exact ⟨source, meaningful, rfl⟩
 
-/-- The GSLT-IL transport and NIK admitted operation are definitionally the
+/-- The GSLT-IL transport and SemanticService admitted operation are definitionally the
 same computation on semantic terms. -/
 theorem promotion_command_admission_square
     (model : QueryFirstModel)
@@ -416,7 +416,7 @@ theorem no_reverse_language_change :
 /-! ## Audit package -/
 
 /-- The live nondegenerate witness tying together native language codes,
-indexed operational transport, NIK admission, and candidate's zero-recheck Need
+indexed operational transport, SemanticService admission, and candidate's zero-recheck Need
 flow while retaining both negative boundaries. -/
 structure Witness where
   codesDistinct : languagePattern zeroStage ≠ languagePattern primeStage

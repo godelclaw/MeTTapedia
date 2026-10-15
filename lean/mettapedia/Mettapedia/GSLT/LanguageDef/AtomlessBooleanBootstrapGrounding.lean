@@ -6,7 +6,7 @@ import Mettapedia.GSLT.LanguageDef.AtomlessBooleanMSOSemanticBridge
 A direct semantic decision procedure becomes a bootstrap authority only after
 an explicit encoding says what lower-level contracts mean in its claim
 language.  This file makes that extra edge proof-relevant and uses the
-atomless Boolean first-order decision procedure to ground exactly one NIK
+atomless Boolean first-order decision procedure to ground exactly one SemanticService
 contract kind: `modelSound`.
 
 The resulting level-one layer is non-vacuous.  It accepts a genuine
@@ -20,10 +20,10 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.AtomlessBooleanBootstrapGrounding
 
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
-open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanMSOSemanticBridge
 open Mettapedia.Logic.Metaphysics
 open Mettapedia.Foundations.Gunk
@@ -74,7 +74,7 @@ def lowerDecision
     exact (ground.correct (grounding.encode claim)).trans
       (grounding.meaning_iff claim)
 
-/-- The explicit grounding edge produces an ordinary, exact NIK bootstrap
+/-- The explicit grounding edge produces an ordinary, exact SemanticService bootstrap
 layer.  Scope and meaning coincide only for this generated layer. -/
 def toBootstrapLayer
     (grounding : ExactSemanticGrounding ground Statement hostLevel
@@ -138,7 +138,7 @@ theorem encode_meaning_iff (claim : LowerContract Statement 1) :
   · simp [encode, TargetMeaning, ColdMeaning, Satisfies, isModelSound]
 
 /-- The atomless decision procedure genuinely grounds a nonempty level-one
-NIK layer, rather than a vacuous level-zero interface. -/
+SemanticService layer, rather than a vacuous level-zero interface. -/
 def grounding :
     ExactSemanticGrounding decisionKernel Statement 1 TargetMeaning where
   encode := encode

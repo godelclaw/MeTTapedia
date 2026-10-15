@@ -3612,8 +3612,8 @@ Verification scope:
   footprint:
   `strengthWith_eq_beta_posterior_meanENN`,
   `evidence_encodes_beta_parameters`,
-  `chapter7_worked_example_strength_uniform_3_1`, and
-  `chapter7_distributional_kyburg_bridge_available`.
+  `uniformPrior_strength_threePositive_oneNegative`, and
+  `evidenceAggregation_and_kyburgFlattening`.
 
 ## Cluster 6c.76: Higher-order-to-PLN inference-rule bridge
 
@@ -3658,7 +3658,7 @@ Verification scope:
   footprint:
   `member_is_pred`,
   `inheritance_uses_conditional_prob_structure`,
-  `ch10_context_hyp_fixture_mismatch_not_sound`, and
+  `context_hyp_fixture_mismatch_not_sound`, and
   `forAll_himp_not_equal_inheritance_ratio_unconditional`.
 
 ## Cluster 6c.77: Checker-reflection facade deletion
@@ -3766,7 +3766,7 @@ Verification scope:
   footprint:
   `member_eq_evaluation`,
   `extensional_implication_reduces_to_subset`,
-  `ch10_context_hyp_fixture_mismatch_not_sound`,
+  `context_hyp_fixture_mismatch_not_sound`,
   `forAll_himp_not_equal_inheritance_ratio_unconditional`,
   and `similarity_symmetric`.
 

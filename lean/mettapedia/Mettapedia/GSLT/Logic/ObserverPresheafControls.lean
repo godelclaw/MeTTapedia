@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Logic.ObserverPresheaf
 import Mettapedia.GSLT.Logic.SaturatedRelativeBisimilarityControls
 
@@ -273,15 +274,10 @@ namespace InertFunctions
 variable (α : Type)
 
 /-- A set of points with no steps. -/
-abbrev inertGSLT : GSLT where
-  Term := α
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := fun _ impossible => impossible.elim
-  rewrites_resp_right := fun impossible _ => impossible.elim
+abbrev functionGSLT : GSLT := GSLT.stepFree α
 
 /-- Every function on the points is a context. -/
-abbrev functionRules : ContextualRules (inertGSLT α) where
+abbrev functionRules : ContextualRules (functionGSLT α) where
   Context := α → α
   identity := id
   compose outer inner := outer ∘ inner
@@ -299,7 +295,7 @@ abbrev functionRules : ContextualRules (inertGSLT α) where
   fires_step := fun impossible => impossible.elim
 
 /-- The one observation: the point is `target`. -/
-abbrev hits (target : α) : ContextualRules.Observations (inertGSLT α) where
+abbrev hits (target : α) : ContextualRules.Observations (functionGSLT α) where
   Atom := Unit
   observes _ point := point = target
   observes_resp := by
@@ -323,19 +319,10 @@ variable {α}
 under every admissible context.** -/
 theorem relEquiv_iff (D : AdmissibleClass (functionRules α)) (target : α) (left right : α) :
     D.RelEquiv (hits α target) left right ↔
-      ∀ context, D.Admissible context → (context left = target ↔ context right = target) := by
-  constructor
-  · intro related context admissible
-    exact AdmissibleContextCongruence.bisimilar_observes related ((), ⟨context, admissible⟩)
-  · intro agree
-    refine ⟨fun first second => ∀ context, D.Admissible context →
-      (context first = target ↔ context second = target), ⟨?_, ?_, ?_⟩, agree⟩
-    · intro _ _ _ _ _ impossible
-      exact impossible.elim
-    · intro _ _ _ _ _ impossible
-      exact impossible.elim
-    · intro _ _ held atom
-      exact held atom.2.1 atom.2.2
+      ∀ context, D.Admissible context → (context left = target ↔ context right = target) :=
+  (D.relEquiv_iff_of_stepFree (hits α target) (fun _ _ impossible => impossible)).trans
+    ⟨fun agree context admissible => agree context admissible (),
+      fun agree context admissible _ => agree context admissible⟩
 
 end InertFunctions
 

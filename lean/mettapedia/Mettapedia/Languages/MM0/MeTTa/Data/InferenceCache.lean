@@ -323,9 +323,9 @@ private theorem cache_cell_returns (state : State) (handle : Handle)
     state state state "get-state" (.symbol "mm0-inference-cache") _ _
     (by decide) (by decide) (by decide)
     (symbol_returns program _ state "mm0-inference-cache") _ (by decide)
-  simpa only [StdLib.apply, cell, current] using
+  simpa only [cell, current] using
     (show StdLib.apply state "get-state" [.symbol cell] =
-      .ok (state, [handleValue handle]) by simp [StdLib.apply, current])
+      .ok (state, [handleValue handle]) by simp [current])
 
 private theorem found_returns (state : State) (handle : Handle) (entries : List Atom)
     (terms context expression : Atom) (allocated : state.read handle = some entries) :
@@ -336,7 +336,7 @@ private theorem found_returns (state : State) (handle : Handle) (entries : List 
   apply match_collapse_returns program (cacheEnvironment handle terms context expression)
     state state "cache" _ _ (query entries terms context expression)
   simp [cacheEnvironment, environment, applySubst, applySubst.applySubstList,
-    Subst.lookup, StdLib.apply, allocated, query]
+    Subst.lookup, allocated, query]
 
 private theorem body_returns_from_query (before after : State) (handle : Handle)
     (entries : List Atom) (terms context expression answer : Atom)
@@ -415,7 +415,7 @@ private theorem publish_returns (before after : State) (handle : Handle)
   · apply call_returns program bindings before after "add-atom" _ _ (by decide) _ (by decide)
     have insertedPath := native_function_arguments_return program bindings before after "add-atom"
       [handleValue handle, row terms context expression value] 2 (boolean true)
-      (by decide) (by decide) (by simp [StdLib.apply, inserted])
+      (by decide) (by decide) (by simp [inserted])
     have last := raw_argument_answers program bindings before after "add-atom"
       (.expression [.var "terms", .var "ctx", .var "expression", .var "value"])
       [] [handleValue handle] 1 [boolean true] (by decide)

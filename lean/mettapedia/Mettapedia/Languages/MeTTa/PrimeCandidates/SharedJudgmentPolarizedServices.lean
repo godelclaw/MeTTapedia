@@ -52,7 +52,7 @@ environment argument is supplied by the polarized computation. -/
 inductive Operation (m : Nat) where
   | matching (expected : PolarizedNeedMatchedIndex.Request)
   | hol (gamma : HOL.Ctx HOL.UniformListInduction.BaseSort)
-      (replay : UniformListChartNIKService.ReplayRequest gamma)
+      (replay : UniformListChartService.ReplayRequest gamma)
       (environment : Sub Tower.Head gamma.length (m + 1))
 
 def submitted? {m : Nat} : Operation m → Tower.Tm m → Option (SharedJudgmentServices.Request m)
@@ -183,7 +183,7 @@ theorem primitive_native_admitted {assembly : Assembly}
 interface; using a fresh hole is optional, not a restriction to closed claims. -/
 theorem submitted_hol_lift {m : Nat}
     (gamma : HOL.Ctx HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length m) (argument : Tower.Tm m) :
     submitted? (.hol gamma replay (fun index => rename wk (environment index))) argument =
       some (.hol gamma replay environment) := by
@@ -198,7 +198,7 @@ which then transports the independently admitted HOL environment. -/
 theorem hol_environment_admitted {assembly : Assembly} {m : Nat}
     {context : Tower.Ctx m} {argument type : Tower.Tm m}
     {gamma : HOL.Ctx HOL.UniformListInduction.BaseSort}
-    {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {replay : UniformListChartService.ReplayRequest gamma}
     {environment : Sub Tower.Head gamma.length (m + 1)}
     (admitted : FormationSensitive.Judgment assembly.rules context argument type)
     (template : SharedJudgmentServices.EnvironmentAdmitted assembly (.snoc context type)
@@ -235,9 +235,9 @@ theorem matching_success_iff {assembly : Assembly}
 
 theorem hol_primitive {assembly : Assembly} {m : Nat}
     {gamma : HOL.Ctx HOL.UniformListInduction.BaseSort}
-    {replay : UniformListChartNIKService.ReplayRequest gamma}
+    {replay : UniformListChartService.ReplayRequest gamma}
     {environment : Sub Tower.Head gamma.length (m + 1)} {argument : Tower.Tm m}
-    {proof : (UniformListChartNIKService.intrinsicProofSystem gamma).ProofObject}
+    {proof : (UniformListChartService.intrinsicProofSystem gamma).ProofObject}
     {represented : Tower.Tm gamma.length}
     (produced : assembly.produceHOL gamma replay = some proof)
     (representation : FormationSensitiveHOLInterface.represent
@@ -251,10 +251,10 @@ theorem hol_primitive {assembly : Assembly} {m : Nat}
 theorem hol_success_iff {assembly : Assembly}
     (qualified : specification.Satisfies assembly) {m : Nat}
     (gamma : HOL.Ctx HOL.UniformListInduction.BaseSort)
-    (replay : UniformListChartNIKService.ReplayRequest gamma)
+    (replay : UniformListChartService.ReplayRequest gamma)
     (environment : Sub Tower.Head gamma.length (m + 1)) (argument : Tower.Tm m) :
     (∃ value, primitive assembly (.hol gamma replay environment) argument = .value value) ↔
-      UniformListChartNIKService.replayAccepted gamma replay = true := by
+      UniformListChartService.replayAccepted gamma replay = true := by
   rw [primitive, invocation?, submitted?, Option.map_some, responseProduced_success_iff]
   exact SharedJudgmentServices.hol_success_iff qualified gamma replay _
 
@@ -603,16 +603,16 @@ open SharedJudgmentServices.SubstitutionExamples
 /-- The request uses a genuinely function-valued native parameter. The
 representation is still the same HOL proposition, not its native proof. -/
 def holOperation : Operation 1 :=
-  .hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) (fun _ => .var 0)
+  .hol [mapping] (UniformListChartService.actualRequest [mapping]) (fun _ => .var 0)
 
 def holPayload : Tower.Tm 1 := subst squareSubstitution FormationSensitiveHOLUniformList.rawMapLength
 
 theorem hol_submission :
     submitted? holOperation functionSquare =
-      some (.hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) squareSubstitution) := rfl
+      some (.hol [mapping] (UniformListChartService.actualRequest [mapping]) squareSubstitution) := rfl
 
 theorem hol_callback : primitive common holOperation functionSquare = .value holPayload :=
-  hol_primitive (UniformListChartNIKService.actual_produced [mapping])
+  hol_primitive (UniformListChartService.actual_produced [mapping])
     (FormationSensitiveHOLUniformList.mapLength_represented [mapping])
 
 theorem higher_order_hol_run
@@ -628,12 +628,12 @@ theorem higher_order_hol_run
       Fin.elim0 Fin.elim0 world world _).mpr
     simp only [Presentation.subst, hol_callback, liftOutcome, and_self]
   · exact SharedJudgmentServices.invoked_payload_admitted common_qualified
-      (request := .hol [mapping] (UniformListChartNIKService.actualRequest [mapping]) squareSubstitution)
-      (response := .holProof (UniformListChartNIKService.actualNativeProof [mapping])
+      (request := .hol [mapping] (UniformListChartService.actualRequest [mapping]) squareSubstitution)
+      (response := .holProof (UniformListChartService.actualNativeProof [mapping])
         FormationSensitiveHOLUniformList.rawMapLength)
       ⟨functionSquare_admitted.context, squareSubstitution_typed⟩
       (SharedJudgmentServices.Invocation.holSuccess
-        (UniformListChartNIKService.actual_produced [mapping])
+        (UniformListChartService.actual_produced [mapping])
         (FormationSensitiveHOLUniformList.mapLength_represented [mapping])) rfl
 
 def alteredHOL : Operation 1 :=

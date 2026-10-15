@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Weighting.RateGenerator
+import Mettapedia.GSLT.Core.NonFactorization
 
 /-!
 # Quantum jumps over rate channels (Section 13.6, corrected)
@@ -809,6 +810,38 @@ theorem sourceJump_survival (t : ℝ) :
     sqNorm (noJump 0 (sourceJump rate θ) t (Pi.single 0 1)) = Real.exp (-t) := by
   rw [sqNorm_noJump_sourceJump rate_nonneg θ t 0]
   simp [totalRate, rateKernel, rate]
+
+/-- The population observer cannot recover the population derivative for
+the per-channel dynamics: the existing coherent and mixed matrices have the
+same observed populations and different derivatives. This is an instance of
+the shared nonfactorization criterion, not a consciousness assignment. -/
+theorem channel_population_derivative_not_factors :
+    ¬ Mettapedia.GSLT.Core.NonFactorization.Factors
+      (fun ρ : Matrix (Fin 3) (Fin 3) ℂ => fun c => ρ c c)
+      (fun ρ : Matrix (Fin 3) (Fin 3) ℂ => fun c => lindbladian 0 L ρ c c) := by
+  apply Mettapedia.GSLT.Core.NonFactorization.NonTrivialFiber.not_factors
+  refine ⟨ρDark, ρMix, funext ρDark_diag_eq, ?_⟩
+  intro sameDerivatives
+  have same := congrFun sameDerivatives 2
+  rw [lindbladian_ρDark, lindbladian_ρMix] at same
+  exact zero_ne_one same
+
+/-- For the independently justified per-source dynamics, the same observer
+does retain the complete population derivative. Thus whether a projection
+is adequate depends on the actual operators, not on its name or carrier. -/
+theorem source_population_derivative_factors :
+    Mettapedia.GSLT.Core.NonFactorization.Factors
+      (fun ρ : Matrix (Fin 3) (Fin 3) ℂ => fun c => ρ c c)
+      (fun ρ : Matrix (Fin 3) (Fin 3) ℂ => fun c =>
+        lindbladian 0 (sourceJump rate θ) ρ c c) := by
+  refine ⟨fun populations c =>
+    ∑ c', populations c' * (generator (rateKernel rate) c' c : ℂ), ?_⟩
+  intro ρ
+  funext c
+  exact (sourceJump_populations_fix ρ c).symm
+
+#print axioms channel_population_derivative_not_factors
+#print axioms source_population_derivative_factors
 
 end Counterexample
 

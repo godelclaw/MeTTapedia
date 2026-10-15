@@ -181,7 +181,7 @@ termination_by sizeOf proofs
 end
 
 
-/-- The closed-payload runtime and generic NIK replay agree exactly whenever
+/-- The closed-payload runtime and generic SemanticService replay agree exactly whenever
 the article carries only declared fixed constructors. -/
 theorem checkRaw_iff_generic_of_payloadsValid
     (definition : ValidatedCalculusLanguageDef) (goal : Pattern) (proof : RawProof)

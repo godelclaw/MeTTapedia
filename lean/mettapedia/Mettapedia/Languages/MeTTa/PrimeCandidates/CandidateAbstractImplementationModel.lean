@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKAdmissionDoctrineCrown
+import Mettapedia.GSLT.LanguageDef.RevisionedAdmission
 import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILGradualNativeParallelism
 
 /-!
@@ -10,7 +10,7 @@ observation-preserving cell between proof-relevant indexed execution objects.
 Exact codecs retain the raw source trace needed for fallback and the complete
 runtime trace needed for an auditable receipt.
 
-The contract reuses the NIK indexed-execution admission doctrine.  Current
+The contract reuses the SemanticService indexed-execution admission doctrine.  Current
 activation therefore runs the retained map directly; no checker is an
 argument of hot execution.  Staleness prevents activation but cannot destroy
 the prepared raw representation.
@@ -25,9 +25,9 @@ as serialization advice.
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 
-open Mettapedia.GSLT.LanguageDef.NIKAdmissionDoctrineCrown
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.RevisionedAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.LanguageDef.GSLTIL.EvidenceWorlds
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILGradualNativeParallelism
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILMultiworldNativeRealization
@@ -152,7 +152,7 @@ def compileTrace
   | ⟨first, last, execution⟩ =>
       ⟨active.run first, active.run last, active.mapExecution execution⟩
 
-/-- The active runner is exactly the semantic cell already retained by NIK. -/
+/-- The active runner is exactly the semantic cell already retained by SemanticService. -/
 theorem compileTrace_eq_map
     (model : AdmittedExecutionModel dependencies revision source target)
     (active : model.admission.Active currentRevision)
@@ -215,7 +215,7 @@ theorem stale_preserves_fallback
     model.rawCodec.decode prepared.fallback = prepared.sourceTrace :=
   prepared.fallback_adequate
 
-/-- Models at one revision compose by composing their retained NIK cells.
+/-- Models at one revision compose by composing their retained SemanticService cells.
 The first raw codec and final receipt codec are the external boundary. -/
 def comp
     {middle : IndexedObservedOperationalObject.{u, uValue} Value}

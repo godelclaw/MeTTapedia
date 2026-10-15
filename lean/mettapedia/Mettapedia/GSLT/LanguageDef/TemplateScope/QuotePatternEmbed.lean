@@ -38,7 +38,7 @@ pattern. The body's stability bit is `true`: this relation builds no pending
 activation. -/
 theorem Rel.of_codeRel {Q : Tm S X₁ → Tm S X₂ → Prop} {f : Nm X₁ → Nm X₂}
     {t₁ : Tm S X₁} {t₂ : Tm S X₂}
-    (hQ : ∀ {c₁ c₂}, Q c₁ c₂ → C.Q c₁ c₂)
+    (hQ : ∀ {c₁ c₂}, Q c₁ c₂ → QR C f c₁ c₂)
     (hv : ∀ n, C.varHole n (f n)) (hp : ∀ x, C.parOK x (f x))
     (hbare : ∀ {x : Nm X₁} {own₁ : List X₁} {own₂ : List X₂},
       (∀ s ∈ own₁, ¬ True) → (∀ s ∈ own₂, ¬ True) → C.bareLam x own₁ (f x) own₂)
@@ -65,7 +65,7 @@ theorem Rel.of_codeRel {Q : Tm S X₁ → Tm S X₂ → Prop} {f : Nm X₁ → N
       have hnil₂ := ownKey_of_not_true hr₂
       refine .lam (νb := f) (μb := f) (fun _ _ => rfl) (fun _ _ => rfl) hx ?_ ?_
         (ihb .code (by decide)) ?_ ?_ ?_ ?_ List.nodup_nil hpar
-        (hx ▸ hbare hr₁ hr₂) (fun _ => rfl)
+        (hx ▸ hbare hr₁ hr₂) (fun _ => rfl) ?_ ?_
       · intro s hs _
         exact hr₁ s hs trivial
       · intro s hs _
@@ -80,14 +80,21 @@ theorem Rel.of_codeRel {Q : Tm S X₁ → Tm S X₂ → Prop} {f : Nm X₁ → N
       · intro n _ ho
         rw [hnil₁ n] at ho
         cases ho
+      · intro s _
+        rw [hnil₂, hnil₁]
+      · intro n _ ho
+        rw [hnil₁ n] at ho
+        cases ho
 
 /-- The two elaborations of one pattern quotation are related stable code.
-Holes are the outer slots; code binders travel by `codeMapHoles`. `C.Q`
-accepts every pair of sealed quotations. The three readings are the setting's
-hole comparison, parameter comparison, and lambda binders. -/
+Holes are the outer slots; code binders travel by `codeMapHoles`. The relation
+of sealed code accepts every pair of sealed quotations written at the root `R`. The three readings are the setting's
+hole comparison, parameter comparison, and lambda binders. The code is written
+in a form rooted at the scope owner `R`, whose head slots are the holes of its
+nested sealed quotations. -/
 theorem Rel.code_pattern {X : Type v} [DecidableEq X] {C : Setting S (Slot X) (BId X)}
-    (hQ : ∀ {c₁ c₂}, codeQ c₁ c₂ → C.Q c₁ c₂)
-    (env : REnv X) (envI : IEnv X)
+    (R : Owner) (hR : scopeOwner R) (env : REnv X) (envI : IEnv X)
+    (hQ : ∀ s, QR C (codeMapHoles env envI) (codeOf R s) (codeI R s))
     (hv : ∀ n, C.varHole n (codeMapHoles env envI n))
     (hp : ∀ x, C.parOK x (codeMapHoles env envI x))
     (hbare : ∀ {x : Nm (Slot X)} {own₁ : List (Slot X)} {own₂ : List (BId X)},
@@ -96,10 +103,14 @@ theorem Rel.code_pattern {X : Type v} [DecidableEq X] {C : Setting S (Slot X) (B
     (hB : ∀ y, codeBound (env y) = false) (hF : ∀ y, env y ≠ codeFreeParam)
     (c : Src S X) (k : Kd) (hk : k ≠ .val) :
     Rel C (codeMapHoles env envI) (codeMapHoles env envI)
-      k [] true (sealParams (codeAt (some env) [] [] [] c))
-      (sealParams (codeIAt (some envI) [] [] [] c)) :=
-  Rel.of_codeRel (C := C) (f := codeMapHoles env envI) hQ hv hp hbare
-    (codeRel_pattern env envI hB hF c) k hk
+      k [] true (sealParams (codeAt R (some env) [] [] [] c))
+      (sealParams (codeIAt R (some envI) [] [] [] c)) :=
+  Rel.of_codeRel (C := C) (f := codeMapHoles env envI)
+    (Q := fun c₁ c₂ => ∃ s, c₁ = codeOf R s ∧ c₂ = codeI R s)
+    (fun {_ _} h => by
+      obtain ⟨s, rfl, rfl⟩ := h
+      exact hQ s) hv hp hbare
+    (codeRel_pattern R hR (fun s => ⟨s, rfl, rfl⟩) env envI hB hF c) k hk
 
 end IdSlot
 

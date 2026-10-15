@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
 import Mettapedia.Logic.Metaphysics.UltrainfinitismTwoSemantics
 
 /-!
@@ -23,7 +23,7 @@ open Mettapedia.Foundations.Gunk
 open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanProfileExtension
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
-open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
 open Mettapedia.Logic.Metaphysics
 
 universe u

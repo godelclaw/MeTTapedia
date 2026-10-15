@@ -30,7 +30,7 @@ def sNBBool : Bool → ℝ := ηBool
 def sPLNBool : Bool → ℝ := ηBool
 
 /-- Positive canary: NB ranking optimality transfers to the PLN-emulated score. -/
-theorem canary_ch13_pln_inherits_nb_ranking_bool :
+theorem canary_pln_inherits_nb_ranking_bool :
     BayesOptimalRanking ηBool sPLNBool := by
   refine pln_inherits_nb_ranking ηBool sNBBool sPLNBool ?_ rfl
   refine ⟨id, ?_, ?_⟩
@@ -42,7 +42,7 @@ def sWide : Bool → ℝ := fun b => if b then 4 else 0
 def δSmall : Bool → ℝ := fun b => if b then (-(1 / 2 : ℝ)) else (1 / 2 : ℝ)
 
 /-- Positive canary: with margin `> 2ε`, bounded perturbation preserves pair order. -/
-theorem canary_ch13_pairwise_stable_of_margin :
+theorem canary_pairwise_stable_of_margin :
     perturbedScore sWide δSmall false < perturbedScore sWide δSmall true := by
   refine pairwise_lt_stable_of_margin (s := sWide) (δ := δSmall)
       (x := false) (y := true) (ε := (1 : ℝ)) ?_ ?_ ?_
@@ -54,7 +54,7 @@ def sNarrow : Bool → ℝ := fun b => if b then 1 else 0
 def δFlip : Bool → ℝ := fun b => if b then (-1) else 1
 
 /-- Negative canary (non-equivalence): without margin assumptions, order can flip. -/
-theorem canary_ch13_ranking_flip_without_margin :
+theorem canary_ranking_flip_without_margin :
     sNarrow false ≤ sNarrow true
       ∧ ¬ (perturbedScore sNarrow δFlip false ≤ perturbedScore sNarrow δFlip true) := by
   constructor
@@ -62,7 +62,7 @@ theorem canary_ch13_ranking_flip_without_margin :
   · norm_num [perturbedScore, sNarrow, δFlip]
 
 /-- Coverage insertion law canary on a finite Bool fixture. -/
-theorem canary_ch13_dependencyCoverage_insert_gain_bool :
+theorem canary_dependencyCoverage_insert_gain_bool :
     dependencyCoverage ({true} : Finset Bool) (insert true ({false} : Finset Bool)) =
       dependencyCoverage ({true} : Finset Bool) ({false} : Finset Bool)
       + dependencyGain ({true} : Finset Bool) ({false} : Finset Bool) true := by
@@ -71,7 +71,7 @@ theorem canary_ch13_dependencyCoverage_insert_gain_bool :
       (S := ({false} : Finset Bool)) (a := true))
 
 /-- Selector defaults canary: the neutral gate remains in `[0,1]`. -/
-theorem canary_ch13_selector_default_gate_bounds :
+theorem canary_selector_default_gate_bounds :
     0 ≤ (selectorDefaults_halfGate Unit Bool).gate () true
       ∧ (selectorDefaults_halfGate Unit Bool).gate () true ≤ 1 := by
   exact ⟨(selectorDefaults_halfGate Unit Bool).gate_lower () true,

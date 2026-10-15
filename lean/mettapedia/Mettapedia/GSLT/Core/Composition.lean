@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.GSLT
 
 set_option linter.dupNamespace false
@@ -480,22 +481,6 @@ end Realization
 
 namespace GSLT
 
-/-! ## Discrete theories -/
-
-/-- Any term grammar has a discrete GSLT: equality is syntactic and there are
-no primitive rewrites.  This is the neutral atom theory for declaration kinds
-that have no authored equations or syntax sugar. -/
-def discrete (Term : Type*) : GSLT where
-  Term := Term
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by
-    intro _ _ _ _ impossible
-    exact impossible.elim
-  rewrites_resp_right := by
-    intro _ _ _ impossible _
-    exact impossible.elim
-
 /-! ## Structural embeddings -/
 
 /-- A faithful embedding of one GSLT into another.  Unlike the behavioral
@@ -900,7 +885,7 @@ end InteractionElaboration
 /-! ### Interaction canaries -/
 
 private def oneWayCanaryInteraction :
-    Interaction (discrete Bool) (discrete Unit) where
+    Interaction (GSLT.stepFree Bool) (GSLT.stepFree Unit) where
   leftToRight := fun source _ => source = true
   rightToLeft := fun _ _ => False
   leftToRight_resp_left := by
@@ -960,13 +945,13 @@ theorem interactingElaboration_rejects_changed_observation :
 /-- Positive canary: an authored crossing is a rewrite of the interacting
 sum. -/
 theorem interactingSum_authored_crossing :
-    (interactingSum (discrete Bool) (discrete Unit)
+    (interactingSum (GSLT.stepFree Bool) (GSLT.stepFree Unit)
       oneWayCanaryInteraction).Step (.inl true) (.inr ()) :=
   InteractingStep.leftToRight rfl
 
 /-- Negative canary: the construction does not invent the reverse crossing. -/
 theorem interactingSum_does_not_invent_reverse :
-    ¬ (interactingSum (discrete Bool) (discrete Unit)
+    ¬ (interactingSum (GSLT.stepFree Bool) (GSLT.stepFree Unit)
       oneWayCanaryInteraction).Step (.inr ()) (.inl true) := by
   intro step
   cases step with
@@ -1658,12 +1643,8 @@ private def canaryLeft : GSLT where
     subst target'
     exact step
 
-private def canaryRight : GSLT where
-  Term := Bool
-  equations := ⟨Eq, ⟨Eq.refl, Eq.symm, Eq.trans⟩⟩
-  rewrites := fun _ _ => False
-  rewrites_resp_left := by aesop
-  rewrites_resp_right := by aesop
+private def canaryRight : GSLT :=
+  GSLT.stepFree (Bool)
 
 /-- A component rewrite remains a rewrite inside a mixed document and under
 both document contexts. -/

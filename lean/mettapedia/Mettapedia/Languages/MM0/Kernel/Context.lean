@@ -23,7 +23,19 @@ structure SortInfo where
 
 abbrev SortSignature := Nat → Option SortInfo
 
+namespace Binder
+
+/-- Change a global sort reference while preserving local dependencies. -/
+def relocateSort? (references : Nat → Option Nat) : Binder → Option Binder
+  | .bound sort => (references sort).map .bound
+  | .regular sort dependencies => (references sort).map (fun image => .regular image dependencies)
+
+end Binder
+
 namespace Context
+
+def relocateSorts? (references : Nat → Option Nat) (context : Context) : Option Context :=
+  context.mapM (Binder.relocateSort? references)
 
 def isBound (context : Context) (index : Nat) : Bool :=
   match context[index]? with

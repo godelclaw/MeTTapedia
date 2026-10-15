@@ -15,7 +15,7 @@ used to view its unchanged raw code in the target fibre.  Nothing is
 quotiented into Lean equality, and no checker is replayed during transport.
 
 The result is the small two-dimensional enrichment required by dependent
-Sigma computation and, later, by GSLT-IL refinement cells and NIK receipts.
+Sigma computation and, later, by GSLT-IL refinement cells and SemanticService receipts.
 
 The present layer is deliberately the exact proof-relevant refinement of the
 existing syntactic `Conv`: its endpoints are formed, while intermediate raw

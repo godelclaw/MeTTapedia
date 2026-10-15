@@ -32,6 +32,14 @@ theorem zero_clause (value : Nat) :
   simp [nat_zero_formals, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
     matchAtom, MORK.Subst.lookup, environment]
 
+private theorem natural_equality (first second : Nat) :
+    (natural first == natural second) = decide (first = second) := by
+  rw [beq_eq_decide]
+  apply Bool.eq_iff_iff.mpr
+  simp only [decide_eq_true_eq, natural, Atom.grounded.injEq,
+    Mettapedia.Languages.MeTTa.OSLFCore.GroundedValue.int.injEq]
+  omega
+
 theorem zero_body_returns (state : State) (value : Nat) :
     PureReturns program (environment value) state natZeroEquation.body state
       (boolean (value == 0)) := by
@@ -42,7 +50,8 @@ theorem zero_body_returns (state : State) (value : Nat) :
     _ (grounded_returns program (environment value) state (.int 0)) _ (by decide)
   · simpa [environment, applySubst, MORK.Subst.lookup] using
       variable_returns program (environment value) state "n"
-  · simp [StdLib.apply, natural, boolean]
+  · rw [StdLib.structural_equality, natural_equality]
+    simp only [beq_eq_decide]
 
 theorem zero_captured_returns (bindings : MORK.Subst) (state : State) (name : String) (value : Nat)
     (captured : applySubst bindings (.var name) = natural value) :
@@ -75,7 +84,10 @@ theorem pred_body_returns (state : State) (value : Nat) :
         _ (grounded_returns program (environment (value + 1)) state (.int 1)) _ (by decide)
       · simpa [environment, applySubst, MORK.Subst.lookup] using
           variable_returns program (environment (value + 1)) state "n"
-      · simp [StdLib.apply, natural]
+      · change (Except.ok (state, [.grounded (.int (((value + 1 : Nat) : Int) - 1))]) : Effects.Result) =
+          .ok (state, [.grounded (.int (value : Int))])
+        have same : ((value + 1 : Nat) : Int) - 1 = (value : Int) := by omega
+        rw [same]
 
 theorem pred_captured_returns (bindings : MORK.Subst) (state : State) (name : String) (value : Nat)
     (captured : applySubst bindings (.var name) = natural value) :
@@ -123,9 +135,9 @@ theorem equality_body_returns (state : State) (first second : Nat) :
   rw [nat_equal_body]
   apply native_variable_call_returns program (equalityEnvironment first second) state state
     "==" ["a", "b"] _ (by decide) (by decide) _ (by decide)
-  simp [StdLib.apply, equalityEnvironment, applySubst, MORK.Subst.lookup,
-    natural, boolean, beq_eq_decide]
-  exact ⟨Int.ofNat.inj, congrArg Int.ofNat⟩
+  change StdLib.apply state "==" [natural first, natural second] =
+    .ok (state, [boolean (decide (first = second))])
+  rw [StdLib.structural_equality, natural_equality]
 
 theorem equality_captured_returns (bindings : MORK.Subst) (state : State)
     (firstName secondName : String) (first second : Nat)
@@ -158,7 +170,10 @@ theorem addition_body_returns (state : State) (first second : Nat) :
   rw [addition_body]
   apply native_variable_call_returns program (equalityEnvironment first second) state state
     "+" ["a", "b"] _ (by decide) (by decide) _ (by decide)
-  simp [StdLib.apply, equalityEnvironment, applySubst, MORK.Subst.lookup, natural]
+  change (Except.ok (state, [.grounded (.int ((first : Int) + (second : Int)))]) : Effects.Result) =
+    .ok (state, [.grounded (.int ((first + second : Nat) : Int))])
+  have same : (first : Int) + (second : Int) = ((first + second : Nat) : Int) := by omega
+  rw [same]
 
 theorem addition_returns (bindings : MORK.Subst) (state : State) (first second : Nat)
     (left right : Atom)
@@ -192,7 +207,8 @@ theorem data_equality_body_returns (state : State) (first second : Atom) :
   rw [data_equality_body_shape]
   apply native_variable_call_returns program (dataEqualityEnvironment first second) state state
     "==" ["first", "second"] _ (by decide) (by decide) _ (by decide)
-  simp [StdLib.apply, dataEqualityEnvironment, applySubst, MORK.Subst.lookup, beq_eq_decide]
+  change StdLib.apply state "==" [first, second] = .ok (state, [boolean (decide (first = second))])
+  rw [StdLib.structural_equality, beq_eq_decide]
 
 theorem data_equality_captured_returns (bindings : MORK.Subst) (state : State)
     (first second : Atom) (firstName secondName : String)

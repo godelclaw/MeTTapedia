@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.Logic.Bridges.FoundationSecondIncompletenessAuthority
 
 /-!
@@ -26,8 +26,8 @@ namespace Mettapedia.Logic.Bridges.FoundationBootstrapIndexSeparation
 open LO.Entailment
 open LO.FirstOrder LO.FirstOrder.Arithmetic
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
-open Mettapedia.Logic.Bridges.FoundationNIKAuthority
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
+open Mettapedia.Logic.Bridges.FoundationProofAuthority
 open Mettapedia.Logic.Bridges.FoundationSecondIncompletenessAuthority
 
 /-- At every bootstrap target, the statement carrier may name an arithmetic

@@ -2,11 +2,11 @@ import Mettapedia.GSLT.LanguageDef.BootstrapCell.Replay
 import Mettapedia.Util.LinearHash
 
 /-!
-# The reflexive cell: replay presented as a calculus that NIK checks
+# The reflexive cell: replay presented as a calculus that SemanticService checks
 
-NIK checks a raw certificate for a goal by replaying it against a validated
+SemanticService checks a raw certificate for a goal by replaying it against a validated
 calculus.  This module presents that checking judgment itself as an ordinary
-calculus, `Accepts(goal, code)`, whose rules are NIK's replay rules for the
+calculus, `Accepts(goal, code)`, whose rules are SemanticService's replay rules for the
 checked calculus, and proves that the generic checker, run on the
 presentation, agrees exactly with the generic checker run on the calculus.
 
@@ -1038,7 +1038,7 @@ mutual
 
 /-- The code of the erasure of a derivation is closed and canonical. -/
 theorem quoteProof_erase_valid : {goal : Pattern} →
-    (derivation : (nikSignature definition).Deriv goal) →
+    (derivation : (calculusReplaySignature definition).Deriv goal) →
       argumentValidAt 0 (quoteProof profile definition.1 derivation.erase) = true
   | _, .byStep ⟨id, arguments⟩ step children => by
       obtain ⟨rule, lookup, argumentsValid, _⟩ := instantiateRule?_some_facts step
@@ -1051,7 +1051,7 @@ theorem quoteProof_erase_valid : {goal : Pattern} →
 
 /-- The same for ordered children. -/
 theorem quoteProofs_erase_valid : {goals : List Pattern} →
-    (derivations : (nikSignature definition).DerivList goals) →
+    (derivations : (calculusReplaySignature definition).DerivList goals) →
       ∀ pattern ∈ quoteProofs profile definition.1 derivations.erase,
         argumentValidAt 0 pattern = true
   | _, .nil => by
@@ -1107,8 +1107,8 @@ calculus yields a derivation of its acceptance judgment in the replay
 calculus, and that derivation's erasure is the replay certificate. -/
 theorem replay_complete (cell : ValidatedCalculusLanguageDef)
     (rulesEq : cell.1.rules = replayRules profile definition.1.rules) :
-    {goal : Pattern} → (derivation : (nikSignature definition).Deriv goal) →
-      ∃ lifted : (nikSignature cell).Deriv
+    {goal : Pattern} → (derivation : (calculusReplaySignature definition).Deriv goal) →
+      ∃ lifted : (calculusReplaySignature cell).Deriv
           (acceptsJudgment profile goal (quoteProof profile definition.1 derivation.erase)),
         lifted.erase = replayProof profile definition.1 derivation.erase
   | goal, .byStep ⟨id, arguments⟩ step children => by
@@ -1142,8 +1142,8 @@ theorem replay_complete (cell : ValidatedCalculusLanguageDef)
 /-- Completeness for ordered children. -/
 theorem replay_completeList (cell : ValidatedCalculusLanguageDef)
     (rulesEq : cell.1.rules = replayRules profile definition.1.rules) :
-    {goals : List Pattern} → (derivations : (nikSignature definition).DerivList goals) →
-      ∃ lifted : (nikSignature cell).DerivList
+    {goals : List Pattern} → (derivations : (calculusReplaySignature definition).DerivList goals) →
+      ∃ lifted : (calculusReplaySignature cell).DerivList
           (List.zipWith (acceptsJudgment profile) goals
             (quoteProofs profile definition.1 derivations.erase)),
         lifted.erase = replayProofs profile definition.1 derivations.erase
@@ -1179,10 +1179,10 @@ calculus accepts for the goal, whose code is the judgment's code, and whose
 replay certificate is the derivation's erasure. -/
 theorem replay_sound (cell : ValidatedCalculusLanguageDef)
     (rulesEq : cell.1.rules = replayRules profile definition.1.rules) :
-    {judgment : Pattern} → (derivation : (nikSignature cell).Deriv judgment) →
+    {judgment : Pattern} → (derivation : (calculusReplaySignature cell).Deriv judgment) →
     ∀ goal code, judgment = acceptsJudgment profile goal code →
       ∃ certificate : RawProof,
-        (nikSignature definition).replay goal certificate = true ∧
+        (calculusReplaySignature definition).replay goal certificate = true ∧
           code = quoteProof profile definition.1 certificate ∧
           derivation.erase = replayProof profile definition.1 certificate
   | _, .byStep ⟨id, fullArguments⟩ step children, goal, code, judgmentEq => by
@@ -1246,11 +1246,11 @@ theorem replay_sound (cell : ValidatedCalculusLanguageDef)
 /-- Soundness for ordered children. -/
 theorem replay_soundList (cell : ValidatedCalculusLanguageDef)
     (rulesEq : cell.1.rules = replayRules profile definition.1.rules) :
-    {judgments : List Pattern} → (derivations : (nikSignature cell).DerivList judgments) →
+    {judgments : List Pattern} → (derivations : (calculusReplaySignature cell).DerivList judgments) →
     ∀ goals codes, goals.length = codes.length →
       judgments = List.zipWith (acceptsJudgment profile) goals codes →
       ∃ certificates : List RawProof,
-        (nikSignature definition).replayAll goals certificates = true ∧
+        (calculusReplaySignature definition).replayAll goals certificates = true ∧
           codes = quoteProofs profile definition.1 certificates ∧
           derivations.erase = replayProofs profile definition.1 certificates
   | _, .nil, goals, codes, lengths, judgmentsEq => by
@@ -1414,7 +1414,7 @@ theorem accepts_derivable_iff (goal code : Pattern) :
 most one derivation in the replay calculus: the code determines the
 certificate, and the certificate determines the derivation. -/
 theorem replay_deriv_subsingleton (goal code : Pattern) :
-    Subsingleton ((nikSignature cell).Deriv (acceptsJudgment profile goal code)) := by
+    Subsingleton ((calculusReplaySignature cell).Deriv (acceptsJudgment profile goal code)) := by
   refine ⟨fun first second => ?_⟩
   obtain ⟨certificate, _, codeEq, firstErased⟩ :=
     replay_sound profile definition cell rulesEq first goal code rfl

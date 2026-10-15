@@ -28,7 +28,7 @@ theorem zf_bottom_to_top_rule_singleton_fixture
   let ψ : SetQuery := (⊤ : SetQuery)
   have hpoint : pointwiseImpliesOnTheory 𝗭𝗙 φ ψ := by
     intro S' _hT hφ
-    exact False.elim (by simpa [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] using hφ)
+    simp [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] at hφ
   have hsing : singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
     (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
       (T := 𝗭𝗙) (φ := φ) (ψ := ψ)).1 hpoint
@@ -42,37 +42,6 @@ theorem zf_bottom_to_top_rule_singleton_fixture
     cases hEq
     simpa using hS
   exact rule.sound hside
-
-/-- Categorical fixture:
-consume the categorical set-theory provability wrapper endpoint. -/
-theorem zf_bottom_to_top_categorical_singleton_fixture
-    (H : WMHyperdoctrine SetState)
-    (hcat : WMCategoricalEndpointContract (H := H))
-    {X : H.Obj} (φc : H.query X)
-    (S : SetPointed)
-    (hS : S ⊧* 𝗭𝗙) :
-    BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) ({S} : SetState) (⊥ : SetQuery) ≤
-      BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) ({S} : SetState) (⊤ : SetQuery) := by
-  let φ : SetQuery := (⊥ : SetQuery)
-  let ψ : SetQuery := (⊤ : SetQuery)
-  have hpoint : pointwiseImpliesOnTheory 𝗭𝗙 φ ψ := by
-    intro S' _hT hφ
-    exact False.elim (by simpa [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] using hφ)
-  have hsing : singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-      (T := 𝗭𝗙) (φ := φ) (ψ := ψ)).1 hpoint
-  have hprov : 𝗭𝗙 ⊢ (φ ➝ ψ) :=
-    (provable_imp_iff_singletonStrengthLEOnZF (φ := φ) (ψ := ψ)).2 hsing
-  have hW : stateModelsZF ({S} : SetState) := by
-    intro S' hmem
-    have hEq : S' = S := by
-      simpa using (List.mem_singleton.mp hmem)
-    cases hEq
-    simpa using hS
-  exact
-    multiset_strength_le_of_provable_imp_categorical
-      (H := H) (hcat := hcat) (X := X) (φc := φc)
-      (T := 𝗭𝗙) (W := ({S} : SetState)) (φ := φ) (ψ := ψ) hW hprov
 
 /-- Steelman positive fixture:
 explicit singleton-universal characterization for ZF in the implication fragment. -/
@@ -107,7 +76,8 @@ theorem zf_outside_scope_top_bottom_counterexample_fixture
       hNotModel hTop hBot)
 
 /-- Unified endpoint fixture:
-provability transport plus categorical endpoint contract in one theorem call. -/
+provability transport plus the evidence-level Beck–Chevalley contract in one
+theorem call. -/
 theorem zf_provable_to_multiset_and_endpoint_contract_fixture
     (H : WMHyperdoctrine SetState)
     (φ ψ : SetQuery)

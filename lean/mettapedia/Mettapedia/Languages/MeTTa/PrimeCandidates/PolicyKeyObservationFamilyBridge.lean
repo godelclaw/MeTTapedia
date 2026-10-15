@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Dynamics.ObservationPolicyFamilyUniversal
-import Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+import Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
+import Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 /-!
 # cost-layer iteration policy-key admission as generic observation-family sufficiency
@@ -20,10 +20,10 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyObservationFamilyBridge
 
 open Mettapedia.GSLT.Core
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKPolicyFamilyAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.PolicyFamilyAdmission
 open Mettapedia.GSLT.LanguageDef.Cost.Elaboration
-open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.PolicyKeyAdmission
 
 universe uState uKey
 
@@ -36,7 +36,7 @@ def observationFamily
   Result := request.Value
   decide := request.observe
 
-/-- A Cost/NIK policy-key admission retains precisely the executable runners
+/-- A Cost/SemanticService policy-key admission retains precisely the executable runners
 required by the generic observation-family realization. -/
 def observationRealization
     {dependencies : DependencySystem}
@@ -48,7 +48,7 @@ def observationRealization
   run := fun policy => (admission.realize policy).run
   agrees := fun policy state => (admission.realize policy).run_key state
 
-/-- The Cost/NIK key admission is an ordinary revision-indexed GSLT policy
+/-- The Cost/SemanticService key admission is an ordinary revision-indexed GSLT policy
 family admission after forgetting only its independent replay field. -/
 def toGenericAdmission
     {dependencies : DependencySystem}
@@ -61,7 +61,7 @@ def toGenericAdmission
   realization := observationRealization admission
 
 /-- Conversely, on an explicitly policy-only request, the generic GSLT
-admission supplies the whole Cost/NIK policy-key admission.  Exact replay is
+admission supplies the whole Cost/SemanticService policy-key admission.  Exact replay is
 not manufactured; the contradiction discharges only a request which has
 already declared that replay is absent. -/
 def ofGenericAdmissionPolicyOnly
@@ -120,7 +120,7 @@ theorem activeToGeneric
       active.runKey policy encoded :=
   rfl
 
-/-- Every admitted Cost/NIK key supports its complete generic observation
+/-- Every admitted Cost/SemanticService key supports its complete generic observation
 family. -/
 theorem policyKeyAdmission_supportsObservationFamily
     {dependencies : DependencySystem}

@@ -60,6 +60,34 @@ def allocation (id : Id) : List (Command Id) → Nat
   | command :: rest =>
       (if command.1 = id then command.2 else 0) + allocation id rest
 
+/-- Turn a service trace into equal-sized quanta without losing repeated
+services of the same retained owner. Idle slots are absent from this trace. -/
+theorem allocation_uniform (id : Id) (quantum : Nat) (serviced : List Id) :
+    allocation id (serviced.map (fun task => (task, quantum))) =
+      serviced.count id * quantum := by
+  induction serviced with
+  | nil => simp [allocation]
+  | cons task rest ih =>
+      by_cases same : task = id <;>
+        simp [allocation, ih, same, Nat.add_mul, Nat.add_comm]
+
+/-- Budgets may vary between visits and between owners. Only visits to the
+selected owner require the lower bound; other owners may receive zero.
+The alignment records which owner actually received each service. -/
+theorem allocation_lower_bound (id : Id) (minimum : Nat)
+    {serviced : List Id} {commands : List (Command Id)}
+    (aligned : List.Forall₂ (fun task command =>
+      command.1 = task ∧ (task = id → minimum ≤ command.2)) serviced commands) :
+    serviced.count id * minimum ≤ allocation id commands := by
+  induction aligned with
+  | nil => simp [allocation]
+  | @cons task command tasks commands step _ ih =>
+      rcases step with ⟨owner, lower⟩
+      by_cases selected : task = id
+      · simpa [allocation, owner, selected, Nat.add_mul, Nat.add_comm] using
+          Nat.add_le_add (lower selected) ih
+      · simpa [allocation, owner, selected] using ih
+
 @[simp] theorem dispatch_selected (command : Command Id)
     (pool : Pool M C Id base) :
     dispatch M C charge command pool command.1 =
@@ -211,6 +239,24 @@ theorem prepared_quanta_partitioned (parts : List (List (Command Id)))
   have unique : (quantumKernel M C (Id := Id) (base := base)).Disjoint schedule := distinct
   exact ((quantumKernel M C).partitioned_eq_run charge Prod.snd pool parts schedule
     coverage unique).trans (quantum_kernel_reference M C charge schedule pool)
+
+/-- Already completed owners may be installed before other owners are prepared.
+The result keeps the full current pool and the remaining paid writes, including
+their cumulative charges and suspended packets. Distinct ownership is required
+across the completed and pending commands, not just within each part. -/
+theorem prepared_quanta_partial_exact (completed pending : List (Command Id))
+    (pool : Pool M C Id base)
+    (distinct : ((completed ++ pending).map Prod.fst).Nodup) :
+    (installQuanta M C (prepareQuanta M C charge completed pool) pool,
+      prepareQuanta M C charge pending
+        (installQuanta M C (prepareQuanta M C charge completed pool) pool)) =
+    (execute M C charge completed pool, prepareQuanta M C charge pending pool) := by
+  have unique : (quantumKernel M C (Id := Id) (base := base)).Disjoint
+      (completed ++ pending) := distinct
+  exact ((quantumKernel M C).partial_preparation_exact charge Prod.snd pool
+    completed pending unique).trans (by
+      rw [quantum_kernel_reference M C charge completed pool]
+      rfl)
 
 /-! ## Differently indexed packets on one private frontier -/
 

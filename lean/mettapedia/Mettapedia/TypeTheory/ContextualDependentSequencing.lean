@@ -231,7 +231,7 @@ theorem initial_state_reuse_changes_answers :
         (runWorldsAt (Program.map (Sigma.mk prior.answer) (next prior.answer))
           false prior.branch).map
             (WorldResult.prependIntents prior.intents)).map WorldResult.answer := by
-  letI (index : Bool) : DecidableEq (Fibre index) := by
+  let (index : Bool) : DecidableEq (Fibre index) := by
     cases index with
     | false => exact inferInstanceAs (DecidableEq PUnit)
     | true => exact inferInstanceAs (DecidableEq Bool)

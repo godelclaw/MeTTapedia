@@ -1,6 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.BiformTheory
 import Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # A proof-sensitive biform-route canary
 
@@ -22,7 +24,7 @@ namespace Mettapedia.GSLT.LanguageDef.BiformTheoryCanary
 open _root_.CategoryTheory
 open scoped _root_.CategoryTheory
 open Mettapedia.GSLT.ProofRelevant
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.GSLT.LanguageDef.HOLHenkinBiformCanary
 open Mettapedia.Logic.HOL

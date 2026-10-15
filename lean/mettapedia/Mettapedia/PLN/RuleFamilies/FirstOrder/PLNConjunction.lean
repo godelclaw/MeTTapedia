@@ -169,7 +169,7 @@ theorem conjunction_lower_bound (n a b : ℕ) (ha : a ≤ n) (_hb : b ≤ n) (ha
   -- The constraint b - k ≤ n - a is equivalent to k ≥ a + b - n
   -- So for k < a + b - n, this constraint fails
   have h_fail : ¬(k ≤ a ∧ k ≤ b ∧ b - k ≤ n - a ∧ b ≤ n) := by
-    push_neg; intro _ _ h3; omega
+    push Not; intro _ _ h3; omega
   rw [dif_neg h_fail]
 
 /-- Upper bound: P(A ∧ B) ≤ min(p_A, p_B) (trivial inclusion bound)
@@ -182,12 +182,12 @@ theorem conjunction_upper_bound (n a b : ℕ) (_ha : a ≤ n) (_hb : b ≤ n) :
   unfold hypergeometricPMF
   -- If k > min(a,b), then k > a or k > b
   have h_fail : ¬(k ≤ a ∧ k ≤ b ∧ b - k ≤ n - a ∧ b ≤ n) := by
-    push_neg
+    push Not
     intro hka hkb _
     -- min a b < k means k > a or k > b
     have : a < k ∨ b < k := by
       by_contra h
-      push_neg at h
+      push Not at h
       have : k ≤ min a b := Nat.le_min.mpr h
       exact Nat.not_lt.mpr this hk
     rcases this with ha_lt | hb_lt
@@ -413,7 +413,7 @@ strengths and confidences directly. Here we show the connection.
 
     The strength formula follows directly from tensor product.
 -/
-theorem pln_book_conjunction_strength (e_A e_B : BinaryEvidence)
+theorem conjunctionIndependent_strength_ge_product (e_A e_B : BinaryEvidence)
     (_h_A : e_A.total ≠ 0) (_h_B : e_B.total ≠ 0)
     (_h_A_top : e_A.total ≠ ⊤) (_h_B_top : e_B.total ≠ ⊤) :
     -- Under independence, s_{A∧B} ≥ s_A × s_B

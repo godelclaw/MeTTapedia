@@ -123,10 +123,14 @@ theorem names_explicateQ : ∀ t : Src S X, Src.names (explicateQ t) = Src.names
 
 variable [DecidableEq X]
 
+/- The root of the form being elaborated: the holes of its quotations are the
+root's head slots. -/
+variable (R : Owner)
+
 /-- **Writing out what the query-wide policy inferred changes no
 elaboration**, on text whose lambdas carry no crossing set. -/
 theorem elabQ_explicateQ : ∀ (t : Src S X) (env : REnv X) (pos : Owner),
-    lamPlain t = true → elabQ env pos (explicateQ t) = elabQ env pos t
+    lamPlain t = true → elabQ R env pos (explicateQ t) = elabQ R env pos t
   | .sym _, _, _, _ => rfl
   | .fn _, _, _, _ => rfl
   | .sv _, _, _, _ => rfl
@@ -288,7 +292,7 @@ theorem crossOwn_lfIntro (xs : Option (List X)) (p : Src S X) (cr : List X) :
 lexical fresh elaborates the source to**, on text whose lambdas carry no
 crossing set. -/
 theorem elabQ_explicateLF : ∀ (t : Src S X) (env : REnv X) (cr : List X) (pos : Owner),
-    lamPlain t = true → elabQ env pos (explicateLF cr t) = elabLF env cr pos t
+    lamPlain t = true → elabQ R env pos (explicateLF cr t) = elabLF R env cr pos t
   | .sym _, _, _, _, _ => rfl
   | .fn _, _, _, _, _ => rfl
   | .sv _, _, _, _, _ => rfl
@@ -345,8 +349,8 @@ theorem elabQ_explicateLF : ∀ (t : Src S X) (env : REnv X) (cr : List X) (pos 
 whose lambdas carry no crossing set; the explicit form no longer depends on
 the names in force. -/
 theorem elabLF_explicateLF (t : Src S X) (env : REnv X) (cr cr' : List X) (pos : Owner)
-    (h : lamPlain t = true) : elabLF env cr' pos (explicateLF cr t) = elabLF env cr pos t :=
-  (elabLF_explicit _ _ _ _ (explicit_explicateLF t cr)).trans (elabQ_explicateLF t env cr pos h)
+    (h : lamPlain t = true) : elabLF R env cr' pos (explicateLF cr t) = elabLF R env cr pos t :=
+  (elabLF_explicit R _ _ _ _ (explicit_explicateLF t cr)).trans (elabQ_explicateLF R t env cr pos h)
 
 /-! ## Programs -/
 
@@ -426,7 +430,7 @@ theorem elabState_explicateEC (o' : Ownership) (l : Lifetime) (r : Readout) (u :
     (fun t _ => names_explicateEC t)
     (fun root t _ =>
       (elabForm_explicit o' .explicitCapture root (explicit_explicateEC t)).trans
-        (elabEC_explicateEC t _ _))
+        (elabEC_explicateEC root t _ _))
     program.all_true
 
 /-- **The query-wide policy, on programs whose lambdas carry no crossing
@@ -439,7 +443,7 @@ theorem elabState_explicateQ (o' : Ownership) (l : Lifetime) (r : Readout) (u : 
     (fun t _ => names_explicateQ t)
     (fun root t ht =>
       (elabForm_explicit o' .queryWide root (explicit_explicateQ t)).trans
-        (elabQ_explicateQ t _ _ ht))
+        (elabQ_explicateQ root t _ _ ht))
     plain
 
 /-- **Lexical fresh, on programs whose lambdas carry no crossing set.** -/
@@ -451,7 +455,7 @@ theorem elabState_explicateLF (o' : Ownership) (l : Lifetime) (r : Readout) (u :
     (fun t _ => names_explicateLF t [])
     (fun root t ht =>
       (elabForm_explicit o' .queryWide root (explicit_explicateLF t [])).trans
-        (elabQ_explicateLF t _ _ _ ht))
+        (elabQ_explicateLF root t _ _ _ ht))
     plain
 
 omit [DecidableEq X] in

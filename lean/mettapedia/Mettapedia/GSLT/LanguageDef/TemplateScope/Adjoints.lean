@@ -78,7 +78,7 @@ theorem run_beta (prog : S → Option (Tm S X)) (n : ℕ) (π : Path) (σ : GSto
   simp only [step]
   rw [run_lam, bindOpt_some_singleton]
   show bindOpt (step .static prog (run .static prog n) (π ++ [1]) σ (.sym s)) _ = _
-  simp only [step, bindOpt_some_singleton, activate, renameOwn_nil]
+  simp only [step, bindOpt_some_singleton, activate, renameOwn_nil, sealRen_nil]
 
 /-- **Equality, recorded.**  Matching a store name against a ground value is the
 refinement step that records the equation in the store. -/

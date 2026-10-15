@@ -62,7 +62,7 @@ theorem budgetCheck_complete (c : Code) (halts : HaltsAtZero c) :
 theorem haltsAtZero_not_computable : ¬ComputablePred HaltsAtZero :=
   ComputablePred.halting_problem 0
 
-/-- The budget checker packaged in the NIK `Checker` interface. -/
+/-- The budget checker packaged in the SemanticService `Checker` interface. -/
 def budgetChecker : Checker Code ℕ where
   check := budgetCheck
 

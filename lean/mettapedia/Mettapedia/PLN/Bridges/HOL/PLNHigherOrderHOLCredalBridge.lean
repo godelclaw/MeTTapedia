@@ -1916,7 +1916,7 @@ theorem credalPredicateFullInheritanceFamilyValue_nonneg
     0 ≤ credalPredicateFullInheritanceFamilyValue
       (Base := Base) (Const := Const) Ms σ hObj p q i := by
   unfold credalPredicateFullInheritanceFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     predicateFullInheritanceStrength_nonneg
       (Base := Base) (Const := Const) (Ms i) σ p q
@@ -1932,7 +1932,7 @@ theorem credalPredicateFullInheritanceFamilyValue_le_one
     credalPredicateFullInheritanceFamilyValue
       (Base := Base) (Const := Const) Ms σ hObj p q i ≤ 1 := by
   unfold credalPredicateFullInheritanceFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     predicateFullInheritanceStrength_le_one
       (Base := Base) (Const := Const) (Ms i) σ p q
@@ -2086,7 +2086,7 @@ theorem credalPredicateFullInheritanceInterval_eq_const_one_of_pointwise_models
       (by
         intro i
         unfold credalPredicateFullInheritanceFamilyValue
-        letI := hObj i
+        let := hObj i
         exact
           (predicateFullInheritanceStrength_eq_one_iff_models_predicateImpFormula
             (Base := Base) (Const := Const) (Ms i) σ p q
@@ -2124,7 +2124,7 @@ theorem credalPredicateVocabularyFullInheritanceFamilyValue_nonneg
     0 ≤ credalPredicateVocabularyFullInheritanceFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i := by
   unfold credalPredicateVocabularyFullInheritanceFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     predicateVocabularyFullInheritanceStrength_nonneg
       (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2142,7 +2142,7 @@ theorem credalPredicateVocabularyFullInheritanceFamilyValue_le_one
     credalPredicateVocabularyFullInheritanceFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i ≤ 1 := by
   unfold credalPredicateVocabularyFullInheritanceFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     predicateVocabularyFullInheritanceStrength_le_one
       (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2312,7 +2312,7 @@ theorem credalPredicateVocabularyFullInheritanceInterval_eq_const_one_of_pointwi
       (by
         intro i
         unfold credalPredicateVocabularyFullInheritanceFamilyValue
-        letI := hObj i
+        let := hObj i
         exact
           (predicateVocabularyFullInheritanceStrength_eq_one_iff_models_predicateImpFormula
             (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2351,7 +2351,7 @@ theorem credalPredicateVocabularySimilarityFamilyValue_nonneg
     0 ≤ credalPredicateVocabularySimilarityFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i := by
   unfold credalPredicateVocabularySimilarityFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularySimilarityStrength_nonneg
         (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2369,7 +2369,7 @@ theorem credalPredicateVocabularySimilarityFamilyValue_le_one
     credalPredicateVocabularySimilarityFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i ≤ 1 := by
   unfold credalPredicateVocabularySimilarityFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularySimilarityStrength_le_one
         (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2544,7 +2544,7 @@ theorem credalPredicateVocabularySimilarityInterval_eq_const_one_of_pointwise_mo
       (by
         intro i
         unfold credalPredicateVocabularySimilarityFamilyValue
-        letI := hObj i
+        let := hObj i
         exact
           Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularySimilarityStrength_eq_one_of_models_predicateIffFormula
               (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2594,7 +2594,7 @@ theorem credalPredicateVocabularyPureExtensionalSimilarityFamilyValue_nonneg
     0 ≤ credalPredicateVocabularyPureExtensionalSimilarityFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i := by
   unfold credalPredicateVocabularyPureExtensionalSimilarityFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularyPureExtensionalSimilarityStrength_nonneg
       (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2611,7 +2611,7 @@ theorem credalPredicateVocabularyPureExtensionalSimilarityFamilyValue_le_one
     credalPredicateVocabularyPureExtensionalSimilarityFamilyValue
       (Base := Base) (Const := Const) Ms σ decode hObj p q i ≤ 1 := by
   unfold credalPredicateVocabularyPureExtensionalSimilarityFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularyPureExtensionalSimilarityStrength_le_one
       (Base := Base) (Const := Const) (Ms i) σ decode p q
@@ -2946,7 +2946,7 @@ theorem credalPredicateVocabularyPureExtensionalSimilarityInterval_eq_const_one_
       (Base := Base) (Const := Const) Ms σ decode hObj p q 1
   intro i
   unfold credalPredicateVocabularyPureExtensionalSimilarityFamilyValue
-  letI := hObj i
+  let := hObj i
   exact
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSimilarityBridge.predicateVocabularyPureExtensionalSimilarityStrength_eq_one_of_mutualExtensional
         (Base := Base) (Const := Const) (Ms i) σ decode p q

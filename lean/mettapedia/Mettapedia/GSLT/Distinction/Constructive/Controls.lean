@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Distinction.Constructive.ClassicalBridge
 import Mettapedia.GSLT.Logic.ConstructiveModalStrength
 
@@ -438,16 +439,8 @@ theorem cells_ping_rest_every_depth (depth : ℕ) :
 /-! ## No section -/
 
 /-- Two terms and no steps. -/
-abbrev pairTheory : GSLT.{0} where
-  Term := Bool
-  equations := ⟨Eq, ⟨fun _ => rfl, Eq.symm, Eq.trans⟩⟩
-  rewrites _ _ := False
-  rewrites_resp_left := by
-    intro _ _ _ _ step
-    exact step.elim
-  rewrites_resp_right := by
-    intro _ _ _ step _
-    exact step.elim
+abbrev pairTheory : GSLT.{0} :=
+  GSLT.stepFree (Bool)
 
 abbrev stillDynamics : System.{0, 0} pairTheory where
   Atom := Empty

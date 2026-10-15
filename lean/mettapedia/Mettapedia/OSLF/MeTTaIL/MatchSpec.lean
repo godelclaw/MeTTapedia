@@ -702,7 +702,7 @@ private theorem extends_of_mergeBindings_right {b1 b2 bs : Bindings}
 
 /-! ## isMatchCorrectListAux ↔ forall -/
 
-private theorem isMatchCorrectListAux_iff_forall (l : List Pattern) :
+theorem isMatchCorrectListAux_iff_forall (l : List Pattern) :
     isMatchCorrectListAux l = true ↔ ∀ p ∈ l, Pattern.isMatchCorrect p = true := by
   induction l with
   | nil => simp [isMatchCorrectListAux]

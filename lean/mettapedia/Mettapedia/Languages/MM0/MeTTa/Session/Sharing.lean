@@ -90,7 +90,7 @@ theorem expected_guard_returns (bindings : Subst) (state : State) (expected : Op
       · simp [expectedCases, ProofResults.resultValue, optionValue, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
           SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, freshLookup, bound]
       · apply native_variable_call_returns program bound state state "==" ["wanted", "actual"] _ (by decide) (by decide) _ (by decide)
-        simp [bound, applySubst, Subst.lookup, actualLookup, StdLib.apply, boolean]
+        simp [bound, applySubst, Subst.lookup, actualLookup, boolean]
         simp [beq_eq_decide, Data.preterm_injective.eq_iff]
 
 theorem supplied_expectation_returns (bindings : Subst) (state : State) (expected actual : Preterm)
@@ -258,8 +258,8 @@ private theorem condition_returns (tables : Proof.Tables) (context : Context) (s
   · simpa [environment, applySubst, Subst.lookup] using variable_returns program
       (environment tables context saved index root claim) state "index"
   · apply native_variable_call_returns program _ state state "size-atom" ["saved"] _ (by decide) (by decide) _ (by decide)
-    simp [environment, applySubst, Subst.lookup, StdLib.apply, natural]
-  · simp [StdLib.apply, natural, boolean]
+    simp [environment, applySubst, Subst.lookup, natural]
+  · simp [natural, boolean]
 
 private theorem entries_call_returns (tables : Proof.Tables) (context : Context) (saved : List Entry)
     (index : Nat) (root : ProofWitness) (claim : Preterm) (bindings : Subst)
@@ -310,7 +310,7 @@ private theorem next_returns (tables : Proof.Tables) (context : Context) (proces
     apply native_binary_call_returns program bindings before before before before "+" _ _ (natural processed.length) (.grounded (.int 1)) _
       (by decide) (by decide) (by decide) (by decide) _ (grounded_returns program bindings before (.int 1)) _ (by decide)
     · simpa [bindings, checkedEnvironment, answerEnvironment, entryEnvironment, environment, applySubst, Subst.lookup] using variable_returns program bindings before "index"
-    · simp [StdLib.apply, natural]
+    · simp [natural]
   apply entries_call_returns (ProofStore.extend tables actual) context (processed ++ entry :: remaining)
     (processed.length + 1) root claim bindings "next" _ before after answer
     (by simp [bindings, checkedEnvironment, answerEnvironment, entryEnvironment, environment, applySubst, Subst.lookup, ProofStore.extend])
@@ -428,7 +428,7 @@ private theorem loop_entry_returns (tables : Proof.Tables) (context : Context) (
   apply let_returns program bindings bound before before after
     (.expression [.symbol "MM0:Saved", .var "expected", .var "proof"]) _ _ (entryValue entry) _
   · apply native_variable_call_returns program bindings before before "index-atom" ["saved", "index"] _ (by decide) (by decide) _ (by decide)
-    simp [bindings, environment, applySubst, Subst.lookup, StdLib.apply, natural]
+    simp [bindings, environment, applySubst, Subst.lookup, natural]
   · simp [entryValue, SpaceSemantics.matchBinding, SpaceSemantics.matchValue,
       SpaceSemantics.matchValue.matchValues, matchAtom,
       bindings, bound, entryEnvironment, environment, Subst.lookup]

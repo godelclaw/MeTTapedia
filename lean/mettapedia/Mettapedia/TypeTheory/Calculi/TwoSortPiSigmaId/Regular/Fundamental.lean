@@ -24,7 +24,7 @@ namespace SemanticTerm
 
 /-- The top sort itself normalizes, although it is deliberately not interpreted
 as a type code. -/
-def u1 (context : CoherentCandidateContext n) :
+theorem u1 (context : CoherentCandidateContext n) :
     SemanticTerm (ContextualCandidateType.normalizing context) (.u1 : ScopedTerm n) where
   realizes := by
     intro m environment realized
@@ -32,7 +32,7 @@ def u1 (context : CoherentCandidateContext n) :
   constantFree := .u1
 
 /-- Lambda introduction for the contextual dependent-function candidate. -/
-def lam
+theorem lam
     {context : CoherentCandidateContext n}
     {domain : ContextualCandidateType context}
     {codomain : ContextualCandidateType (context.extendContextual domain)}
@@ -91,7 +91,7 @@ def lam
 
 /-- Application eliminates a contextual dependent function.  The resulting
 candidate is the codomain pulled back along singleton substitution. -/
-def app
+theorem app
     {context : CoherentCandidateContext n}
     {domain : ContextualCandidateType context}
     {codomain : ContextualCandidateType (context.extendContextual domain)}
@@ -140,7 +140,7 @@ def app
     simpa only [rename_id] using applicationCovered
 
 /-- Pair introduction for the contextual dependent-pair candidate. -/
-def pair
+theorem pair
     {context : CoherentCandidateContext n}
     {domain : ContextualCandidateType context}
     {codomain : ContextualCandidateType (context.extendContextual domain)}
@@ -171,7 +171,7 @@ def pair
     exact secondCovered
 
 /-- First projection eliminates a contextual dependent pair. -/
-def fst
+theorem fst
     {context : CoherentCandidateContext n}
     {domain : ContextualCandidateType context}
     {codomain : ContextualCandidateType (context.extendContextual domain)}
@@ -185,7 +185,7 @@ def fst
 
 /-- Second projection eliminates a contextual dependent pair into the codomain
 pulled back along the first projection. -/
-def snd
+theorem snd
     {context : CoherentCandidateContext n}
     {domain : ContextualCandidateType context}
     {codomain : ContextualCandidateType (context.extendContextual domain)}
@@ -214,7 +214,7 @@ def snd
     exact covered.2
 
 /-- Reflexivity introduction for the normalization interpretation of identity. -/
-def refl
+theorem refl
     {context : CoherentCandidateContext n}
     {type : ContextualCandidateType context} {term : ScopedTerm n}
     (termSemantic : SemanticTerm type term) :
@@ -230,7 +230,7 @@ end SemanticTerm
 namespace SemanticConstantFreeConv
 
 /-- Reflexive semantic conversion for the top sort. -/
-def u1Refl (context : CoherentCandidateContext n) :
+theorem u1Refl (context : CoherentCandidateContext n) :
     SemanticConstantFreeConv context (.u1 : ScopedTerm n) .u1 where
   converts := .refl (.u1 : ScopedTerm n) ConstantFree.u1
   sourceNormalizes := SemanticTerm.u1 context

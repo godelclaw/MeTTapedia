@@ -62,7 +62,7 @@ def encMixedAssoc :
 def Wsplit : ToyState := (⟨3, 1⟩, ⟨1, 4⟩, ⟨0, 2⟩)
 
 /-- Positive canary: extensional-projection mixed policy equals extensional evidence. -/
-theorem canary_ch12_mixed_extensional_projection :
+theorem canary_mixed_extensional_projection :
     InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedExtensional true false
@@ -73,7 +73,7 @@ theorem canary_ch12_mixed_extensional_projection :
   rfl
 
 /-- Positive canary: ASSOC-projection mixed policy equals ASSOC evidence. -/
-theorem canary_ch12_mixed_assoc_projection :
+theorem canary_mixed_assoc_projection :
     InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedAssoc true false
@@ -85,7 +85,7 @@ theorem canary_ch12_mixed_assoc_projection :
 
 /-- Negative canary (non-equivalence):
 on `Wsplit`, extensional-projection and ASSOC-projection mixed policies diverge. -/
-theorem canary_ch12_mixed_projection_non_equivalent :
+theorem canary_mixed_projection_non_equivalent :
     InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedExtensional true false
@@ -130,7 +130,7 @@ def WsplitPattern : ToyState := Wsplit
 /-- Concrete finite Ch.12 endpoint:
 Bayes-normal selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
-theorem canary_ch12_end_to_end_bayesNormal_lower_threshold :
+theorem canary_end_to_end_bayesNormal_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := InheritanceSort)
@@ -162,7 +162,7 @@ theorem canary_ch12_end_to_end_bayesNormal_lower_threshold :
 /-- Concrete finite Ch.12 endpoint:
 Bayes-exact selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
-theorem canary_ch12_end_to_end_bayesExact_lower_threshold :
+theorem canary_end_to_end_bayesExact_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := InheritanceSort)
@@ -194,7 +194,7 @@ theorem canary_ch12_end_to_end_bayesExact_lower_threshold :
 /-- Concrete finite Ch.12 endpoint:
 Walley selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
-theorem canary_ch12_end_to_end_walley_lower_threshold :
+theorem canary_end_to_end_walley_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := InheritanceSort)

@@ -1,5 +1,6 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
 
 /-!
 # Prefix buffers: `cons` onto a flat list in amortized constant time
@@ -413,6 +414,115 @@ theorem claimable_iff_free_below {H : Heap α} {v : View} {top : ℕ}
     by_contra notFront
     exact written (v.start - 1) (by omega) (by omega) below
 
+/-! ## Every view of a chain stays readable
+
+A chain of prepends returns a view after each step.  Each such view stays live
+and keeps reading its list through all later prepends (`read_run_stable`), so
+the views of a whole chain are readable together from one heap
+(`runViews_read`).
+
+For a tabled chain these views are the answer tables of all nodes: prepending
+the answers from the last node backwards gives each node's table as one view.
+The four accounts stay separate:
+* the chain takes one prepend per answer (`length_runViews`);
+* storage upkeep is at most three slot writes per answer (`run_cost`);
+* every table is readable at once (`runViews_read`);
+* enumerating every table delivers the triangular number of answers
+  (`two_mul_sum_length_prefixTables`), while the root table alone delivers
+  one answer per node (`read_run`).
+
+Sharing changes storage and upkeep, not the deliveries requested by a consumer
+that enumerates every table. -/
+
+/-- The views returned along a chain of prepends, first step first. -/
+def runViews : Heap α → View → List α → List α → List View
+  | _, _, _, [] => []
+  | H, v, xs, y :: ys => (prepend H v xs y).2.1 ::
+      runViews (prepend H v xs y).1 (prepend H v xs y).2.1 (y :: xs) ys
+
+/-- The lists those views read: each step puts one element in front of the
+previous list. -/
+def prefixTables : List α → List α → List (List α)
+  | _, [] => []
+  | xs, y :: ys => (y :: xs) :: prefixTables (y :: xs) ys
+
+/-- One view per prepend. -/
+theorem length_runViews {H : Heap α} {v : View} {xs : List α} :
+    ∀ (ys : List α), (runViews H v xs ys).length = ys.length
+  | [] => rfl
+  | y :: ys => by
+    simp only [runViews, List.length_cons, length_runViews ys]
+
+/-- A live view keeps reading its list, and stays live, through a whole chain
+of prepends onto any view. -/
+theorem read_run_stable {H : Heap α} {v w : View} {xs : List α} :
+    ∀ (ys : List α), Live H w →
+      read (run H v xs ys).1 w = read H w ∧ Live (run H v xs ys).1 w
+  | [], hw => by simpa [run] using hw
+  | y :: ys, hw => by
+    obtain ⟨hread, hlive⟩ := read_run_stable (H := (prepend H v xs y).1)
+      (v := (prepend H v xs y).2.1) (w := w) (xs := y :: xs) ys (live_stable y hw)
+    refine ⟨?_, ?_⟩
+    · simpa [run, read_stable y hw] using hread
+    · simpa [run] using hlive
+
+/-- **Every table of the chain is readable from the final heap.** -/
+theorem runViews_read {H : Heap α} {v : View} {xs : List α} :
+    ∀ (ys : List α), read H v = some xs → Live H v →
+      List.Forall₂ (fun w table => read (run H v xs ys).1 w = some table)
+        (runViews H v xs ys) (prefixTables xs ys)
+  | [], _, _ => List.Forall₂.nil
+  | y :: ys, hread, hlive => by
+    have hreadNext := read_prepend y hread
+    have hliveNext := live_prepend (xs := xs) y hlive
+    have hhead := (read_run_stable (H := (prepend H v xs y).1)
+      (v := (prepend H v xs y).2.1) (w := (prepend H v xs y).2.1) (xs := y :: xs) ys
+      hliveNext).1
+    refine List.Forall₂.cons ?_ ?_
+    · simpa [run, hreadNext] using hhead
+    · simpa [run] using runViews_read (H := (prepend H v xs y).1)
+        (v := (prepend H v xs y).2.1) (xs := y :: xs) ys hreadNext hliveNext
+
+/-- **The delivery account.**  Enumerating every table delivers the triangular
+number of answers, plus the starting list once per table. -/
+theorem two_mul_sum_length_prefixTables :
+    ∀ (xs ys : List α),
+      2 * ((prefixTables xs ys).map List.length).sum =
+        ys.length * (ys.length + 1 + 2 * xs.length)
+  | _, [] => by simp [prefixTables]
+  | xs, y :: ys => by
+    have ih := two_mul_sum_length_prefixTables (y :: xs) ys
+    simp only [prefixTables, List.map_cons, List.sum_cons, List.length_cons] at ih ⊢
+    rw [Nat.mul_add, ih]
+    ring
+
+/-- An empty heap with one empty, live view. -/
+def emptyHeap : Heap α where
+  buf _ := fresh [] 0
+  next := 1
+
+/-- The empty view of `emptyHeap`. -/
+def emptyView : View := ⟨0, 0, 0⟩
+
+theorem read_emptyView : read (emptyHeap : Heap α) emptyView = some [] := rfl
+
+theorem live_emptyView : Live (emptyHeap : Heap α) emptyView :=
+  ⟨Nat.zero_lt_one, le_refl 0⟩
+
+/-- **A tabled chain in one heap.**  Prepending `N` answers from the empty
+view gives `N` views that read the `N` growing tables at once, after at most
+`3 N` slot writes; reading every table delivers `N (N + 1) / 2` answers. -/
+theorem chain_tables (ys : List α) :
+    (runViews emptyHeap emptyView [] ys).length = ys.length ∧
+      (run emptyHeap emptyView [] ys).2.2 ≤ 3 * ys.length ∧
+      List.Forall₂ (fun w table => read (run emptyHeap emptyView [] ys).1 w = some table)
+        (runViews emptyHeap emptyView [] ys) (prefixTables [] ys) ∧
+      2 * ((prefixTables [] ys).map List.length).sum = ys.length * (ys.length + 1) := by
+  refine ⟨length_runViews ys, ?_, runViews_read ys read_emptyView live_emptyView, ?_⟩
+  · simpa [emptyView] using
+      run_cost (H := emptyHeap) (v := emptyView) (xs := ([] : List α)) ys rfl le_rfl
+  · simpa using two_mul_sum_length_prefixTables ([] : List α) ys
+
 /-! ## Examples -/
 
 namespace Examples
@@ -434,6 +544,15 @@ theorem four_prepends :
       read (run heap₀ view₀ [1, 2, 3] [4, 5, 6, 7]).1
         (run heap₀ view₀ [1, 2, 3] [4, 5, 6, 7]).2.1 = some [7, 6, 5, 4, 1, 2, 3] := by
   refine ⟨by decide, read_run _ read₀⟩
+
+/-- A chain of three answers prepended from the last node: the three tables
+are read together after five slot writes. -/
+theorem chain_three :
+    (runViews emptyHeap emptyView [] [3, 2, 1]).map
+        (read (run emptyHeap emptyView ([] : List ℕ) [3, 2, 1]).1) =
+      [some [3], some [2, 3], some [1, 2, 3]] ∧
+      (run emptyHeap emptyView ([] : List ℕ) [3, 2, 1]).2.2 = 5 := by
+  constructor <;> decide
 
 end Examples
 

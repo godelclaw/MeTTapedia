@@ -24,6 +24,9 @@ namespace Mettapedia.TypeTheory.DisplayedEvidence
 
 universe uRaw uExact uReason uRaw' uExact' uOutput
 
+-- Raw values and their displayed evidence have independent universe bounds.
+-- The bundled family combines those bounds only in its result sort.
+set_option linter.checkUnivs false in
 /-- An exact evidence family displayed over a raw carrier. -/
 structure Family where
   Raw : Type uRaw

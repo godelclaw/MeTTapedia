@@ -31,6 +31,8 @@ import Mettapedia.Logic.HOL.ProofSyntaxModuloKripke
 import Mettapedia.Logic.HOL.ProofSyntaxModuloConservativity
 import Mettapedia.Logic.HOL.ImpredicativeProofModulo
 import Mettapedia.Logic.HOL.PublishedFacts
+import Mettapedia.Logic.HOL.HornConsequence
+import Mettapedia.Logic.HOL.Embedding.InferenceRuleInstances
 import Mettapedia.Logic.HOL.ProofCarryingPipeline
 import Mettapedia.Logic.HOL.UniformListMapFusion
 import Mettapedia.Logic.HOL.Embedding.GroundUnaryEquationalProofSyntax
@@ -73,6 +75,8 @@ import Mettapedia.Logic.HOL.TermModel.Denote
 import Mettapedia.Logic.HOL.TermModel.PreModelWrapper
 import Mettapedia.Logic.HOL.TermModel.Fundamental
 import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
+import Mettapedia.Logic.HOL.Semantics.KripkeFrameModel
+import Mettapedia.Logic.HOL.PropositionalSlice
 
 /-!
 # Higher-Order Logic Core
@@ -98,6 +102,16 @@ Completeness (Henkin 1950 for the theory of types — sorry-free, axiom-clean):
   `TermModel.HenkinCompleteness.henkin_model_exists_of_consistent_classical`:
   a consistent parameter-free classical theory over `WithParams` has a Henkin
   general model satisfying the theory itself.
+
+Kripke models and the propositional slice:
+- `Semantics.KripkeFrameModel.model`: every preordered set of worlds, with carriers and
+  admissible constants, gives a Kripke-Henkin general model, with impredicative
+  quantification over all admissible values.
+- `PropositionalSlice`: on propositional formulas, the EM-free calculus proves exactly the
+  intuitionistic tautologies and is complete for Kripke-Henkin general models
+  (`provable_iff_int`, `provable_iff_kripkeHenkin`); with the excluded-middle schema it proves
+  exactly the classical tautologies and is complete for extensional Henkin models
+  (`provable_em_iff_cl`, `provable_em_iff_henkin`).
 
 Legacy `WorldModelCompleteness.lean` (hypothesis-parameterised) is retained but is not
 the active completeness interface.

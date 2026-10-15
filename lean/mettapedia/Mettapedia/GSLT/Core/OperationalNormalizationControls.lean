@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.OperationalNormalization
 import Mettapedia.GSLT.Core.GSLTConstructions
 
@@ -17,7 +18,7 @@ namespace Mettapedia.GSLT.IndexedOperational.OperationalNormalizationControls
 
 open Mettapedia.GSLT
 
-def target : GSLT := GSLT.discrete Unit
+def target : GSLT := GSLT.stepFree Unit
 
 /-- A deliberately empty realization of the existing clock, used only to
 separate finite correspondence from preservation of infinite execution. -/

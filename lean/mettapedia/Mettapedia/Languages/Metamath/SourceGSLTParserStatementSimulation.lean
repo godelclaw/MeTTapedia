@@ -143,7 +143,7 @@ inductive ReaderStatementValidation
 
 /-- Every validated statement returns the reader to a matching source-prefix
 boundary. -/
-def ReaderStatementValidation.nextPrefix
+theorem ReaderStatementValidation.nextPrefix
     {before after : SourceState} {final : ParserObservedState}
     {statement : RawStatement}
     (validation : ReaderStatementValidation before after final statement) :
@@ -183,7 +183,7 @@ structure ReaderStatementSimulation
   sourceStep : applyStatement before statement = .ok (after, obligations)
   validation : ReaderStatementValidation before after final statement
 
-def ReaderStatementSimulation.nextPrefix
+theorem ReaderStatementSimulation.nextPrefix
     {fileId : String} {before after : SourceState}
     {initial final : ParserObservedState} {statement : RawStatement}
     {entries : List (LocatedToken × TokenCall)}

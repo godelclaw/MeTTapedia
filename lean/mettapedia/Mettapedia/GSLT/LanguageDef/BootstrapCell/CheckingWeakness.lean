@@ -153,19 +153,19 @@ theorem admissible_entails_replay {T : Set (CheckingFact calculus)}
 /-! ## The generic inference checker -/
 
 /-- The family of all validated calculi, with the generic checker. -/
-abbrev nikFamily : ValidatedCalculusLanguageDef → ReplaySignature.{0} := nikSignature
+abbrev calculusReplayFamily : ValidatedCalculusLanguageDef → ReplaySignature.{0} := calculusReplaySignature
 
 /-- The generic inference checker as a kernel for every validated calculus. -/
-def checkRawKernel : Kernel nikFamily := fun definition => checkRaw definition
+def checkRawKernel : Kernel calculusReplayFamily := fun definition => checkRaw definition
 
-theorem checkRawKernel_eq_replayKernel : checkRawKernel = replayKernel nikFamily := by
+theorem checkRawKernel_eq_replayKernel : checkRawKernel = replayKernel calculusReplayFamily := by
   funext definition goal certificate
   exact checkRaw_eq_replay definition goal certificate
 
 /-- **The generic checker is the weakest admissible kernel.** -/
 theorem checkRawKernel_isWeakestAdmissible :
-    IsWeakestAdmissible (Accepts nikFamily) (Admissible nikFamily)
-      (acceptedFacts nikFamily checkRawKernel) := by
+    IsWeakestAdmissible (Accepts calculusReplayFamily) (Admissible calculusReplayFamily)
+      (acceptedFacts calculusReplayFamily checkRawKernel) := by
   rw [checkRawKernel_eq_replayKernel]
   exact replayKernel_isWeakestAdmissible
 
@@ -177,7 +177,7 @@ open Mettapedia.Languages.MeTTa.PrimeCandidates.MinimalCheckingPackage
 open Mettapedia.GSLT.LanguageDef.BootstrapCell.Calibration
 
 /-- The one-calculus family of the modus ponens package. -/
-abbrev modusPonens : Unit → ReplaySignature.{0} := fun _ => nikSignature mpValidated
+abbrev modusPonens : Unit → ReplaySignature.{0} := fun _ => calculusReplaySignature mpValidated
 
 /-- A kernel that also accepts the wrong goal `P(A)` for every certificate. -/
 def tooStrong : Kernel modusPonens :=
@@ -189,16 +189,16 @@ def rejectAll : Kernel modusPonens := fun _ _ _ => false
 
 theorem mpProofB_derivable :
     (⟨(), mpBGoal, mpProofB⟩ : CheckingFact modusPonens) ∈ Derivable modusPonens := by
-  have accepted : (nikSignature mpValidated).replay mpBGoal mpProofB = true := by
+  have accepted : (calculusReplaySignature mpValidated).replay mpBGoal mpProofB = true := by
     rw [← checkRaw_eq_replay]
     exact mp_proof_b_accepted
-  exact (ReplaySignature.replay_iff (σ := nikSignature mpValidated) mpBGoal mpProofB).mp
+  exact (ReplaySignature.replay_iff (σ := calculusReplaySignature mpValidated) mpBGoal mpProofB).mp
     accepted
 
 theorem wrongGoal_not_derivable :
     (⟨(), mpWrongGoal, mpProofB⟩ : CheckingFact modusPonens) ∉ Derivable modusPonens := by
   intro derivable
-  have accepted := (ReplaySignature.replay_iff (σ := nikSignature mpValidated)
+  have accepted := (ReplaySignature.replay_iff (σ := calculusReplaySignature mpValidated)
     mpWrongGoal mpProofB).mpr derivable
   rw [← checkRaw_eq_replay, mpWrongGoal_rejected] at accepted
   exact Bool.false_ne_true accepted

@@ -99,8 +99,8 @@ Complete formalization of PLN first-order quantifiers via:
   - `nearOneMassInf_counting_eq_nearOneFractionFin` /
     `fuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHoldsFin` -
     exact finite-to-infinitary reduction theorems for the counting instance
-  - `canary_ch11_exists_deMorgan` / `canary_ch11_existential_generalization_ext` /
-    `canary_ch11_universal_specification_ext` - literature-aligned quantifier canaries
+  - `canary_exists_deMorgan` / `canary_existential_generalization_ext` /
+    `canary_universal_specification_ext` - literature-aligned quantifier canaries
   - `canary_inf_nat_exists_deMorgan` / `canary_inf_nat_weight_monotonicity` /
     `canary_inf_nat_parity_non_equivalence_extensional` - genuine infinite-domain canaries
   - `canary_inf_fuzzy_nat_deMorgan` / `canary_inf_fuzzy_nat_monotonicity` /

@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.Logic.Relation.Normalization
 import Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Regular.DefEq
 
@@ -9,7 +9,7 @@ Confluence alone does not make conversion decidable, and a fuelled or one-pass
 evaluator does not become complete by being called a normalizer.  This module
 states the exact computational specification for regular two-sort
 normalization and proves that any implementation satisfying it induces an exact
-NIK `DecidedRelation` for fragment-internal conversion.
+SemanticService `DecidedRelation` for fragment-internal conversion.
 
 An executable normalizer may first be constructed on any honest accessibility
 domain.  An inhabitant of `RegularNormalizationSpecification` additionally
@@ -23,7 +23,7 @@ open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Syntax
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Substitution
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Reduction
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Confluence
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 /-- A term is in reduction normal form when it has no one-step reduct. -/
 def RedNormal (term : ScopedTerm n) : Prop :=
@@ -183,7 +183,7 @@ theorem normalize_eq_iff_converts
     specification.normalize_eq_of_converts⟩
 
 /-- Any implementation meeting the normalization specification supplies the
-exact certificate-free conversion decision required by NIK. -/
+exact certificate-free conversion decision required by SemanticService. -/
 def decidedConversion (specification : NormalizationSpecification)
     (n : Nat) : DecidedRelation (specification.Term n) specification.Converts where
   decide := fun left right =>

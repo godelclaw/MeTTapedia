@@ -1,6 +1,6 @@
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory.MILCheckedChain
 import Mettapedia.Logic.MetaInterpretiveLearning.CumulativeTheory.IntrinsicMILSemanticAdequacy
-import Mettapedia.GSLT.LanguageDef.NIKInferenceExtensionAdmission
+import Mettapedia.GSLT.LanguageDef.InferenceExtensionAdmission
 
 /-!
 # Proof-relevant admission of a learned MIL chain
@@ -9,7 +9,7 @@ The generic inference checker validates the finite proof program, while an
 independent `Type`-valued interpretation constructs its relational evidence.
 The chain interpretation retains the middle occurrence and both premise
 derivations.  A validated calculus-language extension and its interpretation
-are then composed by the ordinary revision-indexed NIK admission doctrine.
+are then composed by the ordinary revision-indexed SemanticService admission doctrine.
 
 The final bridge maps this evidence into cumulative-tower candidate's intrinsic indexed hypothesis
 language.  Thus the learned rule is neither a privileged MIL evaluator nor a
@@ -29,10 +29,10 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
 open Mettapedia.GSLT.LanguageDef.InferenceProofRelevantSemanticExtension
-open Mettapedia.GSLT.LanguageDef.NIKInferenceExtensionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKIndexedExecutionAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKRevisionAlignedComposition
+open Mettapedia.GSLT.LanguageDef.InferenceExtensionAdmission
+open Mettapedia.GSLT.LanguageDef.IndexedExecutionAdmission
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.RevisionAlignedComposition
 open Presentation
 
 
@@ -247,7 +247,7 @@ theorem intrinsicGrandparent_has_chain_shape :
         Nonempty (FatherEvidence middle MILCheckedChain.carol) := by
   exact ⟨MILCheckedChain.bob, ⟨MotherEvidence.fact⟩, ⟨FatherEvidence.fact⟩⟩
 
-/-! ## Revision-indexed NIK composition -/
+/-! ## Revision-indexed SemanticService composition -/
 
 def dependencies : DependencySystem where
   Revision := Bool
@@ -262,7 +262,7 @@ noncomputable def activeInterpretation :=
   (admitInterpretationAt learnedSemantics dependencies false).activate
     (dependencies.sameDependencies_refl false)
 
-/-- Once currentness is established, the active NIK map retains the exact
+/-- Once currentness is established, the active SemanticService map retains the exact
 checked artifact and constructs the proof-relevant learned meaning directly. -/
 theorem active_interpretation_retains_proof_and_evidence :
     let result := activeInterpretation.run ⟨checkedGrandparent⟩

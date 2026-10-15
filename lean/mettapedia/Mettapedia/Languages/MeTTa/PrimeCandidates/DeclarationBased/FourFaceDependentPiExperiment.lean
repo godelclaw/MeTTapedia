@@ -34,7 +34,7 @@ namespace FourFaceDependentPiExperiment
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -432,9 +432,9 @@ theorem extensional_validity_not_raw_reflection :
 
 end ExtensionalFaces
 
-/-! ## A NIK authority for the dependent cell -/
+/-! ## A SemanticService authority for the dependent cell -/
 
-namespace NIKProfile
+namespace CheckerProfile
 
 open ScopedDTT
 open DeepGSLT
@@ -599,7 +599,7 @@ theorem wrong_type_rejected (certificate : Certificate) :
   exact wrongTypeCandidate_outside_scope
     (checker_authority.sound wrongTypeCandidate certificate accepted)
 
-end NIKProfile
+end CheckerProfile
 
 /-! ## Axiom audit -/
 
@@ -620,13 +620,13 @@ end NIKProfile
 #print axioms ExtensionalFaces.varying_fibres_have_distinct_subsingleton_status
 #print axioms ExtensionalFaces.varying_model_graph_valid
 #print axioms ExtensionalFaces.extensional_validity_not_raw_reflection
-#print axioms NIKProfile.checker_authority
-#print axioms NIKProfile.accepted_has_dependent_meaning
-#print axioms NIKProfile.canonical_certificate_replays
-#print axioms NIKProfile.wrongTermCandidate_not_meaning
-#print axioms NIKProfile.wrongTypeCandidate_not_meaning
-#print axioms NIKProfile.wrong_term_rejected
-#print axioms NIKProfile.wrong_type_rejected
+#print axioms CheckerProfile.checker_authority
+#print axioms CheckerProfile.accepted_has_dependent_meaning
+#print axioms CheckerProfile.canonical_certificate_replays
+#print axioms CheckerProfile.wrongTermCandidate_not_meaning
+#print axioms CheckerProfile.wrongTypeCandidate_not_meaning
+#print axioms CheckerProfile.wrong_term_rejected
+#print axioms CheckerProfile.wrong_type_rejected
 
 end FourFaceDependentPiExperiment
 end Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased

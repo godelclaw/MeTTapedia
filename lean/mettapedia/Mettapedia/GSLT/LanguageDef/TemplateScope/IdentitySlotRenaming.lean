@@ -65,357 +65,132 @@ namespace IdSlot
 
 variable {S : Type u} {X : Type v} [DecidableEq X]
 
-/-! ## Sealed code -/
+/-- **Sealed code is related bi-uniquely**: the two code maps forget the same
+information (crossing sets, `new` declarations, `let` versus `unify`). -/
+theorem SC_biUnique : (SC : Setting S (Slot X) (BId X)).BiUnique := by
+  rintro _ _ _ _ ⟨R, s, hR, rfl, rfl⟩ ⟨R', s', hR', rfl, rfl⟩
+  constructor
+  · intro h
+    rw [← mapCode_codeOf hR s, h, mapCode_codeOf hR']
+  · intro h
+    rw [← mapCode_codeI hR s, h, mapCode_codeI hR']
 
-theorem ownNil_fold {Y : Type v} (ps : List (Nm Y)) {t : Tm S Y} (h : ownNil t) :
-    ownNil (ps.foldr (fun p acc => .lam p [] acc) t) := by
-  induction ps with
-  | nil => exact h
-  | cons _ _ ih => exact ⟨rfl, ih⟩
 
-theorem ownNil_seal {Y : Type v} [DecidableEq Y] {t : Tm S Y} (h : ownNil t) :
-    ownNil (sealParams t) := by
-  unfold sealParams
-  exact ownNil_fold _ h
-
-theorem ownNil_codeAt (holes : Option (X → Owner)) (penv senv : List (X × Owner)) (pos : Owner)
-    (s : Src S X) : ownNil (codeAt holes penv senv pos s) := by
-  induction s generalizing holes penv senv pos with
-  | sym _ => simp [codeAt, ownNil]
-  | fn _ => simp [codeAt, ownNil]
-  | sv y =>
-      simp only [codeAt]
-      cases codeLookup senv y with
-      | some _ => simp [ownNil]
-      | none => cases holes <;> simp [ownNil]
-  | par _ =>
-      simp only [codeAt]
-      split <;> simp [ownNil]
-  | lam z _ _ ih =>
-      unfold codeAt
-      exact ⟨rfl, ih _ _ _ _⟩
-  | form z _ ih =>
-      unfold codeAt
-      exact ⟨rfl, ih _ _ _ _⟩
-  | app _ _ ihf iha =>
-      simp only [codeAt, ownNil]
-      exact ⟨ihf _ _ _ _, iha _ _ _ _⟩
-  | quote _ ih =>
-      simp only [codeAt, ownNil]
-      exact ownNil_seal (ih none [] [] [])
-  | pquote _ ih =>
-      simp only [codeAt, ownNil]
-      exact ih _ _ _ _
-  | letS _ _ _ _ ihp ihw ihb =>
-      simp only [codeAt, ownNil]
-      exact ⟨ihp _ _ _ _, ihw _ _ _ _, ihb _ _ _ _⟩
-  | unify _ _ _ ihp ihw ihb =>
-      simp only [codeAt, ownNil]
-      exact ⟨ihp _ _ _ _, ihw _ _ _ _, ihb _ _ _ _⟩
-  | alt _ _ iht ihu =>
-      simp only [codeAt, ownNil]
-      exact ⟨iht _ _ _ _, ihu _ _ _ _⟩
-  | new _ _ ih =>
-      simpa [codeAt] using ih holes penv senv (pos ++ [0])
+/-! ## Reading sealed code through `holeRead` -/
 
 omit [DecidableEq X] in
-theorem mapCode_back_fwd {t : Tm S (Slot X)} (h : ownNil t) :
-    mapCode codeBack (mapCode codeFwd t) = t := by
-  induction t with
-  | sym _ => rfl
-  | fn _ => rfl
-  | var n => simp [mapCode, codeBack_codeFwd]
-  | pvar n => simp [mapCode, codeBack_codeFwd]
-  | lam x own b ih =>
-      simp only [ownNil] at h
-      rcases h with ⟨rfl, hb⟩
-      simp only [mapCode, codeBack_codeFwd, ih hb]
-  | app _ _ ihf iha =>
-      simp only [ownNil] at h
-      simp only [mapCode, ihf h.1, iha h.2]
-  | quote _ ih =>
-      simp only [ownNil] at h
-      simp only [mapCode, ih h]
-  | ctx ks c ih =>
-      simp only [ownNil] at h
-      have hb := ih h
-      simp only [mapCode, hb, List.map_map]
-      congr
-      induction ks with
-      | nil => rfl
-      | cons n ns ihk => simp [List.map_cons, codeBack_codeFwd, ihk]
-  | pquote _ ih =>
-      simp only [ownNil] at h
-      simp only [mapCode, ih h]
-  | letP _ _ _ ihp ihw ihb =>
-      simp only [ownNil] at h
-      simp only [mapCode, ihp h.1, ihw h.2.1, ihb h.2.2]
-  | alt _ _ ih₁ ih₂ =>
-      simp only [ownNil] at h
-      simp only [mapCode, ih₁ h.1, ih₂ h.2]
-
-omit [DecidableEq X] in
-private theorem map_filter_binder {α β : Type v} [DecidableEq α] [DecidableEq β]
-    {f : α → β} (hf : Function.Injective f) (x : α) (l : List α) :
-    ((l.filter fun y => decide (y ≠ x)).map f) =
-      ((l.map f).filter fun z => decide (z ≠ f x)) := by
-  induction l with
-  | nil => rfl
-  | cons a l ih =>
-      by_cases ha : a = x
-      · have hd : decide (a ≠ x) = false := decide_eq_false (fun h => h ha)
-        have hdf : decide (f a ≠ f x) = false :=
-          decide_eq_false (fun h => h (congrArg f ha))
-        rw [List.filter_cons_of_neg (p := fun y => decide (y ≠ x))
-            (by rw [hd]; exact Bool.false_ne_true),
-          List.map_cons,
-          List.filter_cons_of_neg (p := fun z => decide (z ≠ f x))
-            (by rw [hdf]; exact Bool.false_ne_true),
-          ih]
-      · have hk : decide (a ≠ x) = true := decide_eq_true ha
-        have hkf : decide (f a ≠ f x) = true := decide_eq_true (hf.ne ha)
-        rw [List.filter_cons_of_pos (p := fun y => decide (y ≠ x)) hk,
-          List.map_cons, List.map_cons,
-          List.filter_cons_of_pos (p := fun z => decide (z ≠ f x)) hkf, ih]
-
-private theorem paramOcc_mapCode {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
-    {f : Nm Y → Nm Z} (hf : Function.Injective f) :
-    ∀ t : Tm S Y, paramOcc (mapCode f t) = (paramOcc t).map f
+theorem mapCode_comp {Y Z W : Type v} (f : Nm Z → Nm W) (g : Nm Y → Nm Z) :
+    ∀ t : Tm S Y, mapCode f (mapCode g t) = mapCode (f ∘ g) t
   | .sym _ => rfl
   | .fn _ => rfl
   | .var _ => rfl
   | .pvar _ => rfl
-  | .lam x _ b => by
-      simp only [mapCode, paramOcc, paramOcc_mapCode hf b, map_filter_binder hf x]
-  | .app a b => by
-      simp only [mapCode, paramOcc, paramOcc_mapCode hf a, paramOcc_mapCode hf b, List.map_append]
-  | .quote _ => rfl
-  | .ctx _ _ => rfl
-  | .pquote c => by
-      simp only [mapCode, paramOcc, paramOcc_mapCode hf c]
+  | .lam x _ b => by simp only [mapCode, mapCode_comp f g b, Function.comp]
+  | .app a b => by simp only [mapCode, mapCode_comp f g a, mapCode_comp f g b]
+  | .quote c => by simp only [mapCode, mapCode_comp f g c]
+  | .ctx ks c => by simp only [mapCode, mapCode_comp f g c, List.map_map]
+  | .pquote c => by simp only [mapCode, mapCode_comp f g c]
   | .letP p w b => by
-      simp only [mapCode, paramOcc, paramOcc_mapCode hf p, paramOcc_mapCode hf w,
-        paramOcc_mapCode hf b, List.map_append]
-  | .alt t₁ t₂ => by
-      simp only [mapCode, paramOcc, paramOcc_mapCode hf t₁, paramOcc_mapCode hf t₂, List.map_append]
-
-private theorem mapCode_fold {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
-    (f : Nm Y → Nm Z) (ps : List (Nm Y)) (t : Tm S Y) :
-    mapCode f (ps.foldr (fun p acc => .lam p [] acc) t) =
-      (ps.map f).foldr (fun p acc => .lam p [] acc) (mapCode f t) := by
-  induction ps with
-  | nil => rfl
-  | cons _ _ ih => simp only [List.foldr, List.map, mapCode, ih]
-
-theorem mapCode_seal {Y Z : Type v} [DecidableEq Y] [DecidableEq Z]
-    {f : Nm Y → Nm Z} (hf : Function.Injective f) (t : Tm S Y) :
-    mapCode f (sealParams t) = sealParams (mapCode f t) := by
-  unfold sealParams
-  rw [mapCode_fold, paramOcc_mapCode hf]
+      simp only [mapCode, mapCode_comp f g p, mapCode_comp f g w, mapCode_comp f g b]
+  | .alt t u => by simp only [mapCode, mapCode_comp f g t, mapCode_comp f g u]
 
 omit [DecidableEq X] in
-private theorem nil_owners : ∀ p ∈ ([] : List (X × Owner)), p.2 ≠ [] := by
-  intro _ h
-  simp at h
+/-- **Renaming keeps `codeEq`** on code whose lambdas own nothing, when the
+renaming keeps `CodeId.same` on the names compared. -/
+theorem codeEq_mapCode {Y Z : Type v} [DecidableEq S] [DecidableEq Y] [DecidableEq Z]
+    [CodeId Y] [CodeId Z]
+    {f : Nm Y → Nm Z} :
+    ∀ (c c' : Tm S Y), ownNil c → ownNil c' →
+      (∀ a ∈ codeNames c, ∀ b ∈ codeNames c', CodeId.same (f a) (f b) = CodeId.same a b) →
+      codeEq (mapCode f c) (mapCode f c') = codeEq c c'
+  | .sym _, c', _, _, _ => by cases c' <;> rfl
+  | .fn _, c', _, _, _ => by cases c' <;> rfl
+  | .var n, c', _, _, h => by
+      cases c' with
+      | var m => exact h n (by simp [codeNames]) m (by simp [codeNames])
+      | _ => rfl
+  | .pvar n, c', _, _, h => by
+      cases c' with
+      | pvar m => exact h n (by simp [codeNames]) m (by simp [codeNames])
+      | _ => rfl
+  | .lam x o b, c', ho, ho', h => by
+      cases c' with
+      | lam x' o' b' =>
+          obtain ⟨rfl, hb⟩ := ho
+          obtain ⟨rfl, hb'⟩ := ho'
+          simp only [mapCode, codeEq, h x (by simp [codeNames]) x' (by simp [codeNames]),
+            codeEq_mapCode b b' hb hb' fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha'])]
+      | _ => rfl
+  | .app f₁ a₁, c', ho, ho', h => by
+      cases c' with
+      | app f₂ a₂ =>
+          simp only [mapCode, codeEq,
+            codeEq_mapCode f₁ f₂ ho.1 ho'.1 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha']),
+            codeEq_mapCode a₁ a₂ ho.2 ho'.2 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha'])]
+      | _ => rfl
+  | .quote c₁, c', ho, ho', h => by
+      cases c' with
+      | quote c₂ =>
+          simp only [mapCode, codeEq]
+          exact codeEq_mapCode c₁ c₂ ho ho' fun a ha a' ha' =>
+            h a (by simpa [codeNames] using ha) a' (by simpa [codeNames] using ha')
+      | _ => rfl
+  | .ctx _ _, c', _, _, _ => by cases c' <;> rfl
+  | .pquote c₁, c', ho, ho', h => by
+      cases c' with
+      | pquote c₂ =>
+          simp only [mapCode, codeEq]
+          exact codeEq_mapCode c₁ c₂ ho ho' fun a ha a' ha' =>
+            h a (by simpa [codeNames] using ha) a' (by simpa [codeNames] using ha')
+      | _ => rfl
+  | .letP p₁ w₁ b₁, c', ho, ho', h => by
+      cases c' with
+      | letP p₂ w₂ b₂ =>
+          simp only [mapCode, codeEq,
+            codeEq_mapCode p₁ p₂ ho.1 ho'.1 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha']),
+            codeEq_mapCode w₁ w₂ ho.2.1 ho'.2.1 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha']),
+            codeEq_mapCode b₁ b₂ ho.2.2 ho'.2.2 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha'])]
+      | _ => rfl
+  | .alt t₁ u₁, c', ho, ho', h => by
+      cases c' with
+      | alt t₂ u₂ =>
+          simp only [mapCode, codeEq,
+            codeEq_mapCode t₁ t₂ ho.1 ho'.1 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha']),
+            codeEq_mapCode u₁ u₂ ho.2 ho'.2 fun a ha a' ha' =>
+              h a (by simp [codeNames, ha]) a' (by simp [codeNames, ha'])]
+      | _ => rfl
 
-omit [DecidableEq X] in
-private theorem cons_owners {z : X} {o : Owner} {l : List (X × Owner)}
-    (ho : o ≠ []) (hl : ∀ p ∈ l, p.2 ≠ []) :
-    ∀ p ∈ (z, o) :: l, p.2 ≠ [] := by
-  intro p hp
-  simp only [List.mem_cons] at hp
-  rcases hp with rfl | hp
-  · exact ho
-  · exact hl p hp
+theorem holeRead_src_SC {ν : Nm (Slot X) → Nm (BId X)} (s : Slot X) :
+    holeRead (SC : Setting S (Slot X) (BId X)) ν (.src s) = codeFwd (.src s) := rfl
 
-omit [DecidableEq X] in
-private theorem append_owners {l₁ l₂ : List (X × Owner)}
-    (h₁ : ∀ p ∈ l₁, p.2 ≠ []) (h₂ : ∀ p ∈ l₂, p.2 ≠ []) :
-    ∀ p ∈ l₁ ++ l₂, p.2 ≠ [] := by
-  intro p hp
-  rcases List.mem_append.1 hp with hp | hp
-  · exact h₁ p hp
-  · exact h₂ p hp
-
-private theorem codeLookup_ne {l : List (X × Owner)} (hl : ∀ p ∈ l, p.2 ≠ [])
-    {y : X} {o : Owner} (h : codeLookup l y = some o) : o ≠ [] := by
-  induction l with
-  | nil => simp [codeLookup] at h
-  | cons p rest ih =>
-      obtain ⟨z, oz⟩ := p
-      have hoz : oz ≠ [] := hl (z, oz) (List.mem_cons_self ..)
-      have hrest : ∀ q ∈ rest, q.2 ≠ [] := fun q hq => hl q (List.mem_cons_of_mem _ hq)
-      simp only [codeLookup] at h
-      by_cases hz : z = y
-      · simp only [hz, if_true, Option.some.injEq] at h
-        exact h ▸ hoz
-      · simp only [hz, if_false] at h
-        exact ih hrest h
-
-omit [DecidableEq X] in
-private theorem svBinds_ne (pos : Owner) :
-    ∀ (s : Src S X), ∀ p ∈ svBinds pos s, p.2 ≠ []
-  | .sv _, _, h => by
-      simp only [svBinds, List.mem_singleton] at h
-      subst h
-      exact codeBinder_ne_nil pos
-  | .app f a, _, h => by
-      simp only [svBinds, List.mem_append] at h
-      rcases h with h | h
-      · exact svBinds_ne (pos ++ [0]) f _ h
-      · exact svBinds_ne (pos ++ [1]) a _ h
-  | .alt t₁ t₂, _, h => by
-      simp only [svBinds, List.mem_append] at h
-      rcases h with h | h
-      · exact svBinds_ne (pos ++ [0]) t₁ _ h
-      · exact svBinds_ne (pos ++ [1]) t₂ _ h
-  | .sym _, _, h | .fn _, _, h | .par _, _, h | .lam _ _ _, _, h | .quote _, _, h
-    | .pquote _, _, h | .letS _ _ _ _, _, h | .unify _ _ _, _, h | .new _ _, _, h
-    | .form _ _, _, h => by
-      simp [svBinds] at h
-
-/-- Sealed code in the slot model is sealed code in the identity model.  The
-environments are the binders of this quotation, most recent first.  Every
-binder owner is nonempty: owner `[]` is the query's head slot, not a binder. -/
-theorem mapCode_codeAt (penv senv : List (X × Owner)) (pos : Owner)
-    (hpenv : ∀ p ∈ penv, p.2 ≠ []) (hsenv : ∀ p ∈ senv, p.2 ≠ []) :
-    ∀ s : Src S X,
-      mapCode codeFwd (codeAt none penv senv pos s) = codeIAt none penv senv pos s
-  | .sym _ => rfl
-  | .fn _ => rfl
-  | .sv y => by
-      simp only [codeAt, codeIAt]
-      cases h : codeLookup senv y with
-      | none => rfl
-      | some p =>
-          have hp : p ≠ [] := codeLookup_ne hsenv h
-          cases p with
-          | nil => exact absurd rfl hp
-          | cons _ _ => rfl
-  | .par z => by
-      simp only [codeAt, codeIAt]
-      cases h : codeLookup penv z with
-      | none => rfl
-      | some p =>
-          have hp : p ≠ [] := codeLookup_ne hpenv h
-          cases p with
-          | nil => exact absurd rfl hp
-          | cons _ _ => rfl
-  | .lam z _ b => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt ((z, codeBinder pos) :: penv) senv (pos ++ [0])
-          (cons_owners (codeBinder_ne_nil pos) hpenv) hsenv b]
-      rw [show codeFwd (.src (codeBinder pos, z)) =
-          .src (.code z (codeBinder pos)) by simp only [codeBinder]; rfl]
-  | .form z b => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt ((z, codeBinder pos) :: penv) senv (pos ++ [0])
-          (cons_owners (codeBinder_ne_nil pos) hpenv) hsenv b]
-      rw [show codeFwd (.src (codeBinder pos, z)) =
-          .src (.code z (codeBinder pos)) by simp only [codeBinder]; rfl]
-  | .app f a => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt penv senv (pos ++ [0]) hpenv hsenv f,
-        mapCode_codeAt penv senv (pos ++ [1]) hpenv hsenv a]
-  | .quote c => by
-      simp only [codeAt, codeIAt, mapCode]
-      rw [mapCode_seal codeFwd_injective]
-      exact congrArg Tm.quote (congrArg sealParams
-        (mapCode_codeAt [] [] [] nil_owners nil_owners c))
-  | .pquote c => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt [] [] [] nil_owners nil_owners c]
-  | .letS p w b _ => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) p,
-        mapCode_codeAt penv senv (pos ++ [1]) hpenv hsenv w,
-        mapCode_codeAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) b]
-  | .unify p w b => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) p,
-        mapCode_codeAt penv senv (pos ++ [1]) hpenv hsenv w,
-        mapCode_codeAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv
-          (append_owners (svBinds_ne (pos ++ [0]) p) hsenv) b]
-  | .alt t₁ t₂ => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeAt penv senv (pos ++ [0]) hpenv hsenv t₁,
-        mapCode_codeAt penv senv (pos ++ [1]) hpenv hsenv t₂]
-  | .new _ b => by
-      simp only [codeAt, codeIAt,
-        mapCode_codeAt penv senv (pos ++ [0]) hpenv hsenv b]
-
-/-- Sealed code in the identity model is sealed code in the slot model. -/
-theorem mapCode_codeIAt (penv senv : List (X × Owner)) (pos : Owner) :
-    ∀ s : Src S X,
-      mapCode codeBack (codeIAt none penv senv pos s) = codeAt none penv senv pos s
-  | .sym _ => rfl
-  | .fn _ => rfl
-  | .sv y => by
-      simp only [codeAt, codeIAt]
-      cases codeLookup senv y <;> rfl
-  | .par z => by
-      simp only [codeAt, codeIAt]
-      cases codeLookup penv z <;> rfl
-  | .lam z _ b => by
-      simp only [codeAt, codeIAt, mapCode, codeBack,
-        mapCode_codeIAt ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b]
-  | .form z b => by
-      simp only [codeAt, codeIAt, mapCode, codeBack,
-        mapCode_codeIAt ((z, codeBinder pos) :: penv) senv (pos ++ [0]) b]
-  | .app f a => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeIAt penv senv (pos ++ [0]) f, mapCode_codeIAt penv senv (pos ++ [1]) a]
-  | .quote c => by
-      simp only [codeAt, codeIAt, mapCode]
-      have hfwd : mapCode codeFwd (codeAt none [] [] [] c) = codeIAt none [] [] [] c :=
-        mapCode_codeAt [] [] [] nil_owners nil_owners c
-      rw [← hfwd, ← mapCode_seal codeFwd_injective]
-      exact congrArg Tm.quote
-        (mapCode_back_fwd (ownNil_seal (ownNil_codeAt none [] [] [] c)))
-  | .pquote c => by
-      simp only [codeAt, codeIAt, mapCode, mapCode_codeIAt [] [] [] c]
-  | .letS p w b _ => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeIAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) p,
-        mapCode_codeIAt penv senv (pos ++ [1]) w,
-        mapCode_codeIAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) b]
-  | .unify p w b => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeIAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) p,
-        mapCode_codeIAt penv senv (pos ++ [1]) w,
-        mapCode_codeIAt penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) b]
-  | .alt t₁ t₂ => by
-      simp only [codeAt, codeIAt, mapCode,
-        mapCode_codeIAt penv senv (pos ++ [0]) t₁, mapCode_codeIAt penv senv (pos ++ [1]) t₂]
-  | .new _ b => by
-      simp only [codeAt, codeIAt, mapCode_codeIAt penv senv (pos ++ [0]) b]
-
-theorem mapCode_codeOf (s : Src S X) : mapCode codeFwd (codeOf s) = codeI s := by
-  simp only [codeOf, codeI]
-  rw [mapCode_seal codeFwd_injective]
-  exact congrArg sealParams (mapCode_codeAt [] [] [] nil_owners nil_owners s)
-
-theorem mapCode_codeI (s : Src S X) : mapCode codeBack (codeI s) = codeOf s := by
-  rw [← mapCode_codeOf]
-  exact mapCode_back_fwd (ownNil_seal (ownNil_codeAt none [] [] [] s))
-
-/-- **Sealed code is related bi-uniquely**: the two code maps forget the same
-information (crossing sets, `new` declarations, `let` versus `unify`). -/
-theorem SC_biUnique : (SC : Setting S (Slot X) (BId X)).BiUnique := by
-  rintro _ _ _ _ ⟨s, rfl, rfl⟩ ⟨s', rfl, rfl⟩
-  constructor
-  · intro h
-    rw [← mapCode_codeOf s, h, mapCode_codeOf]
-  · intro h
-    rw [← mapCode_codeI s, h, mapCode_codeI]
-
-/-- Sealed code compares alike: binders by position, free parameters by spelling. -/
-theorem SC_codeAgree [DecidableEq S] : (SC : Setting S (Slot X) (BId X)).CodeAgree := by
-  rintro _ _ _ _ ⟨s, rfl, rfl⟩ ⟨s', rfl, rfl⟩
-  rw [codeEq_codeOf_codeI]
+/-- Stripping the copies of read code is reading the stripped code. -/
+theorem strip_holeRead {ν : Nm (Slot X) → Nm (BId X)} {c : Tm S (Slot X)}
+    (hf : CodeForm (SC : Setting S (Slot X) (BId X)) c) :
+    stripCode (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) c) =
+      mapCode codeFwd (stripCode c) := by
+  simp only [stripCode, mapCode_comp]
+  refine mapCode_congr c fun n hn => ?_
+  rcases hf.name_cases hn with ⟨s, rfl⟩ | ⟨hc, -⟩
+  · obtain ⟨s', hs'⟩ := codeFwd_src s
+    show nmBase (codeFwd (.src s)) = codeFwd (nmBase (.src s))
+    rw [hs']
+    exact hs'.symm
+  · cases n with
+    | src _ => exact hc.elim
+    | inst ρ m =>
+        cases m with
+        | inst _ _ => exact hc.elim
+        | src s =>
+            obtain ⟨s', hs'⟩ := codeFwd_src s
+            show nmBase (Nm.inst _ (codeFwd (.src s))) = codeFwd (nmBase (.inst ρ (.src s)))
+            simp only [nmBase, hs']
 
 /-! ## Pattern code matches sealed code -/
 
@@ -517,9 +292,10 @@ theorem decide_code_owner_ne {y₁ y₂ : X} {o₁ o₂ : Owner} (h : o₁ ≠ o
     simp only [Nm.src.injEq, BId.code.injEq] at he
     exact h he.2
 
-/-- A binder of code is not `CodeId.same` a query hole. -/
-theorem same_bound_query {n : Nm (Slot X)} (hn : holeRecS n = false) (y : X) :
-    CodeId.same n (.src ([], y)) = false := by
+/-- A binder of code is not `CodeId.same` a hole of a scope owner. -/
+theorem same_bound_scope {n : Nm (Slot X)} (hn : holeRecS n = false) {o' : Owner}
+    (ho' : scopeOwner o') (y : X) :
+    CodeId.same n (.src (o', y)) = false := by
   cases n with
   | inst _ _ => exact same_instL_src
   | src p =>
@@ -531,12 +307,12 @@ theorem same_bound_query {n : Nm (Slot X)} (hn : holeRecS n = false) (y : X) :
         | false =>
             simp only [hc, Bool.not_false] at hn
             exact absurd hn Bool.false_ne_true.symm
-      have hne : o ≠ [] := fun h => by
-        rw [h, codeBound_nil] at hb
+      have hne : o ≠ o' := fun h => by
+        rw [h, ho'.1] at hb
         exact Bool.false_ne_true hb
       have hnf : o ≠ codeFreeParam := codeBound_ne_free hb
       rw [same_src_eq]
-      simp only [hb, codeBound_nil, Bool.and_false, ite_bool_false,
+      simp only [hb, ho'.1, Bool.and_false, ite_bool_false,
         decide_eq_false hnf, Bool.false_and, ite_bool_false, decide_src_owner_ne hne]
 
 /-- A binder of code is not `CodeId.same` a query hole, on the identity side. -/
@@ -701,24 +477,141 @@ theorem codeFreePvars_seal (t : Tm S (Slot X)) : codeFreePvars (sealParams t) = 
   obtain ⟨ht, hnot⟩ := codeFreePvars_fold (paramOcc t) t n hn
   exact hnot (codeFreePvars_sub ht)
 
-theorem codeFreePvars_codeOf (s : Src S X) : codeFreePvars (codeOf s) = [] := by
+theorem codeFreePvars_codeOf (R : Owner) (s : Src S X) : codeFreePvars (codeOf R s) = [] := by
   simp only [codeOf]
   exact codeFreePvars_seal _
+
+theorem codeNames_codeOf (R : Owner) (c : Src S X) :
+    ∀ n ∈ codeNames (codeOf R c), ∃ s, n = .src s :=
+  fun n hn => codeNames_codeAt R none [] [] [] c n (codeNames_sealParams _ hn)
+
+theorem stripCode_codeOf (R : Owner) (c : Src S X) : stripCode (codeOf R c) = codeOf R c :=
+  mapCode_nmBase_self _ (ownNil_seal (ownNil_codeAt R none [] [] [] c)) (codeNames_codeOf R c)
+
+omit [DecidableEq X] in
+theorem nmBase_nmBase {Y : Type v} : ∀ n : Nm Y, nmBase (nmBase n) = nmBase n
+  | .src _ => rfl
+  | .inst _ n => nmBase_nmBase n
+
+omit [DecidableEq X] in
+theorem stripCode_stripCode {Y : Type v} (c : Tm S Y) : stripCode (stripCode c) = stripCode c := by
+  simp only [stripCode, mapCode_comp]
+  exact mapCode_congr c fun n _ => nmBase_nmBase n
+
+/-- The base of a hole name is a hole name. -/
+theorem holeName_nmBase {n : Nm (Slot X)} (h : holeName (SC : Setting S (Slot X) (BId X)) n) :
+    holeName (SC : Setting S (Slot X) (BId X)) (nmBase n) := by
+  cases n with
+  | src _ => exact h
+  | inst ρ m =>
+      cases m with
+      | src _ => exact h
+      | inst _ _ => exact h.elim
+
+omit [DecidableEq X] in
+/-- A free name of sealed code is a hole of the code. -/
+theorem sealedFree_sub_codeVars {Y : Type v} [DecidableEq Y] :
+    ∀ (t : Tm S Y) {n : Nm Y}, n ∈ sealedFree t → n ∈ codeVars t
+  | .quote _, _, h => h
+  | .ctx _ _, _, h => h
+  | .lam _ _ b, n, h => by
+      simp only [sealedFree, List.mem_filter] at h
+      exact sealedFree_sub_codeVars b h.1
+  | .app f a, n, h => by
+      simp only [sealedFree, codeVars, List.mem_append] at h ⊢
+      exact h.imp (sealedFree_sub_codeVars f) (sealedFree_sub_codeVars a)
+  | .pquote c, _, h => sealedFree_sub_codeVars c h
+  | .letP p w b, n, h => by
+      simp only [sealedFree, codeVars, List.mem_append] at h ⊢
+      exact h.imp (fun h => h.imp (sealedFree_sub_codeVars p) (sealedFree_sub_codeVars w))
+        (sealedFree_sub_codeVars b)
+  | .alt t u, n, h => by
+      simp only [sealedFree, codeVars, List.mem_append] at h ⊢
+      exact h.imp (sealedFree_sub_codeVars t) (sealedFree_sub_codeVars u)
+  | .sym _, _, h | .fn _, _, h | .var _, _, h | .pvar _, _, h => by simp [sealedFree] at h
+
+/-- A binder of code is not `CodeId.same` a hole copy. -/
+theorem same_bound_copyS {n : Nm (Slot X)} (hn : holeRecS n = false) {ρ : Path}
+    {k : Nm (Slot X)} (hk : holeRecS k = true) : CodeId.same n (.inst ρ k) = false := by
+  cases n with
+  | src _ => exact decide_eq_false fun h => by cases h
+  | inst ρ' n' =>
+      refine decide_eq_false fun h => ?_
+      injection h with _ h2
+      subst h2
+      simp only [holeRecS] at hn
+      rw [hn] at hk
+      exact Bool.false_ne_true hk
+
+/-- The same on the identity side. -/
+theorem same_bound_copyI {m : Nm (BId X)} (hm : holeRecI m = false) {ρ : Path}
+    {k : Nm (BId X)} (hk : holeRecI k = true) : CodeId.same m (.inst ρ k) = false := by
+  cases m with
+  | src b => cases b <;> exact decide_eq_false fun h => by cases h
+  | inst ρ' m' =>
+      refine decide_eq_false fun h => ?_
+      injection h with _ h2
+      subst h2
+      simp only [holeRecI] at hm
+      rw [hm] at hk
+      exact Bool.false_ne_true hk
+
+/-- Stripping copies keeps the free parameters of code whose binders and
+parameters are names as written. -/
+theorem codeFreePvars_strip :
+    ∀ (c : Tm S (Slot X)), (∀ n ∈ codeBinders c, ∃ s, n = .src s) →
+      codeFreePvars (stripCode c) = codeFreePvars c
+  | .sym _, _ => rfl
+  | .fn _, _ => rfl
+  | .var _, _ => rfl
+  | .pvar n, h => by
+      obtain ⟨s, rfl⟩ := h n (by simp [codeBinders])
+      rfl
+  | .lam x _ b, h => by
+      obtain ⟨s, rfl⟩ := h x (by simp [codeBinders])
+      have hb := codeFreePvars_strip b fun n hn => h n (by simp [codeBinders, hn])
+      simp only [stripCode, mapCode, codeFreePvars, nmBase] at hb ⊢
+      rw [hb]
+  | .app f a, h => by
+      have h1 := codeFreePvars_strip f fun n hn => h n (by simp [codeBinders, hn])
+      have h2 := codeFreePvars_strip a fun n hn => h n (by simp [codeBinders, hn])
+      simp only [stripCode, mapCode, codeFreePvars] at h1 h2 ⊢
+      rw [h1, h2]
+  | .quote _, _ => rfl
+  | .ctx _ _, _ => rfl
+  | .pquote c, h => by
+      have h1 := codeFreePvars_strip c fun n hn => h n (by simpa [codeBinders] using hn)
+      simp only [stripCode, mapCode, codeFreePvars] at h1 ⊢
+      exact h1
+  | .letP p w b, h => by
+      have h1 := codeFreePvars_strip p fun n hn => h n (by simp [codeBinders, hn])
+      have h2 := codeFreePvars_strip w fun n hn => h n (by simp [codeBinders, hn])
+      have h3 := codeFreePvars_strip b fun n hn => h n (by simp [codeBinders, hn])
+      simp only [stripCode, mapCode, codeFreePvars] at h1 h2 h3 ⊢
+      rw [h1, h2, h3]
+  | .alt t u, h => by
+      have h1 := codeFreePvars_strip t fun n hn => h n (by simp [codeBinders, hn])
+      have h2 := codeFreePvars_strip u fun n hn => h n (by simp [codeBinders, hn])
+      simp only [stripCode, mapCode, codeFreePvars] at h1 h2 ⊢
+      rw [h1, h2]
 
 /-- A slot name written for a binder or a free parameter of code. -/
 def codeNamed (n : Nm (Slot X)) : Prop :=
   ∃ o y, n = .src (o, y) ∧ (codeBound o = true ∨ o = codeFreeParam)
 
-/-- A fragment of sealed code. Variables are query holes, parameters and binders
-are code names, own lists are empty, and a quotation holds sealed code. -/
+/-- A fragment of sealed code. Variables are holes (slots of a form root, as
+written or copied by an activation), parameters and binders are code names,
+own lists are empty, and a quotation holds sealed code: code written at a scope
+owner, its holes possibly copied. -/
 def frag : Tm S (Slot X) → Prop
   | .sym _ => True
   | .fn _ => True
-  | .var n => ∃ y, n = .src ([], y)
+  | .var n => holeName (SC : Setting S (Slot X) (BId X)) n
   | .pvar n => codeNamed n
   | .lam n own b => own = [] ∧ codeNamed n ∧ frag b
   | .app f a => frag f ∧ frag a
-  | .quote c => ∃ s : Src S X, c = codeOf s
+  | .quote c => ∃ (R : Owner) (s : Src S X), scopeOwner R ∧ stripCode c = codeOf R s ∧
+      CodeForm (SC : Setting S (Slot X) (BId X)) c
   | .ctx _ _ => False
   | .pquote c => frag c
   | .letP p w b => frag p ∧ frag w ∧ frag b
@@ -730,46 +623,6 @@ def Align (μ : Nm (Slot X) → Nm (BId X)) (c q : Tm S (Slot X)) : Prop :=
   (∀ m ∈ codeFreePvars q, μ m = codeFwd m) ∧
   (∀ x ∈ freeParams c, ∀ m ∈ codeFreePvars q, μ x = codeFwd m → x = m)
 
-theorem codeLookup_bound (l : List (X × Owner)) {z : X} {o : Owner}
-    (hb : ∀ p ∈ l, codeBound p.2 = true) (hl : codeLookup l z = some o) :
-    codeBound o = true := by
-  induction l generalizing z o with
-  | nil => simp [codeLookup] at hl
-  | cons p rest ih =>
-      obtain ⟨y, o'⟩ := p
-      simp only [codeLookup] at hl
-      by_cases hy : y = z
-      · simp only [hy] at hl
-        cases hl
-        exact hb (y, o) List.mem_cons_self
-      · simp only [hy] at hl
-        exact ih (fun q hq => hb q (List.mem_cons_of_mem _ hq)) hl
-
-omit [DecidableEq X] in
-theorem svBinds_bound (pos : Owner) (s : Src S X) :
-    ∀ p ∈ svBinds pos s, codeBound p.2 = true := by
-  induction s generalizing pos with
-  | sv _ =>
-      intro p hp
-      simp only [svBinds, List.mem_singleton] at hp
-      subst hp
-      exact codeBound_binder _
-  | app _ _ ihf iha =>
-      intro p hp
-      simp only [svBinds, List.mem_append] at hp
-      rcases hp with hp | hp
-      · exact ihf _ p hp
-      · exact iha _ p hp
-  | alt _ _ iht ihu =>
-      intro p hp
-      simp only [svBinds, List.mem_append] at hp
-      rcases hp with hp | hp
-      · exact iht _ p hp
-      · exact ihu _ p hp
-  | sym _ | fn _ | par _ | lam _ _ _ | quote _ | pquote _ | letS _ _ _ _ | unify _ _ _ | new _ _ | form _ _ =>
-      intro p hp
-      simp [svBinds] at hp
-
 theorem frag_fold {ps : List (Nm (Slot X))} {t : Tm S (Slot X)} (ht : frag t)
     (hps : ∀ p ∈ ps, codeNamed p) :
     frag (ps.foldr (fun p acc => .lam p [] acc) t) := by
@@ -779,9 +632,12 @@ theorem frag_fold {ps : List (Nm (Slot X))} {t : Tm S (Slot X)} (ht : frag t)
       exact ⟨rfl, hps p List.mem_cons_self,
         ih fun q hq => hps q (List.mem_cons_of_mem _ hq)⟩
 
-theorem frag_codeAt (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X)
-    (hpenv : ∀ p ∈ penv, codeBound p.2 = true) (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
-    frag (codeAt none penv senv pos s) := by
+theorem frag_codeAt {R : Owner} (hR : scopeOwner R) (penv senv : List (X × Owner)) (pos : Owner)
+    (s : Src S X)
+    (hpenv : ∀ p ∈ penv, codeBound p.2 = true) (hsenv : ∀ p ∈ senv, codeBound p.2 = true)
+    (hh : ∀ n ∈ codeVars (codeAt R none penv senv pos s),
+      holeName (SC : Setting S (Slot X) (BId X)) n) :
+    frag (codeAt R none penv senv pos s) := by
   induction s generalizing penv senv pos with
   | sym _ => simp [codeAt, frag]
   | fn _ => simp [codeAt, frag]
@@ -793,8 +649,8 @@ theorem frag_codeAt (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X)
           simp only [frag, codeNamed]
           exact ⟨o, y, rfl, Or.inl hb⟩
       | none =>
-          simp only [frag]
-          exact ⟨y, rfl⟩
+          simp only [codeAt, hl] at hh
+          exact hh _ (by simp [codeVars])
   | par z =>
       simp only [codeAt]
       cases hl : codeLookup penv z with
@@ -806,59 +662,75 @@ theorem frag_codeAt (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X)
           simp only [frag, codeNamed, codeFreeParam]
           exact ⟨codeFreeParam, z, rfl, Or.inr rfl⟩
   | lam z _ _ ih =>
+      simp only [codeAt, codeVars] at hh
       simp only [codeAt, frag, codeNamed]
       exact ⟨trivial, ⟨codeBinder pos, z, rfl, Or.inl (codeBound_binder _)⟩,
         ih ((z, codeBinder pos) :: penv) senv (pos ++ [0])
           (fun p hp => by
             rcases List.mem_cons.1 hp with rfl | hp
             · exact codeBound_binder _
-            · exact hpenv p hp) hsenv⟩
+            · exact hpenv p hp) hsenv hh⟩
   | form z _ ih =>
+      simp only [codeAt, codeVars] at hh
       simp only [codeAt, frag, codeNamed]
       exact ⟨trivial, ⟨codeBinder pos, z, rfl, Or.inl (codeBound_binder _)⟩,
         ih ((z, codeBinder pos) :: penv) senv (pos ++ [0])
           (fun p hp => by
             rcases List.mem_cons.1 hp with rfl | hp
             · exact codeBound_binder _
-            · exact hpenv p hp) hsenv⟩
+            · exact hpenv p hp) hsenv hh⟩
   | app _ _ ihf iha =>
+      simp only [codeAt, codeVars, List.mem_append] at hh
       simp only [codeAt, frag]
-      exact ⟨ihf penv senv (pos ++ [0]) hpenv hsenv, iha penv senv (pos ++ [1]) hpenv hsenv⟩
-  | quote _ _ =>
-      simp only [codeAt, frag, codeOf]
-      exact ⟨_, rfl⟩
+      exact ⟨ihf penv senv (pos ++ [0]) hpenv hsenv (fun n h => hh n (Or.inl h)),
+        iha penv senv (pos ++ [1]) hpenv hsenv (fun n h => hh n (Or.inr h))⟩
+  | quote c _ =>
+      simp only [codeAt, frag]
+      refine ⟨R, c, hR, stripCode_codeOf R c, ownNil_seal (ownNil_codeAt R none [] [] [] c),
+        fun n hn => hh n (by simpa [codeAt, codeVars] using hn), fun n hn => ?_⟩
+      exact codeNames_codeOf R c n ((mem_codeNames _).2 (Or.inr hn))
   | pquote _ ih =>
+      simp only [codeAt, codeVars] at hh
       simp only [codeAt, frag]
-      exact ih [] [] [] (fun _ h => by cases h) (fun _ h => by cases h)
+      exact ih [] [] [] (fun _ h => by cases h) (fun _ h => by cases h) hh
   | letS p _ _ _ ihp ihw ihb =>
       have hs : ∀ q ∈ svBinds (pos ++ [0]) p ++ senv, codeBound q.2 = true := by
         intro q hq
         rcases List.mem_append.1 hq with hq | hq
         · exact svBinds_bound _ _ _ hq
         · exact hsenv _ hq
+      simp only [codeAt, codeVars, List.mem_append] at hh
       simp only [codeAt, frag]
-      exact ⟨ihp penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv hs,
-        ihw penv senv (pos ++ [1]) hpenv hsenv,
-        ihb penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv hs⟩
+      exact ⟨ihp penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv hs
+          (fun n h => hh n (Or.inl (Or.inl h))),
+        ihw penv senv (pos ++ [1]) hpenv hsenv (fun n h => hh n (Or.inl (Or.inr h))),
+        ihb penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv hs
+          (fun n h => hh n (Or.inr h))⟩
   | unify p _ _ ihp ihw ihb =>
       have hs : ∀ q ∈ svBinds (pos ++ [0]) p ++ senv, codeBound q.2 = true := by
         intro q hq
         rcases List.mem_append.1 hq with hq | hq
         · exact svBinds_bound _ _ _ hq
         · exact hsenv _ hq
+      simp only [codeAt, codeVars, List.mem_append] at hh
       simp only [codeAt, frag]
-      exact ⟨ihp penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv hs,
-        ihw penv senv (pos ++ [1]) hpenv hsenv,
-        ihb penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv hs⟩
+      exact ⟨ihp penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [0]) hpenv hs
+          (fun n h => hh n (Or.inl (Or.inl h))),
+        ihw penv senv (pos ++ [1]) hpenv hsenv (fun n h => hh n (Or.inl (Or.inr h))),
+        ihb penv (svBinds (pos ++ [0]) p ++ senv) (pos ++ [2]) hpenv hs
+          (fun n h => hh n (Or.inr h))⟩
   | alt _ _ iht ihu =>
+      simp only [codeAt, codeVars, List.mem_append] at hh
       simp only [codeAt, frag]
-      exact ⟨iht penv senv (pos ++ [0]) hpenv hsenv, ihu penv senv (pos ++ [1]) hpenv hsenv⟩
+      exact ⟨iht penv senv (pos ++ [0]) hpenv hsenv (fun n h => hh n (Or.inl h)),
+        ihu penv senv (pos ++ [1]) hpenv hsenv (fun n h => hh n (Or.inr h))⟩
   | new _ _ ih =>
-      simpa [codeAt] using ih penv senv (pos ++ [0]) hpenv hsenv
+      simp only [codeAt] at hh
+      simpa [codeAt] using ih penv senv (pos ++ [0]) hpenv hsenv hh
 
-theorem paramOcc_codeAt (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X)
+theorem paramOcc_codeAt (R : Owner) (penv senv : List (X × Owner)) (pos : Owner) (s : Src S X)
     (hpenv : ∀ p ∈ penv, codeBound p.2 = true) (hsenv : ∀ p ∈ senv, codeBound p.2 = true) :
-    ∀ n ∈ paramOcc (codeAt none penv senv pos s), codeNamed n := by
+    ∀ n ∈ paramOcc (codeAt R none penv senv pos s), codeNamed n := by
   induction s generalizing penv senv pos with
   | sym _ => simp [codeAt, paramOcc]
   | fn _ => simp [codeAt, paramOcc]
@@ -945,16 +817,19 @@ theorem paramOcc_codeAt (penv senv : List (X × Owner)) (pos : Owner) (s : Src S
   | new _ _ ih =>
       simpa [codeAt] using ih penv senv (pos ++ [0]) hpenv hsenv
 
-theorem frag_codeOf (s : Src S X) : frag (codeOf s) := by
-  simp only [codeOf]
-  exact frag_fold (frag_codeAt [] [] [] s (fun _ h => by cases h) (fun _ h => by cases h))
-    (paramOcc_codeAt [] [] [] s (fun _ h => by cases h) (fun _ h => by cases h))
+theorem frag_codeOf {R : Owner} (hR : scopeOwner R) (s : Src S X)
+    (hh : ∀ n ∈ codeVars (codeOf R s), holeName (SC : Setting S (Slot X) (BId X)) n) :
+    frag (codeOf R s) := by
+  simp only [codeOf, codeVars_sealParams] at hh ⊢
+  exact frag_fold (frag_codeAt hR [] [] [] s (fun _ h => by cases h) (fun _ h => by cases h) hh)
+    (paramOcc_codeAt R [] [] [] s (fun _ h => by cases h) (fun _ h => by cases h))
 
-/-- Ground readings of a code fragment agree, and a quotation is a code twin. -/
-theorem grel_toGVal? :
+/-- Ground readings of a code fragment agree, and a quotation is related sealed
+code. -/
+theorem grel_toGVal? {ν : Nm (Slot X) → Nm (BId X)} :
     ∀ q : Tm S (Slot X), frag q →
-      OptRel (GRel (SC : Setting S (Slot X) (BId X))) q.toGVal?
-        (mapCode codeFwd q).toGVal? := by
+      OptRel (GRel (SC : Setting S (Slot X) (BId X)) ν) q.toGVal?
+        (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q).toGVal? := by
   intro q
   induction q with
   | sym s =>
@@ -965,11 +840,11 @@ theorem grel_toGVal? :
       intro _
       simp only [Tm.toGVal?, mapCode]
       trivial
-  | quote _ =>
+  | quote c =>
       intro hf
-      obtain ⟨s, rfl⟩ := hf
-      simp only [Tm.toGVal?, mapCode, mapCode_codeOf]
-      exact GRel.quote ⟨s, rfl, rfl⟩
+      obtain ⟨R, s, hR, hs, hcf⟩ := hf
+      simp only [Tm.toGVal?, mapCode]
+      exact GRel.quote ⟨⟨R, s, hR, hs, by rw [strip_holeRead hcf, hs, mapCode_codeOf hR]⟩, hcf, rfl⟩
   | ctx _ _ =>
       intro h
       cases h
@@ -988,23 +863,45 @@ theorem grel_toGVal? :
         · simp [e1, e2, e3, e4]
           exact GRel.app hfg hag
 
-theorem var_binder_none [DecidableEq S] {n : Nm (Slot X)} {m : Nm (BId X)}
+theorem var_binder_none [DecidableEq S] {ν : Nm (Slot X) → Nm (BId X)} {n : Nm (Slot X)}
+    {m : Nm (BId X)}
     (hn : CodeId.hole n = false) (hm : CodeId.hole m = false) {q : Tm S (Slot X)}
     (hf : frag q) (bound₁ : List (Nm (Slot X))) (bound₂ : List (Nm (BId X)))
     (σ₁ : GStore S (Slot X)) (σ₂ : GStore S (BId X)) :
     matchCodeIn σ₁ bound₁ (.var n) q = none ∧
-      matchCodeIn σ₂ bound₂ (.var m) (mapCode codeFwd q) = none := by
+      matchCodeIn σ₂ bound₂ (.var m) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q) = none := by
   have hn' : holeRecS n = false := by rw [← hole_eq_holeRecS]; exact hn
   have hm' : holeRecI m = false := by rw [← hole_eq_holeRecI]; exact hm
   cases q with
   | var k =>
-      obtain ⟨y, rfl⟩ := hf
-      refine ⟨?_, ?_⟩
-      · have hs := same_bound_query hn' y
-        simp only [matchCodeIn, hn, hs]
-        rfl
-      · have hs := same_bound_head hm' ⟨y, [], [], .head⟩
-        simp only [matchCodeIn, mapCode, codeFwd, hm, hs, ite_bool_false]
+      cases k with
+      | src p =>
+          obtain ⟨o, y⟩ := p
+          have ho : scopeOwner o := formRoot.scopeOwner (show formRoot o from hf)
+          refine ⟨?_, ?_⟩
+          · have hs := same_bound_scope hn' ho y
+            simp only [matchCodeIn, hn, hs]
+            rfl
+          · have hs := same_bound_head hm' ⟨y, o, o, .head⟩
+            simp only [matchCodeIn, mapCode, holeRead_src_SC, codeFwd_scope ho, hm, hs,
+              ite_bool_false]
+      | inst ρ k' =>
+          cases k' with
+          | inst _ _ => exact (show False from hf).elim
+          | src p =>
+              obtain ⟨o, y⟩ := p
+              have ho : scopeOwner o := formRoot.scopeOwner (show formRoot o from hf)
+              refine ⟨?_, ?_⟩
+              · have hs : CodeId.same n (.inst ρ (.src (o, y))) = false :=
+                  same_bound_copyS hn' (by simp [holeRecS, ho.1])
+                simp only [matchCodeIn, hn, hs]
+                rfl
+              · have hs : CodeId.same m (holeRead (SC : Setting S (Slot X) (BId X)) ν
+                    (.inst ρ (.src (o, y)))) = false := by
+                  show CodeId.same m (.inst _ (codeFwd (.src (o, y)))) = false
+                  rw [codeFwd_scope ho]
+                  exact same_bound_copyI hm' rfl
+                simp only [matchCodeIn, mapCode, hm, hs, ite_bool_false]
   | sym _ | fn _ | pvar _ | lam _ _ _ | app _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
       simp only [matchCodeIn, mapCode, hn, hm]
       exact ⟨rfl, rfl⟩
@@ -1051,119 +948,103 @@ theorem matchCode_letP_bind {Y : Type v} [DecidableEq S] [DecidableEq Y] [CodeId
       | none => rfl
       | some σ₂ => rfl
 
-theorem nil_ne_free : ([] : Owner) ≠ codeFreeParam := by
-  intro h
-  simp [codeFreeParam] at h
+/-- Two slots that are not both names of code compare as written. -/
+theorem same_src_plain {o₁ o₂ : Owner} {y₁ y₂ : X}
+    (h : ¬ (codeBound o₁ = true ∨ o₁ = codeFreeParam) ∨
+      ¬ (codeBound o₂ = true ∨ o₂ = codeFreeParam)) :
+    CodeId.same (.src (o₁, y₁) : Nm (Slot X)) (.src (o₂, y₂)) =
+      decide ((.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂)) := by
+  rw [same_src_eq]
+  rcases h with h | h
+  · have hb : codeBound o₁ = false := Bool.eq_false_iff.mpr fun hc => h (Or.inl hc)
+    have hf : o₁ ≠ codeFreeParam := fun e => h (Or.inr e)
+    rw [hb, Bool.false_and, ite_bool_false, ite_bool_and_left hf]
+  · have hb : codeBound o₂ = false := Bool.eq_false_iff.mpr fun hc => h (Or.inl hc)
+    have hf : o₂ ≠ codeFreeParam := fun e => h (Or.inr e)
+    rw [hb, Bool.and_false, ite_bool_false, ite_bool_and_right hf]
 
-theorem same_root_head (y₁ y₂ : X) :
-    CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src ([], y₂)) =
-      CodeId.same (.src (.slot ⟨y₁, [], [], .head⟩) : Nm (BId X))
-        (.src (.slot ⟨y₂, [], [], .head⟩)) := by
-  by_cases hy : y₁ = y₂
-  · subst hy
-    rw [same_src_eq]
-    simp only [codeBound_nil, Bool.false_and, ite_bool_false, CodeId.same]
-    simp only [decide_eq_false nil_ne_free, Bool.false_and, ite_bool_false]
-  · have hL : CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src ([], y₂)) = false := by
-      rw [same_src_eq]
-      simp only [codeBound_nil, Bool.false_and, ite_bool_false]
-      simp only [decide_eq_false nil_ne_free, Bool.false_and, ite_bool_false]
-      exact decide_eq_false fun h => by
-        simp only [Nm.src.injEq, Prod.mk.injEq] at h
-        exact hy h.2
-    have hR : CodeId.same (.src (.slot ⟨y₁, [], [], .head⟩) : Nm (BId X))
-        (.src (.slot ⟨y₂, [], [], .head⟩)) = false :=
-      decide_eq_false fun h => by
-        simp only [Nm.src.injEq, BId.slot.injEq, SlotId.mk.injEq] at h
-        exact hy h.1
-    rw [hL, hR]
+/-- A slot identity compares as written, on either side. -/
+theorem same_slot_left (k : SlotId X) (b : Nm (BId X)) :
+    CodeId.same (.src (.slot k) : Nm (BId X)) b = decide (.src (.slot k) = b) := by
+  cases b with
+  | src b => cases b <;> rfl
+  | inst _ _ => rfl
 
-theorem same_root_ne_cons (y₁ y₂ : X) (n : ℕ) (o : List ℕ) :
-    CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src (n :: o, y₂)) =
-      CodeId.same (.src (.slot ⟨y₁, [], [], .head⟩) : Nm (BId X))
-        (.src (.code y₂ (n :: o))) := by
-  have hL : CodeId.same (.src ([], y₁) : Nm (Slot X)) (.src (n :: o, y₂)) = false := by
-    rw [same_src_eq]
-    simp only [codeBound_nil, Bool.false_and, ite_bool_false]
-    simp only [decide_eq_false nil_ne_free, Bool.false_and, ite_bool_false]
-    exact decide_src_owner_ne (List.cons_ne_nil n o).symm
-  rw [hL, same_slot_code]
+theorem same_slot_right (a : Nm (BId X)) (k : SlotId X) :
+    CodeId.same a (.src (.slot k) : Nm (BId X)) = decide (a = .src (.slot k)) := by
+  cases a with
+  | src a => cases a <;> rfl
+  | inst _ _ => rfl
 
-theorem same_cons_ne_root (y₁ y₂ : X) (n : ℕ) (o : List ℕ) :
-    CodeId.same (.src (n :: o, y₁) : Nm (Slot X)) (.src ([], y₂)) =
-      CodeId.same (.src (.code y₁ (n :: o)) : Nm (BId X))
-        (.src (.slot ⟨y₂, [], [], .head⟩)) := by
-  have hL : CodeId.same (.src (n :: o, y₁) : Nm (Slot X)) (.src ([], y₂)) = false := by
-    rw [same_src_eq]
-    simp only [codeBound_nil, Bool.and_false, ite_bool_false]
-    simp only [decide_eq_false nil_ne_free, Bool.and_false, ite_bool_false]
-    exact decide_src_owner_ne (List.cons_ne_nil n o)
-  have hR : CodeId.same (.src (.code y₁ (n :: o)) : Nm (BId X))
-      (.src (.slot ⟨y₂, [], [], .head⟩)) = false :=
-    decide_eq_false fun h => by cases h
-  rw [hL, hR]
+/-- The images of two slots that are not both names of code compare as the slots
+are written: at least one image is a head slot. -/
+theorem same_fwd_plain {o₁ o₂ : Owner} {y₁ y₂ : X}
+    (h : ¬ (codeBound o₁ = true ∨ o₁ = codeFreeParam) ∨
+      ¬ (codeBound o₂ = true ∨ o₂ = codeFreeParam)) :
+    CodeId.same (codeFwd (.src (o₁, y₁))) (codeFwd (.src (o₂, y₂)) : Nm (BId X)) =
+      decide ((.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂)) := by
+  have hiff : codeFwd (.src (o₁, y₁)) = (codeFwd (.src (o₂, y₂)) : Nm (BId X)) ↔
+      (.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂) :=
+    ⟨fun e => codeFwd_injective e, fun e => congrArg codeFwd e⟩
+  rcases h with h | h
+  · have e : codeFwd (.src (o₁, y₁)) = (.src (.slot ⟨y₁, o₁, o₁, .head⟩) : Nm (BId X)) := by
+      simp only [codeFwd, if_neg h]
+    rw [e, same_slot_left, ← e]
+    exact decide_eq_decide.mpr hiff
+  · have e : codeFwd (.src (o₂, y₂)) = (.src (.slot ⟨y₂, o₂, o₂, .head⟩) : Nm (BId X)) := by
+      simp only [codeFwd, if_neg h]
+    rw [e, same_slot_right, ← e]
+    exact decide_eq_decide.mpr hiff
 
 /-- `CodeId.same` is unchanged by reading a slot name as a code name. -/
 theorem same_codeFwd (a b : Nm (Slot X)) :
     CodeId.same (codeFwd a) (codeFwd b) = CodeId.same a b := by
   cases a with
   | src pa =>
+      obtain ⟨o₁, y₁⟩ := pa
       cases b with
       | src pb =>
-          obtain ⟨o₁, y₁⟩ := pa
           obtain ⟨o₂, y₂⟩ := pb
-          cases o₁ with
-          | nil =>
-              cases o₂ with
-              | nil =>
-                  simp only [codeFwd]
-                  exact (same_root_head y₁ y₂).symm
-              | cons n o =>
-                  simp only [codeFwd]
-                  exact (same_root_ne_cons y₁ y₂ n o).symm
-          | cons n o =>
-              cases o₂ with
-              | nil =>
-                  simp only [codeFwd]
-                  exact (same_cons_ne_root y₁ y₂ n o).symm
-              | cons m t =>
-                  simp only [codeFwd, same_src_eq, same_code_eq]
-                  by_cases hb : codeBound (n :: o) && codeBound (m :: t)
-                  · simp only [hb, ite_true]
-                  · simp only [hb]
-                    by_cases hf : (n :: o) = codeFreeParam && (m :: t) = codeFreeParam
-                    · simp only [hf, ite_true]
-                    · simp only [hf]
-                      by_cases he : (n :: o) = (m :: t) ∧ y₁ = y₂
-                      · rcases he with ⟨ho, rfl⟩
-                        simp only [ho, ite_bool_false]
-                      · have hs :
-                            ¬ ((.src (n :: o, y₁) : Nm (Slot X)) = .src (m :: t, y₂)) := by
-                          intro h; cases h; exact he ⟨rfl, rfl⟩
-                        have hc : ¬ ((.src (.code y₁ (n :: o)) : Nm (BId X)) =
-                            .src (.code y₂ (m :: t))) := by
-                          intro h; cases h; exact he ⟨rfl, rfl⟩
-                        rw [decide_eq_false hs, decide_eq_false hc]
-      | inst _ _ =>
-          obtain ⟨o, _⟩ := pa
-          cases o with
-          | nil =>
-              simp only [codeFwd, CodeId.same]
-              rfl
-          | cons _ _ =>
-              simp only [codeFwd, CodeId.same]
-              rfl
+          by_cases h₁ : codeBound o₁ = true ∨ o₁ = codeFreeParam
+          · by_cases h₂ : codeBound o₂ = true ∨ o₂ = codeFreeParam
+            · rw [codeFwd_code h₁, codeFwd_code h₂, same_src_eq, same_code_eq]
+              by_cases hb : codeBound o₁ && codeBound o₂
+              · simp only [hb, ite_true]
+              · simp only [hb]
+                by_cases hf : o₁ = codeFreeParam && o₂ = codeFreeParam
+                · simp only [hf, ite_true]
+                · simp only [hf]
+                  by_cases he : o₁ = o₂ ∧ y₁ = y₂
+                  · rcases he with ⟨ho, rfl⟩
+                    simp only [ho, ite_bool_false]
+                  · have hs :
+                        ¬ ((.src (o₁, y₁) : Nm (Slot X)) = .src (o₂, y₂)) := by
+                      intro h; cases h; exact he ⟨rfl, rfl⟩
+                    have hc : ¬ ((.src (.code y₁ o₁) : Nm (BId X)) =
+                        .src (.code y₂ o₂)) := by
+                      intro h; cases h; exact he ⟨rfl, rfl⟩
+                    rw [decide_eq_false hs, decide_eq_false hc]
+            · rw [same_fwd_plain (Or.inr h₂), same_src_plain (Or.inr h₂)]
+          · rw [same_fwd_plain (Or.inl h₁), same_src_plain (Or.inl h₁)]
+      | inst ρ m =>
+          show CodeId.same (codeFwd (.src (o₁, y₁))) (.inst ρ (codeFwd m)) =
+            CodeId.same (.src (o₁, y₁) : Nm (Slot X)) (.inst ρ m)
+          by_cases h₁ : codeBound o₁ = true ∨ o₁ = codeFreeParam
+          · rw [codeFwd_code h₁]
+            rfl
+          · simp only [codeFwd, if_neg h₁]
+            rfl
   | inst ρ n =>
       cases b with
       | src pb =>
-          obtain ⟨o, _⟩ := pb
-          cases o with
-          | nil =>
-              simp only [codeFwd, CodeId.same]
-              rfl
-          | cons _ _ =>
-              simp only [codeFwd, CodeId.same]
-              rfl
+          obtain ⟨o₂, y₂⟩ := pb
+          show CodeId.same (.inst ρ (codeFwd n)) (codeFwd (.src (o₂, y₂))) =
+            CodeId.same (.inst ρ n : Nm (Slot X)) (.src (o₂, y₂))
+          by_cases h₂ : codeBound o₂ = true ∨ o₂ = codeFreeParam
+          · rw [codeFwd_code h₂]
+            rfl
+          · simp only [codeFwd, if_neg h₂]
+            rfl
       | inst ρ' m =>
           simp only [codeFwd, CodeId.same]
           by_cases he : ρ = ρ' ∧ n = m
@@ -1177,35 +1058,115 @@ theorem same_codeFwd (a b : Nm (Slot X)) :
               exact he ⟨h.1, codeFwd_injective h.2⟩
             rw [decide_eq_false h1, decide_eq_false h2]
 
+theorem same_src_inst_slot (p : Slot X) (ρ : Path) (m : Nm (Slot X)) :
+    CodeId.same (Nm.src p) (Nm.inst ρ m) = false :=
+  decide_eq_false fun h => by cases h
+
+theorem same_inst_src_slot (p : Slot X) (ρ : Path) (m : Nm (Slot X)) :
+    CodeId.same (Nm.inst ρ m) (Nm.src p) = false :=
+  decide_eq_false fun h => by cases h
+
+theorem same_src_inst_bid (b : BId X) (ρ : Path) (m : Nm (BId X)) :
+    CodeId.same (Nm.src b) (Nm.inst ρ m) = false := by
+  cases b <;> exact decide_eq_false fun h => by cases h
+
+theorem same_inst_src_bid (b : BId X) (ρ : Path) (m : Nm (BId X)) :
+    CodeId.same (Nm.inst ρ m) (Nm.src b) = false := by
+  cases b <;> exact decide_eq_false fun h => by cases h
+
+/-- **Reading names of code keeps `CodeId.same`**, on names as written and hole
+copies that `holeRead` keeps apart. -/
+theorem same_holeRead {ν : Nm (Slot X) → Nm (BId X)} {a b : Nm (Slot X)}
+    (ha : (∃ s, a = .src s) ∨ holeCopy (SC : Setting S (Slot X) (BId X)) a)
+    (hb : (∃ s, b = .src s) ∨ holeCopy (SC : Setting S (Slot X) (BId X)) b)
+    (hinj : holeRead (SC : Setting S (Slot X) (BId X)) ν a =
+      holeRead (SC : Setting S (Slot X) (BId X)) ν b → a = b) :
+    CodeId.same (holeRead (SC : Setting S (Slot X) (BId X)) ν a)
+      (holeRead (SC : Setting S (Slot X) (BId X)) ν b) = CodeId.same a b := by
+  rcases ha with ⟨s, rfl⟩ | ha <;> rcases hb with ⟨s', rfl⟩ | hb
+  · exact same_codeFwd _ _
+  · cases b with
+    | src _ => exact hb.elim
+    | inst ρ m =>
+        obtain ⟨s₀, hs₀⟩ := codeFwd_src s
+        rw [holeRead_src_SC, hs₀]
+        show CodeId.same (Nm.src s₀) (Nm.inst _ _) = CodeId.same (Nm.src s) (Nm.inst ρ m)
+        rw [same_src_inst_bid, same_src_inst_slot]
+  · cases a with
+    | src _ => exact ha.elim
+    | inst ρ m =>
+        obtain ⟨s₀, hs₀⟩ := codeFwd_src s'
+        rw [holeRead_src_SC, hs₀]
+        show CodeId.same (Nm.inst _ _) (Nm.src s₀) = CodeId.same (Nm.inst ρ m) (Nm.src s')
+        rw [same_inst_src_bid, same_inst_src_slot]
+  · cases a with
+    | src _ => exact ha.elim
+    | inst ρ m =>
+        cases b with
+        | src _ => exact hb.elim
+        | inst ρ' m' =>
+            show decide (_ = _) = decide (_ = _)
+            exact decide_eq_decide.2 ⟨fun e => hinj e, fun e => e ▸ rfl⟩
+
+/-- **Reading related sealed code keeps `codeEq`.** -/
+theorem codeEq_holeRead [DecidableEq S] {ν : Nm (Slot X) → Nm (BId X)} {c c' : Tm S (Slot X)}
+    (hf : CodeForm (SC : Setting S (Slot X) (BId X)) c)
+    (hf' : CodeForm (SC : Setting S (Slot X) (BId X)) c')
+    (hinj : Set.InjOn (holeRead (SC : Setting S (Slot X) (BId X)) ν)
+      {n | n ∈ codeNames c ∨ n ∈ codeNames c'}) :
+    codeEq (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) c)
+      (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) c') = codeEq c c' :=
+  codeEq_mapCode c c' hf.1 hf'.1 fun _ ha _ hb =>
+    same_holeRead ((hf.name_cases ha).imp_right (·.1)) ((hf'.name_cases hb).imp_right (·.1))
+      (fun e => hinj (Or.inl ha) (Or.inr hb) e)
+
+/-- Sealed code compares alike: binders by position, free parameters by spelling,
+and hole copies by identity, which `holeRead` keeps apart. -/
+theorem SC_codeAgree [DecidableEq S] : (SC : Setting S (Slot X) (BId X)).CodeAgree := by
+  rintro ν c₁ _ c₁' _ ⟨-, hf, rfl⟩ ⟨-, hf', rfl⟩ hinj
+  rw [codeEq_holeRead hf hf' hinj]
+
 /-- Mentioning a binder survives the code-name reading. -/
-theorem mentionsBinder_map (k : Nm (Slot X)) (q : Tm S (Slot X)) :
-    mentionsBinder (codeFwd k) (mapCode codeFwd q) = mentionsBinder k q := by
+theorem mentionsBinder_map {ν : Nm (Slot X) → Nm (BId X)} (k : Nm (Slot X)) :
+    ∀ (q : Tm S (Slot X)), frag q →
+      mentionsBinder (codeFwd k) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q) = mentionsBinder k q := by
+  intro q
   induction q with
   | pvar y =>
-      simp only [mentionsBinder, mapCode]
-      exact same_codeFwd k y
+      intro hq
+      obtain ⟨o, z, rfl, -⟩ := hq
+      simp only [mentionsBinder, mapCode, holeRead_src_SC]
+      exact same_codeFwd k _
   | lam x _ b ih =>
-      simp only [mentionsBinder, mapCode, same_codeFwd, ih]
+      intro hq
+      obtain ⟨-, ⟨o, z, rfl, -⟩, hb⟩ := hq
+      simp only [mentionsBinder, mapCode, holeRead_src_SC, same_codeFwd, ih hb]
   | app _ _ ihf iha =>
-      simp only [mentionsBinder, mapCode, ihf, iha]
+      intro hq
+      simp only [mentionsBinder, mapCode, ihf hq.1, iha hq.2]
   | letP _ _ _ ihp ihw ihb =>
-      simp only [mentionsBinder, mapCode, ihp, ihw, ihb]
+      intro hq
+      simp only [mentionsBinder, mapCode, ihp hq.1, ihw hq.2.1, ihb hq.2.2]
   | alt _ _ iha ihb =>
-      simp only [mentionsBinder, mapCode, iha, ihb]
+      intro hq
+      simp only [mentionsBinder, mapCode, iha hq.1, ihb hq.2]
   | pquote _ ih =>
-      simp only [mentionsBinder, mapCode, ih]
+      intro hq
+      simp only [mentionsBinder, mapCode, ih hq]
   | sym _ | fn _ | var _ | quote _ | ctx _ _ =>
+      intro _
       simp only [mentionsBinder, mapCode]
 
 /-- The binders a fragment mentions, read as code names. -/
-theorem mentioned_codeFwd (bound : List (Nm (Slot X))) (q : Tm S (Slot X)) :
-    mentioned (bound.map codeFwd) (mapCode codeFwd q) =
+theorem mentioned_codeFwd {ν : Nm (Slot X) → Nm (BId X)} (bound : List (Nm (Slot X)))
+    (q : Tm S (Slot X)) (hq : frag q) :
+    mentioned (bound.map codeFwd) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q) =
       (mentioned bound q).map codeFwd := by
   induction bound with
   | nil => simp [mentioned]
   | cons k ks ih =>
-      have hk : mentionsBinder (codeFwd k) (mapCode codeFwd q) = mentionsBinder k q :=
-        mentionsBinder_map k q
+      have hk : mentionsBinder (codeFwd k) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q) = mentionsBinder k q :=
+        mentionsBinder_map k q hq
       cases h : mentionsBinder k q with
       | true =>
           simp only [mentioned, List.map_cons, List.filter, h, hk]
@@ -1225,9 +1186,8 @@ theorem frag_ownNil {q : Tm S (Slot X)} (h : frag q) : ownNil q := by
   | app _ _ ihf iha =>
       exact ⟨ihf h.1, iha h.2⟩
   | quote _ =>
-      obtain ⟨s, rfl⟩ := h
-      rw [codeOf]
-      exact ownNil_seal (ownNil_codeAt none [] [] [] s)
+      obtain ⟨_, _, _, _, hcf⟩ := h
+      exact hcf.1
   | pquote _ ih => exact ih h
   | letP _ _ _ ihp ihw ihb =>
       exact ⟨ihp h.1, ihw h.2.1, ihb h.2.2⟩
@@ -1235,6 +1195,137 @@ theorem frag_ownNil {q : Tm S (Slot X)} (h : frag q) : ownNil q := by
       exact ⟨iha h.1, ihb h.2⟩
   | ctx _ _ => cases h
   | sym _ | fn _ | var _ | pvar _ => exact trivial
+
+/-- A fragment's holes are hole names. -/
+theorem frag_codeVars (q : Tm S (Slot X)) (h : frag q) :
+    ∀ n ∈ codeVars q, holeName (SC : Setting S (Slot X) (BId X)) n := by
+  induction q with
+  | var _ =>
+      intro n hn
+      simp only [codeVars, List.mem_singleton] at hn
+      subst hn
+      exact h
+  | lam _ _ b ih => intro n hn; exact ih h.2.2 n (by simpa [codeVars] using hn)
+  | app f a ihf iha =>
+      intro n hn
+      simp only [codeVars, List.mem_append] at hn
+      exact hn.elim (ihf h.1 n) (iha h.2 n)
+  | quote _ =>
+      intro n hn
+      obtain ⟨_, _, _, _, hcf⟩ := h
+      exact hcf.2.1 n (by simpa [codeVars] using hn)
+  | pquote _ ih => intro n hn; exact ih h n (by simpa [codeVars] using hn)
+  | letP p w b ihp ihw ihb =>
+      intro n hn
+      simp only [codeVars, List.mem_append] at hn
+      rcases hn with (hn | hn) | hn
+      · exact ihp h.1 n hn
+      · exact ihw h.2.1 n hn
+      · exact ihb h.2.2 n hn
+  | alt t u iht ihu =>
+      intro n hn
+      simp only [codeVars, List.mem_append] at hn
+      exact hn.elim (iht h.1 n) (ihu h.2 n)
+  | ctx _ _ => exact h.elim
+  | sym _ | fn _ | pvar _ => intro n hn; simp [codeVars] at hn
+
+/-- A fragment's binders and parameters are names as written. -/
+theorem frag_codeBinders (q : Tm S (Slot X)) (h : frag q) :
+    ∀ n ∈ codeBinders q, ∃ s, n = .src s := by
+  induction q with
+  | pvar _ =>
+      intro n hn
+      simp only [codeBinders, List.mem_singleton] at hn
+      subst hn
+      obtain ⟨o, y, rfl, -⟩ := h
+      exact ⟨_, rfl⟩
+  | lam x _ b ih =>
+      intro n hn
+      simp only [codeBinders, List.mem_cons] at hn
+      rcases hn with rfl | hn
+      · obtain ⟨o, y, rfl, -⟩ := h.2.1
+        exact ⟨_, rfl⟩
+      · exact ih h.2.2 n hn
+  | app f a ihf iha =>
+      intro n hn
+      simp only [codeBinders, List.mem_append] at hn
+      exact hn.elim (ihf h.1 n) (iha h.2 n)
+  | quote _ =>
+      intro n hn
+      obtain ⟨_, _, _, _, hcf⟩ := h
+      exact hcf.2.2 n (by simpa [codeBinders] using hn)
+  | pquote _ ih => intro n hn; exact ih h n (by simpa [codeBinders] using hn)
+  | letP p w b ihp ihw ihb =>
+      intro n hn
+      simp only [codeBinders, List.mem_append] at hn
+      rcases hn with (hn | hn) | hn
+      · exact ihp h.1 n hn
+      · exact ihw h.2.1 n hn
+      · exact ihb h.2.2 n hn
+  | alt t u iht ihu =>
+      intro n hn
+      simp only [codeBinders, List.mem_append] at hn
+      exact hn.elim (iht h.1 n) (ihu h.2 n)
+  | ctx _ _ => exact h.elim
+  | sym _ | fn _ | var _ => intro n hn; simp [codeBinders] at hn
+
+/-- **Copying holes keeps a fragment**: code in the code form whose stripped code is
+a fragment is a fragment. -/
+theorem frag_of_strip (c : Tm S (Slot X)) (hf : CodeForm (SC : Setting S (Slot X) (BId X)) c)
+    (h : frag (stripCode c)) : frag c := by
+  induction c with
+  | sym _ => trivial
+  | fn _ => trivial
+  | var n => exact hf.2.1 n (by simp [codeVars])
+  | pvar n =>
+      obtain ⟨s, rfl⟩ := hf.2.2 n (by simp [codeBinders])
+      exact h
+  | lam x o b ih =>
+      obtain ⟨s, rfl⟩ := hf.2.2 x (by simp [codeBinders])
+      obtain ⟨ho, hb⟩ := hf.1
+      exact ⟨ho, h.2.1, ih ⟨hb, fun n hn => hf.2.1 n (by simpa [codeVars] using hn),
+        fun n hn => hf.2.2 n (by simp [codeBinders, hn])⟩ h.2.2⟩
+  | app a b iha ihb =>
+      simp only [CodeForm, ownNil, codeVars, codeBinders, List.mem_append] at hf
+      exact ⟨iha ⟨hf.1.1, fun n hn => hf.2.1 n (Or.inl hn), fun n hn => hf.2.2 n (Or.inl hn)⟩
+          h.1,
+        ihb ⟨hf.1.2, fun n hn => hf.2.1 n (Or.inr hn), fun n hn => hf.2.2 n (Or.inr hn)⟩ h.2⟩
+  | quote c _ =>
+      obtain ⟨R, s, hR, hs, -⟩ := h
+      refine ⟨R, s, hR, ?_, hf.1, fun n hn => hf.2.1 n (by simpa [codeVars] using hn),
+        fun n hn => hf.2.2 n (by simpa [codeBinders] using hn)⟩
+      rw [← hs]
+      exact (stripCode_stripCode c).symm
+  | ctx _ _ _ => exact h.elim
+  | pquote c ih =>
+      exact ih ⟨hf.1, fun n hn => hf.2.1 n (by simpa [codeVars] using hn),
+        fun n hn => hf.2.2 n (by simpa [codeBinders] using hn)⟩ h
+  | letP p w b ihp ihw ihb =>
+      simp only [CodeForm, ownNil, codeVars, codeBinders, List.mem_append] at hf
+      exact ⟨ihp ⟨hf.1.1, fun n hn => hf.2.1 n (Or.inl (Or.inl hn)),
+          fun n hn => hf.2.2 n (Or.inl (Or.inl hn))⟩ h.1,
+        ihw ⟨hf.1.2.1, fun n hn => hf.2.1 n (Or.inl (Or.inr hn)),
+          fun n hn => hf.2.2 n (Or.inl (Or.inr hn))⟩ h.2.1,
+        ihb ⟨hf.1.2.2, fun n hn => hf.2.1 n (Or.inr hn),
+          fun n hn => hf.2.2 n (Or.inr hn)⟩ h.2.2⟩
+  | alt t u iht ihu =>
+      simp only [CodeForm, ownNil, codeVars, codeBinders, List.mem_append] at hf
+      exact ⟨iht ⟨hf.1.1, fun n hn => hf.2.1 n (Or.inl hn), fun n hn => hf.2.2 n (Or.inl hn)⟩
+          h.1,
+        ihu ⟨hf.1.2, fun n hn => hf.2.1 n (Or.inr hn), fun n hn => hf.2.2 n (Or.inr hn)⟩ h.2⟩
+
+/-- Sealed code in the code form whose stripped code is written at a scope owner is
+a fragment, with no free parameter of code. -/
+theorem frag_of_codeForm {c : Tm S (Slot X)} {R : Owner} {s : Src S X} (hR : scopeOwner R)
+    (hs : stripCode c = codeOf R s) (hf : CodeForm (SC : Setting S (Slot X) (BId X)) c) :
+    frag c ∧ codeFreePvars c = [] := by
+  refine ⟨frag_of_strip c hf ?_, ?_⟩
+  · rw [hs]
+    refine frag_codeOf hR s fun n hn => ?_
+    rw [← hs, stripCode, codeVars_mapCode] at hn
+    obtain ⟨m, hm, rfl⟩ := List.mem_map.1 hn
+    exact holeName_nmBase (hf.2.1 m hm)
+  · rw [← codeFreePvars_strip c hf.2.2, hs, codeFreePvars_codeOf]
 
 theorem matchCodeIn_app_bind {Y : Type v} [DecidableEq S] [DecidableEq Y] [CodeId Y]
     (bound : List (Nm Y)) (σ : GStore S Y) (p₁ p₂ t₁ t₂ : Tm S Y) :
@@ -1265,20 +1356,23 @@ theorem matchCodeIn_letP_bind {Y : Type v} [DecidableEq S] [DecidableEq Y] [Code
       | some σ₂ => rfl
 
 /-- A hole under code binders binds related values: a ground value when the
-fragment mentions none of them, and contextual code along `codeFwd` otherwise. -/
+fragment mentions none of them, and contextual code read through `holeRead`
+otherwise. -/
 theorem hole_refine [DecidableEq S] {ν : Nm (Slot X) → Nm (BId X)}
     {D : Set (Nm (Slot X))} {σ₁ : GStore S (Slot X)} {σ₂ : GStore S (BId X)}
-    (hσ : StoreRel SC ν D σ₁ σ₂) (hinj : Set.InjOn ν D) {n : Nm (Slot X)}
+    (hσ : StoreRel SC ν D σ₁ σ₂) (hinj : Set.InjOn ν D) (hI : HoleInj (SC : Setting S (Slot X) (BId X)) ν D) {n : Nm (Slot X)}
     (hn : n ∈ D) (hb : CodeId.hole n = true) (hb2 : CodeId.hole (ν n) = true)
-    {q : Tm S (Slot X)} (hq : frag q) (bound : List (Nm (Slot X))) :
+    {q : Tm S (Slot X)} (hq : frag q)
+    (hqs : ∀ m ∈ codeVars q, m ∈ D ∨ ∃ s, m = .src s ∧ (SC : Setting S (Slot X) (BId X)).root₁ s)
+    (bound : List (Nm (Slot X))) (hbd : ∀ k ∈ bound, ∃ s, k = .src s) :
     OptRel (StoreRel SC ν D) (matchCodeIn σ₁ bound (.var n) q)
-      (matchCodeIn σ₂ (bound.map codeFwd) (.var (ν n)) (mapCode codeFwd q)) := by
-  have hment := mentioned_codeFwd bound q
+      (matchCodeIn σ₂ (bound.map codeFwd) (.var (ν n)) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q)) := by
+  have hment := mentioned_codeFwd (ν := ν) bound q hq
   have ho := frag_ownNil hq
   cases hks : mentioned bound q with
   | nil =>
-      have hg := grel_toGVal? q hq
-      have hment0 : mentioned (bound.map codeFwd) (mapCode codeFwd q) = [] := by
+      have hg := grel_toGVal? (ν := ν) q hq
+      have hment0 : mentioned (bound.map codeFwd) (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q) = [] := by
         rw [hment, hks]
         rfl
       simp only [matchCodeIn, hb, hb2, contextualVal, hks, hment0]
@@ -1286,10 +1380,28 @@ theorem hole_refine [DecidableEq S] {ν : Nm (Slot X) → Nm (BId X)}
       · simp [e1, e2]
         exact trivial
       · rw [e1, e2]
-        exact hσ.refine SC_biUnique hinj hn hgg
+        refine hσ.refine hI hinj hn hgg fun m hm => ?_
+        rw [CloTable.toGVal?_toTm e1] at hm
+        exact hqs m (sealedFree_sub_codeVars q hm)
   | cons k ks =>
       simp only [matchCodeIn, hb, hb2, contextualVal, hks, hment, List.map_cons]
-      exact hσ.refine SC_biUnique hinj hn (.ctx ho rfl rfl)
+      have hks' : ∀ k' ∈ k :: ks, ∃ s, k' = .src s := by
+        intro k' hk'
+        rw [← hks] at hk'
+        exact hbd k' (List.mem_filter.1 hk').1
+      refine hσ.refine hI hinj hn (.ctx ⟨ho, frag_codeVars q hq, ?_⟩ ?_ rfl) ?_
+      · intro m hm
+        simp only [codeBinders, List.mem_append] at hm
+        rcases hm with hm | hm
+        · exact hks' m hm
+        · exact frag_codeBinders q hq m hm
+      · show List.map codeFwd (k :: ks) =
+          List.map (holeRead (SC : Setting S (Slot X) (BId X)) ν) (k :: ks)
+        exact List.map_congr_left fun m hm => by
+          obtain ⟨s, rfl⟩ := hks' m hm
+          rfl
+      · intro m hm
+        exact hqs m (by simpa [GVal.toTm, sealedFree] using hm)
 
 /-- Entering a lambda of sealed code agrees on the two sides, or neither side
 enters. A free parameter that does enter is the subject's binder. -/
@@ -1305,7 +1417,6 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
         (codeFreeS x₁ = true ∨ codeFreeS (.src (o, y)) = false) ∧
         (codeFreeS x₁ = false → ∀ m : Nm (Slot X), codeFreeS m = true →
           x₂ ≠ codeFwd m)) := by
-  have hone : o ≠ [] := owner_code_ne_nil hbo
   have hact : actSrcS x₁ = actSrcI x₂ := by
     rcases hb with ⟨_, _, _, _, hact⟩ | ⟨_, _, _, _, _, hact⟩
     · exact hact
@@ -1321,7 +1432,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
         cases x₂ with
         | src _ => simp [actSrcI] at hsrcI
         | inst _ _ =>
-            rw [codeFwd_ne_nil hone]
+            rw [codeFwd_code hbo]
             exact same_instI_src
       refine Or.inl ⟨?_, ?_⟩
       · rw [hL, Bool.false_and]
@@ -1361,7 +1472,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
               simp only [codeBound, Bool.false_and, ite_bool_false, decide_eq_false hne,
                 Bool.and_false, ite_bool_false, decide_src_owner_ne hne.symm]
             have hRs : CodeId.same (.src (.code y₁ codeFreeParam)) (codeFwd (.src (o, y))) = false := by
-              rw [codeFwd_ne_nil hone]
+              rw [codeFwd_code (Or.inl hbb)]
               simp only [same_code_eq]
               unfold codeFreeParam at hne ⊢
               simp only [codeBound, Bool.false_and, ite_bool_false, decide_eq_false hne,
@@ -1374,15 +1485,12 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
               · rw [hey, eown₁, same_src_eq]
                 simp only [codeBound, codeFreeParam, Bool.false_and, ite_bool_false]
                 decide
-              · rw [hey, eown₂]
-                simp only [codeFwd, same_code_eq, codeBound, codeFreeParam, Bool.false_and,
+              · rw [hey, eown₂, codeFwd_code (Or.inr rfl)]
+                simp only [same_code_eq, codeBound, codeFreeParam, Bool.false_and,
                   ite_bool_false]
                 decide
               · intro _
-                exact ⟨by simp [hey], by
-                  rw [hey]
-                  simp only [codeFreeParam]
-                  exact codeFwd_cons 9 [] y⟩
+                exact ⟨by simp [hey], by rw [hey, codeFwd_code (Or.inr rfl)]⟩
               · intro hf
                 rw [codeFreeS_param] at hf
                 exact absurd hf Bool.false_ne_true.symm
@@ -1393,7 +1501,8 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
               have hRs :
                   CodeId.same (.src (.code y₁ codeFreeParam))
                     (codeFwd (.src (codeFreeParam, y))) = false := by
-                simp only [codeFwd, same_code_eq, codeFreeParam, codeBound, Bool.false_and,
+                rw [codeFwd_code (Or.inr rfl)]
+                simp only [same_code_eq, codeFreeParam, codeBound, Bool.false_and,
                   ite_bool_false]
                 exact decide_eq_false hey
               refine Or.inl ⟨?_, ?_⟩
@@ -1423,7 +1532,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
                     exact Bool.false_ne_true (hb1.symm.trans hbo)
                   · exact hf1 he
           have hRs : CodeId.same x₂ (codeFwd (.src (o, y))) = false := by
-            rw [codeFwd_ne_nil hone]
+            rw [codeFwd_code hbo]
             cases x₂ with
             | inst _ _ => simp [actSrcI] at hsrcI
             | src b =>
@@ -1492,7 +1601,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
           · refine Or.inr ⟨?_, ?_, e₁, e₂, Or.inl ⟨hS, hI⟩, ?_, Or.inr (codeFreeS_bound hbb), ?_⟩
             · rw [heo, e₁, same_src_eq, hbb]
               simp only [eq_self, Bool.and_self, decide_eq_true trivial, if_pos trivial]
-            · rw [heo, e₂, codeFwd_ne_nil hone]
+            · rw [heo, e₂, codeFwd_code (Or.inl hbb)]
               simp only [same_code_eq, hbb, eq_self, Bool.and_self,
                 decide_eq_true trivial, if_pos trivial]
             · intro hf
@@ -1508,8 +1617,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
                   have hom : om = codeFreeParam :=
                     of_decide_eq_true (by simpa [codeFreeS] using hm)
                   subst hom
-                  rw [show codeFwd (.src (codeFreeParam, ym)) =
-                      .src (.code ym codeFreeParam) by simp only [codeFreeParam]; rfl] at heq
+                  rw [codeFwd_code (o := codeFreeParam) (y := ym) (Or.inr rfl)] at heq
                   cases heq
                   simp only [codeFreeParam, codeBound] at hb1
                   exact Bool.false_ne_true hb1
@@ -1518,7 +1626,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
               simp only [Bool.and_self]
               exact decide_eq_false heo
             have hRs : CodeId.same (.src (.code y₂ o₁)) (codeFwd (.src (o, y))) = false := by
-              rw [codeFwd_ne_nil hone]
+              rw [codeFwd_code (Or.inl hbb)]
               simp only [same_code_eq, hb1, hbb, Bool.and_self]
               exact decide_eq_false heo
             refine Or.inl ⟨?_, ?_⟩
@@ -1532,8 +1640,7 @@ theorem gate_split {x₁ : Nm (Slot X)} {own₁ : List (Slot X)} {x₂ : Nm (BId
               Bool.false_and, ite_bool_false, decide_src_owner_ne hne]
           have hRs :
               CodeId.same (.src (.code y₂ o₁)) (codeFwd (.src (codeFreeParam, y))) = false := by
-            rw [show codeFwd (.src (codeFreeParam, y)) = .src (.code y codeFreeParam) by
-              simp only [codeFreeParam]; rfl]
+            rw [codeFwd_code (o := codeFreeParam) (y := y) (Or.inr rfl)]
             simp only [same_code_eq, hb1]
             unfold codeFreeParam at hne ⊢
             simp only [codeBound, Bool.and_false, ite_bool_false, decide_eq_false hne,
@@ -1616,15 +1723,17 @@ none until a lambda is entered. -/
 theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
     {Res : List (Nm (BId X))} {ok : Bool} {c₁ : Tm S (Slot X)} {c₂ : Tm S (BId X)}
     (h : Rel SC ν μ k Res ok c₁ c₂) (bound : List (Nm (Slot X)) := []) :
-    ok = true →
+    ok = true → (∀ b ∈ bound, ∃ s, b = .src s) →
     ∀ (q : Tm S (Slot X)), frag q → Align μ c₁ q →
     ∀ (D : Set (Nm (Slot X))) (σ₁ : GStore S (Slot X)) (σ₂ : GStore S (BId X)),
-      (∀ n ∈ freeNames c₁, n ∈ D) → Set.InjOn ν D → StoreRel SC ν D σ₁ σ₂ →
+      (∀ n ∈ freeNames c₁, n ∈ D) → Set.InjOn ν D → HoleInj (SC : Setting S (Slot X) (BId X)) ν D → SealOK (SC : Setting S (Slot X) (BId X)) D c₁ →
+      (∀ n ∈ codeVars q, n ∈ D ∨ ∃ s, n = .src s ∧ (SC : Setting S (Slot X) (BId X)).root₁ s) →
+      StoreRel SC ν D σ₁ σ₂ →
       OptRel (StoreRel SC ν D) (matchCodeIn σ₁ bound c₁ q)
-        (matchCodeIn σ₂ (bound.map codeFwd) c₂ (mapCode codeFwd q)) := by
+        (matchCodeIn σ₂ (bound.map codeFwd) c₂ (mapCode (holeRead (SC : Setting S (Slot X) (BId X)) ν) q)) := by
   induction h generalizing bound with
   | sym s =>
-      intro _ q _ _ _ σ₁ σ₂ _ _ hσ
+      intro _ _ q _ _ _ σ₁ σ₂ _ _ _ _ _ hσ
       cases q with
       | sym s' =>
           simp only [matchCodeIn, mapCode]
@@ -1637,7 +1746,7 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [matchCodeIn, mapCode]
           trivial
   | fn F =>
-      intro _ q _ _ _ σ₁ σ₂ _ _ hσ
+      intro _ _ q _ _ _ σ₁ σ₂ _ _ _ _ _ hσ
       cases q with
       | fn F' =>
           simp only [matchCodeIn, mapCode]
@@ -1650,7 +1759,7 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [matchCodeIn, mapCode]
           trivial
   | @var ν _ _ n hv =>
-      intro _ q hq _ D σ₁ σ₂ hD hinj hσ
+      intro _ hbd q hq _ D σ₁ σ₂ hD hinj hI _ hqs hσ
       simp only [SC, scVarHole] at hv
       have hbit : CodeId.hole n = CodeId.hole (ν n) := by
         rw [hole_eq_holeRecS, hv, ← hole_eq_holeRecI]
@@ -1658,19 +1767,18 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
       | false =>
           have hb2 : CodeId.hole (ν n) = false := by rw [← hbit, hb]
           obtain ⟨e1, e2⟩ :=
-            var_binder_none hb hb2 hq bound (bound.map codeFwd) σ₁ σ₂
+            var_binder_none (ν := ν) hb hb2 hq bound (bound.map codeFwd) σ₁ σ₂
           rw [e1, e2]
           trivial
       | true =>
           have hb2 : CodeId.hole (ν n) = true := by rw [← hbit, hb]
-          exact hole_refine hσ hinj (hD n (by simp [freeNames])) hb hb2 hq bound
+          exact hole_refine hσ hinj hI (hD n (by simp [freeNames])) hb hb2 hq hqs bound hbd
   | @pvar _ μ _ x hp =>
-      intro _ q hq ha _ σ₁ σ₂ _ _ hσ
+      intro _ _ q hq ha _ σ₁ σ₂ _ _ _ _ _ hσ
       simp only [SC] at hp
       cases q with
       | pvar m =>
           obtain ⟨om, ym, rfl, hbm⟩ := hq
-          have homnil : om ≠ [] := owner_code_ne_nil hbm
           rcases hp with ⟨hc1, hc2, ho⟩ | ⟨hn1, hn2⟩
           · obtain ⟨ox, yx, hx, hbx⟩ :
                 ∃ ox yx, x = .src (ox, yx) ∧ (codeBound ox = true ∨ ox = codeFreeParam) := by
@@ -1694,8 +1802,8 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
             rw [hμx] at ho ⊢
             have hox : ox = oμ := by simpa [ownerS, ownerI] using ho
             subst hox
-            simp only [matchCodeIn, mapCode]
-            rw [codeFwd_ne_nil homnil]
+            simp only [matchCodeIn, mapCode, holeRead_src_SC]
+            rw [codeFwd_code hbm]
             rcases hbx with hbx | rfl
             · rcases hbm with hbm | rfl
               · rw [same_src_eq, same_code_eq, hbx, hbm]
@@ -1729,8 +1837,7 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
                     simp [codeFreePvars, codeFreeS_param]
                   have hym : yμ = ym := by
                     have hfwd : codeFwd (.src (codeFreeParam, ym)) =
-                        .src (.code ym codeFreeParam) := by
-                      simp only [codeFreeParam]; rfl
+                        .src (.code ym codeFreeParam) := codeFwd_code (Or.inr rfl)
                     have h := hμx.symm.trans (hpin.trans hfwd)
                     simp only [Nm.src.injEq, BId.code.injEq] at h
                     exact h.1
@@ -1745,7 +1852,8 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
                       refine ha.2 _ ?_ _ ?_ ?_
                       · simp [freeParams]
                       · simp [codeFreePvars, codeFreeS_param]
-                      · simpa [codeFwd, codeFreeParam] using hμx
+                      · rw [codeFwd_code (Or.inr rfl)]
+                        exact hμx
                     simp only [Nm.src.injEq, Prod.mk.injEq] at hxeq
                     exact hey hxeq.2
                   · simp only [codeFreeParam, codeBound, decide_eq_false hey, decide_eq_false hyμ]
@@ -1768,7 +1876,7 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
                       exact Bool.false_ne_true (hb1.symm.trans hbm)
                     · exact hf1 he
             have hRs : CodeId.same (μ x) (codeFwd (.src (om, ym))) = false := by
-              rw [codeFwd_ne_nil homnil]
+              rw [codeFwd_code hbm]
               cases hx : μ x with
               | inst _ _ =>
                   exact same_instI_src
@@ -1791,20 +1899,24 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
                         · rw [he] at hb2
                           exact Bool.false_ne_true (hb2.symm.trans hbm)
                         · exact hf2 he
-            simp only [matchCodeIn, mapCode, hLs, hRs, ite_bool_false]
+            simp only [matchCodeIn, mapCode, holeRead_src_SC, hLs, hRs, ite_bool_false]
             trivial
       | sym _ | fn _ | var _ | lam _ _ _ | app _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
-  | quote hq =>
-      intro _ q hqf _ _ σ₁ σ₂ _ _ hσ
-      simp only [SC] at hq
+  | @quote _ _ _ c _ hq =>
+      intro _ _ q hqf _ D σ₁ σ₂ _ _ hI hS hqs hσ
       cases q with
       | quote cq =>
-          obtain ⟨sq, rfl⟩ := hqf
-          obtain ⟨sp, rfl, rfl⟩ := hq
-          simp only [matchCodeIn, mapCode, mapCode_codeOf, codeEq_codeOf_codeI]
-          cases hce : codeEq (codeI sp) (codeI sq) with
+          obtain ⟨_, _, _, _, hcf⟩ := hqf
+          obtain ⟨-, hcf₁, rfl⟩ := hq
+          have hinjq := holeRead_injOn hI hcf₁ hcf
+            (fun n hn => (hS n (by simpa [sealedFree] using hn)).elim Or.inr
+              fun ⟨s, e, _⟩ => Or.inl ⟨s, e⟩)
+            (fun n hn => (hqs n (by simpa [codeVars] using hn)).elim Or.inr
+              fun ⟨s, e, _⟩ => Or.inl ⟨s, e⟩)
+          simp only [matchCodeIn, mapCode, codeEq_holeRead hcf₁ hcf hinjq]
+          cases hce : codeEq c cq with
           | false =>
               simp only [ite_bool_false]
               trivial
@@ -1813,22 +1925,24 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [matchCodeIn, mapCode]
           trivial
   | @pquote _ μ _ pc₁ _ _ hbody _ hokb ih =>
-      intro _ q hq ha D σ₁ σ₂ hD hinj hσ
+      intro _ hbd q hq ha D σ₁ σ₂ hD hinj hI hS hqs hσ
       cases q with
       | quote cq =>
-          obtain ⟨s, rfl⟩ := hq
-          have hAl : Align μ pc₁ (codeOf s) :=
-            ⟨fun m hm => by simp [codeFreePvars_codeOf] at hm,
-             fun _ _ m hm => by simp [codeFreePvars_codeOf] at hm⟩
+          obtain ⟨Rq, s, hRq, hs, hcf⟩ := hq
+          obtain ⟨hfr, hfp⟩ := frag_of_codeForm hRq hs hcf
+          have hAl : Align μ pc₁ cq :=
+            ⟨fun m hm => by simp [hfp] at hm,
+             fun _ _ m hm => by simp [hfp] at hm⟩
           simp only [matchCodeIn, mapCode]
-          simpa [mapCode_codeOf] using
-            ih bound hokb (codeOf s) (frag_codeOf s) hAl D σ₁ σ₂
-              (fun n hn => hD n (by simpa [freeNames] using hn)) hinj hσ
+          exact ih bound hokb hbd cq hfr hAl D σ₁ σ₂
+            (fun n hn => hD n (by simpa [freeNames] using hn)) hinj hI
+            (fun n hn => hS n (by simpa [sealedFree] using hn))
+            (fun n hn => hqs n (by simpa [codeVars] using hn)) hσ
       | sym _ | fn _ | var _ | pvar _ | lam _ _ _ | app _ _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
   | app _ _ ihf iha =>
-      intro hok q hq ha D σ₁ σ₂ hD hinj hσ
+      intro hok hbd q hq ha D σ₁ σ₂ hD hinj hI hS hqs hσ
       have ho := Bool.and_eq_true_iff.mp hok
       cases q with
       | app qf qa =>
@@ -1845,15 +1959,19 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [mapCode]
           rw [matchCodeIn_app_bind (bound := bound) (σ := σ₁),
             matchCodeIn_app_bind (bound := bound.map codeFwd) (σ := σ₂)]
-          exact opt_seq (ihf bound ho.1 qf hqf hAf D σ₁ σ₂
-              (fun n hn => hD n (List.mem_append_left _ hn)) hinj hσ)
-            (fun σ₁' σ₂' hσ' => iha bound ho.2 qa hqa hAa D σ₁' σ₂'
-              (fun n hn => hD n (List.mem_append_right _ hn)) hinj hσ')
+          exact opt_seq (ihf bound ho.1 hbd qf hqf hAf D σ₁ σ₂
+              (fun n hn => hD n (List.mem_append_left _ hn)) hinj hI
+              (fun n hn => hS n (by simp [sealedFree, hn]))
+              (fun n hn => hqs n (by simp [codeVars, hn])) hσ)
+            (fun σ₁' σ₂' hσ' => iha bound ho.2 hbd qa hqa hAa D σ₁' σ₂'
+              (fun n hn => hD n (List.mem_append_right _ hn)) hinj hI
+              (fun n hn => hS n (by simp [sealedFree, hn]))
+              (fun n hn => hqs n (by simp [codeVars, hn])) hσ')
       | sym _ | fn _ | var _ | pvar _ | lam _ _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
   | letP _ hp hw hb ihp ihw ihb =>
-      intro hok q hq ha D σ₁ σ₂ hD hinj hσ
+      intro hok hbd q hq ha D σ₁ σ₂ hD hinj hI hS hqs hσ
       have h3 := Bool.and_eq_true_iff.mp hok
       have h12 := Bool.and_eq_true_iff.mp h3.1
       cases q with
@@ -1872,24 +1990,27 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [mapCode]
           rw [matchCodeIn_letP_bind (bound := bound) (σ := σ₁),
             matchCodeIn_letP_bind (bound := bound.map codeFwd) (σ := σ₂)]
-          exact opt_seq (ihp bound h12.1 qp hqp
+          exact opt_seq (ihp bound h12.1 hbd qp hqp
               ⟨fun m hm => hpins m (memL hm),
                fun x hx m hm hμ => hexact x (memL hx) m (memL hm) hμ⟩
-              D σ₁ σ₂ (fun n hn => hD n (memL hn)) hinj hσ)
+              D σ₁ σ₂ (fun n hn => hD n (memL hn)) hinj hI (fun n hn => hS n (memL hn))
+              (fun n hn => hqs n (memL hn)) hσ)
             (fun σa σb hσab =>
-              opt_seq (ihw bound h12.2 qw hqw
+              opt_seq (ihw bound h12.2 hbd qw hqw
                   ⟨fun m hm => hpins m (memM hm),
                    fun x hx m hm hμ => hexact x (memM hx) m (memM hm) hμ⟩
-                  D σa σb (fun n hn => hD n (memM hn)) hinj hσab)
-                (fun σc σd hσcd => ihb bound h3.2 qb hqb
+                  D σa σb (fun n hn => hD n (memM hn)) hinj hI (fun n hn => hS n (memM hn))
+                  (fun n hn => hqs n (memM hn)) hσab)
+                (fun σc σd hσcd => ihb bound h3.2 hbd qb hqb
                   ⟨fun m hm => hpins m (memR hm),
                    fun x hx m hm hμ => hexact x (memR hx) m (memR hm) hμ⟩
-                  D σc σd (fun n hn => hD n (memR hn)) hinj hσcd))
+                  D σc σd (fun n hn => hD n (memR hn)) hinj hI (fun n hn => hS n (memR hn))
+                  (fun n hn => hqs n (memR hn)) hσcd))
       | sym _ | fn _ | var _ | pvar _ | lam _ _ _ | app _ _ | quote _ | pquote _ | ctx _ _ | alt _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
   | alt _ _ _ ih1 ih2 =>
-      intro hok q hq ha D σ₁ σ₂ hD hinj hσ
+      intro hok hbd q hq ha D σ₁ σ₂ hD hinj hI hS hqs hσ
       have ho := Bool.and_eq_true_iff.mp hok
       cases q with
       | alt q1 q2 =>
@@ -1898,27 +2019,32 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
           simp only [mapCode]
           rw [matchCodeIn_alt_bind (bound := bound) (σ := σ₁),
             matchCodeIn_alt_bind (bound := bound.map codeFwd) (σ := σ₂)]
-          exact opt_seq (ih1 bound ho.1 q1 hq1
+          exact opt_seq (ih1 bound ho.1 hbd q1 hq1
               ⟨fun m hm => hpins m (List.mem_append_left _ hm),
                fun x hx m hm hμ => hexact x (List.mem_append_left _ hx) m
                  (List.mem_append_left _ hm) hμ⟩
-              D σ₁ σ₂ (fun n hn => hD n (List.mem_append_left _ hn)) hinj hσ)
-            (fun σa σb hσab => ih2 bound ho.2 q2 hq2
+              D σ₁ σ₂ (fun n hn => hD n (List.mem_append_left _ hn)) hinj hI
+              (fun n hn => hS n (by simp [sealedFree, hn]))
+              (fun n hn => hqs n (by simp [codeVars, hn])) hσ)
+            (fun σa σb hσab => ih2 bound ho.2 hbd q2 hq2
               ⟨fun m hm => hpins m (List.mem_append_right _ hm),
                fun x hx m hm hμ => hexact x (List.mem_append_right _ hx) m
                  (List.mem_append_right _ hm) hμ⟩
-              D σa σb (fun n hn => hD n (List.mem_append_right _ hn)) hinj hσab)
+              D σa σb (fun n hn => hD n (List.mem_append_right _ hn)) hinj hI
+              (fun n hn => hS n (by simp [sealedFree, hn]))
+              (fun n hn => hqs n (by simp [codeVars, hn])) hσab)
       | sym _ | fn _ | var _ | pvar _ | lam _ _ _ | app _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
-  | @lam ν _ _ x₁ own₁ b₁ x₂ own₂ _ νb μb _ _ hνb hμb hμx _ _ hb _ _ _ _ _ hpar hbare hseen ih =>
-      intro _ q hq ha D σ₁ σ₂ hD hinj hσ
+  | @lam ν _ _ x₁ own₁ b₁ x₂ own₂ _ νb μb _ _ hνb hμb hμx _ _ hb _ _ _ _ _ hpar hbare hseen _ _
+      ih =>
+      intro _ hbd q hq ha D σ₁ σ₂ hD hinj hI hS hqs hσ
       simp only [SC] at hbare
       cases q with
       | lam sb _ qb =>
           obtain ⟨rfl, hnamed, hqb⟩ := hq
           obtain ⟨o, y, rfl, hbo⟩ := hnamed
-          simp only [matchCodeIn, mapCode]
+          simp only [matchCodeIn, mapCode, holeRead_src_SC]
           rcases gate_split hbare hbo with ⟨hL, hR⟩ | ⟨hL, hR, hown1, _, hent, hxe, hcov, hsep⟩
           · rw [hL, hR]
             simp only [ite_bool_false]
@@ -1934,16 +2060,24 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
               exact ⟨rfl, hx2⟩
             have hAl := align_lam hμb hμx hpar hxe' hcov hsep (by
               simpa [hown1] using ha)
-            have hih := ih (bound ++ [.src (o, y)]) hob qb hqb hAl D σ₁ σ₂
+            have hbd' : ∀ b ∈ bound ++ [.src (o, y)], ∃ s, b = Nm.src s := by
+              intro b hb
+              rcases List.mem_append.1 hb with hb | hb
+              · exact hbd b hb
+              · simp only [List.mem_singleton] at hb
+                exact ⟨_, hb⟩
+            have hih := ih (bound ++ [.src (o, y)]) hob hbd' qb hqb hAl D σ₁ σ₂
               (by simpa [hown1, freeNames_lam_nil] using hD)
-              (by simpa [hν] using hinj) (by simpa [hν] using hσ)
+              (by simpa [hν] using hinj) (by simpa [hν] using hI)
+              (fun n hn => hS n (by simp [sealedFree, hn, hown1, ownKey_nil]))
+              (fun n hn => hqs n (by simpa [codeVars] using hn)) (by simpa [hν] using hσ)
             rw [List.map_append, List.map_singleton] at hih
             simpa [hν, hown1, freeNames_lam_nil] using hih
       | sym _ | fn _ | var _ | pvar _ | app _ _ | quote _ | pquote _ | ctx _ _ | letP _ _ _ | alt _ _ =>
           simp only [matchCodeIn, mapCode]
           trivial
   | ctx _ _ _ =>
-      intro _ _ _ _ _ _ _ _ _ _
+      intro _ _ _ _ _ _ _ _ _ _ _ _ _ _
       simp only [matchCodeIn]
       trivial
   | letAct _ _ _ _ _ _ _ _ _ _ _ _ _ =>
@@ -1957,13 +2091,14 @@ theorem match_frag [DecidableEq S] {ν μ : Nm (Slot X) → Nm (BId X)} {k : Kd}
 value on both sides together. A binder of code is entered only when both sides
 name that binder, and then the body matches. -/
 theorem SC_patAgree [DecidableEq S] : (SC : Setting S (Slot X) (BId X)).PatAgree := by
-  intro ν μ _ c₁ c₂ q₁ q₂ D σ₁ σ₂ hR hok _ hQ hD hinj hσ
-  obtain ⟨s, rfl, rfl⟩ := by simpa [SC] using hQ
-  have hAl : Align μ c₁ (codeOf s) :=
-    ⟨fun m hm => by simp [codeFreePvars_codeOf] at hm,
-     fun _ _ m hm => by simp [codeFreePvars_codeOf] at hm⟩
-  simpa [matchCode, mapCode_codeOf] using
-    match_frag (bound := []) hR hok (codeOf s) (frag_codeOf s) hAl D σ₁ σ₂ hD hinj hσ
+  intro ν μ _ c₁ c₂ q₁ q₂ D σ₁ σ₂ hrel hok _ hQ hD hinj hI hS hSq hσ
+  obtain ⟨⟨R, s, hR, hs, -⟩, hcf, rfl⟩ := hQ
+  obtain ⟨hfr, hfp⟩ := frag_of_codeForm hR hs hcf
+  have hAl : Align μ c₁ q₁ :=
+    ⟨fun m hm => by simp [hfp] at hm, fun _ _ m hm => by simp [hfp] at hm⟩
+  simpa [matchCode] using
+    match_frag (bound := []) hrel hok (fun _ h => by cases h) q₁ hfr hAl D σ₁ σ₂ hD hinj hI hS
+      (fun n hn => hSq n (by simpa [sealedFree] using hn)) hσ
 
 /-! ## The root of a form -/
 
@@ -1993,29 +2128,34 @@ theorem root_config {A : Ann S X} {rk : X → SlotId X} (hwf : A.WF []) (hpars :
     (hrk : ∀ y, (rk y).spell = y ∧ (rk y).frame = [] ∧ KeyOK [] A (rk y)) :
     ∃ (ν μ : Nm (Slot X) → Nm (BId X)) (Res : List (Nm (BId X))) (D : Set (Nm (Slot X)))
       (ok : Bool),
-      Rel SC ν μ .code Res ok (A.slotOf (fun _ => []) []) (A.idOf rk (fun _ => []) [] []) ∧
-      freeParams (A.slotOf (fun _ => []) []) = [] ∧
-      (∀ x ∈ freeNames (A.slotOf (fun _ => []) []), x ∈ D) ∧
+      Rel SC ν μ .code Res ok (A.slotOf [] (fun _ => []) []) (A.idOf [] rk (fun _ => []) [] []) ∧
+      freeParams (A.slotOf [] (fun _ => []) []) = [] ∧
+      (∀ x ∈ freeNames (A.slotOf [] (fun _ => []) []), x ∈ D) ∧
+      SealOK (SC : Setting S (Slot X) (BId X)) D (A.slotOf [] (fun _ => []) []) ∧
       CI (SC : Setting S (Slot X) (BId X)) ν D (Res ++ []) Store.empty Store.empty ∧ Fresh [] [] ν D (Res ++ []) := by
-  obtain ⟨Res, hrel, hres⟩ := rel_ann A (k := .code) (env := fun _ => []) (posS := []) (envI := rk)
+  obtain ⟨Res, hrel, hres⟩ := rel_ann (Or.inl rfl) A (k := .code) (env := fun _ => []) (posS := [])
+    (envI := rk)
     (pv := fun _ => []) (fr := []) (posI := []) (ν := fun n => .src (.slot (rk (spellS n))))
     (μ := fun n => .src (.par (spellS n) [])) hwf (by decide) (fun h => by cases h)
     (fun _ _ => rfl) (fun y _ => ⟨(hrk y).1, by rw [(hrk y).2.1]; exact List.prefix_refl _⟩)
     (List.prefix_refl _)
     (by intro z hz; rw [hpars] at hz; cases hz) scopeOwners_nil PosSafe.root
-  have hfree : ∀ n ∈ freeNames (A.slotOf (fun _ => []) []), ∃ y, n = .src ([], y) := by
+  have hfree : ∀ n ∈ freeNames (A.slotOf [] (fun _ => []) []), ∃ y, n = .src ([], y) := by
     intro n hn
-    obtain ⟨y, _, rfl⟩ := Ann.freeNames_slotOf A _ _ n (Ann.Open.of_WF hwf) hn
+    obtain ⟨y, _, rfl⟩ := Ann.freeNames_slotOf [] A _ _ n (Ann.Open.of_WF hwf) hn
     exact ⟨y, rfl⟩
-  refine ⟨_, _, Res, {n | n ∈ freeNames (A.slotOf (fun _ => []) [])}, annOK A, hrel, ?_,
-    fun x hx => hx, ?_, ?_⟩
+  refine ⟨_, _, Res, {n | n ∈ freeNames (A.slotOf [] (fun _ => []) [])}, annOK A, hrel, ?_,
+    fun x hx => hx, ?_, ?_, ?_⟩
   · apply List.eq_nil_iff_forall_not_mem.2
     intro x hx
-    obtain ⟨z, hz, _⟩ := Ann.freeParams_slotOf A _ _ x (Ann.Open.of_WF hwf) hx
+    obtain ⟨z, hz, _⟩ := Ann.freeParams_slotOf [] A _ _ x (Ann.Open.of_WF hwf) hx
     rw [hpars] at hz
     cases hz
+  · intro n hn
+    obtain ⟨y, rfl⟩ := Ann.sealedFree_slotOf [] A _ _ n hn
+    exact Or.inr ⟨_, rfl, rfl⟩
   · rw [List.append_nil]
-    refine ⟨?_, hres.nodup, ?_, StoreRel.empty _ _, ?_, ?_, ?_⟩
+    refine ⟨?_, hres.nodup, ?_, StoreRel.empty _ _, ?_, ?_, ?_, ?_, ?_⟩
     · intro n hn n' hn' he
       obtain ⟨y, rfl⟩ := hfree n hn
       obtain ⟨y', rfl⟩ := hfree n' hn'
@@ -2035,6 +2175,12 @@ theorem root_config {A : Ann S X} {rk : X → SlotId X} (hwf : A.WF []) (hpars :
     · intro m hm
       obtain ⟨k, rfl, hk, -⟩ := hres.shape m hm
       exact ⟨k, rfl, hk⟩
+    · intro n hn hc
+      obtain ⟨y, rfl⟩ := hfree n hn
+      exact False.elim hc
+    · intro n hn _ _ hc
+      obtain ⟨y, rfl⟩ := hfree n hn
+      exact False.elim hc
   · rw [List.append_nil]
     refine ⟨fun n hn => ?_, fun _ _ => oldAt_src _ _, fun m hm => ?_⟩
     · obtain ⟨y, rfl⟩ := hfree n hn
@@ -2043,47 +2189,74 @@ theorem root_config {A : Ann S X} {rk : X → SlotId X} (hwf : A.WF []) (hpars :
       exact oldAt_src _ _
 
 /-- **A clause**: rooted at `[5]`, its wrapper activation owns the root's
-names on both sides; the two clause terms are closed and related under every
-name map. -/
+names and the holes of its sealed code on both sides; the two clause terms are
+closed, their sealed code included, and related under every name map. -/
 theorem clause_rel {A : Ann S X} {rk : X → SlotId X} {own : List X} (u : X) (unit : S)
     (hwf : A.WF [5]) (hpars : A.freePars = []) (hown : ∀ y ∈ A.names, y ∈ own)
-    (hrk : ∀ y, (rk y).spell = y ∧ (rk y).frame = [5] ∧ KeyOK [5] A (rk y)) :
-    freeNames (.app (.lam (.src ([5] ++ [9], u)) (own.map fun y => ([5], y))
-      (A.slotOf (fun _ => [5]) [5])) (.sym unit) : Tm S (Slot X)) = [] ∧
-    freeParams (.app (.lam (.src ([5] ++ [9], u)) (own.map fun y => ([5], y))
-      (A.slotOf (fun _ => [5]) [5])) (.sym unit) : Tm S (Slot X)) = [] ∧
+    (hrk : ∀ y, (rk y).spell = y ∧ (rk y).frame = [5] ∧ KeyOK [5] A (rk y))
+    (hnew : ∀ y, (rk y).intro ≠ .new) :
+    freeNames (.app (.lam (.src ([5] ++ [9], u))
+      ((own ++ holeSpellings [5] (A.slotOf [5] (fun _ => [5]) [5])).map fun y => ([5], y))
+      (A.slotOf [5] (fun _ => [5]) [5])) (.sym unit) : Tm S (Slot X)) = [] ∧
+    freeParams (.app (.lam (.src ([5] ++ [9], u))
+      ((own ++ holeSpellings [5] (A.slotOf [5] (fun _ => [5]) [5])).map fun y => ([5], y))
+      (A.slotOf [5] (fun _ => [5]) [5])) (.sym unit) : Tm S (Slot X)) = [] ∧
+    sealedFree (.app (.lam (.src ([5] ++ [9], u))
+      ((own ++ holeSpellings [5] (A.slotOf [5] (fun _ => [5]) [5])).map fun y => ([5], y))
+      (A.slotOf [5] (fun _ => [5]) [5])) (.sym unit) : Tm S (Slot X)) = [] ∧
     ∀ ν μ, Rel SC ν μ .code [] true
-      (.app (.lam (.src ([5] ++ [9], u)) (own.map fun y => ([5], y))
-        (A.slotOf (fun _ => [5]) [5])) (.sym unit))
-      (.app (.lam (.src (.par u ([5] ++ [9]))) (frameSlots [5] (A.idOf rk (fun _ => [5]) [5] [5]))
-        (A.idOf rk (fun _ => [5]) [5] [5])) (.sym unit)) := by
-  have hfp : freeParams (A.slotOf (fun _ => [5]) [5]) = [] := by
+      (.app (.lam (.src ([5] ++ [9], u))
+        ((own ++ holeSpellings [5] (A.slotOf [5] (fun _ => [5]) [5])).map fun y => ([5], y))
+        (A.slotOf [5] (fun _ => [5]) [5])) (.sym unit))
+      (.app (.lam (.src (.par u ([5] ++ [9]))) (frameSlots [5] (A.idOf [5] rk (fun _ => [5]) [5] [5]))
+        (A.idOf [5] rk (fun _ => [5]) [5] [5])) (.sym unit)) := by
+  set H := holeSpellings [5] (A.slotOf [5] (fun _ => [5]) [5]) with hH
+  have hfp : freeParams (A.slotOf [5] (fun _ => [5]) [5]) = [] := by
     apply List.eq_nil_iff_forall_not_mem.2
     intro x hx
-    obtain ⟨z, hz, _⟩ := Ann.freeParams_slotOf A _ _ x (Ann.Open.of_WF hwf) hx
+    obtain ⟨z, hz, _⟩ := Ann.freeParams_slotOf [5] A _ _ x (Ann.Open.of_WF hwf) hx
     rw [hpars] at hz
     cases hz
-  refine ⟨?_, ?_, ?_⟩
+  have hown' : ∀ y ∈ A.names, y ∈ own ++ H := fun y hy => List.mem_append_left _ (hown y hy)
+  have hhole : ∀ n ∈ sealedFree (A.slotOf [5] (fun _ => [5]) [5]),
+      ∃ y ∈ own ++ H, n = .src ([5], y) := by
+    intro n hn
+    obtain ⟨y, rfl⟩ := Ann.sealedFree_slotOf [5] A _ _ n hn
+    exact ⟨y, List.mem_append_right _ (mem_holeSpellings hn), rfl⟩
+  refine ⟨?_, ?_, ?_, ?_⟩
   · simp only [freeNames, List.append_nil]
     apply List.eq_nil_iff_forall_not_mem.2
     intro n hn
     obtain ⟨hn, ho⟩ := List.mem_filter.1 hn
-    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf A _ _ n (Ann.Open.of_WF hwf) hn
+    obtain ⟨y, hy, rfl⟩ := Ann.freeNames_slotOf [5] A _ _ n (Ann.Open.of_WF hwf) hn
     rw [ownKey_map_src] at ho
-    simp [hown y hy] at ho
+    simp [hown' y hy] at ho
   · simp [freeParams, hfp]
+  · simp only [sealedFree, List.append_nil]
+    apply List.eq_nil_iff_forall_not_mem.2
+    intro n hn
+    obtain ⟨hn, ho⟩ := List.mem_filter.1 hn
+    obtain ⟨y, hy, rfl⟩ := hhole n hn
+    rw [ownKey_map_src] at ho
+    simp [hy] at ho
   · intro ν μ
-    obtain ⟨Rb, hrel, hres⟩ := rel_ann A (k := .code) (env := fun _ => [5]) (posS := [5])
-      (envI := rk) (pv := fun _ => [5]) (fr := [5]) (posI := [5]) (ν := bindν ν [5] own rk)
+    obtain ⟨Rb, hrel, hres⟩ := rel_ann (Or.inr rfl) A (k := .code) (env := fun _ => [5])
+      (posS := [5]) (envI := rk) (pv := fun _ => [5]) (fr := [5]) (posI := [5])
+      (ν := bindν ν [5] (own ++ H) rk)
       (μ := Function.update μ (.src ([5] ++ [9], u)) (.src (.par u ([5] ++ [9])))) hwf (by decide)
-      (fun h => by cases h) (fun y hy => bindν_on (hown y hy))
+      (fun h => by cases h) (fun y hy => bindν_on (hown' y hy))
       (fun y _ => ⟨(hrk y).1, by rw [(hrk y).2.1]; exact List.prefix_refl _⟩) (List.prefix_refl _)
       (by intro z hz; rw [hpars] at hz; cases hz) scopeOwners_five PosSafe.clause
-    obtain ⟨hownk, hresb, hinj, hdisj⟩ := frame_conds (key := rk) hrel hres (fun _ _ _ => rfl)
-      (fun y hy => bindν_on hy) (fun y hy hyo => absurd (hown y hy) hyo) (fun y _ => hrk y)
+    obtain ⟨hownk, hresb, -, -⟩ := frame_conds (key := rk) hrel hres (fun _ _ _ => rfl)
+      (fun y hy => bindν_on hy) (fun y hy hyo => absurd (hown' y hy) hyo) (fun y _ => hrk y)
       (Ann.Open.of_WF hwf)
+    have hoK : ∀ n, ownKey ((own ++ H).map fun y => ([5], y)) n = true →
+        ∃ y, n = .src ([5], y) ∧ bindν ν [5] (own ++ H) rk n = .src (.slot (rk y)) := by
+      intro n ho
+      obtain ⟨y, hy, rfl⟩ := ownKey_map_true ho
+      exact ⟨y, rfl, bindν_on hy⟩
     refine .app (.lam (fun n hn => bindν_off hn) (fun x hx => Function.update_of_ne hx _ _)
-      (Function.update_self _ _ _) ?_ ?_ hrel hownk hresb hinj hdisj hres.nodup ?_
+      (Function.update_self _ _ _) ?_ ?_ hrel hownk hresb ?_ ?_ hres.nodup ?_
       (by
         refine Or.inl ⟨?_, rfl, Or.inr ⟨?_, rfl⟩, fun hcf => ?_, rfl⟩
         · simp only [holeRecS, codeBound]
@@ -2100,7 +2273,7 @@ theorem clause_rel {A : Ann S X} {rk : X → SlotId X} {own : List X} (u : X) (u
           codeFreeParam] at hent
         rcases hent with hent | hent
         · exact absurd hent.1 Bool.false_ne_true.symm
-        · exact absurd hent.1 Bool.false_ne_true)) (.sym unit)
+        · exact absurd hent.1 Bool.false_ne_true) ?_ ?_) (.sym unit)
     · intro s hs h
       obtain ⟨y, _, rfl⟩ := List.mem_map.1 hs
       exact (by simp : ([5] : Owner) ≠ []) h
@@ -2111,9 +2284,48 @@ theorem clause_rel {A : Ann S X} {rk : X → SlotId X} {own : List X} (u : X) (u
       subst hk''
       rw [hkF] at hk0
       simp at hk0
+    · intro n _ n' _ ho ho' he
+      obtain ⟨y, rfl, hy⟩ := hoK n ho
+      obtain ⟨y', rfl, hy'⟩ := hoK n' ho'
+      rw [hy, hy'] at he
+      have hkk : rk y = rk y' := by
+        injection he with he
+        injection he
+      have hyy : y = y' := by rw [← (hrk y).1, ← (hrk y').1, hkk]
+      rw [hyy]
+    · intro n _ ho hmem
+      obtain ⟨y, rfl, hy⟩ := hoK n ho
+      rw [hy] at hmem
+      obtain ⟨k, hk, -, hkh, q, hq, hpat⟩ := hres.shape _ hmem
+      have hkk : rk y = k := by
+        injection hk with hk
+        injection hk
+      subst hkk
+      rcases (hrk y).2.2 with hh | ⟨hn', -⟩ | ⟨hp, P, hP, hnot⟩
+      · exact hkh hh
+      · exact hnew y hn'
+      · rw [hP] at hq
+        have hPq : P = q := List.append_cancel_left hq
+        subst hPq
+        exact hnot (hpat hp)
     · intro x hx
       rw [hfp] at hx
       cases hx
+    · intro s hs
+      obtain ⟨y, hy⟩ := Ann.sealedFree_slotOf [5] A _ _ _ hs
+      injection hy with hy
+      subst hy
+      have h1 : ownKey ((own ++ H).map fun y => ([5], y)) (.src ([5], y) : Nm (Slot X)) = true := by
+        rw [ownKey_map_src]
+        exact decide_eq_true ⟨rfl, List.mem_append_right _ (mem_holeSpellings hs)⟩
+      rw [h1]
+      change ownKey _ (codeFwd (.src ([5], y))) = true
+      rw [codeFwd_scope (formRoot.scopeOwner (Or.inr rfl))]
+      simpa only [ownKey, List.contains_eq_mem, decide_eq_true_eq] using
+        Ann.hole_mem_frameSlots (Or.inr rfl) hrel hs
+    · intro n _ ho
+      obtain ⟨y, -, hy⟩ := hoK n ho
+      exact ⟨_, hy⟩
 
 /-! ## Rule M's and lexical fresh's roots -/
 
@@ -2130,6 +2342,16 @@ omit [DecidableEq X] in
 theorem lfRootEnv_ok (R : Owner) (A : Ann S X) (y : X) :
     (lfRootEnv R y).spell = y ∧ (lfRootEnv R y).frame = R ∧ KeyOK R A (lfRootEnv R y) :=
   ⟨rfl, rfl, Or.inl rfl⟩
+
+/-- Rule M's root identities are made by the root or by a pattern, never by a
+`new` block. -/
+theorem mRootEnv_intro (R : Owner) (t : Src S X) (y : X) : (mRootEnv R t y).intro ≠ .new := by
+  unfold mRootEnv
+  cases findCover (Src.direct t) y false t <;> simp
+
+omit [DecidableEq X] in
+theorem lfRootEnv_intro (R : Owner) (y : X) : (lfRootEnv R y).intro ≠ .new := by
+  simp [lfRootEnv]
 
 /-! ## Programs -/
 
@@ -2150,17 +2372,20 @@ theorem progRel_M (u : X) (unit : S) (cl : S → Option (Src S X))
   | some body =>
       obtain ⟨h₂, h₃⟩ := hcl F body h
       have e₁ : clauseOf cfgM [5] u unit body =
-          .app (.lam (.src ([5] ++ [9], u)) ((Src.names body).dedup.map fun y => ([5], y))
-            ((annM (Src.direct body) [] (mRootEnv [5] body) [5] [5] body).slotOf (fun _ => [5]) [5]))
+          .app (.lam (.src ([5] ++ [9], u))
+            (((Src.names body).dedup ++ holeSpellings [5]
+              ((annM (Src.direct body) [] (mRootEnv [5] body) [5] [5] body).slotOf [5]
+                (fun _ => [5]) [5])).map fun y => ([5], y))
+            ((annM (Src.direct body) [] (mRootEnv [5] body) [5] [5] body).slotOf [5] (fun _ => [5]) [5]))
             (.sym unit) := by
         simp only [clauseOf, rootSpellings, elabCfgX, elabCfg, cfgM, elabForm, List.append_nil]
-        rw [elabMS_eq_slotOf body _ [] (mRootEnv [5] body) [5] [5]]
+        rw [elabMS_eq_slotOf [5] body _ [] (mRootEnv [5] body) [5] [5]]
       have e₂ : clauseId [5] u unit (elabMFormAt [5] body) =
           .app (.lam (.src (.par u ([5] ++ [9])))
             (frameSlots [5] ((annM (Src.direct body) [] (mRootEnv [5] body) [5] [5] body).idOf
-              (mRootEnv [5] body) (fun _ => [5]) [5] [5]))
+              [5] (mRootEnv [5] body) (fun _ => [5]) [5] [5]))
             ((annM (Src.direct body) [] (mRootEnv [5] body) [5] [5] body).idOf
-              (mRootEnv [5] body) (fun _ => [5]) [5] [5])) (.sym unit) := by
+              [5] (mRootEnv [5] body) (fun _ => [5]) [5] [5])) (.sym unit) := by
         simp only [clauseId, elabMFormAt]
         rw [elabMId_eq_idOf]
         rfl
@@ -2168,7 +2393,7 @@ theorem progRel_M (u : X) (unit : S) (cl : S → Option (Src S X))
       rw [e₁, e₂]
       exact clause_rel u unit (annM_WF body _ _ _ _ _ h₂) (by rw [freePars_annM]; exact h₃)
         (fun y hy => List.mem_dedup.2 (by rwa [names_annM] at hy))
-        (fun y => mRootEnv_ok [5] body _ _ _ y)
+        (fun y => mRootEnv_ok [5] body _ _ _ y) (mRootEnv_intro [5] body)
 
 /-- **Lexical fresh's programs are related.** -/
 theorem progRel_LF (u : X) (unit : S) (cl : S → Option (Src S X))
@@ -2181,14 +2406,16 @@ theorem progRel_LF (u : X) (unit : S) (cl : S → Option (Src S X))
   | some body =>
       obtain ⟨h₂, h₃⟩ := hcl F body h
       have e₁ : clauseOf cfgLF [5] u unit body =
-          .app (.lam (.src ([5] ++ [9], u)) ((Src.names body).dedup.map fun y => ([5], y))
-            ((annLF [] [5] [5] body).slotOf (fun _ => [5]) [5])) (.sym unit) := by
+          .app (.lam (.src ([5] ++ [9], u))
+            (((Src.names body).dedup ++ holeSpellings [5]
+              ((annLF [] [5] [5] body).slotOf [5] (fun _ => [5]) [5])).map fun y => ([5], y))
+            ((annLF [] [5] [5] body).slotOf [5] (fun _ => [5]) [5])) (.sym unit) := by
         simp only [clauseOf, rootSpellings, elabCfgX, elabCfg, cfgLF, elabForm, List.append_nil]
-        rw [elabLF_eq_slotOf body [] [5] [5]]
+        rw [elabLF_eq_slotOf [5] body [] [5] [5]]
       have e₂ : clauseId [5] u unit (elabLFFormAt [5] body) =
           .app (.lam (.src (.par u ([5] ++ [9])))
-            (frameSlots [5] ((annLF [] [5] [5] body).idOf (lfRootEnv [5]) (fun _ => [5]) [5] [5]))
-            ((annLF [] [5] [5] body).idOf (lfRootEnv [5]) (fun _ => [5]) [5] [5])) (.sym unit) := by
+            (frameSlots [5] ((annLF [] [5] [5] body).idOf [5] (lfRootEnv [5]) (fun _ => [5]) [5] [5]))
+            ((annLF [] [5] [5] body).idOf [5] (lfRootEnv [5]) (fun _ => [5]) [5] [5])) (.sym unit) := by
         simp only [clauseId, elabLFFormAt]
         rw [elabLFId_eq_idOf]
         rfl
@@ -2196,26 +2423,28 @@ theorem progRel_LF (u : X) (unit : S) (cl : S → Option (Src S X))
       rw [e₁, e₂]
       exact clause_rel u unit (annLF_WF body _ _ _ h₂) (by rw [freePars_annLF]; exact h₃)
         (fun y hy => List.mem_dedup.2 (by rwa [names_annLF] at hy))
-        (fun y => lfRootEnv_ok [5] _ y)
+        (fun y => lfRootEnv_ok [5] _ y) (lfRootEnv_intro [5])
 
 /-! ## The renaming theorem -/
 
 /-- **One result of each model, related by a renaming**: an injective map on
-the names in play (the answer's free names and every name either store binds)
-under which the answers are related values and the final stores are related
-(each binding of one store is a binding of the other at the renamed name,
-with related ground values, and nothing else is bound). -/
+the names in play (the answer's free names, every name either store binds, and
+the copies of holes in stored sealed code, which it reads one to one) under
+which the answers are related values and the final stores are related (each
+binding of one store is a binding of the other at the renamed name, with
+related ground values, and nothing else is bound). -/
 def Renamed (r₁ : Tm S (Slot X) × GStore S (Slot X)) (r₂ : Tm S (BId X) × GStore S (BId X)) :
     Prop :=
   ∃ (ν μ : Nm (Slot X) → Nm (BId X)) (D : Set (Nm (Slot X))), (∀ n ∈ freeNames r₁.1, n ∈ D) ∧
-    Set.InjOn ν D ∧ Rel SC ν μ .val [] true r₁.1 r₂.1 ∧ StoreRel SC ν D r₁.2 r₂.2
+    Set.InjOn ν D ∧ HoleInj (SC : Setting S (Slot X) (BId X)) ν D ∧ Rel SC ν μ .val [] true r₁.1 r₂.1 ∧
+      StoreRel SC ν D r₁.2 r₂.2
 
 omit [DecidableEq X] in
 theorem Out.renamed [DecidableEq X] {π π' : Path} {ν μ : Nm (Slot X) → Nm (BId X)}
     {D : Set (Nm (Slot X))} {Res Rc : List (Nm (BId X))} {r₁ : Tm S (Slot X) × GStore S (Slot X)}
     {r₂ : Tm S (BId X) × GStore S (BId X)} (h : Out SC π π' ν μ D Res Rc r₁ r₂) : Renamed r₁ r₂ := by
-  obtain ⟨ν', D', hfv, -, hrel, -, hci⟩ := h
-  exact ⟨ν', μ, D', hfv, hci.inj, hrel, hci.store⟩
+  obtain ⟨ν', D', hfv, -, -, hrel, -, hci⟩ := h
+  exact ⟨ν', μ, D', hfv, hci.inj, hci.holeInj, hrel, hci.store⟩
 
 variable [DecidableEq S]
 
@@ -2225,15 +2454,16 @@ theorem renaming_of {P₁ : S → Option (Tm S (Slot X))} {P₂ : S → Option (
     (hroot : ∃ (ν μ : Nm (Slot X) → Nm (BId X)) (Res : List (Nm (BId X))) (D : Set (Nm (Slot X)))
       (ok : Bool),
       Rel SC ν μ .code Res ok t₁ t₂ ∧ freeParams t₁ = [] ∧ (∀ x ∈ freeNames t₁, x ∈ D) ∧
+      SealOK (SC : Setting S (Slot X) (BId X)) D t₁ ∧
       CI (SC : Setting S (Slot X) (BId X)) ν D (Res ++ []) Store.empty Store.empty ∧ Fresh [] [] ν D (Res ++ [])) :
     ((∃ n L₁, run .static P₁ n [] Store.empty t₁ = some L₁) ↔
         ∃ m L₂, run .static P₂ m [] Store.empty t₂ = some L₂) ∧
       ∀ {n m : ℕ} {L₁ : Result S (Slot X)} {L₂ : Result S (BId X)},
         run .static P₁ n [] Store.empty t₁ = some L₁ → run .static P₂ m [] Store.empty t₂ = some L₂ →
           List.Forall₂ Renamed L₁ L₂ := by
-  obtain ⟨ν, μ, Res, D, _, hR, hfp, hfv, hci, hF⟩ := hroot
-  exact ⟨defined_iff SC_biUnique SC_codeAgree SC_patAgree hP hR hfp hfv hci hF,
-    fun h₁ h₂ => (bags_rel SC_biUnique SC_codeAgree SC_patAgree hP hR hfp hfv hci hF h₁ h₂).imp
+  obtain ⟨ν, μ, Res, D, _, hR, hfp, hfv, hsv, hci, hF⟩ := hroot
+  exact ⟨defined_iff SC_codeAgree SC_patAgree hP hR hfp hfv hsv hci hF,
+    fun h₁ h₂ => (bags_rel SC_codeAgree SC_patAgree hP hR hfp hfv hsv hci hF h₁ h₂).imp
       fun _ _ h => h.renamed⟩
 
 /-- **The renaming theorem, rule M.**  On an admissible program and query, the
@@ -2251,11 +2481,11 @@ theorem renaming_M (u : X) (unit : S) (cl : S → Option (Src S X)) (t : Src S X
           List.Forall₂ Renamed L₁ L₂ := by
   obtain ⟨h₂, h₃⟩ := ht
   have e₁ : elabCfg cfgM [] t =
-      (annM (Src.direct t) [] (mRootEnv [] t) [] [] t).slotOf (fun _ => []) [] :=
-    elabMS_eq_slotOf t _ _ _ _ _ _ _
+      (annM (Src.direct t) [] (mRootEnv [] t) [] [] t).slotOf [] (fun _ => []) [] :=
+    elabMS_eq_slotOf _ t _ _ _ _ _ _ _
   have e₂ : elabMFormAt [] t =
-      (annM (Src.direct t) [] (mRootEnv [] t) [] [] t).idOf (mRootEnv [] t) (fun _ => []) [] [] :=
-    elabMId_eq_idOf t _ _ _ _ _ _
+      (annM (Src.direct t) [] (mRootEnv [] t) [] [] t).idOf [] (mRootEnv [] t) (fun _ => []) [] [] :=
+    elabMId_eq_idOf _ t _ _ _ _ _ _
   rw [e₁, e₂]
   exact renaming_of (progRel_M u unit cl hcl)
     (root_config (annM_WF t _ _ _ _ _ h₂) (by rw [freePars_annM]; exact h₃)
@@ -2271,10 +2501,10 @@ theorem renaming_LF (u : X) (unit : S) (cl : S → Option (Src S X)) (t : Src S 
         run .static (progLF u unit cl) m [] Store.empty (elabLFFormAt [] t) = some L₂ →
           List.Forall₂ Renamed L₁ L₂ := by
   obtain ⟨h₂, h₃⟩ := ht
-  have e₁ : elabCfg cfgLF [] t = (annLF [] [] [] t).slotOf (fun _ => []) [] :=
-    elabLF_eq_slotOf t _ _ _ _ _
-  have e₂ : elabLFFormAt [] t = (annLF [] [] [] t).idOf (lfRootEnv []) (fun _ => []) [] [] :=
-    elabLFId_eq_idOf t _ _ _ _ _
+  have e₁ : elabCfg cfgLF [] t = (annLF [] [] [] t).slotOf [] (fun _ => []) [] :=
+    elabLF_eq_slotOf _ t _ _ _ _ _
+  have e₂ : elabLFFormAt [] t = (annLF [] [] [] t).idOf [] (lfRootEnv []) (fun _ => []) [] [] :=
+    elabLFId_eq_idOf _ t _ _ _ _ _
   rw [e₁, e₂]
   exact renaming_of (progRel_LF u unit cl hcl)
     (root_config (annLF_WF t _ _ _ h₂) (by rw [freePars_annLF]; exact h₃)
@@ -2429,14 +2659,101 @@ def FOCorr {Y₁ Y₂ : Type v} (R : Nm Y₁ → Nm Y₂ → Prop) : Tm S Y₁ �
   | .app f a, .app f' a' => FOCorr R f f' ∧ FOCorr R a a'
   | _, _ => False
 
+/-- **Two terms equal up to a correspondence `K` of names**: one shape and one
+own list at each lambda, each name of the first paired by `K` with the name of
+the second at the same place. -/
+inductive TmCorr {Y : Type v} (K : Nm Y → Nm Y → Prop) : Tm S Y → Tm S Y → Prop
+  | sym (s : S) : TmCorr K (.sym s) (.sym s)
+  | fn (F : S) : TmCorr K (.fn F) (.fn F)
+  | var {n m : Nm Y} : K n m → TmCorr K (.var n) (.var m)
+  | pvar {n m : Nm Y} : K n m → TmCorr K (.pvar n) (.pvar m)
+  | lam {x x' : Nm Y} {o : List Y} {b b' : Tm S Y} :
+      K x x' → TmCorr K b b' → TmCorr K (.lam x o b) (.lam x' o b')
+  | app {f a f' a' : Tm S Y} : TmCorr K f f' → TmCorr K a a' → TmCorr K (.app f a) (.app f' a')
+  | quote {c c' : Tm S Y} : TmCorr K c c' → TmCorr K (.quote c) (.quote c')
+  | ctx {ks ks' : List (Nm Y)} {c c' : Tm S Y} :
+      List.Forall₂ K ks ks' → TmCorr K c c' → TmCorr K (.ctx ks c) (.ctx ks' c')
+  | pquote {c c' : Tm S Y} : TmCorr K c c' → TmCorr K (.pquote c) (.pquote c')
+  | letP {p w b p' w' b' : Tm S Y} :
+      TmCorr K p p' → TmCorr K w w' → TmCorr K b b' → TmCorr K (.letP p w b) (.letP p' w' b')
+  | alt {t u t' u' : Tm S Y} :
+      TmCorr K t t' → TmCorr K u u' → TmCorr K (.alt t u) (.alt t' u')
+
+omit [DecidableEq S] [DecidableEq X] in
+theorem TmCorr.refl {Y : Type v} : ∀ t : Tm S Y, TmCorr (fun n m => n = m) t t
+  | .sym s => .sym s
+  | .fn F => .fn F
+  | .var _ => .var rfl
+  | .pvar _ => .pvar rfl
+  | .lam _ _ b => .lam rfl (TmCorr.refl b)
+  | .app f a => .app (TmCorr.refl f) (TmCorr.refl a)
+  | .quote c => .quote (TmCorr.refl c)
+  | .ctx ks c => .ctx (List.forall₂_refl ks) (TmCorr.refl c)
+  | .pquote c => .pquote (TmCorr.refl c)
+  | .letP p w b => .letP (TmCorr.refl p) (TmCorr.refl w) (TmCorr.refl b)
+  | .alt t u => .alt (TmCorr.refl t) (TmCorr.refl u)
+
+omit [DecidableEq S] [DecidableEq X] in
+theorem TmCorr.symm {Y : Type v} {K : Nm Y → Nm Y → Prop} {t t' : Tm S Y}
+    (h : TmCorr K t t') : TmCorr (fun m n => K n m) t' t := by
+  induction h with
+  | sym s => exact .sym s
+  | fn F => exact .fn F
+  | var h => exact .var h
+  | pvar h => exact .pvar h
+  | lam hx _ ih => exact .lam hx ih
+  | app _ _ ihf iha => exact .app ihf iha
+  | quote _ ih => exact .quote ih
+  | ctx hks _ ih => exact .ctx hks.flip ih
+  | pquote _ ih => exact .pquote ih
+  | letP _ _ _ ihp ihw ihb => exact .letP ihp ihw ihb
+  | alt _ _ iht ihu => exact .alt iht ihu
+
+omit [DecidableEq S] [DecidableEq X] in
+theorem forall₂_comp {α : Type*} {K K' : α → α → Prop} :
+    ∀ {l l' l'' : List α}, List.Forall₂ K l l' → List.Forall₂ K' l' l'' →
+      List.Forall₂ (fun a c => ∃ b, K a b ∧ K' b c) l l''
+  | _, _, _, .nil, .nil => .nil
+  | _, _, _, .cons h hs, .cons h' hs' => .cons ⟨_, h, h'⟩ (forall₂_comp hs hs')
+
+omit [DecidableEq S] [DecidableEq X] in
+theorem TmCorr.trans {Y : Type v} {K K' : Nm Y → Nm Y → Prop} {t t' : Tm S Y}
+    (h : TmCorr K t t') : ∀ {t'' : Tm S Y}, TmCorr K' t' t'' →
+      TmCorr (fun n k => ∃ m, K n m ∧ K' m k) t t'' := by
+  induction h with
+  | sym s => intro t'' h'; cases h'; exact .sym s
+  | fn F => intro t'' h'; cases h'; exact .fn F
+  | var h => intro t'' h'; cases h' with | var h' => exact .var ⟨_, h, h'⟩
+  | pvar h => intro t'' h'; cases h' with | pvar h' => exact .pvar ⟨_, h, h'⟩
+  | lam hx _ ih => intro t'' h'; cases h' with | lam hx' hb' => exact .lam ⟨_, hx, hx'⟩ (ih hb')
+  | app _ _ ihf iha => intro t'' h'; cases h' with | app hf' ha' => exact .app (ihf hf') (iha ha')
+  | quote _ ih => intro t'' h'; cases h' with | quote hc' => exact .quote (ih hc')
+  | ctx hks _ ih =>
+      intro t'' h'
+      cases h' with
+      | ctx hks' hc' => exact .ctx (forall₂_comp hks hks') (ih hc')
+  | pquote _ ih => intro t'' h'; cases h' with | pquote hc' => exact .pquote (ih hc')
+  | letP _ _ _ ihp ihw ihb =>
+      intro t'' h'
+      cases h' with
+      | letP hp' hw' hb' => exact .letP (ihp hp') (ihw hw') (ihb hb')
+  | alt _ _ iht ihu => intro t'' h'; cases h' with | alt ht' hu' => exact .alt (iht ht') (ihu hu')
+
+/-- **Two ground values equal up to a correspondence `K` of the names of their
+sealed code.** -/
+def GCorr {Y : Type v} (K : Nm Y → Nm Y → Prop) (g g' : GVal S Y) : Prop :=
+  TmCorr K g.toTm g'.toTm
+
 /-- **Two results of the slot model, equal up to a one-to-one correspondence of
-their names**: the answers have the same shape with corresponding names,
-corresponding names hold the same value, and every name either store binds
-has a partner. -/
+their names**: `R` pairs store names and `K` the names of stored sealed code
+(a name as written with itself, a copy of a hole with a copy), each one to one;
+the answers have the same shape with corresponding names, corresponding names
+hold values equal up to `K`, and every name either store binds has a partner. -/
 def FOMatch (r₁ r₃ : Tm S (Slot X) × GStore S (Slot X)) : Prop :=
-  ∃ R : Nm (Slot X) → Nm (Slot X) → Prop,
+  ∃ R K : Nm (Slot X) → Nm (Slot X) → Prop,
     (∀ n m m', R n m → R n m' → m = m') ∧ (∀ n n' m, R n m → R n' m → n = n') ∧
-    FOCorr R r₁.1 r₃.1 ∧ (∀ n m, R n m → r₁.2 n = r₃.2 m) ∧
+    (∀ n m m', K n m → K n m' → m = m') ∧ (∀ n n' m, K n m → K n' m → n = n') ∧
+    FOCorr R r₁.1 r₃.1 ∧ (∀ n m, R n m → OptRel (GCorr K) (r₁.2 n) (r₃.2 m)) ∧
     (∀ n, r₁.2 n ≠ none → ∃ m, R n m) ∧ (∀ m, r₃.2 m ≠ none → ∃ n, R n m)
 
 omit [DecidableEq S] in
@@ -2568,27 +2885,240 @@ theorem firstOrder_mapCode {Y Z : Type v} {f : Nm Y → Nm Z} :
   | .letP _ _ _, h => by simp [Tm.FirstOrder] at h
   | .alt _ _, h => by simp [Tm.FirstOrder] at h
 
+omit [DecidableEq S] [DecidableEq X] in
+theorem forall₂_of_map_eq {α β : Type*} {h₁ h₃ : α → β} {K : α → α → Prop} :
+    ∀ {l₁ l₃ : List α}, l₃.map h₃ = l₁.map h₁ → (∀ n ∈ l₁, ∀ m ∈ l₃, h₃ m = h₁ n → K n m) →
+      List.Forall₂ K l₁ l₃
+  | [], [], _, _ => .nil
+  | [], _ :: _, he, _ => by simp at he
+  | _ :: _, [], he, _ => by simp at he
+  | n :: l₁, m :: l₃, he, hf => by
+      simp only [List.map_cons, List.cons.injEq] at he
+      exact .cons (hf n (by simp) m (by simp) he.1)
+        (forall₂_of_map_eq he.2 fun n' hn' m' hm' => hf n' (by simp [hn']) m' (by simp [hm']))
+
+omit [DecidableEq S] [DecidableEq X] in
+/-- **Two codes with one image correspond name by name**: when `h₃` on `c₃` and
+`h₁` on `c₁` give the same code, the two codes have one shape, and each name of
+`c₁` corresponds to the name of `c₃` at its place, which has the same image. -/
+theorem tmCorr_of_mapCode_eq {Y Z : Type v} {h₁ h₃ : Nm Y → Nm Z} {K : Nm Y → Nm Y → Prop}
+    (c₁ : Tm S Y) : ∀ {c₃ : Tm S Y}, ownNil c₁ → ownNil c₃ → mapCode h₃ c₃ = mapCode h₁ c₁ →
+      (∀ n ∈ codeNames c₁, ∀ m ∈ codeNames c₃, h₃ m = h₁ n → K n m) → TmCorr K c₁ c₃ := by
+  induction c₁ with
+  | sym _ =>
+      intro c₃ _ _ he _
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      injection he with he
+      subst he
+      exact .sym _
+  | fn _ =>
+      intro c₃ _ _ he _
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      injection he with he
+      subst he
+      exact .fn _
+  | var n =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i m
+      injection he with he
+      exact .var (hf n (by simp [codeNames]) m (by simp [codeNames]) he)
+  | pvar n =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i m
+      injection he with he
+      exact .pvar (hf n (by simp [codeNames]) m (by simp [codeNames]) he)
+  | lam x _ b ih =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i x' o' b'
+      injection he with hx _ hb
+      obtain ⟨rfl, hn₁'⟩ := hn₁
+      obtain ⟨rfl, hn₃'⟩ := hn₃
+      exact .lam (hf x (by simp [codeNames]) x' (by simp [codeNames]) hx)
+        (ih hn₁' hn₃' hb fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+  | app a b iha ihb =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i a' b'
+      injection he with ha hb
+      exact .app
+        (iha hn₁.1 hn₃.1 ha fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+        (ihb hn₁.2 hn₃.2 hb fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+  | quote c ih =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i c'
+      injection he with hc
+      have hn₁' : ownNil c := hn₁
+      have hn₃' : ownNil c' := hn₃
+      exact .quote (ih hn₁' hn₃' hc fun n hn m hm => hf n (by simpa only [codeNames] using hn) m
+        (by simpa only [codeNames] using hm))
+  | ctx ks c ih =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i ks' c'
+      injection he with hks hc
+      have hn₁' : ownNil c := hn₁
+      have hn₃' : ownNil c' := hn₃
+      exact .ctx (forall₂_of_map_eq hks fun n hn m hm =>
+          hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+        (ih hn₁' hn₃' hc fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+  | pquote c ih =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i c'
+      injection he with hc
+      have hn₁' : ownNil c := hn₁
+      have hn₃' : ownNil c' := hn₃
+      exact .pquote (ih hn₁' hn₃' hc fun n hn m hm => hf n (by simpa only [codeNames] using hn) m
+        (by simpa only [codeNames] using hm))
+  | letP p w b ihp ihw ihb =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i p' w' b'
+      injection he with hp hw hb
+      exact .letP
+        (ihp hn₁.1 hn₃.1 hp fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+        (ihw hn₁.2.1 hn₃.2.1 hw fun n hn m hm =>
+          hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+        (ihb hn₁.2.2 hn₃.2.2 hb fun n hn m hm =>
+          hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+  | alt t u iht ihu =>
+      intro c₃ hn₁ hn₃ he hf
+      cases c₃ <;> simp only [mapCode, reduceCtorEq] at he
+      rename_i t' u'
+      injection he with ht hu
+      exact .alt
+        (iht hn₁.1 hn₃.1 ht fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+        (ihu hn₁.2 hn₃.2 hu fun n hn m hm => hf n (by simp [codeNames, hn]) m (by simp [codeNames, hm]))
+
+omit [DecidableEq S] in
+/-- A related ground value is the first one read through `holeRead`. -/
+theorem GRel.toTm_eq_mapCode {X₁ X₂ : Type v} {C : Setting S X₁ X₂} {ν : Nm X₁ → Nm X₂}
+    {g₁ : GVal S X₁} {g₂ : GVal S X₂} (h : GRel C ν g₁ g₂) :
+    g₂.toTm = mapCode (holeRead C ν) g₁.toTm := by
+  induction h with
+  | sym _ => rfl
+  | app _ _ ihf iha => simp only [GVal.toTm, mapCode, ihf, iha]
+  | quote hq =>
+      obtain ⟨-, -, rfl⟩ := hq
+      rfl
+  | ctx _ hks hc =>
+      subst hks hc
+      rfl
+
+omit [DecidableEq S] in
+/-- The code of a related ground value is in the code form. -/
+theorem GRel.codeForm {X₁ X₂ : Type v} {C : Setting S X₁ X₂} {ν : Nm X₁ → Nm X₂}
+    {g₁ : GVal S X₁} {g₂ : GVal S X₂} (h : GRel C ν g₁ g₂) : CodeForm C g₁.toTm := by
+  induction h with
+  | sym _ =>
+      exact ⟨trivial, fun n hn => by simp [GVal.toTm, codeVars] at hn,
+        fun n hn => by simp [GVal.toTm, codeBinders] at hn⟩
+  | app _ _ ihf iha =>
+      refine ⟨⟨ihf.1, iha.1⟩, fun n hn => ?_, fun n hn => ?_⟩
+      · simp only [GVal.toTm, codeVars, List.mem_append] at hn
+        exact hn.elim (ihf.2.1 n) (iha.2.1 n)
+      · simp only [GVal.toTm, codeBinders, List.mem_append] at hn
+        exact hn.elim (ihf.2.2 n) (iha.2.2 n)
+  | quote hq => exact hq.2.1
+  | ctx hf _ _ => exact hf
+
+/-- The correspondence of the names of sealed code that two slot renamings into one
+identity result give: a name as written with itself, a copy of a hole with the
+copy that the identity side reads alike. -/
+def copyCorr (ν₁ ν₃ : Nm (Slot X) → Nm (BId X)) (D₁ D₃ : Set (Nm (Slot X))) (n m : Nm (Slot X)) :
+    Prop :=
+  (∃ s, n = .src s ∧ m = n) ∨
+    (holeCopy (SC : Setting S (Slot X) (BId X)) n ∧ holeCopy (SC : Setting S (Slot X) (BId X)) m ∧
+      n ∈ D₁ ∧ m ∈ D₃ ∧
+      holeRead (SC : Setting S (Slot X) (BId X)) ν₁ n = holeRead (SC : Setting S (Slot X) (BId X)) ν₃ m)
+
+omit [DecidableEq S] in
+/-- **Two slot values related to one identity value are equal up to the copies
+of their holes**: each copy of the first corresponds to the copy of the second
+that the identity side reads alike. -/
+theorem gcorr_of_grel {ν₁ ν₃ : Nm (Slot X) → Nm (BId X)} {D₁ D₃ : Set (Nm (Slot X))}
+    {g₁ g₃ : GVal S (Slot X)} {g₂ : GVal S (BId X)} (hg₁ : GRel SC ν₁ g₁ g₂)
+    (hg₃ : GRel SC ν₃ g₃ g₂) (hc₁ : CopiesIn D₁ g₁.toTm) (hc₃ : CopiesIn D₃ g₃.toTm) :
+    GCorr (copyCorr (S := S) ν₁ ν₃ D₁ D₃) g₁ g₃ := by
+  have hsrc : ∀ (ν : Nm (Slot X) → Nm (BId X)) s,
+      ∃ s', holeRead (SC : Setting S (Slot X) (BId X)) ν (.src s) = .src s' :=
+    fun _ s => codeFwd_src s
+  have hcopy : ∀ (ν : Nm (Slot X) → Nm (BId X)) m, holeCopy (SC : Setting S (Slot X) (BId X)) m →
+      ∃ ρ k, holeRead (SC : Setting S (Slot X) (BId X)) ν m = .inst ρ k := by
+    intro ν m hm
+    cases m with
+    | src _ => exact hm.elim
+    | inst ρ k => exact ⟨_, _, rfl⟩
+  have hcf₁ := hg₁.codeForm
+  have hcf₃ := hg₃.codeForm
+  have hcls : ∀ {D : Set (Nm (Slot X))} {g : GVal S (Slot X)},
+      CodeForm (SC : Setting S (Slot X) (BId X)) g.toTm → CopiesIn D g.toTm →
+      ∀ n ∈ codeNames g.toTm, (∃ s, n = .src s) ∨
+        (holeCopy (SC : Setting S (Slot X) (BId X)) n ∧ n ∈ D) := by
+    intro D g hcf hc n hn
+    rcases hcf.name_cases hn with h | ⟨hh, hv⟩
+    · exact Or.inl h
+    · rcases hc n hv with ⟨s, rfl⟩ | hD
+      · exact Or.inl ⟨s, rfl⟩
+      · exact Or.inr ⟨hh, hD⟩
+  refine tmCorr_of_mapCode_eq _ hcf₁.1 hcf₃.1
+    (by rw [← hg₃.toTm_eq_mapCode, ← hg₁.toTm_eq_mapCode]) ?_
+  intro n hn m hm he
+  rcases hcls hcf₁ hc₁ n hn with ⟨s, rfl⟩ | ⟨hcn, hn1⟩ <;>
+    rcases hcls hcf₃ hc₃ m hm with ⟨t, rfl⟩ | ⟨hcm, hm3⟩
+  · exact Or.inl ⟨s, rfl, (SC : Setting S (Slot X) (BId X)).codeMap_inj he⟩
+  · obtain ⟨s', hs'⟩ := hsrc ν₁ s
+    obtain ⟨ρ, k, hk⟩ := hcopy ν₃ m hcm
+    rw [hs', hk] at he
+    cases he
+  · obtain ⟨t', ht'⟩ := hsrc ν₃ t
+    obtain ⟨ρ, k, hk⟩ := hcopy ν₁ n hcn
+    rw [ht', hk] at he
+    cases he
+  · exact Or.inr ⟨hcn, hcm, hn1, hm3, he.symm⟩
+
 omit [DecidableEq S] in
 /-- **Two slot results renamed into one identity result, with a first-order
 answer, are equal up to a one-to-one correspondence of names**, stores
-included. -/
+included: store names correspond by the renamings, and the copies of holes in
+stored sealed code by the identity names they are read as. -/
 theorem fomatch_of_renamed {r₁ r₃ : Tm S (Slot X) × GStore S (Slot X)}
     {r₂ : Tm S (BId X) × GStore S (BId X)} (h₁ : Renamed r₁ r₂) (h₃ : Renamed r₃ r₂)
     (hfo : r₁.1.FirstOrder = true) : FOMatch r₁ r₃ := by
-  obtain ⟨ν₁, μ₁, D₁, hfv₁, hinj₁, hrel₁, hst₁⟩ := h₁
-  obtain ⟨ν₃, μ₃, D₃, hfv₃, hinj₃, hrel₃, hst₃⟩ := h₃
+  obtain ⟨ν₁, μ₁, D₁, hfv₁, hinj₁, hI₁, hrel₁, hst₁⟩ := h₁
+  obtain ⟨ν₃, μ₃, D₃, hfv₃, hinj₃, hI₃, hrel₃, hst₃⟩ := h₃
   have e₁ := hrel₁.val_firstOrder hfo
   have hfo₂ : r₂.1.FirstOrder = true := by
     rw [e₁]
     exact firstOrder_mapCode hfo
   have hfo₃ := hrel₃.val_firstOrder_left hfo₂
   have e₃ := hrel₃.val_firstOrder hfo₃
-  refine ⟨fun n m => n ∈ D₁ ∧ m ∈ D₃ ∧ ν₁ n = ν₃ m, ?_, ?_,
+  refine ⟨fun n m => n ∈ D₁ ∧ m ∈ D₃ ∧ ν₁ n = ν₃ m, copyCorr (S := S) ν₁ ν₃ D₁ D₃, ?_, ?_, ?_, ?_,
     focorr_of_mapCode hfo hfo₃ (e₁.symm.trans e₃) hfv₁ hfv₃, ?_, ?_, ?_⟩
   · rintro n m m' ⟨-, hm, he⟩ ⟨-, hm', he'⟩
     exact hinj₃ hm hm' (he.symm.trans he')
   · rintro n n' m ⟨hn, -, he⟩ ⟨hn', -, he'⟩
     exact hinj₁ hn hn' (he.trans he'.symm)
+  · intro n m m' h h'
+    rcases h with ⟨s, rfl, rfl⟩ | ⟨hn, hm, -, hm3, he⟩ <;>
+      rcases h' with ⟨s', hs', rfl⟩ | ⟨hn', hm', -, hm3', he'⟩
+    · rfl
+    · exact False.elim hn'
+    · subst hs'
+      exact False.elim hn
+    · exact hI₃ m hm3 m' hm3' hm hm' (he.symm.trans he')
+  · intro n n' m h h'
+    rcases h with ⟨s, rfl, rfl⟩ | ⟨hn, hm, hn1, -, he⟩ <;>
+      rcases h' with ⟨s', rfl, he'⟩ | ⟨hn', hm', hn1', -, he'⟩
+    · exact he'
+    · exact False.elim hm'
+    · subst he'
+      exact False.elim hm
+    · exact hI₁ n hn1 n' hn1' hn hn' (he.trans he'.symm)
   · rintro n m ⟨hn, hm, he⟩
     have o₁ := hst₁.rel n hn
     have o₃ := hst₃.rel m hm
@@ -2596,12 +3126,15 @@ theorem fomatch_of_renamed {r₁ r₃ : Tm S (Slot X) × GStore S (Slot X)}
     rcases OptRel.cases o₁ with ⟨a₁, b₁⟩ | ⟨g₁, g₂, a₁, b₁, hg₁⟩ <;>
       rcases OptRel.cases o₃ with ⟨a₃, b₃⟩ | ⟨g₃, g₂', a₃, b₃, hg₃⟩
     · rw [a₁, a₃]
+      trivial
     · rw [b₁] at b₃; cases b₃
     · rw [b₁] at b₃; cases b₃
     · rw [b₁] at b₃
       injection b₃ with b₃
       subst b₃
-      rw [a₁, a₃, ((GRel.eq_iff SC_biUnique hg₁ hg₃).2 rfl)]
+      rw [a₁, a₃]
+      exact gcorr_of_grel hg₁ hg₃ (hst₁.sealOK n g₁ a₁).copiesIn_toTm
+        (hst₃.sealOK m g₃ a₃).copiesIn_toTm
   · intro n hn
     have hnD := hst₁.dom n hn
     have o₁ := hst₁.rel n hnD

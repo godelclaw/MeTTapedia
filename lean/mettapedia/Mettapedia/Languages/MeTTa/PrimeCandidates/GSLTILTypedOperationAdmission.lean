@@ -3,7 +3,7 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLayeredCrown
 import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.PatternBridge
 
 /-!
-# Typed candidate operations through GSLT-IL elaboration and NIK admission
+# Typed candidate operations through GSLT-IL elaboration and SemanticService admission
 
 A recognized candidate language operation carries three identities that must not
 be conflated:
@@ -16,7 +16,7 @@ This module connects those identities.  The authored spelling becomes the
 occurrence of a singleton GSLT-IL route declaration.  The independently
 checked operation supplies an exact typed elaboration profile for that
 occurrence.  The decoded path supplies the represented Data execution and the
-observed NIK refinement.  A single joined object proves that the active direct
+observed SemanticService refinement.  A single joined object proves that the active direct
 map is the operational route selected by the decoder.
 
 The construction does not globalize exact elaboration.  Raw GSLT-IL commands
@@ -32,11 +32,11 @@ open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.GSLTIL
 open Mettapedia.GSLT.LanguageDef.GSLTIL.Syntax
 open Mettapedia.GSLT.LanguageDef.GSLTIL.ElaborationSelection
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationFactorization
-open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
 open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.PatternBridge
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -159,7 +159,7 @@ theorem selected_term_wellTyped (operation : RecognizedOperation) :
 
 /-- One candidate operation after all three independently meaningful boundaries
 have been joined: authored elaboration, represented execution, and
-revision-indexed NIK admission. -/
+revision-indexed SemanticService admission. -/
 structure SelectedAdmittedOperation
     (dependencies : DependencySystem)
     (revision : dependencies.Revision)
@@ -295,13 +295,13 @@ theorem raw_ambiguity_remains :
 realization. -/
 theorem relevant_revision_change_prevents_activation :
     ¬ ∃ currentRevision,
-      Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission.Canary.dependencies.SameDependencies
+      Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission.Canary.dependencies.SameDependencies
         (false, false) currentRevision ∧
-      Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission.Canary.dependencies.SameDependencies
+      Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission.Canary.dependencies.SameDependencies
         (true, false) currentRevision := by
   rintro ⟨currentRevision, first, second⟩
   exact
-    Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission.Canary.relevant_change_has_no_alignment
+    Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission.Canary.relevant_change_has_no_alignment
       ⟨currentRevision, first, second⟩
 
 end Canary

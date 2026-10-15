@@ -1,4 +1,5 @@
 import Mettapedia.Languages.Megalodon.EnvironmentKernel
+import Mettapedia.Languages.Megalodon.SortedABTRefinement
 import Mettapedia.GSLT.LanguageDef.InferenceRuntimeAdequacy
 
 /-!
@@ -12,12 +13,15 @@ the exact type signature used by the existing checked-environment kernel and
 requires the synthesized and declared propositions to have a witnessed common
 reduct.
 
-The conversion definition covers the beta, delta, and eta steps needed by
-real Megalodon definition-bearing documents.  Eta reuses the already-admitted
-term-shift judgment: shifting the proposed reduct by one reconstructs the
-function beneath the lambda, which is proof-relevant evidence that the bound
-variable is unused.  A general normalization-completeness theorem remains a
-separate obligation.
+The conversion definition covers the beta, delta, and eta steps of
+Megalodon's normalizer, at the term and at the type level.  Eta reuses the
+already-admitted term-shift judgment: shifting the proposed reduct by one
+reconstructs the function beneath the lambda, which is proof-relevant evidence
+that the bound variable is unused.  Type-level eta does the same with a shift
+of the type variables of a term (`shiftTypeInTerm`), whose checked compiler is
+`compileTypeShiftTerm`.  `ConversionElaboration` proves the normalization
+completeness: every run of the Mathdata normalizer writes an article of this
+calculus.
 -/
 
 set_option autoImplicit false
@@ -112,19 +116,19 @@ def shiftTypeContext
     (amount cutoff source target : Pattern) : Pattern :=
   a "MShiftTypeContext" [amount, cutoff, source, target]
 
-private def definitionMember
+def definitionMember
     (declarations name type body : Pattern) : Pattern :=
   a "MDefinitionMember" [declarations, name, type, body]
 
-private def substituteTerm
+def substituteTerm
     (index replacement body result : Pattern) : Pattern :=
   a "MSubstituteTerm" [index, replacement, body, result]
 
-private def substituteTypeInTerm
+def substituteTypeInTerm
     (index replacement body result : Pattern) : Pattern :=
   a "MSubstituteTypeInTerm" [index, replacement, body, result]
 
-private def shiftTerm
+def shiftTerm
     (amount cutoff source target : Pattern) : Pattern :=
   a "MShiftTerm" [amount, cutoff, source, target]
 
@@ -273,7 +277,7 @@ private def termTypeLamRule : RuleSchema :=
       (m "signature") (m "typeDepth") (m "context")
       (a "MTmTypeLam" [m "body"]) (a "MTpAll" [m "bodyType"]))
 
-private def definitionHereRule : RuleSchema :=
+def definitionHereRule : RuleSchema :=
   rule "megalodon-def-member-here"
     ["name", "type", "body", "tail"] []
     (definitionMember
@@ -281,7 +285,7 @@ private def definitionHereRule : RuleSchema :=
         [m "name", m "type", m "body", m "tail"])
       (m "name") (m "type") (m "body"))
 
-private def definitionThereParameterRule : RuleSchema :=
+def definitionThereParameterRule : RuleSchema :=
   rule "megalodon-def-member-there-parameter"
     ["headName", "headType", "tail", "name", "type", "body"]
     [definitionMember (m "tail") (m "name") (m "type") (m "body")]
@@ -289,7 +293,7 @@ private def definitionThereParameterRule : RuleSchema :=
       (a "MDeclParameter" [m "headName", m "headType", m "tail"])
       (m "name") (m "type") (m "body"))
 
-private def definitionThereDefinitionRule : RuleSchema :=
+def definitionThereDefinitionRule : RuleSchema :=
   rule "megalodon-def-member-there-definition"
     ["headName", "headType", "headBody", "tail", "name", "type", "body"]
     [definitionMember (m "tail") (m "name") (m "type") (m "body")]
@@ -298,16 +302,98 @@ private def definitionThereDefinitionRule : RuleSchema :=
         [m "headName", m "headType", m "headBody", m "tail"])
       (m "name") (m "type") (m "body"))
 
+/-! ## Type-level shift in terms
+
+Type-level eta must know that the type variable it removes is unused.  As eta
+does for term variables, it asks for the shift that puts the variable back. -/
+
+/-- The type variables of `source` at and above `cutoff`, shifted by `amount`,
+give `target`. -/
+def shiftTypeInTerm (amount cutoff source target : Pattern) : Pattern :=
+  a "MShiftTypeInTerm" [amount, cutoff, source, target]
+
+def shiftTypeTermVarRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-var" ["amount", "cutoff", "variable"] []
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmVar" [m "variable"]) (a "MTmVar" [m "variable"]))
+
+def shiftTypeTermNamedRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-named" ["amount", "cutoff", "name"] []
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmNamed" [m "name"]) (a "MTmNamed" [m "name"]))
+
+def shiftTypeTermPrimRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-prim" ["amount", "cutoff", "primitive"] []
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmPrim" [m "primitive"]) (a "MTmPrim" [m "primitive"]))
+
+def shiftTypeTermAppRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-app"
+    ["amount", "cutoff", "function", "argument", "functionResult", "argumentResult"]
+    [ shiftTypeInTerm (m "amount") (m "cutoff") (m "function") (m "functionResult"),
+      shiftTypeInTerm (m "amount") (m "cutoff") (m "argument") (m "argumentResult") ]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmApp" [m "function", m "argument"])
+      (a "MTmApp" [m "functionResult", m "argumentResult"]))
+
+def shiftTypeTermLamRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-lam"
+    ["amount", "cutoff", "type", "body", "typeResult", "bodyResult"]
+    [ EnvironmentKernel.shiftType (m "amount") (m "cutoff") (m "type") (m "typeResult"),
+      shiftTypeInTerm (m "amount") (m "cutoff") (m "body") (m "bodyResult") ]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmLam" [m "type", m "body"])
+      (a "MTmLam" [m "typeResult", m "bodyResult"]))
+
+def shiftTypeTermImpRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-imp"
+    ["amount", "cutoff", "domain", "codomain", "domainResult", "codomainResult"]
+    [ shiftTypeInTerm (m "amount") (m "cutoff") (m "domain") (m "domainResult"),
+      shiftTypeInTerm (m "amount") (m "cutoff") (m "codomain") (m "codomainResult") ]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmImp" [m "domain", m "codomain"])
+      (a "MTmImp" [m "domainResult", m "codomainResult"]))
+
+def shiftTypeTermAllRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-all"
+    ["amount", "cutoff", "type", "body", "typeResult", "bodyResult"]
+    [ EnvironmentKernel.shiftType (m "amount") (m "cutoff") (m "type") (m "typeResult"),
+      shiftTypeInTerm (m "amount") (m "cutoff") (m "body") (m "bodyResult") ]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmAll" [m "type", m "body"])
+      (a "MTmAll" [m "typeResult", m "bodyResult"]))
+
+def shiftTypeTermTypeAppRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-type-app"
+    ["amount", "cutoff", "function", "type", "functionResult", "typeResult"]
+    [ shiftTypeInTerm (m "amount") (m "cutoff") (m "function") (m "functionResult"),
+      EnvironmentKernel.shiftType (m "amount") (m "cutoff") (m "type") (m "typeResult") ]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmTypeApp" [m "function", m "type"])
+      (a "MTmTypeApp" [m "functionResult", m "typeResult"]))
+
+def shiftTypeTermTypeLamRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-type-lam" ["amount", "cutoff", "body", "bodyResult"]
+    [shiftTypeInTerm (m "amount") (a "MNSucc" [m "cutoff"]) (m "body") (m "bodyResult")]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmTypeLam" [m "body"]) (a "MTmTypeLam" [m "bodyResult"]))
+
+def shiftTypeTermTypeAllRule : RuleSchema :=
+  rule "megalodon-def-shift-type-term-type-all" ["amount", "cutoff", "body", "bodyResult"]
+    [shiftTypeInTerm (m "amount") (a "MNSucc" [m "cutoff"]) (m "body") (m "bodyResult")]
+    (shiftTypeInTerm (m "amount") (m "cutoff")
+      (a "MTmTypeAll" [m "body"]) (a "MTmTypeAll" [m "bodyResult"]))
+
 /-! ## One beta-delta reduction, closed under every term constructor -/
 
-private def reduceDeltaRule : RuleSchema :=
+def reduceDeltaRule : RuleSchema :=
   rule "megalodon-def-reduce-delta"
     ["declarations", "name", "type", "body"]
     [definitionMember (m "declarations") (m "name") (m "type") (m "body")]
     (reduces (m "declarations")
       (a "MTmNamed" [m "name"]) (m "body"))
 
-private def reduceBetaRule : RuleSchema :=
+def reduceBetaRule : RuleSchema :=
   rule "megalodon-def-reduce-beta"
     ["declarations", "type", "body", "argument", "result"]
     [substituteTerm (a "MNZero") (m "argument") (m "body") (m "result")]
@@ -316,7 +402,7 @@ private def reduceBetaRule : RuleSchema :=
         [a "MTmLam" [m "type", m "body"], m "argument"])
       (m "result"))
 
-private def reduceTypeBetaRule : RuleSchema :=
+def reduceTypeBetaRule : RuleSchema :=
   rule "megalodon-def-reduce-type-beta"
     ["declarations", "body", "type", "result"]
     [substituteTypeInTerm (a "MNZero") (m "type") (m "body") (m "result")]
@@ -326,7 +412,7 @@ private def reduceTypeBetaRule : RuleSchema :=
 
 /-- Eta contraction uses the inherited proof-relevant shift relation as the
 unused-binder witness: lifting `result` by one must reconstruct `function`. -/
-private def reduceEtaRule : RuleSchema :=
+def reduceEtaRule : RuleSchema :=
   rule "megalodon-def-reduce-eta"
     ["declarations", "type", "function", "result"]
     [shiftTerm (a "MNSucc" [a "MNZero"]) (a "MNZero")
@@ -337,7 +423,20 @@ private def reduceEtaRule : RuleSchema :=
           [m "function", a "MTmVar" [a "MNZero"]]])
       (m "result"))
 
-private def reduceAppFunctionRule : RuleSchema :=
+/-- Type-level eta contraction uses the type shift as the unused-binder
+witness: lifting the type variables of `result` by one must reconstruct
+`function`. -/
+def reduceTypeEtaRule : RuleSchema :=
+  rule "megalodon-def-reduce-type-eta"
+    ["declarations", "function", "result"]
+    [shiftTypeInTerm (a "MNSucc" [a "MNZero"]) (a "MNZero")
+      (m "result") (m "function")]
+    (reduces (m "declarations")
+      (a "MTmTypeLam"
+        [a "MTmTypeApp" [m "function", a "MTpVar" [a "MNZero"]]])
+      (m "result"))
+
+def reduceAppFunctionRule : RuleSchema :=
   rule "megalodon-def-reduce-app-function"
     ["declarations", "function", "functionResult", "argument"]
     [reduces (m "declarations") (m "function") (m "functionResult")]
@@ -353,7 +452,7 @@ def reduceAppArgumentRule : RuleSchema :=
       (a "MTmApp" [m "function", m "argument"])
       (a "MTmApp" [m "function", m "argumentResult"]))
 
-private def reduceLamBodyRule : RuleSchema :=
+def reduceLamBodyRule : RuleSchema :=
   rule "megalodon-def-reduce-lam-body"
     ["declarations", "type", "body", "bodyResult"]
     [reduces (m "declarations") (m "body") (m "bodyResult")]
@@ -361,7 +460,7 @@ private def reduceLamBodyRule : RuleSchema :=
       (a "MTmLam" [m "type", m "body"])
       (a "MTmLam" [m "type", m "bodyResult"]))
 
-private def reduceImpDomainRule : RuleSchema :=
+def reduceImpDomainRule : RuleSchema :=
   rule "megalodon-def-reduce-imp-domain"
     ["declarations", "domain", "domainResult", "codomain"]
     [reduces (m "declarations") (m "domain") (m "domainResult")]
@@ -377,7 +476,7 @@ def reduceImpCodomainRule : RuleSchema :=
       (a "MTmImp" [m "domain", m "codomain"])
       (a "MTmImp" [m "domain", m "codomainResult"]))
 
-private def reduceAllBodyRule : RuleSchema :=
+def reduceAllBodyRule : RuleSchema :=
   rule "megalodon-def-reduce-all-body"
     ["declarations", "type", "body", "bodyResult"]
     [reduces (m "declarations") (m "body") (m "bodyResult")]
@@ -385,7 +484,7 @@ private def reduceAllBodyRule : RuleSchema :=
       (a "MTmAll" [m "type", m "body"])
       (a "MTmAll" [m "type", m "bodyResult"]))
 
-private def reduceTypeAppFunctionRule : RuleSchema :=
+def reduceTypeAppFunctionRule : RuleSchema :=
   rule "megalodon-def-reduce-type-app-function"
     ["declarations", "function", "functionResult", "type"]
     [reduces (m "declarations") (m "function") (m "functionResult")]
@@ -393,7 +492,7 @@ private def reduceTypeAppFunctionRule : RuleSchema :=
       (a "MTmTypeApp" [m "function", m "type"])
       (a "MTmTypeApp" [m "functionResult", m "type"]))
 
-private def reduceTypeLamBodyRule : RuleSchema :=
+def reduceTypeLamBodyRule : RuleSchema :=
   rule "megalodon-def-reduce-type-lam-body"
     ["declarations", "body", "bodyResult"]
     [reduces (m "declarations") (m "body") (m "bodyResult")]
@@ -401,7 +500,7 @@ private def reduceTypeLamBodyRule : RuleSchema :=
       (a "MTmTypeLam" [m "body"])
       (a "MTmTypeLam" [m "bodyResult"]))
 
-private def reduceTypeAllBodyRule : RuleSchema :=
+def reduceTypeAllBodyRule : RuleSchema :=
   rule "megalodon-def-reduce-type-all-body"
     ["declarations", "body", "bodyResult"]
     [reduces (m "declarations") (m "body") (m "bodyResult")]
@@ -608,7 +707,8 @@ private def additionalJudgments : List JudgmentDecl :=
     { head := "MDefinitionReductionPath", arity := 3 },
     { head := "MDefinitionConverts", arity := 2 },
     { head := "MDefinitionPropositionRepresentative", arity := 6 },
-    { head := "MDefinitionProves", arity := 5 } ]
+    { head := "MDefinitionProves", arity := 5 },
+    { head := "MShiftTypeInTerm", arity := 4 } ]
 
 private def additionalRules : List RuleSchema :=
   [ projectNilRule, projectParameterRule, projectDefinitionRule,
@@ -628,7 +728,11 @@ private def additionalRules : List RuleSchema :=
     propositionPlainRule, propositionTypeAllRule,
     fullConvertRule, fullImpIntroRule, fullImpElimRule,
     fullAllIntroRule, fullAllElimRule,
-    fullTypeElimRule, fullTypeIntroRule ]
+    fullTypeElimRule, fullTypeIntroRule,
+    shiftTypeTermVarRule, shiftTypeTermNamedRule, shiftTypeTermPrimRule,
+    shiftTypeTermAppRule, shiftTypeTermLamRule, shiftTypeTermImpRule,
+    shiftTypeTermAllRule, shiftTypeTermTypeAppRule, shiftTypeTermTypeLamRule,
+    shiftTypeTermTypeAllRule, reduceTypeEtaRule ]
 
 def definition : CalculusLanguageDef :=
   { EnvironmentKernel.definition with
@@ -644,239 +748,226 @@ def definition : CalculusLanguageDef :=
         version := "megalodon-beta-delta-eta-v1" } }
 
 set_option maxRecDepth 100000 in
-set_option maxHeartbeats 5000000 in
 theorem definition_valid : definition.isValid = true := by
-  have hvalidate : definition.toLanguageDef.validate = [] := by
-    apply LanguageDef.validate_eq_nil_of_constructorOnly <;>
-      simp [definition, definition, additionalConstructors,
-        definitionParameterName, identityDefinitionName,
-        EnvironmentKernel.definition, EnvironmentKernel.additionalConstructors,
-        MathdataKernel.polymorphicReuseName,
-        EnvironmentKernel.implicationReuseTermName,
-        EnvironmentKernel.implicationReuseKnownName,
-        PolymorphicKernel.definition, TermQuantifiedKernel.definition,
-        TermQuantifiedKernel.constructors,
-        TermQuantifiedKernel.expressionType,
-        TermQuantifiedKernel.expressionConstructor,
-        LanguageDef.typeNames, TypeDecl.plain, TermParam.typeExpr,
-        TypeExpr.baseNames]
-  unfold CalculusLanguageDef.isValid CalculusLanguageDef.hasValidLocalRules
-  rw [hvalidate]
-  simp (config := { maxSteps := 5000000, decide := true })
-    [ definition, definition, additionalConstructors,
-      definitionParameterName, identityDefinitionName,
-      additionalJudgments, additionalRules,
-      CalculusLanguageDef.ruleIds, CalculusLanguageDef.judgmentSignatureValid,
-      CalculusLanguageDef.judgmentHeads, CalculusLanguageDef.conversionDeclarationValid,
-      CalculusLanguageDef.lookupJudgment?, RuleSchema.isValidIn,
-      RuleSchema.isLocallyValid, RuleSchema.metavariableNames,
-      RuleSchema.occurrences, RuleSchema.patterns,
-      patternMetavariableOccurrencesAt, patternsMetavariableOccurrencesAt,
-      patternHasNoCollectionRest, patternsHaveNoCollectionRest,
-      CalculusLanguageDef.judgmentSchemaValid, fixedConstructorsValid,
-      fixedConstructorListsValid, languageHasConstructorArity,
-      Pattern.isWellScoped, Pattern.isWellScopedAt,
-      Pattern.isWellScopedListAt, Pattern.hasCanonicalBinderMetadata,
-      Pattern.hasCanonicalBinderMetadataList, Pattern.zipHead,
-      Pattern.mapHead, Pattern.evalHead,
-      projectNilRule, projectParameterRule, projectDefinitionRule,
-      polyTypePlainRule, polyTypeAllRule,
-      declarationsValidNilRule, declarationsValidParameterRule,
-      declarationsValidDefinitionRule,
-      shiftTypeContextNilRule, shiftTypeContextConsRule,
-      termTypeAppRule, termTypeLamRule,
-      definitionHereRule, definitionThereParameterRule,
-      definitionThereDefinitionRule,
-      reduceDeltaRule, reduceBetaRule, reduceTypeBetaRule, reduceEtaRule,
-      reduceAppFunctionRule, reduceAppArgumentRule, reduceLamBodyRule,
-      reduceImpDomainRule, reduceImpCodomainRule, reduceAllBodyRule,
-      reduceTypeAppFunctionRule, reduceTypeLamBodyRule,
-      reduceTypeAllBodyRule, pathReflRule, pathStepRule,
-      conversionCommonRule, fullProofRule,
-      propositionPlainRule, propositionTypeAllRule,
-      fullConvertRule, fullImpIntroRule, fullImpElimRule,
-      fullAllIntroRule, fullAllElimRule,
-      fullTypeElimRule, fullTypeIntroRule,
-      rule, ruleId, projectSignature, polyType, declarationsValid,
-      shiftTypeContext,
-      definitionMember, substituteTerm,
-      substituteTypeInTerm, shiftTerm, reduces, reductionPath, converts,
-      scopedTerm, propositionRepresentative,
-      baseProves, fullProves, a, m,
-      EnvironmentKernel.definition, EnvironmentKernel.additionalConstructors,
-      EnvironmentKernel.additionalJudgments, EnvironmentKernel.additionalRules,
-      MathdataKernel.polymorphicReuseName,
-      EnvironmentKernel.implicationReuseTermName,
-      EnvironmentKernel.implicationReuseKnownName,
-      PolymorphicKernel.definition, PolymorphicKernel.additionalJudgments,
-      PolymorphicKernel.additionalRules, PolymorphicKernel.rule,
-      PolymorphicKernel.ruleId, PolymorphicKernel.plainVarRule,
-      PolymorphicKernel.plainPropRule, PolymorphicKernel.plainBaseRule,
-      PolymorphicKernel.plainArrRule, PolymorphicKernel.typeVarZeroRule,
-      PolymorphicKernel.typeVarSuccRule, PolymorphicKernel.typeNamedZeroRule,
-      PolymorphicKernel.typeNamedSuccRule, PolymorphicKernel.typeAppRule,
-      PolymorphicKernel.typeLamRule, PolymorphicKernel.typeImpRule,
-      PolymorphicKernel.typeAllRule, PolymorphicKernel.proofHypZeroRule,
-      PolymorphicKernel.proofHypSuccRule,
-      PolymorphicKernel.proofImpIntroRule,
-      PolymorphicKernel.proofImpElimRule,
-      PolymorphicKernel.proofAllIntroRule,
-      PolymorphicKernel.proofAllElimRule,
-      PolymorphicKernel.proofTypeIntroRule,
-      PolymorphicKernel.plainType, PolymorphicKernel.hasType,
-      PolymorphicKernel.proves, PolymorphicKernel.lessThan,
-      PolymorphicKernel.shiftProofContext,
-      PolymorphicKernel.substituteTerm, PolymorphicKernel.a,
-      PolymorphicKernel.m,
-      TermQuantifiedKernel.definition, TermQuantifiedKernel.constructors,
-      TermQuantifiedKernel.rules, TermQuantifiedKernel.expressionType,
-      TermQuantifiedKernel.expressionConstructor,
-      TermQuantifiedKernel.rule, TermQuantifiedKernel.ruleId,
-      TermQuantifiedKernel.addZeroRule, TermQuantifiedKernel.addSuccRule,
-      TermQuantifiedKernel.lessZeroRule, TermQuantifiedKernel.lessSuccRule,
-      TermQuantifiedKernel.shiftVarAtZeroRule,
-      TermQuantifiedKernel.shiftVarBelowRule,
-      TermQuantifiedKernel.shiftVarSuccRule,
-      TermQuantifiedKernel.shiftNamedRule, TermQuantifiedKernel.shiftAppRule,
-      TermQuantifiedKernel.shiftImpRule, TermQuantifiedKernel.shiftAllRule,
-      TermQuantifiedKernel.shiftProofNilRule,
-      TermQuantifiedKernel.shiftProofConsRule,
-      TermQuantifiedKernel.substVarEqualRule,
-      TermQuantifiedKernel.substVarBelowRule,
-      TermQuantifiedKernel.substVarAboveRule,
-      TermQuantifiedKernel.substNamedRule,
-      TermQuantifiedKernel.substAppRule, TermQuantifiedKernel.substImpRule,
-      TermQuantifiedKernel.substAllRule,
-      TermQuantifiedKernel.typeVarZeroRule,
-      TermQuantifiedKernel.typeVarSuccRule,
-      TermQuantifiedKernel.typeNamedZeroRule,
-      TermQuantifiedKernel.typeNamedSuccRule,
-      TermQuantifiedKernel.typeAppRule, TermQuantifiedKernel.typeImpRule,
-      TermQuantifiedKernel.typeAllRule,
-      TermQuantifiedKernel.proofHypZeroRule,
-      TermQuantifiedKernel.proofHypSuccRule,
-      TermQuantifiedKernel.proofImpIntroRule,
-      TermQuantifiedKernel.proofImpElimRule,
-      TermQuantifiedKernel.proofAllIntroRule,
-      TermQuantifiedKernel.proofAllElimRule,
-      TermQuantifiedKernel.addNat, TermQuantifiedKernel.lessThan,
-      TermQuantifiedKernel.shiftTerm,
-      TermQuantifiedKernel.shiftProofContext,
-      TermQuantifiedKernel.substituteTerm, TermQuantifiedKernel.hasType,
-      TermQuantifiedKernel.proves, TermQuantifiedKernel.a,
-      TermQuantifiedKernel.m, List.eraseDups, List.eraseDupsBy]
+  decide +kernel
 
 def validated : ValidatedCalculusLanguageDef := ⟨definition, definition_valid⟩
 
-@[simp] private theorem lookup_projectNilRule :
+@[simp] theorem lookup_projectNilRule :
     definition.lookupRule? (ruleId "megalodon-def-project-nil") =
       some projectNilRule := by
   rfl
 
-@[simp] private theorem lookup_projectParameterRule :
+@[simp] theorem lookup_projectParameterRule :
     definition.lookupRule? (ruleId "megalodon-def-project-parameter") =
       some projectParameterRule := by
   rfl
 
-@[simp] private theorem lookup_projectDefinitionRule :
+@[simp] theorem lookup_projectDefinitionRule :
     definition.lookupRule? (ruleId "megalodon-def-project-definition") =
       some projectDefinitionRule := by
   rfl
 
-@[simp] private theorem lookup_definitionHereRule :
+@[simp] theorem lookup_definitionHereRule :
     definition.lookupRule? (ruleId "megalodon-def-member-here") =
       some definitionHereRule := by
   rfl
 
-@[simp] private theorem lookup_reduceDeltaRule :
+@[simp] theorem lookup_reduceDeltaRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-delta") =
       some reduceDeltaRule := by
   rfl
 
-@[simp] private theorem lookup_reduceBetaRule :
+@[simp] theorem lookup_reduceBetaRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-beta") =
       some reduceBetaRule := by
   rfl
 
-@[simp] private theorem lookup_reduceEtaRule :
+@[simp] theorem lookup_reduceEtaRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-eta") =
       some reduceEtaRule := by
   rfl
 
-@[simp] private theorem lookup_reduceAppFunctionRule :
+@[simp] theorem lookup_reduceAppFunctionRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-app-function") =
       some reduceAppFunctionRule := by
   rfl
 
-@[simp] private theorem lookup_reduceImpDomainRule :
+@[simp] theorem lookup_reduceImpDomainRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-imp-domain") =
       some reduceImpDomainRule := by
   rfl
 
-@[simp] private theorem lookup_reduceImpCodomainRule :
+@[simp] theorem lookup_reduceImpCodomainRule :
     definition.lookupRule? (ruleId "megalodon-def-reduce-imp-codomain") =
       some reduceImpCodomainRule := by
   rfl
 
-@[simp] private theorem lookup_pathReflRule :
+@[simp] theorem lookup_pathReflRule :
     definition.lookupRule? (ruleId "megalodon-def-path-refl") =
       some pathReflRule := by
   rfl
 
-@[simp] private theorem lookup_pathStepRule :
+@[simp] theorem lookup_pathStepRule :
     definition.lookupRule? (ruleId "megalodon-def-path-step") =
       some pathStepRule := by
   rfl
 
-@[simp] private theorem lookup_conversionCommonRule :
+@[simp] theorem lookup_conversionCommonRule :
     definition.lookupRule? (ruleId "megalodon-def-conversion-common") =
       some conversionCommonRule := by
   rfl
 
-@[simp] private theorem lookup_fullProofRule :
+@[simp] theorem lookup_fullProofRule :
     definition.lookupRule? (ruleId "megalodon-def-proof") =
       some fullProofRule := by
   rfl
 
-@[simp] private theorem lookup_environmentProofBaseRule :
+@[simp] theorem lookup_environmentProofBaseRule :
     definition.lookupRule? (ruleId "megalodon-env-proof-base") =
       some EnvironmentKernel.proofBaseRule := by
   rfl
 
-@[simp] private theorem lookup_typeNamedZeroRule :
+@[simp] theorem lookup_typeNamedZeroRule :
     definition.lookupRule? (ruleId "megalodon-poly-term-named-zero") =
       some PolymorphicKernel.typeNamedZeroRule := by
   rfl
 
-@[simp] private theorem lookup_typeNamedSuccRule :
+@[simp] theorem lookup_typeNamedSuccRule :
     definition.lookupRule? (ruleId "megalodon-poly-term-named-succ") =
       some PolymorphicKernel.typeNamedSuccRule := by
   rfl
 
-@[simp] private theorem lookup_typeAppRule :
+@[simp] theorem lookup_typeAppRule :
     definition.lookupRule? (ruleId "megalodon-poly-term-app") =
       some PolymorphicKernel.typeAppRule := by
   rfl
 
-@[simp] private theorem lookup_proofHypZeroRule :
+@[simp] theorem lookup_proofHypZeroRule :
     definition.lookupRule? (ruleId "megalodon-poly-proof-hyp-zero") =
       some PolymorphicKernel.proofHypZeroRule := by
   rfl
 
-@[simp] private theorem lookup_proofImpIntroRule :
+@[simp] theorem lookup_proofImpIntroRule :
     definition.lookupRule? (ruleId "megalodon-poly-proof-imp-intro") =
       some PolymorphicKernel.proofImpIntroRule := by
   rfl
 
-@[simp] private theorem lookup_shiftNamedRule :
+@[simp] theorem lookup_shiftNamedRule :
     definition.lookupRule? (ruleId "megalodon-term-shift-named") =
       some TermQuantifiedKernel.shiftNamedRule := by
   rfl
 
-@[simp] private theorem lookup_substVarEqualRule :
+@[simp] theorem lookup_substVarEqualRule :
     definition.lookupRule? (ruleId "megalodon-term-subst-var-equal") =
       some TermQuantifiedKernel.substVarEqualRule := by
   rfl
+
+section Lookups
+
+set_option maxRecDepth 100000
+
+@[simp] theorem lookup_definitionThereParameterRule :
+    definition.lookupRule? (ruleId "megalodon-def-member-there-parameter") =
+      some definitionThereParameterRule := by
+  rfl
+
+@[simp] theorem lookup_definitionThereDefinitionRule :
+    definition.lookupRule? (ruleId "megalodon-def-member-there-definition") =
+      some definitionThereDefinitionRule := by
+  rfl
+
+@[simp] theorem lookup_reduceTypeBetaRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-type-beta") =
+      some reduceTypeBetaRule := by
+  rfl
+
+@[simp] theorem lookup_reduceTypeEtaRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-type-eta") =
+      some reduceTypeEtaRule := by
+  rfl
+
+@[simp] theorem lookup_reduceAppArgumentRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-app-argument") =
+      some reduceAppArgumentRule := by
+  rfl
+
+@[simp] theorem lookup_reduceLamBodyRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-lam-body") =
+      some reduceLamBodyRule := by
+  rfl
+
+@[simp] theorem lookup_reduceAllBodyRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-all-body") =
+      some reduceAllBodyRule := by
+  rfl
+
+@[simp] theorem lookup_reduceTypeAppFunctionRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-type-app-function") =
+      some reduceTypeAppFunctionRule := by
+  rfl
+
+@[simp] theorem lookup_reduceTypeLamBodyRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-type-lam-body") =
+      some reduceTypeLamBodyRule := by
+  rfl
+
+@[simp] theorem lookup_reduceTypeAllBodyRule :
+    definition.lookupRule? (ruleId "megalodon-def-reduce-type-all-body") =
+      some reduceTypeAllBodyRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermVarRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-var") =
+      some shiftTypeTermVarRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermNamedRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-named") =
+      some shiftTypeTermNamedRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermPrimRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-prim") =
+      some shiftTypeTermPrimRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermAppRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-app") =
+      some shiftTypeTermAppRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermLamRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-lam") =
+      some shiftTypeTermLamRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermImpRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-imp") =
+      some shiftTypeTermImpRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermAllRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-all") =
+      some shiftTypeTermAllRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermTypeAppRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-type-app") =
+      some shiftTypeTermTypeAppRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermTypeLamRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-type-lam") =
+      some shiftTypeTermTypeLamRule := by
+  rfl
+
+@[simp] theorem lookup_shiftTypeTermTypeAllRule :
+    definition.lookupRule? (ruleId "megalodon-def-shift-type-term-type-all") =
+      some shiftTypeTermTypeAllRule := by
+  rfl
+
+end Lookups
 
 def coGSLTDefinition : ExtendedLanguageDef calculusLayer :=
   definition.toExtended
@@ -1089,6 +1180,407 @@ theorem compileProjection_checked (declarations : List MathdataKernel.TermDecl) 
             Pattern.hasCanonicalBinderMetadataList,
             a, m]
           simpa [validated, projectSignature, a] using inductionHypothesis
+
+/-! ## Checked type shifts and type-level eta
+
+Type-level eta removes an unused type binder. Its evidence is the checked shift of the type
+variables of the reduct (`compileTypeShiftTerm`): lifting them by one must reconstruct the
+function beneath the type binder. -/
+
+section TypeEta
+
+private theorem checkRaw_node_eq {ruleInstance : RuleInstance} {premises : List Pattern}
+    {conclusion : Pattern} (children : List RawProof)
+    (instantiated : instantiateRule? validated ruleInstance =
+      some (premises, conclusion)) :
+    checkRaw validated conclusion (.node ruleInstance children) =
+      checkRawChildren validated premises children := by
+  rw [checkRaw, instantiated]
+  simp
+
+private theorem checkRawChildren_single (premise : Pattern) (child : RawProof) :
+    checkRawChildren validated [premise] [child] =
+      checkRaw validated premise child := by
+  simp [checkRawChildren]
+
+private theorem checkRawChildren_pair (first second : Pattern) (firstChild secondChild : RawProof) :
+    checkRawChildren validated [first, second]
+        [firstChild, secondChild] =
+      (checkRaw validated first firstChild &&
+        checkRaw validated second secondChild) := by
+  simp [checkRawChildren]
+
+set_option maxRecDepth 100000
+
+private theorem instantiate_var (amount cutoff index : Nat) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-var",
+          arguments := [ENat amount, ENat cutoff, ENat index] } =
+      some ([], shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.db index))
+        (ETm (.db index))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermVarRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermVarRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_named (amount cutoff : Nat) (name : MathdataKernel.Name) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-named",
+          arguments := [ENat amount, ENat cutoff, a name] } =
+      some ([], shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.named name))
+        (ETm (.named name))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermNamedRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermNamedRule,
+    shiftTypeInTerm, ruleId, Pattern.isGroundAt, Pattern.isGroundListAt,
+    Pattern.hasCanonicalBinderMetadata, Pattern.hasCanonicalBinderMetadataList,
+    TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_prim (amount cutoff index : Nat) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-prim",
+          arguments := [ENat amount, ENat cutoff, ENat index] } =
+      some ([], shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.prim index))
+        (ETm (.prim index))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermPrimRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermPrimRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_app (amount cutoff : Nat)
+    (function argument functionResult argumentResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-app",
+          arguments := [ENat amount, ENat cutoff, ETm function, ETm argument,
+            ETm functionResult, ETm argumentResult] } =
+      some ([shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm function) (ETm functionResult),
+          shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm argument) (ETm argumentResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.app function argument))
+          (ETm (.app functionResult argumentResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermAppRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermAppRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_lam (amount cutoff : Nat) (type : MathdataKernel.Tp)
+    (body : MathdataKernel.Tm) (typeResult : MathdataKernel.Tp) (bodyResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-lam",
+          arguments := [ENat amount, ENat cutoff, ETp type, ETm body, ETp typeResult,
+            ETm bodyResult] } =
+      some ([EnvironmentKernel.shiftType (ENat amount) (ENat cutoff) (ETp type) (ETp typeResult),
+          shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm body) (ETm bodyResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.lam type body))
+          (ETm (.lam typeResult bodyResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermLamRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermLamRule,
+    shiftTypeInTerm, ruleId, EnvironmentKernel.shiftType, EnvironmentKernel.a,
+    TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_imp (amount cutoff : Nat)
+    (domain codomain domainResult codomainResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-imp",
+          arguments := [ENat amount, ENat cutoff, ETm domain, ETm codomain, ETm domainResult,
+            ETm codomainResult] } =
+      some ([shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm domain) (ETm domainResult),
+          shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm codomain) (ETm codomainResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.imp domain codomain))
+          (ETm (.imp domainResult codomainResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermImpRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermImpRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_all (amount cutoff : Nat) (type : MathdataKernel.Tp)
+    (body : MathdataKernel.Tm) (typeResult : MathdataKernel.Tp) (bodyResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-all",
+          arguments := [ENat amount, ENat cutoff, ETp type, ETm body, ETp typeResult,
+            ETm bodyResult] } =
+      some ([EnvironmentKernel.shiftType (ENat amount) (ENat cutoff) (ETp type) (ETp typeResult),
+          shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm body) (ETm bodyResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.all type body))
+          (ETm (.all typeResult bodyResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermAllRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermAllRule,
+    shiftTypeInTerm, ruleId, EnvironmentKernel.shiftType, EnvironmentKernel.a,
+    TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_typeApp (amount cutoff : Nat) (function : MathdataKernel.Tm)
+    (type : MathdataKernel.Tp) (functionResult : MathdataKernel.Tm)
+    (typeResult : MathdataKernel.Tp) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-type-app",
+          arguments := [ENat amount, ENat cutoff, ETm function, ETp type, ETm functionResult,
+            ETp typeResult] } =
+      some ([shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm function) (ETm functionResult),
+          EnvironmentKernel.shiftType (ENat amount) (ENat cutoff) (ETp type) (ETp typeResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.typeApp function type))
+          (ETm (.typeApp functionResult typeResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermTypeAppRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermTypeAppRule,
+    shiftTypeInTerm, ruleId, EnvironmentKernel.shiftType, EnvironmentKernel.a,
+    TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.a]
+
+private theorem instantiate_typeLam (amount cutoff : Nat) (body bodyResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-type-lam",
+          arguments := [ENat amount, ENat cutoff, ETm body, ETm bodyResult] } =
+      some ([shiftTypeInTerm (ENat amount) (ENat (cutoff + 1)) (ETm body) (ETm bodyResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.typeLam body))
+          (ETm (.typeLam bodyResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermTypeLamRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermTypeLamRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.encodeNat,
+    TermQuantifiedKernel.a]
+
+private theorem instantiate_typeAll (amount cutoff : Nat) (body bodyResult : MathdataKernel.Tm) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-shift-type-term-type-all",
+          arguments := [ENat amount, ENat cutoff, ETm body, ETm bodyResult] } =
+      some ([shiftTypeInTerm (ENat amount) (ENat (cutoff + 1)) (ETm body) (ETm bodyResult)],
+        shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm (.typeAll body))
+          (ETm (.typeAll bodyResult))) := by
+  simp only [instantiateRule?, validated,
+    lookup_shiftTypeTermTypeAllRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, shiftTypeTermTypeAllRule,
+    shiftTypeInTerm, ruleId, TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.encodeNat,
+    TermQuantifiedKernel.a]
+
+private theorem instantiate_typeEta (declarations : Pattern) (function result : MathdataKernel.Tm)
+    (declarationsGround : declarations.isGroundAt 0 = true)
+    (declarationsCanonical : declarations.hasCanonicalBinderMetadata = true) :
+    instantiateRule? validated
+        { ruleId := ruleId "megalodon-def-reduce-type-eta",
+          arguments := [declarations, ETm function, ETm result] } =
+      some ([shiftTypeInTerm (ENat 1) (ENat 0) (ETm result) (ETm function)],
+        reduces declarations
+          (ETm (.typeLam (.typeApp function (.var 0)))) (ETm result)) := by
+  simp only [instantiateRule?, validated,
+    lookup_reduceTypeEtaRule]
+  simp [argumentsValidAt, argumentValidAt, instantiateSchemas?, instantiateSchema?,
+    instantiateSchemasAt?, instantiateSchemaAt?, lookupArgumentAt?,
+    RuleSchema.sideConditionsHold, rule, a, m, reduces, reduceTypeEtaRule,
+    shiftTypeInTerm, ruleId, declarationsGround, declarationsCanonical,
+    TermQuantifiedKernel.encodeTm, TermQuantifiedKernel.encodeTp,
+    TermQuantifiedKernel.encodeNat, TermQuantifiedKernel.a]
+
+/-- Shift the type variables of a term, with the checked evidence. -/
+def compileTypeShiftTerm (amount : Nat) :
+    (cutoff : Nat) → MathdataKernel.Tm → MathdataKernel.Tm × RawProof
+  | cutoff, .db index =>
+      (.db index,
+        node "megalodon-def-shift-type-term-var" [ENat amount, ENat cutoff, ENat index])
+  | cutoff, .named name =>
+      (.named name,
+        node "megalodon-def-shift-type-term-named" [ENat amount, ENat cutoff, a name])
+  | cutoff, .prim index =>
+      (.prim index,
+        node "megalodon-def-shift-type-term-prim" [ENat amount, ENat cutoff, ENat index])
+  | cutoff, .app function argument =>
+      let functionCompiled := compileTypeShiftTerm amount cutoff function
+      let argumentCompiled := compileTypeShiftTerm amount cutoff argument
+      (.app functionCompiled.1 argumentCompiled.1,
+        node "megalodon-def-shift-type-term-app"
+          [ENat amount, ENat cutoff, ETm function, ETm argument, ETm functionCompiled.1,
+            ETm argumentCompiled.1]
+          [functionCompiled.2, argumentCompiled.2])
+  | cutoff, .lam type body =>
+      let typeCompiled := EnvironmentKernel.compileTypeShift amount cutoff type
+      let bodyCompiled := compileTypeShiftTerm amount cutoff body
+      (.lam typeCompiled.1 bodyCompiled.1,
+        node "megalodon-def-shift-type-term-lam"
+          [ENat amount, ENat cutoff, ETp type, ETm body, ETp typeCompiled.1,
+            ETm bodyCompiled.1]
+          [typeCompiled.2, bodyCompiled.2])
+  | cutoff, .imp domain codomain =>
+      let domainCompiled := compileTypeShiftTerm amount cutoff domain
+      let codomainCompiled := compileTypeShiftTerm amount cutoff codomain
+      (.imp domainCompiled.1 codomainCompiled.1,
+        node "megalodon-def-shift-type-term-imp"
+          [ENat amount, ENat cutoff, ETm domain, ETm codomain, ETm domainCompiled.1,
+            ETm codomainCompiled.1]
+          [domainCompiled.2, codomainCompiled.2])
+  | cutoff, .all type body =>
+      let typeCompiled := EnvironmentKernel.compileTypeShift amount cutoff type
+      let bodyCompiled := compileTypeShiftTerm amount cutoff body
+      (.all typeCompiled.1 bodyCompiled.1,
+        node "megalodon-def-shift-type-term-all"
+          [ENat amount, ENat cutoff, ETp type, ETm body, ETp typeCompiled.1,
+            ETm bodyCompiled.1]
+          [typeCompiled.2, bodyCompiled.2])
+  | cutoff, .typeApp function type =>
+      let functionCompiled := compileTypeShiftTerm amount cutoff function
+      let typeCompiled := EnvironmentKernel.compileTypeShift amount cutoff type
+      (.typeApp functionCompiled.1 typeCompiled.1,
+        node "megalodon-def-shift-type-term-type-app"
+          [ENat amount, ENat cutoff, ETm function, ETp type, ETm functionCompiled.1,
+            ETp typeCompiled.1]
+          [functionCompiled.2, typeCompiled.2])
+  | cutoff, .typeLam body =>
+      let bodyCompiled := compileTypeShiftTerm amount (cutoff + 1) body
+      (.typeLam bodyCompiled.1,
+        node "megalodon-def-shift-type-term-type-lam"
+          [ENat amount, ENat cutoff, ETm body, ETm bodyCompiled.1] [bodyCompiled.2])
+  | cutoff, .typeAll body =>
+      let bodyCompiled := compileTypeShiftTerm amount (cutoff + 1) body
+      (.typeAll bodyCompiled.1,
+        node "megalodon-def-shift-type-term-type-all"
+          [ENat amount, ENat cutoff, ETm body, ETm bodyCompiled.1] [bodyCompiled.2])
+
+theorem compileTypeShiftTerm_result (amount : Nat) :
+    ∀ (cutoff : Nat) (term : MathdataKernel.Tm),
+      (compileTypeShiftTerm amount cutoff term).1 = MathdataKernel.Tm.typeShift cutoff amount term
+  | _, .db _ => rfl
+  | _, .named _ => rfl
+  | _, .prim _ => rfl
+  | cutoff, .app function argument => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        compileTypeShiftTerm_result amount cutoff function,
+        compileTypeShiftTerm_result amount cutoff argument]
+  | cutoff, .lam type body => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        EnvironmentKernel.compileTypeShift_result, compileTypeShiftTerm_result amount cutoff body]
+  | cutoff, .imp domain codomain => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        compileTypeShiftTerm_result amount cutoff domain,
+        compileTypeShiftTerm_result amount cutoff codomain]
+  | cutoff, .all type body => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        EnvironmentKernel.compileTypeShift_result, compileTypeShiftTerm_result amount cutoff body]
+  | cutoff, .typeApp function type => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        EnvironmentKernel.compileTypeShift_result,
+        compileTypeShiftTerm_result amount cutoff function]
+  | cutoff, .typeLam body => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        compileTypeShiftTerm_result amount (cutoff + 1) body]
+  | cutoff, .typeAll body => by
+      simp [compileTypeShiftTerm, MathdataKernel.Tm.typeShift,
+        compileTypeShiftTerm_result amount (cutoff + 1) body]
+
+private theorem typeShift_checked (amount cutoff : Nat) (type : MathdataKernel.Tp) :
+    checkRaw validated
+      (EnvironmentKernel.shiftType (ENat amount) (ENat cutoff) (ETp type)
+        (ETp (EnvironmentKernel.compileTypeShift amount cutoff type).1))
+      (EnvironmentKernel.compileTypeShift amount cutoff type).2 = true :=
+  checkRaw_true_of_ruleLookupRefines environment_ruleLookupRefines
+    (EnvironmentKernel.compileTypeShift_checked amount cutoff type)
+
+/-- The type shift compiler is sound: its evidence proves exactly the shift it computes. -/
+theorem compileTypeShiftTerm_checked (amount : Nat) :
+    ∀ (cutoff : Nat) (term : MathdataKernel.Tm),
+      checkRaw validated
+        (shiftTypeInTerm (ENat amount) (ENat cutoff) (ETm term)
+          (ETm (compileTypeShiftTerm amount cutoff term).1))
+        (compileTypeShiftTerm amount cutoff term).2 = true
+  | cutoff, .db index => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq [] (instantiate_var amount cutoff index)]
+      simp [checkRawChildren]
+  | cutoff, .named name => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq [] (instantiate_named amount cutoff name)]
+      simp [checkRawChildren]
+  | cutoff, .prim index => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq [] (instantiate_prim amount cutoff index)]
+      simp [checkRawChildren]
+  | cutoff, .app function argument => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_app amount cutoff function argument _ _),
+        checkRawChildren_pair, Bool.and_eq_true]
+      exact ⟨compileTypeShiftTerm_checked amount cutoff function,
+        compileTypeShiftTerm_checked amount cutoff argument⟩
+  | cutoff, .lam type body => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_lam amount cutoff type body _ _),
+        checkRawChildren_pair, Bool.and_eq_true]
+      exact ⟨typeShift_checked amount cutoff type,
+        compileTypeShiftTerm_checked amount cutoff body⟩
+  | cutoff, .imp domain codomain => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_imp amount cutoff domain codomain _ _),
+        checkRawChildren_pair, Bool.and_eq_true]
+      exact ⟨compileTypeShiftTerm_checked amount cutoff domain,
+        compileTypeShiftTerm_checked amount cutoff codomain⟩
+  | cutoff, .all type body => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_all amount cutoff type body _ _),
+        checkRawChildren_pair, Bool.and_eq_true]
+      exact ⟨typeShift_checked amount cutoff type,
+        compileTypeShiftTerm_checked amount cutoff body⟩
+  | cutoff, .typeApp function type => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_typeApp amount cutoff function type _ _),
+        checkRawChildren_pair, Bool.and_eq_true]
+      exact ⟨compileTypeShiftTerm_checked amount cutoff function,
+        typeShift_checked amount cutoff type⟩
+  | cutoff, .typeLam body => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_typeLam amount cutoff body _),
+        checkRawChildren_single]
+      exact compileTypeShiftTerm_checked amount (cutoff + 1) body
+  | cutoff, .typeAll body => by
+      simp only [compileTypeShiftTerm]
+      rw [node, checkRaw_node_eq _ (instantiate_typeAll amount cutoff body _),
+        checkRawChildren_single]
+      exact compileTypeShiftTerm_checked amount (cutoff + 1) body
+
+/-- Compile a successful Mathdata removal of an unused type binder into the type shift
+witness and the single type-level eta node. -/
+def compileTypeEtaReduction (declarations : Pattern) (function result : MathdataKernel.Tm)
+    (_ : MathdataKernel.Tm.typeDropAt? 0 function = some result) : RawProof :=
+  node "megalodon-def-reduce-type-eta" [declarations, ETm function, ETm result]
+    [(compileTypeShiftTerm 1 0 result).2]
+
+/-- The type-level eta compiler is sound: Mathdata's removal of an unused type binder
+becomes one accepted reduction step with the same endpoints. -/
+theorem compileTypeEtaReduction_checked (declarations : Pattern)
+    (function result : MathdataKernel.Tm)
+    (drop : MathdataKernel.Tm.typeDropAt? 0 function = some result)
+    (declarationsGround : declarations.isGroundAt 0 = true)
+    (declarationsCanonical : declarations.hasCanonicalBinderMetadata = true) :
+    checkRaw validated
+      (reduces declarations
+        (ETm (.typeLam (.typeApp function (.var 0)))) (ETm result))
+      (compileTypeEtaReduction declarations function result drop) = true := by
+  rw [compileTypeEtaReduction, node,
+    checkRaw_node_eq _ (instantiate_typeEta declarations function result declarationsGround
+      declarationsCanonical), checkRawChildren_single]
+  have shifted : (compileTypeShiftTerm 1 0 result).1 = function := by
+    rw [compileTypeShiftTerm_result]
+    exact SortedABTRefinement.typeShift_of_typeDropAt?_eq_some 0 drop
+  have checked := compileTypeShiftTerm_checked 1 0 result
+  rw [shifted] at checked
+  exact checked
+
+end TypeEta
 
 def parameterDeclaration : MathdataKernel.TermDecl :=
   { name := definitionParameterName, type := .prop }
@@ -1786,27 +2278,27 @@ private def prefixHypothesisArticle (continuation : RawProof) : RawProof :=
       emptyTypes, emptyProofs, prefixProposition, prefixProposition, prefixProposition]
     [prefixFormationArticle, prefixFormationArticle, continuation]
 
-@[simp] private theorem lookup_typeAllRule :
+@[simp] theorem lookup_typeAllRule :
     definition.lookupRule? (ruleId "megalodon-poly-term-all") =
       some PolymorphicKernel.typeAllRule := by rfl
 
-@[simp] private theorem lookup_typeVarZeroRule :
+@[simp] theorem lookup_typeVarZeroRule :
     definition.lookupRule? (ruleId "megalodon-poly-term-var-zero") =
       some PolymorphicKernel.typeVarZeroRule := by rfl
 
-@[simp] private theorem lookup_plainPropRule :
+@[simp] theorem lookup_plainPropRule :
     definition.lookupRule? (ruleId "megalodon-poly-type-prop") =
       some PolymorphicKernel.plainPropRule := by rfl
 
-@[simp] private theorem lookup_propositionPlainRule :
+@[simp] theorem lookup_propositionPlainRule :
     definition.lookupRule? (ruleId "megalodon-def-proposition-plain") =
       some propositionPlainRule := by rfl
 
-@[simp] private theorem lookup_propositionTypeAllRule :
+@[simp] theorem lookup_propositionTypeAllRule :
     definition.lookupRule? (ruleId "megalodon-def-proposition-type-all") =
       some propositionTypeAllRule := by rfl
 
-@[simp] private theorem lookup_fullImpIntroRule :
+@[simp] theorem lookup_fullImpIntroRule :
     definition.lookupRule? (ruleId "megalodon-def-proof-imp-intro") =
       some fullImpIntroRule := by rfl
 

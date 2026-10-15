@@ -2,6 +2,8 @@ import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardBiformTheory
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardExecuteOperational
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardToStructuredCSemantics
 
+open Mettapedia.Logic.Consequence
+
 /-!
 # The hot call-guard executor as a biform theory
 
@@ -22,7 +24,7 @@ open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.GSLT.LanguageDef
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.LanguageDef.BiformTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT

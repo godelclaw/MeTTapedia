@@ -340,7 +340,7 @@ theorem finishHandler_finishDelta_exact
 
 def relations : RelationEnv := relationEnv finishHandler
 
-def reductionLaws : ReductionRespectsEquationsUsing relations
+theorem reductionLaws : ReductionRespectsEquationsUsing relations
     StructuredC.language :=
   ReductionRespectsEquationsUsing.of_equation_free relations rfl
 
@@ -398,7 +398,7 @@ def missingFinishHandler : ExternalHandler :=
 
 def missingFinishRelations : RelationEnv := relationEnv missingFinishHandler
 
-def missingFinishLaws : ReductionRespectsEquationsUsing missingFinishRelations
+theorem missingFinishLaws : ReductionRespectsEquationsUsing missingFinishRelations
     StructuredC.language :=
   ReductionRespectsEquationsUsing.of_equation_free missingFinishRelations rfl
 

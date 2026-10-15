@@ -1,5 +1,6 @@
-import Mettapedia.GSLT.LanguageDef.MaximalNativeCalculus
-import Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
+import Mettapedia.GSLT.Core.StepFree
+import Mettapedia.GSLT.LanguageDef.CapabilitySelection
+import Mettapedia.GSLT.LanguageDef.ObservationRefinement
 import Mettapedia.GSLT.Parsing.BackendCorrespondence
 
 /-!
@@ -36,9 +37,9 @@ namespace Mettapedia.GSLT.LanguageDef.GSLTHosting
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.IndexedOperational
-open Mettapedia.GSLT.LanguageDef.MaximalNativeCalculus
-open Mettapedia.GSLT.LanguageDef.NIKObservedRefinement
-open Mettapedia.GSLT.LanguageDef.NIKRouteAdmission
+open Mettapedia.GSLT.LanguageDef.CapabilitySelection
+open Mettapedia.GSLT.LanguageDef.ObservationRefinement
+open Mettapedia.GSLT.LanguageDef.OperationalAdmission
 open Mettapedia.GSLT.Parsing.CompilerCorrespondence
 open Mettapedia.GSLT.Parsing.GuardCorrespondence
 open Mettapedia.GSLT.Parsing.PackedForest
@@ -142,7 +143,7 @@ def comp (earlier : BehavioralHosting source middle)
   rfl
 
 /-- Forget no-invention only after obtaining the ordinary operational
-refinement used by NIK admission. -/
+refinement used by SemanticService admission. -/
 def toRefinement (hosting : BehavioralHosting source target) :
     Refinement source.operational target.operational :=
   hosting.forward.refinement
@@ -248,7 +249,7 @@ def toRecognizedFamily
 its erased admission arrow. -/
 def selectedHosting (family : HostedRecognizedFamily Index source target)
     (selection :
-      family.toRecognizedFamily.MaximalNativeCalculusPrinciple) :
+      family.toRecognizedFamily.MaximalLicensedSelection) :
     BehavioralHosting source target :=
   family.hosting selection.1
 
@@ -257,7 +258,7 @@ because eligibility was already restricted to hosting realizations. -/
 theorem selected_produces_iff
     (family : HostedRecognizedFamily Index source target)
     (selection :
-      family.toRecognizedFamily.MaximalNativeCalculusPrinciple)
+      family.toRecognizedFamily.MaximalLicensedSelection)
     (initial : source.operational.theory.Term) (value : Value) :
     ProducesObservation target
         ((family.selectedHosting selection).compile initial) value ↔
@@ -270,14 +271,14 @@ member exists, never to establish semantic correctness. -/
 def strongestHosting
     (family : HostedRecognizedFamily Index source target)
     (request : family.toRecognizedFamily.CapabilityRequest)
-    (selection : request.StrongestNativeCalculusPrinciple) :
+    (selection : request.GreatestLicensedSelection) :
     BehavioralHosting source target :=
   family.hosting selection.1
 
 theorem strongest_produces_iff
     (family : HostedRecognizedFamily Index source target)
     (request : family.toRecognizedFamily.CapabilityRequest)
-    (selection : request.StrongestNativeCalculusPrinciple)
+    (selection : request.GreatestLicensedSelection)
     (initial : source.operational.theory.Term) (value : Value) :
     ProducesObservation target
         ((family.strongestHosting request selection).compile initial) value ↔
@@ -290,7 +291,7 @@ end HostedRecognizedFamily
 
 namespace FusionCanary
 
-open NIKObservedRefinement.FusionCanary
+open ObservationRefinement.FusionCanary
 
 private theorem discretePath_final_eq_initial
     {initial final : targetTheory.Term}
@@ -299,7 +300,7 @@ private theorem discretePath_final_eq_initial
   | refl => rfl
   | cons step rest =>
       exact (show False from by
-        simpa [targetTheory, GSLT.discrete, GSLT.Step] using step.down).elim
+        simpa [targetTheory, GSLT.stepFree, GSLT.Step] using step.down).elim
 
 /-- The existing fused compiler is a genuine hosting realization for its
 declared semantic-result observation. -/
@@ -348,7 +349,7 @@ private theorem discreteLoop_eq_refl
   | refl => rfl
   | cons step rest =>
       exact (show False from by
-        simpa [targetTheory, GSLT.discrete, GSLT.Step] using step.down).elim
+        simpa [targetTheory, GSLT.stepFree, GSLT.Step] using step.down).elim
 
 private theorem targetObservationWitness_unique
     (left right : ObservationFibre targetObserved true true) :
@@ -401,12 +402,12 @@ def hostedFamily :
 
 theorem selected_fusion_is_exact_on_results :
     ∃ selection :
-        hostedFamily.toRecognizedFamily.MaximalNativeCalculusPrinciple,
+        hostedFamily.toRecognizedFamily.MaximalLicensedSelection,
       ProducesObservation targetObserved
           ((hostedFamily.selectedHosting selection).compile
             (false, true)) true ↔
         ProducesObservation sourceObserved (false, true) true := by
-  obtain ⟨selection⟩ := hostedFamily.toRecognizedFamily.principle_inhabited
+  obtain ⟨selection⟩ := hostedFamily.toRecognizedFamily.maximalLicensedSelection_inhabited
   exact ⟨selection,
     hostedFamily.selected_produces_iff selection (false, true) true⟩
 
@@ -416,7 +417,7 @@ end FusionCanary
 
 namespace ExtraBehaviorCanary
 
-@[reducible] def sourceTheory : GSLT := GSLT.discrete Unit
+@[reducible] def sourceTheory : GSLT := GSLT.stepFree Unit
 
 @[reducible] def targetTheory : GSLT where
   Term := Bool
@@ -453,7 +454,7 @@ def forwardRealization : OperationalRealization sourceTheory targetTheory where
   mapStep := by
     intro first last step
     exact (show False from by
-      simp [sourceTheory, GSLT.discrete, GSLT.Step] at step).elim
+      simp [GSLT.Step] at step).elim
 
 def forwardRefinement : Refinement sourceOperational targetOperational where
   realization := forwardRealization
@@ -468,9 +469,9 @@ def forward : ObservedRefinement sourceObserved targetObserved where
     | refl => rfl
     | cons step rest =>
         exact (show False from by
-          simpa [sourceTheory, GSLT.discrete, GSLT.Step] using step.down).elim
+          simpa [sourceTheory, GSLT.stepFree, GSLT.Step] using step.down).elim
 
-def extraStep : targetTheory.Step false true :=
+theorem extraStep : targetTheory.Step false true :=
   ⟨rfl, rfl⟩
 
 def extraPath : ExecutionPath targetTheory false true :=
@@ -559,11 +560,11 @@ namespace ExactLexicalRealization
 variable {Raw : Type uRaw}
 variable {source middle runtime : Raw → List Codepoint → Prop}
 
-def id (relation : Raw → List Codepoint → Prop) :
+theorem id (relation : Raw → List Codepoint → Prop) :
     ExactLexicalRealization relation relation where
   runtime_iff_source := fun _ _ => Iff.rfl
 
-def comp (earlier : ExactLexicalRealization source middle)
+theorem comp (earlier : ExactLexicalRealization source middle)
     (later : ExactLexicalRealization middle runtime) :
     ExactLexicalRealization source runtime where
   runtime_iff_source := fun raw codepoints =>

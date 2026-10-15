@@ -17,7 +17,7 @@ this checklist is not a percentage of all future cognitive-language research.
 This broad inventory is not the critical path or a readiness denominator for
 integrated higher-order MeTTa experimentation. In particular, closing every
 public observation, binding, evaluation, or final handoff row is not a premise
-of an already qualified HOL/DTT/NIK fragment. Experiments must pin the rules
+of an already qualified HOL/DTT/SemanticService fragment. Experiments must pin the rules
 and observations they use; they need not settle every Prime convention.
 The metatheory paper states that integration scope; working notes are maintained
 separately. This inventory retains its original row meanings and theorem evidence;
@@ -165,7 +165,7 @@ def obligations : List Obligation := [
       "The same formed syntactic CwF qualifies Pi/Sigma, Id/reflexivity, native motive frames/boundaries, universes, installed declarations and the required four-face specimen. The canonical family-only J attachment to this exact quotient is refuted; the separate retained-function interface now jointly qualifies all 33 native clauses with the source, fixed four-face services and actual required declarations. Indexed-environment and operational-presheaf/host comparisons remain open. A coarser semantic equality can lose conversion reflection without losing independently required native admission. Finite-list union does not make an abstract-set host; no full HOTG or optimal host is selected." },
   { id := "FORK-HO", milestone := .decisionFamilies
     decisionFamily := some .reasoning
-    acceptance := "GSLT/OSLF interfaces and all four NIK faces state the actual supported judgments, residuals and trust boundaries."
+    acceptance := "GSLT/OSLF interfaces and all four SemanticService faces state the actual supported judgments, residuals and trust boundaries."
     requirementIds := (study .reasoning).requirementIds, dependsOn := ["TRACE-003"]
     progress := .partialEvidence (study .reasoning).constraints
       "The HOL workload connects model discrimination, submitted proofs and revision reuse. Its structural producer now retains the actual submitted proof; theorem application and strategy inspection have distinct qualified views. Actual assembly callbacks feed the native-proof and submitted-receipt services. A sound proof producer can ignore submitted history, so faithful replay is a separate consumer contract. A required four-face registry fixes the caller's interfaces and native surfaces and rejects vacuous source substitution. Finite repeated matching/HOL calls have exact typed backends and generated complete-run OSLF meaning. Ordinary rewrite changes may alter conditional equation premises even when equation text is retained. The full public-judgment/native/model integration, raw proof-byte validation and unrestricted OSLF completeness remain open." },

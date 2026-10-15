@@ -34,7 +34,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceTypeCo
 
 open _root_.CategoryTheory
 open Mettapedia.GSLT.LanguageDef
-open KernelAuthority NIKMetalogic
+open KernelAuthority SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation Presentation.FormationSensitive SharedJudgmentFragment
@@ -70,11 +70,11 @@ variable (contract : Contract.{uIndex, uArtifact, uEvidence} targets)
   (universes : SharedJudgmentUniverseInterpretation.Operations C)
   (decode : SharedJudgmentUniverseInterpretation.CodesDecode interpretation universes)
   (index : Index)
-  (request : NIKServiceInvocation.Request
+  (request : SemanticServiceInvocation.Request
     (registry.serviceAt (requiredQualification contract registry qualified) index))
-  (input : NIKServiceInvocation.InputAdmission request)
+  (input : SemanticServiceInvocation.InputAdmission request)
   {claim : (targets index).Carrier}
-  (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim)
+  (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim)
   {level : LevelExpr Nat}
   (typeAdmitted : Judgment assembly.rules ((registry.attachment index).context claim)
     ((registry.attachment index).nativeType claim) (sortTm level))
@@ -218,8 +218,8 @@ theorem common_data_type_admitted :
 
 /-- All four actual required invocations have accepted payloads and an
 independently formed type, while retaining their native constructor meaning. -/
-theorem four_accepted_and_formed (face : NIK.Face) :
-    (NIKServiceInvocation.invoke (SharedJudgmentServiceRegistry.Controls.request face)).acceptedValue =
+theorem four_accepted_and_formed (face : SemanticService.Face) :
+    (SemanticServiceInvocation.invoke (SharedJudgmentServiceRegistry.Controls.request face)).acceptedValue =
       some (SharedJudgmentServiceRegistry.Controls.expected face) ∧
     Judgment common.rules NativeMatchedTransportDenotation.parameterContext
       (WireControls.parameterPayload (SharedJudgmentServiceRegistry.Controls.expected face)) NativeWireData.dataType ∧
@@ -240,7 +240,7 @@ theorem four_accepted_and_formed (face : NIK.Face) :
 
 /-- Each accepted face also supports the actual capture-safe filling of
 the Data parameter by an arbitrary constructor-algebra value. -/
-theorem four_formed_substitutions (face : NIK.Face) (value : Value) :
+theorem four_formed_substitutions (face : SemanticService.Face) (value : Value) :
     FormationSensitive.CtxMor common.rules NativeMatchedTransportDenotation.parameterContext
       OpaqueRelatorScopedComputation.Common.context (fillParameter value) ∧
     Judgment common.rules OpaqueRelatorScopedComputation.Common.context

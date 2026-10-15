@@ -16,7 +16,6 @@ theorem.
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 
 open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.WithParams
 open scoped ENNReal
@@ -33,10 +32,6 @@ abbrev PointedHOL := @Mettapedia.Logic.HOL.HenkinModel
 
 /-- Public HOL state alias. -/
 abbrev HOLState := @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.HOLState
-
-/-- Public categorical endpoint alias for HOL world-model states. -/
-abbrev WMCategoricalEndpointContract :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.WMCategoricalEndpointContract
 
 /-- Public pointwise implication relation for closed HOL formulas. -/
 abbrev pointwiseImplies (φ ψ : HOLQuery (Base := Base) Const) : Prop :=
@@ -83,9 +78,6 @@ abbrev multiset_strength_le_of_pointwise :=
 abbrev multiset_consequence_of_pointwise :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_consequence_of_pointwise
 
-abbrev multiset_strength_le_of_pointwise_categorical :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_pointwise_categorical
-
 abbrev multiset_strength_le_of_singletonStrengthLE :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_singletonStrengthLE
 
@@ -98,9 +90,6 @@ abbrev externalImplication_iff_singletonConsequence_of_sound_complete :=
 abbrev multiset_consequence_of_externalImplication_sound :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_consequence_of_externalImplication_sound
 
-abbrev multiset_strength_le_of_singletonStrengthLE_categorical :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_singletonStrengthLE_categorical
-
 abbrev wmConsequenceRule_of_pointwise :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRule_of_pointwise
 
@@ -110,14 +99,8 @@ abbrev wmConsequenceRule_of_singletonStrengthLE :=
 noncomputable abbrev wmConsequenceRuleOn_of_pointwise :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_pointwise
 
-noncomputable abbrev wmConsequenceRuleOn_of_pointwise_categorical :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_pointwise_categorical
-
 noncomputable abbrev wmConsequenceRuleOn_of_singletonStrengthLE :=
   @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_singletonStrengthLE
-
-noncomputable abbrev wmConsequenceRuleOn_of_singletonStrengthLE_categorical :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_singletonStrengthLE_categorical
 
 /-!
 ## Classical theory-model states for HO WM-PLN
@@ -708,8 +691,8 @@ theorem queryStrength_le_of_pointwise_onTheory
   let pψ : HenkinModel Base (WithParams Const) → Prop :=
     fun M => Mettapedia.Logic.HOL.holSatisfies
       (Base := Base) (Const := WithParams Const) M ψ
-  letI : DecidablePred pφ := Classical.decPred pφ
-  letI : DecidablePred pψ := Classical.decPred pψ
+  let : DecidablePred pφ := Classical.decPred pφ
+  let : DecidablePred pψ := Classical.decPred pψ
   have hφ :
       BinaryWorldModel.queryStrength
           (State := ClassicalHOLState (Base := Base) (Const := Const))

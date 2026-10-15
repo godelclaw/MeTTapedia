@@ -130,6 +130,41 @@ Sentence-first operational dispatch semantics with mood system
 | `SimulationPreservation.lean` | Simulation preservation theorems |
 | `PiRhoCanonicalBridge.lean` | π→ρ canonical bridge (2,285 lines) |
 
+## Instruments and Observer Bisimilarity
+
+An observer holds a kit of probes, one family per admitted constructor:
+`ask` opens a term into an argument bundle, `get` projects a component,
+`build` reconstructs. Bisimilarity is then indexed by the kit. With nothing
+admitted it is the authored theory's own; with everything admitted it is the
+equation theory.
+
+The general theory is stated once, for every congruence on the closed terms
+of a many-sorted first-order signature and every authored labelled system
+that respects it:
+
+| File | Contents |
+|------|----------|
+| `../Syntax/SortedConstructorCongruences.lean` | Congruences, generated theories, interpretations and their kernels, supported terms |
+| `SortedInstrumentCongruenceSystem.lean` | The kit's labelled steps beside the authored ones: calibration, reconstruction, monotonicity, the empty kit, the gap |
+| `SortedInstrumentCongruenceLogic.lean` | The structural-modal logic: satisfaction respects the equations, characteristic formulas, structural separation, adequacy for every kit |
+| `SortedInstrumentCongruenceControls.lean` | Replication with its unfolding law: openings across a root-changing equation, partial kits, the authored diamond |
+| `SortedInstrumentCongruenceBranchingControls.lean` | Finite conjunctions are not adequate without finite branching |
+
+The reconstruction recurses on the supplied term, so it places no condition
+on the equation theory. These modules take the kit's labelled steps as
+given. Deriving them as least context labels of a reactive system needs
+relative pushouts modulo the equations; that derivation is carried out for
+particular equation languages in the modules below.
+
+| Files | Equation language | Labels |
+|-------|-------------------|--------|
+| `InstrumentObservations.lean`, `InstrumentMonotonicity.lean`, `PartialStructuralObservers.lean` | none (free trees) | direct |
+| `InstrumentEquation*.lean` | any generated congruence, one sort | direct, with least-count descent |
+| `InstrumentCut*.lean`, `InstrumentSource*.lean` | unary unit | least context labels from relative pushouts |
+| `SortedTyped*.lean`, `SortedCommutative*.lean` | designated associative, commutative cut with unit | least context labels from relative pushouts |
+
+Binding constructors are outside all of these carriers.
+
 ## Audit and Status Tracking
 
 | File | Contents |

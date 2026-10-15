@@ -30,7 +30,7 @@ def reading : Wrapped → ℤ
   | .plain _ => 0
   | .wrap bit => if bit then 1 else 0
 
-def presented : PresentedSystem.{0, 0, 0, 0, 0} inertGSLT unitScale where
+def presented : PresentedSystem.{0, 0, 0, 0, 0} wrappedBooleanGSLT unitScale where
   dynamics := canarySystem
   Obs := Unit
   value _ := reading

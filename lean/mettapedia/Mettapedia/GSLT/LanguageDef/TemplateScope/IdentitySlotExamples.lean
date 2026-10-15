@@ -109,26 +109,26 @@ def noCl : Sy → Option A := fun _ => none
 different terms, because the spellings differ, and the same code in both
 models: equality of code compares binder positions. -/
 theorem code_identity_not_spelling :
-    (codeOf (lm .w (pr .w)) ≠ codeOf (lm .z (pr .z))) ∧
-      codeEq (codeOf (lm .w (pr .w))) (codeOf (lm .z (pr .z))) = true ∧
-    (codeI (lm .w (pr .w)) ≠ codeI (lm .z (pr .z))) ∧
-      codeEq (codeI (lm .w (pr .w))) (codeI (lm .z (pr .z))) = true ∧
-      codeEq (codeOf (lm .w (pr .z))) (codeOf (lm .z (pr .z))) = false ∧
-      codeEq (codeI (lm .w (pr .z))) (codeI (lm .z (pr .z))) = false := by
+    (codeOf [] (lm .w (pr .w)) ≠ codeOf [] (lm .z (pr .z))) ∧
+      codeEq (codeOf [] (lm .w (pr .w))) (codeOf [] (lm .z (pr .z))) = true ∧
+    (codeI [] (lm .w (pr .w)) ≠ codeI [] (lm .z (pr .z))) ∧
+      codeEq (codeI [] (lm .w (pr .w))) (codeI [] (lm .z (pr .z))) = true ∧
+      codeEq (codeOf [] (lm .w (pr .z))) (codeOf [] (lm .z (pr .z))) = false ∧
+      codeEq (codeI [] (lm .w (pr .z))) (codeI [] (lm .z (pr .z))) = false := by
   decide +kernel
 
 /-- **Matching uses those identities.**  The pattern `(lam z z)` matches the
 code `(lam w w)` in both models.  It does not match `(lam w z)`: the pattern's
 `z` is bound and the code's `z` is free. -/
 theorem code_match_identity :
-    (matchCode (Store.empty : GStore Sy (Slot Sp)) (codeOf (lm .z (pr .z)))
-        (codeOf (lm .w (pr .w)))).isSome = true ∧
-      (matchCode (Store.empty : GStore Sy (Slot Sp)) (codeOf (lm .z (pr .z)))
-        (codeOf (lm .w (pr .z)))).isNone = true ∧
-    (matchCode (Store.empty : GStore Sy (BId Sp)) (codeI (lm .z (pr .z)))
-        (codeI (lm .w (pr .w)))).isSome = true ∧
-      (matchCode (Store.empty : GStore Sy (BId Sp)) (codeI (lm .z (pr .z)))
-        (codeI (lm .w (pr .z)))).isNone = true := by
+    (matchCode (Store.empty : GStore Sy (Slot Sp)) (codeOf [] (lm .z (pr .z)))
+        (codeOf [] (lm .w (pr .w)))).isSome = true ∧
+      (matchCode (Store.empty : GStore Sy (Slot Sp)) (codeOf [] (lm .z (pr .z)))
+        (codeOf [] (lm .w (pr .z)))).isNone = true ∧
+    (matchCode (Store.empty : GStore Sy (BId Sp)) (codeI [] (lm .z (pr .z)))
+        (codeI [] (lm .w (pr .w)))).isSome = true ∧
+      (matchCode (Store.empty : GStore Sy (BId Sp)) (codeI [] (lm .z (pr .z)))
+        (codeI [] (lm .w (pr .z)))).isNone = true := by
   decide +kernel
 
 /-- **An activation copy of a binder stays a binder.** `CodeId.hole` and
@@ -431,7 +431,7 @@ theorem unrelated_of_sym_pvar {o₁ : Option (Result Sy (Slot Sp))} {o₂ : Opti
   cases hf with
   | nil => simp at e₁
   | cons hr _ =>
-      obtain ⟨ν, μ, D, -, -, hrel, -⟩ := hr
+      obtain ⟨ν, μ, D, -, -, -, hrel, -⟩ := hr
       simp only [List.map_cons, List.cons.injEq] at e₁ e₂
       rw [e₁.1, e₂.1] at hrel
       have hsym : ∀ {R : List (Nm (BId Sp))} {ok : Bool} {t₂ : Tm Sy (BId Sp)},
@@ -543,12 +543,12 @@ def quoteBody : Tm FS FX :=
 end Fresh
 
 /-- **An opening is an activation.** Static activation is the shipped renaming
-of the lambda's own names at the activation path, then the parameter
-substitution. The store is not consulted. -/
+of the lambda's own names at the activation path, inside the body's sealed
+code too, then the parameter substitution. The store is not consulted. -/
 theorem open_is_activation {S : Type} {X : Type} [DecidableEq S] [DecidableEq X]
     (ρ : Path) (key : Nm X) (own : List X) (body arg : Tm S X) :
     activate .static (Store.empty : GStore S X) ρ key own body arg =
-      subst (renameOwn ρ own) (Sub.single key arg) body := rfl
+      subst (renameOwn ρ own) (Sub.single key arg) (sealRen ρ own body) := rfl
 
 /-- **Two openings, two store names.** The same owned spelling, copied at two
 paths, is two `.inst` names. -/
@@ -658,8 +658,8 @@ def lamZH : Src LeakSym LeakSp := .lam .z none (.sv .hole)
 /-- **The code match refuses.** Both sealed forms of `(lam w w)` against
 `(lam z $hole)` return no store. -/
 theorem leak_code_no_capture :
-    matchCode (Store.empty : GStore LeakSym (Slot LeakSp)) (codeOf lamWW) (codeOf lamZH) = none ∧
-      matchCode (Store.empty : GStore LeakSym (BId LeakSp)) (codeI lamWW) (codeI lamZH) = none := by
+    matchCode (Store.empty : GStore LeakSym (Slot LeakSp)) (codeOf [] lamWW) (codeOf [] lamZH) = none ∧
+      matchCode (Store.empty : GStore LeakSym (BId LeakSp)) (codeI [] lamWW) (codeI [] lamZH) = none := by
   exact ⟨rfl, rfl⟩
 
 /-- `(let (quote (lam w w)) (quote (lam z $hole)) (Got escaped $hole))`. -/

@@ -6,11 +6,11 @@ import Mettapedia.Languages.Metamath.InferencePreparedAssertionStepReceipt
 open Mettapedia.GSLT.LanguageDef
 
 /-!
-# candidate/NIK admission of prepared Metamath assertion records
+# candidate/SemanticService admission of prepared Metamath assertion records
 
 The source-owned Metamath projection proves unique stored assertion labels;
 the generic compiler turns that exact snapshot into an immutable record index;
-and candidate/NIK admits the resulting observed refinement at the complete source
+and candidate/SemanticService admits the resulting observed refinement at the complete source
 occurrence and revision key.
 
 This is deliberately distinct from indexing the GSLT grammar's operation
@@ -25,7 +25,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.MonotoneUniqueIndexCompilation
 open Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Core
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationAdmission
-open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationNIKBridge
+open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeTypedOptimizationBridge
 open Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateAbstractImplementationModel
 open Mettapedia.Languages.Metamath.MMLean4Bridge
 open Mettapedia.Languages.Metamath.InferenceEncoding
@@ -102,7 +102,7 @@ def authority (projection : PrefixProjection) (queries : List String)
     (nativeAuthority projection queries revision)
 
 /-- Prepared assertion-record selection is an ordinary member of the common
-NIK optimization family.  Native and generic preparation select the same
+SemanticService optimization family.  Native and generic preparation select the same
 projection-derived evidence. -/
 theorem enters_common_nik_family
     (projection : PrefixProjection) (queries : List String)
@@ -135,7 +135,7 @@ theorem admitted_records_observe_source
   spec.adequate (source projection queries) (evidence projection queries valid)
 
 /-- End-to-end live-prefix theorem: the same projection gate both admits the
-NIK record-selection refinement and licenses fused application of the exact
+SemanticService record-selection refinement and licenses fused application of the exact
 selected record.  No independent assertion-index or substitution certificate
 is assumed. -/
 theorem projected_admission_and_fused_application
@@ -191,7 +191,7 @@ def profitability
 def pathProfitability
     (projection : PrefixProjection) (queries : List String)
     (revision : Nat) (valid : prefixProjectionValid projection = true) :=
-  NativeTypedOptimizationNIKBridge.profitabilityReceipt spec
+  NativeTypedOptimizationBridge.profitabilityReceipt spec
     (candidate projection queries revision)
     (authority projection queries revision)
     (evidence projection queries valid)
@@ -402,7 +402,7 @@ def admitAssertionReceipt
 
 mutual
 
-/-- Add current NIK admission exactly at assertion occurrences of a retained
+/-- Add current SemanticService admission exactly at assertion occurrences of a retained
 proof receipt.  Active-hypothesis leaves require no assertion optimization. -/
 def admittedTreeReceiptShape
     {projection : PrefixProjection} {target : ValidatedCalculusLanguageDef}

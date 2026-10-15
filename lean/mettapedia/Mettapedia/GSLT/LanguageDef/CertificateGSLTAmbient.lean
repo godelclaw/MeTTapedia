@@ -49,7 +49,7 @@ open Mettapedia.GSLT.LanguageDef.CertificateGSLT
 /-! ## The projection -/
 
 /-- Forget which proof.  This is the only direction that is canonical. -/
-@[reducible] def truncate {definition : ValidatedCalculusLanguageDef}
+theorem truncate {definition : ValidatedCalculusLanguageDef}
     {goal : Pattern} (derivation : Derivation definition goal) :
     Nonempty (Derivation definition goal) := ⟨derivation⟩
 

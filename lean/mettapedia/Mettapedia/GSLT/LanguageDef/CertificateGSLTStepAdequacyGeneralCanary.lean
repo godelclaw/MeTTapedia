@@ -300,7 +300,7 @@ theorem orphan_gate_rejects :
     patternsMetavariableOccurrencesAt, termUnit]
 
 private theorem orphanPresentable :
-    LanguageDef.directTraceSupported orphanLanguage = true := rfl
+    languageDirectTraceSupported orphanLanguage = true := rfl
 
 private def orphanDirect : DirectTraceLanguage :=
   ⟨orphanLanguage, orphanPresentable⟩
@@ -412,7 +412,7 @@ theorem subst_gate_rejects :
     rewriteDirectTraceAdequate, patternHoleSkeleton, substTarget, termUnit]
 
 private theorem substPresentable :
-    LanguageDef.directTraceSupported substLanguage = true := rfl
+    languageDirectTraceSupported substLanguage = true := rfl
 
 private def substDirect : DirectTraceLanguage :=
   ⟨substLanguage, substPresentable⟩
@@ -526,7 +526,7 @@ theorem bag_gate_rejects :
     rewriteDirectTraceAdequate, patternHoleSkeleton]
 
 private theorem bagPresentable :
-    LanguageDef.directTraceSupported bagLanguage = true := rfl
+    languageDirectTraceSupported bagLanguage = true := rfl
 
 private def bagDirect : DirectTraceLanguage := ⟨bagLanguage, bagPresentable⟩
 
@@ -700,7 +700,7 @@ theorem query_gate_rejects :
 theorem query_ofLanguage?_none :
     DirectTraceLanguage.ofLanguage? queryLanguage = none :=
   DirectTraceLanguage.ofLanguage?_eq_none_of_unsupported
-    (by simp [LanguageDef.directTraceSupported,
+    (by simp [languageDirectTraceSupported,
       RewriteRule.directTraceSupported, queryLanguage, queryRule])
 
 end Mettapedia.GSLT.LanguageDef.CertificateGSLT.StepAdequacyGeneralCanary

@@ -23,8 +23,8 @@ namespace Mettapedia.Logic.TheorySimulation
 
 open Mettapedia.MorphismReachability
 open Mettapedia.GSLT.LanguageDef.CertifiedTheoryCategory
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 
 universe uKind uSignature uClaim
 

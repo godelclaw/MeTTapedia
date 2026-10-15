@@ -19,7 +19,7 @@ same decoder has the same logical behavior.
 Maturity boundary: the four-field node array, flat child array, numeric rule
 table, and present fuel discipline are a fully connected physical proof of
 concept.  They are not claimed to be an endgame-optimal layout, compression,
-cache strategy, or universal NIK wire format.  The decoder and commuting
+cache strategy, or universal SemanticService wire format.  The decoder and commuting
 theorems deliberately isolate the replaceable representation from meaning.
 -/
 

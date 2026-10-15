@@ -77,7 +77,7 @@ theorem lookup_inventing_axiom_untrusted :
 /-- **Negative control**: a computed leaf claiming the missing axiom is
 rejected, whatever fuel it names. -/
 theorem missing_axiom_leaf_rejected (fuel : Nat) :
-    check formMM0 (family withoutAxiom).evaluate (theoremJ 0 axiomDecl)
+    check kernelCalculus (family withoutAxiom).evaluate (theoremJ 0 axiomDecl)
       (.computed ⟨Operation.lookup, ⟨(0 : Nat), axiomDecl, fuel⟩⟩) = false :=
   absent_output_rejects _ _
     (AuthoredFamily.evaluate_eq_none (F := family withoutAxiom) (index := Operation.lookup)
@@ -122,6 +122,6 @@ theorem unproved_refused : ¬ Calculus.Admission.Authorized withAxiom unproved :
   cases (Calculus.Admission.authorized_iff _ _).mp authorized with
   | theoremDecl _ _ _ checked =>
       cases checked with
-      | hyp found => simp [Admission.proofContext, axiomDecl] at found
+      | hyp found => simp [axiomDecl] at found
 
 end Mettapedia.Languages.MM0.Presentation.Calculus.Controls

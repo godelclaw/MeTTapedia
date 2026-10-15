@@ -26,7 +26,7 @@ open Mettapedia.GSLT.Core.InteractionEvent
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.LanguageDef.GSLTIL.RouteEquipment
 open Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationComposition
-open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationNIKAdmission
+open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
 open Mettapedia.Languages.MeTTa.PrimeCandidates.NativeInteractionFibration
 

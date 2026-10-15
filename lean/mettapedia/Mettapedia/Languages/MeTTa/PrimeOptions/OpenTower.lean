@@ -2,6 +2,10 @@ import Mettapedia.GSLT.Distinction.OptionGraph
 import Mettapedia.SetTheory.OpenTower.Hosting
 import Mettapedia.SetTheory.OpenTower.Stability
 import Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion
+import Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels
+import Mettapedia.SetTheory.OpenTower.Strength.Shapes
+import Mettapedia.SetTheory.OpenTower.Strength.Completions
+import Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories
 import Mettapedia.TypeTheory.IndexedUniverseAdequacy
 import Mettapedia.GSLT.Logic.ObserverPresheafControls
 import Mettapedia.Logic.TheoryModel.Basic
@@ -30,7 +34,10 @@ Seven questions, with their options, arrows, contracts and witnesses.
   reachable by one sentence, a cofinal extensible family, one fixed model, a linear open tower, or
   a plural family of admitted theories. The review digest proposed this question separately as
   the strength of the top; it is the same question and is merged here. Its "greatest consistent
-  theory" is recorded in the one form refuted, a completion isolated by one sentence.
+  theory" is recorded in the one form refuted, a completion isolated by one sentence. Every pair
+  of its options is separated by a witness. Its four undecided options are ordered by arrows:
+  restrictions from the plural family down to one model, the reading of the plural family at
+  one model, interpretations back up, and the passages one level up.
 * **Perspectives** (`open-tower-perspectives`): three statements of openness, kept as separate
   options, with the one equivalence that holds between two of them: for Boolean algebras, no
   terminal refinement stage and no principal perspective are the same property.
@@ -103,11 +110,39 @@ def questions : List Question := [
       one sentence, one fixed model, a linear open tower, a plural family of admitted theories \
       with interpretation arrows, or a cofinal, directed, extensible family of stages that no \
       set exhausts. 'Strongest' names an order: constructor capability, interpretability, \
-      proof-theoretic strength or model strength."
+      proof-theoretic strength or model strength. Among the four undecided options, at one \
+      level: one model is a part of a tower, a tower is a part of the cofinal family, and every \
+      stage of the cofinal family is admitted under one of the two maximal theories of the \
+      plural family; nothing goes back as a part. The closed sets of a level form a chain. A \
+      tower lies inside one model beyond it; the cofinal family lies inside no model of its \
+      level, and one level up it is the family of stages inside one model. A model of a theory \
+      is one of its completions: its verdict on a sentence is a function of the class of the \
+      sentence, and the class is not a function of the verdict when a sentence is left open."
     facts := [cites [``Mettapedia.TypeTheory.IndexedUniverseAdequacy.no_final_stage,
       ``Mettapedia.TypeTheory.IndexedUniverseAdequacy.finite_support_has_strict_host,
       ``Mettapedia.GSLT.AdmissibleContextCongruence.ObserverPresheafControls.OracleTower.oracleTower_strict,
-      ``Mettapedia.Logic.TheoryModel.subset_theoryOf_iff]] },
+      ``Mettapedia.Logic.TheoryModel.subset_theoryOf_iff],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.exists_isLinearTower,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.subset_closedSets,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.not_subset_of_isFixedModel,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.not_subset_of_collected,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.subset_total,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.exists_isFixedModel_hosting,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.not_hostedBy_of_collected,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.mem_image_closed_iff],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.exists_completion_of_model,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.model_verdict_factors_through_class,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.class_not_factors_through_model_verdict],
+      .«theorem» [
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_collected_of_cofinal, choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_injective_of_subsets_mem, choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.em_of_closedRel_trichotomy, choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.exists_incomparable_transitive, choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_wellFounded, choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension,
+          choiceFree := true },
+        { declaration := ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.hypersets_no_memHom_into_members,
+          choiceFree := true }]] },
   { id := "open-tower-hosted-system"
     title := "The system a stage hosts"
     summary := "The higher-order derivation system of the seven set laws, with its proofs \
@@ -214,47 +249,94 @@ def nodes : List Node := [
       one transitively." },
   { id := "greatest-stage", question := "open-tower-top"
     title := "A greatest stage"
-    summary := "A closed set including every closed set."
+    summary := "A closed set including every closed set. It fails to exist exactly when every \
+      closed set is a member of another."
     standings := [{
       standing := .rejected,
       evidence := [cites [``Mettapedia.SetTheory.OpenTower.InternalTower.not_exists_greatest_stage]]
     }]
-    hypotheses := [cofinalInaccessibles] },
+    hypotheses := [cofinalInaccessibles]
+    facts := [cites [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_exists_greatest_iff]] },
   { id := "strongest-completion", question := "open-tower-top"
     title := "A strongest theory reached by one sentence"
     summary := "A completion of a base theory isolated by a single sentence over it: the form in \
-      which a greatest consistent theory above the base is refuted."
+      which a greatest consistent theory above the base is refuted. The refutation is for \
+      consistent Δ₁ extensions of IΣ₁; over a complete theory, such as the theory of a set model, \
+      the one completion is isolated."
     standings := [{
       standing := .rejected,
       evidence := [cites [
         ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.no_isolated_completion,
         ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.lindenbaum_noTerminalStage]]
-    }] },
+    }]
+    facts := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.isOpen_singleton_of_complete,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.structure_theory_complete]] },
   { id := "cofinal-extensible-family", question := "open-tower-top"
     title := "A cofinal, directed, extensible family of stages"
     summary := "The class of stages: every set lies in a stage, any two sets lie in one stage, \
-      every set-indexed family lies in one stage, and no set-indexed family is cofinal."
+      every set-indexed family lies in one stage, and no set-indexed family is cofinal. The \
+      stages are the levels of the von Neumann hierarchy at the inaccessible cardinals, with the \
+      empty set and the hereditarily finite sets; they are well-ordered by membership, and the \
+      named hypothesis says exactly that they are cofinal."
     hypotheses := [cofinalInaccessibles]
     facts := [cites [``Mettapedia.SetTheory.OpenTower.InternalTower.exists_stage_containing,
       ``Mettapedia.SetTheory.OpenTower.InternalTower.stages_directed,
       ``Mettapedia.SetTheory.OpenTower.InternalTower.small_family_bounded,
-      ``Mettapedia.SetTheory.OpenTower.InternalTower.no_small_cofinal_family]] },
+      ``Mettapedia.SetTheory.OpenTower.InternalTower.no_small_cofinal_family],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closed_eq_vonNeumann,
+        ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closed_subset_total,
+        ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closedSets_isWellOrder,
+        ``Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels.closed_iff,
+        ``Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels.cofinalInaccessibles_iff_cofinal,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isCofinalFamily_ordinalStage,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.closedSets_not_collected]] },
   { id := "one-fixed-model", question := "open-tower-top"
     title := "One fixed model"
     summary := "A single model, for example HOTG with ambient hypersets, as the top. A model is \
-      one perspective: a point of the space of completions." },
+      one perspective: a point of the space of completions. As a set model it is one closed set \
+      holding the empty set; the law that every set lies in a closed set fails inside it exactly \
+      when it is the least closed set around one of its members."
+    facts := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isFixedModel_hereditarilyFinite,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isFixedModel_image,
+      ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_universeLawInside_iff,
+      ``Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels.universeLawInside_vonNeumann_iff,
+      ``Mettapedia.SetTheory.OpenTower.ExternalTower.image_members_in_closed_members,
+      ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_injective_members_into_member,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_holds_iff,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.exists_completion_of_model,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.affirms_neg_iff,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.structure_theory_complete]] },
   { id := "linear-open-tower", question := "open-tower-top"
     title := "A linear open tower"
-    summary := "Stages U0 < U1 < …, each modelling the last, with no final stage."
-    facts := [cites [``Mettapedia.TypeTheory.IndexedUniverseAdequacy.no_final_stage]] },
+    summary := "Stages U0 < U1 < …, each modelling the last, with no final stage. As a tower \
+      of closed sets it is the beginning of the tower indexed by the ordinals of the level; its \
+      union is not closed."
+    hypotheses := [cofinalInaccessibles]
+    facts := [cites [``Mettapedia.TypeTheory.IndexedUniverseAdequacy.no_final_stage],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.stageChain_stage,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.StageChain.iUnion_not_closed,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_cofinal_range,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.ordinalStage_natCast]] },
   { id := "plural-admitted-family", question := "open-tower-top"
     title := "A plural family of admitted theories"
     summary := "Stages related by interpretation arrows with contracts: directed within a \
       compatible family, joined across incompatible families only by interpretations into a host \
-      that keeps their memberships apart; no terminal stage."
+      that keeps their memberships apart; no terminal stage. Among theories of membership \
+      principles, the admitted ones are exactly the parts of the well-founded theory and the \
+      parts of the anti-founded theory: two maximal members with no common admitted extension."
     facts := [cites [``Mettapedia.Logic.FinitaryRuleSystem.directedUnion_noBottom,
       ``Mettapedia.Logic.FinitaryRuleSystem.Canary.splitUnion_not_noBottom,
-      ``Mettapedia.SetTheory.CarveOuts.not_acc_of_quine]] },
+      ``Mettapedia.SetTheory.CarveOuts.not_acc_of_quine],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_wellFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_antiFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_iff,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.hypersets_holds_iff,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_greatest_admitted,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_wellFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_decorates,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.forall_affirms_iff_provable,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.arithmetic_completions_disagree]] },
   { id := "seven-law-hol-system", question := "open-tower-hosted-system"
     title := "The derivation system of the seven set laws"
     summary := "Higher-order derivations from the seven HOTG set laws, retained as proof terms." },
@@ -408,21 +490,243 @@ def arrows : List Arrow := [
   { id := "plural-family-to-fixed-model", source := "plural-admitted-family"
     target := "one-fixed-model"
     kind := .observationalQuotient
-    grades := [.ungraded]
-    summary := "Choosing one model is choosing a point of the space of perspectives: what holds \
-      at every perspective holds at the chosen one; which independent sentences the point \
-      decides is not recorded."
+    grades := [.factors, .lossy]
+    summary := "Choosing one model is choosing a point of the space of perspectives: a model of a \
+      theory is one of its completions. The verdict of the model on a sentence is a function of \
+      the class of the sentence, so what holds at every perspective holds at the chosen one. \
+      The class is not a function of the verdict when the theory leaves a sentence open: which \
+      verdict the open sentence gets depends on the point."
     evidence := [cites [``Mettapedia.Logic.Metaphysics.ultraTrue_all_iff,
       ``Mettapedia.Logic.Metaphysics.ultraTrue_exists_iff,
       ``Mettapedia.Logic.Metaphysics.openFamily_iff_not_precise,
       ``Mettapedia.Foundations.Gunk.isGunky_iff_perfect_stoneSpace,
       ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.completions_perfect,
-      ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.no_isolated_completion]]
+      ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.no_isolated_completion,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.forall_affirms_iff_provable,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Completions.affirms_neg_iff],
+      cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.exists_completion_of_model,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.model_verdict_factors_through_class,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.class_not_factors_through_verdict]]
     contract := {
       entries := [
-        .keeps .verdicts [``Mettapedia.Logic.Metaphysics.ultraTrue_all_iff]
-          "what holds at every perspective holds at the chosen one",
-        .unknownAt .distinctions "which independent sentences the chosen point decides"] } },
+        .keeps .verdicts [``Mettapedia.Logic.Metaphysics.ultraTrue_all_iff,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Completions.forall_affirms_iff_provable,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Completions.model_verdict_factors_through_class]
+          "what holds at every perspective holds at the chosen one; for the completions of a \
+          theory, what every completion affirms is what the theory proves, and the verdict of a \
+          model on a sentence is a function of the class of the sentence",
+        .loses .distinctions [``Mettapedia.SetTheory.OpenTower.Strength.Completions.arithmetic_completions_disagree,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Completions.stage_theories_leave_infinity_open,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Completions.class_not_factors_through_model_verdict]
+          "the open sentences: a sentence the theory neither proves nor refutes is affirmed at \
+          one completion and refuted at another, and the class of a sentence is not a function \
+          of the verdict of one model, so one point does not show that a sentence is open"] } },
+  { id := "plural-family-to-cofinal-family", source := "plural-admitted-family"
+    target := "cofinal-extensible-family"
+    kind := .restriction
+    grades := [.preserved]
+    summary := "The stages admitted under the set-forming principles with membership induction, \
+      on the membership of one level of sets. They share one theory and one membership, and any \
+      two of them are comparable. The accessible part of any stage admitted under the \
+      set-forming principles is admitted under that theory too."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_wellFounded,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_decorates,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_wellFounded]]
+    contract := {
+      entries := [
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded,
+          ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_wellFounded]
+          "one admitted theory: every stage of the part satisfies the set-forming principles \
+          and membership induction, and so does the accessible part of every stage admitted \
+          under the set-forming principles",
+        .keeps .verdicts [``Mettapedia.SetTheory.OpenTower.InternalTower.stages_directed,
+          ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closed_subset_total]
+          "compatible and directed: any two sets lie in one stage, and any two stages are \
+          comparable by inclusion",
+        .loses .distinctions [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_quineAtom_among_members,
+          ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.hypersets_no_memHom_into_members,
+          ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension]
+          "the anti-founded theory: no set has a Quine atom among its members, the hypersets \
+          have no membership-preserving map into the members of a set, and no admitted theory \
+          includes both theories"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "cofinal-family-to-linear-tower", source := "cofinal-extensible-family"
+    target := "linear-open-tower"
+    kind := .restriction
+    grades := [.preserved]
+    summary := "The stages of a linear tower are closed sets of the level: the tower is a \
+      subfamily of the cofinal family, with membership and inclusion as in the family."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.subset_closedSets,
+      ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.stageChain_stage,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isCofinalFamily_closedSets]]
+    contract := {
+      entries := [
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.subset_closedSets,
+          ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closed_subset_total]
+          "every stage of the tower is a stage of the family, and the order of the family is \
+          linear, as the order of the tower is",
+        .loses .verdicts [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_cofinal_range,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.not_subset_of_collected]
+          "cofinality: no family indexed by the natural numbers has every set of the level in \
+          one of its members, so the cofinal family is a part of no tower"] } },
+  { id := "linear-tower-to-fixed-model", source := "linear-open-tower"
+    target := "one-fixed-model"
+    kind := .restriction
+    grades := [.preserved]
+    summary := "One stage of the tower, kept alone as the model: every fixed model is the first \
+      stage of a tower."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.exists_isLinearTower,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded]]
+    contract := {
+      entries := [
+        .keeps (.formulas .bounded) [``Mettapedia.SetTheory.OpenTower.Stability.stage_bounded_absolute]
+          "bounded formulas with parameters in the stage have the same truth value at the stage \
+          and at every later stage of the tower",
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded]
+          "the stage satisfies the set-forming principles and membership induction",
+        .loses (.formulas .firstOrder) [``Mettapedia.SetTheory.OpenTower.Stability.infinity_changes]
+          "the axiom of infinity is false at the first stage over ∅ and true at every later stage",
+        .loses .verdicts [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.not_hostedBy_self,
+          ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_injective_members_into_member,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.not_subset_of_isFixedModel]
+          "hosting: each stage of the tower is a member of the next, while the one stage is not \
+          a member of itself and its members do not inject into the members of any of its \
+          members; the tower is a part of no fixed model"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "fixed-model-heads-linear-tower", source := "one-fixed-model"
+    target := "linear-open-tower"
+    kind := .interpretation
+    grades := [.preserved]
+    summary := "Every fixed model is the first stage of the tower over it; the type codes, \
+      operation codes and truth fibres of its model are members of the next stage."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.stageChain_chainFrom,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.exists_isLinearTower,
+      ``Mettapedia.SetTheory.OpenTower.Hosting.Stage.internal_copy]]
+    contract := {
+      entries := [
+        .keeps (.evidence .witnesses) [``Mettapedia.SetTheory.OpenTower.Hosting.Stage.internal_copy]
+          "each type code, operation code and individual truth fibre of the model belongs to \
+          every later stage",
+        .keeps (.formulas .bounded) [``Mettapedia.SetTheory.OpenTower.Stability.bounded_absolute]
+          "bounded formulas with parameters in the model, preserved and reflected",
+        .loses (.formulas .firstOrder) [``Mettapedia.SetTheory.OpenTower.Stability.infinity_changes]
+          "the axiom of infinity is false at the first stage over ∅ and true at the later \
+          stages of the tower over it"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "linear-tower-in-cofinal-family", source := "linear-open-tower"
+    target := "cofinal-extensible-family"
+    kind := .interpretation
+    grades := [.preserved]
+    summary := "The stages of a linear tower are stages of the cofinal family, and the family \
+      continues the tower: indexed by the ordinals of the level, the tower of least closed sets \
+      reaches every set."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.subset_closedSets,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.ordinalStage_natCast,
+      ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.ordinalStage_cofinal]]
+    contract := {
+      entries := [
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.subset_closedSets,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.ordinalStage_natCast]
+          "every stage of the tower is a stage of the family; the tower of least closed sets is \
+          the beginning of the tower indexed by the ordinals",
+        .keeps .verdicts [``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closed_trichotomy,
+          ``Mettapedia.SetTheory.OpenTower.Strength.ClosedLevels.closedSets_isWellOrder]
+          "the shape of the order: the stages of the family are well-ordered by membership, as \
+          the stages of the tower are"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "cofinal-family-in-plural-family", source := "cofinal-extensible-family"
+    target := "plural-admitted-family"
+    kind := .interpretation
+    grades := [.preserved]
+    summary := "Every stage of the family is admitted under one theory of the plural family, and \
+      is a transitive part of the stage of the other theory: the map sending a set to its \
+      hyperset is injective and preserves and reflects membership."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded,
+      ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.members_decorate_hypersets,
+      ``Mettapedia.TypeTheory.MaterialSets.Hypersets.HSet.ofZFSet_injective]]
+    contract := {
+      entries := [
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded]
+          "the set-forming principles and membership induction hold at every stage",
+        .keeps (.formulas .atomic) [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.members_decorate_hypersets,
+          ``Mettapedia.TypeTheory.MaterialSets.Hypersets.HSet.ofZFSet_mem_ofZFSet_iff]
+          "membership, into the hypersets: preserved and reflected, with a transitive image",
+        .loses .verdicts [``Mettapedia.SetTheory.Profiles.hset_refutes_memInduction,
+          ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension]
+          "membership induction: a law of every stage of the family, refuted at the hypersets; \
+          no admitted theory has it together with the Quine atom"] } },
+  { id := "linear-tower-in-limit-model", source := "linear-open-tower"
+    target := "one-fixed-model"
+    kind := .interpretation
+    grades := [.ungraded]
+    summary := "Every linear tower lies inside one fixed model: a closed set that has every \
+      stage of the tower as a member. That model is not the union of the tower, which is not \
+      closed."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.exists_isFixedModel_hosting,
+      ``Mettapedia.SetTheory.OpenTower.InternalTower.small_family_bounded,
+      ``Mettapedia.SetTheory.OpenTower.InternalTower.stage_mem_limitStage]]
+    contract := {
+      entries := [
+        .keeps (.evidence .witnesses) [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.exists_isFixedModel_hosting,
+          ``Mettapedia.SetTheory.OpenTower.Hosting.Stage.internal_copy]
+          "every stage of the tower is a member of the model, which then holds the type codes, \
+          operation codes and truth fibres of the model of each stage",
+        .loses .verdicts [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.StageChain.iUnion_not_closed,
+          ``Mettapedia.SetTheory.OpenTower.InternalTower.towerUnion_ne_limitStage]
+          "the tower as one model: the union of the stages is not closed, so the hosting model \
+          is strictly beyond the tower"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "cofinal-family-in-model-one-level-up", source := "cofinal-extensible-family"
+    target := "one-fixed-model"
+    kind := .interpretation
+    grades := [.preserved]
+    summary := "The closed sets of one level, lifted, are exactly the closed members of the \
+      image of the level, which is one fixed model of the next level and satisfies the same \
+      first-order sentences as the level. At one level there is no such model: a model with \
+      every closed set as a member or a part would be a greatest stage."
+    evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.mem_image_closed_iff,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isFixedModel_image,
+      ``Mettapedia.SetTheory.OpenTower.ExternalTower.image_elementarilyEquivalent,
+      ``Mettapedia.SetTheory.OpenTower.ExternalTower.image_members_in_closed_members,
+      ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.not_hostedBy_of_collected]]
+    contract := {
+      entries := [
+        .keeps (.formulas .firstOrder) [``Mettapedia.SetTheory.OpenTower.ExternalTower.image_elementarilyEquivalent]
+          "first-order sentences of membership and equality: the level and its image satisfy \
+          the same",
+        .keeps .laws [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.mem_image_closed_iff,
+          ``Mettapedia.SetTheory.OpenTower.ExternalTower.image_members_in_closed_members]
+          "the stages: the closed members of the image are the lifts of the closed sets, and \
+          every member of the image lies in one of them",
+        .loses .verdicts [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.closedSets_not_collected,
+          ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.collected]
+          "collection at its own level: no set of the level has every closed set as a member, \
+          while one level up the image is one set"]
+      hypotheses := [cofinalInaccessibles.name] } },
+  { id := "plural-family-coded-one-level-up", source := "plural-admitted-family"
+    target := "one-fixed-model"
+    kind := .interpretation
+    grades := [.ungraded]
+    summary := "The stage with a Quine atom, hosted with its membership kept apart: every \
+      hyperset of one level is a set of the next level, the codes form one set, and every \
+      closed set that has the image of the level as a member has that set as a member. \
+      Membership of hypersets is a relation on the codes, not their membership."
+    evidence := [cites [``Mettapedia.TypeTheory.MaterialSets.Hypersets.code_injective,
+      ``Mettapedia.TypeTheory.MaterialSets.Hypersets.codeMem_code,
+      ``Mettapedia.TypeTheory.MaterialSets.Hypersets.mem_hsetCode,
+      ``Mettapedia.TypeTheory.MaterialSets.Hypersets.hsetCode_mem_of_carrierCode_mem]]
+    contract := {
+      entries := [
+        .keeps .distinctions [``Mettapedia.TypeTheory.MaterialSets.Hypersets.code_injective]
+          "distinct hypersets have distinct codes",
+        .keeps .verdicts [``Mettapedia.TypeTheory.MaterialSets.Hypersets.codeMem_code]
+          "membership of hypersets, read as the interpreted relation on the codes",
+        .loses (.formulas .atomic) [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.codeMem_quineAtom_self,
+          ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.hypersets_no_memHom_into_members]
+          "membership as the host's membership: the code of the Quine atom is related to itself \
+          and is not a member of itself, and no map of the hypersets into the members of a set \
+          preserves membership"] } },
   { id := "refinement-is-perspective", source := "no-terminal-refinement-stage"
     target := "no-principal-perspective"
     kind := .equivalence
@@ -467,8 +771,26 @@ def observers : List Observer := [
     reads := "Whether the option exists for a consistent Δ₁ extension of IΣ₁."
     kind := .«theorem» },
   { id := "greatest-element", title := "A greatest element"
-    reads := "Whether the option has a top: a stage including every stage, or a strongest \
-      theory reached by one sentence."
+    reads := "Whether the option has a top: a stage including every stage, a strongest theory \
+      reached by one sentence, or an admitted theory including every admitted theory."
+    kind := .«theorem» },
+  { id := "stages-collected", title := "One set has every stage"
+    reads := "Whether one set of the level has every stage of the option as a member."
+    kind := .«theorem» },
+  { id := "hosts-its-stages", title := "Hosts its own stages"
+    reads := "Whether every stage of the option is a member of a stage of the option, which \
+      then holds a model of it."
+    kind := .«theorem» },
+  { id := "independent-sentence", title := "One verdict on an open sentence"
+    reads := "Whether the option gives one verdict to a sentence that the base theory neither \
+      proves nor refutes."
+    kind := .«theorem» },
+  { id := "quine-atom-stage", title := "A stage with a Quine atom"
+    reads := "Whether the option has a stage in which some set is its own only member."
+    kind := .«theorem» },
+  { id := "realized-at-a-stage", title := "Realized at a stage"
+    reads := "Whether the option exists at a stage of the tower: among the closed sets of its \
+      level, or as a completion of its first-order theory reached by one sentence."
     kind := .«theorem» }
 ]
 
@@ -597,7 +919,154 @@ def witnesses : List Witness := [
     rightVerdict := {
       reading := "Needed: a linear tower puts both on one membership, and in the canary rule \
         system a union that is not directed derives falsity."
-      evidence := [cites [``Mettapedia.Logic.FinitaryRuleSystem.Canary.splitUnion_not_noBottom]] } }
+      evidence := [cites [``Mettapedia.Logic.FinitaryRuleSystem.Canary.splitUnion_not_noBottom]] } },
+  { id := "no-set-has-every-stage", observer := "stages-collected"
+    left := "cofinal-extensible-family", right := "one-fixed-model"
+    case := "The closed sets of one level, under the inaccessibility hypothesis, and one closed \
+      set of that level. The law that every set lies in a closed set does not separate the two: \
+      it holds inside the image of a level one level up, and inside the level at an inaccessible \
+      cardinal exactly when the inaccessibles below it are unbounded. No first-order sentence \
+      separates them for every model either: the image of a level satisfies the same sentences \
+      as the level."
+    leftVerdict := {
+      reading := "No: every set of the level lies in a closed set, and no set has every member \
+        of such a family as a member."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.closedSets_not_collected,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_collected_of_cofinal]] }
+    rightVerdict := {
+      reading := "Yes: one model is one set, a member of its singleton and, under the \
+        hypothesis, of a later closed set."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.collected,
+        ``Mettapedia.SetTheory.OpenTower.InternalTower.no_terminal_stage]] } },
+  { id := "tower-is-collected", observer := "stages-collected"
+    left := "cofinal-extensible-family", right := "linear-open-tower"
+    case := "The closed sets of one level, under the inaccessibility hypothesis, and a tower of \
+      closed sets indexed by the natural numbers. On the shape of the order the two agree: the \
+      closed sets of a level are linearly ordered by inclusion."
+    leftVerdict := {
+      reading := "No: a cofinal family is collected by no set, so it is a part of no tower."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.closedSets_not_collected,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsCofinalFamily.not_subset_of_collected]] }
+    rightVerdict := {
+      reading := "Yes: the stages of a tower are the members of one set, and one closed set has \
+        them all as members."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.collected,
+        ``Mettapedia.SetTheory.OpenTower.InternalTower.small_family_bounded]] } },
+  { id := "open-sentence-left-open", observer := "independent-sentence"
+    left := "one-fixed-model", right := "plural-admitted-family"
+    case := "A consistent Δ₁ extension of IΣ₁ with a sentence it neither proves nor refutes; the \
+      first two stages of the tower over ∅ with the axiom of infinity; the six set-forming \
+      principles with membership induction against a Quine atom."
+    leftVerdict := {
+      reading := "One verdict: a model of a theory is one of its completions, a completion \
+        affirms the negation of a sentence exactly when it does not affirm the sentence, and the \
+        theory of a set model is complete."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.exists_completion_of_model,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.affirms_neg_iff,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.structure_theory_complete]] }
+    rightVerdict := {
+      reading := "Left open: one completion affirms the sentence and another its negation; the \
+        common theory of the two stages neither proves nor refutes infinity; membership \
+        induction and a Quine atom are each admitted with the set-forming principles, and not \
+        together."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.arithmetic_completions_disagree,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.stage_theories_leave_infinity_open,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_wellFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_antiFounded]] } },
+  { id := "quine-atom-stage-admitted", observer := "quine-atom-stage"
+    left := "cofinal-extensible-family", right := "plural-admitted-family"
+    case := "The members of a set of any level, and the hypersets."
+    leftVerdict := {
+      reading := "None: no set has a Quine atom among its members, and every stage satisfies \
+        membership induction."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_quineAtom_among_members,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.stage_wellFounded]] }
+    rightVerdict := {
+      reading := "One: the hypersets satisfy the set-forming principles with a Quine atom. They \
+        are joined to the well-founded stages by interpretation: every transitive set is a \
+        transitive part of them, their accessible part satisfies the well-founded theory, and \
+        one level up they are coded as sets under their own membership. They have no \
+        membership-preserving map into the members of a set."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.admitted_antiFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.members_decorate_hypersets,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.bubble_wellFounded,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.hypersets_no_memHom_into_members,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.codeMem_quineAtom_self]] } },
+  { id := "fixed-model-not-self-hosted", observer := "hosts-its-stages"
+    left := "one-fixed-model", right := "linear-open-tower"
+    case := "One closed set holding the empty set, and a tower of closed sets indexed by the \
+      natural numbers."
+    leftVerdict := {
+      reading := "No: the model is not a member of itself, and its members do not inject into \
+        the members of any of its members."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsFixedModel.not_hostedBy_self,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_injective_members_into_member]] }
+    rightVerdict := {
+      reading := "Yes: each stage is a member of the next, which holds the type codes, \
+        operation codes and truth fibres of its model."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.IsLinearTower.hostedBy_self,
+        ``Mettapedia.SetTheory.OpenTower.Hosting.tower_hosting]] } },
+  { id := "stage-theory-isolates-its-completion", observer := "realized-at-a-stage"
+    left := "greatest-stage", right := "strongest-completion"
+    case := "A stage of the tower: the closed sets of its level, under the inaccessibility \
+      hypothesis, and its first-order theory."
+    leftVerdict := {
+      reading := "Not realized: no closed set of the level includes every closed set; \
+        equivalently, every closed set is a member of another."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.InternalTower.not_exists_greatest_stage,
+        ``Mettapedia.SetTheory.OpenTower.Strength.StageFamilies.not_exists_greatest_iff]] }
+    rightVerdict := {
+      reading := "Realized: the theory of a set model is complete and consistent, so it has a \
+        completion, and that completion is isolated. The refutation of an isolated completion \
+        is for effectively axiomatized bases."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Completions.structureTheory_completion_isolated,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.structureTheory_completions_nonempty]] } },
+  { id := "a-fixed-model-exists", observer := "realized-at-a-stage"
+    left := "greatest-stage", right := "one-fixed-model"
+    case := "The closed sets of one level, under the inaccessibility hypothesis."
+    leftVerdict := {
+      reading := "Not realized: no closed set of the level includes every closed set."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.InternalTower.not_exists_greatest_stage]] }
+    rightVerdict := {
+      reading := "Realized: the hereditarily finite sets are a fixed model at every level, \
+        every stage of the tower after the first is a set model of ZFC, and one level up the \
+        image of the level is a fixed model with no hypothesis. None of them is greatest: each \
+        is a member of a later closed set. In another order the first stage over ∅ is maximal: \
+        no closed set that has it as a member is elementarily equivalent to it, so it has no \
+        elementary extension among the stages."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isFixedModel_hereditarilyFinite,
+        ``Mettapedia.SetTheory.OpenTower.ZFCStages.stage_models_zfc,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Shapes.isFixedModel_image,
+        ``Mettapedia.SetTheory.OpenTower.InternalTower.no_terminal_stage,
+        ``Mettapedia.SetTheory.OpenTower.Strength.Completions.stage_zero_not_elementaryEquiv]] } },
+  { id := "no-top-admitted-theory", observer := "greatest-element"
+    left := "greatest-stage", right := "plural-admitted-family"
+    case := "The closed sets of one level, under the inaccessibility hypothesis, and the \
+      theories of membership principles admitted at a level."
+    leftVerdict := {
+      reading := "Refuted: the least closed set around a greatest one would contain it."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.InternalTower.not_exists_greatest_stage]] }
+    rightVerdict := {
+      reading := "Holds without a top: no admitted theory includes every admitted theory, \
+        since the well-founded and the anti-founded theory have no common admitted extension; \
+        directed unions of bottom-free rule systems stay bottom-free."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_greatest_admitted,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension,
+        ``Mettapedia.Logic.FinitaryRuleSystem.directedUnion_noBottom]] } },
+  { id := "no-strongest-admitted-theory", observer := "greatest-element"
+    left := "strongest-completion", right := "plural-admitted-family"
+    case := "A consistent Δ₁ extension of IΣ₁, and the theories of membership principles \
+      admitted at a level."
+    leftVerdict := {
+      reading := "Refuted: no completion is isolated."
+      evidence := [cites [
+        ``Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion.no_isolated_completion]] }
+    rightVerdict := {
+      reading := "Holds without a top: no admitted theory includes every admitted theory, \
+        since the well-founded and the anti-founded theory have no common admitted extension."
+      evidence := [cites [``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_greatest_admitted,
+        ``Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories.no_common_admitted_extension]] } }
 ]
 
 /-- The local graph of this module. -/

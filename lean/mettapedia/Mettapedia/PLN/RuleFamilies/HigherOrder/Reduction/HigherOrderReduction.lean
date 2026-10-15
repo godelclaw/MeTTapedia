@@ -237,13 +237,13 @@ def HOEquivalent (R1 R2 : α → U → BinaryEvidence) (A B : α) : Prop :=
 
 /-- Chapter-10 implication formula, pointwise over individuals:
 `himp (R1 A X) (R2 B X)`. -/
-noncomputable def chapterImplicationPred
+noncomputable def pointwiseImplicationPred
     (R1 R2 : α → U → BinaryEvidence) (A B : α) : U → BinaryEvidence :=
   fun X => BinaryEvidence.himp (R1 A X) (R2 B X)
 
 /-- Chapter-10 equivalence formula, pointwise over individuals:
 `(R1 A X ⊓ R2 B X) ⊔ (¬R1 A X ⊓ ¬R2 B X)`. -/
-noncomputable def chapterEquivalencePred
+noncomputable def pointwiseEquivalencePred
     (R1 R2 : α → U → BinaryEvidence) (A B : α) : U → BinaryEvidence :=
   fun X =>
     (R1 A X ⊓ R2 B X) ⊔
@@ -390,20 +390,20 @@ theorem forAll_himp_to_inheritance_ratio_of_bridge
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hImp : ∀ X, isTrue (R1 A X) → isTrue (R2 B X))
     (hPred :
-      ∀ X, isTrue (chapterImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X))
+      ∀ X, isTrue (pointwiseImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X))
     (hCorner :
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) = pTrue ∨
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) = ⊥) :
-    forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
   have hForAll :
-      forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+      forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
     simpa [forAllEval] using
       congrArg (fun D => weakness μ D)
         (diagonal_eq_of_pointwise_isTrue_iff
-          (P := chapterImplicationPred R1 R2 A B)
+          (P := pointwiseImplicationPred R1 R2 A B)
           (Q := fun X => R1 A X)
           hPred)
   have hRatio :
@@ -416,7 +416,7 @@ theorem forAll_himp_to_inheritance_ratio_of_bridge
   -- implication→inheritance reduction chain.
   clear hRatio
   calc
-    forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ
+    forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ
         = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hForAll
     _ = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
           weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
@@ -438,20 +438,20 @@ theorem forAll_equivalence_to_similarity_ratio_of_bridge
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hEq : HOEquivalent R1 R2 A B)
     (hPred :
-      ∀ X, isTrue (chapterEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X))
+      ∀ X, isTrue (pointwiseEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X))
     (hCorner :
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) = pTrue ∨
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) = ⊥) :
-    forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
   have hForAll :
-      forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+      forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
     simpa [forAllEval] using
       congrArg (fun D => weakness μ D)
         (diagonal_eq_of_pointwise_isTrue_iff
-          (P := chapterEquivalencePred R1 R2 A B)
+          (P := pointwiseEquivalencePred R1 R2 A B)
           (Q := fun X => R1 A X)
           hPred)
   have hRatio :
@@ -464,7 +464,7 @@ theorem forAll_equivalence_to_similarity_ratio_of_bridge
   -- similarity-ratio semantics.
   clear hRatio
   calc
-    forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ
+    forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ
         = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hForAll
     _ = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
           weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
@@ -480,19 +480,19 @@ theorem forAll_himp_ratio_iff_piecewise
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hImp : ∀ X, isTrue (R1 A X) → isTrue (R2 B X))
     (hPred :
-      ∀ X, isTrue (chapterImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X)) :
-    (forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+      ∀ X, isTrue (pointwiseImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X)) :
+    (forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)) ↔
     (let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
      w = ⊥ ∨ w = pTrue ∨ w = pFalse ∨ w = pBoth) := by
   have hForAll :
-      forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+      forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
     simpa [forAllEval] using
       congrArg (fun D => weakness μ D)
         (diagonal_eq_of_pointwise_isTrue_iff
-          (P := chapterImplicationPred R1 R2 A B)
+          (P := pointwiseImplicationPred R1 R2 A B)
           (Q := fun X => R1 A X)
           hPred)
   have hRatio :
@@ -520,7 +520,7 @@ theorem forAll_himp_ratio_iff_piecewise
       (self_div_fixed_iff_pbit_corner
         (w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal))).mpr h
     calc
-      forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ
+      forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ
           = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hForAll
       _ = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
             weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hw.symm
@@ -532,19 +532,19 @@ theorem forAll_equivalence_ratio_iff_piecewise
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hEq : HOEquivalent R1 R2 A B)
     (hPred :
-      ∀ X, isTrue (chapterEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X)) :
-    (forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+      ∀ X, isTrue (pointwiseEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X)) :
+    (forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)) ↔
     (let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
      w = ⊥ ∨ w = pTrue ∨ w = pFalse ∨ w = pBoth) := by
   have hForAll :
-      forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+      forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
     simpa [forAllEval] using
       congrArg (fun D => weakness μ D)
         (diagonal_eq_of_pointwise_isTrue_iff
-          (P := chapterEquivalencePred R1 R2 A B)
+          (P := pointwiseEquivalencePred R1 R2 A B)
           (Q := fun X => R1 A X)
           hPred)
   have hRatio :
@@ -572,7 +572,7 @@ theorem forAll_equivalence_ratio_iff_piecewise
       (self_div_fixed_iff_pbit_corner
         (w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal))).mpr h
     calc
-      forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ
+      forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ
           = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hForAll
       _ = weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
             weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := hw.symm
@@ -582,7 +582,7 @@ structure HimpRatioSideConditions
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence) where
   hImp : ∀ X, isTrue (R1 A X) → isTrue (R2 B X)
   hPred :
-    ∀ X, isTrue (chapterImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X)
+    ∀ X, isTrue (pointwiseImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X)
   hCorner :
     let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
     w = ⊥ ∨ w = pTrue ∨ w = pFalse ∨ w = pBoth
@@ -592,7 +592,7 @@ structure EquivalenceRatioSideConditions
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence) where
   hEq : HOEquivalent R1 R2 A B
   hPred :
-    ∀ X, isTrue (chapterEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X)
+    ∀ X, isTrue (pointwiseEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X)
   hCorner :
     let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
     w = ⊥ ∨ w = pTrue ∨ w = pFalse ∨ w = pBoth
@@ -603,7 +603,7 @@ theorem himp_sideConditions_of_true_or_bot
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hImp : ∀ X, isTrue (R1 A X) → isTrue (R2 B X))
     (hPred :
-      ∀ X, isTrue (chapterImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X))
+      ∀ X, isTrue (pointwiseImplicationPred R1 R2 A B X) ↔ isTrue (R1 A X))
     (hCorner2 :
       let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
       w = pTrue ∨ w = ⊥) :
@@ -623,7 +623,7 @@ theorem equivalence_sideConditions_of_true_or_bot
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hEq : HOEquivalent R1 R2 A B)
     (hPred :
-      ∀ X, isTrue (chapterEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X))
+      ∀ X, isTrue (pointwiseEquivalencePred R1 R2 A B X) ↔ isTrue (R1 A X))
     (hCorner2 :
       let w := weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
       w = pTrue ∨ w = ⊥) :
@@ -642,7 +642,7 @@ record instead of individual corner/predicate hypotheses. -/
 theorem forAll_himp_to_inheritance_ratio_of_sideConditions
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hSC : HimpRatioSideConditions R1 R2 A B μ) :
-    forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
   exact
@@ -655,7 +655,7 @@ record instead of individual corner/predicate hypotheses. -/
 theorem forAll_equivalence_to_similarity_ratio_of_sideConditions
     (R1 R2 : α → U → BinaryEvidence) (A B : α) (μ : WeightFunction U BinaryEvidence)
     (hSC : EquivalenceRatioSideConditions R1 R2 A B μ) :
-    forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) := by
   exact
@@ -668,7 +668,7 @@ form does not reduce to the inheritance-ratio expression in general. -/
 theorem forAll_himp_not_equal_inheritance_ratio_unconditional :
     ∃ (R1 R2 : Unit → Unit → BinaryEvidence) (A B : Unit) (μ : WeightFunction Unit BinaryEvidence),
       (∀ X, isTrue (R1 A X) → isTrue (R2 B X)) ∧
-      forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ ≠
+      forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ ≠
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) /
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) := by
   let R1 : Unit → Unit → BinaryEvidence := fun _ _ => pTrue
@@ -683,8 +683,8 @@ theorem forAll_himp_not_equal_inheritance_ratio_unconditional :
     -- Right side is `pTrue/pTrue = pTrue` over the singleton diagonal.
     intro hEq
     have hLeft :
-        forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ = ⊥ := by
-      simp [forAllEval, chapterImplicationPred, R1, R2, A, B, SatisfyingSet.diagonal,
+        forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ = ⊥ := by
+      simp [forAllEval, pointwiseImplicationPred, R1, R2, A, B, SatisfyingSet.diagonal,
         BinaryEvidence.himp, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue, weakness]
     have hWeakTrue :
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) = pTrue := by
@@ -696,7 +696,7 @@ theorem forAll_himp_not_equal_inheritance_ratio_unconditional :
       rw [hWeakTrue]
       simp [BinaryEvidence.div_def, pTrue]
     have hTmp :
-        forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ = pTrue := hEq.trans hRight
+        forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ = pTrue := hEq.trans hRight
     have : (⊥ : BinaryEvidence) = pTrue := by
       exact hLeft.symm.trans hTmp
     have hpos : (0 : ℝ≥0∞) = 1 := congrArg BinaryEvidence.pos this
@@ -707,7 +707,7 @@ form does not reduce to the similarity-ratio expression in general. -/
 theorem forAll_equivalence_not_equal_similarity_ratio_unconditional :
     ∃ (R1 R2 : Unit → Unit → BinaryEvidence) (A B : Unit) (μ : WeightFunction Unit BinaryEvidence),
       HOEquivalent R1 R2 A B ∧
-      forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ ≠
+      forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ ≠
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) /
         weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) := by
   let R1 : Unit → Unit → BinaryEvidence := fun _ _ => pTrue
@@ -720,18 +720,18 @@ theorem forAll_equivalence_not_equal_similarity_ratio_unconditional :
     simp [R1, R2, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue, pTrue]
   · intro hEq
     have hLeft :
-        forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ = ⊥ := by
+        forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ = ⊥ := by
       have hNegTop :
-          (chapterEquivalencePred R1 R2 A B ()).neg = ⊤ := by
-        simp [chapterEquivalencePred, R1, R2, A, B, BinaryEvidence.compl, BinaryEvidence.himp, pTrue]
+          (pointwiseEquivalencePred R1 R2 A B ()).neg = ⊤ := by
+        simp [pointwiseEquivalencePred, R1, R2, A, B, BinaryEvidence.compl, BinaryEvidence.himp, pTrue]
         change max (0 : ℝ≥0∞) (⊤ : ℝ≥0∞) = (⊤ : ℝ≥0∞)
         simp
-      have hNotTrue : ¬ isTrue (chapterEquivalencePred R1 R2 A B ()) := by
+      have hNotTrue : ¬ isTrue (pointwiseEquivalencePred R1 R2 A B ()) := by
         intro h
         have hTopNeZero : (⊤ : ℝ≥0∞) ≠ 0 := by simp
         exact hTopNeZero (hNegTop.symm.trans h.2)
       have hDiag :
-          (⟨chapterEquivalencePred R1 R2 A B⟩ : SatisfyingSet Unit).diagonal = ∅ := by
+          (⟨pointwiseEquivalencePred R1 R2 A B⟩ : SatisfyingSet Unit).diagonal = ∅ := by
         ext uv
         rcases uv with ⟨u, v⟩
         cases u
@@ -750,7 +750,7 @@ theorem forAll_equivalence_not_equal_similarity_ratio_unconditional :
       rw [hWeakTrue]
       simp [BinaryEvidence.div_def, pTrue]
     have hTmp :
-        forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ = pTrue := hEq.trans hRight
+        forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ = pTrue := hEq.trans hRight
     have : (⊥ : BinaryEvidence) = pTrue := by
       exact hLeft.symm.trans hTmp
     have hpos : (0 : ℝ≥0∞) = 1 := congrArg BinaryEvidence.pos this
@@ -773,13 +773,13 @@ theorem corner_source_unit_bot :
 
 /-- Worked Chapter-10 end-to-end fixture:
 instantiate the chapter implication ratio bridge on Unit-domain all-false source. -/
-theorem ch10_implication_ratio_fixture_unit_false :
+theorem implication_ratio_fixture_unit_false :
     let R1 : Unit → Unit → BinaryEvidence := fun _ _ => pFalse
     let R2 : Unit → Unit → BinaryEvidence := fun _ _ => pFalse
     let A : Unit := ()
     let B : Unit := ()
     let μ : WeightFunction Unit BinaryEvidence := ⟨fun _ => pTrue⟩
-    forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) := by
   dsimp
@@ -793,19 +793,19 @@ theorem ch10_implication_ratio_fixture_unit_false :
   · intro X hX
     simp [pFalse, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue] at hX
   · intro X
-    simp [chapterImplicationPred, pFalse, BinaryEvidence.himp, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue]
+    simp [pointwiseImplicationPred, pFalse, BinaryEvidence.himp, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue]
   · right
     exact corner_source_unit_bot
 
 /-- Worked Chapter-10 end-to-end fixture (equivalence path):
 instantiate the chapter equivalence ratio bridge on Unit-domain all-`pBoth` source. -/
-theorem ch10_equivalence_ratio_fixture_unit_both :
+theorem equivalence_ratio_fixture_unit_both :
     let R1 : Unit → Unit → BinaryEvidence := fun _ _ => pBoth
     let R2 : Unit → Unit → BinaryEvidence := fun _ _ => pBoth
     let A : Unit := ()
     let B : Unit := ()
     let μ : WeightFunction Unit BinaryEvidence := ⟨fun _ => pTrue⟩
-    forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+    forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) /
       weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet Unit).diagonal) := by
   dsimp
@@ -821,7 +821,7 @@ theorem ch10_equivalence_ratio_fixture_unit_both :
     simp [pBoth, Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue]
   · intro X
     have hEqPred :
-        chapterEquivalencePred
+        pointwiseEquivalencePred
           (fun _ _ => pBoth) (fun _ _ => pBoth) () () X = pBoth := by
       have hCompl : BinaryEvidence.compl pBoth = (⊥ : BinaryEvidence) := by
         apply BinaryEvidence.ext'
@@ -830,10 +830,10 @@ theorem ch10_equivalence_ratio_fixture_unit_both :
         · change (if (1 : ℝ≥0∞) ≤ (0 : ℝ≥0∞) then ⊤ else (0 : ℝ≥0∞)) = 0
           simp
       calc
-        chapterEquivalencePred
+        pointwiseEquivalencePred
             (fun _ _ => pBoth) (fun _ _ => pBoth) () () X
             = (pBoth ⊓ pBoth) ⊔ (BinaryEvidence.compl pBoth ⊓ BinaryEvidence.compl pBoth) := by
-              simp [chapterEquivalencePred]
+              simp [pointwiseEquivalencePred]
         _ = pBoth ⊔ ((⊥ : BinaryEvidence) ⊓ (⊥ : BinaryEvidence)) := by
               simp [hCompl]
         _ = pBoth := by simp
@@ -983,7 +983,7 @@ structure HimpReductionRule
 def HimpReductionRule.conclusion
     {R1 R2 : α → U → BinaryEvidence} {A B : α} {μ : WeightFunction U BinaryEvidence}
     (_r : HimpReductionRule R1 R2 A B μ) : Prop :=
-  forAllEval ⟨chapterImplicationPred R1 R2 A B⟩ μ =
+  forAllEval ⟨pointwiseImplicationPred R1 R2 A B⟩ μ =
     weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
     weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
 
@@ -1005,7 +1005,7 @@ structure EquivalenceReductionRule
 def EquivalenceReductionRule.conclusion
     {R1 R2 : α → U → BinaryEvidence} {A B : α} {μ : WeightFunction U BinaryEvidence}
     (_r : EquivalenceReductionRule R1 R2 A B μ) : Prop :=
-  forAllEval ⟨chapterEquivalencePred R1 R2 A B⟩ μ =
+  forAllEval ⟨pointwiseEquivalencePred R1 R2 A B⟩ μ =
     weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal) /
     weakness μ ((⟨fun X => R1 A X⟩ : SatisfyingSet U).diagonal)
 
@@ -1068,7 +1068,7 @@ noncomputable def doingMathSet : SatisfyingSet BenContextObj := ⟨doingMathPred
 noncomputable def doingJugglingSet : SatisfyingSet BenContextObj := ⟨doingJugglingPred⟩
 
 /-- `Context doing_math (Hyp (Ben ⇒ competent))`. -/
-noncomputable def ch10_ctx_payload_math :
+noncomputable def ctx_payload_math :
     ContextMacroPayload BenContextObj where
   ctx := doingMathSet
   hypStmt := ⟨{
@@ -1077,7 +1077,7 @@ noncomputable def ch10_ctx_payload_math :
   }⟩
 
 /-- `Context doing_juggling (Hyp (Ben ⇒ notCompetent))`. -/
-noncomputable def ch10_ctx_payload_juggling :
+noncomputable def ctx_payload_juggling :
     ContextMacroPayload BenContextObj where
   ctx := doingJugglingSet
   hypStmt := ⟨{
@@ -1086,7 +1086,7 @@ noncomputable def ch10_ctx_payload_juggling :
   }⟩
 
 /-- Negative fixture: `Context doing_math (Hyp (Ben ⇒ notCompetent))` should fail. -/
-noncomputable def ch10_ctx_payload_mismatch :
+noncomputable def ctx_payload_mismatch :
     ContextMacroPayload BenContextObj where
   ctx := doingMathSet
   hypStmt := ⟨{
@@ -1095,13 +1095,13 @@ noncomputable def ch10_ctx_payload_mismatch :
   }⟩
 
 /-- Positive context/hyp fixture: math-context competence statement is valid. -/
-theorem ch10_context_hyp_fixture_math_sound :
-    hosSemantics (expandContextMacro ch10_ctx_payload_math) := by
+theorem context_hyp_fixture_math_sound :
+    hosSemantics (expandContextMacro ctx_payload_math) := by
   unfold hosSemantics Subset
   intro u hu
   cases u with
   | benMath =>
-      simp [ch10_ctx_payload_math, expandContextMacro, andExtSet,
+      simp [ctx_payload_math, expandContextMacro, andExtSet,
         benSet, competentSet, doingMathSet,
         benPred, competentPred, doingMathPred,
         Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue, pTrue, pFalse] at hu ⊢
@@ -1115,8 +1115,8 @@ theorem ch10_context_hyp_fixture_math_sound :
       simp at hu
 
 /-- Positive context/hyp fixture: juggling-context non-competence statement is valid. -/
-theorem ch10_context_hyp_fixture_juggling_sound :
-    hosSemantics (expandContextMacro ch10_ctx_payload_juggling) := by
+theorem context_hyp_fixture_juggling_sound :
+    hosSemantics (expandContextMacro ctx_payload_juggling) := by
   unfold hosSemantics Subset
   intro u hu
   cases u with
@@ -1125,7 +1125,7 @@ theorem ch10_context_hyp_fixture_juggling_sound :
       change 0 < min (1 : ℝ≥0∞) 0 ∧ min (0 : ℝ≥0∞) 1 = 0 at hu
       simp at hu
   | benJuggle =>
-      simp [ch10_ctx_payload_juggling, expandContextMacro, andExtSet,
+      simp [ctx_payload_juggling, expandContextMacro, andExtSet,
         benSet, notCompetentSet, doingJugglingSet,
         benPred, notCompetentPred, doingJugglingPred,
         Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue, pTrue, pFalse] at hu ⊢
@@ -1135,19 +1135,19 @@ theorem ch10_context_hyp_fixture_juggling_sound :
       simp at hu
 
 /-- Negative context/hyp fixture: math-context non-competence statement is not valid. -/
-theorem ch10_context_hyp_fixture_mismatch_not_sound :
-    ¬ hosSemantics (expandContextMacro ch10_ctx_payload_mismatch) := by
+theorem context_hyp_fixture_mismatch_not_sound :
+    ¬ hosSemantics (expandContextMacro ctx_payload_mismatch) := by
   intro h
   have hSrc :
       isTrue
-        ((expandContextMacro ch10_ctx_payload_mismatch).src.pred
+        ((expandContextMacro ctx_payload_mismatch).src.pred
           BenContextObj.benMath) := by
-    simp [ch10_ctx_payload_mismatch, expandContextMacro, andExtSet,
+    simp [ctx_payload_mismatch, expandContextMacro, andExtSet,
       benSet, doingMathSet, benPred, doingMathPred,
       Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit.isTrue, pTrue, pFalse]
   have hDst :
       isTrue
-        ((expandContextMacro ch10_ctx_payload_mismatch).dst.pred
+        ((expandContextMacro ctx_payload_mismatch).dst.pred
           BenContextObj.benMath) :=
     h BenContextObj.benMath hSrc
   change 0 < min (0 : ℝ≥0∞) 1 ∧ min (1 : ℝ≥0∞) 0 = 0 at hDst

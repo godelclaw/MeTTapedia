@@ -21,7 +21,7 @@ batch from one live store revision.  The coordinates remain independent:
 * the effect handler is named explicitly as contextual or shared-state.
 
 This is an operational revision boundary.  It is deliberately not called a
-semantic-theory or NIK revision: connecting those revision notions requires a
+semantic-theory or SemanticService revision: connecting those revision notions requires a
 separate currentness theorem.  Refusal leaves the exact occurrence batch
 pending and carries no semantic refutation constructor.
 -/

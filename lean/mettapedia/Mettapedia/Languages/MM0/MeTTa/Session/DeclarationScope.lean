@@ -99,7 +99,7 @@ theorem cell_returns (before : State) (bindings : Subst) (name : String) (value 
   apply native_unary_call_returns program bindings before before before "get-state" (.symbol name)
     (.symbol name) value (by decide) (by decide) (by decide)
     (symbol_returns program bindings before name) _ (by decide)
-  simp [StdLib.apply, present]
+  simp [present]
 
 private theorem active_body_enters (before : State) (handle : Handle) (stored : List Atom)
     (state command : Atom)

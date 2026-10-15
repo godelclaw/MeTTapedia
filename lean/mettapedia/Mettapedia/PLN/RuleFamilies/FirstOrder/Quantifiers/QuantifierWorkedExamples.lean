@@ -16,7 +16,7 @@ namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 
 /-- Shared ε=0.1 fixture with AFew-like interval `[0.4,0.6]` and strong `PCL=0.9`. -/
-def ch11AFewParams : FuzzyQuantifierParams where
+def aFewParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.4
   UPC := 0.6
@@ -28,7 +28,7 @@ def ch11AFewParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with MANY-like interval `[0.4,0.95]`. -/
-def ch11ManyParams : FuzzyQuantifierParams where
+def manyParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.4
   UPC := 0.95
@@ -52,7 +52,7 @@ def bothLow : Bool → ℝ :=
   fun _ => 0.05
 
 /-- Shared ε=0.1 fixture with MOST-like interval `[0.7,0.9]`. -/
-def ch11MostParams : FuzzyQuantifierParams where
+def mostParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.7
   UPC := 0.9
@@ -64,7 +64,7 @@ def ch11MostParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with FEW-like interval `[0.1,0.3]`. -/
-def ch11FewParams : FuzzyQuantifierParams where
+def fewParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.1
   UPC := 0.3
@@ -76,7 +76,7 @@ def ch11FewParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with ALMOST-ALL-like interval `[0.75,1.0]`. -/
-def ch11AlmostAllParams : FuzzyQuantifierParams where
+def almostAllParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.75
   UPC := 1
@@ -88,7 +88,7 @@ def ch11AlmostAllParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with ABOUT-HALF-like interval `[0.45,0.55]`. -/
-def ch11AboutHalfParams : FuzzyQuantifierParams where
+def aboutHalfParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.45
   UPC := 0.55
@@ -100,7 +100,7 @@ def ch11AboutHalfParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with PROBABLY-like interval `[0.66,0.85]`. -/
-def ch11ProbablyParams : FuzzyQuantifierParams where
+def probablyParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.66
   UPC := 0.85
@@ -112,7 +112,7 @@ def ch11ProbablyParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with MAYBE/POSSIBLY-like interval `[0.3,0.7]`. -/
-def ch11MaybeParams : FuzzyQuantifierParams where
+def maybeParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.3
   UPC := 0.7
@@ -124,7 +124,7 @@ def ch11MaybeParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with ALMOST-NONE-like interval `[0.0,0.2]`. -/
-def ch11AlmostNoneParams : FuzzyQuantifierParams where
+def almostNoneParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0
   UPC := 0.2
@@ -136,7 +136,7 @@ def ch11AlmostNoneParams : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Shared ε=0.1 fixture with MANY-BUT-NOT-MOST interval `[0.4,0.69]`. -/
-def ch11ManyNotMostParams : FuzzyQuantifierParams where
+def manyNotMostParams : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.4
   UPC := 0.69
@@ -162,266 +162,266 @@ def threeHighTwoLowFin5 : Fin 5 → ℝ :=
 
 /-- Crooked-lottery canary:
 `AFew` holds while strict `ForAll` (via `PCL=0.9`) does not. -/
-theorem canary_ch11_crookedLottery_afew_not_forall :
-    fuzzyIntervalHolds ch11AFewParams oneHighOneLow ∧
-      ¬ fuzzyForAllHolds ch11AFewParams oneHighOneLow := by
-  have hfrac : nearOneFraction ch11AFewParams oneHighOneLow = (1 / 2 : ℝ) := by
+theorem canary_crookedLottery_afew_not_forall :
+    fuzzyIntervalHolds aFewParams oneHighOneLow ∧
+      ¬ fuzzyForAllHolds aFewParams oneHighOneLow := by
+  have hfrac : nearOneFraction aFewParams oneHighOneLow = (1 / 2 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11AFewParams (oneHighOneLow u)) =
+        (fun u : Bool => nearOne aFewParams (oneHighOneLow u)) =
           (fun u => u = true) := by
       funext u
-      cases u <;> simp [nearOne, oneHighOneLow, ch11AFewParams] <;> norm_num
+      cases u <;> simp [nearOne, oneHighOneLow, aFewParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
   constructor
   · unfold fuzzyIntervalHolds
     rw [hfrac]
-    norm_num [ch11AFewParams]
+    norm_num [aFewParams]
   · unfold fuzzyForAllHolds
     rw [hfrac]
-    norm_num [ch11AFewParams]
+    norm_num [aFewParams]
 
 /-- Fuzzy-syllogism canary:
 with "many women are beautiful" and "almost all beautiful bring happiness"
 encoded as near-one fractions `1/2` and `1`, the composed score remains "many". -/
-theorem canary_ch11_fuzzySyllogism_many :
-    ch11ManyParams.LPC ≤
-        nearOneFraction ch11ManyParams oneHighOneLow *
-          nearOneFraction ch11ManyParams bothHigh ∧
-      nearOneFraction ch11ManyParams oneHighOneLow *
-          nearOneFraction ch11ManyParams bothHigh ≤
-        ch11ManyParams.UPC := by
-  have hWB : nearOneFraction ch11ManyParams oneHighOneLow = (1 / 2 : ℝ) := by
+theorem canary_fuzzySyllogism_many :
+    manyParams.LPC ≤
+        nearOneFraction manyParams oneHighOneLow *
+          nearOneFraction manyParams bothHigh ∧
+      nearOneFraction manyParams oneHighOneLow *
+          nearOneFraction manyParams bothHigh ≤
+        manyParams.UPC := by
+  have hWB : nearOneFraction manyParams oneHighOneLow = (1 / 2 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11ManyParams (oneHighOneLow u)) =
+        (fun u : Bool => nearOne manyParams (oneHighOneLow u)) =
           (fun u => u = true) := by
       funext u
-      cases u <;> simp [nearOne, oneHighOneLow, ch11ManyParams] <;> norm_num
+      cases u <;> simp [nearOne, oneHighOneLow, manyParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
-  have hBH : nearOneFraction ch11ManyParams bothHigh = (1 : ℝ) := by
+  have hBH : nearOneFraction manyParams bothHigh = (1 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11ManyParams (bothHigh u)) = (fun _ => True) := by
+        (fun u : Bool => nearOne manyParams (bothHigh u)) = (fun _ => True) := by
       funext u
-      cases u <;> simp [nearOne, bothHigh, ch11ManyParams] <;> norm_num
+      cases u <;> simp [nearOne, bothHigh, manyParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
   rw [hWB, hBH]
-  norm_num [ch11ManyParams]
+  norm_num [manyParams]
 
 /-- Positive fixture: all-high profile satisfies strict fuzzy `ForAll` under AFew parameters. -/
-theorem canary_ch11_allHigh_forall :
-    fuzzyForAllHolds ch11AFewParams bothHigh := by
-  have hBH : nearOneFraction ch11AFewParams bothHigh = (1 : ℝ) := by
+theorem canary_allHigh_forall :
+    fuzzyForAllHolds aFewParams bothHigh := by
+  have hBH : nearOneFraction aFewParams bothHigh = (1 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11AFewParams (bothHigh u)) = (fun _ => True) := by
+        (fun u : Bool => nearOne aFewParams (bothHigh u)) = (fun _ => True) := by
       funext u
-      cases u <;> simp [nearOne, bothHigh, ch11AFewParams] <;> norm_num
+      cases u <;> simp [nearOne, bothHigh, aFewParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
   unfold fuzzyForAllHolds
   rw [hBH]
-  norm_num [ch11AFewParams]
+  norm_num [aFewParams]
 
 /-- Negative fixture: all-low profile fails fuzzy `ThereExists` under AFew parameters. -/
-theorem canary_ch11_allLow_not_thereExists :
-    ¬ fuzzyThereExistsHolds ch11AFewParams bothLow := by
-  have hBZ : nearZeroFraction ch11AFewParams bothLow = (1 : ℝ) := by
+theorem canary_allLow_not_thereExists :
+    ¬ fuzzyThereExistsHolds aFewParams bothLow := by
+  have hBZ : nearZeroFraction aFewParams bothLow = (1 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearZero ch11AFewParams (bothLow u)) = (fun _ => True) := by
+        (fun u : Bool => nearZero aFewParams (bothLow u)) = (fun _ => True) := by
       funext u
-      cases u <;> simp [nearZero, bothLow, ch11AFewParams] <;> norm_num
+      cases u <;> simp [nearZero, bothLow, aFewParams] <;> norm_num
     unfold nearZeroFraction
     simp [hpred, witnessFraction, witnessCount]
   unfold fuzzyThereExistsHolds
   rw [hBZ]
-  norm_num [ch11AFewParams]
+  norm_num [aFewParams]
 
 /-- MOST fixture canary: expected near-one fraction is exactly `3/4`. -/
-theorem canary_ch11_most_fraction_threeQuarters :
-    nearOneFraction ch11MostParams threeHighOneLow = (3 / 4 : ℝ) := by
+theorem canary_most_fraction_threeQuarters :
+    nearOneFraction mostParams threeHighOneLow = (3 / 4 : ℝ) := by
   have hpred :
-      (fun u : Fin 4 => nearOne ch11MostParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
+      (fun u : Fin 4 => nearOne mostParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
     funext u
-    fin_cases u <;> simp [nearOne, threeHighOneLow, ch11MostParams] <;> norm_num
+    fin_cases u <;> simp [nearOne, threeHighOneLow, mostParams] <;> norm_num
   unfold nearOneFraction
   simp [hpred, witnessFraction, witnessCount]
 
 /-- FEW fixture canary: expected near-one fraction is exactly `1/4`. -/
-theorem canary_ch11_few_fraction_oneQuarter :
-    nearOneFraction ch11FewParams oneHighThreeLow = (1 / 4 : ℝ) := by
+theorem canary_few_fraction_oneQuarter :
+    nearOneFraction fewParams oneHighThreeLow = (1 / 4 : ℝ) := by
   have hpred :
-      (fun u : Fin 4 => nearOne ch11FewParams (oneHighThreeLow u)) = (fun u => u = 0) := by
+      (fun u : Fin 4 => nearOne fewParams (oneHighThreeLow u)) = (fun u => u = 0) := by
     funext u
-    fin_cases u <;> simp [nearOne, oneHighThreeLow, ch11FewParams] <;> norm_num
+    fin_cases u <;> simp [nearOne, oneHighThreeLow, fewParams] <;> norm_num
   unfold nearOneFraction
   simp [hpred, witnessFraction, witnessCount]
 
 /-- MOST positive + FEW negative on the same `3/4` fixture. -/
-theorem canary_ch11_most_vs_few_split_on_threeQuarters :
-    fuzzyIntervalHolds ch11MostParams threeHighOneLow ∧
-      ¬ fuzzyIntervalHolds ch11FewParams threeHighOneLow := by
-  have hfrac : nearOneFraction ch11MostParams threeHighOneLow = (3 / 4 : ℝ) := by
-    exact canary_ch11_most_fraction_threeQuarters
+theorem canary_most_vs_few_split_on_threeQuarters :
+    fuzzyIntervalHolds mostParams threeHighOneLow ∧
+      ¬ fuzzyIntervalHolds fewParams threeHighOneLow := by
+  have hfrac : nearOneFraction mostParams threeHighOneLow = (3 / 4 : ℝ) := by
+    exact canary_most_fraction_threeQuarters
   constructor
   · unfold fuzzyIntervalHolds
     rw [hfrac]
-    norm_num [ch11MostParams]
+    norm_num [mostParams]
   · unfold fuzzyIntervalHolds
-    have hfracFew : nearOneFraction ch11FewParams threeHighOneLow = (3 / 4 : ℝ) := by
+    have hfracFew : nearOneFraction fewParams threeHighOneLow = (3 / 4 : ℝ) := by
       have hpred :
-          (fun u : Fin 4 => nearOne ch11FewParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
+          (fun u : Fin 4 => nearOne fewParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
         funext u
-        fin_cases u <;> simp [nearOne, threeHighOneLow, ch11FewParams] <;> norm_num
+        fin_cases u <;> simp [nearOne, threeHighOneLow, fewParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hfracFew]
-    norm_num [ch11FewParams]
+    norm_num [fewParams]
 
 /-- ALMOST-ALL fixture canary: expected near-one fraction is exactly `3/4`. -/
-theorem canary_ch11_almostAll_fraction_threeQuarters :
-    nearOneFraction ch11AlmostAllParams threeHighOneLow = (3 / 4 : ℝ) := by
+theorem canary_almostAll_fraction_threeQuarters :
+    nearOneFraction almostAllParams threeHighOneLow = (3 / 4 : ℝ) := by
   have hpred :
-      (fun u : Fin 4 => nearOne ch11AlmostAllParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
+      (fun u : Fin 4 => nearOne almostAllParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
     funext u
-    fin_cases u <;> simp [nearOne, threeHighOneLow, ch11AlmostAllParams] <;> norm_num
+    fin_cases u <;> simp [nearOne, threeHighOneLow, almostAllParams] <;> norm_num
   unfold nearOneFraction
   simp [hpred, witnessFraction, witnessCount]
 
 /-- ALMOST-ALL positive canary on the `3/4` fixture. -/
-theorem canary_ch11_almostAll_holds_on_threeQuarters :
-    fuzzyIntervalHolds ch11AlmostAllParams threeHighOneLow := by
+theorem canary_almostAll_holds_on_threeQuarters :
+    fuzzyIntervalHolds almostAllParams threeHighOneLow := by
   unfold fuzzyIntervalHolds
-  rw [canary_ch11_almostAll_fraction_threeQuarters]
-  norm_num [ch11AlmostAllParams]
+  rw [canary_almostAll_fraction_threeQuarters]
+  norm_num [almostAllParams]
 
 /-- ABOUT-HALF fixture canary: expected near-one fraction is exactly `1/2`. -/
-theorem canary_ch11_aboutHalf_fraction_oneHalf :
-    nearOneFraction ch11AboutHalfParams oneHighOneLow = (1 / 2 : ℝ) := by
+theorem canary_aboutHalf_fraction_oneHalf :
+    nearOneFraction aboutHalfParams oneHighOneLow = (1 / 2 : ℝ) := by
   have hpred :
-      (fun u : Bool => nearOne ch11AboutHalfParams (oneHighOneLow u)) = (fun u => u = true) := by
+      (fun u : Bool => nearOne aboutHalfParams (oneHighOneLow u)) = (fun u => u = true) := by
     funext u
-    cases u <;> simp [nearOne, oneHighOneLow, ch11AboutHalfParams] <;> norm_num
+    cases u <;> simp [nearOne, oneHighOneLow, aboutHalfParams] <;> norm_num
   unfold nearOneFraction
   simp [hpred, witnessFraction, witnessCount]
 
 /-- ABOUT-HALF split canary:
 the `1/2` fixture is accepted while an all-high profile is rejected. -/
-theorem canary_ch11_aboutHalf_positive_negative_split :
-    fuzzyIntervalHolds ch11AboutHalfParams oneHighOneLow ∧
-      ¬ fuzzyIntervalHolds ch11AboutHalfParams bothHigh := by
+theorem canary_aboutHalf_positive_negative_split :
+    fuzzyIntervalHolds aboutHalfParams oneHighOneLow ∧
+      ¬ fuzzyIntervalHolds aboutHalfParams bothHigh := by
   constructor
   · unfold fuzzyIntervalHolds
-    rw [canary_ch11_aboutHalf_fraction_oneHalf]
-    norm_num [ch11AboutHalfParams]
+    rw [canary_aboutHalf_fraction_oneHalf]
+    norm_num [aboutHalfParams]
   · unfold fuzzyIntervalHolds
-    have hAll : nearOneFraction ch11AboutHalfParams bothHigh = (1 : ℝ) := by
+    have hAll : nearOneFraction aboutHalfParams bothHigh = (1 : ℝ) := by
       have hpred :
-          (fun u : Bool => nearOne ch11AboutHalfParams (bothHigh u)) = (fun _ => True) := by
+          (fun u : Bool => nearOne aboutHalfParams (bothHigh u)) = (fun _ => True) := by
         funext u
-        cases u <;> simp [nearOne, bothHigh, ch11AboutHalfParams] <;> norm_num
+        cases u <;> simp [nearOne, bothHigh, aboutHalfParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hAll]
-    norm_num [ch11AboutHalfParams]
+    norm_num [aboutHalfParams]
 
 /-- PROBABLY positive + negative split:
 `3/4` is accepted, while `1/2` is rejected. -/
-theorem canary_ch11_probably_positive_negative_split :
-    fuzzyIntervalHolds ch11ProbablyParams threeHighOneLow ∧
-      ¬ fuzzyIntervalHolds ch11ProbablyParams oneHighOneLow := by
+theorem canary_probably_positive_negative_split :
+    fuzzyIntervalHolds probablyParams threeHighOneLow ∧
+      ¬ fuzzyIntervalHolds probablyParams oneHighOneLow := by
   constructor
   · unfold fuzzyIntervalHolds
-    have hThreeQuarter : nearOneFraction ch11ProbablyParams threeHighOneLow = (3 / 4 : ℝ) := by
+    have hThreeQuarter : nearOneFraction probablyParams threeHighOneLow = (3 / 4 : ℝ) := by
       have hpred :
-          (fun u : Fin 4 => nearOne ch11ProbablyParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
+          (fun u : Fin 4 => nearOne probablyParams (threeHighOneLow u)) = (fun u => u ≠ 0) := by
         funext u
-        fin_cases u <;> simp [nearOne, threeHighOneLow, ch11ProbablyParams] <;> norm_num
+        fin_cases u <;> simp [nearOne, threeHighOneLow, probablyParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hThreeQuarter]
-    norm_num [ch11ProbablyParams]
+    norm_num [probablyParams]
   · unfold fuzzyIntervalHolds
-    have hHalf : nearOneFraction ch11ProbablyParams oneHighOneLow = (1 / 2 : ℝ) := by
+    have hHalf : nearOneFraction probablyParams oneHighOneLow = (1 / 2 : ℝ) := by
       have hpred :
-          (fun u : Bool => nearOne ch11ProbablyParams (oneHighOneLow u)) = (fun u => u = true) := by
+          (fun u : Bool => nearOne probablyParams (oneHighOneLow u)) = (fun u => u = true) := by
         funext u
-        cases u <;> simp [nearOne, oneHighOneLow, ch11ProbablyParams] <;> norm_num
+        cases u <;> simp [nearOne, oneHighOneLow, probablyParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hHalf]
-    norm_num [ch11ProbablyParams]
+    norm_num [probablyParams]
 
 /-- PROBABLY positive finite fixture:
 `3/4` near-one mass is accepted by `[0.66,0.85]`. -/
-theorem canary_ch11_probably_holds_on_threeQuarters :
-    fuzzyIntervalHolds ch11ProbablyParams threeHighOneLow :=
-  (canary_ch11_probably_positive_negative_split).1
+theorem canary_probably_holds_on_threeQuarters :
+    fuzzyIntervalHolds probablyParams threeHighOneLow :=
+  (canary_probably_positive_negative_split).1
 
 /-- PROBABLY negative finite fixture:
 `1/2` near-one mass is rejected by `[0.66,0.85]`. -/
-theorem canary_ch11_probably_rejects_oneHalf :
-    ¬ fuzzyIntervalHolds ch11ProbablyParams oneHighOneLow :=
-  (canary_ch11_probably_positive_negative_split).2
+theorem canary_probably_rejects_oneHalf :
+    ¬ fuzzyIntervalHolds probablyParams oneHighOneLow :=
+  (canary_probably_positive_negative_split).2
 
 /-- MAYBE/POSSIBLY positive + negative split:
 `1/2` is accepted, while certainty (`1`) is rejected. -/
-theorem canary_ch11_maybe_positive_negative_split :
-    fuzzyIntervalHolds ch11MaybeParams oneHighOneLow ∧
-      ¬ fuzzyIntervalHolds ch11MaybeParams bothHigh := by
+theorem canary_maybe_positive_negative_split :
+    fuzzyIntervalHolds maybeParams oneHighOneLow ∧
+      ¬ fuzzyIntervalHolds maybeParams bothHigh := by
   constructor
   · unfold fuzzyIntervalHolds
-    have hHalf : nearOneFraction ch11MaybeParams oneHighOneLow = (1 / 2 : ℝ) := by
+    have hHalf : nearOneFraction maybeParams oneHighOneLow = (1 / 2 : ℝ) := by
       have hpred :
-          (fun u : Bool => nearOne ch11MaybeParams (oneHighOneLow u)) = (fun u => u = true) := by
+          (fun u : Bool => nearOne maybeParams (oneHighOneLow u)) = (fun u => u = true) := by
         funext u
-        cases u <;> simp [nearOne, oneHighOneLow, ch11MaybeParams] <;> norm_num
+        cases u <;> simp [nearOne, oneHighOneLow, maybeParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hHalf]
-    norm_num [ch11MaybeParams]
+    norm_num [maybeParams]
   · unfold fuzzyIntervalHolds
-    have hAll : nearOneFraction ch11MaybeParams bothHigh = (1 : ℝ) := by
+    have hAll : nearOneFraction maybeParams bothHigh = (1 : ℝ) := by
       have hpred :
-          (fun u : Bool => nearOne ch11MaybeParams (bothHigh u)) = (fun _ => True) := by
+          (fun u : Bool => nearOne maybeParams (bothHigh u)) = (fun _ => True) := by
         funext u
-        cases u <;> simp [nearOne, bothHigh, ch11MaybeParams] <;> norm_num
+        cases u <;> simp [nearOne, bothHigh, maybeParams] <;> norm_num
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount]
     rw [hAll]
-    norm_num [ch11MaybeParams]
+    norm_num [maybeParams]
 
 /-- MAYBE/POSSIBLY positive finite fixture:
 `1/2` near-one mass is accepted by `[0.3,0.7]`. -/
-theorem canary_ch11_maybe_holds_on_oneHalf :
-    fuzzyIntervalHolds ch11MaybeParams oneHighOneLow :=
-  (canary_ch11_maybe_positive_negative_split).1
+theorem canary_maybe_holds_on_oneHalf :
+    fuzzyIntervalHolds maybeParams oneHighOneLow :=
+  (canary_maybe_positive_negative_split).1
 
 /-- ALMOST-NONE fixture canary: expected near-one fraction is exactly `1/5`. -/
-theorem canary_ch11_almostNone_fraction_oneFifth :
-    nearOneFraction ch11AlmostNoneParams oneHighFourLowFin5 = (1 / 5 : ℝ) := by
+theorem canary_almostNone_fraction_oneFifth :
+    nearOneFraction almostNoneParams oneHighFourLowFin5 = (1 / 5 : ℝ) := by
   have hpred :
-      (fun u : Fin 5 => nearOne ch11AlmostNoneParams (oneHighFourLowFin5 u)) = (fun u => u = 0) := by
+      (fun u : Fin 5 => nearOne almostNoneParams (oneHighFourLowFin5 u)) = (fun u => u = 0) := by
     funext u
-    fin_cases u <;> simp [nearOne, oneHighFourLowFin5, ch11AlmostNoneParams] <;> norm_num
+    fin_cases u <;> simp [nearOne, oneHighFourLowFin5, almostNoneParams] <;> norm_num
   unfold nearOneFraction
   simp [hpred, witnessFraction, witnessCount]
 
 /-- ALMOST-NONE positive canary on the finite-5 `1/5` fixture. -/
-theorem canary_ch11_almostNone_holds_on_oneFifth :
-    fuzzyIntervalHolds ch11AlmostNoneParams oneHighFourLowFin5 := by
+theorem canary_almostNone_holds_on_oneFifth :
+    fuzzyIntervalHolds almostNoneParams oneHighFourLowFin5 := by
   unfold fuzzyIntervalHolds
-  rw [canary_ch11_almostNone_fraction_oneFifth]
-  norm_num [ch11AlmostNoneParams]
+  rw [canary_almostNone_fraction_oneFifth]
+  norm_num [almostNoneParams]
 
 /-- MANY-BUT-NOT-MOST fixture canary: expected near-one fraction is exactly `3/5`. -/
-theorem canary_ch11_manyNotMost_fraction_threeFifths :
-    nearOneFraction ch11ManyNotMostParams threeHighTwoLowFin5 = (3 / 5 : ℝ) := by
+theorem canary_manyNotMost_fraction_threeFifths :
+    nearOneFraction manyNotMostParams threeHighTwoLowFin5 = (3 / 5 : ℝ) := by
   have hpred :
-      (fun u : Fin 5 => nearOne ch11ManyNotMostParams (threeHighTwoLowFin5 u)) =
+      (fun u : Fin 5 => nearOne manyNotMostParams (threeHighTwoLowFin5 u)) =
         (fun u => u = 0 ∨ u = 1 ∨ u = 2) := by
     funext u
-    fin_cases u <;> simp [nearOne, threeHighTwoLowFin5, ch11ManyNotMostParams] <;> norm_num
+    fin_cases u <;> simp [nearOne, threeHighTwoLowFin5, manyNotMostParams] <;> norm_num
   have hcount : Fintype.card {u : Fin 5 // u = 0 ∨ u = 1 ∨ u = 2} = 3 := by
     decide
   unfold nearOneFraction
@@ -429,26 +429,26 @@ theorem canary_ch11_manyNotMost_fraction_threeFifths :
 
 /-- MANY-BUT-NOT-MOST split canary:
 the `3/5` fixture satisfies many-but-not-most, but not MOST. -/
-theorem canary_ch11_manyNotMost_vs_most_split :
-    fuzzyIntervalHolds ch11ManyNotMostParams threeHighTwoLowFin5 ∧
-      ¬ fuzzyIntervalHolds ch11MostParams threeHighTwoLowFin5 := by
+theorem canary_manyNotMost_vs_most_split :
+    fuzzyIntervalHolds manyNotMostParams threeHighTwoLowFin5 ∧
+      ¬ fuzzyIntervalHolds mostParams threeHighTwoLowFin5 := by
   constructor
   · unfold fuzzyIntervalHolds
-    rw [canary_ch11_manyNotMost_fraction_threeFifths]
-    norm_num [ch11ManyNotMostParams]
+    rw [canary_manyNotMost_fraction_threeFifths]
+    norm_num [manyNotMostParams]
   · unfold fuzzyIntervalHolds
-    have hMostFrac : nearOneFraction ch11MostParams threeHighTwoLowFin5 = (3 / 5 : ℝ) := by
+    have hMostFrac : nearOneFraction mostParams threeHighTwoLowFin5 = (3 / 5 : ℝ) := by
       have hpred :
-          (fun u : Fin 5 => nearOne ch11MostParams (threeHighTwoLowFin5 u)) =
+          (fun u : Fin 5 => nearOne mostParams (threeHighTwoLowFin5 u)) =
             (fun u => u = 0 ∨ u = 1 ∨ u = 2) := by
         funext u
-        fin_cases u <;> simp [nearOne, threeHighTwoLowFin5, ch11MostParams] <;> norm_num
+        fin_cases u <;> simp [nearOne, threeHighTwoLowFin5, mostParams] <;> norm_num
       have hcount : Fintype.card {u : Fin 5 // u = 0 ∨ u = 1 ∨ u = 2} = 3 := by
         decide
       unfold nearOneFraction
       simp [hpred, witnessFraction, witnessCount, hcount]
     rw [hMostFrac]
-    norm_num [ch11MostParams]
+    norm_num [mostParams]
 
 /-- ITV fixtures for explicit rule-4 non-equivalence witness. -/
 def itvHi : ITV where
@@ -479,7 +479,7 @@ def itvG : ITV where
   credibility_in_unit := by norm_num
 
 /-- ε=0.2 makes "near one" mean `x ≥ 0.8`. -/
-def ch11Rule4Params : FuzzyQuantifierParams where
+def itvConjunctionSeparationParams : FuzzyQuantifierParams where
   ε := 0.2
   LPC := 0
   UPC := 1
@@ -491,39 +491,39 @@ def ch11Rule4Params : FuzzyQuantifierParams where
   hLPC_le_UPC := by norm_num
 
 /-- Profile induced by ITV midpoint strengths. -/
-noncomputable def rule4Profile : Bool → ℝ :=
+noncomputable def itvSeparationStrengthProfile : Bool → ℝ :=
   fun b => (if b then itvHi else itvLo).strength
 
 /-- Concrete ITV-valued finite fixture used by coordinate bridge canaries. -/
-def rule4ITVProfile : Bool → ITV :=
+def itvSeparationProfile : Bool → ITV :=
   fun b => if b then itvHi else itvLo
 
 /-- Ch.11 Rule-4 non-equivalence witness on an ITV-based path:
 
 `∃x (G ∧ F(x))` score is not equal to `G ∧ ∃x F(x)` score under proxy-threshold
 aggregation. -/
-theorem canary_ch11_rule4_not_equivalent_itvPath :
-    fuzzyExistsScore ch11Rule4Params
-      (conjoinProfile itvG.strength rule4Profile)
+theorem canary_existentialConjunction_not_equivalent_itvPath :
+    fuzzyExistsScore itvConjunctionSeparationParams
+      (conjoinProfile itvG.strength itvSeparationStrengthProfile)
       ≠
-    min itvG.strength (fuzzyExistsScore ch11Rule4Params rule4Profile) := by
+    min itvG.strength (fuzzyExistsScore itvConjunctionSeparationParams itvSeparationStrengthProfile) := by
   have hLeft :
-      fuzzyExistsScore ch11Rule4Params (conjoinProfile itvG.strength rule4Profile) = (0 : ℝ) := by
+      fuzzyExistsScore itvConjunctionSeparationParams (conjoinProfile itvG.strength itvSeparationStrengthProfile) = (0 : ℝ) := by
     unfold fuzzyExistsScore nearOneFraction witnessFraction witnessCount nearOne
-    unfold conjoinProfile rule4Profile ch11Rule4Params
+    unfold conjoinProfile itvSeparationStrengthProfile itvConjunctionSeparationParams
     norm_num [ITV.strength, itvG, itvHi, itvLo]
   have hScore :
-      fuzzyExistsScore ch11Rule4Params rule4Profile = (1 / 2 : ℝ) := by
+      fuzzyExistsScore itvConjunctionSeparationParams itvSeparationStrengthProfile = (1 / 2 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11Rule4Params (rule4Profile u)) =
+        (fun u : Bool => nearOne itvConjunctionSeparationParams (itvSeparationStrengthProfile u)) =
           (fun u => u = true) := by
       funext u
       cases u <;>
-        simp [nearOne, rule4Profile, ch11Rule4Params, ITV.strength, itvHi, itvLo] <;> norm_num
+        simp [nearOne, itvSeparationStrengthProfile, itvConjunctionSeparationParams, ITV.strength, itvHi, itvLo] <;> norm_num
     unfold fuzzyExistsScore nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
   have hRight :
-      min itvG.strength (fuzzyExistsScore ch11Rule4Params rule4Profile) = (1 / 2 : ℝ) := by
+      min itvG.strength (fuzzyExistsScore itvConjunctionSeparationParams itvSeparationStrengthProfile) = (1 / 2 : ℝ) := by
     rw [hScore]
     norm_num [ITV.strength, itvG]
   rw [hLeft, hRight]
@@ -531,43 +531,43 @@ theorem canary_ch11_rule4_not_equivalent_itvPath :
 
 /-- ITV-coordinate bridge canary:
 lower/upper fuzzy-interval truth transfers to strength-profile truth. -/
-theorem canary_ch11_itv_strength_interval_of_lower_upper :
-    fuzzyIntervalHolds ch11ManyParams (itvLowerProfile rule4ITVProfile) ∧
-      fuzzyIntervalHolds ch11ManyParams (itvUpperProfile rule4ITVProfile) ∧
-      fuzzyIntervalHolds ch11ManyParams (itvStrengthProfile rule4ITVProfile) := by
-  have hLowerFrac : nearOneFraction ch11ManyParams (itvLowerProfile rule4ITVProfile) = (1 / 2 : ℝ) := by
+theorem canary_itv_strength_interval_of_lower_upper :
+    fuzzyIntervalHolds manyParams (itvLowerProfile itvSeparationProfile) ∧
+      fuzzyIntervalHolds manyParams (itvUpperProfile itvSeparationProfile) ∧
+      fuzzyIntervalHolds manyParams (itvStrengthProfile itvSeparationProfile) := by
+  have hLowerFrac : nearOneFraction manyParams (itvLowerProfile itvSeparationProfile) = (1 / 2 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11ManyParams ((itvLowerProfile rule4ITVProfile) u)) =
+        (fun u : Bool => nearOne manyParams ((itvLowerProfile itvSeparationProfile) u)) =
           (fun u => u = true) := by
       funext u
       cases u <;>
-        simp [nearOne, itvLowerProfile, rule4ITVProfile, itvHi, itvLo, ch11ManyParams] <;> norm_num
+        simp [nearOne, itvLowerProfile, itvSeparationProfile, itvHi, itvLo, manyParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
-  have hUpperFrac : nearOneFraction ch11ManyParams (itvUpperProfile rule4ITVProfile) = (1 / 2 : ℝ) := by
+  have hUpperFrac : nearOneFraction manyParams (itvUpperProfile itvSeparationProfile) = (1 / 2 : ℝ) := by
     have hpred :
-        (fun u : Bool => nearOne ch11ManyParams ((itvUpperProfile rule4ITVProfile) u)) =
+        (fun u : Bool => nearOne manyParams ((itvUpperProfile itvSeparationProfile) u)) =
           (fun u => u = true) := by
       funext u
       cases u <;>
-        simp [nearOne, itvUpperProfile, rule4ITVProfile, itvHi, itvLo, ch11ManyParams] <;> norm_num
+        simp [nearOne, itvUpperProfile, itvSeparationProfile, itvHi, itvLo, manyParams] <;> norm_num
     unfold nearOneFraction
     simp [hpred, witnessFraction, witnessCount]
-  have hLower : fuzzyIntervalHolds ch11ManyParams (itvLowerProfile rule4ITVProfile) := by
+  have hLower : fuzzyIntervalHolds manyParams (itvLowerProfile itvSeparationProfile) := by
     unfold fuzzyIntervalHolds
     rw [hLowerFrac]
-    norm_num [ch11ManyParams]
-  have hUpper : fuzzyIntervalHolds ch11ManyParams (itvUpperProfile rule4ITVProfile) := by
+    norm_num [manyParams]
+  have hUpper : fuzzyIntervalHolds manyParams (itvUpperProfile itvSeparationProfile) := by
     unfold fuzzyIntervalHolds
     rw [hUpperFrac]
-    norm_num [ch11ManyParams]
+    norm_num [manyParams]
   refine ⟨hLower, hUpper, ?_⟩
-  exact fuzzyIntervalHolds_strength_of_lower_upper ch11ManyParams rule4ITVProfile hLower hUpper
+  exact fuzzyIntervalHolds_strength_of_lower_upper manyParams itvSeparationProfile hLower hUpper
 
 /-! ### ITV Rule-Family Finite Fixture Corpus (Ch.11 core rules) -/
 
 /-- MOST-style parameters with strict `PCL = 1` for universal-specification fixtures. -/
-def ch11MostPCL1Params : FuzzyQuantifierParams where
+def mostPCL1Params : FuzzyQuantifierParams where
   ε := 0.1
   LPC := 0.7
   UPC := 0.9
@@ -589,65 +589,65 @@ def itvMixedBool : Bool → ITV := fun b => if b then itvHi else itvLo
 
 /-- ITV existential-generalization fixture:
 one near-one witness implies strictly positive fuzzy existential score. -/
-theorem canary_ch11_itv_existential_generalization_mixed :
-    0 < fuzzyExistsScore ch11AFewParams (itvStrengthProfile itvMixedBool) := by
-  have hWitness : nearOne ch11AFewParams ((itvStrengthProfile itvMixedBool) true) := by
-    simp [nearOne, itvStrengthProfile, itvMixedBool, ch11AFewParams, ITV.strength, itvHi]
+theorem canary_itv_existential_generalization_mixed :
+    0 < fuzzyExistsScore aFewParams (itvStrengthProfile itvMixedBool) := by
+  have hWitness : nearOne aFewParams ((itvStrengthProfile itvMixedBool) true) := by
+    simp [nearOne, itvStrengthProfile, itvMixedBool, aFewParams, ITV.strength, itvHi]
     norm_num
   exact
     fuzzyExistsScore_pos_of_itvStrengthWitness
-      ch11AFewParams itvMixedBool true hWitness
+      aFewParams itvMixedBool true hWitness
 
 /-- ITV universal-specification fixture (strict threshold):
 on an all-high profile with `PCL = 1`, every instance is near-one. -/
-theorem canary_ch11_itv_universal_specification_allHigh :
-    nearOne ch11MostPCL1Params ((itvStrengthProfile itvAllHighBool) false) := by
+theorem canary_itv_universal_specification_allHigh :
+    nearOne mostPCL1Params ((itvStrengthProfile itvAllHighBool) false) := by
   have hPred :
-      (fun u : Bool => nearOne ch11MostPCL1Params ((itvStrengthProfile itvAllHighBool) u)) =
+      (fun u : Bool => nearOne mostPCL1Params ((itvStrengthProfile itvAllHighBool) u)) =
         (fun _ => True) := by
     funext u
     cases u <;>
-      (simp [nearOne, itvStrengthProfile, itvAllHighBool, ch11MostPCL1Params, ITV.strength, itvHi];
+      (simp [nearOne, itvStrengthProfile, itvAllHighBool, mostPCL1Params, ITV.strength, itvHi];
         norm_num)
-  have hFrac : nearOneFraction ch11MostPCL1Params (itvStrengthProfile itvAllHighBool) = (1 : ℝ) := by
+  have hFrac : nearOneFraction mostPCL1Params (itvStrengthProfile itvAllHighBool) = (1 : ℝ) := by
     unfold nearOneFraction
     simp [hPred, witnessFraction, witnessCount]
-  have hForAll : fuzzyForAllHolds ch11MostPCL1Params (itvStrengthProfile itvAllHighBool) := by
+  have hForAll : fuzzyForAllHolds mostPCL1Params (itvStrengthProfile itvAllHighBool) := by
     unfold fuzzyForAllHolds
     rw [hFrac]
-    norm_num [ch11MostPCL1Params]
+    norm_num [mostPCL1Params]
   exact
     nearOne_itvStrength_of_fuzzyForAll_eq_one
-      ch11MostPCL1Params itvAllHighBool false hForAll rfl
+      mostPCL1Params itvAllHighBool false hForAll rfl
 
 /-- ITV exchange fixture on all-low profile:
 the existential side is false, and the complemented near-one mass is exactly `1`. -/
-theorem canary_ch11_itv_exchange_allLow_false :
-    ¬ fuzzyThereExistsHolds ch11AFewParams (itvStrengthProfile itvAllLowBool) ∧
-      nearOneFraction ch11AFewParams (itvStrengthComplementProfile itvAllLowBool) = (1 : ℝ) := by
+theorem canary_itv_exchange_allLow_false :
+    ¬ fuzzyThereExistsHolds aFewParams (itvStrengthProfile itvAllLowBool) ∧
+      nearOneFraction aFewParams (itvStrengthComplementProfile itvAllLowBool) = (1 : ℝ) := by
   have hCompPred :
       (fun u : Bool =>
-          nearOne ch11AFewParams ((itvStrengthComplementProfile itvAllLowBool) u)) =
+          nearOne aFewParams ((itvStrengthComplementProfile itvAllLowBool) u)) =
         (fun _ => True) := by
     funext u
     cases u <;>
       (simp [nearOne, itvStrengthComplementProfile, itvStrengthProfile, itvAllLowBool,
-        ch11AFewParams, ITV.strength, itvLo];
+        aFewParams, ITV.strength, itvLo];
        norm_num)
   have hCompFrac :
-      nearOneFraction ch11AFewParams (itvStrengthComplementProfile itvAllLowBool) = (1 : ℝ) := by
+      nearOneFraction aFewParams (itvStrengthComplementProfile itvAllLowBool) = (1 : ℝ) := by
     unfold nearOneFraction
     simp [hCompPred, witnessFraction, witnessCount]
   have hExch :
-      fuzzyThereExistsHolds ch11AFewParams (itvStrengthProfile itvAllLowBool) ↔
-        ch11AFewParams.PCL ≤
-          1 - nearOneFraction ch11AFewParams (itvStrengthComplementProfile itvAllLowBool) :=
-    fuzzyThereExistsHolds_itvStrength_iff_exchange ch11AFewParams itvAllLowBool
+      fuzzyThereExistsHolds aFewParams (itvStrengthProfile itvAllLowBool) ↔
+        aFewParams.PCL ≤
+          1 - nearOneFraction aFewParams (itvStrengthComplementProfile itvAllLowBool) :=
+    fuzzyThereExistsHolds_itvStrength_iff_exchange aFewParams itvAllLowBool
   have hRhsFalse :
-      ¬ ch11AFewParams.PCL ≤
-          1 - nearOneFraction ch11AFewParams (itvStrengthComplementProfile itvAllLowBool) := by
+      ¬ aFewParams.PCL ≤
+          1 - nearOneFraction aFewParams (itvStrengthComplementProfile itvAllLowBool) := by
     rw [hCompFrac]
-    norm_num [ch11AFewParams]
+    norm_num [aFewParams]
   constructor
   · intro hThere
     exact hRhsFalse (hExch.mp hThere)
@@ -655,12 +655,12 @@ theorem canary_ch11_itv_exchange_allLow_false :
 
 /-- End-to-end finite fixture bundle for Ch.11 core rule-family on ITV path:
 existential generalization, universal specification, and exchange behavior. -/
-theorem canary_ch11_itv_rule_family_bundle_bool :
-    (0 < fuzzyExistsScore ch11AFewParams (itvStrengthProfile itvMixedBool)) ∧
-      (nearOne ch11MostPCL1Params ((itvStrengthProfile itvAllHighBool) false)) ∧
-      (¬ fuzzyThereExistsHolds ch11AFewParams (itvStrengthProfile itvAllLowBool)) := by
-  refine ⟨canary_ch11_itv_existential_generalization_mixed, ?_, ?_⟩
-  · exact canary_ch11_itv_universal_specification_allHigh
-  · exact (canary_ch11_itv_exchange_allLow_false).1
+theorem canary_itv_rule_family_bundle_bool :
+    (0 < fuzzyExistsScore aFewParams (itvStrengthProfile itvMixedBool)) ∧
+      (nearOne mostPCL1Params ((itvStrengthProfile itvAllHighBool) false)) ∧
+      (¬ fuzzyThereExistsHolds aFewParams (itvStrengthProfile itvAllLowBool)) := by
+  refine ⟨canary_itv_existential_generalization_mixed, ?_, ?_⟩
+  · exact canary_itv_universal_specification_allHigh
+  · exact (canary_itv_exchange_allLow_false).1
 
 end Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers

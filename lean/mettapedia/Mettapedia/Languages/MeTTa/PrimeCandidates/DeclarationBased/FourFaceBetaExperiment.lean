@@ -1,5 +1,5 @@
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.CumulativeEmbedding
-import Mettapedia.GSLT.LanguageDef.NIKMetalogic
+import Mettapedia.GSLT.LanguageDef.SemanticEvidence
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionReflection
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedBetaSubjectReduction
 
@@ -37,7 +37,7 @@ open Mettapedia.TypeTheory.Calculi.SingleBaseSTLC
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
@@ -152,9 +152,9 @@ end DeepGSLT
 /-! ## Faces 3 and 4: shallow STT and set-valued validity -/
 
 
-/-! ## A NIK profile whose scope and meaning are independently stated -/
+/-! ## A SemanticService profile whose scope and meaning are independently stated -/
 
-namespace NIKProfile
+namespace CheckerProfile
 
 open IntrinsicSTT
 open TowerDTT
@@ -247,17 +247,17 @@ theorem changed_target_outside_scope :
     IntrinsicScope changedTarget → False :=
   fun scopeEvidence => changedTarget_ne_canonicalTarget scopeEvidence.1
 
-end NIKProfile
+end CheckerProfile
 
 /-! ## Axiom audit -/
 
 #print axioms DeepGSLT.canonical_deep_checked
 #print axioms DeepGSLT.canonical_deep_no_invention
 #print axioms DeepGSLT.changed_target_rejected
-#print axioms NIKProfile.checker_authority
-#print axioms NIKProfile.accepted_projects_to_both_extensional_faces
-#print axioms NIKProfile.canonical_certificate_replays
-#print axioms NIKProfile.changed_target_outside_scope
+#print axioms CheckerProfile.checker_authority
+#print axioms CheckerProfile.accepted_projects_to_both_extensional_faces
+#print axioms CheckerProfile.canonical_certificate_replays
+#print axioms CheckerProfile.changed_target_outside_scope
 
 end FourFaceBetaExperiment
 end Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased

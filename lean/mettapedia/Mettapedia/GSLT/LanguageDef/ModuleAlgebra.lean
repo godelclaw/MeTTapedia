@@ -3,3 +3,16 @@ import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Authoring
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Gluing
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Semantics
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Controls
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SemanticGluing
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SemanticGluingControls
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.PresentationTransport
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.PresentationTransportControls
+import Mettapedia.GSLT.Parsing.EquationAuthoringPilot
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SignatureGluing
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SignatureGluingControls
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.ClosedTermGluing
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.DeduktiModuleInterpretations
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NativeAuthoring
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotation
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotationControls
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SortedFirstOrderAuthoring

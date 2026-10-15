@@ -370,4 +370,191 @@ theorem recoverValue?_context (dependencies : List TypeExpr) (ambient depth : Na
   split at h <;> cases h
   exact ⟨rfl, rfl⟩
 
+/-- Actual occurrence-depth lookup at every suffix of the current authored
+address. This is a structural invariant, not a matching or permission judgment. -/
+def DepthCoherent (rule : RewriteRule) (site : RulePatternSite) (path : List Nat)
+    (depth : Nat) (schema : Pattern) : Prop :=
+  ∀ suffix, RuleBinding.occurrenceDepthAtSite? rule site (path ++ suffix) =
+    RuleBinding.occurrenceDepthAt? schema suffix depth
+
+theorem depthCoherent_of_site (rule : RewriteRule) (site : RulePatternSite) (schema : Pattern)
+    (depth : Nat) (patternFound : RuleBinding.sitePattern? rule site = some schema)
+    (depthFound : RuleBinding.siteBinderDepth? rule site = some depth) :
+    DepthCoherent rule site [] depth schema := by
+  intro suffix
+  simp only [List.nil_append, RuleBinding.occurrenceDepthAtSite?, patternFound, depthFound,
+    Option.bind_eq_bind, Option.bind_some]
+
+theorem depthCoherent_left (rule : RewriteRule) : DepthCoherent rule .left [] 0 rule.left := by
+  intro suffix
+  rfl
+
+theorem depthCoherent_right (rule : RewriteRule) : DepthCoherent rule .right [] 0 rule.right := by
+  intro suffix
+  rfl
+
+theorem DepthCoherent.fvar {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {name : String}
+    (coherent : DepthCoherent rule site path depth (.fvar name)) :
+    RuleBinding.occurrenceDepthAtSite? rule site path = some depth := by
+  simpa only [List.append_nil, RuleBinding.occurrenceDepthAt?] using coherent []
+
+theorem DepthCoherent.lambda {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {display : Option String} {body : Pattern}
+    (coherent : DepthCoherent rule site path depth (.lambda display body)) :
+    DepthCoherent rule site (path ++ [0]) (depth + 1) body := by
+  intro suffix
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?] using coherent (0 :: suffix)
+
+theorem DepthCoherent.multiLambda {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth arity : Nat} {display : List String} {body : Pattern}
+    (coherent : DepthCoherent rule site path depth (.multiLambda arity display body)) :
+    DepthCoherent rule site (path ++ [0]) (depth + arity) body := by
+  intro suffix
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?] using coherent (0 :: suffix)
+
+theorem DepthCoherent.substitutionBody {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {body replacement : Pattern}
+    (coherent : DepthCoherent rule site path depth (.subst body replacement)) :
+    DepthCoherent rule site (path ++ [0]) (depth + 1) body := by
+  intro suffix
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?] using coherent (0 :: suffix)
+
+theorem DepthCoherent.substitutionReplacement {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {body replacement : Pattern}
+    (coherent : DepthCoherent rule site path depth (.subst body replacement)) :
+    DepthCoherent rule site (path ++ [1]) depth replacement := by
+  intro suffix
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?] using coherent (1 :: suffix)
+
+theorem DepthCoherent.constructorChild {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth index : Nat} {label : String} {patterns : List Pattern} {pattern : Pattern}
+    (coherent : DepthCoherent rule site path depth (.apply label patterns))
+    (selected : patterns[index]? = some pattern) :
+    DepthCoherent rule site (path ++ [index]) depth pattern := by
+  intro suffix
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?, selected,
+    Option.bind_some] using coherent (index :: suffix)
+
+theorem DepthCoherent.collectionChild {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth index : Nat} {kind : CollType} {patterns : List Pattern} {rest : Option String} {pattern : Pattern}
+    (coherent : DepthCoherent rule site path depth (.collection kind patterns rest))
+    (selected : patterns[index]? = some pattern) :
+    DepthCoherent rule site (path ++ [index]) depth pattern := by
+  intro suffix
+  have within := (List.getElem?_eq_some_iff.mp selected).1
+  simpa only [List.append_assoc, List.singleton_append, RuleBinding.occurrenceDepthAt?, if_pos within,
+    selected, Option.bind_some] using coherent (index :: suffix)
+
+theorem DepthCoherent.collectionRest {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {kind : CollType} {patterns : List Pattern} {name : String}
+    (coherent : DepthCoherent rule site path depth (.collection kind patterns (some name))) :
+    RuleBinding.occurrenceDepthAtSite? rule site (path ++ [patterns.length]) = some depth := by
+  simpa only [RuleBinding.occurrenceDepthAt?, lt_self_iff_false, if_false, beq_self_eq_true,
+    List.isEmpty_nil, Bool.and_true, Option.isSome_some, if_true] using coherent [patterns.length]
+
+/-- Each cursor index is the physical child address in the authored row. -/
+def ArgumentsDepthCoherent (rule : RewriteRule) (site : RulePatternSite) (path : List Nat)
+    (depth index : Nat) (patterns : List Pattern) : Prop :=
+  ∀ offset pattern, patterns[offset]? = some pattern →
+    DepthCoherent rule site (path ++ [index + offset]) depth pattern
+
+theorem ArgumentsDepthCoherent.head {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth index : Nat} {first : Pattern} {patterns : List Pattern}
+    (coherent : ArgumentsDepthCoherent rule site path depth index (first :: patterns)) :
+    DepthCoherent rule site (path ++ [index]) depth first := by
+  simpa only [Nat.add_zero] using coherent 0 first rfl
+
+theorem ArgumentsDepthCoherent.tail {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth index : Nat} {first : Pattern} {patterns : List Pattern}
+    (coherent : ArgumentsDepthCoherent rule site path depth index (first :: patterns)) :
+    ArgumentsDepthCoherent rule site path depth (index + 1) patterns := by
+  intro offset pattern selected
+  have found := coherent (offset + 1) pattern (by simpa using selected)
+  simpa only [Nat.add_assoc, Nat.add_comm 1 offset] using found
+
+theorem DepthCoherent.constructorArguments {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {label : String} {patterns : List Pattern}
+    (coherent : DepthCoherent rule site path depth (.apply label patterns)) :
+    ArgumentsDepthCoherent rule site path depth 0 patterns := by
+  intro offset pattern selected
+  simpa only [Nat.zero_add] using coherent.constructorChild selected
+
+theorem DepthCoherent.collectionArguments {rule : RewriteRule} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {kind : CollType} {patterns : List Pattern} {rest : Option String}
+    (coherent : DepthCoherent rule site path depth (.collection kind patterns rest)) :
+    ArgumentsDepthCoherent rule site path depth 0 patterns := by
+  intro offset pattern selected
+  simpa only [Nat.zero_add] using coherent.collectionChild selected
+
+end Mettapedia.OSLF.MeTTaIL.RuleBinding
+
+/-! ## Free-name coverage of the original operations -/
+
+namespace Mettapedia.OSLF.MeTTaIL.RuleBinding
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open ContextSubstitution
+
+def patternsFreeWithin (footprint : List String) (patterns : List Pattern) : Prop :=
+  ∀ pattern ∈ patterns, ∀ name ∈ pattern.freeFvarNames, name ∈ footprint
+theorem recovery_free_names (dependencies depth ambient : Nat) (indices : List Nat) (target : Pattern) :
+    (ContextSubstitution.substitute (recoveryAssignment depth dependencies ambient indices) target).freeFvarNames =
+      target.freeFvarNames := by
+  apply substitute_free_names
+  intro index
+  simp only [recoveryAssignment]
+  split
+  · split <;> simp only [Pattern.freeFvarNames]
+  · simp only [Pattern.freeFvarNames]
+
+theorem recovered_body_free_names (dependencies : List TypeExpr) (ambient depth : Nat)
+    (arguments : List Pattern) (target : Pattern) (value : ContextualValue)
+    (recovered : recoverValue? dependencies ambient depth arguments target = some value) :
+    value.body.freeFvarNames = target.freeFvarNames := by
+  unfold recoverValue? at recovered
+  split at recovered <;> try cases recovered
+  simp only [Option.bind_eq_bind, Option.bind_eq_some_iff] at recovered
+  rcases recovered with ⟨indices, _found, recovered⟩
+  split at recovered <;> try cases recovered
+  split at recovered <;> cases recovered
+  exact recovery_free_names dependencies.length depth ambient indices target
+theorem occurrence_assignment_free_within (footprint : List String)
+    (dependencies depth : Nat) (arguments : List Pattern)
+    (covered : patternsFreeWithin footprint arguments) :
+    ∀ index, ∀ name ∈ (occurrenceAssignment dependencies depth arguments index).freeFvarNames,
+      name ∈ footprint := by
+  intro index name occurs
+  simp only [occurrenceAssignment] at occurs
+  split at occurs
+  · rw [List.getD_eq_getElem?_getD] at occurs
+    cases found : arguments[index]? with
+    | none => simp only [found, Option.getD_none, Pattern.freeFvarNames, List.not_mem_nil] at occurs
+    | some argument =>
+        simp only [found, Option.getD_some] at occurs
+        exact covered argument (List.mem_of_getElem? found) name occurs
+  · simp only [Pattern.freeFvarNames, List.not_mem_nil] at occurs
+
+theorem instantiate_value_free_within (footprint : List String)
+    (value : ContextualValue) (ambient depth : Nat) (arguments : List Pattern) (result : Pattern)
+    (body : ∀ name ∈ value.body.freeFvarNames, name ∈ footprint)
+    (inputs : patternsFreeWithin footprint arguments)
+    (success : instantiateValue? value ambient depth arguments = some result) :
+    ∀ name ∈ result.freeFvarNames, name ∈ footprint := by
+  unfold instantiateValue? at success
+  split at success <;> try cases success
+  split at success <;> try cases success
+  split at success <;> try cases success
+  split at success <;> try cases success
+  dsimp only at success
+  split at success <;> cases success
+  exact substitute_free_within footprint value.body _
+    (occurrence_assignment_free_within footprint value.dependencies.length depth arguments inputs) body
+
+#print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.patternsFreeWithin
+#print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.recovery_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.recovered_body_free_names
+#print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.occurrence_assignment_free_within
+#print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.instantiate_value_free_within
+
 end Mettapedia.OSLF.MeTTaIL.RuleBinding

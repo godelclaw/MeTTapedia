@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Gluing
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.Semantics
 
@@ -121,7 +122,7 @@ theorem failure_associativity :
     (join left right).bind (fun p => join p copied) =
       (join right copied).bind (fun p => join left p) := join_assoc left right copied
 
-private def core : GSLT := GSLT.discrete Nat
+private def core : GSLT := GSLT.stepFree Nat
 
 private def meaning : RuleSemantics Spec core where
   step := fun spec source target => source = spec.1 ∧ target = spec.2

@@ -40,7 +40,7 @@ open Mettapedia.TypeTheory.DesignStudy
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 open Presentation Presentation.FormationSensitive SharedJudgmentFragment
 open Mettapedia.GSLT.LanguageDef
-open KernelAuthority NIKMetalogic
+open KernelAuthority SemanticEvidence
 
 
 universe u v w w' uIndex uArtifact uEvidence
@@ -284,13 +284,13 @@ theorem qualified_accepted_type_has_code
     (data : Data.{u, v, w, w', uIndex, uArtifact, uEvidence} assembly C targets)
     (qualified : (specification contract required).Satisfies data)
     (index : Index)
-    (request : NIKServiceInvocation.Request
+    (request : SemanticServiceInvocation.Request
       (data.registry.serviceAt
         (SharedJudgmentServiceTypeCoherence.requiredQualification contract data.registry
           ((satisfies_iff contract required data).mp qualified).2.2.1) index))
-    (input : NIKServiceInvocation.InputAdmission request)
+    (input : SemanticServiceInvocation.InputAdmission request)
     {claim : (targets index).Carrier}
-    (accepted : (NIKServiceInvocation.invoke request).acceptedValue = some claim)
+    (accepted : (SemanticServiceInvocation.invoke request).acceptedValue = some claim)
     {level : LevelExpr Nat}
     (formed : Judgment assembly.rules ((data.registry.attachment index).context claim)
       ((data.registry.attachment index).nativeType claim) (sortTm level)) :

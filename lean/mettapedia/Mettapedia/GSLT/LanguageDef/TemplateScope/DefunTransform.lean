@@ -74,6 +74,18 @@ theorem mem_freeNames_foldl : ∀ (h : Tm S X) (vs : List (Tm S X)) (n : Nm X),
         · exact Or.inr ⟨a, List.mem_cons_self, hn⟩
       · exact Or.inr ⟨v, List.mem_cons_of_mem _ hv, hn⟩
 
+omit [DecidableEq X] in
+theorem mem_sealedVars_foldl : ∀ (h : Tm S X) (vs : List (Tm S X)) (n : Nm X),
+    n ∈ sealedVars (vs.foldl .app h) → n ∈ sealedVars h ∨ ∃ v ∈ vs, n ∈ sealedVars v
+  | _, [], _, hn => Or.inl hn
+  | h, a :: as, n, hn => by
+      rcases mem_sealedVars_foldl (.app h a) as n hn with hn | ⟨v, hv, hn⟩
+      · simp only [sealedVars, List.mem_append] at hn
+        rcases hn with hn | hn
+        · exact Or.inl hn
+        · exact Or.inr ⟨a, List.mem_cons_self, hn⟩
+      · exact Or.inr ⟨v, List.mem_cons_of_mem _ hv, hn⟩
+
 theorem mem_freeParams_foldl : ∀ (h : Tm S X) (vs : List (Tm S X)) (p : Nm X),
     p ∈ freeParams (vs.foldl .app h) → p ∈ freeParams h ∨ ∃ v ∈ vs, p ∈ freeParams v
   | _, [], _, hp => Or.inl hp
@@ -198,6 +210,31 @@ theorem freeNames_defun (name : Tm S X → S) : ∀ (t : Tm S X) (n : Nm X),
   | .sym _, _, hn | .fn _, _, hn | .var _, _, hn | .pvar _, _, hn | .quote _, _, hn
   | .ctx _ _, _, hn => hn
 
+/-- Defunctionalization adds no name to sealed code: a lambda's closure carries
+store names and parameters only. -/
+theorem sealedVars_defun (name : Tm S X → S) : ∀ (t : Tm S X) (n : Nm X),
+    n ∈ sealedVars (defun name t) → n ∈ sealedVars t
+  | .lam x own b, n, hn => by
+      rcases mem_sealedVars_foldl _ _ n hn with hn | ⟨v, hv, hn⟩
+      · simp [sealedVars] at hn
+      · simp only [refs, List.mem_append, List.mem_map] at hv
+        rcases hv with ⟨c, -, rfl⟩ | ⟨p, -, rfl⟩ <;> simp [sealedVars] at hn
+  | .app f a, n, hn => by
+      simp only [defun, sealedVars, List.mem_append] at hn ⊢
+      exact hn.imp (sealedVars_defun name f n) (sealedVars_defun name a n)
+  | .letP p w b, n, hn => by
+      simp only [defun, sealedVars, List.mem_append] at hn ⊢
+      exact hn.imp (fun h => h.imp (sealedVars_defun name p n) (sealedVars_defun name w n))
+        (sealedVars_defun name b n)
+  | .alt t₁ t₂, n, hn => by
+      simp only [defun, sealedVars, List.mem_append] at hn ⊢
+      exact hn.imp (sealedVars_defun name t₁ n) (sealedVars_defun name t₂ n)
+  | .pquote c, n, hn => by
+      simp only [defun, sealedVars] at hn ⊢
+      exact sealedVars_defun name c n hn
+  | .sym _, _, hn | .fn _, _, hn | .var _, _, hn | .pvar _, _, hn | .quote _, _, hn
+  | .ctx _ _, _, hn => hn
+
 /-- Defunctionalization introduces no free parameter. -/
 theorem freeParams_defun (name : Tm S X → S) : ∀ (t : Tm S X) (p : Nm X),
     p ∈ freeParams (defun name t) → p ∈ freeParams t
@@ -291,6 +328,23 @@ theorem inst_absP_refs (cs ps : List (Nm X)) : ∀ (B : Tm S X), B.lamFree = tru
       simp only [subst]
       rw [inst_absP_refs cs ps t₁ hl.1 (fun c hc => (hcs c hc).1),
         inst_absP_refs cs ps t₂ hl.2 (fun c hc => (hcs c hc).2)]
+
+/-- The sealed code of a rule `defunRule` produces is the lambda body's. -/
+theorem defunRule_sealed (name : Tm S X → S) (x : Nm X) (own : List X) (b : Tm S X)
+    {r : ApplyRule S X} (h : defunRule name (.lam x own b) = some r) :
+    ∀ n ∈ sealedVars r.body, n ∈ sealedVars b := by
+  simp only [defunRule, Option.some.injEq] at h
+  subst h
+  intro n hn
+  rcases mem_sealedVars_subst _ _ _ n hn with hn' | ⟨m, w, hw, hnw⟩ | ⟨q, w, hw, -⟩
+  · exact sealedVars_defun name b n hn'
+  · simp only [absP] at hw
+    split at hw
+    · simp only [Option.some.injEq] at hw
+      subst hw
+      simp [sealedVars] at hnw
+    · cases hw
+  · cases hw
 
 /-- **The rules are well formed.**  Every rule `defunRule` produces is
 first-order, its free store names are its own names, and its free parameters
@@ -421,12 +475,14 @@ theorem rel_defun (T : CloTable S X) (name : Tm S X → S) :
       exact rel_defun T name b hb
 
 omit [DecidableEq S] in
-/-- A term with no ranked free name or parameter defunctionalizes to a good term. -/
+/-- A term with no ranked free name or parameter, and no ranked name in its sealed
+code, defunctionalizes to a good term. -/
 theorem good_defun (T : CloTable S X) (name : Tm S X → S) (t : Tm S X)
-    (hn : ∀ n ∈ freeNames t, T.nameRank n = none) (hp : ∀ p ∈ freeParams t, T.paramRank p = none) :
+    (hn : ∀ n ∈ freeNames t, T.nameRank n = none) (hp : ∀ p ∈ freeParams t, T.paramRank p = none)
+    (hs : ∀ n ∈ sealedVars t, T.nameRank n = none) :
     T.good (defun name t) = true :=
   (T.good_iff).2 ⟨fun n h => hn n (freeNames_defun name t n h),
-    fun p h => hp p (freeParams_defun name t p h)⟩
+    fun p h => hp p (freeParams_defun name t p h), fun n h => hs n (sealedVars_defun name t n h)⟩
 
 /-- The defunctionalized program: every equation defunctionalized. -/
 def defunProg (name : Tm S X → S) (prog : S → Option (Tm S X)) : S → Option (Tm S X) :=

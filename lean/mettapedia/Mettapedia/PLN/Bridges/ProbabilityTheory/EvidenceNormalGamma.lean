@@ -32,7 +32,7 @@ case (EvidenceDirichlet.lean), extending PLN to continuous domains.
 
 import Mathlib.Data.Real.Basic
 import Mathlib.Algebra.Order.Field.Basic
-import Mathlib.Algebra.Order.GroupWithZero.Unbundled.Basic
+import Mathlib.Algebra.Order.GroupWithZero.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
 import Mettapedia.PLN.Evidence.EvidenceClass
 

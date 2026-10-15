@@ -1,9 +1,9 @@
 import Mettapedia.GSLT.Core.GenerativeCantorAtomlessness
-import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
-import Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
+import Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
+import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 
 /-!
-# Finite-stage semantics for the Cantor atomless NIK authority
+# Finite-stage semantics for the Cantor atomless SemanticService authority
 
 The Cantor-clopen semantic carrier is exhaustively presented by finite Boolean
 prefix stages.  This module transports the existing first-order semantics
@@ -26,13 +26,13 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.GenerativeCantorSemanticGrounding
 
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderDecision
-open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderNIKAuthority
+open Mettapedia.GSLT.LanguageDef.AtomlessBooleanFirstOrderAuthority
 open Mettapedia.GSLT.LanguageDef.AtomlessBooleanProfileExtension
 open Mettapedia.GSLT.LanguageDef.BooleanAlgebraIdentityDecision
 open Mettapedia.GSLT.LanguageDef.CheckerAuthorityFamily
 open Mettapedia.GSLT.LanguageDef.KernelAuthority
-open Mettapedia.GSLT.LanguageDef.NIKHeterogeneousTheory
-open Mettapedia.GSLT.LanguageDef.NIKMetalogic
+open Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
+open Mettapedia.GSLT.LanguageDef.SemanticEvidence
 open Mettapedia.GSLT.Ultrainfinite.GenerativeCantorAtomlessness
 open TopologicalSpace
 
@@ -136,7 +136,7 @@ theorem stagedMeaning_iff_coldMeaning (formula : Formula 0) :
     decode_emptyCodeValuation]
   rfl
 
-/-! ## Exact NIK authority and bidirectional transport -/
+/-! ## Exact SemanticService authority and bidirectional transport -/
 
 /-- The finite decision procedure qualified against staged meaning. -/
 def stagedDecisionKernel : Checker.DecisionKernel (Formula 0) StagedMeaning where

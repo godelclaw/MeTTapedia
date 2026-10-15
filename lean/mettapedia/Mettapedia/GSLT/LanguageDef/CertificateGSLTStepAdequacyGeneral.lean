@@ -496,8 +496,8 @@ theorem tracePremisesModed_congruence_shape :
 refines the direct-trace premise gate. -/
 theorem directTraceSupported_of_adequate {language : LanguageDef}
     (adequate : languageDirectTraceAdequate language = true) :
-    LanguageDef.directTraceSupported language = true := by
-  simp only [LanguageDef.directTraceSupported, Bool.and_eq_true]
+    languageDirectTraceSupported language = true := by
+  simp only [languageDirectTraceSupported, Bool.and_eq_true]
   refine ⟨languageDirectTraceAdequate_equationFree adequate, ?_⟩
   apply List.all_eq_true.mpr
   intro rule member
