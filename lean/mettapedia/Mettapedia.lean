@@ -967,3 +967,13 @@ import Mettapedia.GSLT.Poly.SortedSignature
 import Mettapedia.GSLT.Poly.SortedSignatureControls
 import Mettapedia.GSLT.Poly.FirstOrderLanguage
 import Mettapedia.GSLT.Poly.FirstOrderLanguageControls
+
+import Mettapedia.CogArch.Attention
+
+import Mettapedia.CogArch.Memory
+
+import Mettapedia.Algorithms.Retrieval
+
+import Mettapedia.ProbabilityTheory.MarkovChain
+
+import Mettapedia.PLN.Bridges.CogArch

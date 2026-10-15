@@ -67,7 +67,7 @@ claim's origin episode belongs to its evidential base.
 
 set_option autoImplicit false
 
-namespace AgentMemory.Evidence
+namespace Mettapedia.PLN.Bridges.CogArch.EvidenceRevision
 
 /-! ## Simple truth values and revision -/
 
@@ -191,7 +191,7 @@ def Ledger.unlink (e : E) (L : Ledger E) : Ledger E := ⟨L.sup.erase e, L.con.e
 def Ledger.ev (L : Ledger E) : Ev := ⟨L.sup.card, L.con.card⟩
 
 /-- The truth value is a view of the ledger. -/
-def Ledger.tv (L : Ledger E) : STV := AgentMemory.Evidence.tv L.ev
+def Ledger.tv (L : Ledger E) : STV := Mettapedia.PLN.Bridges.CogArch.EvidenceRevision.tv L.ev
 
 omit [DecidableEq E] in
 theorem Ledger.ev_valid (L : Ledger E) : L.ev.Valid := by
@@ -395,4 +395,4 @@ theorem rehearsal_raises_confidence (a b : ℚ) (ha : 0 ≤ a) (hab : a < b) :
   rw [div_lt_div_iff₀ (by linarith) (by linarith)]
   nlinarith
 
-end AgentMemory.Evidence
+end Mettapedia.PLN.Bridges.CogArch.EvidenceRevision

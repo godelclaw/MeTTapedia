@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Bridges.CogArch
 import Mettapedia.PLN.Bridges.HOL
 import Mettapedia.PLN.Bridges.ProbabilityTheory
 import Mettapedia.PLN.Bridges.Languages

@@ -63,7 +63,7 @@ from the evidence that remains.
 
 set_option autoImplicit false
 
-namespace AgentMemory.Derived
+namespace Mettapedia.PLN.Bridges.CogArch.DerivedBeliefs
 
 /-! ## Exclusive relations and transitive deduction -/
 
@@ -318,4 +318,4 @@ theorem orphan_survives_upstream :
     2 ∈ store.erase 1 ∧ ¬ support ⊆ ({1, 2} : Finset ℕ).erase 1 := by
   decide
 
-end AgentMemory.Derived
+end Mettapedia.PLN.Bridges.CogArch.DerivedBeliefs
