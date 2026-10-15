@@ -1,4 +1,5 @@
 import Mettapedia.CogArch.Memory.BitemporalClaims
+import Mettapedia.CogArch.Memory.ContextViews
 import Mettapedia.CogArch.Memory.EventSourcedMemory
 import Mettapedia.CogArch.Memory.HierarchicalSummary
 import Mettapedia.CogArch.Memory.MemoryRefinement
