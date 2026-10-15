@@ -1,3 +1,5 @@
+import Mettapedia.ProbabilityTheory.MarkovChain.Audit
+import Mettapedia.Algorithms.Retrieval.Audit
 import Mettapedia.CogArch.Attention
 import Mettapedia.CogArch.Memory
 import Mettapedia.Algorithms.Retrieval
@@ -87,3 +89,25 @@ import Mettapedia.PLN.Bridges.CogArch
 #print axioms Mettapedia.PLN.Bridges.CogArch.AttentionEvidence.attenuation_total
 #print axioms Mettapedia.PLN.Bridges.CogArch.AttentionEvidence.attenuation_le
 #print axioms Mettapedia.PLN.Bridges.CogArch.AttentionEvidence.attenuation_total_le
+
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.lazy_transport
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.continuation_nonneg
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.continuation_lt_one
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.lazy_ppr_eq_ppr
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.mean_hops
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.impulse_zero
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.impulse_add
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.impulse_succ
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.sti_cycle
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.stimulate_spread_decay
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.sti_unroll
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.sti_steady_state
+#print axioms Mettapedia.CogArch.Attention.Equilibrium.lazy_ppr_tail
+#print axioms Mettapedia.CogArch.Attention.Relevance.concept_shortcut
+#print axioms Mettapedia.CogArch.Attention.Relevance.spreading_regret
+#print axioms Mettapedia.CogArch.Attention.Relevance.walk_generated_needs_optimal
+#print axioms Mettapedia.CogArch.Attention.SpreadingExamples.hub_first
+#print axioms Mettapedia.CogArch.Attention.SpreadingExamples.hub_second
+#print axioms Mettapedia.CogArch.Attention.SpreadingExamples.hub_fixed
+#print axioms Mettapedia.CogArch.Attention.SpreadingExamples.extra_round_lowers_recall
+#print axioms Mettapedia.CogArch.Attention.SpreadingExamples.usefulness_gain_not_concave
