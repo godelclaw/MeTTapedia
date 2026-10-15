@@ -98,7 +98,7 @@ concrete DocTextClaimsEng of DocTextClaims = {
     Clm_00093 = {s = "Mettapedia hosts formalizations across probability theory, information theory, logic, set theory, and related areas"} ;
     Clm_00094 = {s = "Mettapedia/Bridge connects cross-module formalizations"} ;
     Clm_00095 = {s = "Mettapedia/CategoryTheory provides categorical foundations for OSLF, PLN, and de Finetti formalization"} ;
-    Clm_00096 = {s = "Mettapedia/CognitiveArchitecture formalizes MetaMo, OpenPsi, MicroPsi, and their mathematical bridges"} ;
+    Clm_00096 = {s = "Mettapedia/CogArch formalizes MetaMo, OpenPsi, MicroPsi, and their mathematical bridges"} ;
     Clm_00097 = {s = "Mettapedia/Languages formalizes formal linguistics, natural language semantics, and process calculi"} ;
     Clm_00098 = {s = "Mettapedia/ProbabilityTheory/KnuthSkilling/README.md contains the Knuth-Skilling structure and build targets"} ;
     Clm_00099 = {s = "MicroPsi is a three-file formalization with seven demands and PAD decomposition"} ;
