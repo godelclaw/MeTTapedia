@@ -78,6 +78,17 @@ theorem l1_sub_le (x y : ι → ℝ) : l1 (x - y) ≤ l1 x + l1 y := by
 theorem l1_of_nonneg {x : ι → ℝ} (hx : ∀ i, 0 ≤ x i) : l1 x = mass x := by
   simp [l1, mass, abs_of_nonneg (hx _)]
 
+theorem l1_sub_comm (x y : ι → ℝ) : l1 (x - y) = l1 (y - x) := by
+  simp only [l1, Pi.sub_apply, abs_sub_comm]
+
+theorem l1_triangle_sub (x y z : ι → ℝ) :
+    l1 (x - z) ≤ l1 (x - y) + l1 (y - z) := by
+  simp only [l1, Pi.sub_apply, ← Finset.sum_add_distrib]
+  exact Finset.sum_le_sum fun i _ => abs_sub_le (x i) (y i) (z i)
+
+theorem abs_coordinate_le_l1 (x : ι → ℝ) (i : ι) : |x i| ≤ l1 x :=
+  Finset.single_le_sum (fun j _ => abs_nonneg (x j)) (Finset.mem_univ i)
+
 namespace RestartWalk
 
 variable (W : RestartWalk ι)
@@ -224,6 +235,28 @@ theorem iterate_error (s x₀ : ι → ℝ) (k : ℕ) :
     l1 ((W.step s)^[k] x₀ - W.ppr s) ≤ (1 - W.α) ^ k * l1 (x₀ - W.ppr s) := by
   have h := W.iterate_contract s k x₀ (W.ppr s)
   rwa [Function.iterate_fixed (W.ppr_fixed s)] at h
+
+/-- A posteriori error: the observed change bounds distance to the fixed point.
+This concerns the supplied walk, not semantic usefulness of its scores. -/
+theorem error_le_change (s x : ι → ℝ) :
+    l1 (x - W.ppr s) ≤ l1 (W.step s x - x) / W.α := by
+  have ht := l1_triangle_sub x (W.step s x) (W.ppr s)
+  have hc := W.step_contract s x (W.ppr s)
+  rw [W.ppr_fixed s] at hc
+  rw [l1_sub_comm x (W.step s x)] at ht
+  apply (le_div_iff₀ W.α_pos).mpr
+  nlinarith
+
+/-- Error of the newly computed vector, using only the observed change. -/
+theorem next_error_le (s x : ι → ℝ) :
+    l1 (W.step s x - W.ppr s) ≤
+      (1 - W.α) / W.α * l1 (W.step s x - x) := by
+  calc
+    l1 (W.step s x - W.ppr s) ≤ (1 - W.α) * l1 (x - W.ppr s) := by
+      simpa only [W.ppr_fixed s] using W.step_contract s x (W.ppr s)
+    _ ≤ (1 - W.α) * (l1 (W.step s x - x) / W.α) :=
+      mul_le_mul_of_nonneg_left (W.error_le_change s x) W.one_sub_α_nonneg
+    _ = (1 - W.α) / W.α * l1 (W.step s x - x) := by ring
 
 /-! ## Positivity and mass -/
 
@@ -420,6 +453,62 @@ theorem mass_outside_reach {s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (k : ℕ) :
           (pow_nonneg W.one_sub_α_nonneg _)
     _ ≤ (1 - W.α) ^ (k + 1) * mass s :=
         mul_le_mul_of_nonneg_left (W.ppr_mass_le hs) (pow_nonneg W.one_sub_α_nonneg _)
+
+/-- A cluster with pointwise bounded outgoing leakage retains most PPR mass.
+The support and leakage hypotheses concern the world; no relevance claim is
+made for an arbitrary cluster. Columns may be substochastic. -/
+theorem outside_mass_le_leakage (S : Finset ι) (ℓ : ℝ) (hℓ : 0 ≤ ℓ)
+    {s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (hs1 : mass s = 1)
+    (hsS : ∀ i, i ∉ S → s i = 0)
+    (hleak : ∀ j ∈ S, ∑ i ∈ Sᶜ, W.P i j ≤ ℓ) :
+    ∑ i ∈ Sᶜ, W.ppr s i ≤ (1 - W.α) * ℓ / (W.α + (1 - W.α) * ℓ) := by
+  classical
+  let x := W.ppr s
+  have hx : ∀ i, 0 ≤ x i := W.ppr_nonneg hs
+  have hmass : (∑ j ∈ S, x j) + ∑ j ∈ Sᶜ, x j ≤ 1 := by
+    rw [Finset.sum_add_sum_compl]
+    exact (W.ppr_mass_le hs).trans_eq hs1
+  have hmove : ∑ i ∈ Sᶜ, (W.P *ᵥ x) i ≤
+      ℓ * (∑ j ∈ S, x j) + ∑ j ∈ Sᶜ, x j := by
+    simp only [mulVec_apply]
+    rw [Finset.sum_comm]
+    simp_rw [← Finset.sum_mul]
+    rw [← Finset.sum_add_sum_compl S (fun j => (∑ i ∈ Sᶜ, W.P i j) * x j)]
+    apply add_le_add
+    · rw [Finset.mul_sum]
+      exact Finset.sum_le_sum fun j hj => mul_le_mul_of_nonneg_right (hleak j hj) (hx j)
+    · apply Finset.sum_le_sum
+      intro j _
+      have hc : ∑ i ∈ Sᶜ, W.P i j ≤ 1 :=
+        (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+          (fun i _ _ => W.nonneg i j)).trans (W.col_le j)
+      simpa using mul_le_mul_of_nonneg_right hc (hx j)
+  have hfix : (∑ i ∈ Sᶜ, x i) = (1 - W.α) * ∑ i ∈ Sᶜ, (W.P *ᵥ x) i := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro i hi
+    simpa [x, Matrix.mulVec, dotProduct, hsS i (Finset.mem_compl.mp hi)] using W.ppr_apply s i
+  have hb := mul_le_mul_of_nonneg_left hmove W.one_sub_α_nonneg
+  have hm := mul_le_mul_of_nonneg_left hmass
+    (mul_nonneg W.one_sub_α_nonneg hℓ)
+  have hd : 0 < W.α + (1 - W.α) * ℓ :=
+    add_pos_of_pos_of_nonneg W.α_pos (mul_nonneg W.one_sub_α_nonneg hℓ)
+  apply (le_div_iff₀ hd).mpr
+  nlinarith
+
+/-- Every nonnegative depth contribution survives in the full PPR score. -/
+theorem ppr_ge_depth {s : ι → ℝ} (hs : ∀ i, 0 ≤ s i) (t : ℕ) (j : ι) :
+    W.α * (1 - W.α) ^ t * ((W.P ^ t) *ᵥ s) j ≤ W.ppr s j := by
+  have hu := congrFun (W.ppr_unroll s t) j
+  simp only [Pi.add_apply, Finset.sum_apply, Pi.smul_apply, smul_eq_mul] at hu
+  have hn : ∀ n, 0 ≤ W.α * (1 - W.α) ^ n * ((W.P ^ n) *ᵥ s) j :=
+    fun n => mul_nonneg (mul_nonneg W.α_pos.le
+      (pow_nonneg W.one_sub_α_nonneg n)) (W.pow_mulVec_nonneg hs n j)
+  have hterm := Finset.single_le_sum (fun n _ => hn n) (Finset.mem_range.mpr (Nat.lt_succ_self t))
+  have htail : 0 ≤ (1 - W.α) ^ (t + 1) * ((W.P ^ (t + 1)) *ᵥ W.ppr s) j :=
+    mul_nonneg (pow_nonneg W.one_sub_α_nonneg _)
+      (W.pow_mulVec_nonneg (W.ppr_nonneg hs) _ j)
+  linarith
 
 end RestartWalk
 
