@@ -1,5 +1,6 @@
 import Mettapedia.CogArch.Attention.ThreeTimescale
 import Mettapedia.CogArch.Attention.Spreading
+import Mettapedia.CogArch.Attention.RecallPulse
 import Mettapedia.CogArch.Attention.PremiseActivation
 import Mettapedia.CogArch.Attention.Equilibrium
 import Mettapedia.CogArch.Attention.Relevance
