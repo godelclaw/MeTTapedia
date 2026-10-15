@@ -181,6 +181,7 @@ import Mettapedia.Logic.Relation.PathConfluenceExamples
 import Mettapedia.Logic.Relation.DecodedPath
 import Mettapedia.Logic.WorldModel
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
+import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
 import Mettapedia.Logic.GunkyMereology
 import Mettapedia.Logic.StoneGunkDuality
 import Mettapedia.Logic.Metaphysics
