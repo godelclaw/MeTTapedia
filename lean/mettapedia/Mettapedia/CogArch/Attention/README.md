@@ -39,6 +39,22 @@ hops c/(1−c) equals ρd/(1−ρ), approximately 1.44·d·h for sufficiently la
 This describes the fixed schedule, not a universal law of every ECAN caller.
 Disabled decay (ρ = 1) is outside this equilibrium theorem, not forbidden.
 
+## Upstream importance diffusion and its PageRank core
+
+`ImportanceDiffusion` states upstream ECAN's diffusion rule exactly (iCog-Labs-Dev/metta-attention 3e1c814, ported from the OpenCog attention agents). A source gives `MAX_SPREAD_PERCENTAGE` of its STI. A `HEBBIAN_MAX_ALLOCATION_PERCENTAGE` share goes to its Hebbian targets in proportion to mean times confidence over their count. The rest is split evenly over its incident and contained atoms. For every fixed source set this is transport by a row-stochastic kernel, so STI is conserved whatever the attentional focus (`diffuse_eq_transport`, `diffuse_mass`).
+
+Three simplifications give the linear core: every atom diffuses, rent is proportional to holdings (retention ρ < 1) and stimulus is exogenous. Under them one cycle is a restart walk on that kernel. Its unique fixed point is the personalized PageRank vector of the stimulus, with restart probability 1−ρ (`cycle_fixed_iff_ppr`), and every start converges at rate ρ (`cycle_converges`). The equilibrium total is Σu/(1−ρ), set by the stimulus alone (`equilibrium_mass`). Equilibria add over stimuli (`equilibrium_add`).
+
+The linear core leaves out three upstream features:
+
+- **Focus gating.** It changes which kernel applies, never the total (`gated_mass`).
+- **Wages paid to focus atoms.** These make stimulus depend on the state. Every focus set then sustains itself, so n atoms have 2^n fixed points against one (`focusWages_fixed`, `focusWages_out`, `focusWages_in`), and responses do not add (`wage_not_additive`).
+- **Funds-targeting rent.** Rent is zero at or above the target and between one and two base rents below it. It holds the bank's funds in an invariant band around the target whenever the base rent covers the wages paid (`funds_band_invariant`). PageRank's total follows the stimulus; upstream's funds follow the target.
+
+Convex mixtures of kernels are kernels (`transport_mix`). Mechanisms run on separate funds conserve the combined total (`parallel_mass`).
+
+Modelling choices: shares come from one snapshot. An atom with no incident atoms gives nothing structurally (upstream's focus agent divides by zero there). Rent is per cycle, without the elapsed-time multiplier.
+
 ## Observable stopping
 
 For x' = step(s,x), the remaining fixed-point error is at most
