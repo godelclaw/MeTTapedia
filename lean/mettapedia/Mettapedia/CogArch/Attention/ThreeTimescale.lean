@@ -22,7 +22,7 @@ their roundoff, serialization, relevance quality, or the MeTTa interpreter.
 
 noncomputable section
 
-namespace PettaClaw.ECANReal
+namespace Mettapedia.CogArch.Attention.ThreeTimescale
 
 inductive Horizon where
   | sti | mti | lti
@@ -202,24 +202,5 @@ theorem calibration_roundtrip (t f : ℝ) (ht : 0 < t) (hf0 : 0 < f) (hf1 : f < 
     field_simp
   rw [he, Real.exp_log hf0]
 
-#print axioms replace_total
-#print axioms replace_preserves_other
-#print axioms sweep_total
-#print axioms retention_disabled
-#print axioms retention_zero_time
-#print axioms retention_positive
-#print axioms retention_le_one
-#print axioms retention_compose
-#print axioms advance_total
-#print axioms advance_values_compose
-#print axioms advance_compose
-#print axioms consolidate_sti
-#print axioms consolidate_lti_uses_new_mti
-#print axioms consolidation_disabled
-#print axioms consolidate_total
-#print axioms smoothing_between
-#print axioms calibration_disabled
-#print axioms calibrated_half_life_positive
-#print axioms calibration_roundtrip
 
-end PettaClaw.ECANReal
+end Mettapedia.CogArch.Attention.ThreeTimescale
