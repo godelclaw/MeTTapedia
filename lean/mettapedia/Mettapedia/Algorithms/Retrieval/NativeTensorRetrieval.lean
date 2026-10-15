@@ -18,7 +18,7 @@ selections suffice as candidates for a final top-k under a common total order.
 
 set_option autoImplicit false
 
-namespace AgentMemory.NativeTensor
+namespace Mettapedia.Algorithms.Retrieval.NativeTensorRetrieval
 
 inductive Filter (K V : Type*) where
   | all
@@ -188,4 +188,4 @@ theorem shaping_card_bound (k : Nat) (left right : Finset I)
 
 end Ranking
 
-end AgentMemory.NativeTensor
+end Mettapedia.Algorithms.Retrieval.NativeTensorRetrieval

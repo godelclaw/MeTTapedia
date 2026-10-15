@@ -17,7 +17,7 @@ Approximate candidates cannot be admitted as complete without another proof.
 
 set_option autoImplicit false
 
-namespace AgentMemory.Selector
+namespace Mettapedia.Algorithms.Retrieval.SelectorContract
 
 structure View where
   source : Nat
@@ -162,4 +162,4 @@ theorem transport_composes {I A B Q R S : Type*}
   transport_complete first qfirst meaning middle
     (fun r a => last (qsecond r) (second a)) hfirst hsecond
 
-end AgentMemory.Selector
+end Mettapedia.Algorithms.Retrieval.SelectorContract

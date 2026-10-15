@@ -46,7 +46,7 @@ Main results:
 
 set_option autoImplicit false
 
-namespace AgentMemory.Retrieval
+namespace Mettapedia.Algorithms.Retrieval.RetrievalContract
 
 /-! ## Filter and refine -/
 
@@ -455,4 +455,4 @@ example : rrf 60 [[1, 2, 3], [3, 1]] (2 : â„•) < rrf 60 [[1, 2, 3], [3, 1]] 1 âˆ
 
 end Fusion
 
-end AgentMemory.Retrieval
+end Mettapedia.Algorithms.Retrieval.RetrievalContract
