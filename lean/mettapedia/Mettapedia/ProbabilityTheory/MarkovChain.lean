@@ -1,2 +1,3 @@
 import Mettapedia.ProbabilityTheory.MarkovChain.Restart
+import Mettapedia.ProbabilityTheory.MarkovChain.SuccessorRepresentation
 import Mettapedia.ProbabilityTheory.MarkovChain.FiniteMassTransport
