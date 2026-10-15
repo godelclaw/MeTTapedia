@@ -1,0 +1,53 @@
+{
+  "schema": "attention-memory-qualification-v1",
+  "date": "2026-10-15",
+  "lean": "4.33.1",
+  "source_revision": "d0a7fb8a16c04b6649fad6f17441d3f9dacac46b",
+  "upstream_revision": "b749881912bfa35a7ad5cf5fb939f463f45420db",
+  "semantic_root": "Mettapedia.CogArch",
+  "qualified_targets": [
+    "Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction:olean",
+    "Mettapedia.DocText.LogicReadmeCompositional:olean",
+    "Mettapedia.DocText.CogArchReadmeCompositional:olean",
+    "Mettapedia.CogArch.Attention.Audit:olean",
+    "Mettapedia.CogArch:olean"
+  ],
+  "warnings_as_errors": [
+    "Mettapedia/CogArch/Attention/ThreeTimescale.lean",
+    "Mettapedia/ProbabilityTheory/MarkovChain/FiniteMassTransport.lean",
+    "Mettapedia/CogArch/Attention/Spreading.lean",
+    "Mettapedia/CogArch/Attention/PremiseActivation.lean",
+    "Mettapedia/PLN/Bridges/CogArch/AttentionEvidence.lean",
+    "scripts/GenerateLogicReadme.lean",
+    "scripts/GenerateCogArchReadme.lean"
+  ],
+  "axiom_audit": {
+    "statements": 80,
+    "dependencies": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "sorryAx": false
+  },
+  "relocation": {
+    "memory_and_markov_modules": 11,
+    "preserved_declarations": 433,
+    "body_check": "identical modulo namespaces, separated audit commands and whitespace"
+  },
+  "external_compatibility": {
+    "exchangeability_revision": "4a8ac3c735dd14f5ef69cde9cfce92a517149301",
+    "status": "local compatibility commit; not published in this work"
+  },
+  "broader_bn_check": {
+    "qualified": false,
+    "target": "Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules",
+    "remaining_dependency_failures": [
+      "KnuthSkilling.Additive.Proofs.DirectCuts.DirectCuts",
+      "OrderedSemigroups.SemigroupToGroup.SemigroupToMonoid",
+      "OrderedSemigroups.SemigroupToGroup.MonoidToGroup"
+    ],
+    "local_conjunction_failure": "repaired and qualified separately"
+  },
+  "scope": "Exact mathematical models and kernel checks; not a certification of floating-point arithmetic, native implementation, or empirical retrieval quality."
+}
