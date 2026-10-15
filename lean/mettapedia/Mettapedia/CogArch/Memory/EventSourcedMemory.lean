@@ -44,7 +44,7 @@ Queue laws:
 
 set_option autoImplicit false
 
-namespace AgentMemory.EventLog
+namespace Mettapedia.CogArch.Memory.EventSourcedMemory
 
 /-! ## Commands, operations and records -/
 
@@ -633,4 +633,4 @@ theorem unbudgeted_never_drains (p : Pipeline F Id C) (hp : p.pending ≠ []) (n
   rw [h, List.length_nil] at this
   exact hp (List.eq_nil_of_length_eq_zero this.symm)
 
-end AgentMemory.EventLog
+end Mettapedia.CogArch.Memory.EventSourcedMemory

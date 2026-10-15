@@ -38,7 +38,7 @@ Main results:
 
 set_option autoImplicit false
 
-namespace AgentMemory.Summary
+namespace Mettapedia.CogArch.Memory.HierarchicalSummary
 
 variable {ι M : Type*} [DecidableEq ι]
 
@@ -253,12 +253,5 @@ theorem latest_time_misses_removed_membership :
 
 end Revisions
 
-#print axioms revisionStamp_eq_iff
-#print axioms changed_membership_changes_stamp
-#print axioms changed_dependency_changes_stamp
-#print axioms unrelated_revision_does_not_change_stamp
-#print axioms added_member_changes_stamp
-#print axioms removed_member_changes_stamp
-#print axioms latest_time_misses_removed_membership
 
-end AgentMemory.Summary
+end Mettapedia.CogArch.Memory.HierarchicalSummary

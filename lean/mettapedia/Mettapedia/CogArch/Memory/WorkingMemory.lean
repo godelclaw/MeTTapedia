@@ -66,7 +66,7 @@ status and the premises of the belief.
 
 set_option autoImplicit false
 
-namespace AgentMemory.WorkingMemory
+namespace Mettapedia.CogArch.Memory.WorkingMemory
 
 /-! ## The store -/
 
@@ -361,4 +361,4 @@ theorem recallP_writeback (b : Belief) : recallP (writeback b) = b := by
   obtain ⟨content, origin, premises⟩ := b
   cases origin <;> rfl
 
-end AgentMemory.WorkingMemory
+end Mettapedia.CogArch.Memory.WorkingMemory

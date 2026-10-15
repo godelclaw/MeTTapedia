@@ -10,7 +10,7 @@ runtime tests check storage recovery separately. These laws concern state and
 provenance, not the truth or quality of an agent's interpretation.
 -/
 
-namespace AgentMemory.Refinement
+namespace Mettapedia.CogArch.Memory.MemoryRefinement
 
 structure Intent where
   operation : Nat
@@ -107,9 +107,5 @@ theorem retirement_changes_revision (n : Node) : (retire n).revision ≠ n.revis
 theorem explicit_restore_reactivates (n : Node) (body : String) :
     recalled (restore n body) = true := rfl
 
-#print axioms completion_after_forget
-#print axioms old_completion_cannot_replace_new_edit
-#print axioms complete_preserves_originals
-#print axioms capture_preserves_retirement
 
-end AgentMemory.Refinement
+end Mettapedia.CogArch.Memory.MemoryRefinement

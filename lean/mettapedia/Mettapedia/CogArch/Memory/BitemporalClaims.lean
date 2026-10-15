@@ -53,7 +53,7 @@ Main results:
 
 set_option autoImplicit false
 
-namespace AgentMemory.Bitemporal
+namespace Mettapedia.CogArch.Memory.BitemporalClaims
 
 /-! ## Event-time order -/
 
@@ -745,4 +745,4 @@ theorem inplace_stamps_lose_history :
 
 end Log
 
-end AgentMemory.Bitemporal
+end Mettapedia.CogArch.Memory.BitemporalClaims
