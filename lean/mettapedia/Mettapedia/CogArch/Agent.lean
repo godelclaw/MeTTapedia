@@ -6,6 +6,7 @@ import Mettapedia.CogArch.Agent.WorldModelRegimeSeparation
 import Mettapedia.CogArch.Agent.ContextEpoch
 import Mettapedia.CogArch.Agent.ContextAttention
 import Mettapedia.CogArch.Agent.EffectReceiptProjection
+import Mettapedia.CogArch.Agent.WorkReporting
 import Mettapedia.CogArch.Agent.EffectBrokerNoninterference
 import Mettapedia.CogArch.Agent.OpenEndedContext
 import Mettapedia.CogArch.Agent.WorldOfViewsBridge
@@ -29,7 +30,9 @@ import Mettapedia.CogArch.Agent.WellbeingAssessment
 Typed operational state, commitments, context epochs, plural world models,
 effect receipts, and authority-preserving execution boundaries.  These
 interfaces are architecture-neutral; particular agents are downstream
-instances.  Reproducible event histories use the same weakest-sufficient-view
+instances.  Public work reporting separates activity metadata from commentary
+and preserves that distinction when preparing summary input.
+Reproducible event histories use the same weakest-sufficient-view
 boundary without treating a bounded context as the authoritative ledger;
 declared build views connect to that order through a separate bridge.
 Assessment views retain occurrence, assessor, interpretation and quality keys
