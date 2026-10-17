@@ -2,6 +2,8 @@ import Mettapedia.Languages.MeTTa.PrimeComparisons.MegalodonProofWire
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedImmediateDemand
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceService
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # Executed admission of Megalodon guest proof objects
 
@@ -33,6 +35,7 @@ open Presentation NeedReference
 open Presentation.PolarizedNeed Presentation.PolarizedNeedMachine
 open Presentation.PolarizedNeedNaturalSemantics
 open MegalodonProofWire
+open Mettapedia.Languages.Megalodon.NativeSyntaxWire hiding Wire
 
 inductive Verdict where
   | malformed

@@ -452,6 +452,13 @@ def queryTaskTerm {environment : Environment} {request : GeneralPremise.Query.Re
     GeneralPremise.Query.Task environment request → Term
   | .start => .symbol "PremiseQueryStart"
   | .rows frame => .application "PremiseQueryRows" [signatureTerm frame.signature, .natural frame.cursor]
+  | .dynamicInputs frame => .application "PremiseQueryDynamicInputs"
+      [signatureTerm frame.signature, .natural frame.index,
+        Base.patternsTerm frame.schemas, encodeList modeTerm frame.modes,
+        Base.patternsTerm frame.resolvedRev]
+  | .dynamicRows frame => .application "PremiseQueryDynamicRows"
+      [signatureTerm frame.signature, Base.patternsTerm frame.resolved,
+        encodeList Base.patternsTerm frame.rows, .natural frame.cursor]
   | .arguments frame => .application "PremiseQueryArguments"
       [.natural frame.rowIndex, .natural frame.index, assignmentTerm frame.assignment,
         Base.patternsTerm frame.schemas, Base.patternsTerm frame.values, encodeList modeTerm frame.modes,
@@ -465,6 +472,9 @@ def queryObligationTerm : GeneralPremise.Query.Obligation → Term
   | .signatureUnavailable relation arity => .application "PremiseSignatureUnavailable" [.string relation, .natural arity]
   | .inputUnavailable row argument => .application "PremiseInputUnavailable" [.natural row, .natural argument]
   | .argumentShape row argument => .application "PremiseArgumentShape" [.natural row, .natural argument]
+  | .dynamicInputUnavailable argument => .application "PremiseDynamicInputUnavailable" [.natural argument]
+  | .dynamicArgumentShape argument => .application "PremiseDynamicArgumentShape" [.natural argument]
+  | .dynamicUnavailable relation => .application "PremiseDynamicUnavailable" [.string relation]
 
 namespace QueryExecution
 

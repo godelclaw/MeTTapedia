@@ -359,7 +359,7 @@ theorem selectedTree_normalize_pattern_eq_of_sameSupport_pair
 leaf selected in the two parent environments.  Equality of normalized values
 is derived from the pair; sealedness of the semantic atom is derived from the
 same positional boundary replay. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_leftSealedPair
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_leftSealedPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -434,7 +434,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_leftSealedPa
       environmentSealed declaration depth
 
 /-- Right-sealed semantic-leaf companion. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_rightSealedPair
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_rightSealedPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -513,7 +513,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_rightSealedP
 leaf without a sealedness premise.  The pair supplies normal equality and the
 stopped boundary witnesses supply equality of the support component observed
 by restoration. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportPair
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -584,7 +584,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportP
 
 /-- Lift an equal-support child pair through the exact stopped plan contexts
 to the complete parent abstract roots. -/
-noncomputable def selectedRoots_commonRestorationApex_of_sameSupportPair
+theorem selectedRoots_commonRestorationApex_of_sameSupportPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -663,7 +663,7 @@ noncomputable def selectedRoots_commonRestorationApex_of_sameSupportPair
 to the complete parent abstract roots.  The only remaining input is the rigid
 context alignment; all selected-leaf semantics come from the child pair and
 the replayed boundary positions. -/
-noncomputable def selectedRoots_commonRestorationApex_of_leftSealedPair
+theorem selectedRoots_commonRestorationApex_of_leftSealedPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -747,7 +747,7 @@ noncomputable def selectedRoots_commonRestorationApex_of_leftSealedPair
 
 /-- Right-sealed companion of
 `selectedRoots_commonRestorationApex_of_leftSealedPair`. -/
-noncomputable def selectedRoots_commonRestorationApex_of_rightSealedPair
+theorem selectedRoots_commonRestorationApex_of_rightSealedPair
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}

@@ -74,10 +74,10 @@ theorem typed_iff_backend {space : Space} (backend : Backend.{u} (Const space))
           infer (signature space) (BinderNames.nil : BinderNames Atom String []) term =
               .ok elaborated ∧
             backend.HasType (backend.translateTerm elaborated.term)
-              (backend.translateType (toTy type)) := by
+              (backend.translateType (.base type)) := by
   constructor
   · rintro ⟨term, annotates, intrinsic, inferred⟩
-    exact ⟨term, annotates, ⟨toTy type, intrinsic⟩, inferred, backend.preserves intrinsic⟩
+    exact ⟨term, annotates, ⟨.base type, intrinsic⟩, inferred, backend.preserves intrinsic⟩
   · rintro ⟨term, annotates, ⟨found, intrinsic⟩, inferred, accepted⟩
     have typeEq := backend.reflects intrinsic accepted
     subst typeEq

@@ -1,7 +1,7 @@
 import Mettapedia.Languages.GF.LinguisticInvariance
 import Mettapedia.Languages.GF.OSLFBridge_handcrafted
 import Mettapedia.Languages.GF.WorldModelSemantics
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 /-!
 # Universal Grammar as a Shared Semantic Core

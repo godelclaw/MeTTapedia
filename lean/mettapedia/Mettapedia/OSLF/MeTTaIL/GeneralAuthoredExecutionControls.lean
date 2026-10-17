@@ -54,7 +54,10 @@ def language : LanguageDef where
   rewrites := [child, parent]
 
 def snapshot (rows : List Pattern) : Snapshot :=
-  ⟨language, [], ⟨[⟨"seen", [term], [.input]⟩], rows.map fun value => ⟨"seen", [value]⟩⟩⟩
+  ⟨language, [], {
+    signatures := [⟨"seen", [term], [.input]⟩]
+    rows := rows.map fun value => ⟨"seen", [value]⟩
+    dynamicRelations := [] }⟩
 
 def permissions : Permissions where
   equationIndices := some []

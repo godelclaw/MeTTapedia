@@ -2,6 +2,7 @@ import Mettapedia.GSLT.Distinction.OptionGraph
 import Mettapedia.SetTheory.OpenTower.Hosting
 import Mettapedia.SetTheory.OpenTower.Stability
 import Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion
+import Mettapedia.SetTheory.OpenTower.ConsistencyTower
 import Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels
 import Mettapedia.SetTheory.OpenTower.Strength.Shapes
 import Mettapedia.SetTheory.OpenTower.Strength.Completions
@@ -21,8 +22,9 @@ Seven questions, with their options, arrows, contracts and witnesses.
 
 * **What an open tower is** (`open-tower-kind`): an internal tower of closed sets in one level
   under a named supply of inaccessibles; the external schema of embeddings between universe
-  levels; a generated enclosure tower; a proof-theoretic progression. The first two are built;
-  the last two are recorded without facts from this module.
+  levels; a generated enclosure tower; a proof-theoretic progression. The first two are built,
+  and so are the finite levels of the progression of consistency extensions; the generated
+  enclosure tower is recorded without facts from this module.
 * **Limits** (`open-tower-limit`): the union of the ω-tower against its closure.
 * **Hosting** (`open-tower-hosting`): a stage as a model of an exactly named derivation
   system, componentwise enclosure of its model codes in a later stage, and a first-order set
@@ -198,7 +200,25 @@ def nodes : List Node := [
   { id := "proof-theoretic-progression", question := "open-tower-kind"
     title := "Proof-theoretic progression"
     summary := "Extensions of a theory by consistency or reflection principles along presented \
-      well-orders. A separate track from enlarging set carriers." },
+      well-orders. A separate track from enlarging set carriers. The finite levels of the \
+      consistency progression over a Δ₁ extension of IΣ₁ true in the standard model are built: \
+      each stage proves the consistency of the one below and not its own, the stages increase \
+      strictly without a terminal stage, and no stage proves every truth of the standard model. \
+      They are instantiated at PA, whose Δ₁ presentation is constructed, not postulated; true \
+      arithmetic, which proves every truth, has no Δ₁ presentation. Transfinite levels are not \
+      built."
+    facts := [cites [``Mettapedia.SetTheory.OpenTower.ConsistencyTower.SoundStage.next_proves_consistency,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.SoundStage.not_proves_own_consistency,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.SoundStage.tower_strictMono,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.SoundStage.not_next_le,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.noTerminalStage,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.truth_not_reached,
+      ``Mettapedia.Logic.Diagonal.Arithmetic.stage_diagonalizable,
+      ``Mettapedia.Logic.Diagonal.InductionSchemeDelta1.peanoDelta1,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.peano_tower_strictMono,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.peano_tower_certified,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.peano_tower_not_self_certified,
+      ``Mettapedia.SetTheory.OpenTower.ConsistencyTower.trueArith_not_delta1]] },
   { id := "union-of-tower", question := "open-tower-limit"
     title := "The union of the ω-tower"
     summary := "The set of members of all stages of the ω-tower. It models Zermelo set theory with \

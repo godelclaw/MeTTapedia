@@ -7,7 +7,7 @@ import Mettapedia.PLN.Bridges.GSLT
 import Mettapedia.PLN.Bridges.KR
 import Mettapedia.PLN.Bridges.PredictiveCoding
 import Mettapedia.PLN.Bridges.UniversalAI
-import Mettapedia.PLN.Bridges.CellCausalProbability
+import Mettapedia.PLN.Bridges.CognitiveArchitecture
 
 /-!
 # PLN bridges

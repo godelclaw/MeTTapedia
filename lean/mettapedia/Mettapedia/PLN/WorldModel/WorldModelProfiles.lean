@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # World-Model Profiles: The Categorical Spine
@@ -257,7 +257,7 @@ theorem directPath_strength_lower_bound (e₁ e₂ : BinaryEvidence) :
 
 Every frame `H` (complete Heyting algebra) presents a localic topos
 `Sh(H)`, and in that topos `Sub(1) ≅ H`.  Since `BinaryEvidence` is a
-frame (proved in `EvidenceQuantale.lean`), the correct categorical
+frame (proved in `BinaryEvidence.lean`), the correct categorical
 home for `SatisfyingSet` is the localic topos `Sh(BinaryEvidence)`, where
 frame-valued predicates `P : U → BinaryEvidence` classify subobjects.
 
@@ -271,7 +271,7 @@ setting (where `BinaryEvidence` IS the truth-value object), not in an
 arbitrary presheaf setting (where `Ω` is something else). -/
 
 /-- `BinaryEvidence` is a frame (complete lattice with distributive joins).
-    The instance is in EvidenceQuantale.lean; this re-export witnesses
+    The instance is in BinaryEvidence.lean; this re-export witnesses
     the localic story. -/
 noncomputable example : CompleteLattice BinaryEvidence := inferInstance
 

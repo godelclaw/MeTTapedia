@@ -20,13 +20,7 @@ Single-entry build target for the Chapter-9 positive (non-counterexample) path:
 - finite BRGI object (feasible-set semantics + optimality endpoint)
 - concrete Bool selector fixture + composed rewrite/threshold endpoint
 
-Build command:
-
-```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
-  lake build Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression
-```
+Build with `lake build Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression`.
 -/
 
 namespace Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression

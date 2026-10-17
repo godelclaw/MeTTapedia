@@ -203,14 +203,19 @@ def Template.removeAtoms (t : Template) : List Atom :=
     In explicit mode `(I (BTM pat₁) (== pat₂ pat₃) ...)`, each factor
     names its source explicitly.
 
-    Current coverage:
+    Current coverage, as the support model reads it (`matchSourceFactor`):
     - `btm`: match against the workspace (current space / PathMap trie)
     - `eqConstraint`: `(== pat witness)` — substitute pat, check it exists in space,
       bind witness to the found atom
-    - `neqConstraint`: `(!= pat witness)` — substitute pat, REMOVE it from the space,
-      match witness against the remaining atoms
+    - `neqConstraint`: `(!= pat witness)` — substitute pat, remove it from the
+      candidates, match witness against the remaining atoms
 
-    NOT yet formalized: `ACT` (external file), `z3`. -/
+    The kernel reads both over stored atoms (`Mainline.sourceRows`): `(== p w)` unifies
+    `p` and `w` with the same stored atom, solved jointly with the other factors;
+    `(!= p w)` unifies `p` with a stored atom and `w` with a different stored atom, so
+    it has no row when no stored atom meets `p`.
+
+    NOT yet formalized here: `ACT` (external file), `z3`; the kernel model has both. -/
 inductive SourceFactor where
   /-- `(BTM pat)`: match `pat` against the current workspace. -/
   | btm : Atom → SourceFactor
@@ -291,7 +296,9 @@ def InputSpec.toPattern? : InputSpec → Option Pattern
     - `sum`: sum of the distinct staged integer result paths.
 
     `selectAll` and `selectFirst` belong to the authored three-phase protocol;
-    they are not claims about MORK's count/sum sink implementation. -/
+    they are not claims about MORK's count/sum sink implementation.  The kernel's
+    `sum` reads decimal `u32` symbols and wraps modulo `2^32`; this model sums grounded
+    integers, which MM2 text cannot express. -/
 inductive FoldAggregator where
   | selectAll   : FoldAggregator
   | selectFirst : FoldAggregator

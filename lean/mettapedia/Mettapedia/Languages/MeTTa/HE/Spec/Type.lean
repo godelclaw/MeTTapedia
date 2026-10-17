@@ -142,27 +142,41 @@ theorem TypeMatchRel.structural_of_nonWildcard
   | atomRight => exact (hRightAtom rfl).elim
   | structural _ _ _ _ hspec hmerge => exact ⟨_, hspec, hmerge⟩
 
+/-- One ordered type query at a use site. The incoming constraints and the
+current expected type belong to the query's protected context. -/
+abbrev TypeLookupRel := Bindings → Atom → Atom → List Atom → Prop
+
+/-- Literal annotation/intrinsic lookup remains the explicit historical instance. -/
+def rawTypeLookupRel (space : Space) : TypeLookupRel :=
+  fun _ subject _ candidates => TypesOfRel space subject candidates
+
+/-- One physical type occurrence in the ordered list returned at this use. -/
+def TypeAtRel (lookup : TypeLookupRel) (bindings : Bindings)
+    (subject expected actual : Atom) : Prop :=
+  ∃ candidates, lookup bindings subject expected candidates ∧ actual ∈ candidates
+
 /-- Relational `type_cast`, including the specification's first-success rule.
 The reference interpreter calls `match_types(expected, actual, bindings)`;
 this corrects the reversed operands printed in the prose pseudocode.  The
 order matters when either type contains variables.  On total failure, one
 error derivation is available for every discovered actual type. -/
 inductive TypeCastRel (space : Space) (atom expectedType : Atom)
-    (bindings : Bindings) : ResultPair → Prop where
+    (bindings : Bindings) : ResultPair →
+      (lookup : TypeLookupRel := rawTypeLookupRel space) → Prop where
   | success {types earlierTypes laterTypes : List Atom} {actualType : Atom}
       {output : Bindings} :
-      TypesOfRel space atom types →
+      lookup bindings atom expectedType types →
       types = earlierTypes ++ actualType :: laterTypes →
       (∀ earlier ∈ earlierTypes, ∀ candidate,
         ¬TypeMatchRel expectedType earlier bindings candidate) →
       TypeMatchRel expectedType actualType bindings output →
-      TypeCastRel space atom expectedType bindings (atom, output)
+      TypeCastRel space atom expectedType bindings (lookup := lookup) (atom, output)
   | failure {types : List Atom} {actualType : Atom} :
-      TypesOfRel space atom types →
+      lookup bindings atom expectedType types →
       actualType ∈ types →
       (∀ candidateType ∈ types, ∀ candidate,
         ¬TypeMatchRel expectedType candidateType bindings candidate) →
-      TypeCastRel space atom expectedType bindings
+      TypeCastRel space atom expectedType bindings (lookup := lookup)
         (mkError atom (.badType expectedType actualType), bindings)
 
 /-! ## Function applicability -/
@@ -198,32 +212,34 @@ theorem FunctionTypeRel.unique
 /-- A successful left-to-right argument check.  Each step selects one actual
 type and threads the bindings produced by declarative type matching. -/
 inductive ArgumentsApplicableRel (space : Space) :
-    List Atom → List Atom → Bindings → Bindings → Prop where
+    List Atom → List Atom → Bindings → Bindings →
+      (lookup : TypeLookupRel := rawTypeLookupRel space) → Prop where
   | nil (bindings : Bindings) :
-      ArgumentsApplicableRel space [] [] bindings bindings
+      ArgumentsApplicableRel space (lookup := lookup) [] [] bindings bindings
   | cons {argument expectedType actualType : Atom}
       {arguments expectedTypes : List Atom}
       {bindings next output : Bindings} :
-      TypeOfRel space argument actualType →
+      TypeAtRel lookup bindings argument expectedType actualType →
       TypeMatchRel expectedType actualType bindings next →
-      ArgumentsApplicableRel space arguments expectedTypes next output →
-      ArgumentsApplicableRel space
+      ArgumentsApplicableRel space (lookup := lookup) arguments expectedTypes next output →
+      ArgumentsApplicableRel space (lookup := lookup)
         (argument :: arguments) (expectedType :: expectedTypes)
         bindings output
 
 /-- One complete successful applicability path, including the return-type
 check. -/
 inductive ApplicationSuccessRel (space : Space) :
-    Atom → Atom → Atom → Bindings → Bindings → Prop where
+    Atom → Atom → Atom → Bindings → Bindings →
+      (lookup : TypeLookupRel := rawTypeLookupRel space) → Prop where
   | mk {expression functionType expectedType operator returnType : Atom}
       {arguments argumentTypes : List Atom}
       {bindings afterArguments output : Bindings} :
       expression = .expression (operator :: arguments) →
       FunctionTypeRel functionType argumentTypes returnType →
-      ArgumentsApplicableRel space arguments argumentTypes
+      ArgumentsApplicableRel space (lookup := lookup) arguments argumentTypes
         bindings afterArguments →
       TypeMatchRel expectedType returnType afterArguments output →
-      ApplicationSuccessRel space expression functionType expectedType
+      ApplicationSuccessRel space (lookup := lookup) expression functionType expectedType
         bindings output
 
 /-- One observable outcome of function-type applicability. -/
@@ -236,19 +252,20 @@ inductive ApplicabilityOutcome where
 carry the same errors as the pseudocode and require absence of any complete
 success whenever another type path could otherwise mask the error. -/
 inductive ApplicabilityRel (space : Space) :
-    Atom → Atom → Atom → Bindings → ApplicabilityOutcome → Prop where
+    Atom → Atom → Atom → Bindings → ApplicabilityOutcome →
+      (lookup : TypeLookupRel := rawTypeLookupRel space) → Prop where
   | success {expression functionType expectedType : Atom}
       {bindings output : Bindings} :
-      ApplicationSuccessRel space expression functionType expectedType
+      ApplicationSuccessRel space (lookup := lookup) expression functionType expectedType
         bindings output →
-      ApplicabilityRel space expression functionType expectedType bindings
+      ApplicabilityRel space (lookup := lookup) expression functionType expectedType bindings
         (.success output)
   | wrongArity {expression functionType expectedType operator returnType : Atom}
       {arguments argumentTypes : List Atom} {bindings : Bindings} :
       expression = .expression (operator :: arguments) →
       FunctionTypeRel functionType argumentTypes returnType →
       arguments.length ≠ argumentTypes.length →
-      ApplicabilityRel space expression functionType expectedType bindings
+      ApplicabilityRel space (lookup := lookup) expression functionType expectedType bindings
         (.error (mkError expression .incorrectNumberOfArguments))
   | badArgument {expression functionType expectedType operator returnType : Atom}
       {argumentsBefore argumentsAfter : List Atom}
@@ -260,15 +277,15 @@ inductive ApplicabilityRel (space : Space) :
       FunctionTypeRel functionType
         (typesBefore ++ expectedArgument :: typesAfter) returnType →
       argumentsAfter.length = typesAfter.length →
-      ArgumentsApplicableRel space argumentsBefore typesBefore
+      ArgumentsApplicableRel space (lookup := lookup) argumentsBefore typesBefore
         bindings beforeBad →
-      TypeOfRel space badArgument actualType →
+      TypeAtRel lookup beforeBad badArgument expectedArgument actualType →
       (∀ candidate,
         ¬TypeMatchRel expectedArgument actualType beforeBad candidate) →
       (∀ output,
-        ¬ApplicationSuccessRel space expression functionType expectedType
+        ¬ApplicationSuccessRel space (lookup := lookup) expression functionType expectedType
           bindings output) →
-      ApplicabilityRel space expression functionType expectedType bindings
+      ApplicabilityRel space (lookup := lookup) expression functionType expectedType bindings
         (.error (mkError expression
           -- The pseudocode prints `idx - 1` despite iterating expression
           -- positions from one.  The reference evaluator and the documented
@@ -280,14 +297,14 @@ inductive ApplicabilityRel (space : Space) :
       {bindings afterArguments : Bindings} :
       expression = .expression (operator :: arguments) →
       FunctionTypeRel functionType argumentTypes returnType →
-      ArgumentsApplicableRel space arguments argumentTypes
+      ArgumentsApplicableRel space (lookup := lookup) arguments argumentTypes
         bindings afterArguments →
       (∀ candidate,
         ¬TypeMatchRel expectedType returnType afterArguments candidate) →
       (∀ output,
-        ¬ApplicationSuccessRel space expression functionType expectedType
+        ¬ApplicationSuccessRel space (lookup := lookup) expression functionType expectedType
           bindings output) →
-      ApplicabilityRel space expression functionType expectedType bindings
+      ApplicabilityRel space (lookup := lookup) expression functionType expectedType bindings
         (.error (mkError expression (.badType expectedType returnType)))
 
 /-! ## Boundary examples -/

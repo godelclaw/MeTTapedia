@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Contexts.ConstantMap
 import Mettapedia.GSLT.Contexts.TransitionProfile
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ContextShape
+import Mettapedia.Logic.HostingStyles.ContextShape
 
 /-!
 # The readings of a theory: how often a context may use a hole

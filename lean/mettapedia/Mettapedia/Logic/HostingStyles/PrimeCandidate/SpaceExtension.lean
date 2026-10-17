@@ -33,7 +33,9 @@ adds no rewrite and no equation (`probeWithSpace`, validated:
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -357,4 +359,4 @@ theorem spacePresentation_finitelyBranching {base : BasePremiseEvaluator}
 #print axioms silentSpace_hosts_no_tabular_terms
 #print axioms spacePresentation_finitelyBranching
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

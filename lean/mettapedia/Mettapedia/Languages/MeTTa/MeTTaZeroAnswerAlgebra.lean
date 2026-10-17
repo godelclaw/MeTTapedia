@@ -172,4 +172,75 @@ theorem singleton_ne_duplicate (answer : Pattern) :
   have cards := congrArg Multiset.card equal
   simp at cards
 
+
+/-! ## Idempotent observations forget multiplicity
+
+An observation whose addition is idempotent (`x + x = x`), such as storing
+answers in a set, or asking whether some answer exists, can only see which
+answers occur.  It factors through the support, so it identifies one answer
+with two (`AdditiveObservation.not_injective_of_idempotent`), which the free
+carrier separates (`singleton_ne_duplicate`).  A set-valued store, MM2's for
+instance, interprets this support quotient: answer counts cannot be read back
+from it (`no_support_recovers_queryAll`). -/
+
+/-- With idempotent addition, folding a bag equals folding its support. -/
+theorem foldMap_dedup {Observation : Type*} [AddCommMonoid Observation]
+    (idempotent : ∀ x : Observation, x + x = x) (generator : Pattern → Observation)
+    (answers : Multiset Pattern) :
+    foldMap generator answers.dedup = foldMap generator answers := by
+  induction answers using Multiset.induction_on with
+  | empty => rfl
+  | @cons answer answers inductionHypothesis =>
+      by_cases member : answer ∈ answers
+      · rw [Multiset.dedup_cons_of_mem member, inductionHypothesis]
+        conv_rhs => rw [← Multiset.cons_erase member]
+        conv_lhs => rw [← Multiset.cons_erase member]
+        simp only [foldMap, Multiset.map_cons, Multiset.sum_cons]
+        rw [← add_assoc, idempotent]
+      · rw [Multiset.dedup_cons_of_notMem member]
+        simp only [foldMap, Multiset.map_cons, Multiset.sum_cons] at inductionHypothesis ⊢
+        rw [inductionHypothesis]
+
+/-- An additive observation into an idempotent algebra depends only on the
+support of the answer bag. -/
+theorem AdditiveObservation.observe_toFinset {Observation : Type*} [AddCommMonoid Observation]
+    (idempotent : ∀ x : Observation, x + x = x) (observation : AdditiveObservation Observation)
+    (answers : Multiset Pattern) :
+    observation.observe answers = observation.observe answers.toFinset.val := by
+  rw [Multiset.toFinset_val, observation.observe_eq_foldMap answers,
+    observation.observe_eq_foldMap answers.dedup, foldMap_dedup idempotent]
+
+/-- **No idempotent additive observation is faithful**: it identifies one
+answer with two. -/
+theorem AdditiveObservation.not_injective_of_idempotent {Observation : Type*}
+    [AddCommMonoid Observation] (idempotent : ∀ x : Observation, x + x = x)
+    (observation : AdditiveObservation Observation) (answer : Pattern) :
+    observation.observe {answer} = observation.observe {answer, answer} ∧
+      ¬ Function.Injective observation.observe := by
+  have same : observation.observe {answer} = observation.observe {answer, answer} := by
+    rw [observation.observe_toFinset idempotent {answer},
+      observation.observe_toFinset idempotent {answer, answer}]
+    congr 2
+    simp
+  exact ⟨same, fun injective => singleton_ne_duplicate answer (injective same)⟩
+
+/-- **Answer counts are not a function of the support**: on the structural
+model, the spaces `{p}` and `{p, p}` have the same support and different
+`queryAll` bags. -/
+theorem no_support_recovers_queryAll (answer : Pattern) :
+    ¬ ∃ recover : Finset Pattern → Multiset Pattern,
+        ∀ space : Multiset Pattern,
+          recover space.toFinset = queryAll (structuralModel fun _ => 0) space := by
+  rintro ⟨recover, recovers⟩
+  have everything : ∀ space : Multiset Pattern,
+      queryAll (structuralModel fun _ => 0) space = space := fun space =>
+    queryAll_eq_contents (structuralModel fun _ => 0) (structuralModel_lawful _) space
+  have once := recovers {answer}
+  have twice := recovers {answer, answer}
+  rw [everything] at once twice
+  have sameSupport : ({answer} : Multiset Pattern).toFinset = ({answer, answer} : Multiset Pattern).toFinset := by
+    simp
+  rw [sameSupport] at once
+  exact singleton_ne_duplicate answer (once.symm.trans twice)
+
 end Mettapedia.Languages.MeTTa.MeTTaZeroAnswerAlgebra

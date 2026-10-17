@@ -4,7 +4,6 @@ import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNBayesInversionBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNBayesNetFastRules
 import Mettapedia.PLN.RuleFamilies.FirstOrder.BNTopologyRegression
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction
-import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConsistencyLemmas
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionITVBridge

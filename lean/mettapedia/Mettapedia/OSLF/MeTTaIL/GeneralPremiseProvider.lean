@@ -73,7 +73,51 @@ structure ProviderRow where
 structure ProviderSnapshot where
   signatures : List Signature
   rows : List ProviderRow
+  /-- Relations implemented by admitted dynamic services have no finite-table
+  output-shape guarantee merely because the static row inventory is empty. -/
+  dynamicRelations : List String := []
   deriving DecidableEq, Repr
+
+/-- A source relation and its executable finite response. The source relation
+is supplied by the primitive's independent semantics, including occurrence
+multiplicity. A missing response is distinct from a complete empty response. -/
+structure DynamicProvider where
+  Source : String → List Pattern → List (List Pattern) → Prop
+  rows? : String → List Pattern → Option (List (List Pattern))
+  rows_exact : ∀ relation arguments rows,
+    rows? relation arguments = some rows ↔ Source relation arguments rows
+
+namespace DynamicProvider
+
+def empty : DynamicProvider where
+  Source := fun _ _ _ => False
+  rows? := fun _ _ => none
+  rows_exact := by intro relation arguments rows; simp
+
+/-- A source relation with an executable exact finite response is functional;
+the list retains the provider's occurrences rather than identifying duplicates. -/
+theorem source_unique (provider : DynamicProvider) {relation : String}
+    {arguments : List Pattern} {first last : List (List Pattern)}
+    (left : provider.Source relation arguments first)
+    (right : provider.Source relation arguments last) : first = last :=
+  Option.some.inj (((provider.rows_exact _ _ _).mpr left).symm.trans
+    ((provider.rows_exact _ _ _).mpr right))
+
+theorem unknown_iff (provider : DynamicProvider) (relation : String)
+    (arguments : List Pattern) :
+    provider.rows? relation arguments = none ↔
+      ∀ rows, ¬ provider.Source relation arguments rows := by
+  constructor
+  · intro missing rows source
+    have answer := (provider.rows_exact _ _ _).mpr source
+    rw [missing] at answer
+    contradiction
+  · intro missing
+    cases found : provider.rows? relation arguments with
+    | none => rfl
+    | some rows => exact (missing rows ((provider.rows_exact _ _ _).mp found)).elim
+
+end DynamicProvider
 
 /-- Ambiguous or unavailable signatures remain unavailable. -/
 def signature? (provider : ProviderSnapshot) (relation : String) (arity : Nat) :

@@ -548,7 +548,8 @@ end Controls
 
 namespace Conditional
 
-open RelationPremiseExecution (premiseTerm premisesTerm providerRowsTerm providerEnv)
+open RelationPremiseExecution (premiseTerm premisesTerm providerRowsTerm providerEnv
+  VariableRuleView VariableSourceProgram variableRuleView)
 open MatchAutomataBindingExecution (bindingsTerm bindingsOptionTerm)
 
 private abbrev bindingsValue (bindings : Bindings) : Atom := encoded (bindingsTerm bindings)
@@ -614,7 +615,7 @@ private theorem apply_clause
 
 private theorem apply_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : RulePlan) (subject : PatternPlan) :
+    (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) :
     PureReturns program (applyEnvironment rows plan subject) state applyEquation.body state
       (patternsValue (plan.run (providerEnv rows) language subject.erase)) := by
   let caller := applyEnvironment rows plan subject
@@ -645,8 +646,8 @@ private theorem apply_body_returns (state : State) (language : LanguageDef)
       · simpa [found, bindingsOptionTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany] using matched
       · simp [applyCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
           SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, selected, caller, applyEnvironment]
-      · have executed := RelationPremiseExecution.premises_captured_returns selected state language rows
-            plan.premises seed (v "premises") (v "rows") (v "seed")
+      · have executed := RelationPremiseExecution.checked_premises_captured_returns selected state language rows
+            plan.premises view seed (v "premises") (v "rows") (v "seed")
             (by simp [selected, caller, applyEnvironment, applySubst, Subst.lookup])
         apply let_returns program selected bound state state state (v "results") _ _ _ _ executed _ _
         · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, bound, selected, caller, applyEnvironment, choices]
@@ -659,7 +660,7 @@ private theorem apply_body_returns (state : State) (language : LanguageDef)
 relation-premise fold and RHS construction. No premise verdict is assumed. -/
 theorem apply_rule_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : RulePlan) (subject : PatternPlan) (one two three four five : Atom)
+    (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) (one two three four five : Atom)
     (captured : [one, two, three, four, five].map (applySubst caller) =
       [patternValue plan.left.erase, patternValue plan.right.erase, premisesValue plan.premises,
        providerRowsValue rows, patternValue subject.erase]) :
@@ -668,7 +669,7 @@ theorem apply_rule_captured_returns (caller : Subst) (state : State) (language :
   apply PureData.raw_authored_call_return program caller (applyEnvironment rows plan subject) state state
     "gslt:rule:apply-conditional" [one, two, three, four, five] applyEquation.body _
     (by decide) (by decide) (by decide) (by decide +kernel) _ _
-    (apply_body_returns state language rows plan subject)
+    (apply_body_returns state language rows plan view subject)
   · intro index bounded
     have small : index = 0 ∨ index = 1 ∨ index = 2 ∨ index = 3 ∨ index = 4 := by
       simp only [List.length_cons, List.length_nil] at bounded
@@ -686,10 +687,10 @@ def applyRuleTerm
 
 theorem apply_rule_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : RulePlan) (subject : PatternPlan) :
+    (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) :
     PureReturns program [] state (encoded (applyRuleTerm rows plan subject)) state
       (patternsValue (plan.run (providerEnv rows) language subject.erase)) :=
-  apply_rule_captured_returns [] state language rows plan subject _ _ _ _ _ (by simp)
+  apply_rule_captured_returns [] state language rows plan view subject _ _ _ _ _ (by simp)
 
 
 private abbrev ruleRowsValue (contexts : RewriteRule → Term) (plans : List RulePlan) : Atom :=
@@ -755,7 +756,8 @@ private theorem root_call (caller : Subst) (state : State) (contexts : RewriteRu
 
 private theorem root_body_returns (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List RulePlan) (subject : PatternPlan) :
+    (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) :
     PureReturns program (rootEnvironment contexts rows plans subject) state rootEquation.body state
       (patternsValue (plans.flatMap (fun plan => plan.run (providerEnv rows) language subject.erase))) := by
   induction plans with
@@ -770,6 +772,10 @@ private theorem root_body_returns (state : State) (language : LanguageDef)
       · simp [rootCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
       · exact symbol_returns program caller state "LNil"
   | cons plan plans ih =>
+      have tailViews : ∀ row ∈ plans, row.variablePremises?.isSome = true := by
+        intro row member
+        exact sourceViews row (by simp [member])
+      have firstView := variableRuleView plan (sourceViews plan (by simp))
       let caller := rootEnvironment contexts rows (plan :: plans) subject
       let selected := ("rest", ruleRowsValue contexts plans) ::
         ("right", patternValue plan.right.erase) :: ("left", patternValue plan.left.erase) ::
@@ -779,12 +785,12 @@ private theorem root_body_returns (state : State) (language : LanguageDef)
       let tailResults := plans.flatMap (fun next => next.run (providerEnv rows) language subject.erase)
       let headBound := ("head", patternsValue headResults) :: selected
       let tailBound := ("tail", patternsValue tailResults) :: headBound
-      have headReturned := apply_rule_captured_returns selected state language rows plan subject
+      have headReturned := apply_rule_captured_returns selected state language rows plan firstView subject
         (v "left") (v "right") (v "premises") (v "rows") (v "subject")
         (by simp [selected, caller, rootEnvironment, applySubst, Subst.lookup])
       have tailReturned := root_call headBound state contexts rows plans subject
         (v "rest") (v "rows") (v "subject") (patternsValue tailResults)
-        (by simp [headBound, selected, caller, rootEnvironment, applySubst, Subst.lookup]) ih
+        (by simp [headBound, selected, caller, rootEnvironment, applySubst, Subst.lookup]) (ih tailViews)
       rw [root_shape]
       apply case_returns program caller selected state state state (v "rewrites")
         (ruleRowsValue contexts (plan :: plans)) rootConsBody _ _ rootCases (read_cases_encoded _) _ _ _
@@ -812,13 +818,14 @@ private theorem root_body_returns (state : State) (language : LanguageDef)
 including each duplicate row and every surviving premise witness. -/
 theorem root_reducts_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List RulePlan) (subject : PatternPlan) (one two three : Atom)
+    (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [ruleRowsValue contexts plans, providerRowsValue rows, patternValue subject.erase]) :
     PureReturns program caller state (a "gslt:rule:conditional-root-reducts" [one, two, three]) state
       (patternsValue (plans.flatMap (fun plan => plan.run (providerEnv rows) language subject.erase))) :=
   root_call caller state contexts rows plans subject one two three _ captured
-    (root_body_returns state language contexts rows plans subject)
+    (root_body_returns state language contexts rows plans sourceViews subject)
 
 def rootQueryTerm (contexts : RewriteRule → Term)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
@@ -828,10 +835,11 @@ def rootQueryTerm (contexts : RewriteRule → Term)
 
 theorem root_reducts_returns (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List RulePlan) (subject : PatternPlan) :
+    (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) :
     PureReturns program [] state (encoded (rootQueryTerm contexts rows plans subject)) state
       (patternsValue (plans.flatMap (fun plan => plan.run (providerEnv rows) language subject.erase))) :=
-  root_reducts_captured_returns [] state language contexts rows plans subject _ _ _ (by simp)
+  root_reducts_captured_returns [] state language contexts rows plans sourceViews subject _ _ _ (by simp)
 
 private def languageEquation : SpaceSemantics.Equation :=
   (equations "gslt:rule:language-conditional-root-reducts")[0]'(by decide +kernel)
@@ -866,7 +874,7 @@ private theorem language_clause (language : LanguageDef) (types terms : Term)
     SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
 
 private theorem language_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program (languageEnvironment language types terms contexts compiled rows subject) state
       languageEquation.body state
@@ -876,15 +884,15 @@ private theorem language_body_returns (state : State) (language : LanguageDef) (
     ("types", encoded types) :: ("name", encoded (.string language.name)) :: caller
   rw [language_shape]
   apply case_returns program caller selected state state state (v "language")
-    (encoded (languageTerm language types terms contexts compiled))
+    (encoded (languageTerm language types terms contexts compiled.val))
     (a "gslt:rule:conditional-root-reducts" [v "rewrites", v "rows", v "subject"]) _ _
     languageCases (read_cases_encoded _) _ _ _
   · simpa [caller, languageEnvironment, applySubst, Subst.lookup] using variable_returns program caller state "language"
   · simp [languageCases, languageTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany,
       SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
-      matchAtom, Subst.lookup, selected, caller, languageEnvironment, ruleRowsValue]
+      matchAtom, Subst.lookup, selected, caller, languageEnvironment, ruleRowsValue, VariableSourceProgram.plans]
   · rw [← compiled.run_eq_rootFrontier (providerEnv rows) language subject.erase]
-    exact root_reducts_captured_returns selected state language contexts rows compiled.plans subject
+    exact root_reducts_captured_returns selected state language contexts rows compiled.plans compiled.property subject
       (v "rewrites") (v "rows") (v "subject")
       (by simp [selected, caller, languageEnvironment, applySubst, Subst.lookup])
 
@@ -897,11 +905,11 @@ def languageQueryTerm (language : LanguageDef) (types terms : Term)
 
 theorem language_root_captured_returns (caller : Subst) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (subject : PatternPlan) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
-      [encoded (languageTerm language types terms contexts compiled), providerRowsValue rows,
+      [encoded (languageTerm language types terms contexts compiled.val), providerRowsValue rows,
        patternValue subject.erase]) :
     PureReturns program caller state (a "gslt:rule:language-conditional-root-reducts" [one, two, three]) state
       (patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) := by
@@ -919,14 +927,14 @@ theorem language_root_captured_returns (caller : Subst) (state : State)
     exact language_clause language types terms contexts compiled rows subject
 
 theorem language_root_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program [] state (encoded (languageQueryTerm language types terms contexts compiled rows subject)) state
       (patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) :=
   language_root_captured_returns [] state language types terms contexts compiled rows subject _ _ _ (by simp)
 
 theorem language_root_completed_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel
@@ -938,7 +946,7 @@ theorem language_root_completed_iff (state : State) (language : LanguageDef) (ty
     (language_root_returns state language types terms contexts compiled rows subject) after answers input output
 
 theorem language_root_derivation_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
@@ -964,7 +972,7 @@ def ObservesRootReduct (state : State) (language : LanguageDef) (types terms : T
 GSLT steps with a finite literal provider. Nonrecursive premise support is
 earned from complete compilation, including the actual preceding bindings. -/
 theorem observes_root_iff_gslt_step (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (equationFree : language.isEquationFree = true) (target : Pattern) :
     ObservesRootReduct state language types terms contexts compiled rows subject target ↔
@@ -993,8 +1001,8 @@ theorem observes_root_iff_gslt_step (state : State) (language : LanguageDef) (ty
 namespace Controls
 
 private def atom (name : String) : PatternPlan := .application name []
-private def row (name : String) (left right : PatternPlan) (premises : List PremisePlan) : RulePlan :=
-  { name, typeContext := [], premises, left, right }
+private def row (name : String) (left right : PatternPlan) (premises : List VariablePremisePlan) : RulePlan :=
+  { name, typeContext := [], premises := premises.map VariablePremisePlan.toPlan, left, right }
 
 structure Fixture where
   name : String
@@ -1069,10 +1077,16 @@ def Fixture.results (fixture : Fixture) : List Pattern :=
 def Fixture.expectedTerm (fixture : Fixture) : Term :=
   InferenceCettaWire.encodePatterns fixture.results
 
-theorem Fixture.returns (fixture : Fixture) (state : State) :
+def Fixture.sourceCompiled (fixture : Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true) :
+    VariableSourceProgram fixture.language.rewrites :=
+  ⟨fixture.compiled, List.all_eq_true.mp admitted⟩
+
+theorem Fixture.returns (fixture : Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true) (state : State) :
     PureReturns program [] state (encoded fixture.queryTerm) state (encoded fixture.expectedTerm) := by
   exact language_root_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject
 
 /-- The dependent second premise is checked in each preceding branch's
 bindings, and duplicate rows remain two distinct successful observations. -/
@@ -1086,12 +1100,13 @@ def incorrectResults : List (Fixture × List Pattern) :=
    (chainFixture, [.apply "out" [.apply "c" []], .apply "out" [.apply "d" []], .apply "out" [.apply "d" []]]),
    (childFixture, [.apply "wrap" [.apply "done" []]])]
 
-theorem Fixture.refuses_incorrect (fixture : Fixture) (state : State) (incorrect : List Pattern)
+theorem Fixture.refuses_incorrect (fixture : Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true) (state : State) (incorrect : List Pattern)
     (different : incorrect ≠ fixture.results) :
     ¬ DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded fixture.queryTerm) }
       (.complete state [patternsValue incorrect] [] []) := by
   intro accepted
-  have observed := (pure_returns_derivation_iff program [] state state _ _ (fixture.returns state)
+  have observed := (pure_returns_derivation_iff program [] state state _ _ (fixture.returns admitted state)
     state [patternsValue incorrect] [] []).mp accepted
   have sameAtom := List.cons.inj observed.2.1 |>.1
   exact different (InferenceCettaWire.encodePatterns_injective (CettaWireAtom.encode_injective _ _ sameAtom))
@@ -1105,7 +1120,8 @@ theorem incorrect_observations_refused (state : State) :
   rcases member with rfl | rfl | rfl
   all_goals
     apply Fixture.refuses_incorrect
-    decide +kernel
+    · decide +kernel
+    · decide +kernel
 
 /-- A recursive context premise is outside this relation-only plan profile. -/
 theorem congruence_not_admitted :
@@ -1125,7 +1141,8 @@ namespace Matched
 
 open MeTTaILSubtermMatchAutomata (BoundMatch)
 open MatchAutomataBindingExecution (bindingsTerm boundMatchTerm matchesTerm)
-open RelationPremiseExecution (premisesTerm providerRowsTerm providerEnv)
+open RelationPremiseExecution (premisesTerm providerRowsTerm providerEnv
+  VariableRuleView VariableSourceProgram variableRuleView)
 
 /-- The lowered row continuation uses the matcher-supplied bindings directly.
 It evaluates every guard before constructing the right-hand side. -/
@@ -1269,20 +1286,20 @@ private theorem applyMatch_clause {language : LanguageDef} (contexts : RewriteRu
 private theorem applyMatch_body_returns (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (compiled : RuleProgram language.rewrites) (matched : BoundMatch) :
-    PureReturns program (applyMatchEnvironment contexts rows compiled matched) state
-      applyMatchEquation.body state (patternsValue (runMatch rows language compiled matched)) := by
+    (compiled : VariableSourceProgram language.rewrites) (matched : BoundMatch) :
+    PureReturns program (applyMatchEnvironment contexts rows compiled.val matched) state
+      applyMatchEquation.body state (patternsValue (runMatch rows language compiled.val matched)) := by
   rcases matched with ⟨⟨position, index⟩, seed⟩
   rw [applyMatch_shape]
   cases position with
   | nil =>
-      let caller := applyMatchEnvironment contexts rows compiled ⟨⟨[], index⟩, seed⟩
+      let caller := applyMatchEnvironment contexts rows compiled.val ⟨⟨[], index⟩, seed⟩
       let selected := ("seed", seedValue seed) :: ("index", number index) :: caller
       let rowTerms := compiled.plans.map (Conditional.ruleTerm contexts)
       let looked := ("selected", optionValue rowTerms[index]?) :: selected
       have lookup := row_at_captured_returns selected state index rowTerms (v "index") (v "rewrites")
         (by simp [selected, caller, applyMatchEnvironment, applySubst, Subst.lookup,
-          compiledRows_as_list, rowTerms])
+          compiledRows_as_list, rowTerms, VariableSourceProgram.plans])
       simp only [runMatch, List.isEmpty_nil, ↓reduceIte]
       apply case_returns program caller selected state state state (v "matched")
         (encoded (boundMatchTerm ⟨⟨[], index⟩, seed⟩)) applyMatchRootBody _ _
@@ -1297,9 +1314,9 @@ private theorem applyMatch_body_returns (state : State) (language : LanguageDef)
         apply let_returns program selected looked state state state (v "selected") _ _ _ _ lookup _ _
         · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, looked, selected,
             caller, applyMatchEnvironment]
-        · cases found : compiled.plans[index]? with
+        · cases found : compiled.val.plans[index]? with
           | none =>
-              have emptyRow : rowTerms[index]? = none := by simp [rowTerms, List.getElem?_map, found]
+              have emptyRow : rowTerms[index]? = none := by simp [rowTerms, VariableSourceProgram.plans, List.getElem?_map, found]
               simp only [patternsValue, InferenceCettaWire.encodePatterns, CettaWireAtom.encode]
               apply case_returns program looked looked state state state (v "selected") (.symbol "None")
                 (.symbol "LNil") (.symbol "LNil") _ applyMatchRowCases (read_cases_encoded _) _ _ _
@@ -1309,7 +1326,7 @@ private theorem applyMatch_body_returns (state : State) (language : LanguageDef)
               · exact symbol_returns program looked state "LNil"
           | some plan =>
               have chosenRow : rowTerms[index]? = some (Conditional.ruleTerm contexts plan) := by
-                simp [rowTerms, List.getElem?_map, found]
+                simp [rowTerms, VariableSourceProgram.plans, List.getElem?_map, found]
               let rowBound := ("right", patternValue plan.right.erase) ::
                 ("left", patternValue plan.left.erase) ::
                 ("premises", encoded (premisesTerm plan.premises)) ::
@@ -1324,8 +1341,8 @@ private theorem applyMatch_body_returns (state : State) (language : LanguageDef)
               · simp [applyMatchRowCases, Conditional.ruleTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany,
                   SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
                   matchAtom, Subst.lookup, rowBound, looked, selected, caller, applyMatchEnvironment]
-              · have guarded := RelationPremiseExecution.premises_captured_returns rowBound state language rows
-                    plan.premises seed (v "premises") (v "rows") (v "seed")
+              · have guarded := RelationPremiseExecution.checked_premises_captured_returns rowBound state language rows
+                    plan.premises (compiled.ruleView plan (List.mem_of_getElem? found)) seed (v "premises") (v "rows") (v "seed")
                     (by simp [rowBound, looked, selected, caller, applyMatchEnvironment,
                       seedValue, applySubst, Subst.lookup])
                 unfold applyMatchSomeBody
@@ -1340,7 +1357,7 @@ private theorem applyMatch_body_returns (state : State) (language : LanguageDef)
                       (by simp [choicesBound, rowBound, looked, selected, caller, applyMatchEnvironment,
                         choiceValue, RelationPremiseExecution.bindingResultsTerm, applySubst, Subst.lookup])
   | cons child path =>
-      let caller := applyMatchEnvironment contexts rows compiled ⟨⟨child :: path, index⟩, seed⟩
+      let caller := applyMatchEnvironment contexts rows compiled.val ⟨⟨child :: path, index⟩, seed⟩
       let selected := ("seed", seedValue seed) :: ("index", number index) ::
         ("path", encoded (MatchAutomataDerivativeExecution.positionTerm path)) :: ("child", number child) :: caller
       simp only [runMatch, List.isEmpty_cons, Bool.false_eq_true, ↓reduceIte,
@@ -1361,13 +1378,13 @@ guards using the supplied bindings, without matching the LHS a second time. -/
 theorem apply_match_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (compiled : RuleProgram language.rewrites) (matched : BoundMatch) (one two three : Atom)
+    (compiled : VariableSourceProgram language.rewrites) (matched : BoundMatch) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
-      [compiledRows contexts compiled, encoded (providerRowsTerm rows), encoded (boundMatchTerm matched)]) :
+      [compiledRows contexts compiled.val, encoded (providerRowsTerm rows), encoded (boundMatchTerm matched)]) :
     PureReturns program caller state (a "gslt:rule:apply-root-match" [one, two, three]) state
-      (patternsValue (runMatch rows language compiled matched)) := by
+      (patternsValue (runMatch rows language compiled.val matched)) := by
   apply PureData.raw_authored_call_return program caller
-    (applyMatchEnvironment contexts rows compiled matched) state state "gslt:rule:apply-root-match"
+    (applyMatchEnvironment contexts rows compiled.val matched) state state "gslt:rule:apply-root-match"
     [one, two, three] applyMatchEquation.body _
     (by decide) (by decide) (by decide) (by decide +kernel) _ _
     (applyMatch_body_returns state language contexts rows compiled matched)
@@ -1377,7 +1394,7 @@ theorem apply_match_captured_returns (caller : Subst) (state : State) (language 
       omega
     rcases small with rfl | rfl | rfl <;> decide +kernel
   · rw [captured]
-    exact applyMatch_clause contexts rows compiled matched
+    exact applyMatch_clause contexts rows compiled.val matched
 
 private def matchedRootEquation : SpaceSemantics.Equation :=
   (equations "gslt:rule:matched-root-reducts")[0]'(by decide +kernel)
@@ -1442,12 +1459,12 @@ private theorem matchedRoot_call (caller : Subst) (state : State) (language : La
 private theorem matchedRoot_body_returns (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (compiled : RuleProgram language.rewrites) (observations : List BoundMatch) :
-    PureReturns program (matchedRootEnvironment contexts rows compiled observations) state
-      matchedRootEquation.body state (patternsValue (runMatches rows language compiled observations)) := by
+    (compiled : VariableSourceProgram language.rewrites) (observations : List BoundMatch) :
+    PureReturns program (matchedRootEnvironment contexts rows compiled.val observations) state
+      matchedRootEquation.body state (patternsValue (runMatches rows language compiled.val observations)) := by
   induction observations with
   | nil =>
-      let caller := matchedRootEnvironment contexts rows compiled []
+      let caller := matchedRootEnvironment contexts rows compiled.val []
       rw [matchedRoot_shape]
       simp only [runMatches, List.flatMap_nil, patternsValue, InferenceCettaWire.encodePatterns, CettaWireAtom.encode]
       apply case_returns program caller caller state state state (v "matches") (.symbol "LNil")
@@ -1457,10 +1474,10 @@ private theorem matchedRoot_body_returns (state : State) (language : LanguageDef
       · simp [matchedRootCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
       · exact symbol_returns program caller state "LNil"
   | cons matched observations ih =>
-      let caller := matchedRootEnvironment contexts rows compiled (matched :: observations)
+      let caller := matchedRootEnvironment contexts rows compiled.val (matched :: observations)
       let selected := ("rest", encoded (matchesTerm observations)) :: ("matched", encoded (boundMatchTerm matched)) :: caller
-      let headResults := runMatch rows language compiled matched
-      let tailResults := runMatches rows language compiled observations
+      let headResults := runMatch rows language compiled.val matched
+      let tailResults := runMatches rows language compiled.val observations
       let headBound := ("head", patternsValue headResults) :: selected
       let tailBound := ("tail", patternsValue tailResults) :: headBound
       have headReturned := apply_match_captured_returns selected state language contexts rows compiled matched
@@ -1497,11 +1514,11 @@ premise witnesses. It neither sorts nor removes repeated occurrences. -/
 theorem matched_root_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (compiled : RuleProgram language.rewrites) (observations : List BoundMatch) (one two three : Atom)
+    (compiled : VariableSourceProgram language.rewrites) (observations : List BoundMatch) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
-      [compiledRows contexts compiled, encoded (providerRowsTerm rows), encoded (matchesTerm observations)]) :
+      [compiledRows contexts compiled.val, encoded (providerRowsTerm rows), encoded (matchesTerm observations)]) :
     PureReturns program caller state (a "gslt:rule:matched-root-reducts" [one, two, three]) state
-      (patternsValue (runMatches rows language compiled observations)) :=
+      (patternsValue (runMatches rows language compiled.val observations)) :=
   matchedRoot_call caller state language contexts rows compiled observations one two three _ captured
     (matchedRoot_body_returns state language contexts rows compiled observations)
 
@@ -1617,18 +1634,18 @@ private theorem language_clause (strategy : Strategy) (language : LanguageDef) (
 
 private theorem language_body_returns (strategy : Strategy) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program (languageEnvironment language types terms contexts compiled rows subject) state
       (languageEquation strategy).body state
       (patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) := by
   let caller := languageEnvironment language types terms contexts compiled rows subject
-  let selected := ("rewrites", compiledRows contexts compiled) :: ("terms", encoded terms) ::
+  let selected := ("rewrites", compiledRows contexts compiled.val) :: ("terms", encoded terms) ::
     ("types", encoded types) :: ("name", encoded (.string language.name)) :: caller
   let patterns := compiled.plans.map (·.left)
-  have admitted := compiled_patterns language compiled
+  have admitted := compiled_patterns language compiled.val
   have closed : PureReturns MatchAutomataProgram.program [] state
-      (a (matcherHead strategy) [encoded (Conditional.languageTerm language types terms contexts compiled), patternValue subject.erase])
+      (a (matcherHead strategy) [encoded (Conditional.languageTerm language types terms contexts compiled.val), patternValue subject.erase])
       state (encoded (matcherResult strategy patterns subject)) := by
     cases strategy with
     | bottomUp =>
@@ -1644,7 +1661,7 @@ private theorem language_body_returns (strategy : Strategy) (state : State)
       (encoded (matcherResult strategy patterns subject)) := by
     apply PureData.raw_capture_returns MatchAutomataProgram.program [] selected state state
       (matcherHead strategy)
-      [encoded (Conditional.languageTerm language types terms contexts compiled), patternValue subject.erase]
+      [encoded (Conditional.languageTerm language types terms contexts compiled.val), patternValue subject.erase]
       [v "language", v "subject"] _ _ _ _ _ closed
     · cases strategy <;> decide +kernel
     · intro index bounded
@@ -1670,7 +1687,7 @@ private theorem language_body_returns (strategy : Strategy) (state : State)
     ("matches", encoded (matchesTerm observations)) :: bound
   rw [language_shape]
   apply case_returns program caller selected state state state (v "language")
-    (encoded (Conditional.languageTerm language types terms contexts compiled)) (languageMatchBody strategy) _ _
+    (encoded (Conditional.languageTerm language types terms contexts compiled.val)) (languageMatchBody strategy) _ _
     (languageCases strategy) (read_cases_encoded _) _ _ _
   · simpa [caller, languageEnvironment, applySubst, Subst.lookup] using variable_returns program caller state "language"
   · simp [languageCases, Conditional.languageTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany,
@@ -1688,7 +1705,7 @@ private theorem language_body_returns (strategy : Strategy) (state : State)
           CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
           SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom,
           Subst.lookup, matchBound, bound, number, selected, caller, languageEnvironment]
-      · rw [← run_reference_eq_frontier rows language compiled subject]
+      · rw [← run_reference_eq_frontier rows language compiled.val subject]
         exact matched_root_captured_returns matchBound state language contexts rows compiled observations
           (v "rewrites") (v "rows") (v "matches")
           (by simp [matchBound, bound, selected, caller, languageEnvironment, applySubst, Subst.lookup])
@@ -1704,11 +1721,11 @@ def languageQueryTerm (strategy : Strategy) (language : LanguageDef) (types term
 bindings before the canonical guarded row continuations. -/
 theorem language_captured_returns (strategy : Strategy) (caller : Subst) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
-      [encoded (Conditional.languageTerm language types terms contexts compiled), encoded (providerRowsTerm rows),
+      [encoded (Conditional.languageTerm language types terms contexts compiled.val), encoded (providerRowsTerm rows),
        patternValue subject.erase]) :
     PureReturns program caller state (a (executorHead strategy) [one, two, three]) state
       (patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) := by
@@ -1727,14 +1744,14 @@ theorem language_captured_returns (strategy : Strategy) (caller : Subst) (state 
     exact language_clause strategy language types terms contexts compiled rows subject
 
 theorem language_returns (strategy : Strategy) (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program [] state (encoded (languageQueryTerm strategy language types terms contexts compiled rows subject)) state
       (patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) :=
   language_captured_returns strategy [] state language types terms contexts compiled rows subject _ _ _ (by simp)
 
 theorem language_completed_iff (strategy : Strategy) (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel
@@ -1746,7 +1763,7 @@ theorem language_completed_iff (strategy : Strategy) (state : State) (language :
     (language_returns strategy state language types terms contexts compiled rows subject) after answers input output
 
 theorem language_derivation_iff (strategy : Strategy) (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
@@ -1767,7 +1784,7 @@ def ObservesRootReduct (strategy : Strategy) (state : State) (language : Languag
 
 theorem observes_root_iff_gslt_step (strategy : Strategy) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (equationFree : language.isEquationFree = true) (target : Pattern) :
     ObservesRootReduct strategy state language types terms contexts compiled rows subject target ↔
@@ -1784,36 +1801,40 @@ def queryTerm (strategy : Strategy) (fixture : Conditional.Controls.Fixture) : T
   languageQueryTerm strategy fixture.language (.symbol "LNil") (.symbol "LNil")
     (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject
 
-theorem fixture_returns (strategy : Strategy) (fixture : Conditional.Controls.Fixture) (state : State) :
+theorem fixture_returns (strategy : Strategy) (fixture : Conditional.Controls.Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true) (state : State) :
     PureReturns program [] state (encoded (queryTerm strategy fixture)) state
       (encoded fixture.expectedTerm) :=
   language_returns strategy state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject
 
 theorem incorrect_observation_refused (strategy : Strategy) (fixture : Conditional.Controls.Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true)
     (incorrect : List Pattern) (state : State) (different : incorrect ≠ fixture.results) :
     ¬ DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (queryTerm strategy fixture)) }
       (.complete state [patternsValue incorrect] [] []) := by
   intro executed
-  apply Conditional.Controls.Fixture.refuses_incorrect fixture state incorrect different
+  apply Conditional.Controls.Fixture.refuses_incorrect fixture admitted state incorrect different
   apply (Conditional.language_root_derivation_iff state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject state _ [] []).mpr
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject state _ [] []).mpr
   exact (language_derivation_iff strategy state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject state _ [] []).mp executed
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject state _ [] []).mp executed
 
 /-- A future row occurrence is rejected even if the supplied bindings would
 otherwise satisfy a row's guards. Only a real authored occurrence can run. -/
 theorem future_occurrence_returns_nil (state : State) (language : LanguageDef)
     (contexts : RewriteRule → Term) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (compiled : RuleProgram language.rewrites) (seed : Bindings) :
+    (compiled : VariableSourceProgram language.rewrites) (seed : Bindings) :
     PureReturns program [] state
       (a "gslt:rule:apply-root-match"
-        [compiledRows contexts compiled, encoded (providerRowsTerm rows),
+        [compiledRows contexts compiled.val, encoded (providerRowsTerm rows),
          encoded (boundMatchTerm ⟨⟨[], compiled.plans.length⟩, seed⟩)]) state (.symbol "LNil") := by
-  simpa [runMatch, List.getElem?_eq_none, InferenceCettaWire.encodePatterns, CettaWireAtom.encode] using
+  simpa [runMatch, VariableSourceProgram.plans, List.getElem?_eq_none, InferenceCettaWire.encodePatterns, CettaWireAtom.encode] using
     apply_match_captured_returns [] state language contexts rows compiled
-      ⟨⟨[], compiled.plans.length⟩, seed⟩ _ _ _ (by simp)
+      ⟨⟨[], compiled.plans.length⟩, seed⟩
+      (compiledRows contexts compiled.val) (encoded (providerRowsTerm rows))
+      (encoded (boundMatchTerm ⟨⟨[], compiled.plans.length⟩, seed⟩)) (by simp)
 
 end Controls
 

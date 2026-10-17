@@ -57,7 +57,7 @@ namespace RhoCostGeneratorRootAlignment
 
 /-- The declaration/root comparison is exhaustive because Cost has exactly
 two static colours. -/
-def positionCases
+theorem positionCases
     {kernel : CostStaticNormalizationKernel rhoCIGSLT}
     {targetFree : FreeTypeContext} {targetBound : List TypeExpr}
     {targetSort : LangSort rhoCIGSLT.costWholeLanguage}

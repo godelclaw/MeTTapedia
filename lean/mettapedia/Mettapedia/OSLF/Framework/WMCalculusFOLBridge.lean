@@ -17,7 +17,7 @@ the FOL BinaryWorldModel instance a *fiber* over the generic WM calculus Languag
 The bridge proves:
 - **BinaryEvidence-add correspondence**: the LanguageDef reduction
   `Extract(Revise(W₁,W₂), q) → Combine(Extract(W₁,q), Extract(W₂,q))`
-  is the syntactic shadow of `folEvidence (W₁+W₂) φ = folEvidence W₁ φ + folEvidence W₂ φ`.
+  is the syntactic shadow of `crispEvidence folSatisfies (W₁+W₂) φ = crispEvidence folSatisfies W₁ φ + crispEvidence folSatisfies W₂ φ`.
 - **Diamond interpretation**: ◇(isCombined) at decomposable terms means evidence
   can be decomposed into per-source Tarskian satisfaction counts.
 - **Singleton adequacy**: sentence truth ↔ strength = 1 lifts through
@@ -43,6 +43,7 @@ open Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
 open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
@@ -70,7 +71,7 @@ are the same fact expressed in two formalisms. -/
 
 /-- The syntactic evidence-add reduction and the semantic evidence additivity
     are corresponding facts: one is a LanguageDef rewrite step, the other is
-    the `folEvidence_add` theorem.  Both express that evidence
+    the `crispEvidence_add` theorem.  Both express that evidence
     extraction distributes over state composition. -/
 theorem fol_evidence_add_correspondence {L : Language.{u}}
     (v : WMExtVertex) (val : FOLValuation L) (s₁ s₂ q : String) :
@@ -79,12 +80,12 @@ theorem fol_evidence_add_correspondence {L : Language.{u}}
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q))
       (pCombine (pExtract (.fvar s₁) (.fvar q)) (pExtract (.fvar s₂) (.fvar q))) ∧
     -- Semantic side: evidence additivity holds on the valued FOL states
-    folEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
-      folEvidence (val.stateVal s₁) (val.queryVal q) +
-        folEvidence (val.stateVal s₂) (val.queryVal q) :=
+    crispEvidence folSatisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
+      crispEvidence folSatisfies (val.stateVal s₁) (val.queryVal q) +
+        crispEvidence folSatisfies (val.stateVal s₂) (val.queryVal q) :=
   ⟨langReduces_to_semantic _
       (wmLangReduces_evidenceAdd v (.fvar s₁) (.fvar s₂) (.fvar q)),
-   folEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
+   crispEvidence_add folSatisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
 
 /-- Full-vertex version of evidence-add correspondence. -/
 theorem fol_evidence_add_correspondence_full {L : Language.{u}}
@@ -92,12 +93,12 @@ theorem fol_evidence_add_correspondence_full {L : Language.{u}}
     langSemanticReduces (wmFullVertexLanguageDef v)
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q))
       (pCombine (pExtract (.fvar s₁) (.fvar q)) (pExtract (.fvar s₂) (.fvar q))) ∧
-    folEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
-      folEvidence (val.stateVal s₁) (val.queryVal q) +
-        folEvidence (val.stateVal s₂) (val.queryVal q) :=
+    crispEvidence folSatisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
+      crispEvidence folSatisfies (val.stateVal s₁) (val.queryVal q) +
+        crispEvidence folSatisfies (val.stateVal s₂) (val.queryVal q) :=
   ⟨langReduces_to_semantic _
       (wmFullLangReduces_evidenceAdd v (.fvar s₁) (.fvar s₂) (.fvar q)),
-   folEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
+   crispEvidence_add folSatisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
 
 /-! ## Section 3: Diamond Interpretation
 
@@ -114,14 +115,14 @@ theorem fol_diamond_evidence_decomposition {L : Language.{u}}
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q)) ∧
     -- Semantic: evidence decomposes into per-source components
     ∃ e₁ e₂ : BinaryEvidence,
-      e₁ = folEvidence (val.stateVal s₁) (val.queryVal q) ∧
-      e₂ = folEvidence (val.stateVal s₂) (val.queryVal q) ∧
-      folEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) = e₁ + e₂ :=
+      e₁ = crispEvidence folSatisfies (val.stateVal s₁) (val.queryVal q) ∧
+      e₂ = crispEvidence folSatisfies (val.stateVal s₂) (val.queryVal q) ∧
+      crispEvidence folSatisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) = e₁ + e₂ :=
   ⟨diamond_isCombined_at_decomposable v (.fvar s₁) (.fvar s₂) (.fvar q),
-   ⟨folEvidence (val.stateVal s₁) (val.queryVal q),
-    folEvidence (val.stateVal s₂) (val.queryVal q),
+   ⟨crispEvidence folSatisfies (val.stateVal s₁) (val.queryVal q),
+    crispEvidence folSatisfies (val.stateVal s₂) (val.queryVal q),
     rfl, rfl,
-    folEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩⟩
+    crispEvidence_add folSatisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩⟩
 
 /-- Revision commutativity: the syntactic diamond for commutativity corresponds
     to the semantic fact that multiset addition is commutative. -/
@@ -148,7 +149,7 @@ theorem fol_singleton_adequacy_lift {L : Language.{u}}
         (State := Multiset (PointedFOL L)) (Query := FOLQuery L)
         (val.stateVal s) φ = 1 := by
   rw [hs]
-  exact singleton_adequacy_strength_one S φ
+  exact singleton_adequacy_strength_one folSatisfies S φ
 
 /-! ## Section 5: BinaryEvidence Barb (Process-Algebraic Observable)
 
@@ -176,9 +177,9 @@ the evidence is non-zero. -/
 theorem fol_nonzero_evidence_of_satisfying_model {L : Language.{u}}
     (W : Multiset (PointedFOL L)) (φ : FOLQuery L)
     (S : PointedFOL L) (hmem : S ∈ W) (hsat : folSatisfies S φ) :
-    (folEvidence W φ).pos ≥ 1 := by
+    (crispEvidence folSatisfies W φ).pos ≥ 1 := by
   classical
-  simp only [folEvidence]
+  simp only [crispEvidence]
   have hpos : 0 < Multiset.countP (fun S => folSatisfies S φ) W :=
     Multiset.countP_pos.mpr ⟨S, hmem, hsat⟩
   exact_mod_cast hpos
@@ -188,7 +189,7 @@ theorem fol_nonzero_evidence_of_satisfying_model {L : Language.{u}}
 theorem fol_nonzero_evidence_of_satisfying_model_val {L : Language.{u}}
     (val : FOLValuation L) (s : String) (φ : FOLQuery L)
     (S : PointedFOL L) (hmem : S ∈ val.stateVal s) (hsat : folSatisfies S φ) :
-    (folEvidence (val.stateVal s) φ).pos ≥ 1 :=
+    (crispEvidence folSatisfies (val.stateVal s) φ).pos ≥ 1 :=
   fol_nonzero_evidence_of_satisfying_model (val.stateVal s) φ S hmem hsat
 
 /-! ## Section 7: Consequence Lifting Through OSLF
@@ -207,7 +208,7 @@ theorem fol_consequence_lifts {L : Language.{u}}
       (State := Multiset (PointedFOL L)) (Query := FOLQuery L) W φ ≤
     BinaryWorldModel.queryStrength
       (State := Multiset (PointedFOL L)) (Query := FOLQuery L) W ψ :=
-  queryStrength_le_of_pointwise W φ ψ himp
+  queryStrength_le_of_pointwise folSatisfies W φ ψ himp
 
 /-! ## Section 8: Galois Corollary with FOL Reading
 
@@ -266,8 +267,8 @@ theorem fol_strength_one_of_validity {L : Language.{u}}
     apply Multiset.countP_eq_zero.mpr
     intro S hS habs
     exact habs (hvalid S hS)
-  change BinaryEvidence.toStrength (folEvidence W φ) = 1
-  simp only [BinaryEvidence.toStrength, folEvidence, hcount, hcountNeg]
+  change BinaryEvidence.toStrength (crispEvidence folSatisfies W φ) = 1
+  simp only [BinaryEvidence.toStrength, crispEvidence, hcount, hcountNeg]
   have hne0 : (W.card : ℝ≥0∞) ≠ 0 := by positivity
   simp [BinaryEvidence.total, hne0]
   exact ENNReal.div_self hne0 (ENNReal.natCast_ne_top W.card)
@@ -288,14 +289,14 @@ theorem fol_model_theoretic_consequence_is_strength_le {L : Language.{u}}
       (State := Multiset (PointedFOL L)) (Query := FOLQuery L) W φ ≤
     BinaryWorldModel.queryStrength
       (State := Multiset (PointedFOL L)) (Query := FOLQuery L) W ψ :=
-  queryStrength_le_of_pointwise W φ ψ hcons
+  queryStrength_le_of_pointwise folSatisfies W φ ψ hcons
 
 /-- The converse: if singleton-strength is monotone, then model-theoretic
     consequence holds — the FOL bridge is fully faithful at singletons. -/
 theorem fol_strength_le_implies_model_theoretic_consequence {L : Language.{u}}
     (φ ψ : FOLQuery L)
-    (hle : singletonStrengthLE φ ψ) :
+    (hle : singletonStrengthLE folSatisfies φ ψ) :
     ∀ S : PointedFOL L, folSatisfies S φ → folSatisfies S ψ :=
-  (pointwiseImplies_iff_singletonStrengthLE φ ψ).mpr hle
+  (pointwiseImplies_iff_singletonStrengthLE folSatisfies φ ψ).mpr hle
 
 end Mettapedia.OSLF.Framework.WMCalculusFOLBridge

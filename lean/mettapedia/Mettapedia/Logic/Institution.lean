@@ -28,6 +28,9 @@ open scoped CategoryTheory
 
 universe uSignature uSignatureHom uSentence uModel uModelHom
 
+-- These universes are independent field levels, supplied explicitly by callers.
+-- The structure's own result sort only exposes their maximum.
+set_option linter.checkUnivs false in
 /-- A model-valued institution in the standard variance: sentences translate
 forward along signature morphisms, while models reduce backward. -/
 structure Institution (Signature : Type uSignature)

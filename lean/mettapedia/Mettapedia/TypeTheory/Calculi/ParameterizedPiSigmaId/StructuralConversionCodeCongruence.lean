@@ -39,26 +39,30 @@ theorem mapContext_comp {n m k : Nat} (first : Tm Head n → Tm Head m)
       mapContext (second ∘ first) (secondStep ∘ firstStep) code := by
   induction code <;> simp_all only [mapContext, Function.comp_apply]
 
-variable [DecidableEq Head] (headEq : Head → Head → Prop) [DecidableRel headEq]
-variable (decodeRoot : {n : Nat} → RootCode n → Option (Tm Head n × Tm Head n))
+variable [DecidableEq Head]
 
-theorem decode_mapContext {n m : Nat} (wrap : Tm Head n → Tm Head m)
+theorem decode_mapContext_between
+    (sourceHeadEq targetHeadEq : Head → Head → Prop)
+    [DecidableRel sourceHeadEq] [DecidableRel targetHeadEq]
+    (sourceRoot targetRoot : {n : Nat} → RootCode n → Option (Tm Head n × Tm Head n))
+    {n m : Nat} (wrap : Tm Head n → Tm Head m)
     (wrapStep : StepCode Head RootCode n → StepCode Head RootCode m)
     (compatible : ∀ (step : StepCode Head RootCode n),
-      StepCode.decode headEq decodeRoot (wrapStep step) =
-        mapEndpoints wrap (StepCode.decode headEq decodeRoot step))
+      StepCode.decode targetHeadEq targetRoot (wrapStep step) =
+        mapEndpoints wrap (StepCode.decode sourceHeadEq sourceRoot step))
     (code : Code Head RootCode n) {left right : Tm Head n}
-    (accepted : decode headEq decodeRoot code = some (left, right)) :
-    decode headEq decodeRoot (mapContext wrap wrapStep code) = some (wrap left, wrap right) := by
+    (accepted : decode sourceHeadEq sourceRoot code = some (left, right)) :
+    decode targetHeadEq targetRoot (mapContext wrap wrapStep code) = some (wrap left, wrap right)
+ := by
   induction code generalizing left right with
   | single step =>
-      change StepCode.decode headEq decodeRoot step = some (left, right) at accepted
+      change StepCode.decode sourceHeadEq sourceRoot step = some (left, right) at accepted
       simp only [mapContext, decode, compatible, accepted, mapEndpoints, Option.map_some]
   | refl term =>
       cases accepted
       rfl
   | symm code ih =>
-      cases decoded : decode headEq decodeRoot code with
+      cases decoded : decode sourceHeadEq sourceRoot code with
       | none => simp [decode, decoded, reverseEndpoints] at accepted
       | some pair =>
           rcases pair with ⟨a, b⟩
@@ -67,11 +71,11 @@ theorem decode_mapContext {n m : Nat} (wrap : Tm Head n → Tm Head m)
           rcases accepted with ⟨rfl, rfl⟩
           simp only [mapContext, decode, ih decoded, reverseEndpoints, Option.map_some]
   | trans first second ihFirst ihSecond =>
-      cases firstDecoded : decode headEq decodeRoot first with
+      cases firstDecoded : decode sourceHeadEq sourceRoot first with
       | none => simp [decode, firstDecoded, joinEndpoints] at accepted
       | some pair =>
           rcases pair with ⟨a, b⟩
-          cases secondDecoded : decode headEq decodeRoot second with
+          cases secondDecoded : decode sourceHeadEq sourceRoot second with
           | none => simp [decode, firstDecoded, secondDecoded, joinEndpoints] at accepted
           | some pair =>
               rcases pair with ⟨c, d⟩
@@ -82,6 +86,20 @@ theorem decode_mapContext {n m : Nat} (wrap : Tm Head n → Tm Head m)
                 cases accepted
                 simp [mapContext, decode, ihFirst firstDecoded, ihSecond secondDecoded, joinEndpoints]
               · cases accepted
+
+
+variable (headEq : Head → Head → Prop) [DecidableRel headEq]
+variable (decodeRoot : {n : Nat} → RootCode n → Option (Tm Head n × Tm Head n))
+
+theorem decode_mapContext {n m : Nat} (wrap : Tm Head n → Tm Head m)
+    (wrapStep : StepCode Head RootCode n → StepCode Head RootCode m)
+    (compatible : ∀ (step : StepCode Head RootCode n),
+      StepCode.decode headEq decodeRoot (wrapStep step) =
+        mapEndpoints wrap (StepCode.decode headEq decodeRoot step))
+    (code : Code Head RootCode n) {left right : Tm Head n}
+    (accepted : decode headEq decodeRoot code = some (left, right)) :
+    decode headEq decodeRoot (mapContext wrap wrapStep code) = some (wrap left, wrap right) :=
+  decode_mapContext_between headEq headEq decodeRoot decodeRoot wrap wrapStep compatible code accepted
 
 theorem check_mapContext {n m : Nat} (wrap : Tm Head n → Tm Head m)
     (wrapStep : StepCode Head RootCode n → StepCode Head RootCode m)

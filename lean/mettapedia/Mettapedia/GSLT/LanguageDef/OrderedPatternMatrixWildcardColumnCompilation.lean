@@ -25,6 +25,8 @@ export Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation
   (Pattern Subject Row Matrix ConstructorKey structuralMatchList runMatrixAll
     structuralMatch
     rigidPrefixKeys specializePrefix defaultMatrix
+    matrixWork patternListWork matrixWork_tail_lt
+    matrixWork_specializePrefix_lt_of_mem matrixWork_defaultMatrix_lt_of_firstKey
     runMatrixAll_constructor_decomposition runMatrixAll_nil_eq_default)
 
 end OPM
@@ -162,6 +164,107 @@ private theorem allFirstWildcard_cons
     (accepted : allFirstWildcard (row :: rows) = true) :
     firstIsWildcard row = true ∧ rows.all firstIsWildcard = true := by
   simpa [allFirstWildcard] using accepted
+
+private theorem matrixWork_dropFirstColumn_le (matrix : OPM.Matrix Head Rule) :
+    OPM.matrixWork (dropFirstColumn matrix) ≤ OPM.matrixWork matrix := by
+  induction matrix with
+  | nil => exact Nat.le_refl _
+  | cons row rows ih =>
+    cases patterns : row.patterns with
+    | nil =>
+      simpa [dropFirstColumn, OPM.matrixWork,
+        Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation.Row.work, patterns] using
+        Nat.add_le_add_left ih row.work
+    | cons pattern patterns =>
+      simp only [dropFirstColumn, List.map_cons, OPM.matrixWork,
+        Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation.Row.work,
+        List.tail, patterns, OPM.patternListWork]
+      dsimp only [dropFirstColumn, List.tail] at ih
+      omega
+
+/-- A licensed common-column elimination strictly reduces the same structural
+work account as constructor specialization and authored-row removal. -/
+theorem matrixWork_dropFirstColumn_lt (matrix : OPM.Matrix Head Rule)
+    (all : allFirstWildcard matrix = true) :
+    OPM.matrixWork (dropFirstColumn matrix) < OPM.matrixWork matrix := by
+  cases matrix with
+  | nil => simp [allFirstWildcard] at all
+  | cons row rows =>
+    obtain ⟨here, _⟩ := allFirstWildcard_cons row rows all
+    obtain ⟨patterns, shape⟩ := (firstIsWildcard_eq_true_iff row).mp here
+    have tail := matrixWork_dropFirstColumn_le rows
+    simp only [dropFirstColumn, List.map_cons, OPM.matrixWork,
+      Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation.Row.work,
+      shape, List.tail, OPM.patternListWork,
+      Mettapedia.GSLT.LanguageDef.OrderedPatternMatrixCompilation.Pattern.work]
+    dsimp only [dropFirstColumn, List.tail] at tail
+    omega
+
+private theorem compileBranches_exists_of_each [DecidableEq Head]
+    (fuel : Nat) (matrix : OPM.Matrix Head Rule)
+    (keys : List (OPM.ConstructorKey Head))
+    (each : ∀ key ∈ keys,
+      ∃ program, compile? fuel (OPM.specializePrefix key matrix) = some program) :
+    ∃ branches, compileBranches (compile? fuel) matrix keys = some branches := by
+  induction keys with
+  | nil => exact ⟨.nil, rfl⟩
+  | cons key keys ih =>
+    obtain ⟨program, compiled⟩ := each key (by simp)
+    obtain ⟨rest, restCompiled⟩ := ih (fun next member => each next (by simp [member]))
+    exact ⟨.cons key program rest, by simp [compileBranches, compiled, restCompiled]⟩
+
+/-- The compiler succeeds above the structural work of every finite matrix.
+Common wildcard elimination, constructor branches and fallthrough all consume
+that account; no language-specific compilation cutoff is required. -/
+theorem compile?_exists_of_work_lt [DecidableEq Head] :
+    ∀ (fuel : Nat) (matrix : OPM.Matrix Head Rule),
+      OPM.matrixWork matrix < fuel →
+      ∃ program, compile? fuel matrix = some program := by
+  intro fuel
+  induction fuel with
+  | zero => intro matrix bound; omega
+  | succ fuel ih =>
+    intro matrix bound
+    by_cases all : allFirstWildcard matrix = true
+    · have decreases := matrixWork_dropFirstColumn_lt matrix all
+      obtain ⟨next, compiled⟩ := ih (dropFirstColumn matrix) (by omega)
+      exact ⟨.drop next, by simp [compile?, compileStep, all, compiled]⟩
+    · have allFalse : allFirstWildcard matrix = false :=
+        by cases checked : allFirstWildcard matrix <;> simp_all
+      cases matrix with
+      | nil => exact ⟨.failure, rfl⟩
+      | cons row rows =>
+        cases rigid : row.firstKey? with
+        | none =>
+          have decreases := OPM.matrixWork_tail_lt row rows
+          obtain ⟨next, compiled⟩ := ih rows (by omega)
+          exact ⟨.tryRule row.rule row.patterns next, by
+            simp [compile?, compileStep, allFalse, rigid, compiled]⟩
+        | some key =>
+          obtain ⟨branches, branchesCompiled⟩ :=
+            compileBranches_exists_of_each fuel (row :: rows)
+              (OPM.rigidPrefixKeys (row :: rows)) (fun query member => by
+                apply ih
+                have decreases := OPM.matrixWork_specializePrefix_lt_of_mem query (row :: rows) member
+                omega)
+          have decreases := OPM.matrixWork_defaultMatrix_lt_of_firstKey row rows key rigid
+          obtain ⟨default, defaultCompiled⟩ := ih (OPM.defaultMatrix (row :: rows)) (by omega)
+          exact ⟨.switch branches default, by
+            simp [compile?, compileStep, allFalse, rigid, branchesCompiled, defaultCompiled]⟩
+
+theorem compile?_bounded_isSome [DecidableEq Head] (matrix : OPM.Matrix Head Rule) :
+    (compile? (OPM.matrixWork matrix + 1) matrix).isSome = true := by
+  obtain ⟨program, compiled⟩ :=
+    compile?_exists_of_work_lt (OPM.matrixWork matrix + 1) matrix (by omega)
+  simp [compiled]
+
+/-- Construct the optimized decision program using its proved work bound. -/
+def compile [DecidableEq Head] (matrix : OPM.Matrix Head Rule) : DecisionProgram Head Rule :=
+  (compile? (OPM.matrixWork matrix + 1) matrix).get (compile?_bounded_isSome matrix)
+
+theorem compile?_bounded_eq_some [DecidableEq Head] (matrix : OPM.Matrix Head Rule) :
+    compile? (OPM.matrixWork matrix + 1) matrix = some (compile matrix) :=
+  (Option.some_get (compile?_bounded_isSome matrix)).symm
 
 /-- On a present subject coordinate, deleting a universally wildcard column
 preserves the complete source result list. -/
@@ -450,6 +553,13 @@ theorem compile?_candidate_rules_exact
       OPM.runMatrixAll (fun rule => [rule]) matrix subjects :=
   compile?_all_correct fuel matrix program compiled (fun rule => [rule])
     subjects
+
+/-- The total optimized compiler preserves the entire ordered occurrence
+stream, with arbitrary leaf observations and repeated equal results. -/
+theorem compile_all_correct [DecidableEq Head] (matrix : OPM.Matrix Head Rule)
+    (attempt : Rule → List Result) (subjects : List (OPM.Subject Head)) :
+    (compile matrix).evalAll attempt subjects = OPM.runMatrixAll attempt matrix subjects :=
+  compile?_all_correct _ matrix (compile matrix) (compile?_bounded_eq_some matrix) attempt subjects
 
 /-! ## Independent controls -/
 

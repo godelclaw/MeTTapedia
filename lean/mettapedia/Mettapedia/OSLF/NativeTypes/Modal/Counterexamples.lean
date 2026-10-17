@@ -69,7 +69,7 @@ def language : LanguageDef where
   equations := [equation]
   rewrites := [firstRule, secondRule]
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := {language := language, freeTypes := [], provider := {signatures := [], rows := []}}
 def permissions : Permissions := {sites := .rootOnly}
 
 def binding : GeneralRuleBindingInference.BindingPlan :=

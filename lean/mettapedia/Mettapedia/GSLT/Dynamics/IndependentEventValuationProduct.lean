@@ -348,7 +348,7 @@ theorem aligned_partial_has_no_global_comparison :
   simp [exclusive] at impossible
 
 /-- A genuinely total pair supplies the complete categorical comparison. -/
-def totalComparison : ComparisonLawful
+theorem totalComparison : ComparisonLawful
     (chronological (fun value : Bool => value)) rightHistoryValuation :=
   comparisonLawful_of_total
     (chronological_isTotal (fun value : Bool => value))

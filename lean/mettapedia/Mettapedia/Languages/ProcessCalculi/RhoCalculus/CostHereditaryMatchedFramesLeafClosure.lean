@@ -26,7 +26,7 @@ This is the local leaf form of the recursive closure theorem.  It derives the
 common active support, recursively closes the two selected child contents, and
 returns only the semantic atom apex.  Structural callers can compose that leaf
 without first rebuilding either complete plan context. -/
-noncomputable def selectedAtoms_commonRestorationApex_of_closeSmaller
+theorem selectedAtoms_commonRestorationApex_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
@@ -194,7 +194,7 @@ The child closure uses the declaration that classified the original pair.
 The returned restoration apex uses the intrinsic declaration of the two
 same-colour static frames; these declarations need not be definitionally the
 same in an enclosing bridge case. -/
-noncomputable def selectedRoots_commonRestorationApex_of_closeSmaller
+theorem selectedRoots_commonRestorationApex_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}

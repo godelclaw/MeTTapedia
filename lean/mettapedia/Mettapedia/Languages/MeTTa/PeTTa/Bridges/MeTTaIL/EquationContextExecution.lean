@@ -28,6 +28,24 @@ open MeTTaILFirstOrderRuleCompilation MeTTaILFirstOrderEquationCompilation
 open Eval Effects EquationContextExecutionProgram
 open RelationPremiseExecution (providerEnv providerRowsTerm)
 
+/-- The checked local shape of equations executable by the retained names-only
+premise helpers. General equation plans remain available as data. -/
+abbrev VariableEquationPlans :=
+  {plans : List RulePlan // ∀ plan ∈ plans, plan.variablePremises?.isSome = true}
+
+abbrev variableEquationPlans (plans : List RulePlan)
+    (admitted : plans.all (fun plan => plan.variablePremises?.isSome) = true) : VariableEquationPlans :=
+  ⟨plans, List.all_eq_true.mp admitted⟩
+
+@[simp] theorem variableEquationPlans_val (plans : List RulePlan)
+    (admitted : plans.all (fun plan => plan.variablePremises?.isSome) = true) :
+    (variableEquationPlans plans admitted).val = plans := rfl
+
+def variableEquationPlans? (plans : List RulePlan) : Option VariableEquationPlans :=
+  if admitted : plans.all (fun plan => plan.variablePremises?.isSome) = true then
+    some ⟨plans, List.all_eq_true.mp admitted⟩
+  else none
+
 private abbrev a (head : String) (arguments : List Atom) : Atom := .expression (.symbol head :: arguments)
 private abbrev v (name : String) : Atom := .var name
 private abbrev encoded (term : Term) : Atom := CettaWireAtom.encode term
@@ -699,7 +717,7 @@ private theorem pattern_equal_returns (caller : Subst) (state : State) (actual c
 
 private theorem validate_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) :
     PureReturns program (environment .validate [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (positionedReceiptTerm receipt)]) state
@@ -744,7 +762,7 @@ private theorem validate_body_returns (state : State) (language : LanguageDef)
               (encoded (MatchAutomataBindingExecution.patternOptionTerm
                 (validateReceipt? (providerEnv rows) language plans site.2.erase receipt.atomic))) := by
             apply EquationContextExecutionProgram.retained_captured_returns (by decide +kernel)
-            exact EquationExecution.validate_captured_returns focusBound state language rows contexts plans site.2 receipt.atomic
+            exact EquationExecution.validate_captured_returns focusBound state language rows contexts plans.val plans.property site.2 receipt.atomic
               _ _ _ _ (by simp [focusBound, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
           unfold validateAtomic
           cases localRead : validateReceipt? (providerEnv rows) language plans site.2.erase receipt.atomic with
@@ -801,7 +819,7 @@ private theorem validate_body_returns (state : State) (language : LanguageDef)
 receipt, reconstructs the whole term and checks the claimed whole target. -/
 theorem validate_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -839,7 +857,7 @@ private theorem replay_shape : (equation .replay).body = a "case" [v "receipts",
 /-- Check the original oriented receipt before accepting its reversed edge. -/
 private theorem validate_previous_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject predecessor : PatternPlan) (receipt : PositionedReceipt) :
     PureReturns program (environment .validate [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (signedReceiptTerm (.inr (predecessor, receipt)))]) state
@@ -904,7 +922,7 @@ private theorem validate_previous_body_returns (state : State) (language : Langu
 private theorem replay_body_returns_of_step {Event : Type}
     (eventTerm : Event → Term) (check : PatternPlan → Event → Option PatternPlan)
     (state : State) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (stepReturns : ∀ (caller : Subst) (subject : PatternPlan) (event : Event) (arguments : List Atom),
       arguments.map (applySubst caller) =
         [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -979,7 +997,7 @@ private theorem replay_body_returns_of_step {Event : Type}
 
 private theorem forward_validation_result (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (rowsFirstOrder : FirstOrderRelations (providerEnv rows)) (plans : List RulePlan)
+    (rowsFirstOrder : FirstOrderRelations (providerEnv rows)) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) :
     replayResultTerm (validateSignedReceipt? (providerEnv rows) language plans subject (.inl receipt)) =
       MatchAutomataBindingExecution.patternOptionTerm
@@ -1000,7 +1018,7 @@ private theorem forward_validation_result (language : LanguageDef)
 private theorem forward_validation_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (rowsFirstOrder : FirstOrderRelations (providerEnv rows))
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1014,7 +1032,7 @@ private theorem forward_validation_captured_returns (caller : Subst) (state : St
 private theorem validate_signed_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (rowsFirstOrder : FirstOrderRelations (providerEnv rows))
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : SignedReceipt) :
     PureReturns program (environment .validate [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (signedReceiptTerm receipt)]) state
@@ -1030,7 +1048,7 @@ private theorem validate_signed_body_returns (state : State) (language : Languag
 theorem validate_signed_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : SignedReceipt) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1044,7 +1062,7 @@ theorem validate_signed_captured_returns (caller : Subst) (state : State) (langu
 private theorem replay_signed_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List SignedReceipt) :
     PureReturns program (environment .replay [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (signedReceiptsTerm receipts)]) state
@@ -1060,7 +1078,7 @@ private theorem replay_signed_body_returns (state : State) (language : LanguageD
 theorem replay_signed_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List SignedReceipt) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1073,7 +1091,7 @@ theorem replay_signed_captured_returns (caller : Subst) (state : State) (languag
 private theorem replay_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (rowsFirstOrder : FirstOrderRelations (providerEnv rows))
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List PositionedReceipt) :
     PureReturns program (environment .replay [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (positionedReceiptsTerm receipts)]) state
@@ -1092,7 +1110,7 @@ subject. The actual source checks each receipt at its preceding endpoint. -/
 theorem replay_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List PositionedReceipt) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1116,7 +1134,7 @@ def replayQueryTerm (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term
 
 theorem validate_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) :
     PureReturns program [] state (encoded (validateQueryTerm contexts plans rows subject receipt)) state
       (encoded (MatchAutomataBindingExecution.patternOptionTerm
@@ -1126,7 +1144,7 @@ theorem validate_returns (state : State) (language : LanguageDef)
 theorem replay_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List PositionedReceipt) :
     PureReturns program [] state (encoded (replayQueryTerm contexts plans rows subject receipts)) state
       (encoded (replayResultTerm (replayContextPath? (providerEnv rows) language plans subject receipts))) :=
@@ -1135,7 +1153,7 @@ theorem replay_returns (state : State) (language : LanguageDef)
 /-- Completed validation has exact answers, store and input/output observations. -/
 theorem validate_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) } =
       .complete after answers input output) ↔
@@ -1146,7 +1164,7 @@ theorem validate_completed_iff (state : State) (language : LanguageDef)
 
 theorem validate_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) }
       (.complete after answers input output) ↔
@@ -1158,7 +1176,7 @@ theorem validate_derivation_iff (state : State) (language : LanguageDef)
 theorem replay_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List PositionedReceipt) (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts plans rows subject receipts)) } =
       .complete after answers input output) ↔
@@ -1170,7 +1188,7 @@ theorem replay_completed_iff (state : State) (language : LanguageDef)
 theorem replay_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List PositionedReceipt) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts plans rows subject receipts)) }
       (.complete after answers input output) ↔
@@ -1183,7 +1201,7 @@ theorem replay_derivation_iff (state : State) (language : LanguageDef)
 exactly when it belongs to the canonical physical-site equation frontier. -/
 theorem validates_positioned_receipt_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : PositionedReceipt) (target : Pattern) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target])] [] []) ↔
@@ -1202,7 +1220,7 @@ physical receipt trace. Every intermediate subject is independently admitted. -/
 theorem replays_receipts_iff_route (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject target : PatternPlan) (receipts : List PositionedReceipt) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts plans rows subject receipts)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] []) ↔
@@ -1219,25 +1237,27 @@ theorem replays_receipts_iff_route (state : State) (language : LanguageDef)
 theorem validates_canonical_context_step (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (subject : PatternPlan) (receipt : PositionedReceipt) (target : Pattern)
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) (receipt : PositionedReceipt) (target : Pattern)
     (accepted : DeclarativeSpec.Runs program
-      { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts compiled.plans rows subject receipt)) }
+      { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject receipt)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target])] [] [])) :
     EquationContextStep (engineBasePremises (providerEnv rows)) language subject.erase target :=
   validated_positioned_step compiled subject receipt target
     ((validatePositionedReceipt?_iff _ _ _ _ _ _).mpr
-      ((validates_positioned_receipt_iff state language rows contexts compiled.plans subject receipt target).mp accepted))
+      ((validates_positioned_receipt_iff state language rows contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject receipt target).mp accepted))
 
 theorem replays_canonical_equivalence (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (subject target : PatternPlan) (receipts : List PositionedReceipt)
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (subject target : PatternPlan) (receipts : List PositionedReceipt)
     (accepted : DeclarativeSpec.Runs program
-      { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts compiled.plans rows subject receipts)) }
+      { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject receipts)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] [])) :
     EquationEquiv (engineBasePremises (providerEnv rows)) language subject.erase target.erase := by
-  obtain ⟨route, _⟩ := (replays_receipts_iff_route state language rows admitted contexts compiled.plans subject target receipts).mp accepted
+  obtain ⟨route, _⟩ := (replays_receipts_iff_route state language rows admitted contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject target receipts).mp accepted
   exact checkedRoute_equivalent compiled route
 
 /-- The context address and the complete atomic provenance remain independently
@@ -1364,7 +1384,7 @@ private theorem after_body_returns_of_replay {Event : Type}
     (kind : ContinuationKind)
     (eventTerm : Event → Term) (replay : PatternPlan → List Event → Option PatternPlan)
     (state : State) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (replayReturns : ∀ (caller : Subst) (subject : PatternPlan) (events : List Event) (arguments : List Atom),
       arguments.map (applySubst caller) =
         [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1468,7 +1488,7 @@ private theorem after_body_returns_of_replay {Event : Type}
 private theorem after_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (receipts : List PositionedReceipt) (results : List Pattern)
     (firstOrder : ∀ result ∈ results, isMatchCorrectAux result = true) :
     PureReturns program (environment .afterResults
@@ -1491,7 +1511,7 @@ by the directed executor's existing closure theorem at the call site. -/
 theorem after_results_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (receipts : List PositionedReceipt) (results : List Pattern)
     (firstOrder : ∀ result ∈ results, isMatchCorrectAux result = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
@@ -1505,7 +1525,7 @@ private theorem after_results_captured_returns_of_replay {Event : Type}
     (kind : ContinuationKind)
     (eventTerm : Event → Term) (replay : PatternPlan → List Event → Option PatternPlan)
     (caller : Subst) (state : State) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (replayReturns : ∀ (caller : Subst) (subject : PatternPlan) (events : List Event) (arguments : List Atom),
       arguments.map (applySubst caller) =
         [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -1544,7 +1564,7 @@ private theorem witnessed_body_returns_of_replay {Event : Type}
     (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy)
     (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1645,7 +1665,7 @@ private theorem witnessed_body_returns_of_replay {Event : Type}
 private theorem witnessed_body_returns (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy)
     (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1674,7 +1694,7 @@ composition. Equality certificates never create a directed rewrite permission. -
 theorem witnessed_reducts_captured_returns (caller : Subst) (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1704,7 +1724,7 @@ def witnessedQueryTerm (strategy : MeTTaILMatchAutomataExecution.Strategy) (lang
 theorem witnessed_reducts_returns (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1720,7 +1740,7 @@ theorem witnessed_reducts_returns (state : State)
 theorem witnessed_reducts_completed_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1739,7 +1759,7 @@ theorem witnessed_reducts_completed_iff (state : State)
 theorem witnessed_reducts_derivation_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1774,7 +1794,7 @@ forward receipts enumerate every symmetric canonical equation witness. -/
 theorem observes_witnessed_iff_routes (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1804,6 +1824,7 @@ theorem observes_witnessed_gslt_step (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
     (contexts fields : RewriteRule → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -1813,7 +1834,7 @@ theorem observes_witnessed_gslt_step (state : State)
       subject target before after) :
     (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv rows) language).Step subject.erase target.erase := by
   obtain ⟨redex, contractum, ⟨started, _⟩, directed, ⟨finished, _⟩⟩ :=
-    (observes_witnessed_iff_routes state strategy language types terms equationContexts contexts fields compiled.plans rows
+    (observes_witnessed_iff_routes state strategy language types terms equationContexts contexts fields (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows
       providerAdmitted viewAdmitted projected subject target before after).mp observed
   exact ⟨redex.erase, contractum.erase, checkedRoute_equivalent compiled started,
     directed, checkedRoute_equivalent compiled finished⟩
@@ -1858,7 +1879,7 @@ def signedReplayQueryTerm (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation �
 theorem validate_signed_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : SignedReceipt) :
     PureReturns program [] state (encoded (signedValidateQueryTerm contexts plans rows subject receipt)) state
       (encoded (replayResultTerm (validateSignedReceipt? (providerEnv rows) language plans subject receipt))) := by
@@ -1869,7 +1890,7 @@ theorem validate_signed_returns (state : State) (language : LanguageDef)
 theorem replay_signed_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List SignedReceipt) :
     PureReturns program [] state (encoded (signedReplayQueryTerm contexts plans rows subject receipts)) state
       (encoded (replayResultTerm (replaySignedPath? (providerEnv rows) language plans subject receipts))) := by
@@ -1880,7 +1901,7 @@ theorem replay_signed_returns (state : State) (language : LanguageDef)
 theorem validate_signed_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : SignedReceipt) (terminal : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (encoded (signedValidateQueryTerm contexts plans rows subject receipt)) } = .complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -1891,7 +1912,7 @@ theorem validate_signed_completed_iff (state : State) (language : LanguageDef)
 theorem validate_signed_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipt : SignedReceipt) (terminal : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedValidateQueryTerm contexts plans rows subject receipt)) } (.complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -1902,7 +1923,7 @@ theorem validate_signed_derivation_iff (state : State) (language : LanguageDef)
 theorem replay_signed_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List SignedReceipt) (terminal : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (encoded (signedReplayQueryTerm contexts plans rows subject receipts)) } = .complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -1913,7 +1934,7 @@ theorem replay_signed_completed_iff (state : State) (language : LanguageDef)
 theorem replay_signed_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject : PatternPlan) (receipts : List SignedReceipt) (terminal : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedReplayQueryTerm contexts plans rows subject receipts)) } (.complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -1926,7 +1947,7 @@ including its context, branch ordinals, bindings and both claimed targets. -/
 theorem validates_signed_receipt_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject target : PatternPlan) (receipt : SignedReceipt) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedValidateQueryTerm contexts plans rows subject receipt)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] []) ↔
@@ -1943,7 +1964,7 @@ ordered receipt trace, with actual admitted intermediate subjects. -/
 theorem replays_signed_receipts_iff_route (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (subject target : PatternPlan) (receipts : List SignedReceipt) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedReplayQueryTerm contexts plans rows subject receipts)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] []) ↔
@@ -1961,17 +1982,18 @@ theorem replays_signed_canonical_equivalence (state : State) (language : Languag
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (subject target : PatternPlan) (receipts : List SignedReceipt)
-    (accepted : DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedReplayQueryTerm contexts compiled.plans rows subject receipts)) }
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (subject target : PatternPlan) (receipts : List SignedReceipt)
+    (accepted : DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (signedReplayQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject receipts)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] [])) :
     EquationEquiv (engineBasePremises (providerEnv rows)) language subject.erase target.erase := by
-  obtain ⟨route, _⟩ := (replays_signed_receipts_iff_route state language rows admitted contexts compiled.plans subject target receipts).mp accepted
+  obtain ⟨route, _⟩ := (replays_signed_receipts_iff_route state language rows admitted contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject target receipts).mp accepted
   exact checkedSignedRoute_equivalent compiled route
 
 theorem after_signed_results_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (admitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : VariableEquationPlans)
     (receipts : List SignedReceipt) (results : List Pattern)
     (firstOrder : ∀ result ∈ results, isMatchCorrectAux result = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
@@ -1990,7 +2012,7 @@ theorem after_signed_results_captured_returns (caller : Subst) (state : State) (
 private theorem signed_witnessed_body_returns (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy)
     (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2017,7 +2039,7 @@ composition. Equality certificates never create a directed rewrite permission. -
 theorem signed_witnessed_reducts_captured_returns (caller : Subst) (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2047,7 +2069,7 @@ def signedWitnessedQueryTerm (strategy : MeTTaILMatchAutomataExecution.Strategy)
 theorem signed_witnessed_reducts_returns (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2063,7 +2085,7 @@ theorem signed_witnessed_reducts_returns (state : State)
 theorem signed_witnessed_reducts_completed_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2082,7 +2104,7 @@ theorem signed_witnessed_reducts_completed_iff (state : State)
 theorem signed_witnessed_reducts_derivation_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2118,7 +2140,7 @@ intermediate subjects and receipts. -/
 theorem observes_signed_witnessed_iff_routes (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2148,6 +2170,7 @@ theorem observes_signed_witnessed_gslt_step (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
     (contexts fields : RewriteRule → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2157,7 +2180,7 @@ theorem observes_signed_witnessed_gslt_step (state : State)
       subject target before after) :
     (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv rows) language).Step subject.erase target.erase := by
   obtain ⟨redex, contractum, ⟨started, _⟩, directed, ⟨finished, _⟩⟩ :=
-    (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields compiled.plans rows
+    (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows
       providerAdmitted viewAdmitted projected subject target before after).mp observed
   exact ⟨redex.erase, contractum.erase, checkedSignedRoute_equivalent compiled started,
     directed, checkedSignedRoute_equivalent compiled finished⟩
@@ -2179,7 +2202,7 @@ theorem positioned_receipt_returns (state : State) :
   simpa only [EquationExecution.Controls.provider_exact,
     MeTTaILFirstOrderEquationCompilation.Controls.positioned_receipt_accepted,
     MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_returns state language rows contexts compiled.plans pair firstPositioned
+    validate_returns state language rows contexts (variableEquationPlans compiled.plans (by decide +kernel)) pair firstPositioned
 
 theorem future_site_refused_returns (state : State) :
     PureReturns program [] state (encoded (validateQueryTerm contexts compiled.plans rows pair
@@ -2187,7 +2210,7 @@ theorem future_site_refused_returns (state : State) :
   simpa only [EquationExecution.Controls.provider_exact,
     MeTTaILFirstOrderEquationCompilation.Controls.positioned_future_site_refused,
     MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_returns state language rows contexts compiled.plans pair { firstPositioned with position := [2] }
+    validate_returns state language rows contexts (variableEquationPlans compiled.plans (by decide +kernel)) pair { firstPositioned with position := [2] }
 
 theorem wrong_sibling_refused_returns (state : State) :
     PureReturns program [] state (encoded (validateQueryTerm contexts compiled.plans rows pair
@@ -2196,7 +2219,7 @@ theorem wrong_sibling_refused_returns (state : State) :
   simpa only [EquationExecution.Controls.provider_exact,
     MeTTaILFirstOrderEquationCompilation.Controls.positioned_wrong_sibling_refused,
     MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_returns state language rows contexts compiled.plans pair
+    validate_returns state language rows contexts (variableEquationPlans compiled.plans (by decide +kernel)) pair
       { firstPositioned with target := (.application "pair" [.application "out" [atom "b"], atom "a"] : PatternPlan).erase }
 
 theorem two_step_path_returns (state : State) :
@@ -2206,22 +2229,22 @@ theorem two_step_path_returns (state : State) :
   simpa only [EquationExecution.Controls.provider_exact,
     MeTTaILFirstOrderEquationCompilation.Controls.checked_two_step_path,
     replayResultTerm, Option.map_some, MatchAutomataBindingExecution.patternOptionTerm] using
-    replay_returns state language rows literal_rows_admitted contexts compiled.plans pair [firstPositioned, secondPositioned]
+    replay_returns state language rows literal_rows_admitted contexts (variableEquationPlans compiled.plans (by decide +kernel)) pair [firstPositioned, secondPositioned]
 
 private theorem reversed_path_refused :
     replayContextPath? (providerEnv rows) language compiled.plans pair [secondPositioned, firstPositioned] = none := by
   have site : MeTTaILSubtermMatchAutomata.selectSite? pair [0] =
       some (.apply "pair" [] .hole [(atom "a").erase], atom "a") := by
     simp [MeTTaILSubtermMatchAutomata.selectSite?, pair, erasePatterns]
-  have localRead : validateReceipt? MeTTaILFirstOrderEquationCompilation.Controls.relations language compiled.plans
+  have localRead : validateReceipt? MeTTaILFirstOrderEquationCompilation.Controls.relations language (variableEquationPlans compiled.plans (by decide +kernel))
       (atom "a").erase (MeTTaILFirstOrderEquationCompilation.Controls.expected 0 2 "c") =
       some (.apply "out" [(atom "c").erase]) := by
     apply (validateReceipt?_iff _ _ _ _ _ _).mpr
     refine ⟨?_, rfl⟩
-    rw [show compiled.plans = [MeTTaILFirstOrderEquationCompilation.Controls.conditional] from rfl,
+    rw [show (variableEquationPlans compiled.plans (by decide +kernel)) = [MeTTaILFirstOrderEquationCompilation.Controls.conditional] from rfl,
       MeTTaILFirstOrderEquationCompilation.Controls.conditional_frontier]
     decide +kernel
-  have refused : validatePositionedReceipt? (providerEnv rows) language compiled.plans pair secondPositioned = none := by
+  have refused : validatePositionedReceipt? (providerEnv rows) language (variableEquationPlans compiled.plans (by decide +kernel)) pair secondPositioned = none := by
     rw [EquationExecution.Controls.provider_exact]
     simp only [validatePositionedReceipt?, secondPositioned, site, Option.bind_eq_bind, Option.bind_some, localRead]
     simp [Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleContext.fill, secondTarget,
@@ -2234,11 +2257,11 @@ theorem reversed_path_refused_returns (state : State) :
       (encoded (.symbol "None")) := by
   simpa only [reversed_path_refused, replayResultTerm, Option.map_none,
     MatchAutomataBindingExecution.patternOptionTerm] using
-    replay_returns state language rows literal_rows_admitted contexts compiled.plans pair [secondPositioned, firstPositioned]
+    replay_returns state language rows literal_rows_admitted contexts (variableEquationPlans compiled.plans (by decide +kernel)) pair [secondPositioned, firstPositioned]
 
 theorem two_step_path_derivation (state : State) :
     DeclarativeSpec.Runs program
-      { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts compiled.plans rows pair
+      { state := state, control := .evaluate [] (encoded (replayQueryTerm contexts (variableEquationPlans compiled.plans (by decide +kernel)) rows pair
         [firstPositioned, secondPositioned])) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern secondTarget.erase])] [] []) :=
   (pure_returns_derivation_iff program [] state state _ _ (two_step_path_returns state) state _ [] []).mpr
@@ -2246,7 +2269,7 @@ theorem two_step_path_derivation (state : State) :
 
 theorem two_step_path_equivalent (state : State) :
     EquationEquiv (engineBasePremises (providerEnv rows)) language pair.erase secondTarget.erase :=
-  replays_canonical_equivalence state language rows literal_rows_admitted contexts compiled pair secondTarget
+  replays_canonical_equivalence state language rows literal_rows_admitted contexts compiled (List.all_eq_true.mp (by decide +kernel)) pair secondTarget
     [firstPositioned, secondPositioned] (two_step_path_derivation state)
 
 private def groundPlan (name left right : String) : RulePlan :=
@@ -2276,7 +2299,7 @@ private theorem moduloProjected : ∀ rule ∈ moduloLanguage.rewrites,
 private theorem moduloBeforeChecked (language : LanguageDef) :
     validatePositionedReceipt? (providerEnv []) language moduloCompiled.plans (atom "a") moduloBefore =
       some (atom "b").erase := by
-  have atomic : validateReceipt? (providerEnv []) language moduloCompiled.plans (atom "a").erase
+  have atomic : validateReceipt? (providerEnv []) language (variableEquationPlans moduloCompiled.plans (by decide +kernel)) (atom "a").erase
       moduloBefore.atomic = some (atom "b").erase := by
     simp [validateReceipt?, validateRowReceipt?, moduloCompiled, moduloBefore, groundPlan, orientedPlan,
       atom, PatternPlan.erase, erasePatterns, PatternPlan.run, runPlans, replayPremises?,
@@ -2288,7 +2311,7 @@ private theorem moduloBeforeChecked (language : LanguageDef) :
 private theorem moduloAfterChecked (language : LanguageDef) :
     validatePositionedReceipt? (providerEnv []) language moduloCompiled.plans (atom "c") moduloAfter =
       some (atom "d").erase := by
-  have atomic : validateReceipt? (providerEnv []) language moduloCompiled.plans (atom "c").erase
+  have atomic : validateReceipt? (providerEnv []) language (variableEquationPlans moduloCompiled.plans (by decide +kernel)) (atom "c").erase
       moduloAfter.atomic = some (atom "d").erase := by
     simp [validateReceipt?, validateRowReceipt?, moduloCompiled, moduloAfter, groundPlan, orientedPlan,
       atom, PatternPlan.erase, erasePatterns, PatternPlan.run, runPlans, replayPremises?,
@@ -2327,13 +2350,13 @@ theorem modulo_duplicates_returns (state : State) (strategy : MeTTaILMatchAutoma
         moduloEqContexts moduloContexts moduloFields moduloCompiled.plans [] 1 (atom "a") [moduloBefore] [moduloAfter])) state
       (patternsValue [(atom "d").erase, (atom "d").erase]) := by
   simpa only [moduloFrontier] using witnessed_reducts_returns state strategy moduloLanguage
-    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
     moduloProviderAdmitted moduloViewAdmitted moduloProjected 1 (atom "a") [moduloBefore] [moduloAfter]
 
 theorem modulo_duplicates_derivation (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded
       (witnessedQueryTerm strategy moduloLanguage (.symbol "RetainedTypes") (.symbol "RetainedTerms")
-        moduloEqContexts moduloContexts moduloFields moduloCompiled.plans [] 1 (atom "a") [moduloBefore] [moduloAfter])) }
+        moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) [] 1 (atom "a") [moduloBefore] [moduloAfter])) }
       (.complete state [patternsValue [(atom "d").erase, (atom "d").erase]] [] []) :=
   (pure_returns_derivation_iff program [] state state _ _ (modulo_duplicates_returns state strategy) state _ [] []).mpr
     ⟨rfl, rfl, rfl, rfl⟩
@@ -2342,7 +2365,7 @@ theorem modulo_duplicates_gslt_step (state : State) (strategy : MeTTaILMatchAuto
     (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv []) moduloLanguage).Step
       (atom "a").erase (atom "d").erase :=
   observes_witnessed_gslt_step state strategy moduloLanguage (.symbol "RetainedTypes") (.symbol "RetainedTerms")
-    moduloEqContexts moduloContexts moduloFields moduloCompiled [] moduloProviderAdmitted moduloViewAdmitted moduloProjected
+    moduloEqContexts moduloContexts moduloFields moduloCompiled (List.all_eq_true.mp (by decide +kernel)) [] moduloProviderAdmitted moduloViewAdmitted moduloProjected
     (atom "a") (atom "d") [moduloBefore] [moduloAfter]
     ⟨1, [(atom "d").erase, (atom "d").erase], modulo_duplicates_derivation state strategy, by simp⟩
 
@@ -2351,20 +2374,20 @@ when the original presentation has no directed rows. -/
 theorem equation_only_does_not_authorize_reduction (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy) :
     PureReturns program [] state
       (encoded (witnessedQueryTerm strategy { moduloLanguage with rewrites := [] }
-        (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+        (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
         1 (atom "a") [moduloBefore] [])) state (patternsValue []) := by
   have admitted : ContextualRuleExecution.languageAdmitted (directedView { moduloLanguage with rewrites := [] }) = true := by
     decide +kernel
   have projected : ∀ rule ∈ ({ moduloLanguage with rewrites := [] } : LanguageDef).rewrites,
       ContextualRuleExecution.premisesTerm? rule.premises = some (moduloFields rule) := by simp
-  have actual : witnessedReducts strategy (providerEnv []) { moduloLanguage with rewrites := [] } moduloCompiled.plans
+  have actual : witnessedReducts strategy (providerEnv []) { moduloLanguage with rewrites := [] } (variableEquationPlans moduloCompiled.plans (by decide +kernel))
       1 (atom "a") [moduloBefore] [] = [] := by
     have empty : MeTTaILMatchAutomataExecution.runAt strategy (engineBasePremises (providerEnv []))
         (directedView { moduloLanguage with rewrites := [] }) 1 (atom "b") = [] :=
       MeTTaILFirstOrderContextualExecution.runAt_eq_nil_of_no_root_match strategy _ _ _ _ (by simp)
     simp only [witnessedReducts, witnessedFrontier, moduloBeforeReplayed, empty, afterPathResults, List.filterMap_nil]
   simpa only [actual] using witnessed_reducts_returns state strategy { moduloLanguage with rewrites := [] }
-    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
     moduloProviderAdmitted admitted projected 1 (atom "a") [moduloBefore] []
 
 
@@ -2391,7 +2414,7 @@ theorem checked_previous_returns (state : State) :
   simpa only [discard_provider_exact,
     MeTTaILFirstOrderEquationCompilation.Controls.checked_previous_recovers_discarded_variable,
     replayResultTerm, Option.map_some, MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts discardCompiled.plans
+    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
       (atom "b") (.inr (discardPredecessor, discardReceipt))
 
 theorem signed_roundtrip_returns (state : State) :
@@ -2400,12 +2423,12 @@ theorem signed_roundtrip_returns (state : State) :
       (encoded (.application "Some" [InferenceCettaWire.encodePattern discardPredecessor.erase])) := by
   simpa only [discard_provider_exact, MeTTaILFirstOrderEquationCompilation.Controls.signed_conditional_roundtrip,
     replayResultTerm, Option.map_some, MatchAutomataBindingExecution.patternOptionTerm] using
-    replay_signed_returns state discardLanguage discardRows discard_rows_admitted contexts discardCompiled.plans
+    replay_signed_returns state discardLanguage discardRows discard_rows_admitted contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
       discardPredecessor [.inl discardReceipt, .inr (discardPredecessor, discardReceipt)]
 
 theorem signed_roundtrip_derivation (state : State) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded
-      (signedReplayQueryTerm contexts discardCompiled.plans discardRows discardPredecessor
+      (signedReplayQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows discardPredecessor
         [.inl discardReceipt, .inr (discardPredecessor, discardReceipt)])) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern discardPredecessor.erase])] [] []) :=
   (pure_returns_derivation_iff program [] state state _ _ (signed_roundtrip_returns state) state _ [] []).mpr
@@ -2416,23 +2439,23 @@ theorem wrong_current_endpoint_refused_returns (state : State) :
       (atom "c") (.inr (discardPredecessor, discardReceipt)))) state (encoded (.symbol "None")) := by
   simpa only [discard_provider_exact, MeTTaILFirstOrderEquationCompilation.Controls.signed_wrong_current_endpoint_refused,
     replayResultTerm, Option.map_none, MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts discardCompiled.plans
+    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
       (atom "c") (.inr (discardPredecessor, discardReceipt))
 
 theorem forged_previous_refused_returns (state : State) :
     PureReturns program [] state (encoded (signedValidateQueryTerm contexts discardCompiled.plans discardRows
       (atom "b") (.inr (.application "drop" [atom "c", atom "b"], discardReceipt)))) state (encoded (.symbol "None")) := by
-  have refused : validateSignedReceipt? discardRelations discardLanguage discardCompiled.plans (atom "b")
+  have refused : validateSignedReceipt? discardRelations discardLanguage (variableEquationPlans discardCompiled.plans (by decide +kernel)) (atom "b")
       (.inr (.application "drop" [atom "c", atom "b"], discardReceipt)) = none :=
     MeTTaILFirstOrderEquationCompilation.Controls.signed_forged_predecessor_refused
   simpa only [discard_provider_exact, refused, replayResultTerm, Option.map_none,
     MatchAutomataBindingExecution.patternOptionTerm] using
-    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts discardCompiled.plans
+    validate_signed_returns state discardLanguage discardRows discard_rows_admitted contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
       (atom "b") (.inr (.application "drop" [atom "c", atom "b"], discardReceipt))
 
 theorem checked_previous_derivation (state : State) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded
-      (signedValidateQueryTerm contexts discardCompiled.plans discardRows (atom "b")
+      (signedValidateQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows (atom "b")
         (.inr (discardPredecessor, discardReceipt)))) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern discardPredecessor.erase])] [] []) :=
   (pure_returns_derivation_iff program [] state state _ _ (checked_previous_returns state) state _ [] []).mpr
@@ -2442,7 +2465,7 @@ theorem checked_previous_equivalent (state : State) :
     EquationEquiv (engineBasePremises (providerEnv discardRows)) discardLanguage
       (atom "b").erase discardPredecessor.erase :=
   validated_signed_equivalent discardCompiled _ _ _
-    ((validates_signed_receipt_iff state discardLanguage discardRows discard_rows_admitted contexts discardCompiled.plans
+    ((validates_signed_receipt_iff state discardLanguage discardRows discard_rows_admitted contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
       (atom "b") discardPredecessor (.inr (discardPredecessor, discardReceipt))).mp
       (checked_previous_derivation state))
 
@@ -2529,6 +2552,7 @@ theorem acquired_signed_route_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (viewAdmitted : (directedView language).isEquationFree = true)
     {subject target : PatternPlan}
     (path : Route (fun left right => PLift (Relation.SymmGen
@@ -2541,12 +2565,13 @@ theorem acquired_signed_route_returns (state : State) (language : LanguageDef)
   have same : actualReceipts = receipts := Option.some.inj (actualAcquired.symm.trans acquired)
   subst actualReceipts
   simpa only [replayed, replayResultTerm, MatchAutomataBindingExecution.patternOptionTerm, Option.map_some] using
-    replay_signed_returns state language rows providerAdmitted contexts compiled.plans subject receipts
+    replay_signed_returns state language rows providerAdmitted contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject receipts
 
 theorem acquired_signed_route_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (viewAdmitted : (directedView language).isEquationFree = true)
     {subject target : PatternPlan}
     (path : Route (fun left right => PLift (Relation.SymmGen
@@ -2555,13 +2580,13 @@ theorem acquired_signed_route_derivation_iff (state : State) (language : Languag
     (acquired : compileSignedRoute? (providerEnv rows) language compiled.plans path = some receipts)
     (terminal : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (CettaWireAtom.encode (signedReplayQueryTerm contexts compiled.plans rows subject receipts)) }
+      { state, control := .evaluate [] (CettaWireAtom.encode (signedReplayQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject receipts)) }
       (.complete terminal answers input output) ↔
       terminal = state ∧
       answers = [CettaWireAtom.encode (.application "Some" [InferenceCettaWire.encodePattern target.erase])] ∧
       input = [] ∧ output = [] :=
   pure_returns_derivation_iff program [] state state _ _
-    (acquired_signed_route_returns state language rows providerAdmitted contexts compiled viewAdmitted path receipts acquired)
+    (acquired_signed_route_returns state language rows providerAdmitted contexts compiled sourceViews viewAdmitted path receipts acquired)
     terminal answers input output
 
 /-- Completed source execution preserves and reflects independently authored
@@ -2570,9 +2595,10 @@ theorem replays_some_signed_receipts_iff_admitted_canonical_route (state : State
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (viewAdmitted : (directedView language).isEquationFree = true) (subject target : PatternPlan) :
     (∃ receipts, DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (CettaWireAtom.encode (signedReplayQueryTerm contexts compiled.plans rows subject receipts)) }
+      { state, control := .evaluate [] (CettaWireAtom.encode (signedReplayQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject receipts)) }
       (.complete state [CettaWireAtom.encode (.application "Some" [InferenceCettaWire.encodePattern target.erase])] [] [])) ↔
       ∃ path : Route (fun left right => PLift (Relation.SymmGen
         (EquationContextStep (engineBasePremises (providerEnv rows)) language) left right)) subject.erase target.erase,
@@ -2581,11 +2607,11 @@ theorem replays_some_signed_receipts_iff_admitted_canonical_route (state : State
   constructor
   · rintro ⟨receipts, run⟩
     obtain ⟨route, trace⟩ :=
-      (replays_signed_receipts_iff_route state language rows providerAdmitted contexts compiled.plans subject target receipts).mp run
+      (replays_signed_receipts_iff_route state language rows providerAdmitted contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject target receipts).mp run
     exact ⟨receipts, (replaySignedPath?_iff_route _ _ _ _ _ _).mpr ⟨route, trace⟩⟩
   · rintro ⟨receipts, accepted⟩
     exact ⟨receipts,
-      (replays_signed_receipts_iff_route state language rows providerAdmitted contexts compiled.plans subject target receipts).mpr
+      (replays_signed_receipts_iff_route state language rows providerAdmitted contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject target receipts).mpr
         ((replaySignedPath?_iff_route _ _ _ _ _ _).mp accepted)⟩
 
 /-- Actual equation-route replay around the original directed execution is
@@ -2595,6 +2621,7 @@ theorem observes_some_signed_witnessed_iff_admitted_canonical_routes (state : St
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term)
     (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -2614,7 +2641,7 @@ theorem observes_some_signed_witnessed_iff_admitted_canonical_routes (state : St
   constructor
   · rintro ⟨before, after, observed⟩
     obtain ⟨redex, contractum, started, directed, finished⟩ :=
-      (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields compiled.plans rows
+      (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows
         providerAdmitted viewAdmitted projected subject target before after).mp observed
     have startReplay := (replaySignedPath?_iff_route _ _ _ _ _ _).mpr started
     have finishReplay := (replaySignedPath?_iff_route _ _ _ _ _ _).mpr finished
@@ -2628,7 +2655,7 @@ theorem observes_some_signed_witnessed_iff_admitted_canonical_routes (state : St
     obtain ⟨after, finishReplay⟩ :=
       (replaySignedPath?_exists_iff_admitted_canonical_route compiled equationFree contractum target).mpr finished
     exact ⟨before, after,
-      (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields compiled.plans rows
+      (observes_signed_witnessed_iff_routes state strategy language types terms equationContexts contexts fields (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows
         providerAdmitted viewAdmitted projected subject target before after).mpr
           ⟨redex, contractum, (replaySignedPath?_iff_route _ _ _ _ _ _).mp startReplay, directed,
             (replaySignedPath?_iff_route _ _ _ _ _ _).mp finishReplay⟩⟩
@@ -2783,7 +2810,7 @@ private theorem frontier_matches_shape : (equation .frontierMatches).body = a "c
 
 private theorem frontier_matches_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan)
     (foundMatches : List MeTTaILSubtermMatchAutomata.BoundMatch) :
     PureReturns program (environment .frontierMatches [encoded (EquationExecution.equationsTerm contexts plans),
       rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase),
@@ -2858,7 +2885,7 @@ private theorem frontier_matches_body_returns (state : State) (language : Langua
                     (a "gslt:equation:root" [v "equations", v "rows", v "focus"]) state
                     (encoded (EquationExecution.receiptsTerm atomic)) := by
                   apply EquationContextExecutionProgram.retained_captured_returns (by decide +kernel)
-                  exact EquationExecution.root_captured_returns focusBound state language rows contexts plans site.2 _ _ _
+                  exact EquationExecution.root_captured_returns focusBound state language rows contexts plans.val plans.property site.2 _ _ _
                     (by simp [focusBound, tailBound, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
                 have lifted := lift_captured_returns atomicBound state found.location.position subject atomic
                   (v "position") (v "subject") (v "atomic")
@@ -2892,7 +2919,7 @@ private theorem frontier_matches_body_returns (state : State) (language : Langua
 matcher positions; every instance keeps its physical and query occurrence. -/
 theorem frontier_matches_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan)
     (foundMatches : List MeTTaILSubtermMatchAutomata.BoundMatch) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -2915,7 +2942,7 @@ private theorem frontier_shape : (equation .frontier).body = a "case"
 
 private theorem frontier_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) :
     PureReturns program (environment .frontier [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase)]) state (equation .frontier).body state
       (encoded (positionedReceiptsTerm (contextualReceipts (providerEnv rows) language plans subject))) := by
@@ -2957,7 +2984,7 @@ private theorem frontier_body_returns (state : State) (language : LanguageDef)
 frontier through the retained matcher and atomic instance compiler. -/
 theorem frontier_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (one two three : Atom)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase)]) :
     PureReturns program caller state (a "gslt:equation-context:frontier" [one, two, three]) state
@@ -3072,7 +3099,7 @@ private theorem signed_previous_template : PureData.Template program (a "Some" [
 
 private theorem find_signed_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject target : PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject target : PatternPlan) :
     PureReturns program (environment .findSigned [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase), encoded (InferenceCettaWire.encodePattern target.erase)]) state
       (equation .findSigned).body state
@@ -3170,7 +3197,7 @@ private theorem find_signed_body_returns (state : State) (language : LanguageDef
 an original oriented witness at the supplied predecessor before reversing it. -/
 theorem find_signed_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject target : PatternPlan) (one two three four : Atom)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject target : PatternPlan) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), encoded (InferenceCettaWire.encodePattern target.erase)]) :
@@ -3205,7 +3232,7 @@ private theorem acquire_result_template : PureData.Template program acquireResul
 
 private theorem acquire_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan) :
     PureReturns program (environment .acquirePath [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase), encoded (InferenceCettaWire.encodePatterns (erasePatterns endpoints))]) state
       (equation .acquirePath).body state
@@ -3287,7 +3314,7 @@ private theorem acquire_body_returns (state : State) (language : LanguageDef)
 canonical receipt acquisition, including a refused adjacency. -/
 theorem acquire_path_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -3308,14 +3335,14 @@ def acquirePathQueryTerm (contexts : Equation → Term) (plans : List RulePlan)
 
 theorem acquire_path_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan) :
     PureReturns program [] state (encoded (acquirePathQueryTerm contexts plans rows subject endpoints)) state
       (encoded (encodeOption signedReceiptsTerm (acquireSignedPath? (providerEnv rows) language plans subject endpoints))) :=
   acquire_path_captured_returns [] state language rows contexts plans subject endpoints _ _ _ _ (by simp)
 
 theorem acquire_path_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (terminal : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts plans rows subject endpoints)) } =
       .complete terminal answers input output) ↔
@@ -3326,7 +3353,7 @@ theorem acquire_path_completed_iff (state : State) (language : LanguageDef)
 
 theorem acquire_path_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (terminal : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts plans rows subject endpoints)) }
@@ -3340,7 +3367,7 @@ theorem acquire_path_derivation_iff (state : State) (language : LanguageDef)
 a target that some unrelated equation witness could have produced. -/
 theorem acquire_path_observes_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (receipts : List SignedReceipt) :
     DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts plans rows subject endpoints)) }
@@ -3366,9 +3393,10 @@ finite route judgment with the supplied, ordered intermediate endpoints. -/
 theorem acquire_path_observes_iff_canonical_route (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (viewAdmitted : (directedView language).isEquationFree = true) (subject : PatternPlan) (endpoints : List PatternPlan) :
     (∃ receipts : List SignedReceipt, DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts compiled.plans rows subject endpoints)) }
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject endpoints)) }
       (.complete state [encoded (.application "Some" [signedReceiptsTerm receipts])] [] [])) ↔
     ∃ target, ∃ path : Route (fun left right => PLift (Relation.SymmGen
       (EquationContextStep (engineBasePremises (providerEnv rows)) language) left.erase right.erase)) subject target,
@@ -3376,44 +3404,46 @@ theorem acquire_path_observes_iff_canonical_route (state : State) (language : La
   rw [← acquireSignedPath?_isSome_iff_route compiled viewAdmitted subject endpoints]
   constructor
   · rintro ⟨receipts, observed⟩
-    have acquired := (acquire_path_observes_iff state language rows contexts compiled.plans subject endpoints receipts).mp observed
+    have acquired := (acquire_path_observes_iff state language rows contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject endpoints receipts).mp observed
     simp only [acquired, Option.isSome_some]
   · intro supported
-    cases acquired : acquireSignedPath? (providerEnv rows) language compiled.plans subject endpoints with
+    cases acquired : acquireSignedPath? (providerEnv rows) language (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject endpoints with
     | none => simp only [acquired, Option.isSome_none, Bool.false_eq_true] at supported
     | some receipts => exact ⟨receipts,
-        (acquire_path_observes_iff state language rows contexts compiled.plans subject endpoints receipts).mpr acquired⟩
+        (acquire_path_observes_iff state language rows contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject endpoints receipts).mpr acquired⟩
 
 /-- A successful native acquisition has the original equation-equivalence
 meaning. Equality is never added to the directed rewrite permission list. -/
 theorem observed_acquisition_equivalent (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (endpoints : List PatternPlan) (receipts : List SignedReceipt)
     (observed : DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts compiled.plans rows subject endpoints)) }
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject endpoints)) }
       (.complete state [encoded (.application "Some" [signedReceiptsTerm receipts])] [] [])) :
     EquationEquiv (engineBasePremises (providerEnv rows)) language subject.erase
       (endpoints.foldl (fun _ next => next) subject).erase := by
-  have acquired := (acquire_path_observes_iff state language rows contexts compiled.plans subject endpoints receipts).mp observed
+  have acquired := (acquire_path_observes_iff state language rows contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject endpoints receipts).mp observed
   exact replaySignedPath?_sound compiled _ _ receipts
-    (acquireSignedPath?_replays (providerEnv rows) language compiled.plans subject endpoints receipts acquired)
+    (acquireSignedPath?_replays (providerEnv rows) language (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject endpoints receipts acquired)
 
 /-- Every canonical finite route in the admitted profile is acquired by the
 actual native program from its endpoint list and replays to its stated target. -/
 theorem native_canonical_route_acquisition (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Equation → Term) (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (viewAdmitted : (directedView language).isEquationFree = true) {subject target : PatternPlan}
     (path : Route (fun left right => PLift (Relation.SymmGen
       (EquationContextStep (engineBasePremises (providerEnv rows)) language) left.erase right.erase)) subject target) :
     ∃ receipts, DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts compiled.plans rows subject
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows subject
         (path.trace (fun {_source target} _ => target)))) }
       (.complete state [encoded (.application "Some" [signedReceiptsTerm receipts])] [] []) ∧
-      replaySignedPath? (providerEnv rows) language compiled.plans subject receipts = some target := by
+      replaySignedPath? (providerEnv rows) language (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject receipts = some target := by
   obtain ⟨receipts, acquired, replayed⟩ := compileSignedRoute?_complete compiled viewAdmitted path
-  exact ⟨receipts, (acquire_path_observes_iff state language rows contexts compiled.plans subject _ receipts).mpr acquired, replayed⟩
+  exact ⟨receipts, (acquire_path_observes_iff state language rows contexts (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) subject _ receipts).mpr acquired, replayed⟩
 
 #print axioms acquire_path_returns
 #print axioms acquire_path_completed_iff
@@ -3432,11 +3462,11 @@ open _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Con
 its independent canonical evidence was built from the second witness. -/
 theorem first_duplicate_acquired_derivation (state : State) :
     DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts compiled.plans rows
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (variableEquationPlans compiled.plans (by decide +kernel)) rows
         (atom "a") [Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.RepresentabilityControls.conditionalTarget])) }
       (.complete state [encoded (.application "Some" [signedReceiptsTerm
         [.inl ⟨[], MeTTaILFirstOrderEquationCompilation.Controls.expected 0 0 "b", Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.RepresentabilityControls.conditionalTarget.erase⟩]])] [] []) := by
-  apply (acquire_path_observes_iff state language rows contexts compiled.plans (atom "a")
+  apply (acquire_path_observes_iff state language rows contexts (variableEquationPlans compiled.plans (by decide +kernel)) (atom "a")
     [Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.RepresentabilityControls.conditionalTarget] _).mpr
   rw [EquationExecution.Controls.provider_exact]
   simpa only [compileSignedRoute?, Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.RepresentabilityControls.conditionalRoute, Route.trace] using
@@ -3446,10 +3476,10 @@ theorem first_duplicate_acquired_derivation (state : State) :
 cannot reconstruct. Native acquisition retains and validates that witness. -/
 theorem discarded_variable_roundtrip_acquired_derivation (state : State) :
     ∃ receipts, DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts discardCompiled.plans discardRows
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows
         discardPredecessor [atom "b", discardPredecessor])) }
       (.complete state [encoded (.application "Some" [signedReceiptsTerm receipts])] [] []) ∧
-      replaySignedPath? (providerEnv discardRows) discardLanguage discardCompiled.plans
+      replaySignedPath? (providerEnv discardRows) discardLanguage (variableEquationPlans discardCompiled.plans (by decide +kernel))
         discardPredecessor receipts = some discardPredecessor ∧ receipts.length = 2 := by
   have edge : EquationContextStep (engineBasePremises (providerEnv discardRows)) discardLanguage
       discardPredecessor.erase (atom "b").erase := by
@@ -3462,24 +3492,24 @@ theorem discarded_variable_roundtrip_acquired_derivation (state : State) :
     .cons ⟨Or.inl edge⟩ (.cons ⟨Or.inr edge⟩ (.refl _))
   have admitted : (directedView discardLanguage).isEquationFree = true := by decide +kernel
   obtain ⟨receipts, observed, replayed⟩ := native_canonical_route_acquisition state discardLanguage discardRows
-    contexts discardCompiled admitted path
+    contexts discardCompiled (List.all_eq_true.mp (by decide +kernel)) admitted path
   change DeclarativeSpec.Runs program
-    { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts discardCompiled.plans discardRows
+    { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows
       discardPredecessor [atom "b", discardPredecessor])) }
     (.complete state [encoded (.application "Some" [signedReceiptsTerm receipts])] [] []) at observed
-  have acquired := (acquire_path_observes_iff state discardLanguage discardRows contexts discardCompiled.plans
+  have acquired := (acquire_path_observes_iff state discardLanguage discardRows contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
     discardPredecessor [atom "b", discardPredecessor] receipts).mp observed
   exact ⟨receipts, observed, replayed, acquireSignedPath?_length (providerEnv discardRows) discardLanguage
-    discardCompiled.plans discardPredecessor [atom "b", discardPredecessor] receipts acquired⟩
+    (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardPredecessor [atom "b", discardPredecessor] receipts acquired⟩
 
 /-- Failure of one supplied adjacency refuses that path; it does not assert
 inequivalence of the endpoints. -/
 theorem absent_endpoint_acquisition_refused_derivation (state : State) :
     DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts discardCompiled.plans discardRows
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows
         (atom "b") [atom "c"])) }
       (.complete state [encoded (.symbol "None")] [] []) := by
-  apply (acquire_path_derivation_iff state discardLanguage discardRows contexts discardCompiled.plans
+  apply (acquire_path_derivation_iff state discardLanguage discardRows contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
     (atom "b") [atom "c"] _ _ _ _).mpr
   rw [discard_provider_exact]
   simp only [acquireSignedPath?,
@@ -3489,18 +3519,18 @@ theorem absent_endpoint_acquisition_refused_derivation (state : State) :
 /-- An accepted first edge does not authorize a later unsupported edge. -/
 theorem failed_later_endpoint_acquisition_refused_derivation (state : State) :
     DeclarativeSpec.Runs program
-      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts discardCompiled.plans discardRows
+      { state, control := .evaluate [] (encoded (acquirePathQueryTerm contexts (variableEquationPlans discardCompiled.plans (by decide +kernel)) discardRows
         discardPredecessor [atom "b", atom "c"])) }
       (.complete state [encoded (.symbol "None")] [] []) := by
-  apply (acquire_path_derivation_iff state discardLanguage discardRows contexts discardCompiled.plans
+  apply (acquire_path_derivation_iff state discardLanguage discardRows contexts (variableEquationPlans discardCompiled.plans (by decide +kernel))
     discardPredecessor [atom "b", atom "c"] _ _ _ _).mpr
   rw [discard_provider_exact]
-  have refused : acquireSignedPath? discardRelations discardLanguage discardCompiled.plans
+  have refused : acquireSignedPath? discardRelations discardLanguage (variableEquationPlans discardCompiled.plans (by decide +kernel))
       discardPredecessor [atom "b", atom "c"] = none := by
     simp only [acquireSignedPath?,
       MeTTaILFirstOrderEquationCompilation.RepresentabilityControls.absent_endpoint_refused,
       Option.bind_eq_bind, Option.bind_none]
-    cases findSignedReceipt? discardRelations discardLanguage discardCompiled.plans
+    cases findSignedReceipt? discardRelations discardLanguage (variableEquationPlans discardCompiled.plans (by decide +kernel))
       discardPredecessor (atom "b") <;> rfl
   simp only [refused, encodeOption, true_and]
 
@@ -3529,7 +3559,7 @@ private theorem acquired_replay_shape : (equation .acquiredReplay).body = a "cas
 private theorem acquired_replay_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan) :
     PureReturns program (environment .acquiredReplay
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows, encoded (endpointTerm subject),
         encoded (encodeList endpointTerm endpoints)]) state (equation .acquiredReplay).body state
@@ -3568,7 +3598,7 @@ refusal concerns that supplied endpoint trace, not global inequivalence. -/
 theorem acquired_replay_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows, encoded (endpointTerm subject),
@@ -3584,7 +3614,7 @@ executor's closure theorem in the combined source proof. -/
 theorem acquired_after_results_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (endpoints : List PatternPlan) (results : List Pattern)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (endpoints : List PatternPlan) (results : List Pattern)
     (firstOrder : ∀ result ∈ results, isMatchCorrectAux result = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [encoded (EquationExecution.equationsTerm contexts plans), rowsValue rows,
@@ -3602,7 +3632,7 @@ theorem acquired_after_results_captured_returns (caller : Subst) (state : State)
 
 private theorem acquired_witnessed_body_returns (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
-    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3629,7 +3659,7 @@ directed child firing. Every contractum is first-order by the proved executor,
 not by assuming the final endpoints represent all intermediate subjects. -/
 theorem acquired_witnessed_reducts_captured_returns (caller : Subst) (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
-    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3655,7 +3685,7 @@ def acquiredReplayQueryTerm (contexts : Equation → Term) (plans : List RulePla
 theorem acquired_replay_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan) :
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan) :
     PureReturns program [] state (encoded (acquiredReplayQueryTerm contexts plans rows subject endpoints)) state
       (encoded (replayResultTerm (acquireReplayPath? (providerEnv rows) language plans subject endpoints))) := by
   simpa only [acquiredReplayQueryTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany] using
@@ -3664,7 +3694,7 @@ theorem acquired_replay_returns (state : State) (language : LanguageDef)
 theorem acquired_replay_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (terminal : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (encoded (acquiredReplayQueryTerm contexts plans rows subject endpoints)) } = .complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -3675,7 +3705,7 @@ theorem acquired_replay_completed_iff (state : State) (language : LanguageDef)
 theorem acquired_replay_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
-    (contexts : Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (endpoints : List PatternPlan)
+    (contexts : Equation → Term) (plans : VariableEquationPlans) (subject : PatternPlan) (endpoints : List PatternPlan)
     (terminal : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded (acquiredReplayQueryTerm contexts plans rows subject endpoints)) } (.complete terminal answers input output) ↔
       terminal = state ∧ answers = [encoded (replayResultTerm
@@ -3694,7 +3724,7 @@ def acquiredWitnessedQueryTerm (strategy : MeTTaILMatchAutomataExecution.Strateg
 
 theorem acquired_witnessed_reducts_returns (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
-    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3709,7 +3739,7 @@ theorem acquired_witnessed_reducts_returns (state : State)
 
 theorem acquired_witnessed_reducts_completed_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
-    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3727,7 +3757,7 @@ theorem acquired_witnessed_reducts_completed_iff (state : State)
 
 theorem acquired_witnessed_reducts_derivation_iff (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
-    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : List RulePlan)
+    (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term) (plans : VariableEquationPlans)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3762,6 +3792,7 @@ theorem observes_acquired_witnessed_iff_canonical_routes (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term)
     (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3782,19 +3813,20 @@ theorem observes_acquired_witnessed_iff_canonical_routes (state : State)
   constructor
   · rintro ⟨depth, results, executed, member⟩
     have observation := (acquired_witnessed_reducts_derivation_iff state strategy language types terms equationContexts contexts fields
-      compiled.plans rows providerAdmitted viewAdmitted projected depth subject before after state [patternsValue results] [] []).mp executed
+      (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows providerAdmitted viewAdmitted projected depth subject before after state [patternsValue results] [] []).mp executed
     have sameWire := CettaWireAtom.encode_injective _ _ (List.cons.inj observation.2.1).1
     have same := InferenceCettaWire.encodePatterns_injective sameWire
     exact ⟨depth, by simpa only [same] using member⟩
   · rintro ⟨depth, member⟩
     exact ⟨depth, _, (acquired_witnessed_reducts_derivation_iff state strategy language types terms equationContexts contexts fields
-      compiled.plans rows providerAdmitted viewAdmitted projected depth subject before after state _ [] []).mpr
+      (⟨compiled.plans, sourceViews⟩ : VariableEquationPlans) rows providerAdmitted viewAdmitted projected depth subject before after state _ [] []).mpr
         ⟨rfl, rfl, rfl, rfl⟩, member⟩
 
 theorem observes_acquired_witnessed_gslt_step (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) (language : LanguageDef) (types terms : Term)
     (equationContexts : Equation → Term) (contexts fields : RewriteRule → Term)
     (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
     (viewAdmitted : ContextualRuleExecution.languageAdmitted (directedView language) = true)
@@ -3804,7 +3836,7 @@ theorem observes_acquired_witnessed_gslt_step (state : State)
       subject target before after) :
     (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv rows) language).Step subject.erase target.erase := by
   obtain ⟨redex, contractum, ⟨started, _⟩, directed, ⟨finished, _⟩⟩ :=
-    (observes_acquired_witnessed_iff_canonical_routes state strategy language types terms equationContexts contexts fields compiled rows
+    (observes_acquired_witnessed_iff_canonical_routes state strategy language types terms equationContexts contexts fields compiled sourceViews rows
       providerAdmitted viewAdmitted projected subject target before after).mp observed
   exact ⟨redex.erase, contractum.erase, canonicalRoute_equivalent started,
     directed, canonicalRoute_equivalent finished⟩
@@ -3855,10 +3887,10 @@ after actual native acquisition and replay of the two endpoint traces. -/
 theorem acquired_modulo_duplicates_derivation (state : State) (strategy : MeTTaILMatchAutomataExecution.Strategy) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded
       (acquiredWitnessedQueryTerm strategy moduloLanguage (.symbol "RetainedTypes") (.symbol "RetainedTerms")
-        moduloEqContexts moduloContexts moduloFields moduloCompiled.plans [] 1 (fixtureAtom "a") [fixtureAtom "b"] [fixtureAtom "d"])) }
+        moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) [] 1 (fixtureAtom "a") [fixtureAtom "b"] [fixtureAtom "d"])) }
       (.complete state [patternsValue [(fixtureAtom "d").erase, (fixtureAtom "d").erase]] [] []) := by
   rw [acquired_witnessed_reducts_derivation_iff state strategy moduloLanguage
-    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
     moduloProviderAdmitted moduloViewAdmitted moduloProjected 1 (fixtureAtom "a") [fixtureAtom "b"] [fixtureAtom "d"]]
   exact ⟨rfl, by rw [acquiredModuloFrontier], rfl, rfl⟩
 
@@ -3866,7 +3898,7 @@ theorem acquired_modulo_duplicates_gslt_step (state : State) (strategy : MeTTaIL
     (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv []) moduloLanguage).Step
       (fixtureAtom "a").erase (fixtureAtom "d").erase :=
   observes_acquired_witnessed_gslt_step state strategy moduloLanguage (.symbol "RetainedTypes") (.symbol "RetainedTerms")
-    moduloEqContexts moduloContexts moduloFields moduloCompiled [] moduloProviderAdmitted moduloViewAdmitted moduloProjected
+    moduloEqContexts moduloContexts moduloFields moduloCompiled (List.all_eq_true.mp (by decide +kernel)) [] moduloProviderAdmitted moduloViewAdmitted moduloProjected
     (fixtureAtom "a") (fixtureAtom "d") [fixtureAtom "b"] [fixtureAtom "d"]
     ⟨1, [(fixtureAtom "d").erase, (fixtureAtom "d").erase], acquired_modulo_duplicates_derivation state strategy, by simp⟩
 
@@ -3875,14 +3907,14 @@ presentation. The actual combined native entry completes with an empty list. -/
 theorem acquired_equation_only_does_not_authorize_reduction (state : State)
     (strategy : MeTTaILMatchAutomataExecution.Strategy) :
     PureReturns program [] state (encoded (acquiredWitnessedQueryTerm strategy { moduloLanguage with rewrites := [] }
-      (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+      (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
       1 (fixtureAtom "a") [fixtureAtom "b"] [])) state (patternsValue []) := by
   let noDirected : LanguageDef := { moduloLanguage with rewrites := [] }
-  let equations : EquationProgram noDirected.equations := ⟨moduloCompiled.plans, rfl⟩
+  let equations : EquationProgram noDirected.equations := ⟨(variableEquationPlans moduloCompiled.plans (by decide +kernel)), rfl⟩
   have admitted : ContextualRuleExecution.languageAdmitted (directedView noDirected) = true := by decide +kernel
   have projected : ∀ rule ∈ noDirected.rewrites,
       ContextualRuleExecution.premisesTerm? rule.premises = some (moduloFields rule) := by simp [noDirected]
-  have before : acquireReplayPath? (providerEnv []) noDirected moduloCompiled.plans (fixtureAtom "a") [fixtureAtom "b"] =
+  have before : acquireReplayPath? (providerEnv []) noDirected (variableEquationPlans moduloCompiled.plans (by decide +kernel)) (fixtureAtom "a") [fixtureAtom "b"] =
       some (fixtureAtom "b") := by
     apply (acquireReplayPath?_iff_canonical_route equations (by decide +kernel) (fixtureAtom "a") (fixtureAtom "b") [fixtureAtom "b"]).mpr
     exact ⟨.cons ⟨Or.inl (validated_positioned_step equations (fixtureAtom "a") moduloBefore (fixtureAtom "b").erase
@@ -3890,11 +3922,11 @@ theorem acquired_equation_only_does_not_authorize_reduction (state : State)
   have empty : MeTTaILMatchAutomataExecution.runAt strategy (engineBasePremises (providerEnv []))
       (directedView noDirected) 1 (fixtureAtom "b") = [] :=
     MeTTaILFirstOrderContextualExecution.runAt_eq_nil_of_no_root_match strategy _ _ _ _ (by simp [noDirected])
-  have actual : acquiredWitnessedReducts strategy (providerEnv []) noDirected moduloCompiled.plans
+  have actual : acquiredWitnessedReducts strategy (providerEnv []) noDirected (variableEquationPlans moduloCompiled.plans (by decide +kernel))
       1 (fixtureAtom "a") [fixtureAtom "b"] [] = [] := by
     simp only [acquiredWitnessedReducts, witnessedFrontier, before, empty, afterPathResults, List.filterMap_nil]
   simpa only [actual] using acquired_witnessed_reducts_returns state strategy noDirected
-    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields moduloCompiled.plans []
+    (.symbol "RetainedTypes") (.symbol "RetainedTerms") moduloEqContexts moduloContexts moduloFields (variableEquationPlans moduloCompiled.plans (by decide +kernel)) []
     moduloProviderAdmitted admitted projected 1 (fixtureAtom "a") [fixtureAtom "b"] []
 
 /-- The checked original predecessor supplies the discarded variable; the
@@ -3902,7 +3934,7 @@ native acquisition/replay continuation returns that exact predecessor after
 a two-edge conditional roundtrip. -/
 theorem acquired_discarded_variable_roundtrip_derivation (state : State) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (encoded
-      (acquiredReplayQueryTerm contexts _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled.plans discardRows _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor
+      (acquiredReplayQueryTerm contexts (variableEquationPlans _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled.plans (by decide +kernel)) discardRows _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor
         [fixtureAtom "b", _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor])) }
       (.complete state [encoded (.application "Some" [endpointTerm _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor])] [] []) := by
   have original := validated_positioned_step _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardReceipt (fixtureAtom "b").erase
@@ -3911,7 +3943,7 @@ theorem acquired_discarded_variable_roundtrip_derivation (state : State) :
       (EquationContextStep (engineBasePremises _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardRelations) _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardLanguage) left.erase right.erase))
       _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor :=
     .cons (middle := fixtureAtom "b") ⟨Or.inl original⟩ (.cons ⟨Or.inr original⟩ (.refl _))
-  have replayed : acquireReplayPath? _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardRelations _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardLanguage _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled.plans _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor
+  have replayed : acquireReplayPath? _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardRelations _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardLanguage (variableEquationPlans _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled.plans (by decide +kernel)) _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor
       [fixtureAtom "b", _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor] = some _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor :=
     (acquireReplayPath?_iff_canonical_route _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardCompiled (by decide +kernel) _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor
       [fixtureAtom "b", _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderEquationCompilation.Controls.discardPredecessor]).mpr ⟨path, rfl⟩

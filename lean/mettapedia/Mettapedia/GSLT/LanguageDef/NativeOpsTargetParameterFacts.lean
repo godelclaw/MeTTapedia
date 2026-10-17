@@ -322,6 +322,59 @@ theorem target_singleton_parameter_teardown {World : Type}
     (targetStoreCell state.memory storage 0 value) current.storage 0 current.nextLocal) } = state
   rw [sameStorage, extent, target_singleton_cell_released value fresh]
 
+/-- Lift a proved read-only body to full invocation. Parameter entry is the
+actual cell binder; teardown restores the complete caller state. The body may
+allocate private temporaries, but cannot extend the local-cell lifetime or
+change caller memory, effects or fault state. -/
+theorem target_singleton_readonly_function_exact {World : Type}
+    (interface : Interface) (heap : TargetHeapSemantics World) (calls : TargetCalls World)
+    (function : NativeIR.Function) (parameter : Parameter)
+    (parameters : function.header.parameters = [parameter])
+    (argument raw : TargetValue) (state : TargetState World)
+    (postFrame : Nat → TargetFrame)
+    (bodyExact : ∀ storage, targetFreshFrame state.memory storage →
+      ∀ out : TargetBlockOutcome World,
+      let bound := targetDeclareLocal (targetEmptyFrame storage) state
+        parameter.name parameter.type argument
+      TargetRun interface heap calls function.header.result function.body function.body
+        bound.1 bound.2 out ↔ out = ⟨.returned raw, postFrame storage, bound.2⟩)
+    (sameStorage : ∀ storage, (postFrame storage).storage = storage)
+    (extent : ∀ storage, (postFrame storage).nextLocal = 1)
+    (result : TargetRawResult World) :
+    TargetFunctionBody interface heap calls function [argument] state result ↔
+      (∃ storage, targetFreshFrame state.memory storage) ∧ result = ⟨raw, state⟩ := by
+  have teardown (storage : Nat) (fresh : targetFreshFrame state.memory storage) :=
+    target_singleton_parameter_teardown state storage parameter argument fresh
+      (postFrame storage) (sameStorage storage) (extent storage)
+  constructor
+  · intro ran
+    cases ran with
+    | @run storage frame bound out returnedValue fresh binding body returned =>
+      let declared := targetDeclareLocal (targetEmptyFrame storage) state
+        parameter.name parameter.type argument
+      have pair : (frame, bound) = declared := by
+        rw [parameters] at binding
+        exact (Option.some.inj binding).symm
+      have frameEq : frame = declared.1 := congrArg Prod.fst pair
+      have stateEq : bound = declared.2 := congrArg Prod.snd pair
+      subst frame
+      subst bound
+      have exactBody := (bodyExact storage fresh out).mp body
+      have rawEq := TargetFlow.returned.inj
+        (returned.symm.trans (congrArg TargetBlockOutcome.flow exactBody))
+      refine ⟨⟨storage, fresh⟩, ?_⟩
+      rw [rawEq, exactBody]
+      exact congrArg (TargetRawResult.mk raw) (teardown storage fresh)
+  · rintro ⟨⟨storage, fresh⟩, rfl⟩
+    let bound := targetDeclareLocal (targetEmptyFrame storage) state
+      parameter.name parameter.type argument
+    let out : TargetBlockOutcome World := ⟨.returned raw, postFrame storage, bound.2⟩
+    have body := (bodyExact storage fresh out).mpr rfl
+    have executed : TargetFunctionBody interface heap calls function [argument] state
+        ⟨raw, (targetLeaveScope (targetEmptyFrame storage) out.frame out.state).2⟩ :=
+      .run fresh (by rw [parameters]; rfl) body rfl
+    simpa only [out, bound, teardown storage fresh] using executed
+
 /-- Caller field transport commutes with all invocation parameter cells.
 Missing reads or writes remain missing; the law does not fill caller storage. -/
 theorem targetCopyFields_parameter_memory (source destination : Address)

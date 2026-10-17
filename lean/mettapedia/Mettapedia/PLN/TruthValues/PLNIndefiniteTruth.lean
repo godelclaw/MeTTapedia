@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 import Mettapedia.PLN.Evidence.EvidenceClass
 import Mettapedia.PLN.TruthValues.PLNConfidenceWeight
@@ -71,7 +71,7 @@ From `PLNIntuitionisticBridge.lean`:
 - BinaryEvidence forms separate Heyting algebra (product of chains)
 
 ### BinaryEvidence Quantale
-From `EvidenceQuantale.lean`:
+From `BinaryEvidence.lean`:
 - BinaryEvidence has quantale structure: tensor ⊗ and hplus ⊕
 - Credibility composes via quantale operations
 - **Separate from** interval arithmetic

@@ -19,6 +19,7 @@ import Mettapedia.Machines.BranchLocalNeed.LocalSteps
 import Mettapedia.Machines.BranchLocalNeed.ProtocolBridge
 import Mettapedia.Machines.BranchLocalNeed.ReferenceSemantics
 import Mettapedia.Machines.BranchLocalNeed.Representation
+import Mettapedia.Machines.BranchLocalNeed.RepresentationNativeTypes
 import Mettapedia.Machines.BranchLocalNeed.SharedContinuationInstance
 import Mettapedia.Machines.BranchLocalNeed.Worlds
 

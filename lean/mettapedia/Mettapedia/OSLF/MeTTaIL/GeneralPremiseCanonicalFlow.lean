@@ -78,6 +78,8 @@ theorem TracedQuery.canonical {environment : Environment} {context : Context}
     (before : CanonicalValues initial) : CanonicalValues final := by
   cases held with
   | row _ _ rowTyped arguments _ => exact arguments.readout.canonical before rowTyped.2.canonical
+  | dynamicRow _ _ _ _ _ rowTyped arguments _ =>
+      exact arguments.readout.canonical before rowTyped.2.canonical
 
 theorem RootFiring.target_canonical {environment : Environment} {bound : List TypeExpr}
     {type : TypeExpr} {source target : Pattern} {index : Nat}

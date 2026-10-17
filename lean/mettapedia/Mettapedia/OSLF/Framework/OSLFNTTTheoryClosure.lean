@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.OSLFNTTWMBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 import Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 

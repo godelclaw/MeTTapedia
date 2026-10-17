@@ -106,58 +106,6 @@ def layer : BootstrapLayer CheckingClaim 1 where
 
 end ReflexiveCell
 
-/-! ## Controls on the modus ponens package -/
 
-section Controls
-
-open Mettapedia.Languages.MeTTa.PrimeCandidates.MinimalCheckingPackage
-open Mettapedia.GSLT.LanguageDef.BootstrapCell.Calibration
-
-/-- The modus ponens cell as a reflexive cell. -/
-def modusPonensReflexiveCell : ReflexiveCell mpValidated where
-  profile := levelOne
-  upper := modusPonensCellValidated
-  rulesEq := modusPonensCell_rules
-
-def sourceSoundClaim (goal : Pattern) (certificate : RawProof) :
-    LowerContract CheckingClaim 1 where
-  targetLevel := ⟨0, by decide⟩
-  kind := .sourceSound
-  statement := (goal, certificate)
-
-/-- **Positive control.**  The level-one layer accepts the claim that the
-package derives `P(B)` with its certificate. -/
-theorem layer_accepts_modusPonens :
-    modusPonensReflexiveCell.layer.checker.check (sourceSoundClaim mpBGoal mpProofB)
-      (replayProof levelOne mpCache mpProofB) = true :=
-  modusPonensCell_accepts
-
-/-- **Negative control.**  No certificate makes the layer accept the wrong
-goal. -/
-theorem layer_rejects_wrong_goal (certificate : RawProof) :
-    modusPonensReflexiveCell.layer.checker.check (sourceSoundClaim mpWrongGoal mpProofB)
-      certificate = false := by
-  cases accepted : modusPonensReflexiveCell.layer.checker.check
-      (sourceSoundClaim mpWrongGoal mpProofB) certificate with
-  | false => rfl
-  | true =>
-      obtain ⟨_, derivation, erased⟩ :=
-        modusPonensReflexiveCell.checker_sound _ certificate accepted
-      have checked := checkRaw_erase derivation
-      change derivation.erase = mpProofB at erased
-      rw [erased] at checked
-      change checkRaw mpValidated mpWrongGoal mpProofB = true at checked
-      rw [mpWrongGoal_rejected] at checked
-      exact absurd checked Bool.false_ne_true
-
-/-- **Negative control.**  The replay layer cannot certify a model-soundness
-claim, even about a fact it accepts. -/
-theorem layer_rejects_modelSound (certificate : RawProof) :
-    modusPonensReflexiveCell.layer.checker.check
-      { targetLevel := ⟨0, by decide⟩, kind := .modelSound, statement := (mpBGoal, mpProofB) }
-      certificate = false :=
-  modusPonensReflexiveCell.other_kind_rejected _ (by decide) certificate
-
-end Controls
 
 end Mettapedia.GSLT.LanguageDef.BootstrapCell

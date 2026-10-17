@@ -33,6 +33,12 @@ import Mettapedia.Languages.ProcessCalculi.MORK.MM2RuleScopedReloadCanary
 import Mettapedia.Languages.ProcessCalculi.MORK.ProviderExtension
 import Mettapedia.Languages.ProcessCalculi.MORK.MeTTaZeroBoundary
 import Mettapedia.Languages.ProcessCalculi.MORK.OccurrenceSeam
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2Expressiveness
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2MainlineProviders
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2MainlineReference
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2FunctionCalls
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2CallLocality
+import Mettapedia.Languages.ProcessCalculi.MORK.MM2SupportKernelBridge
 
 /-!
 # MORK: Minimal Model 2 (MM2) Formalization
@@ -40,6 +46,22 @@ import Mettapedia.Languages.ProcessCalculi.MORK.OccurrenceSeam
 MORK (MM2 Object-Relational Kernel) is the execution substrate for MeTTa-Compiler.
 This module formalises MORK's execution semantics and proves its structural
 correspondence with the MQ-calculus COMM rule.
+
+## Two models
+
+* **The kernel** is `Mainline` (`MM2MainlineProviders`): every sink and source of the
+  default build, unification against stored atoms, `+` instances written before the
+  other sinks, and the kernel's faults.  It is checked against the MORK binary by the
+  differential harness (`MM2MainlineReference`).
+* **The support model** is everything built on `Space`, `WorkQueueExec`,
+  `MM2RuleScopedExecution` and their consumers: one-way matching, sinks finalized in
+  authored order, ground instances only.  Where those modules say "MM2" they mean this
+  model.  On comma conjunctions with `+` and `-` sinks it fires as the kernel does when
+  every stored atom a pattern can reach is ground and every `+` sink precedes every `-`
+  sink (`MM2SupportKernelBridge.fireDirective_eq_ruleScoped_ground`); the queue of
+  `WorkQueueExec` also needs ground instances, since it drops the others.
+* The three-phase protocol (`ThreePhaseExec`, `MORKCommBridge`) is authored on top of
+  MM2; its non-deterministic fold is a property of the abstraction, not of a kernel run.
 
 ## Structure
 
@@ -51,7 +73,7 @@ MORK/
   WorkQueueOrder.lean      — Exact full compact-expression scheduler key
   WorkQueueExec.lean       — Compatible/source-aware queues, explicit failure policy, exact fuel
   ThreePhaseRefinement.lean — Hosted phase steps → work-queue firing under hypotheses
-  Conformance.lean         — 27 kernel-checked conformance + correspondence theorems
+  Conformance.lean         — Support-model evaluator, recorded `mork run` outputs, correspondence theorems
   ArithmeticExtension.lean — Int/float sink lowering + `CmpSource` packaging
   BridgeWorkspaceInterfaceRefinement.lean — Live insert/match/step workspace interface
   BridgeCursorInterfaceRefinement.lean — Bridge cursor API ↔ PathMap cursor semantics
@@ -67,15 +89,21 @@ MORK/
   GSLTNativeTypes.lean — OSLF/CertificateGSLT native judgments generated from the family
   ProviderExtension.lean — Authored source/sink interfaces and realization laws
   MeTTaZeroBoundary.lean — Internal work-closure separation from bare Zero
+  MM2Expressiveness.lean — What MM2 cannot express locally (synchronous call, absence; reflection); a reserved band returns in time
+  MM2MainlineProviders.lean — Every sink and source form of the kernel, with its order of effects (eager adds), unification against stored atoms, faults and feature gating
+  MM2MainlineReference.lean — The kernel's text format and reference primitives for comparing the model with the kernel binary; kernel probes as fixtures
+  MM2FunctionCalls.lean — Call sinks and call factors with providers defined by MeTTaIL languages; conservativity, bind, gated reflection
+  MM2CallLocality.lean — Synchronous call is not locally eliminable in the kernel (reports in every window context); relocation closes the window
+  MM2SupportKernelBridge.lean — On ground stored atoms, the kernel fires comma conjunctions with adds before removes exactly as the support model does
 ```
 
 ## Key Results
 
 - `phase_ranges_disjoint`: unfold/base/fold priority bands are mutually disjoint
 - `phase_priority_monotone`: priorities are ordered unfold < base < fold
-- `mork_fold_is_comm`: any binary MORK fold step corresponds to a MQ CommReduction
-- `mork_fold_both_outcomes_exist`: MORK fold is non-deterministic (both sub-results possible)
-- `mork_mq_nondeterminism_corresponds`: MORK non-determinism ↔ MQ comm_both_outcomes
+- `mork_fold_is_comm`: any binary fold step of the authored protocol corresponds to a MQ CommReduction
+- `mork_fold_both_outcomes_exist`: the protocol's fold admits both sub-results (abstraction)
+- `mork_mq_nondeterminism_corresponds`: protocol non-determinism ↔ MQ comm_both_outcomes
 - `applyBase_eq_lattice_ops`: MORK base step = PathMap psubtract + pjoin
 - `applyFold_eq_lattice_ops`: MORK fold step = PathMap psubtract chain + pjoin
 - `applySubst_commutes`: MORK applySubst commutes with morkPatternToAtom

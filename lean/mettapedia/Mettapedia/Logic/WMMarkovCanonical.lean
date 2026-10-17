@@ -1,5 +1,5 @@
 import Mettapedia.Logic.WMMarkov
-import Mettapedia.PLN.WorldModel.WorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-!
 # Canonical Markov WM Endpoints

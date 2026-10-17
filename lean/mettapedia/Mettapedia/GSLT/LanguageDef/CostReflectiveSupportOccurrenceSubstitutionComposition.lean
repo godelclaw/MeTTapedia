@@ -606,20 +606,20 @@ private def occurrenceCanaryAssignment (language : LanguageDef)
       exact .lambda (.fvar (by simp [occurrenceCanaryTargetFree]))
     · simp [occurrenceCanarySourceFree, selected] at lookup
 
-private def occurrenceCanarySourceTyped (language : LanguageDef)
+private theorem occurrenceCanarySourceTyped (language : LanguageDef)
     (valueType : TypeExpr) :
     HasType language (occurrenceCanarySourceFree valueType) []
       (.fvar "source") (.arrow valueType valueType) :=
   .fvar (occurrenceCanarySourceLookup valueType)
 
-private def occurrenceCanarySourceSafe (profile : ReflectionProfile)
+private theorem occurrenceCanarySourceSafe (profile : ReflectionProfile)
     (language : LanguageDef) (valueType : TypeExpr) :
     (occurrenceCanarySourceTyped language valueType).ReflectiveSupportSafeAt
       profile occurrenceCanaryInputSupport [] id :=
   .fvar (by simp [occurrenceCanarySourceFree]) []
     ⟨[], by simp [occurrenceCanaryInputSupport]⟩
 
-private def occurrenceCanaryAligned (profile : ReflectionProfile)
+private theorem occurrenceCanaryAligned (profile : ReflectionProfile)
     (language : LanguageDef) (valueType : TypeExpr) :
     ReflectiveSupportSubstitutionAlignedAt occurrenceCanaryTypingSupport
       (occurrenceCanarySourceSafe profile language valueType) :=

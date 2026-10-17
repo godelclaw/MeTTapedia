@@ -2452,7 +2452,7 @@ theorem predicateNearOneMassInf_counting_eq_nearOneFraction
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) : ℝ) =
       nearOneFraction params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  nearOneMassInf_counting_eq_nearOneFractionFin
+  nearOneMassInf_counting_eq_nearOneFraction
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)
@@ -2472,7 +2472,7 @@ theorem predicateNearZeroMassInf_counting_eq_nearZeroFraction
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) : ℝ) =
       nearZeroFraction params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  nearZeroMassInf_counting_eq_nearZeroFractionFin
+  nearZeroMassInf_counting_eq_nearZeroFraction
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)
@@ -2492,7 +2492,7 @@ theorem predicateFuzzyExistsScoreInf_counting_eq_fuzzyExistsScore
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) : ℝ) =
       fuzzyExistsScore params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  fuzzyExistsScoreInf_counting_eq_fuzzyExistsScoreFin
+  fuzzyExistsScoreInf_counting_eq_fuzzyExistsScore
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)
@@ -2512,7 +2512,7 @@ theorem predicateFuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHolds
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) ↔
       fuzzyIntervalHolds params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  fuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHoldsFin
+  fuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHolds
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)
@@ -2532,7 +2532,7 @@ theorem predicateFuzzyForAllHoldsInf_counting_iff_fuzzyForAllHolds
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) ↔
       fuzzyForAllHolds params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  fuzzyForAllHoldsInf_counting_iff_fuzzyForAllHoldsFin
+  fuzzyForAllHoldsInf_counting_iff_fuzzyForAllHolds
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)
@@ -2552,7 +2552,7 @@ theorem predicateFuzzyThereExistsHoldsInf_counting_iff_fuzzyThereExistsHolds
         (predicateCrispProfileInf (Base := Base) (Const := Const) M σ p) ↔
       fuzzyThereExistsHolds params
         (predicateCrispProfile (Base := Base) (Const := Const) M σ p) :=
-  fuzzyThereExistsHoldsInf_counting_iff_fuzzyThereExistsHoldsFin
+  fuzzyThereExistsHoldsInf_counting_iff_fuzzyThereExistsHolds
     params
     (predicateCrispProfile (Base := Base) (Const := Const) M σ p)
     (predicateCrispProfile_mem_unit (Base := Base) (Const := Const) M σ p)

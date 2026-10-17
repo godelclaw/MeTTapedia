@@ -984,17 +984,21 @@ set_option backward.isDefEq.lazyWhnfCore false
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 
-@[implicit_reducible] noncomputable def truthModel
+@[reducible] noncomputable def truthModel
     (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
     HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
     (ConstantAdmission.sourceMeanings Source.truthResult M)
 
-@[implicit_reducible] noncomputable def conjunctionModel
+@[reducible] noncomputable def conjunctionModel
     (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
     HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.conjunctionResult (truthModel M))
+    (ConstantAdmission.standardSourceMeanings Source.conjunctionResult M.Carrier (truthModel M).constDen)
+
+@[simp] theorem truthModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (truthModel M).Carrier = M.Carrier := rfl
 
 theorem truthModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (_full : M.FullDomains) : (truthModel M).FullDomains :=
@@ -1012,6 +1016,10 @@ theorem truthModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
   have body := truth_extension M full
   exact body.trans (raw_truth_denote M _)
 
+@[simp] theorem conjunctionModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (conjunctionModel M).Carrier = M.Carrier := rfl
+
 theorem conjunctionModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (_full : M.FullDomains) : (conjunctionModel M).FullDomains :=
   HOL.HenkinModel.fullDomains_standard _ _
@@ -1019,9 +1027,8 @@ theorem conjunctionModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
 theorem conjunctionModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains) :
     conjunctionModel M = ConstantAdmission.sourceExtension Source.conjunctionResult (truthModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.conjunctionResult (truthModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (truthModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.conjunctionResult (truthModel M)
+    (truthModel_fullDomains M full)
 
 theorem conjunctionModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains) : (conjunctionModel M).constDen Symbols.truth = ULift.up True := by
@@ -1043,9 +1050,13 @@ theorem conjunctionModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
   exact raw_conjunction_denote (truthModel M) (truthModel_fullDomains M full) (truthModel_truth M full)
     _ left right
 
-@[implicit_reducible] noncomputable def implicationModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def implicationModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.implicationResult (conjunctionModel M))
+    (ConstantAdmission.standardSourceMeanings Source.implicationResult M.Carrier (conjunctionModel M).constDen)
+
+@[simp] theorem implicationModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (implicationModel M).Carrier = M.Carrier := rfl
 
 theorem implicationModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (implicationModel M).FullDomains :=
@@ -1053,9 +1064,8 @@ theorem implicationModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
 
 theorem implicationModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     implicationModel M = ConstantAdmission.sourceExtension Source.implicationResult (conjunctionModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.implicationResult (conjunctionModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (conjunctionModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.implicationResult (conjunctionModel M)
+    (conjunctionModel_fullDomains M full)
 
 theorem implicationModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1066,8 +1076,8 @@ theorem implicationModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbo
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.implicationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.implicationResult (conjunctionModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.implicationResult M.Carrier (conjunctionModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1083,8 +1093,8 @@ theorem implicationModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.implicationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.implicationResult (conjunctionModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.implicationResult M.Carrier (conjunctionModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1095,14 +1105,25 @@ theorem implicationModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
     (full : M.FullDomains)  (left right : HOL.Ty.denote M.Carrier .prop) :
     (implicationModel M).constDen (Symbols.implication) left right =
       ULift.up (left.down → right.down) := by
+  change ConstantAdmission.standardSourceMeanings Source.implicationResult M.Carrier
+    (conjunctionModel M).constDen Symbols.implication left right = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.implicationResult M.Carrier
+      (conjunctionModel M).constDen = @ConstantAdmission.sourceMeanings Source.implicationResult (conjunctionModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.implicationResult (conjunctionModel M)
+      (conjunctionModel_fullDomains M full)
+  rw [meanings]
   have body := implication_extension (conjunctionModel M)
     (conjunctionModel_fullDomains M full)
   refine (congrFun (congrFun (body) left) right).trans ?_
   exact raw_implication_denote (conjunctionModel M) (conjunctionModel_conjunction M full) (fun index => nomatch index) left right
 
-@[implicit_reducible] noncomputable def universalModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def universalModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.universalResult (implicationModel M))
+    (ConstantAdmission.standardSourceMeanings Source.universalResult M.Carrier (implicationModel M).constDen)
+
+@[simp] theorem universalModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (universalModel M).Carrier = M.Carrier := rfl
 
 theorem universalModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (universalModel M).FullDomains :=
@@ -1110,9 +1131,8 @@ theorem universalModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy S
 
 theorem universalModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     universalModel M = ConstantAdmission.sourceExtension Source.universalResult (implicationModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.universalResult (implicationModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (implicationModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.universalResult (implicationModel M)
+    (implicationModel_fullDomains M full)
 
 theorem universalModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1123,8 +1143,8 @@ theorem universalModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.universalConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.universalResult (implicationModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.universalResult M.Carrier (implicationModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1140,8 +1160,8 @@ theorem universalModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy S
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.universalConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.universalResult (implicationModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.universalResult M.Carrier (implicationModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1157,8 +1177,8 @@ theorem universalModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy S
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.universalConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.universalResult (implicationModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.universalResult M.Carrier (implicationModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1169,17 +1189,29 @@ theorem universalModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sym
     (full : M.FullDomains) (operand : HOL.Ty AtomicTy) (predicate : HOL.Ty.denote M.Carrier (operand.arr .prop)) :
     (universalModel M).constDen (Symbols.universal operand) predicate =
       ULift.up (∀ value, M.adm operand value → (predicate value).down) := by
+  change ConstantAdmission.standardSourceMeanings Source.universalResult M.Carrier
+    (implicationModel M).constDen (Symbols.universal operand) predicate = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.universalResult M.Carrier
+      (implicationModel M).constDen = @ConstantAdmission.sourceMeanings Source.universalResult (implicationModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.universalResult (implicationModel M)
+      (implicationModel_fullDomains M full)
+  rw [meanings]
   have inheritedDomains : ∀ type value, (implicationModel M).adm type value ↔ M.adm type value :=
     fun type value => ⟨fun _ => full type value, fun _ => implicationModel_fullDomains M full type value⟩
   have body := universal_extension (implicationModel M)
     (implicationModel_fullDomains M full) operand
   refine (congrFun (body) predicate).trans ?_
   have rawMeaning := raw_universal_denote (implicationModel M) (implicationModel_truth M full) operand (fun index => nomatch index) predicate
-  simpa only [inheritedDomains] using rawMeaning
+  simpa only [inheritedDomains, implicationModel_carrier,
+    ConstantAdmission.sourceExtension_carrier] using rawMeaning
 
-@[implicit_reducible] noncomputable def existentialModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def existentialModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.existentialResult (universalModel M))
+    (ConstantAdmission.standardSourceMeanings Source.existentialResult M.Carrier (universalModel M).constDen)
+
+@[simp] theorem existentialModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (existentialModel M).Carrier = M.Carrier := rfl
 
 theorem existentialModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (existentialModel M).FullDomains :=
@@ -1187,9 +1219,8 @@ theorem existentialModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
 
 theorem existentialModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     existentialModel M = ConstantAdmission.sourceExtension Source.existentialResult (universalModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.existentialResult (universalModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (universalModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.existentialResult (universalModel M)
+    (universalModel_fullDomains M full)
 
 theorem existentialModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1200,8 +1231,8 @@ theorem existentialModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbo
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.existentialConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.existentialResult (universalModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.existentialResult M.Carrier (universalModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1217,8 +1248,8 @@ theorem existentialModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.existentialConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.existentialResult (universalModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.existentialResult M.Carrier (universalModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1234,8 +1265,8 @@ theorem existentialModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.existentialConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.existentialResult (universalModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.existentialResult M.Carrier (universalModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1251,8 +1282,8 @@ theorem existentialModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy S
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.universalConstant, Source.existentialConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.existentialResult (universalModel M) Source.universalConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.existentialResult M.Carrier (universalModel M).constDen Source.universalConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1263,6 +1294,13 @@ theorem existentialModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
     (full : M.FullDomains) (operand : HOL.Ty AtomicTy) (predicate : HOL.Ty.denote M.Carrier (operand.arr .prop)) :
     (existentialModel M).constDen (Symbols.existential operand) predicate =
       ULift.up (∃ value, M.adm operand value ∧ (predicate value).down) := by
+  change ConstantAdmission.standardSourceMeanings Source.existentialResult M.Carrier
+    (universalModel M).constDen (Symbols.existential operand) predicate = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.existentialResult M.Carrier
+      (universalModel M).constDen = @ConstantAdmission.sourceMeanings Source.existentialResult (universalModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.existentialResult (universalModel M)
+      (universalModel_fullDomains M full)
+  rw [meanings]
   have inheritedDomains : ∀ type value, (universalModel M).adm type value ↔ M.adm type value :=
     fun type value => ⟨fun _ => full type value, fun _ => universalModel_fullDomains M full type value⟩
   have universalMeaning : ∀ (type : HOL.Ty AtomicTy)
@@ -1270,16 +1308,21 @@ theorem existentialModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy
       (universalModel M).constDen (Symbols.universal type) predicate =
         ULift.up (∀ value, (universalModel M).adm type value → (predicate value).down) := by
     intro type predicate
-    simpa only [inheritedDomains] using universalModel_universal M full type predicate
+    simpa only [inheritedDomains, universalModel_carrier] using universalModel_universal M full type predicate
   have body := existential_extension (universalModel M)
     (universalModel_fullDomains M full) operand
   refine (congrFun (body) predicate).trans ?_
   have rawMeaning := raw_existential_denote (universalModel M) (universalModel_fullDomains M full) universalMeaning (universalModel_implication M full) operand (fun index => nomatch index) predicate
-  simpa only [inheritedDomains] using rawMeaning
+  simpa only [inheritedDomains, universalModel_carrier,
+    ConstantAdmission.sourceExtension_carrier] using rawMeaning
 
-@[implicit_reducible] noncomputable def falsityModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def falsityModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.falsityResult (existentialModel M))
+    (ConstantAdmission.standardSourceMeanings Source.falsityResult M.Carrier (existentialModel M).constDen)
+
+@[simp] theorem falsityModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (falsityModel M).Carrier = M.Carrier := rfl
 
 theorem falsityModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (falsityModel M).FullDomains :=
@@ -1287,9 +1330,8 @@ theorem falsityModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sym
 
 theorem falsityModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     falsityModel M = ConstantAdmission.sourceExtension Source.falsityResult (existentialModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.falsityResult (existentialModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (existentialModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.falsityResult (existentialModel M)
+    (existentialModel_fullDomains M full)
 
 theorem falsityModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1300,8 +1342,8 @@ theorem falsityModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.falsityConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.falsityResult (existentialModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.falsityResult M.Carrier (existentialModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1317,8 +1359,8 @@ theorem falsityModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sym
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.falsityConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.falsityResult (existentialModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.falsityResult M.Carrier (existentialModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1334,8 +1376,8 @@ theorem falsityModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sym
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.falsityConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.falsityResult (existentialModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.falsityResult M.Carrier (existentialModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1351,8 +1393,8 @@ theorem falsityModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbo
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.universalConstant, Source.falsityConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.falsityResult (existentialModel M) Source.universalConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.falsityResult M.Carrier (existentialModel M).constDen Source.universalConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1368,8 +1410,8 @@ theorem falsityModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sym
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.existentialConstant, Source.falsityConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.falsityResult (existentialModel M) Source.existentialConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.falsityResult M.Carrier (existentialModel M).constDen Source.existentialConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1380,6 +1422,13 @@ theorem falsityModel_falsity (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
     (falsityModel M).constDen (Symbols.falsity) =
       ULift.up False := by
+  change ConstantAdmission.standardSourceMeanings Source.falsityResult M.Carrier
+    (existentialModel M).constDen Symbols.falsity = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.falsityResult M.Carrier
+      (existentialModel M).constDen = @ConstantAdmission.sourceMeanings Source.falsityResult (existentialModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.falsityResult (existentialModel M)
+      (existentialModel_fullDomains M full)
+  rw [meanings]
   have inheritedDomains : ∀ type value, (existentialModel M).adm type value ↔ M.adm type value :=
     fun type value => ⟨fun _ => full type value, fun _ => existentialModel_fullDomains M full type value⟩
   have universalMeaning : ∀ (type : HOL.Ty AtomicTy)
@@ -1387,15 +1436,19 @@ theorem falsityModel_falsity (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
       (existentialModel M).constDen (Symbols.universal type) predicate =
         ULift.up (∀ value, (existentialModel M).adm type value → (predicate value).down) := by
     intro type predicate
-    simpa only [inheritedDomains] using existentialModel_universal M full type predicate
+    simpa only [inheritedDomains, existentialModel_carrier] using existentialModel_universal M full type predicate
   have body := falsity_extension (existentialModel M)
     (existentialModel_fullDomains M full)
   refine (body).trans ?_
   exact raw_falsity_denote (existentialModel M) universalMeaning (fun index => nomatch index)
 
-@[implicit_reducible] noncomputable def negationModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def negationModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.negationResult (falsityModel M))
+    (ConstantAdmission.standardSourceMeanings Source.negationResult M.Carrier (falsityModel M).constDen)
+
+@[simp] theorem negationModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (negationModel M).Carrier = M.Carrier := rfl
 
 theorem negationModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (negationModel M).FullDomains :=
@@ -1403,9 +1456,8 @@ theorem negationModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sy
 
 theorem negationModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     negationModel M = ConstantAdmission.sourceExtension Source.negationResult (falsityModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.negationResult (falsityModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (falsityModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.negationResult (falsityModel M)
+    (falsityModel_fullDomains M full)
 
 theorem negationModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1416,8 +1468,8 @@ theorem negationModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1433,8 +1485,8 @@ theorem negationModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1450,8 +1502,8 @@ theorem negationModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1467,8 +1519,8 @@ theorem negationModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symb
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.universalConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.universalConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.universalConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1484,8 +1536,8 @@ theorem negationModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Sy
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.existentialConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.existentialConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.existentialConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1501,8 +1553,8 @@ theorem negationModel_falsity (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.falsityConstant, Source.negationConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.negationResult (falsityModel M) Source.falsityConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.negationResult M.Carrier (falsityModel M).constDen Source.falsityConstant
     Source.falsitySchema (type := HOL.Ty.prop)
     (by simp [Source.falsitySchema])
     different
@@ -1513,14 +1565,25 @@ theorem negationModel_negation (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbo
     (full : M.FullDomains)  (proposition : HOL.Ty.denote M.Carrier .prop) :
     (negationModel M).constDen (Symbols.negation) proposition =
       ULift.up (¬ proposition.down) := by
+  change ConstantAdmission.standardSourceMeanings Source.negationResult M.Carrier
+    (falsityModel M).constDen Symbols.negation proposition = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.negationResult M.Carrier
+      (falsityModel M).constDen = @ConstantAdmission.sourceMeanings Source.negationResult (falsityModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.negationResult (falsityModel M)
+      (falsityModel_fullDomains M full)
+  rw [meanings]
   have body := negation_extension (falsityModel M)
     (falsityModel_fullDomains M full)
   refine (congrFun (body) proposition).trans ?_
   exact raw_negation_denote (falsityModel M) (falsityModel_implication M full) (falsityModel_falsity M full) (fun index => nomatch index) proposition
 
-@[implicit_reducible] noncomputable def oneOneModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def oneOneModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.oneOneResult (negationModel M))
+    (ConstantAdmission.standardSourceMeanings Source.oneOneResult M.Carrier (negationModel M).constDen)
+
+@[simp] theorem oneOneModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (oneOneModel M).Carrier = M.Carrier := rfl
 
 theorem oneOneModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (oneOneModel M).FullDomains :=
@@ -1528,9 +1591,8 @@ theorem oneOneModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symb
 
 theorem oneOneModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     oneOneModel M = ConstantAdmission.sourceExtension Source.oneOneResult (negationModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.oneOneResult (negationModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (negationModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.oneOneResult (negationModel M)
+    (negationModel_fullDomains M full)
 
 theorem oneOneModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1541,8 +1603,8 @@ theorem oneOneModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1558,8 +1620,8 @@ theorem oneOneModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symb
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1575,8 +1637,8 @@ theorem oneOneModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symb
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1592,8 +1654,8 @@ theorem oneOneModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.universalConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.universalConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.universalConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1609,8 +1671,8 @@ theorem oneOneModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symb
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.existentialConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.existentialConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.existentialConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1626,8 +1688,8 @@ theorem oneOneModel_falsity (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.falsityConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.falsityConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.falsityConstant
     Source.falsitySchema (type := HOL.Ty.prop)
     (by simp [Source.falsitySchema])
     different
@@ -1643,8 +1705,8 @@ theorem oneOneModel_negation (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.negationConstant, Source.oneOneConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.oneOneResult (negationModel M) Source.negationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.oneOneResult M.Carrier (negationModel M).constDen Source.negationConstant
     Source.negationSchema (type := (HOL.Ty.arr .prop .prop))
     (by simp [Source.negationSchema])
     different
@@ -1655,6 +1717,13 @@ theorem oneOneModel_oneOne (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains) (domain : HOL.Ty AtomicTy) (codomain : HOL.Ty AtomicTy) (function : HOL.Ty.denote M.Carrier (domain.arr codomain)) :
     (oneOneModel M).constDen (Symbols.oneOne domain codomain) function =
       ULift.up (Function.Injective function) := by
+  change ConstantAdmission.standardSourceMeanings Source.oneOneResult M.Carrier
+    (negationModel M).constDen (Symbols.oneOne domain codomain) function = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.oneOneResult M.Carrier
+      (negationModel M).constDen = @ConstantAdmission.sourceMeanings Source.oneOneResult (negationModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.oneOneResult (negationModel M)
+      (negationModel_fullDomains M full)
+  rw [meanings]
   have inheritedDomains : ∀ type value, (negationModel M).adm type value ↔ M.adm type value :=
     fun type value => ⟨fun _ => full type value, fun _ => negationModel_fullDomains M full type value⟩
   have universalMeaning : ∀ (type : HOL.Ty AtomicTy)
@@ -1662,20 +1731,25 @@ theorem oneOneModel_oneOne (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
       (negationModel M).constDen (Symbols.universal type) predicate =
         ULift.up (∀ value, (negationModel M).adm type value → (predicate value).down) := by
     intro type predicate
-    simpa only [inheritedDomains] using negationModel_universal M full type predicate
+    simpa only [inheritedDomains, negationModel_carrier] using negationModel_universal M full type predicate
   have body := oneOne_extension (negationModel M)
     (negationModel_fullDomains M full) domain codomain
   refine (congrFun (body) function).trans ?_
   have rawMeaning := raw_oneOne_denote (negationModel M) universalMeaning (negationModel_implication M full) domain codomain (fun index => nomatch index) function
   have admitted : ∀ type value, (negationModel M).adm type value ↔ True :=
     fun type value => iff_true_intro (negationModel_fullDomains M full type value)
-  simpa only [admitted, true_implies, true_and,
+  simpa only [admitted, true_implies, true_and, negationModel_carrier,
+    ConstantAdmission.sourceExtension_carrier,
     HOL.HenkinModel.eqv_iff_eq_of_fullDomains (negationModel M)
       (negationModel_fullDomains M full), Function.Injective] using rawMeaning
 
-@[implicit_reducible] noncomputable def ontoModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
+@[reducible] noncomputable def ontoModel (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol :=
   HOL.HenkinModel.standard M.Carrier
-    (ConstantAdmission.sourceMeanings Source.ontoResult (oneOneModel M))
+    (ConstantAdmission.standardSourceMeanings Source.ontoResult M.Carrier (oneOneModel M).constDen)
+
+@[simp] theorem ontoModel_carrier
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (ontoModel M).Carrier = M.Carrier := rfl
 
 theorem ontoModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (_full : M.FullDomains) :
     (ontoModel M).FullDomains :=
@@ -1683,9 +1757,8 @@ theorem ontoModel_fullDomains (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
 
 theorem ontoModel_eq_sourceExtension (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     ontoModel M = ConstantAdmission.sourceExtension Source.ontoResult (oneOneModel M) :=
-  HOL.HenkinModel.standard_eq_of_fullDomains
-    (ConstantAdmission.sourceExtension Source.ontoResult (oneOneModel M))
-    (ConstantAdmission.sourceExtension_fullDomains _ _ (oneOneModel_fullDomains M full))
+  ConstantAdmission.standardSourceModel_eq_sourceExtension Source.ontoResult (oneOneModel M)
+    (oneOneModel_fullDomains M full)
 
 theorem ontoModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains)  :
@@ -1696,8 +1769,8 @@ theorem ontoModel_truth (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.truthConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.truthConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.truthConstant
     Source.truthSchema (type := HOL.Ty.prop)
     (by simp [Source.truthSchema])
     different
@@ -1713,8 +1786,8 @@ theorem ontoModel_conjunction (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.conjunctionConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.conjunctionConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.conjunctionConstant
     Source.conjunctionSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.conjunctionSchema])
     different
@@ -1730,8 +1803,8 @@ theorem ontoModel_implication (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.implicationConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.implicationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.implicationConstant
     Source.implicationSchema (type := (HOL.Ty.arr .prop (HOL.Ty.arr .prop .prop)))
     (by simp [Source.implicationSchema])
     different
@@ -1747,8 +1820,8 @@ theorem ontoModel_universal (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.universalConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.universalConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.universalConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1764,8 +1837,8 @@ theorem ontoModel_existential (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.existentialConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.existentialConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.existentialConstant
     (Ty.function (Ty.function (Ty.fromHOL operand) Ty.bool) Ty.bool) (type := ((operand.arr .prop).arr .prop))
     (by simp)
     different
@@ -1781,8 +1854,8 @@ theorem ontoModel_falsity (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.falsityConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.falsityConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.falsityConstant
     Source.falsitySchema (type := HOL.Ty.prop)
     (by simp [Source.falsitySchema])
     different
@@ -1798,8 +1871,8 @@ theorem ontoModel_negation (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.negationConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.negationConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.negationConstant
     Source.negationSchema (type := (HOL.Ty.arr .prop .prop))
     (by simp [Source.negationSchema])
     different
@@ -1815,8 +1888,8 @@ theorem ontoModel_oneOne (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     intro same
     have names := congrArg constantName same
     simp [constantName, Source.oneOneConstant, Source.ontoConstant, Name.global] at names
-  have retained := ConstantAdmission.sourceExtension_constant_other
-    Source.ontoResult (oneOneModel M) Source.oneOneConstant
+  have retained := ConstantAdmission.standardSourceMeanings_constant_other
+    Source.ontoResult M.Carrier (oneOneModel M).constDen Source.oneOneConstant
     (Ty.function (Ty.function (Ty.fromHOL domain) (Ty.fromHOL codomain)) Ty.bool) (type := ((domain.arr codomain).arr .prop))
     (by simp)
     different
@@ -1827,6 +1900,13 @@ theorem ontoModel_onto (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
     (full : M.FullDomains) (domain : HOL.Ty AtomicTy) (codomain : HOL.Ty AtomicTy) (function : HOL.Ty.denote M.Carrier (domain.arr codomain)) :
     (ontoModel M).constDen (Symbols.onto domain codomain) function =
       ULift.up (Function.Surjective function) := by
+  change ConstantAdmission.standardSourceMeanings Source.ontoResult M.Carrier
+    (oneOneModel M).constDen (Symbols.onto domain codomain) function = _
+  have meanings : @ConstantAdmission.standardSourceMeanings Source.ontoResult M.Carrier
+      (oneOneModel M).constDen = @ConstantAdmission.sourceMeanings Source.ontoResult (oneOneModel M) :=
+    ConstantAdmission.standardSourceMeanings_eq Source.ontoResult (oneOneModel M)
+      (oneOneModel_fullDomains M full)
+  rw [meanings]
   have inheritedDomains : ∀ type value, (oneOneModel M).adm type value ↔ M.adm type value :=
     fun type value => ⟨fun _ => full type value, fun _ => oneOneModel_fullDomains M full type value⟩
   have universalMeaning : ∀ (type : HOL.Ty AtomicTy)
@@ -1834,22 +1914,30 @@ theorem ontoModel_onto (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
       (oneOneModel M).constDen (Symbols.universal type) predicate =
         ULift.up (∀ value, (oneOneModel M).adm type value → (predicate value).down) := by
     intro type predicate
-    simpa only [inheritedDomains] using oneOneModel_universal M full type predicate
+    simpa only [inheritedDomains, oneOneModel_carrier] using oneOneModel_universal M full type predicate
   have existentialMeaning : ∀ (type : HOL.Ty AtomicTy)
       (predicate : HOL.Ty.denote.{0, w + 1} M.Carrier (type.arr .prop)),
       (oneOneModel M).constDen (Symbols.existential type) predicate =
         ULift.up (∃ value, (oneOneModel M).adm type value ∧ (predicate value).down) := by
     intro type predicate
-    simpa only [inheritedDomains] using oneOneModel_existential M full type predicate
+    simpa only [inheritedDomains, oneOneModel_carrier] using oneOneModel_existential M full type predicate
   have body := onto_extension (oneOneModel M)
     (oneOneModel_fullDomains M full) domain codomain
   refine (congrFun (body) function).trans ?_
   have rawMeaning := raw_onto_denote (oneOneModel M) universalMeaning existentialMeaning domain codomain (fun index => nomatch index) function
-  have admitted : ∀ type value, (oneOneModel M).adm type value ↔ True :=
-    fun type value => iff_true_intro (oneOneModel_fullDomains M full type value)
-  simpa only [admitted, true_implies, true_and,
-    HOL.HenkinModel.eqv_iff_eq_of_fullDomains (oneOneModel M)
-      (oneOneModel_fullDomains M full), Function.Surjective, eq_comm] using rawMeaning
+  refine rawMeaning.trans ?_
+  apply congrArg ULift.up
+  apply propext
+  constructor
+  · intro onto value
+    obtain ⟨preimage, _, equivalent⟩ := onto value (oneOneModel_fullDomains M full codomain value)
+    exact ⟨preimage, ((HOL.HenkinModel.eqv_iff_eq_of_fullDomains (oneOneModel M)
+      (oneOneModel_fullDomains M full) _ _).mp equivalent).symm⟩
+  · intro onto value _
+    obtain ⟨preimage, equal⟩ := onto value
+    exact ⟨preimage, oneOneModel_fullDomains M full domain preimage,
+      (HOL.HenkinModel.eqv_iff_eq_of_fullDomains (oneOneModel M)
+        (oneOneModel_fullDomains M full) _ _).mpr equal.symm⟩
 
 end Interpretation
 

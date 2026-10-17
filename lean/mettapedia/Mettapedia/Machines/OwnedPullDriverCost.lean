@@ -241,6 +241,45 @@ theorem CostedRuns.runSlice_after_completion {Value Event : Type}
   have final : (machineCore Value Event).step ⟨.done value, []⟩ = none := rfl
   simpa only [MachineCore.runSlice_of_final _ _ final, Nat.add_zero] using combined
 
+/-- A fully spent root slice cannot exceed the semantic transition count.
+The bound applies to the performed slice, independently of its consumer. -/
+theorem CostedRuns.root_debit_le {Value Event : Type}
+    {work : Program Value Event} {events : List Event} {value : Value}
+    {calls depth : Nat} (run : CostedRuns work events value calls depth)
+    (debit : Nat) {next : State Value Event}
+    (performed : MachineCore.runSlice (machineCore Value Event) debit ⟨work, []⟩ =
+      (next, debit)) :
+    debit ≤ events.length + 2 * calls ∧ debit ≤ 2 * (events.length + calls) := by
+  have bound : debit ≤ events.length + 2 * calls := by
+    cases Nat.lt_or_ge (events.length + 2 * calls) debit with
+    | inl greater =>
+        have room := Nat.add_sub_of_le (Nat.le_of_lt greater)
+        have stopped := run.runSlice_after_completion (debit - (events.length + 2 * calls))
+        rw [room] at stopped
+        have same : debit = events.length + 2 * calls :=
+          congrArg Prod.snd (performed.symm.trans stopped)
+        exact absurd same.symm (Nat.ne_of_lt greater)
+    | inr within => exact within
+  exact ⟨bound, by omega⟩
+
+/-- Reaching a genuinely terminal root identifies both its semantic debit
+and returned value. A child return with outer frames does not satisfy this. -/
+theorem CostedRuns.root_eq_of_final {Value Event : Type}
+    {work : Program Value Event} {events : List Event} {value : Value}
+    {calls depth : Nat} (run : CostedRuns work events value calls depth)
+    (debit : Nat) {next : State Value Event}
+    (performed : MachineCore.runSlice (machineCore Value Event) debit ⟨work, []⟩ =
+      (next, debit))
+    (terminal : (machineCore Value Event).step next = none) :
+    debit = events.length + 2 * calls ∧ next = ⟨.done value, []⟩ := by
+  have bound := (run.root_debit_le debit performed).1
+  have combined := MachineCore.runSlice_add (machineCore Value Event) debit
+    (events.length + 2 * calls - debit) ⟨work, []⟩
+  rw [Nat.add_sub_of_le bound, performed] at combined
+  simp only [MachineCore.runSlice_of_final _ _ terminal, Nat.add_zero] at combined
+  have identified := combined.symm.trans (run.runSlice [])
+  exact ⟨congrArg Prod.snd identified, congrArg Prod.fst identified⟩
+
 /-- A producer's value may already exist while its observer is still pending.
 One tick resumes that observer rather than declaring the whole run final. -/
 theorem runSlice_pending_return {Value Event : Type} (value : Value)
@@ -265,29 +304,23 @@ or access to a shared producer. No trace is allocated by these quanta.
 /-- Resume a paid invocation without restarting it or charging unused fuel. -/
 def paidSlice {Value Event : Type} (fuel : Nat) (packet : Nat × State Value Event) :
     Nat × State Value Event :=
-  let result := MachineCore.runSlice (machineCore Value Event) fuel packet.2
-  (packet.1 + result.2, result.1)
+  MachineCore.paidSlice (machineCore Value Event) fuel packet
 
 @[simp] theorem paidSlice_zero {Value Event : Type} (packet : Nat × State Value Event) :
     paidSlice 0 packet = packet := by
-  simp [paidSlice, MachineCore.runSlice]
+  exact MachineCore.paidSlice_zero (machineCore Value Event) packet
 
 /-- Full residual and cumulative charge compose, including internal returns. -/
 theorem paidSlice_add {Value Event : Type} (first second : Nat)
     (packet : Nat × State Value Event) :
     paidSlice (first + second) packet = paidSlice second (paidSlice first packet) := by
-  have combined := MachineCore.runSlice_add (machineCore Value Event) first second packet.2
-  have paid := congrArg (fun result : State Value Event × Nat =>
-    (packet.1 + result.2, result.1)) combined
-  simpa only [paidSlice, Nat.add_assoc] using paid
+  exact MachineCore.paidSlice_add (machineCore Value Event) first second packet
 
 theorem paidSlice_debit_bounds {Value Event : Type} (fuel : Nat)
     (packet : Nat × State Value Event) :
     packet.1 ≤ (paidSlice fuel packet).1 ∧
       (paidSlice fuel packet).1 ≤ packet.1 + fuel := by
-  have bounded := MachineCore.runSlice_used_le (machineCore Value Event) fuel packet.2
-  dsimp only [paidSlice]
-  omega
+  exact MachineCore.paidSlice_debit_bounds (machineCore Value Event) fuel packet
 
 /-- A return is publishable only after this invocation's caller frames are empty. -/
 def completedValue {Value Event : Type} (state : State Value Event) : Option Value :=
@@ -307,9 +340,9 @@ theorem CostedRuns.paidSlice {Value Event : Type} {work : Program Value Event}
     (run : CostedRuns work events value calls depth) (spent extra : Nat) :
     paidSlice (events.length + 2 * calls + extra) (spent, ⟨work, []⟩) =
       (spent + events.length + 2 * calls, ⟨.done value, []⟩) := by
-  unfold OwnedPullDriver.paidSlice
-  rw [run.runSlice_after_completion extra]
-  simp only [Nat.add_assoc]
+  have paid := congrArg (fun result : State Value Event × Nat =>
+    (spent + result.2, result.1)) (run.runSlice_after_completion extra)
+  simpa only [OwnedPullDriver.paidSlice, MachineCore.paidSlice, machineCore, Nat.add_assoc] using paid
 
 /-- An item addresses one invocation and supplies its next quantum. The
 snapshot and seed are unused because each packet already holds its program. -/

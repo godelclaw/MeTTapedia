@@ -46,7 +46,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList)
 open Mettapedia.Logic.HostingStyles.AmbientSpace (atomAt_wellSorted_of ruleSpace_wellSorted_of)

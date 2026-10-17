@@ -13,6 +13,11 @@ identifies stores exactly by physical-key membership.
 Literal atom support remains a separate observation. In particular, physical
 keys can identify two differently named source variables while literal source
 consumers still distinguish their names.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

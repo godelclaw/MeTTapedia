@@ -28,7 +28,9 @@ What the extension changes, and what it does not:
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -367,4 +369,4 @@ theorem choice_branches (base : BasePremiseEvaluator) :
 #print axioms choiceTower_steps
 #print axioms choice_branches
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

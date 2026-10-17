@@ -57,6 +57,25 @@ instance instCategory (definition : ValidatedCalculusLanguageDef) :
   assoc first second third :=
     (OpenDerivationList.bind_assoc third second first).symm
 
+/-- Closed source derivations are exactly arrows from the empty premise
+context to a singleton goal. Both directions retain the actual derivation;
+no cursor, execution schedule or quotient of proofs is involved. -/
+def closedDerivationEquiv (definition : ValidatedCalculusLanguageDef) (goal : Pattern) :
+    Derivation definition goal ≃
+      ((⟨[]⟩ : ClassifyingContext definition) ⟶ ⟨[goal]⟩) where
+  toFun proof := OpenDerivationList.cons (OpenDerivation.ofClosed proof) .nil
+  invFun proofs := (proofs.get ⟨0, by simp⟩).close
+  left_inv proof := by
+    change (OpenDerivation.ofClosed proof).close = proof
+    exact OpenDerivation.close_ofClosed proof
+  right_inv proofs := by
+    cases proofs with
+    | cons proof rest =>
+        cases rest
+        change OpenDerivationList.cons (OpenDerivation.ofClosed proof.close) .nil =
+          OpenDerivationList.cons proof .nil
+        rw [OpenDerivation.ofClosed_close]
+
 @[simp] theorem id_def (source : ClassifyingContext definition) :
     𝟙 source = assumptionEnvironment definition source.judgments := rfl
 

@@ -48,13 +48,38 @@ def MatcherAccepts (environment : Environment) (request : Request)
       TypedAssignment environment request.context wanted.assignment ∧
       wanted.origins = (frame.origins ++ [(frame.argumentIndex, matched.trace)]) ++ traces
 
+/-- Native-row alternatives retain the exact acquired table and occurrence
+index; a different provider call cannot supply their pending answers. -/
+def DynamicRowsAccepts (environment : Environment) (request : Request)
+    (signature : Signature) (rows : List (List Pattern)) (cursor : Nat)
+    (wanted : CertifiedAnswer environment request) : Prop :=
+  ∃ nativeIndex values, cursor ≤ nativeIndex ∧
+    wanted.rowIndex = environment.provider.rows.length + nativeIndex ∧
+    rows[nativeIndex]? = some values ∧
+    RowTyped environment.language environment.free request.context.bound signature
+      ⟨request.relation, values⟩ ∧
+    TracedArgumentsHold request.context 0 request.initial request.arguments values signature.modes
+      wanted.assignment wanted.origins ∧ TypedAssignment environment request.context wanted.assignment
+
+/-- Pending input resolution denotes the original remaining input judgment,
+then the acquired provider table, then its exact native-row alternatives. -/
+def DynamicInputsAccepts (environment : Environment) (request : Request)
+    (frame : DynamicInputsFrame environment request)
+    (wanted : CertifiedAnswer environment request) : Prop :=
+  ∃ values rows,
+    DynamicInputs request.context frame.index request.initial frame.schemas frame.modes values ∧
+    environment.dynamic.Source request.relation (frame.resolvedRev.reverse ++ values) rows ∧
+    DynamicRowsAccepts environment request frame.signature rows 0 wanted
+
 def TaskAccepts (environment : Environment) (request : Request) :
     Task environment request → CertifiedAnswer environment request → Prop
   | .start, wanted => TracedQuery environment request.context request.relation request.arguments
       request.initial wanted.rowIndex wanted.assignment wanted.origins
   | .rows frame, wanted => frame.cursor ≤ wanted.rowIndex ∧
-      TracedQuery environment request.context request.relation request.arguments
+      wanted.rowIndex < environment.provider.rows.length ∧ TracedQuery environment request.context request.relation request.arguments
         request.initial wanted.rowIndex wanted.assignment wanted.origins
+  | .dynamicInputs frame, wanted => DynamicInputsAccepts environment request frame wanted
+  | .dynamicRows frame, wanted => DynamicRowsAccepts environment request frame.signature frame.rows frame.cursor wanted
   | .arguments frame, wanted => ArgumentsAccepts environment request frame wanted
   | .matcher frame, wanted => MatcherAccepts environment request frame wanted
 
@@ -98,11 +123,43 @@ theorem expand_wellFormed (environment : Environment) (request : Request)
       simp only [expand] at member
       split at member
       · simp at member
+      · split at member
+        · simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          rcases member with same | same <;> subst branch <;> trivial
+        · simp only [List.mem_singleton] at member
+          subst branch
+          trivial
+  | rows frame =>
+      simp only [expand] at member
+      split at member
+      · simp at member
+      · split at member
+        · simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          rcases member with same | same <;> subst branch <;> trivial
+        · simp only [List.mem_singleton] at member
+          subst branch
+          trivial
+  | dynamicInputs frame =>
+      simp only [expand] at member
+      unfold expandDynamicInputs at member
+      split at member
+      · split at member
+        · simp at member
+        · simp only [List.mem_singleton] at member
+          subst branch
+          trivial
+      · split at member
+        · simp at member
+        · simp only [List.mem_singleton] at member
+          subst branch
+          trivial
       · simp only [List.mem_singleton] at member
         subst branch
         trivial
-  | rows frame =>
+      · simp at member
+  | dynamicRows frame =>
       simp only [expand] at member
+      unfold expandDynamicRows at member
       split at member
       · simp at member
       · split at member
@@ -336,16 +393,20 @@ theorem expandMatcher_accepts_iff (environment : Environment) (request : Request
 private theorem valid_details (environment : Environment) (request : Request)
     (signature : Signature)
     (found : signature? environment.provider request.relation request.arguments.length = some signature)
-    (wanted : CertifiedAnswer environment request) :
+    (wanted : CertifiedAnswer environment request)
+    (finite : wanted.rowIndex < environment.provider.rows.length) :
     ∃ row, environment.provider.rows[wanted.rowIndex]? = some row ∧
       RowTyped environment.language environment.free request.context.bound signature row ∧
       TracedArgumentsHold request.context 0 request.initial request.arguments row.values signature.modes
         wanted.assignment wanted.origins ∧ TypedAssignment environment request.context wanted.assignment := by
-  cases wanted.valid with
-  | @row row actual final origins selected declared typed held finalTyped =>
+  rcases wanted with ⟨wantedIndex, wantedAssignment, wantedOrigins, valid⟩
+  dsimp only at finite ⊢
+  cases valid with
+  | @row rowIndex row actual final origins selected declared typed held finalTyped =>
       have same := Option.some.inj (declared.symm.trans found)
       subst actual
       exact ⟨row, selected, typed, held, finalTyped⟩
+  | dynamicRow _ _ _ _ _ _ _ _ => omega
 
 theorem expandRows_accepts_iff (environment : Environment) (request : Request)
     (frame : RowsFrame environment request) (wanted : CertifiedAnswer environment request) :
@@ -356,8 +417,8 @@ theorem expandRows_accepts_iff (environment : Environment) (request : Request)
   · rename_i unavailable
     simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff,
       TaskAccepts]
-    rintro ⟨bounded, _⟩
-    obtain ⟨row, selected, _, _, _⟩ := valid_details environment request _ frame.signatureFound wanted
+    rintro ⟨bounded, finite, _⟩
+    obtain ⟨row, selected, _, _, _⟩ := valid_details environment request _ frame.signatureFound wanted finite
     have within := (List.getElem?_eq_some_iff.mp selected).1
     have beyond := List.getElem?_eq_none_iff.mp unavailable
     omega
@@ -368,53 +429,223 @@ theorem expandRows_accepts_iff (environment : Environment) (request : Request)
       · rintro ⟨branch, (same | same), accepted⟩
         · subst branch
           obtain ⟨rowSame, _, _, _, _⟩ := accepted
-          exact ⟨by simp only [rowSame]; exact Nat.le_refl _, wanted.valid⟩
+          exact ⟨by simp only [rowSame]; exact Nat.le_refl _,
+            by rw [rowSame]; exact (List.getElem?_eq_some_iff.mp found).1, wanted.valid⟩
         · subst branch
           exact ⟨Nat.le_trans (Nat.le_succ _) accepted.1, accepted.2⟩
-      · rintro ⟨bounded, _⟩
+      · rintro ⟨bounded, finite, _⟩
         by_cases current : wanted.rowIndex = frame.cursor
         · obtain ⟨actual, selected, _, held, typed⟩ :=
-            valid_details environment request _ frame.signatureFound wanted
+            valid_details environment request _ frame.signatureFound wanted finite
           rw [current] at selected
           have same := Option.some.inj (found.symm.trans selected)
           subst actual
           exact ⟨_, .inl rfl, current, wanted.origins, held, typed, by simp⟩
-        · exact ⟨_, .inr rfl, by dsimp only; omega, wanted.valid⟩
+        · exact ⟨_, .inr rfl, by dsimp only; omega, finite, wanted.valid⟩
     · rename_i unchecked
       simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
       constructor
-      · rintro ⟨branch, rfl, bounded, valid⟩
-        exact ⟨Nat.le_trans (Nat.le_succ _) bounded, valid⟩
-      · rintro ⟨bounded, valid⟩
+      · rintro ⟨branch, rfl, bounded, finite, valid⟩
+        exact ⟨Nat.le_trans (Nat.le_succ _) bounded, finite, valid⟩
+      · rintro ⟨bounded, finite, valid⟩
         have later : frame.cursor + 1 ≤ wanted.rowIndex := by
           by_cases current : wanted.rowIndex = frame.cursor
           · obtain ⟨actual, selected, typed, _, _⟩ :=
-              valid_details environment request _ frame.signatureFound wanted
+              valid_details environment request _ frame.signatureFound wanted finite
             rw [current] at selected
             have same := Option.some.inj (found.symm.trans selected)
             subst actual
             exact False.elim (unchecked (checkRow_complete typed))
           · omega
-        exact ⟨_, rfl, later, valid⟩
+        exact ⟨_, rfl, later, finite, valid⟩
+
+private theorem dynamic_input_shapes {context : Context} {index : Nat} {initial : Assignment}
+    {schemas values : List Pattern} {modes : List RelationArgMode}
+    (held : DynamicInputs context index initial schemas modes values) :
+    (schemas = [] ∧ modes = []) ∨
+      (∃ schema tail tailModes, schemas = schema :: tail ∧ modes = .input :: tailModes) ∨
+      (∃ schema tail tailModes, schemas = schema :: tail ∧ modes = .output :: tailModes) := by
+  cases held with
+  | nil => exact .inl ⟨rfl, rfl⟩
+  | input _ _ => exact .inr (.inl ⟨_, _, _, rfl, rfl⟩)
+  | output _ => exact .inr (.inr ⟨_, _, _, rfl, rfl⟩)
+
+theorem expandDynamicInputs_accepts_iff (environment : Environment) (request : Request)
+    (frame : DynamicInputsFrame environment request) (wanted : CertifiedAnswer environment request) :
+    ExpansionAccepts environment request (expandDynamicInputs environment request frame) wanted ↔
+      DynamicInputsAccepts environment request frame wanted := by
+  unfold expandDynamicInputs
+  split
+  · rename_i schemasFound modesFound
+    split
+    · rename_i unavailable
+      simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]
+      rintro ⟨values, rows, held, source, _⟩
+      rw [schemasFound, modesFound] at held
+      cases held
+      have computed := (environment.dynamic.rows_exact _ _ _).mpr
+        (by simpa only [List.append_nil] using source)
+      rw [unavailable] at computed
+      cases computed
+    · rename_i rows computed
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
+      constructor
+      · rintro ⟨branch, rfl, accepted⟩
+        refine ⟨[], rows, ?_, ?_, accepted⟩
+        · rw [schemasFound, modesFound]
+          exact .nil
+        · simpa only [List.append_nil] using (environment.dynamic.rows_exact _ _ _).mp computed
+      · rintro ⟨values, actual, held, source, accepted⟩
+        rw [schemasFound, modesFound] at held
+        cases held
+        have source' : environment.dynamic.Source request.relation frame.resolvedRev.reverse actual :=
+          by simpa only [List.append_nil] using source
+        have same := environment.dynamic.source_unique ((environment.dynamic.rows_exact _ _ _).mp computed) source'
+        subst actual
+        exact ⟨_, rfl, accepted⟩
+  · rename_i schema schemas modes schemasFound modesFound
+    split
+    · rename_i unavailable
+      simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]
+      rintro ⟨values, rows, held, _, _⟩
+      rw [schemasFound, modesFound] at held
+      cases held with
+      | input interpreted _ => rw [unavailable] at interpreted; cases interpreted
+    · rename_i value interpreted
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
+      constructor
+      · rintro ⟨branch, rfl, values, rows, tail, source, accepted⟩
+        refine ⟨value :: values, rows, ?_, ?_, accepted⟩
+        · rw [schemasFound, modesFound]
+          exact .input interpreted tail
+        · simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using source
+      · rintro ⟨values, rows, held, source, accepted⟩
+        rw [schemasFound, modesFound] at held
+        cases held with
+        | input matched tail =>
+            have same := Option.some.inj (interpreted.symm.trans matched)
+            cases same
+            refine ⟨_, rfl, _, rows, tail, ?_, accepted⟩
+            simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using source
+  · rename_i schema schemas modes schemasFound modesFound
+    simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
+    constructor
+    · rintro ⟨branch, rfl, values, rows, tail, source, accepted⟩
+      refine ⟨schema :: values, rows, ?_, ?_, accepted⟩
+      · rw [schemasFound, modesFound]
+        exact .output tail
+      · simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using source
+    · rintro ⟨values, rows, held, source, accepted⟩
+      rw [schemasFound, modesFound] at held
+      cases held with
+      | output tail =>
+          refine ⟨_, rfl, _, rows, tail, ?_, accepted⟩
+          simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using source
+  · rename_i nilMismatch inputMismatch outputMismatch
+    simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]
+    rintro ⟨values, rows, held, _, _⟩
+    rcases dynamic_input_shapes held with ⟨schemas, modes⟩ | ⟨schema, schemas, modes, hs, hm⟩ | ⟨schema, schemas, modes, hs, hm⟩
+    · exact nilMismatch schemas modes
+    · exact inputMismatch schema schemas modes hs hm
+    · exact outputMismatch schema schemas modes hs hm
+
+theorem expandDynamicRows_accepts_iff (environment : Environment) (request : Request)
+    (frame : DynamicRowsFrame environment request) (wanted : CertifiedAnswer environment request) :
+    ExpansionAccepts environment request (expandDynamicRows environment request frame) wanted ↔
+      DynamicRowsAccepts environment request frame.signature frame.rows frame.cursor wanted := by
+  unfold expandDynamicRows
+  split
+  · rename_i unavailable
+    simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]
+    rintro ⟨nativeIndex, values, bounded, _, selected, _, _, _⟩
+    have within := (List.getElem?_eq_some_iff.mp selected).1
+    have beyond := List.getElem?_eq_none_iff.mp unavailable
+    omega
+  · rename_i values selected
+    split
+    · rename_i checked
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_cons, or_false]
+      constructor
+      · rintro ⟨branch, (same | same), accepted⟩
+        · subst branch
+          obtain ⟨rowSame, traces, held, typed, originsSame⟩ := accepted
+          refine ⟨frame.cursor, values, Nat.le_refl _, rowSame, selected, checkRow_sound checked, ?_, typed⟩
+          simpa only [List.nil_append] using originsSame ▸ held
+        · subst branch
+          obtain ⟨nativeIndex, actual, bounded, rowSame, found, typed, held, finalTyped⟩ := accepted
+          exact ⟨nativeIndex, actual, Nat.le_trans (Nat.le_succ _) bounded,
+            rowSame, found, typed, held, finalTyped⟩
+      · rintro ⟨nativeIndex, actual, bounded, rowSame, found, typed, held, finalTyped⟩
+        by_cases current : nativeIndex = frame.cursor
+        · subst nativeIndex
+          have same := Option.some.inj (selected.symm.trans found)
+          subst actual
+          exact ⟨_, .inl rfl, rowSame, wanted.origins, held, finalTyped, by simp⟩
+        · exact ⟨_, .inr rfl, nativeIndex, actual, by dsimp only; omega,
+            rowSame, found, typed, held, finalTyped⟩
+    · rename_i unchecked
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
+      constructor
+      · rintro ⟨branch, rfl, nativeIndex, actual, bounded, rowSame, found, typed, held, finalTyped⟩
+        exact ⟨nativeIndex, actual, Nat.le_trans (Nat.le_succ _) bounded,
+          rowSame, found, typed, held, finalTyped⟩
+      · rintro ⟨nativeIndex, actual, bounded, rowSame, found, typed, held, finalTyped⟩
+        have later : frame.cursor + 1 ≤ nativeIndex := by
+          by_cases current : nativeIndex = frame.cursor
+          · subst nativeIndex
+            have same := Option.some.inj (selected.symm.trans found)
+            subst actual
+            exact False.elim (unchecked (checkRow_complete typed))
+          · omega
+        exact ⟨_, rfl, nativeIndex, actual, later, rowSame, found, typed, held, finalTyped⟩
 
 theorem expandStart_accepts_iff (environment : Environment) (request : Request)
     (wanted : CertifiedAnswer environment request) :
     ExpansionAccepts environment request (expand environment request .start) wanted ↔
       TaskAccepts environment request .start wanted := by
+  rcases wanted with ⟨rowIndex, final, origins, valid⟩
   simp only [expand]
   split
   · rename_i unavailable
-    simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff,
-      TaskAccepts]
-    intro valid
+    simp only [ExpansionAccepts, List.not_mem_nil, false_and, exists_false, or_self, false_iff]
+    intro _
     cases valid with
     | row _ declared _ _ _ => simp [unavailable] at declared
-  · simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
-    constructor
-    · rintro ⟨branch, rfl, _, valid⟩
-      exact valid
-    · intro valid
-      exact ⟨_, rfl, Nat.zero_le _, valid⟩
+    | dynamicRow _ declared _ _ _ _ _ _ => simp [unavailable] at declared
+  · rename_i signature found
+    split
+    · rename_i registered
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_cons, or_false]
+      constructor
+      · intro _
+        exact valid
+      · intro _
+        cases valid with
+        | @row rowIndex row actual final origins selected declared typed held finalTyped =>
+            have same := Option.some.inj (declared.symm.trans found)
+            subst actual
+            exact ⟨_, .inl rfl, Nat.zero_le _, (List.getElem?_eq_some_iff.mp selected).1,
+              .row selected found typed held finalTyped⟩
+        | @dynamicRow nativeIndex actual final resolved rows values origins enabled declared inputs source selected typed held finalTyped =>
+            have same := Option.some.inj (declared.symm.trans found)
+            subst actual
+            refine ⟨_, .inr rfl, resolved, rows, ?_, ?_, nativeIndex, values,
+              Nat.zero_le _, rfl, selected, typed, held, finalTyped⟩
+            · simpa only using inputs
+            · simpa only [List.reverse_nil, List.nil_append] using source
+    · rename_i unregistered
+      simp only [ExpansionAccepts, List.not_mem_nil, false_or, List.mem_singleton]
+      constructor
+      · intro _
+        exact valid
+      · intro _
+        cases valid with
+        | @row rowIndex row actual final origins selected declared typed held finalTyped =>
+            have same := Option.some.inj (declared.symm.trans found)
+            subst actual
+            exact ⟨_, rfl, Nat.zero_le _, (List.getElem?_eq_some_iff.mp selected).1,
+              .row selected found typed held finalTyped⟩
+        | dynamicRow enabled _ _ _ _ _ _ _ => exact False.elim (unregistered enabled)
 
 theorem expand_accepts_iff (environment : Environment) (request : Request)
     (task : Task environment request) (wanted : CertifiedAnswer environment request)
@@ -424,6 +655,8 @@ theorem expand_accepts_iff (environment : Environment) (request : Request)
   cases task with
   | start => exact expandStart_accepts_iff _ _ _
   | rows frame => exact expandRows_accepts_iff _ _ _ _
+  | dynamicInputs frame => exact expandDynamicInputs_accepts_iff _ _ _ _
+  | dynamicRows frame => exact expandDynamicRows_accepts_iff _ _ _ _
   | arguments frame => exact expandArguments_accepts_iff _ _ _ _
   | matcher frame => exact expandMatcher_accepts_iff _ _ _ _ wellFormed
 
@@ -639,10 +872,35 @@ theorem finite_collection_free_within (footprint : List String) (ambient : Nat)
   simp only [Pattern.freeFvarNames, Option.toList_none, List.append_nil]
   exact List.mem_flatMap.mpr ⟨element, member, occurs⟩
 
+/-- Each registered primitive response supplies its own object-value
+support. Authored output schemas in the resolved request remain holes. -/
+def DynamicOutputsFreeWithin (footprint : List String) (environment : Environment) : Prop :=
+  ∀ relation ∈ environment.provider.dynamicRelations, ∀ resolved rows,
+    environment.dynamic.Source relation resolved rows →
+      ∀ values ∈ rows, patternsFreeWithin footprint values
+
+theorem DynamicOutputsFreeWithin.of_empty (footprint : List String) (environment : Environment)
+    (empty : environment.dynamic = DynamicProvider.empty) :
+    DynamicOutputsFreeWithin footprint environment := by
+  intro relation _ resolved rows source
+  rw [empty] at source
+  cases source
+
+/-- A provider with no registered native methods has no native output
+support obligation, regardless of the unused implementation. -/
+theorem DynamicOutputsFreeWithin.of_unregistered (footprint : List String)
+    (environment : Environment) (empty : environment.provider.dynamicRelations = []) :
+    DynamicOutputsFreeWithin footprint environment := by
+  intro relation registered
+  simp only [empty, List.not_mem_nil] at registered
+
 def taskFreeWithin (footprint : List String) {environment : Environment}
     {request : Query.Request} : Query.Task environment request → Prop
   | .start => assignmentFreeWithin footprint request.initial
   | .rows _ => assignmentFreeWithin footprint request.initial
+  | .dynamicInputs _ => assignmentFreeWithin footprint request.initial
+  | .dynamicRows frame => assignmentFreeWithin footprint request.initial ∧
+      ∀ values ∈ frame.rows, patternsFreeWithin footprint values
   | .arguments frame => assignmentFreeWithin footprint frame.assignment ∧
       patternsFreeWithin footprint frame.values
   | .matcher frame => assignmentFreeWithin footprint frame.query.initial ∧
@@ -732,9 +990,72 @@ theorem matcher_expansion_free_within (footprint : List String)
         exact ⟨stored, target, values⟩
       · intro answer member; cases member
 
+theorem dynamicInputs_expansion_free_within (footprint : List String)
+    (environment : Environment) (request : Query.Request)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
+    (frame : Query.DynamicInputsFrame environment request)
+    (stored : assignmentFreeWithin footprint request.initial) :
+    (∀ task ∈ (Query.expandDynamicInputs environment request frame).tasks,
+      taskFreeWithin footprint task) ∧
+    (∀ answer ∈ (Query.expandDynamicInputs environment request frame).answers,
+      assignmentFreeWithin footprint answer.assignment) := by
+  unfold Query.expandDynamicInputs
+  split
+  · split
+    · constructor <;> intro item member <;> cases member
+    · rename_i rows computed
+      constructor
+      · intro task member
+        rcases List.mem_singleton.mp member with rfl
+        refine ⟨stored, ?_⟩
+        exact dynamic request.relation frame.registered _ rows
+          ((environment.dynamic.rows_exact _ _ _).mp computed)
+      · intro item member; cases member
+  · split
+    · constructor <;> intro item member <;> cases member
+    · constructor
+      · intro task member
+        rcases List.mem_singleton.mp member with rfl
+        exact stored
+      · intro item member; cases member
+  · constructor
+    · intro task member
+      rcases List.mem_singleton.mp member with rfl
+      exact stored
+    · intro item member; cases member
+  · constructor <;> intro item member <;> cases member
+
+theorem dynamicRows_expansion_free_within (footprint : List String)
+    (environment : Environment) (request : Query.Request)
+    (frame : Query.DynamicRowsFrame environment request)
+    (stored : assignmentFreeWithin footprint request.initial)
+    (values : ∀ row ∈ frame.rows, patternsFreeWithin footprint row) :
+    (∀ task ∈ (Query.expandDynamicRows environment request frame).tasks,
+      taskFreeWithin footprint task) ∧
+    (∀ answer ∈ (Query.expandDynamicRows environment request frame).answers,
+      assignmentFreeWithin footprint answer.assignment) := by
+  unfold Query.expandDynamicRows
+  split
+  · constructor <;> intro item member <;> cases member
+  · rename_i row selected
+    split
+    · constructor
+      · intro task member
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+        rcases member with rfl | rfl
+        · exact ⟨stored, values row (List.mem_of_getElem? selected)⟩
+        · exact ⟨stored, values⟩
+      · intro item member; cases member
+    · constructor
+      · intro task member
+        rcases List.mem_singleton.mp member with rfl
+        exact ⟨stored, values⟩
+      · intro item member; cases member
+
 theorem expansion_free_within (footprint : List String)
     (environment : Environment) (request : Query.Request)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
     (task : Query.Task environment request) (covered : taskFreeWithin footprint task) :
     (∀ next ∈ (Query.expand environment request task).tasks, taskFreeWithin footprint next) ∧
     (∀ answer ∈ (Query.expand environment request task).answers,
@@ -744,11 +1065,17 @@ theorem expansion_free_within (footprint : List String)
       simp only [Query.expand]
       split
       · constructor <;> intro item member <;> cases member
-      · constructor
-        · intro next member
-          rcases List.mem_singleton.mp member with rfl
-          exact covered
-        · intro answer member; cases member
+      · split
+        · constructor
+          · intro next member
+            simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+            rcases member with rfl | rfl <;> exact covered
+          · intro item member; cases member
+        · constructor
+          · intro next member
+            rcases List.mem_singleton.mp member with rfl
+            exact covered
+          · intro item member; cases member
   | rows frame =>
       simp only [Query.expand]
       split
@@ -767,16 +1094,19 @@ theorem expansion_free_within (footprint : List String)
             rcases List.mem_singleton.mp member with rfl
             exact covered
           · intro answer member; cases member
+  | dynamicInputs frame => exact dynamicInputs_expansion_free_within footprint environment request dynamic frame covered
+  | dynamicRows frame => exact dynamicRows_expansion_free_within footprint environment request frame covered.1 covered.2
   | arguments frame => exact arguments_expansion_free_within footprint environment request frame covered.1 covered.2
   | matcher frame => exact matcher_expansion_free_within footprint environment request frame covered.1 covered.2.1 covered.2.2
 theorem run_free_within (footprint : List String) (environment : Environment)
     (request : Query.Request)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
     (fuel : Nat) (state : Query.State environment request)
     (covered : stateFreeWithin footprint environment request state) :
     stateFreeWithin footprint environment request (Query.run environment request fuel state) :=
   Scheduler.run_preserves (taskFreeWithin footprint) (fun (answer : Query.Answer environment request) => assignmentFreeWithin footprint answer.assignment)
-    (Query.expand environment request) (expansion_free_within footprint environment request provider)
+    (Query.expand environment request) (expansion_free_within footprint environment request provider dynamic)
     fuel state covered
 
 theorem start_free_within (footprint : List String) (environment : Environment)
@@ -791,37 +1121,46 @@ theorem start_free_within (footprint : List String) (environment : Environment)
 theorem run_from_start_free_within (footprint : List String) (environment : Environment)
     (request : Query.Request)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
     (stored : assignmentFreeWithin footprint request.initial) (fuel : Nat) :
     stateFreeWithin footprint environment request
       (Query.run environment request fuel (Query.start environment request)) :=
-  run_free_within footprint environment request provider fuel _
+  run_free_within footprint environment request provider dynamic fuel _
     (start_free_within footprint environment request stored)
 theorem tick_free_within (footprint : List String) (environment : Environment)
     (request : Query.Request)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
     (state : Query.State environment request) (covered : stateFreeWithin footprint environment request state) :
     stateFreeWithin footprint environment request (Query.tick environment request state) :=
   Scheduler.tick_preserves (taskFreeWithin footprint)
     (fun (answer : Query.Answer environment request) => assignmentFreeWithin footprint answer.assignment)
-    (Query.expand environment request) (expansion_free_within footprint environment request provider) state covered
+    (Query.expand environment request) (expansion_free_within footprint environment request provider dynamic) state covered
 theorem run_answer_free_within (footprint : List String) (environment : Environment)
     (request : Query.Request)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : DynamicOutputsFreeWithin footprint environment)
     (stored : assignmentFreeWithin footprint request.initial) (fuel : Nat)
     (answer : Query.Answer environment request)
     (member : answer ∈ (Query.run environment request fuel (Query.start environment request)).answers) :
     assignmentFreeWithin footprint answer.assignment :=
-  (run_from_start_free_within footprint environment request provider stored fuel).2 answer member
-theorem run_finite_free_within (environment : Environment) (request : Query.Request) (fuel : Nat) :
+  (run_from_start_free_within footprint environment request provider dynamic stored fuel).2 answer member
+theorem run_finite_free_within (environment : Environment) (request : Query.Request)
+    (dynamic : DynamicOutputsFreeWithin
+      (ConditionalEquationExecution.assignmentFreeNames request.initial ++ providerFreeNames environment.provider) environment)
+    (fuel : Nat) :
     stateFreeWithin (ConditionalEquationExecution.assignmentFreeNames request.initial ++ providerFreeNames environment.provider)
       environment request (Query.run environment request fuel (Query.start environment request)) := by
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · exact assignment_coverage_mono _ _ request.initial
       (fun name member => List.mem_append_left _ member) (assignment_covered_by_own_names request.initial)
 
 theorem prefix_assignment_check_snapshot (environment : Environment) (request : Query.Request)
+    (dynamic : DynamicOutputsFreeWithin
+      (ConditionalEquationExecution.assignmentFreeNames request.initial ++ providerFreeNames environment.provider) environment)
     (fuel : Nat) (frame : Query.ArgumentsFrame environment request)
     (member : Query.Task.arguments frame ∈
       (Query.run environment request fuel (Query.start environment request)).agenda) :
@@ -833,7 +1172,7 @@ theorem prefix_assignment_check_snapshot (environment : Environment) (request : 
   unfold checkTypedAssignment
   apply ConditionalEquationExecution.checkAssignment_snapshot
   apply assignment_free_names_covered
-  exact ((run_finite_free_within environment request fuel).1 _ member).1
+  exact ((run_finite_free_within environment request dynamic fuel).1 _ member).1
 
 #print axioms Mettapedia.OSLF.MeTTaIL.GeneralPremise.Query.removed_parameter_free_within
 #print axioms Mettapedia.OSLF.MeTTaIL.GeneralPremise.Query.bound_parameter_free_within

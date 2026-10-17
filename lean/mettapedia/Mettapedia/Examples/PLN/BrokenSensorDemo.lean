@@ -30,8 +30,8 @@ All declarations are closed.
 -/
 
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-import Mettapedia.PLN.Evidence.EvidenceQuantale
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 namespace Mettapedia.Examples.PLN.BrokenSensorDemo
 

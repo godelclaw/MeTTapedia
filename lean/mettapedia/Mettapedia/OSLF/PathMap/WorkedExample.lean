@@ -127,18 +127,23 @@ private theorem symbol_not_var (s : String) : ∀ w, Atom.symbol s ≠ Atom.var 
 /-- All five atoms pass the HE variable-query match. -/
 theorem alpha_matches : heIsMatch 10 varQuery atom_alpha = true :=
   heIsMatch_var_any "x" atom_alpha 9 (symbol_not_var "alpha")
+    (by simp [atom_alpha, Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars])
 
 theorem beta_matches : heIsMatch 10 varQuery atom_beta = true :=
   heIsMatch_var_any "x" atom_beta 9 (symbol_not_var "beta")
+    (by simp [atom_beta, Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars])
 
 theorem gamma_matches : heIsMatch 10 varQuery atom_gamma = true :=
   heIsMatch_var_any "x" atom_gamma 9 (symbol_not_var "gamma")
+    (by simp [atom_gamma, Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars])
 
 theorem delta_matches : heIsMatch 10 varQuery atom_delta = true :=
   heIsMatch_var_any "x" atom_delta 9 (symbol_not_var "delta")
+    (by simp [atom_delta, Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars])
 
 theorem epsilon_matches : heIsMatch 10 varQuery atom_epsilon = true :=
   heIsMatch_var_any "x" atom_epsilon 9 (symbol_not_var "epsilon")
+    (by simp [atom_epsilon, Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars])
 
 /-! ## §6: The direct query result IS the full support
 

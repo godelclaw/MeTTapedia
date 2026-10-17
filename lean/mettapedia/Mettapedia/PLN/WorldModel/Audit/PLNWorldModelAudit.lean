@@ -1,8 +1,8 @@
 import Mathlib.Data.ENNReal.Basic
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 import Mettapedia.PLN.WorldModel.GenericWorldModelForgetting
-import Mettapedia.PLN.WorldModel.PLNWorldModelOverlap
-import Mettapedia.PLN.WorldModel.PLNWorldModelConservationPack
+import Mettapedia.PLN.WorldModel.WorldModelOverlap
+import Mettapedia.PLN.WorldModel.WorldModelConservationPack
 import Mettapedia.PLN.WorldModel.OrderCost.PLNWorldModelOrderCostBounds
 import Mettapedia.PLN.WorldModel.Semitopology.PLNSemitopologyProvenanceBridge
 

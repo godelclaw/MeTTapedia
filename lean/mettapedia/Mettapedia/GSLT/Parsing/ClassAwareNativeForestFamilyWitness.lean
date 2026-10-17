@@ -91,7 +91,7 @@ theorem list_member_of_getElem?_eq_some
 
 /-- Structural input turns an exact node-array lookup into semantic `NodeAt`
 evidence. -/
-def nodeAtOfLookup
+theorem nodeAtOfLookup
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     (inputs : FamilyDecodingInputs view inventory profile plan)
@@ -102,7 +102,7 @@ def nodeAtOfLookup
 
 /-- Structural input turns an exact choice-array lookup into the
 parent-indexed ownership used by semantic derivations. -/
-def ownedChoiceOfLookup
+theorem ownedChoiceOfLookup
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     (inputs : FamilyDecodingInputs view inventory profile plan)
@@ -860,7 +860,7 @@ theorem mem_decodedFamilies_sound
 /-- Root checking, finite occurrence decoding, explicit completeness, and
 the pre-existing structural checks assemble the exact native representation
 contract. -/
-def RootedFamilyDecodingInputs.represents
+theorem RootedFamilyDecodingInputs.represents
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     (inputs : RootedFamilyDecodingInputs view inventory profile plan)
@@ -1141,12 +1141,12 @@ theorem nodeAt_unique
     left = right :=
   Option.some.inj (leftAt.1.symm.trans rightAt.1)
 
-def representationCanaryParentAt :
+theorem representationCanaryParentAt :
     NodeAt representationCanaryView 0 representationCanarySymbol := by
   simp [NodeAt, NodeSpanCoherent, representationCanaryView,
     representationCanarySymbol]
 
-def representationCanaryTerminalAt :
+theorem representationCanaryTerminalAt :
     NodeAt representationCanaryView 1 representationCanaryTerminal := by
   simp [NodeAt, NodeSpanCoherent, representationCanaryView,
     representationCanaryTerminal]
@@ -1197,7 +1197,7 @@ theorem representationCanaryDecoded_member :
         [leafCanaryWitness] := by
   decide
 
-def representationCanaryCoverage :
+theorem representationCanaryCoverage :
     ExactFamilyCoverage representationCanaryInputs.families
       [leafCanaryWitness] := by
   constructor
@@ -1218,7 +1218,7 @@ def representationCanaryCoverage :
 
 /-- A nontrivial symbol/choice/terminal instance reaches the full exact
 `Represents` contract through the generic decoder and coverage interface. -/
-def representationCanaryRepresents :
+theorem representationCanaryRepresents :
     Represents representationCanaryView
       representationCanaryInventory.toTable representationCanaryProfile [65]
       (decodedForest representationCanaryInputs.families

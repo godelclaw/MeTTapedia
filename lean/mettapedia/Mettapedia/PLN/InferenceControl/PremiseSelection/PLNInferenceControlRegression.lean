@@ -19,13 +19,7 @@ Single-entry build target for Chapter-13 inference-control coverage:
 - coverage/submodularity objective theorems
 - executable positive/negative canaries
 
-Build command:
-
-```bash
-cd /home/zar/claude/Mettapedia/lean/mettapedia
-ulimit -Sv 6291456 && export LAKE_JOBS=3 && nice -n 19 \
-  lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression
-```
+Build with `lake build Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression`.
 -/
 
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression

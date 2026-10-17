@@ -37,7 +37,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
 open Mettapedia.GSLT.LanguageDef.InferenceProofRelevantSemanticExtension
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareCheckedContext
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareFormedTyping
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

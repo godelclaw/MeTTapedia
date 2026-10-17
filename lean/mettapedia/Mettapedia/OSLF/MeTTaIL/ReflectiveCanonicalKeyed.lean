@@ -126,9 +126,9 @@ theorem sortPatternsBy_forall₂_of_key_perm_of_cross_ties
       rfl
     rw [leftMap, rightMap]
     let ordered : Key → Key → Prop := fun first second => first ≤ second
-    letI : Std.Total ordered := ⟨fun first second => le_total first second⟩
-    letI : IsTrans Key ordered := ⟨fun _ _ _ => le_trans⟩
-    letI : Std.Antisymm ordered := ⟨fun _ _ => le_antisymm⟩
+    let : Std.Total ordered := ⟨fun first second => le_total first second⟩
+    let : IsTrans Key ordered := ⟨fun _ _ _ => le_trans⟩
+    let : Std.Antisymm ordered := ⟨fun _ _ => le_antisymm⟩
     apply List.Perm.eq_of_pairwise' (r := ordered)
     · simpa [ordered] using
         (List.pairwise_mergeSort' ordered (left.map key))
@@ -371,6 +371,22 @@ mutual
           canonicalizeListByDepths key declaration availableDepth scopeDepth
             patterns
 end
+
+/-- A non-quote application keeps its head while its arguments are canonicalized. -/
+theorem canonicalizeByDepths_apply_of_ne_quote {Key : Type} [LinearOrder Key]
+    (key : Nat → Nat → Pattern → Key)
+    (declaration : ReflectivePresentationDecl)
+    (availableDepth scopeDepth : Nat) (constructor : String)
+    (arguments : List Pattern)
+    (notQuote : constructor ≠ declaration.quoteConstructor) :
+    canonicalizeByDepths key declaration availableDepth scopeDepth
+        (.apply constructor arguments) =
+      .apply constructor
+        (canonicalizeListByDepths key declaration availableDepth scopeDepth arguments) := by
+  unfold canonicalizeByDepths
+  simp only [beq_iff_eq, notQuote, if_false]
+  unfold finishNormalizeReflectiveApply
+  simp [notQuote]
 
 /-- Two-depth keyed canonicalization cancels the reflective declaration's
 quote/drop shell exactly.  The ordering key is irrelevant at this redex;

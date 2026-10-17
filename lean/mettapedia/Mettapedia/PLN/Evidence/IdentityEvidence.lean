@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Identity BinaryEvidence Layer
@@ -137,7 +137,7 @@ theorem transportAlongPathIf_disabled
     transportAlongPathIf false idEv path payload = payload := by
   simp [transportAlongPathIf]
 
-/-- Additive revision of independent identity-path evidence. -/
+/-- Additive revision of identity-path evidence from disjoint observations. -/
 noncomputable def reviseIdentityEvidence (e₁ e₂ : BinaryEvidence) : BinaryEvidence :=
   e₁ + e₂
 

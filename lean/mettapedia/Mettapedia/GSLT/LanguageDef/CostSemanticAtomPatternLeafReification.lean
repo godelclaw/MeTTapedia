@@ -18,7 +18,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 mutual
   /-- Mapping constructors on both endpoints preserves a semantic-leaf
   alignment when the selected leaf relation is transported pointwise. -/
-  def PatternLeafAligned.mapPattern
+  theorem PatternLeafAligned.mapPattern
       (symbols : LanguageDefSymbolMap)
       {relation mappedRelation : Pattern → Pattern → Prop}
       (mapLeaf : ∀ {left right}, relation left right →
@@ -46,7 +46,7 @@ mutual
           (PatternLeafAlignedList.mapPattern symbols mapLeaf elements)
 
   /-- Listwise companion of `PatternLeafAligned.mapPattern`. -/
-  def PatternLeafAlignedList.mapPattern
+  theorem PatternLeafAlignedList.mapPattern
       (symbols : LanguageDefSymbolMap)
       {relation mappedRelation : Pattern → Pattern → Prop}
       (mapLeaf : ∀ {left right}, relation left right →
@@ -66,7 +66,7 @@ mutual
   semantic-leaf alignment.  The leaf callback is depth-indexed because an
   ordinary binder increments the local depth while a substitution body uses
   its own shifted depth. -/
-  def PatternLeafAligned.thickenAmbientBVars
+  theorem PatternLeafAligned.thickenAmbientBVars
       {source : CIGSLT} {color : CostStaticColor}
       {sourceBound targetBound : List TypeExpr}
       (thinning : CostStaticBinderThinning source color sourceBound targetBound)
@@ -112,7 +112,7 @@ mutual
               depth elements))
 
   /-- Listwise companion of `PatternLeafAligned.thickenAmbientBVars`. -/
-  def PatternLeafAlignedList.thickenAmbientBVars
+  theorem PatternLeafAlignedList.thickenAmbientBVars
       {source : CIGSLT} {color : CostStaticColor}
       {sourceBound targetBound : List TypeExpr}
       (thinning : CostStaticBinderThinning source color sourceBound targetBound)
@@ -138,7 +138,7 @@ namespace CostStaticAtomKeyCospan
 mutual
   /-- Map both endpoints of a structural semantic-leaf alignment through two
   legs of one common semantic-key cospan. -/
-  def reifyPatternLeafAligned
+  theorem reifyPatternLeafAligned
       {leftCount rightCount leftEndpoint rightEndpoint : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -188,7 +188,7 @@ mutual
               leftLeg rightLeg leaf elements))
 
   /-- Listwise companion of `reifyPatternLeafAligned`. -/
-  def reifyPatternLeafAlignedList
+  theorem reifyPatternLeafAlignedList
       {leftCount rightCount leftEndpoint rightEndpoint : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}

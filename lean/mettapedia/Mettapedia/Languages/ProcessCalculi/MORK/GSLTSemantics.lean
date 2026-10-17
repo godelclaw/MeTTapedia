@@ -23,6 +23,12 @@ policy, keeping the open-world language semantics distinct from the
 remove-before-interpret implementation boundary.  The consuming member is
 relative to the modeled interpreter; it does not classify unmodeled upstream
 factory cases.  Neither profile assigns those cases invented meaning.
+
+Every profile here fires with the support model's matcher and sink order (one-way
+matching, sinks finalized in their authored order).  The kernel's step is
+`Mainline.mainlineStep`; their firings agree on ground stored atoms when every `+`
+sink precedes every `-` sink and the support queue's instances are ground
+(`MM2SupportKernelBridge`).
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MORK

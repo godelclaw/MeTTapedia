@@ -3,7 +3,7 @@ import Mettapedia.Machines.CMemory.Assertions
 /-!
 # Scalar values of the admitted C fragment and typed loads
 
-The admitted scalars are `bool` flags, signed 32-bit integers, `uint32_t`
+The admitted scalars are unsigned 8-bit storage cells, `bool` flags, signed 32-bit integers, `uint32_t`
 counters and capacities, `uint64_t` identities and guards, and object pointers
 such as `Space *`. Interpreting a native `int` as signed 32-bit storage requires
 that width in the declared native layout; it is not a claim about every C ABI.
@@ -11,8 +11,10 @@ that width in the declared native layout; it is not a claim about every C ABI.
 constructor and otherwise reaches `undefined` in this restricted calculus.
 This is not the complete C11 effective-type rule: C11 6.5p7 also permits
 corresponding signed/unsigned types and character accesses, among others.
-Those accesses require a byte representation and a source/type adapter;
-the sum of scalar constructors does not provide them.
+The unsigned-byte storage constructor preserves all eight bits. Treating an
+arbitrary C object or a `const char *` as those byte cells still requires an
+object-representation and source/type adapter; the scalar sum supplies neither
+character aliasing nor implicit integer promotions.
 
 ## Examples
 
@@ -34,9 +36,10 @@ open CellPermission
 
 universe u
 
-/-- **Scalar values**: booleans, signed 32-bit integers, 32- and 64-bit unsigned integers, and object pointers
+/-- **Scalar values**: unsigned bytes, booleans, signed 32-bit integers, 32- and 64-bit unsigned integers, and object pointers
 (null or a pointer). -/
 inductive CVal where
+  | u8 (n : UInt8)
   | bool (b : Bool)
   | i32 (n : Int32)
   | u32 (n : UInt32)
@@ -45,6 +48,12 @@ inductive CVal where
   deriving DecidableEq, Repr
 
 namespace CProg
+
+/-- Read an admitted unsigned-byte storage cell without reinterpreting another scalar. -/
+def loadU8 (p : Ptr) : CProg CVal UInt8 :=
+  load p >>= fun
+    | .u8 n => pure n
+    | _ => undefined
 
 /-- Load a signed 32-bit cell, retaining negative values and the stored type. -/
 def loadI32 (p : Ptr) : CProg CVal Int32 :=
@@ -93,6 +102,15 @@ variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option 
 theorem loadI32_rule {P : Heap L → Prop} {p : Ptr} {n : Int32}
     (reads : ∀ σ, P σ → read ((σ p.block).2 p.offset) = some (some (CVal.i32 n))) :
     CTriple P (CProg.loadI32 p) (fun r σ => r = n ∧ P σ) := by
+  apply triple_bind _ (load_rule reads)
+  intro v
+  apply triple_pure
+  rintro rfl
+  exact triple_pre _ (fun σ holds => ⟨rfl, holds⟩) (triple_ret _ n (fun r σ => r = n ∧ P σ))
+
+theorem loadU8_rule {P : Heap L → Prop} {p : Ptr} {n : UInt8}
+    (reads : ∀ σ, P σ → read ((σ p.block).2 p.offset) = some (some (CVal.u8 n))) :
+    CTriple P (CProg.loadU8 p) (fun r σ => r = n ∧ P σ) := by
   apply triple_bind _ (load_rule reads)
   intro v
   apply triple_pure
@@ -163,6 +181,28 @@ theorem unsigned64_increment_wraps :
 
 
 variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+/-- A byte read is not an implicit conversion or a character-aliasing claim. -/
+theorem loadU8_of_u32_undefined (p : Ptr) (n : UInt32) (σ : Heap L)
+    (holds : read ((σ p.block).2 p.offset) = some (some (CVal.u32 n))) :
+    ¬ (CProg.loadU8 p).Safe act σ := by
+  intro safe
+  rw [CProg.loadU8, Prog.bind_eq, Prog.safe_bind] at safe
+  obtain ⟨-, after⟩ := safe
+  have runs : (CProg.load (V := CVal) p).Runs act σ (CVal.u32 n) σ :=
+    ⟨CVal.u32 n, σ, ⟨holds, rfl⟩, rfl, rfl⟩
+  exact (after _ _ runs).1
+
+/-- The byte cell is not silently promoted by a typed wide load. -/
+theorem loadU32_of_u8_undefined (p : Ptr) (n : UInt8) (σ : Heap L)
+    (holds : read ((σ p.block).2 p.offset) = some (some (CVal.u8 n))) :
+    ¬ (CProg.loadU32 p).Safe act σ := by
+  intro safe
+  rw [CProg.loadU32, Prog.bind_eq, Prog.safe_bind] at safe
+  obtain ⟨-, after⟩ := safe
+  have runs : (CProg.load (V := CVal) p).Runs act σ (CVal.u8 n) σ :=
+    ⟨CVal.u8 n, σ, ⟨holds, rfl⟩, rfl, rfl⟩
+  exact (after _ _ runs).1
 
 /-- The unsigned reader does not reinterpret a signed cell, even when its
 current value is nonnegative. -/

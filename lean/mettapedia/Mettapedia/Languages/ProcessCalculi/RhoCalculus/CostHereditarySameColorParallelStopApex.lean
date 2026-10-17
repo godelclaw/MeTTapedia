@@ -187,7 +187,7 @@ noncomputable def
 
 /-- Reconstruct two same-colour process-plan frames from restoration evidence
 on their canonically paired parallel leaves. -/
-noncomputable def processPlans_commonRestorationApex_of_sameColorCanonical
+theorem processPlans_commonRestorationApex_of_sameColorCanonical
     {color : CostStaticColor}
     {targetFree : FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -355,7 +355,7 @@ noncomputable def processPlans_commonRestorationApex_of_sameColorCanonical
 
 /-- Same-colour process-plan reconstruction with independent keying and
 restoration depths. -/
-noncomputable def
+theorem
     processPlans_commonRestorationApex_at_independentDepths_of_sameColorCanonical
     {color : CostStaticColor}
     {targetFree : FreeTypeContext}
@@ -550,7 +550,7 @@ end ParallelFrontier
 
 /-- Reconstruct a reached same-colour process pair in the semantic cospan of
 its enclosing static roots, with independent keying and restoration depths. -/
-noncomputable def rho_reachedPlanPairCommonApex_of_sameColorCanonical
+theorem rho_reachedPlanPairCommonApex_of_sameColorCanonical
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

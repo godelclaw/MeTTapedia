@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.NativeTypes.Generation.NativeCubeProfile
+import Mettapedia.OSLF.NativeTypes.Certificates.DeferredSeededSearch
 import Mettapedia.OSLF.NativeTypes.Generation.BindingNativeSearch
 import Mettapedia.OSLF.NativeTypes.Generation.ConstructorOrigins
 import Mettapedia.OSLF.NativeTypes.Generation.NativeStructuralTypes
@@ -184,9 +185,45 @@ def rawSeeds : List (Certificates.Refinement.Certificate installed.signature) :=
     ((List.finRange installed.operational.declarations.headers.length).map Sum.inl ++
       (List.finRange installed.operational.modal.length).map Sum.inr).flatMap fun former =>
       [Certificates.Refinement.erase (installed.cubeDerivation
-        (CubeNativeDeclarations.primitiveFormation installed.vertex (.former former))),
+        (CubeNativeClosedFormation.primitiveFormation installed.vertex (.former former))),
        Certificates.Refinement.erase (installed.cubeDerivation
-        (CubeNativeDeclarations.primitiveFormation installed.vertex (.formation former)))]
+        (CubeNativeClosedFormation.primitiveFormation installed.vertex (.formation former)))]
+
+/-- Structural judgments precede the operational declaration catalogue.
+Each family retains its declaration order and complete certificate. -/
+def rawSeedFactories : List (Unit → Certificates.Refinement.Certificate installed.signature) :=
+  (List.finRange installed.operational.declarations.headers.length).map (fun constructor _ =>
+      Certificates.Refinement.erase (installed.operationalDerivation
+        (installed.operational.constructorDerivation
+          (installed.operational.declarations.structuralFormation constructor)))) ++
+    installed.operational.derivationSeedFactories.map (fun factory _ =>
+      Certificates.Refinement.erase (installed.operationalDerivation (factory ()).2)) ++
+    (List.finRange installed.operational.modal.length).map (fun index _ =>
+      Certificates.Refinement.erase (installed.operationalDerivation
+        (NativeModalContinuation.genericResponseFormation (BindingPipeline.plan installed.operational.generated)
+          installed.operational.declarations installed.operational.modal index))) ++
+    ((List.finRange installed.operational.declarations.headers.length).map Sum.inl ++
+      (List.finRange installed.operational.modal.length).map Sum.inr).flatMap fun former =>
+      [fun _ => Certificates.Refinement.erase (installed.cubeDerivation
+        (CubeNativeClosedFormation.primitiveFormation installed.vertex (.former former))),
+       fun _ => Certificates.Refinement.erase (installed.cubeDerivation
+        (CubeNativeClosedFormation.primitiveFormation installed.vertex (.formation former)))]
+
+theorem rawSeedFactories_perm :
+    (installed.rawSeedFactories.map (fun factory => factory ())).Perm installed.rawSeeds := by
+  have operational := List.Perm.map
+    (fun named : Σ judgment, Derivation installed.operational.signature judgment =>
+      Certificates.Refinement.erase (installed.operationalDerivation named.2))
+    installed.operational.derivationSeedFactories_perm
+  simp only [List.map_map, Function.comp_def] at operational
+  simp only [rawSeedFactories, rawSeeds, List.map_append, List.map_map,
+    List.map_flatMap, List.map_cons, List.map_nil, Function.comp_def]
+  apply List.Perm.append_right
+  apply List.Perm.append_right
+  exact List.perm_append_comm.trans (List.Perm.append_right _ operational)
+
+theorem rawSeedFactories_length : installed.rawSeedFactories.length = installed.rawSeeds.length := by
+  simpa only [List.length_map] using installed.rawSeedFactories_perm.length_eq
 
 def nativeSeeds : List (Tree (NativeLogic.presentation installed.operational.logic installed.signature)) :=
   installed.rawSeeds.filterMap fun certificate =>
@@ -195,26 +232,36 @@ def nativeSeeds : List (Tree (NativeLogic.presentation installed.operational.log
         ((NativeLogic.certificateAllowedFast_exact _ _).mp selected))
     else none
 
+/-- Refused vocabulary keeps an explicit empty scheduled position. It is not
+counted as a refutation and does not collapse later occurrence identities. -/
+def nativeSeedFactories : List (Unit → Option
+    (Tree (NativeLogic.presentation installed.operational.logic installed.signature))) :=
+  installed.rawSeedFactories.map fun factory _ =>
+    let certificate := factory ()
+    if selected : NativeLogic.certificateAllowedFast installed.operational.logic certificate = true then
+      some (NativeLogic.restrict installed.operational.logic certificate
+        ((NativeLogic.certificateAllowedFast_exact _ _).mp selected))
+    else none
+
 abbrev SearchState := Search.State (NativeLogic.presentation installed.operational.logic installed.signature)
 
 def search (judgment : Judgment installed.symbols) (budget : Nat) : installed.SearchState :=
-  NativeLogic.searchWithSeeds installed.operational.logic installed.nativeSeeds judgment budget
+  NativeLogic.searchWithDeferred installed.operational.logic installed.nativeSeedFactories judgment budget
 
 def resume (judgment : Judgment installed.symbols) (budget : Nat)
     (state : installed.SearchState) : installed.SearchState :=
-  NativeLogic.resumeWithSeeds installed.operational.logic installed.nativeSeeds judgment budget state
+  NativeLogic.resumeWithDeferred installed.operational.logic installed.nativeSeedFactories judgment budget state
 
 theorem resume_add (judgment : Judgment installed.symbols) (first second : Nat) :
     installed.search judgment (first + second) =
       installed.resume judgment second (installed.search judgment first) := by
-  exact NativeLogic.seeded_resume (D := installed.signature)
-    installed.operational.logic installed.nativeSeeds judgment first second
+  exact NativeLogic.deferred_resume installed.operational.logic installed.nativeSeedFactories judgment first second
 
 theorem stable (judgment : Judgment installed.symbols) (budget extra : Nat)
     (tree : Tree (NativeLogic.presentation installed.operational.logic installed.signature))
     (found : (installed.search judgment budget).found = some tree) :
     installed.search judgment (budget + extra) = installed.search judgment budget :=
-  NativeLogic.seeded_stable _ _ _ _ _ _ found
+  NativeLogic.deferred_stable _ _ _ _ _ _ found
 
 theorem sound (judgment : Judgment installed.symbols) (budget : Nat)
     (tree : Tree (NativeLogic.presentation installed.operational.logic installed.signature))
@@ -223,16 +270,16 @@ theorem sound (judgment : Judgment installed.symbols) (budget : Nat)
       NativeLogic.CertificatePermitted installed.operational.logic (NativeLogic.embed _ tree) ∧
       ∃ derivation : Derivation installed.signature judgment,
         Certificates.Refinement.erase derivation = NativeLogic.embed _ tree :=
-  NativeLogic.seeded_sound _ _ _ _ _ found
+  NativeLogic.deferred_sound _ _ _ _ _ found
 
 theorem discovery (judgment : Judgment installed.symbols)
     (certificate : Certificates.Refinement.Certificate installed.signature)
     (selected : NativeLogic.CertificatePermitted installed.operational.logic certificate)
     (accepted : Certificates.Refinement.check certificate judgment = true) :
     ∃ found, (installed.search judgment
-      (SeededSearch.discoveryBound installed.nativeSeeds.length
+      (DeferredSeededSearch.discoveryBound installed.nativeSeedFactories.length
         (Tree.wireSize (NativeLogic.restrict installed.operational.logic certificate selected)))).found = some found := by
-  apply NativeLogic.seeded_discovery installed.operational.logic installed.nativeSeeds judgment
+  apply NativeLogic.deferred_discovery installed.operational.logic installed.nativeSeedFactories judgment
     (NativeLogic.restrict installed.operational.logic certificate selected)
   have comparison := NativeLogic.embed_check installed.operational.logic
     (NativeLogic.restrict installed.operational.logic certificate selected) judgment

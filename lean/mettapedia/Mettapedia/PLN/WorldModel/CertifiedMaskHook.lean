@@ -7,7 +7,7 @@ proved proposition about the extracted evidence into an ordinary
 make a hard mask available.
 -/
 
-import Mettapedia.PLN.WorldModel.GenericWorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 import Mettapedia.GSLT.LanguageDef.Gauthier.CertifiedMask
 
 namespace Mettapedia.PLN.WorldModel.CertifiedMaskHook

@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 import Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 import Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem
@@ -222,7 +222,7 @@ in this project are mathematically compatible:
    - Files: DirectedGraph.lean, BayesianNetwork.lean, DSeparation.lean
 
 2. **PLN BinaryEvidence Quantale**: Commutative quantale, frame, deduction
-   - Files: EvidenceQuantale.lean, EvidenceQuantale.lean, PLNDeduction.lean
+   - Files: BinaryEvidence.lean, BinaryEvidence.lean, PLNDeduction.lean
 
 3. **Heyting K&S**: Interval bounds, excluded middle gap, uncertainty
    - Files: HeytingValuationOnEvidence.lean, EvidenceIntervalBounds.lean

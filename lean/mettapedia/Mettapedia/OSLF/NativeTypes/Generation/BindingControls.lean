@@ -17,7 +17,8 @@ namespace Mettapedia.OSLF.NativeTypes.Generation.BindingPipeline.Controls
 open Mettapedia.OSLF.MeTTaIL Syntax GeneralExecutionAdmission GeneralPremise
 open Mettapedia.OSLF.NativeTypes
 
-def snapshot (language : LanguageDef) : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot (language : LanguageDef) : Snapshot :=
+  ⟨language, [], {signatures := [], rows := [], dynamicRelations := []}⟩
 
 def fragment : LanguageFragment :=
   {operational := {sites := .rootOnly, equationIndices := some [], includeDerivedEquations := false}}

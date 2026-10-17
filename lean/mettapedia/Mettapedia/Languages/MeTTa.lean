@@ -1,19 +1,27 @@
+import Mettapedia.Languages.MeTTa.GuardedAtomRuleBoundary
 import Mettapedia.Languages.MeTTa.HE
 import Mettapedia.Languages.MeTTa.OSLFCore
 import Mettapedia.Languages.MeTTa.MeTTaZero
 import Mettapedia.Languages.MeTTa.MeTTaZeroAnswerAlgebra
+import Mettapedia.Languages.MeTTa.WeightedAnswerAlgebra
+import Mettapedia.Languages.MeTTa.LayerEffects
+import Mettapedia.Languages.MeTTa.AnnotationCapabilities
+import Mettapedia.Languages.MeTTa.SpecRunObserver
 import Mettapedia.Languages.MeTTa.MeTTaZeroWorkClosure
 import Mettapedia.Languages.MeTTa.MeTTaZeroUV
 import Mettapedia.Languages.MeTTa.MeTTaInteraction
 import Mettapedia.Languages.MeTTa.MeTTaInteractionBind
 import Mettapedia.Languages.MeTTa.MeTTaInteractionResources
 import Mettapedia.Languages.MeTTa.MeTTaRevisionedQueryBindEval
+import Mettapedia.Languages.MeTTa.MeTTaAuthoredProgramExecution
 import Mettapedia.Languages.MeTTa.MeTTaRevisionedQueryBindEvalCollapse
 import Mettapedia.Languages.MeTTa.StigmergicSpace
 import Mettapedia.Logic.Query.Coverage
 import Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire
 import Mettapedia.Languages.MeTTa.MeTTaZeroLanguageAdequacy
 import Mettapedia.Languages.MeTTa.MeTTaZeroStagedAdequacy
+import Mettapedia.Languages.MeTTa.MeTTaZeroNativeKernel
+import Mettapedia.Languages.MeTTa.MeTTaFiniteRevisionedKernel
 import Mettapedia.Languages.MeTTa.MeTTaZeroHornFragment
 import Mettapedia.Languages.MeTTa.MeTTaZeroCertifiedPlanning
 import Mettapedia.Languages.MeTTa.PeTTa
@@ -21,7 +29,6 @@ import Mettapedia.Languages.MeTTa.CoreProfile
 import Mettapedia.Languages.MeTTa.DialectProfile
 import Mettapedia.Languages.MeTTa.RuntimeSpec
 import Mettapedia.Languages.MeTTa.DialectProjectionBoundary
-import Mettapedia.Languages.MeTTa.DialectReductionCarrierCensus
 import Mettapedia.Machines.DeterministicTail
 import Mettapedia.Machines.FinitePullProducer
 import Mettapedia.Logic.Unification.BinaryPatternViews
@@ -60,84 +67,30 @@ import Mettapedia.Languages.MeTTa.CeTTaSpaceEngineRefinement
 import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.HEFragmentBridge
 import Mettapedia.Languages.MeTTa.DTTSeedProofPath
 import Mettapedia.Languages.MeTTa.DTTTutorialStatus
-import Mettapedia.Languages.MeTTa.PrimeCandidates
-import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent
-import Mettapedia.Languages.MeTTa.PrimeComparisons
-import Mettapedia.Languages.MeTTa.PrimeCandidates.Language
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IndexedLanguageChange
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DataFibration
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DataTranslationKernel
-import Mettapedia.Languages.MeTTa.PrimeCandidates.InternalDataTransport
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationSyntax
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationFactorization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageOperationAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILLayeredCrown
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GSLTILTypedOperationAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.SourceScopedAdaptiveRealization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionOptimizationSelection
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionExternalGuidanceReceipt
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionExternalArtifactChecker
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionRankingArtifact
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionBoundedRanking
-import Mettapedia.Languages.MeTTa.PrimeCandidates.IncrementalCompressionEvidenceStageBridge
-import Mettapedia.Languages.MeTTa.PrimeCandidates.InternalAdmission
-import Mettapedia.Languages.MeTTa.PrimeCandidates.SelfInstance
-import Mettapedia.Languages.MeTTa.PrimeCandidates.RegularIntegrationBuild
-import Mettapedia.Languages.MeTTa.PrimeCandidates.OpenLambdaPiCorrespondence
-import Mettapedia.Languages.MeTTa.PrimeCandidates.ContextualDataFibration
-import Mettapedia.Languages.MeTTa.PrimeCandidates.InternalContextualTransport
+import Mettapedia.Languages.MeTTa.Experimental.NoValueZoo
+import Mettapedia.Languages.MeTTa.Experimental.NullDesigns
 import Mettapedia.Logic.Query.MultisetAscription
-import Mettapedia.Languages.MeTTa.PrimeCandidates.TypedScheduler
-import Mettapedia.Languages.MeTTa.PrimeCandidates.EvaluationCoherence
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CertifiedPlanning
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NucleusDerivedModalTyping
-import Mettapedia.Languages.MeTTa.PrimeCandidates.GradualGuarantee
-import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDefAdequacy
-import Mettapedia.Languages.MeTTa.PrimeCandidates.UniversalName
 import Mettapedia.TypeTheory.Calculi.StagedScopedReflective.SuperpositionOccurrencePressure
-import Mettapedia.Languages.MeTTa.PrimeCandidates.MetalogicCriteria
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetCoreComparison
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralDependentPiComparison
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralBooleanIdentityComparison
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralAtomlessBooleanComparison
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralGenerativeAtomlessGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.ModelQualifiedSetCoreChecker
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSemanticGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetOperationComparison
-import Mettapedia.Languages.MeTTa.PrimeComparisons.ModelQualifiedSetOperationChecker
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetOperationGrounding
-import Mettapedia.Languages.MeTTa.PrimeComparisons.PluralSetTypeUltrainfiniteComparison
-import Mettapedia.Languages.MeTTa.PrimeCandidates.ScopedIdentityStatus
 import Mettapedia.GSLT.LanguageDef.ScopedProofIrrelevance
 import Mettapedia.GSLT.LanguageDef.IdentityComputationCalibration
-import Mettapedia.Languages.MeTTa.PrimeCandidates.ListLanes
-import Mettapedia.Languages.MeTTa.PrimeCandidates.MinimalCheckingPackage
-import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.Calibration.PackageIdentityV1
-import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.Calibration.FragmentAdequacyV1
-import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.Calibration.CertificateBoundaryV1
-import Mettapedia.Languages.MeTTa.PrimeCeTTaCurrent.Calibration.PeTTaChainerDAGReplayV1
 import Mettapedia.Machines.BranchLocalNeed.Worlds
 import Mettapedia.Machines.BranchLocalNeed.InferenceControl
 import Mettapedia.Machines.BranchLocalNeed.ProtocolBridge
 import Mettapedia.Machines.BranchLocalNeed.InteractionAuthority
 import Mettapedia.Machines.BranchLocalNeed.InteractionValuation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CallSharingTournament
-import Mettapedia.Languages.MeTTa.PrimeCandidates.EquationCallSemantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CellCausalSemantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CellCausalFrontier
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CellCausalControl
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeReceiptCorrespondence
-import Mettapedia.Languages.MeTTa.PrimeCandidates.CellCausalNativeRefinement
-import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeContextRefinement
-import Mettapedia.Languages.MeTTa.PrimeCandidates.ScopedIntroduction
+import Mettapedia.Machines.DemandBoundary
 import Mettapedia.Languages.FiniteChoice.FrontierAlgebra
 import Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+import Mettapedia.Languages.MeTTa.EquationKernel
+import Mettapedia.Languages.MeTTa.Seal
 import Mettapedia.Languages.MeTTa.MetavariableFrame
 import Mettapedia.Languages.MeTTa.MetavariableFrameStore
 import Mettapedia.Languages.MeTTa.MetavariableFrameStoreEscape
+import Mettapedia.Languages.MeTTa.MetavariableFrameLineage
+import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback
+import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory
 import Mettapedia.Languages.MeTTa.FreshFrameOccursCheck
+import Mettapedia.Languages.MeTTa.PatternSelection
 import Mettapedia.Languages.MeTTa.AnswerProducerHandoff
 import Mettapedia.Languages.MeTTa.SpecializerRelevance
 import Mettapedia.Languages.MeTTa.UndeclaredOperandType
@@ -159,20 +112,22 @@ import Mettapedia.Languages.FiniteChoice.CollapseSuperposeRoundTrip
 import Mettapedia.Languages.FiniteChoice.EmptinessTaxonomy
 import Mettapedia.GSLT.Dynamics.SourceFallback
 import Mettapedia.Languages.LazyArithPair.Semantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandObligations
 import Mettapedia.Machines.BranchLocalNeed.CacheLaws
 import Mettapedia.Machines.BranchLocalNeed.DependentService
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandNeedSimulation
-import Mettapedia.OSLF.Framework.CandidateDTTCheckedIntroduction
 import Mettapedia.OSLF.Framework.CandidateDependentWorldModel
 import Mettapedia.Languages.MeTTa.HE.HOLContract.Guest
 import Mettapedia.Languages.MeTTa.HE.HOLContract.Backend
+import Mettapedia.Languages.MeTTa.HE.HOLContract.BackendRoutes
 
 /-!
-open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
-open Mettapedia.TypeTheory.UniverseLevel
 
 # MeTTa Language Formalizations
+
+This aggregate collects source profiles and separate experimental adapters.
+`Mettapedia.Languages.GuardedAtomRule.Evidence` owns the separate guarded
+atom-rule calculus;
+its source judgments and dependency closure are available through that owner
+without importing this aggregate.
 
 ## Variants
 - `HE` - Hyperon Experimental MeTTa (authoritative HE spec)
@@ -183,4 +138,6 @@ open Mettapedia.TypeTheory.UniverseLevel
 - `HE.HOLContract.Guest` - the HOL contract of HE's type declarations and the
   hosted HOL Light checker
 - `HE.HOLContract.Backend` - replaceable backends of the contract
+- `HE.HOLContract.BackendRoutes` - admitted backends as conservative routes: every client
+  borrows the same theory through each of them
 -/

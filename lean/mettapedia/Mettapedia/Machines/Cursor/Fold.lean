@@ -371,6 +371,95 @@ theorem rejected_fresh_return_preserves_residual
 def cancel (state : Packet Item Accumulator) : Packet Item Accumulator :=
   {state with remaining := [], pending := none}
 
+/-- Change the representations of returns and committed consumer state. The
+loan, occurrence order, and acceptance/request accounts are transported whole. -/
+def Packet.map {Item' Accumulator' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (state : Packet Item Accumulator) : Packet Item' Accumulator' :=
+  ⟨state.remaining.map itemMap, state.pending.map itemMap,
+    accumulatorMap state.accumulator, state.accepted, state.requested⟩
+
+theorem Packet.map_id (state : Packet Item Accumulator) : state.map id id = state := by
+  cases state with
+  | mk remaining pending accumulator accepted requested =>
+      cases pending <;> simp [Packet.map]
+
+theorem Packet.map_map {Item' Accumulator' Item'' Accumulator'' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (itemMap' : Item' → Item'') (accumulatorMap' : Accumulator' → Accumulator'')
+    (state : Packet Item Accumulator) :
+    (state.map itemMap accumulatorMap).map itemMap' accumulatorMap' =
+      state.map (itemMap' ∘ itemMap) (accumulatorMap' ∘ accumulatorMap) := by
+  cases state with
+  | mk remaining pending accumulator accepted requested =>
+      cases pending <;> simp [Packet.map, List.map_map]
+
+theorem undelivered_map {Item' Accumulator' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (state : Packet Item Accumulator) :
+    undelivered (state.map itemMap accumulatorMap) = (undelivered state).map itemMap := by
+  cases state with
+  | mk remaining pending accumulator accepted requested =>
+      cases pending <;> simp [undelivered, Packet.map]
+
+/-- Return transport commutes with partial consumption when each successful
+consumer update and each refusal is preserved. This is a local operation
+obligation; the theorem derives correspondence for arbitrary allowances,
+pending loans, residuals, and accounting histories. It does not permit an
+effectful consumer to discard its private post-state on refusal. -/
+theorem sequence_map {Item' Accumulator' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (consume : Accumulator → Item → Option Accumulator)
+    (consume' : Accumulator' → Item' → Option Accumulator')
+    (compatible : ∀ accumulator item,
+      consume' (accumulatorMap accumulator) (itemMap item) =
+        (consume accumulator item).map accumulatorMap)
+    (allowance : Nat) (state : Packet Item Accumulator) :
+    sequence consume' allowance (state.map itemMap accumulatorMap) =
+      Prod.map id (Packet.map itemMap accumulatorMap) (sequence consume allowance state) := by
+  induction allowance generalizing state with
+  | zero => rfl
+  | succ allowance ih =>
+      rcases state with ⟨remaining, pending, accumulator, accepted, requested⟩
+      cases pending with
+      | some item =>
+          cases decision : consume accumulator item with
+          | none => simp [Packet.map, sequence, compatible, decision]
+          | some next =>
+              simpa [Packet.map, sequence, compatible, decision] using
+                ih ⟨remaining, none, next, accepted + 1, requested⟩
+      | none =>
+          cases remaining with
+          | nil => rfl
+          | cons item remaining =>
+              cases decision : consume accumulator item with
+              | none => simp [Packet.map, sequence, compatible, decision]
+              | some next =>
+                  simpa [Packet.map, sequence, compatible, decision] using
+                    ih ⟨remaining, none, next, accepted + 1, requested + 1⟩
+
+/-- A representation change at suspension preserves the held return and
+continues that same computation. A completed result remains completed. -/
+theorem resume_map {Item' Accumulator' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (consume : Accumulator → Item → Option Accumulator)
+    (consume' : Accumulator' → Item' → Option Accumulator')
+    (compatible : ∀ accumulator item,
+      consume' (accumulatorMap accumulator) (itemMap item) =
+        (consume accumulator item).map accumulatorMap)
+    (allowance : Nat) (earlier : Stop × Packet Item Accumulator) :
+    resume consume' allowance (Prod.map id (Packet.map itemMap accumulatorMap) earlier) =
+      Prod.map id (Packet.map itemMap accumulatorMap) (resume consume allowance earlier) := by
+  rcases earlier with ⟨stop, state⟩
+  cases stop with
+  | paused => exact sequence_map itemMap accumulatorMap consume consume' compatible allowance state
+  | complete => rfl
+
+theorem cancel_map {Item' Accumulator' : Type}
+    (itemMap : Item → Item') (accumulatorMap : Accumulator → Accumulator')
+    (state : Packet Item Accumulator) :
+    cancel (state.map itemMap accumulatorMap) = (cancel state).map itemMap accumulatorMap := rfl
+
 theorem cancellation_after_prefix (consume : Accumulator → Item → Accumulator)
     (items : List Item) (accumulator : Accumulator) (accepted requested allowance : Nat)
     (within : allowance ≤ items.length) :
@@ -426,6 +515,77 @@ structure Returned (Term Environment : Type) where
   conditions : List Term
   deriving DecidableEq, Repr
 
+/-- Re-encode a returned occurrence without changing its role. Conditions use
+the same term representation as its payload; the complete captured environment
+is passed to the environment map rather than reconstructed from the payload. -/
+def Returned.map {Term Environment Term' Environment' : Type}
+    (termMap : Term → Term') (environmentMap : Environment → Environment')
+    (returned : Returned Term Environment) : Returned Term' Environment' :=
+  ⟨termMap returned.payload, environmentMap returned.environment, returned.form,
+    returned.conditions.map termMap⟩
+
+theorem Returned.map_id {Term Environment : Type} (returned : Returned Term Environment) :
+    returned.map id id = returned := by
+  cases returned
+  simp [Returned.map]
+
+/-- A storage or lowering map preserves the form even when it changes the
+representation of the written term. It supplies no new activation authority. -/
+theorem Returned.map_form {Term Environment Term' Environment' : Type}
+    (termMap : Term → Term') (environmentMap : Environment → Environment')
+    (returned : Returned Term Environment) :
+    (returned.map termMap environmentMap).form = returned.form := rfl
+
+/-- Successive crossings compose on the whole return, including captured
+context and delayed conditions. -/
+theorem Returned.map_map {Term Environment Term' Environment' Term'' Environment'' : Type}
+    (termMap : Term → Term') (environmentMap : Environment → Environment')
+    (termMap' : Term' → Term'') (environmentMap' : Environment' → Environment'')
+    (returned : Returned Term Environment) :
+    (returned.map termMap environmentMap).map termMap' environmentMap' =
+      returned.map (termMap' ∘ termMap) (environmentMap' ∘ environmentMap) := by
+  cases returned
+  simp [Returned.map, List.map_map]
+
+/-- Faithful payload and context encodings also reflect equality of complete
+returns. Preservation by mapping alone does not establish this reflection. -/
+theorem Returned.map_injective {Term Environment Term' Environment' : Type}
+    {termMap : Term → Term'} {environmentMap : Environment → Environment'}
+    (terms : Function.Injective termMap) (environments : Function.Injective environmentMap) :
+    Function.Injective (Returned.map termMap environmentMap) := by
+  intro left right equal
+  have payload := terms (congrArg Returned.payload equal)
+  have environment := environments (congrArg Returned.environment equal)
+  have form := congrArg Returned.form equal
+  have conditions := (List.map_injective_iff.mpr terms)
+    (congrArg Returned.conditions equal)
+  cases left
+  cases right
+  simp only [Returned.map] at payload environment form conditions
+  cases payload
+  cases environment
+  cases form
+  cases conditions
+  rfl
+
+/-- Collecting returned occurrences is a concrete compatible consumer. Thus
+representation transport preserves every prefix and retained loan, with no
+injectivity or distinct-payload assumption and no deduplication. -/
+theorem returned_collection_map {Term Environment Term' Environment' : Type}
+    (termMap : Term → Term') (environmentMap : Environment → Environment')
+    (allowance : Nat)
+    (state : Packet (Returned Term Environment) (List (Returned Term Environment))) :
+    sequence (fun delivered returned => some (delivered ++ [returned])) allowance
+      (state.map (Returned.map termMap environmentMap)
+        (List.map (Returned.map termMap environmentMap))) =
+      Prod.map id
+        (Packet.map (Returned.map termMap environmentMap)
+          (List.map (Returned.map termMap environmentMap)))
+        (sequence (fun delivered returned => some (delivered ++ [returned])) allowance state) := by
+  apply sequence_map
+  intro accumulator item
+  simp
+
 theorem whole_return_delivery {Term Environment : Type}
     (returns : List (Returned Term Environment)) :
     sequence (fun delivered returned => some (delivered ++ [returned]))
@@ -460,6 +620,15 @@ def conditional : Returned Nat (List Nat) := ⟨7, [4, 4], .conditional, [9]⟩
 theorem equal_payloads_are_not_equal_returns :
     held.payload = source.payload ∧ held ≠ source ∧ conditional ≠ held := by decide
 
+/-- No classifier of the written payload alone can recover whether all
+returned occurrences are pending computations or completed data. -/
+theorem payload_alone_cannot_recover_form :
+    ¬ ∃ classify : Nat → ReturnForm,
+      ∀ returned : Returned Nat (List Nat), classify returned.payload = returned.form := by
+  rintro ⟨classify, correct⟩
+  have same := (correct held).symm.trans (correct source)
+  cases same
+
 theorem held_and_delayed_forms_are_delivered_unchanged :
     sequence (fun delivered returned => some (delivered ++ [returned])) 5
       ⟨[held, held, source, conditional], none, [], 0, 0⟩ =
@@ -474,6 +643,10 @@ end ReturnControls
 #print axioms pending_complete_exact
 #print axioms resumed_complete_exact
 #print axioms resumed_whole_return_delivery
+#print axioms sequence_map
+#print axioms resume_map
+#print axioms returned_collection_map
+#print axioms ReturnControls.payload_alone_cannot_recover_form
 
 
 
@@ -524,7 +697,8 @@ inductive Control (Item Terminal : Type) where
 
 /-- This is the existing indexed-polynomial client, not a second evaluator.
 The private accumulator and callback caches belong to the provider's state. -/
-abbrev client (Item Terminal : Type) :
+abbrev client (Item Terminal : Type)
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
     Client (P := protocol Item Terminal) (Return := fun _ _ => Result Item Terminal) where
   V _ _ := Control Item Terminal
   str := fun _ _ => ↾(fun control => match control with
@@ -534,7 +708,9 @@ abbrev client (Item Terminal : Type) :
     | .running (allowance+1) (some item) accepted =>
         ⟨.inr (.accept item), fun decision =>
           match decision with
-          | true => .running allowance none (accepted+1)
+          | true => match terminalAfter item with
+              | none => .running allowance none (accepted+1)
+              | some reason => .stopped ⟨some reason,none,accepted+1⟩
           | false => .stopped ⟨none,some item,accepted⟩⟩
     | .running (allowance+1) none accepted =>
         ⟨.inr .next, fun reply => match reply with
@@ -545,23 +721,31 @@ abbrev client (Item Terminal : Type) :
 variable (M : Provider (protocol Item Terminal)) (charge : Charge M)
 
 def packet (allowance : Nat) (pending : Option Item) (accepted : Nat)
-    (state : M.State () ()) : Mettapedia.Machines.Cursor.Packet M (client Item Terminal) () :=
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.Packet M (client Item Terminal terminalAfter) () :=
   ⟨(),.running allowance pending accepted,state⟩
 
 /-- Independent callback sequencing follows the ownership boundary's branch
 order. An already held return is tried before a producer request; successful
-acceptance alone spends the allowance. Every callback's post-state is retained. -/
-def fromCallbacks : Nat → Option Item → Nat → M.State () () →
-    Nat × (Result Item Terminal × M.State () ())
-  | 0, pending, accepted, state => (0,⟨⟨none,pending,accepted⟩,state⟩)
-  | allowance+1, some item, accepted, state =>
+acceptance alone spends the allowance. Every callback's post-state is retained.
+`terminalAfter` reads a producer-certified marker from the complete return;
+it never probes the producer and does not activate the returned payload. -/
+def fromCallbacks (allowance : Nat) (pending : Option Item) (accepted : Nat)
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Nat × (Result Item Terminal × M.State () ()) :=
+  match allowance, pending with
+  | 0, pending => (0,⟨⟨none,pending,accepted⟩,state⟩)
+  | allowance+1, some item =>
       let decision := M.step state (.accept item)
       match decision.1 with
-      | true =>
-          let rest := fromCallbacks allowance none (accepted+1) decision.2
-          (charge state (.accept item)+rest.1,rest.2)
+      | true => match terminalAfter item with
+          | some reason =>
+              (charge state (.accept item),⟨⟨some reason,none,accepted+1⟩,decision.2⟩)
+          | none =>
+              let rest := fromCallbacks allowance none (accepted+1) decision.2 terminalAfter
+              (charge state (.accept item)+rest.1,rest.2)
       | false => (charge state (.accept item),⟨⟨none,some item,accepted⟩,decision.2⟩)
-  | allowance+1, none, accepted, state =>
+  | allowance+1, none =>
       let response := M.step state .next
       match response.1 with
       | .paused => (charge state .next,⟨⟨none,none,accepted⟩,response.2⟩)
@@ -569,35 +753,41 @@ def fromCallbacks : Nat → Option Item → Nat → M.State () () →
       | .returned item =>
           let decision := M.step response.2 (.accept item)
           match decision.1 with
-          | true =>
-              let rest := fromCallbacks allowance none (accepted+1) decision.2
-              (charge state .next+charge response.2 (.accept item)+rest.1,rest.2)
+          | true => match terminalAfter item with
+              | some reason => (charge state .next+charge response.2 (.accept item),
+                  ⟨⟨some reason,none,accepted+1⟩,decision.2⟩)
+              | none =>
+                  let rest := fromCallbacks allowance none (accepted+1) decision.2 terminalAfter
+                  (charge state .next+charge response.2 (.accept item)+rest.1,rest.2)
           | false => (charge state .next+charge response.2 (.accept item),
               ⟨⟨none,some item,accepted⟩,decision.2⟩)
+termination_by structural allowance
 
 
 
 private theorem advance_stopped (fuel : Nat) (result : Result Item Terminal)
-    (state : M.State () ()) :
-    Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge (fuel+1)
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge (fuel+1)
       ⟨(),Control.stopped result,state⟩ =
         (0,.done ⟨(),result,state⟩) := rfl
 
 private theorem advance_allowance_zero (fuel accepted : Nat) (pending : Option Item)
-    (state : M.State () ()) :
-    Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge (fuel+1)
-      (packet M 0 pending accepted state) =
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge (fuel+1)
+      (packet M 0 pending accepted state terminalAfter) =
         (0,.done ⟨(),⟨none,pending,accepted⟩,state⟩) := rfl
 
 private theorem advance_pending (fuel allowance accepted : Nat) (item : Item)
-    (state : M.State () ()) :
-    Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge (fuel+1)
-      (packet M (allowance+1) (some item) accepted state) =
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge (fuel+1)
+      (packet M (allowance+1) (some item) accepted state terminalAfter) =
       let decision := M.step state (.accept item)
       let nextControl := match decision.1 with
-        | true => Control.running allowance none (accepted+1)
+        | true => match terminalAfter item with
+            | none => Control.running allowance none (accepted+1)
+            | some reason => Control.stopped ⟨some reason,none,accepted+1⟩
         | false => Control.stopped ⟨none,some item,accepted⟩
-      let later := Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge fuel
+      let later := Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge fuel
         ⟨(),nextControl,decision.2⟩
       (charge state (.accept item)+later.1,later.2) := by
   cases response : M.step state (.accept item) with
@@ -605,15 +795,15 @@ private theorem advance_pending (fuel allowance accepted : Nat) (item : Item)
       cases decision <;> simp [Mettapedia.Machines.Cursor.advance,packet,client,response]
 
 private theorem advance_poll (fuel allowance accepted : Nat)
-    (state : M.State () ()) :
-    Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge (fuel+1)
-      (packet M (allowance+1) none accepted state) =
+    (state : M.State () ()) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge (fuel+1)
+      (packet M (allowance+1) none accepted state terminalAfter) =
       let reply := M.step state .next
       let nextControl := match reply.1 with
         | .returned item => Control.running (allowance+1) (some item) accepted
         | .paused => Control.stopped ⟨none,none,accepted⟩
         | .terminal reason => Control.stopped ⟨some reason,none,accepted⟩
-      let later := Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge fuel
+      let later := Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge fuel
         ⟨(),nextControl,reply.2⟩
       (charge state .next+later.1,later.2) := by
   cases response : M.step state .next with
@@ -627,79 +817,182 @@ private theorem inspection_allowance_succ (allowance extra : Nat) :
 /-- The independently sequenced callback call instantiates the common cursor.
 At most two provider requests are inspected per accepted return, plus a final
 client inspection. The result preserves the whole provider post-state and
-loan even when the callback refuses. The cursor's `done` finishes this
+loan even when the callback refuses. A producer-certified terminal marker is
+read from the whole held item only after acceptance, without a second pull.
+The marker's validity must be established by the producer; this sequencing
+law alone does not certify it. The cursor's `done` finishes this
 callback call: a nonterminal result can retain a loan or remain paused, so it
 does not assert completion of the surrounding computation. This is a
 mathematical realization; physical callback lifetime, protected control-state
 access and bounded-word overflow need separate evidence. -/
 theorem callback_call_instantiates_common_cursor
-    (allowance extra accepted : Nat) (pending : Option Item) (state : M.State () ()) :
-    Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge
-      (2*allowance+extra+1) (packet M allowance pending accepted state) =
-      let returned := fromCallbacks M charge allowance pending accepted state
+    (allowance extra accepted : Nat) (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
+      (2*allowance+extra+1) (packet M allowance pending accepted state terminalAfter) =
+      let returned := fromCallbacks M charge allowance pending accepted state terminalAfter
       (returned.1,.done ⟨(),returned.2.1,returned.2.2⟩) := by
   induction allowance generalizing pending accepted state extra with
   | zero =>
       simpa only [Nat.mul_zero, Nat.zero_add, fromCallbacks] using
-        advance_allowance_zero M charge extra accepted pending state
+        advance_allowance_zero M charge extra accepted pending state terminalAfter
   | succ allowance ih =>
       rw [inspection_allowance_succ]
       cases pending with
       | some item =>
-          rw [advance_pending]
+          rw [advance_pending (terminalAfter := terminalAfter)]
           cases decision : M.step state (.accept item) with
           | mk acceptedReply after =>
               cases acceptedReply with
               | false =>
                   have halted := advance_stopped M charge (2*allowance+extra+1)
-                    ⟨none,some item,accepted⟩ after
+                    ⟨none,some item,accepted⟩ after terminalAfter
                   simp [decision,halted,fromCallbacks]
               | true =>
-                  dsimp only
-                  have recursion := ih (extra+1) (accepted+1) none after
-                  simpa only [packet,fromCallbacks,decision,Nat.add_assoc] using
-                    congrArg (fun returned =>
-                      (charge state (.accept item)+returned.1,returned.2)) recursion
+                  cases final : terminalAfter item with
+                  | none =>
+                      dsimp only
+                      have recursion := ih (extra+1) (accepted+1) none after
+                      simpa only [packet,fromCallbacks,decision,final,Nat.add_assoc] using
+                        congrArg (fun returned =>
+                          (charge state (.accept item)+returned.1,returned.2)) recursion
+                  | some reason =>
+                      have halted := advance_stopped M charge (2*allowance+extra+1)
+                        ⟨some reason,none,accepted+1⟩ after terminalAfter
+                      simp [decision,final,halted,fromCallbacks]
       | none =>
-          rw [advance_poll]
+          rw [advance_poll (terminalAfter := terminalAfter)]
           cases response : M.step state .next with
           | mk reply after =>
               cases reply with
               | paused =>
                   have halted := advance_stopped M charge (2*allowance+extra+1)
-                    ⟨none,none,accepted⟩ after
+                    ⟨none,none,accepted⟩ after terminalAfter
                   simp [response,halted,fromCallbacks]
               | terminal reason =>
                   have halted := advance_stopped M charge (2*allowance+extra+1)
-                    ⟨some reason,none,accepted⟩ after
+                    ⟨some reason,none,accepted⟩ after terminalAfter
                   simp [response,halted,fromCallbacks]
               | returned item =>
                   dsimp only
                   change (charge state .next +
-                    (Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge
+                    (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
                       (2*allowance+extra+1+1)
-                      (packet M (allowance+1) (some item) accepted after)).1,
-                    (Mettapedia.Machines.Cursor.advance M (client Item Terminal) charge
+                      (packet M (allowance+1) (some item) accepted after terminalAfter)).1,
+                    (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
                       (2*allowance+extra+1+1)
-                      (packet M (allowance+1) (some item) accepted after)).2) = _
+                      (packet M (allowance+1) (some item) accepted after terminalAfter)).2) = _
                   rw [advance_pending M charge (2*allowance+extra+1)
-                    allowance accepted item after]
+                    allowance accepted item after terminalAfter]
                   cases decision : M.step after (.accept item) with
                   | mk acceptedReply afterAccept =>
                       cases acceptedReply with
                       | false =>
                           have halted := advance_stopped M charge (2*allowance+extra)
-                            ⟨none,some item,accepted⟩ afterAccept
+                            ⟨none,some item,accepted⟩ afterAccept terminalAfter
                           simp only [Nat.add_assoc] at halted
                           simp [decision,halted,fromCallbacks,response,Nat.add_assoc]
                       | true =>
-                          have recursion := ih extra (accepted+1) none afterAccept
-                          simpa only [packet,fromCallbacks,response,decision,Nat.add_assoc] using
-                            congrArg (fun returned =>
-                              (charge state .next+charge after (.accept item)+returned.1,
-                                returned.2)) recursion
+                          cases final : terminalAfter item with
+                          | none =>
+                              have recursion := ih extra (accepted+1) none afterAccept
+                              simpa only [packet,fromCallbacks,response,decision,final,Nat.add_assoc] using
+                                congrArg (fun returned =>
+                                  (charge state .next+charge after (.accept item)+returned.1,
+                                    returned.2)) recursion
+                          | some reason =>
+                              have halted := advance_stopped M charge (2*allowance+extra)
+                                ⟨some reason,none,accepted+1⟩ afterAccept terminalAfter
+                              simp only [Nat.add_assoc] at halted
+                              simp [response,decision,final,halted,fromCallbacks,Nat.add_assoc]
 
 #print axioms callback_call_instantiates_common_cursor
+
+/-- A local provider refinement transports a whole callback call, including
+state changed by a refused acceptance. Charges may differ between realizations;
+the complete result, pending return and provider post-state must correspond.
+The proof reuses the common cursor refinement and the independently recursive
+callback realization above. -/
+theorem fromCallbacks_transport
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target) (allowance accepted : Nat)
+    (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    ((fromCallbacks M charge allowance pending accepted state terminalAfter).2.1,
+      h.map (fromCallbacks M charge allowance pending accepted state terminalAfter).2.2) =
+      (fromCallbacks target targetCharge allowance pending accepted (h.map state) terminalAfter).2 := by
+  have transported := h.advance (client Item Terminal terminalAfter) charge targetCharge
+    (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)
+  change h.outcome (client Item Terminal terminalAfter)
+      (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
+        (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)).2 =
+    (Mettapedia.Machines.Cursor.advance target (client Item Terminal terminalAfter) targetCharge
+      (2*allowance+0+1) (packet target allowance pending accepted (h.map state) terminalAfter)).2
+      at transported
+  rw [callback_call_instantiates_common_cursor M charge allowance 0 accepted pending state terminalAfter,
+    callback_call_instantiates_common_cursor target targetCharge allowance 0 accepted pending
+      (h.map state) terminalAfter] at transported
+  simpa only [Hom.outcome, Outcome.mapState, Outcome.done.injEq,
+    Sigma.mk.inj_iff, heq_eq_eq, true_and] using transported
+
+/-- A callback implementation's local resource inequalities compose over the
+same retained call. A refused callback remains charged and retains the
+potential of its actual post-state. This compares the declared resource
+meters, independently of the observation equality above. -/
+theorem fromCallbacks_amortized
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target) (potential : Potential M)
+    (localBound : Amortized h charge targetCharge potential)
+    (allowance accepted : Nat) (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    (fromCallbacks M charge allowance pending accepted state terminalAfter).1 +
+        potential (fromCallbacks M charge allowance pending accepted state terminalAfter).2.2 ≤
+      (fromCallbacks target targetCharge allowance pending accepted (h.map state) terminalAfter).1 +
+        potential state := by
+  have bounded := advance_amortized (client Item Terminal terminalAfter) h charge targetCharge
+    potential localBound (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)
+  change (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
+        (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)).1 +
+      outcomePotential (client Item Terminal terminalAfter) potential
+        (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
+          (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)).2 ≤
+    (Mettapedia.Machines.Cursor.advance target (client Item Terminal terminalAfter) targetCharge
+      (2*allowance+0+1) (packet target allowance pending accepted (h.map state) terminalAfter)).1 +
+        potential state at bounded
+  rw [callback_call_instantiates_common_cursor M charge allowance 0 accepted pending state terminalAfter,
+    callback_call_instantiates_common_cursor target targetCharge allowance 0 accepted pending
+      (h.map state) terminalAfter] at bounded
+  exact bounded
+
+/-- Transport an already paid callback account without replay. This map keeps
+the whole terminal/loan record and the corresponding provider state. -/
+def mapCall {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (previous : Nat × (Result Item Terminal × M.State () ())) :
+    Nat × (Result Item Terminal × target.State () ()) :=
+  (previous.1, previous.2.1, h.map previous.2.2)
+
+theorem fromCallbacks_account_transport
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target)
+    (localCharge : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      charge state request = targetCharge (h.map state) request)
+    (allowance accepted : Nat) (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    mapCall M h (fromCallbacks M charge allowance pending accepted state terminalAfter) =
+      fromCallbacks target targetCharge allowance pending accepted (h.map state) terminalAfter := by
+  apply Prod.ext
+  · have paid := h.advance_charge (client Item Terminal terminalAfter) charge targetCharge localCharge
+      (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)
+    change (Mettapedia.Machines.Cursor.advance M (client Item Terminal terminalAfter) charge
+      (2*allowance+0+1) (packet M allowance pending accepted state terminalAfter)).1 =
+      (Mettapedia.Machines.Cursor.advance target (client Item Terminal terminalAfter) targetCharge
+        (2*allowance+0+1) (packet target allowance pending accepted (h.map state) terminalAfter)).1 at paid
+    rw [callback_call_instantiates_common_cursor M charge allowance 0 accepted pending state terminalAfter,
+      callback_call_instantiates_common_cursor target targetCharge allowance 0 accepted pending
+        (h.map state) terminalAfter] at paid
+    exact paid
+  · exact fromCallbacks_transport M charge h targetCharge allowance accepted pending state terminalAfter
 
 
 
@@ -707,22 +1000,66 @@ theorem callback_call_instantiates_common_cursor
 full provider post-state. This does not restart the producer or erase refusal
 side effects. -/
 def resumeCall (allowance : Nat)
-    (previous : Nat × (Result Item Terminal × M.State () ())) :
+    (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
     Nat × (Result Item Terminal × M.State () ()) :=
   match previous.2.1.terminal with
   | some _ => previous
   | none =>
       let later := fromCallbacks M charge allowance previous.2.1.pending
-        previous.2.1.accepted previous.2.2
+        previous.2.1.accepted previous.2.2 terminalAfter
       (previous.1+later.1,later.2)
+
+/-- A worker can be changed at a retained callback boundary when its complete
+state has a provider refinement. Both sides resume the held return, rather
+than reconstructing the source request or repeating an accepted prefix. -/
+theorem resumeCall_transport
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target) (allowance targetSpent : Nat)
+    (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    ((resumeCall M charge allowance previous terminalAfter).2.1,
+      h.map (resumeCall M charge allowance previous terminalAfter).2.2) =
+      (resumeCall target targetCharge allowance
+        (targetSpent, previous.2.1, h.map previous.2.2) terminalAfter).2 := by
+  unfold resumeCall
+  cases previous.2.1.terminal with
+  | some reason => rfl
+  | none =>
+      exact fromCallbacks_transport M charge h targetCharge allowance
+        previous.2.1.accepted previous.2.1.pending previous.2.2 terminalAfter
+
+theorem resumeCall_account_transport
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target)
+    (localCharge : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      charge state request = targetCharge (h.map state) request)
+    (allowance : Nat) (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    mapCall M h (resumeCall M charge allowance previous terminalAfter) =
+      resumeCall target targetCharge allowance (mapCall M h previous) terminalAfter := by
+  unfold mapCall resumeCall
+  cases previous.2.1.terminal with
+  | some reason => rfl
+  | none =>
+      exact congrArg (fun later => (previous.1 + later.1, later.2))
+        (fromCallbacks_account_transport M charge h targetCharge localCharge allowance
+          previous.2.1.accepted previous.2.1.pending previous.2.2 terminalAfter)
+
+#print axioms fromCallbacks_transport
+#print axioms resumeCall_transport
+#print axioms fromCallbacks_amortized
+#print axioms resumeCall_account_transport
 
 
 /-- Publication allowance bounds successful acknowledgments, independently of
 producer inspections and the provider's declared operation charge. -/
 theorem fromCallbacks_acceptance_bound (allowance accepted : Nat)
-    (pending : Option Item) (state : M.State () ()) :
-    accepted ≤ (fromCallbacks M charge allowance pending accepted state).2.1.accepted ∧
-      (fromCallbacks M charge allowance pending accepted state).2.1.accepted ≤ accepted + allowance := by
+    (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    accepted ≤ (fromCallbacks M charge allowance pending accepted state terminalAfter).2.1.accepted ∧
+      (fromCallbacks M charge allowance pending accepted state terminalAfter).2.1.accepted ≤ accepted + allowance := by
   induction allowance generalizing pending accepted state with
   | zero => simp [fromCallbacks]
   | succ allowance ih =>
@@ -733,9 +1070,12 @@ theorem fromCallbacks_acceptance_bound (allowance accepted : Nat)
               cases decision with
               | false => simp [fromCallbacks, response]
               | true =>
-                  have bound := ih (accepted+1) none after
-                  simp only [fromCallbacks, response] at *
-                  omega
+                  cases final : terminalAfter item with
+                  | none =>
+                      have bound := ih (accepted+1) none after
+                      simp only [fromCallbacks, response, final] at *
+                      omega
+                  | some reason => simp [fromCallbacks, response, final]
       | none =>
           cases response : M.step state .next with
           | mk reply after =>
@@ -748,41 +1088,48 @@ theorem fromCallbacks_acceptance_bound (allowance accepted : Nat)
                       cases decision with
                       | false => simp [fromCallbacks, response, acknowledgment]
                       | true =>
-                          have bound := ih (accepted+1) none final
-                          simp only [fromCallbacks, response, acknowledgment] at *
-                          omega
+                          cases marked : terminalAfter item with
+                          | none =>
+                              have bound := ih (accepted+1) none final
+                              simp only [fromCallbacks, response, acknowledgment, marked] at *
+                              omega
+                          | some reason =>
+                              simp [fromCallbacks, response, acknowledgment, marked]
 
-theorem resumeCall_zero (previous : Nat × (Result Item Terminal × M.State () ())) :
-    resumeCall M charge 0 previous = previous := by
+theorem resumeCall_zero (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    resumeCall M charge 0 previous terminalAfter = previous := by
   rcases previous with ⟨spent,⟨⟨terminal,pending,accepted⟩,state⟩⟩
   cases terminal <;> rfl
 
 /-- Refused work remains paid. Resuming a callback never subtracts its charge. -/
 theorem resumeCall_charge_mono (allowance : Nat)
-    (previous : Nat × (Result Item Terminal × M.State () ())) :
-    previous.1 ≤ (resumeCall M charge allowance previous).1 := by
+    (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    previous.1 ≤ (resumeCall M charge allowance previous terminalAfter).1 := by
   unfold resumeCall
   cases previous.2.1.terminal <;> simp
 
 theorem resumeCall_acceptance_bound (allowance : Nat)
-    (previous : Nat × (Result Item Terminal × M.State () ())) :
-    previous.2.1.accepted ≤ (resumeCall M charge allowance previous).2.1.accepted ∧
-      (resumeCall M charge allowance previous).2.1.accepted ≤ previous.2.1.accepted + allowance := by
+    (previous : Nat × (Result Item Terminal × M.State () ()))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    previous.2.1.accepted ≤ (resumeCall M charge allowance previous terminalAfter).2.1.accepted ∧
+      (resumeCall M charge allowance previous terminalAfter).2.1.accepted ≤ previous.2.1.accepted + allowance := by
   unfold resumeCall
   cases previous.2.1.terminal with
   | some reason => simp
   | none =>
       exact fromCallbacks_acceptance_bound M charge allowance previous.2.1.accepted
-        previous.2.1.pending previous.2.2
+        previous.2.1.pending previous.2.2 terminalAfter
 
 /-- A private callback task carries cumulative work, its complete loan/terminal
 result and the provider's complete post-state. This is the existing snapshot
 kernel; native independence and external-effect admission remain obligations. -/
-def kernel (Id : Type) :
+def kernel (Id : Type) (terminalAfter : Item → Option Terminal := fun _ => none) :
     SnapshotBatch.Kernel Unit (Id × Nat) Unit Id
       (Nat × (Result Item Terminal × M.State () ())) :=
   SnapshotBatch.Kernel.fromOwnerAction (fun _ allowance previous =>
-    resumeCall M charge allowance previous)
+    resumeCall M charge allowance previous terminalAfter)
 
 /-- Reordering different owners retains each owner's command sequence. A
 stateful refusal prevents replacing that sequence by its total allowance. -/
@@ -790,9 +1137,10 @@ theorem kernel_interleaving {Id : Type} [DecidableEq Id]
     (pool : Id → Nat × (Result Item Terminal × M.State () ()))
     (first second : List (Id × Nat))
     (same : ∀ owner, first.filter (fun item => decide (item.1 = owner)) =
-      second.filter (fun item => decide (item.1 = owner))) :
-    (kernel M charge Id).run () (fun _ => ()) pool first =
-      (kernel M charge Id).run () (fun _ => ()) pool second :=
+      second.filter (fun item => decide (item.1 = owner)))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    (kernel M charge Id terminalAfter).run () (fun _ => ()) pool first =
+      (kernel M charge Id terminalAfter).run () (fun _ => ()) pool second :=
   SnapshotBatch.Kernel.run_eq_of_owner_sequences _ _ _ _ _ _ same
 
 /-- One quantum per distinct private owner can be prepared in any exact worker
@@ -800,10 +1148,55 @@ partition. Publication installs the computed packets without rerunning them. -/
 theorem kernel_partitioned {Id : Type} [DecidableEq Id]
     (pool : Id → Nat × (Result Item Terminal × M.State () ()))
     (parts : List (List (Id × Nat))) (schedule : List (Id × Nat))
-    (coverage : parts.flatten.Perm schedule) (distinct : (schedule.map Prod.fst).Nodup) :
-    (kernel M charge Id).partitioned () (fun _ => ()) pool parts =
-      (kernel M charge Id).run () (fun _ => ()) pool schedule :=
+    (coverage : parts.flatten.Perm schedule) (distinct : (schedule.map Prod.fst).Nodup)
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    (kernel M charge Id terminalAfter).partitioned () (fun _ => ()) pool parts =
+      (kernel M charge Id terminalAfter).run () (fun _ => ()) pool schedule :=
   SnapshotBatch.Kernel.partitioned_eq_run _ _ _ _ _ _ coverage distinct
+
+/-- Private worker execution and publication commute with a checked provider
+representation change. Refusal state, loans and prior receipts are part of
+the transported store, rather than reconstructed from the answer sequence. -/
+theorem kernel_batch_transport {Id : Type} [DecidableEq Id]
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target)
+    (localCharge : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      charge state request = targetCharge (h.map state) request)
+    (pool : Id → Nat × (Result Item Terminal × M.State () ()))
+    (schedule : List (Id × Nat))
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    (fun owner => mapCall M h ((kernel M charge Id terminalAfter).batch () (fun _ => ()) pool schedule owner)) =
+      (kernel target targetCharge Id terminalAfter).batch () (fun _ => ())
+        (fun owner => mapCall M h (pool owner)) schedule := by
+  apply SnapshotBatch.Kernel.batch_map
+  · intro item
+    rfl
+  · intro item seed previous
+    exact resumeCall_account_transport M charge h targetCharge localCharge item.2 previous terminalAfter
+
+/-- A qualified partition of distinct private owners transports to the
+reference run with its complete per-owner states and declared receipts.
+This requires ownership separation and exact schedule coverage; an answer
+cardinality claim alone provides neither premise. -/
+theorem kernel_partitioned_transport {Id : Type} [DecidableEq Id]
+    {target : Provider (protocol Item Terminal)} (h : Hom M target)
+    (targetCharge : Charge target)
+    (localCharge : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      charge state request = targetCharge (h.map state) request)
+    (pool : Id → Nat × (Result Item Terminal × M.State () ()))
+    (parts : List (List (Id × Nat))) (schedule : List (Id × Nat))
+    (coverage : parts.flatten.Perm schedule) (distinct : (schedule.map Prod.fst).Nodup)
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    (fun owner => mapCall M h
+      ((kernel M charge Id terminalAfter).partitioned () (fun _ => ()) pool parts owner)) =
+      (kernel target targetCharge Id terminalAfter).run () (fun _ => ())
+        (fun owner => mapCall M h (pool owner)) schedule := by
+  rw [SnapshotBatch.Kernel.partitioned_eq_batch,
+    kernel_batch_transport M charge h targetCharge localCharge (terminalAfter := terminalAfter),
+    ← SnapshotBatch.Kernel.partitioned_eq_batch]
+  exact kernel_partitioned target targetCharge _ parts schedule coverage distinct terminalAfter
 
 
 /-- The earlier pure finite boundary is an actual provider instance of this
@@ -896,6 +1289,160 @@ def cold : Cache := ⟨[7,7],[],0,false⟩
 def refused : Nat × (Result Nat String × Cache) :=
   ⟨2,⟨⟨none,some 7,0⟩,⟨[7],[],1,true⟩⟩⟩
 
+/-- The alternative callback implementation retains an array window rather
+than a list tail. Its refusal state and published occurrences remain private
+consumer state, separate from the underlying pull representation. -/
+structure WindowCache where
+  remaining : Sequence.Slice Nat
+  delivered : List Nat
+  requested : Nat
+  warmed : Bool
+
+abbrev windowWarming : Provider (protocol Nat String) where
+  State _ _ := WindowCache
+  step := fun state request => match request with
+    | .next =>
+        let pulled := (Sequence.slices Nat).step (base := ()) (index := ()) state.remaining ()
+        let next := {state with remaining := pulled.2, requested := state.requested + 1}
+        match pulled.1 with
+        | none => ⟨.terminal "complete", next⟩
+        | some item => ⟨.returned item, next⟩
+    | .accept item =>
+        if state.warmed then
+          ⟨true,{state with delivered := state.delivered ++ [item]}⟩
+        else ⟨false,{state with warmed := true}⟩
+
+/-- The actual array lookup uses the existing slice refinement. Acceptance
+and refusal preserve the full private consumer state under that same map. -/
+def windowHom : Hom windowWarming warming where
+  map state :=
+    ⟨(Sequence.sliceHom Nat).map (base := ()) (index := ()) state.remaining, state.delivered, state.requested, state.warmed⟩
+  step state request := by
+    cases request with
+    | accept item =>
+        cases warmed : state.warmed <;> simp [windowWarming, warming, warmed]
+    | next =>
+        have pull := (Sequence.sliceHom Nat).step (base := ()) (index := ()) state.remaining ()
+        cases found : (Sequence.slices Nat).step (base := ()) (index := ()) state.remaining () with
+        | mk reply after =>
+            cases remaining : (Sequence.sliceHom Nat).map (base := ()) (index := ()) state.remaining with
+            | nil =>
+                simp only [found, remaining, Sequence.tails] at pull
+                cases reply with
+                | none =>
+                    have rest := congrArg (fun pair => pair.2) pull
+                    simp [windowWarming, warming, found]
+                    exact congrArg (fun items =>
+                      (⟨items, state.delivered, state.requested + 1, state.warmed⟩ : Cache)) rest
+                | some item => cases congrArg (fun pair => pair.1) pull
+            | cons item rest =>
+                simp only [found, remaining, Sequence.tails] at pull
+                cases reply with
+                | none => cases congrArg (fun pair => pair.1) pull
+                | some value =>
+                    have same := congrArg (fun pair => pair.1) pull
+                    have tail := congrArg (fun pair => pair.2) pull
+                    cases Option.some.inj same
+                    simp [windowWarming, warming, found]
+                    exact congrArg (fun items =>
+                      (⟨items, state.delivered, state.requested + 1, state.warmed⟩ : Cache)) tail
+
+/-- This instance transports every state and allowance, including windows
+whose remaining count extends beyond their backing array. The underlying
+slice law determines the actual exhausted view in those cases. -/
+theorem window_callback_refines_tail (allowance accepted : Nat) (pending : Option Nat)
+    (state : WindowCache) :
+    ((fromCallbacks windowWarming (fun _ _ => 1) allowance pending accepted state).2.1,
+      windowHom.map
+        (fromCallbacks windowWarming (fun _ _ => 1) allowance pending accepted state).2.2) =
+      (fromCallbacks warming (fun _ _ => 1) allowance pending accepted (windowHom.map state)).2 :=
+  fromCallbacks_transport windowWarming (fun _ _ => 1) windowHom
+    (fun _ _ => 1) allowance accepted pending state
+
+theorem changing_representation_after_refusal_keeps_retry_state :
+    let initial : WindowCache := ⟨⟨#[99,7,7,42],1,2⟩,[],0,false⟩
+    let paused := fromCallbacks windowWarming (fun _ _ => 1) 1 none 0 initial
+    resumeCall warming (fun _ _ => 1) 1
+      (paused.1, paused.2.1, windowHom.map paused.2.2) =
+        ⟨3,⟨⟨none,none,1⟩,⟨[7],[7],1,true⟩⟩⟩ := by decide
+
+/-- Moving only the array window loses the warmed consumer state. Even
+though the remaining values agree, the next acceptance decision changes. -/
+theorem moving_only_the_window_does_not_refine_resumption :
+    let initial : WindowCache := ⟨⟨#[99,7,7,42],1,2⟩,[],0,false⟩
+    let paused := fromCallbacks windowWarming (fun _ _ => 1) 1 none 0 initial
+    (resumeCall warming (fun _ _ => 1) 1
+      (paused.1, paused.2.1, {windowHom.map paused.2.2 with warmed := false})).2.1.accepted ≠
+      (resumeCall warming (fun _ _ => 1) 1
+        (paused.1, paused.2.1, windowHom.map paused.2.2)).2.1.accepted := by decide
+
+/-- This concrete adapter certifies a last item from the actual list-tail
+successor. Refusal still updates the original private cache. The marker is
+part of the held return, rather than a second probe of the residual. -/
+abbrev finalWarming : Provider (protocol (Nat × Bool) String) where
+  State _ _ := Cache
+  step := fun state request => match request with
+    | .next =>
+        let response := warming.step (base := ()) (index := ()) state .next
+        match response.1 with
+        | .returned item => ⟨.returned (item,response.2.remaining.isEmpty),response.2⟩
+        | .paused => ⟨.paused,response.2⟩
+        | .terminal reason => ⟨.terminal reason,response.2⟩
+    | .accept item => warming.step (base := ()) (index := ()) state (.accept item.1)
+
+def terminalMarker (item : Nat × Bool) : Option String :=
+  if item.2 then some "complete" else none
+
+/-- The final marker is derived from an empty successor, not from observing
+that one answer has occurred or from a requested determinism annotation. -/
+theorem final_marker_has_empty_residual (state : Cache) (item : Nat)
+    (marked : (finalWarming.step (base := ()) (index := ()) state .next).1 =
+      .returned (item,true)) :
+    (finalWarming.step (base := ()) (index := ()) state .next).2.remaining = [] := by
+  cases remaining : state.remaining with
+  | nil => simp [finalWarming,warming,remaining] at marked
+  | cons value rest =>
+      cases rest with
+      | nil => simp [finalWarming,warming,remaining]
+      | cons next tail => simp [finalWarming,warming,remaining] at marked
+
+theorem final_refusal_retains_the_whole_loan :
+    fromCallbacks finalWarming (fun _ _ => 1) 4 none 0
+      ⟨[7],[],0,false⟩ terminalMarker =
+      ⟨2,⟨⟨none,some (7,true),0⟩,⟨[],[],1,true⟩⟩⟩ := rfl
+
+theorem final_retry_finishes_without_polling :
+    resumeCall finalWarming (fun _ _ => 1) 4
+      (fromCallbacks finalWarming (fun _ _ => 1) 4 none 0
+        ⟨[7],[],0,false⟩ terminalMarker) terminalMarker =
+      ⟨3,⟨⟨some "complete",none,1⟩,⟨[],[7],1,true⟩⟩⟩ := rfl
+
+theorem accepted_final_resume_is_inert (allowance : Nat) :
+    resumeCall finalWarming (fun _ _ => 1) allowance
+      (fromCallbacks finalWarming (fun _ _ => 1) 4 none 0
+        ⟨[7],[],0,true⟩ terminalMarker) terminalMarker =
+      ⟨2,⟨⟨some "complete",none,1⟩,⟨[],[7],1,true⟩⟩⟩ := rfl
+
+theorem equal_payloads_keep_two_final_deliveries :
+    fromCallbacks finalWarming (fun _ _ => 1) 4 none 0
+      ⟨[7,7],[],0,true⟩ terminalMarker =
+      ⟨4,⟨⟨some "complete",none,2⟩,⟨[],[7,7],2,true⟩⟩⟩ := rfl
+
+/-- Sequencing cannot repair an unearned final claim: it would suppress the
+second occurrence. The producer's separate final-marker proof is essential. -/
+theorem unearned_final_marker_suppresses_an_occurrence :
+    let dishonest := fromCallbacks warming (fun _ _ => 1) 4 none 0
+      ⟨[7,7],[],0,true⟩ (fun _ => some "complete")
+    dishonest.2.1.accepted = 1 ∧ dishonest.2.2.remaining = [7] ∧
+      dishonest.2.1.terminal = some "complete" := ⟨rfl,rfl,rfl⟩
+
+#print axioms final_marker_has_empty_residual
+#print axioms final_refusal_retains_the_whole_loan
+#print axioms final_retry_finishes_without_polling
+#print axioms accepted_final_resume_is_inert
+#print axioms equal_payloads_keep_two_final_deliveries
+#print axioms unearned_final_marker_suppresses_an_occurrence
+
 theorem refusal_keeps_full_poststate :
     fromCallbacks warming (fun _ _ => 1) 1 none 0 cold = refused := rfl
 
@@ -922,6 +1469,27 @@ theorem terminal_call_never_repolls :
 
 private def privatePool : Nat → Nat × (Result Nat String × Cache) :=
   fun owner => (0,⟨⟨none,none,0⟩, if owner = 0 then cold else {cold with warmed := true}⟩)
+
+private def windowPool : Nat → Nat × (Result Nat String × WindowCache) :=
+  fun owner => (0, ⟨⟨none,none,0⟩, ⟨⟨#[99,7,7,42],1,2⟩,[],0,owner != 0⟩⟩)
+
+/-- Two independent callback implementations, with reversed worker placement,
+instantiate the common transport theorem. One owner refuses and retains its
+warmed state and loan; the other publishes one of two equal occurrences. -/
+theorem window_partition_uses_common_transport :
+    (fun owner => mapCall windowWarming windowHom
+      ((kernel windowWarming (fun _ _ => 1) Nat).partitioned () (fun _ => ())
+        windowPool [[(1,1)],[(0,1)]] owner)) =
+      (kernel warming (fun _ _ => 1) Nat).run () (fun _ => ()) privatePool [(0,1),(1,1)] := by
+  have mapped : (fun owner => mapCall windowWarming windowHom (windowPool owner)) =
+      privatePool := by
+    funext owner
+    by_cases same : owner = 0 <;>
+      simp [mapCall, windowHom, windowPool, privatePool, cold, same, Sequence.sliceHom]
+  have transported := kernel_partitioned_transport windowWarming (fun _ _ => 1) windowHom
+    (fun _ _ => 1) (by intros; rfl) windowPool [[(1,1)],[(0,1)]] [(0,1),(1,1)]
+    (by decide) (by decide)
+  simpa only [mapped] using transported
 
 theorem partitioned_callbacks_retain_refusal_and_accepted_state :
     let result := (kernel warming (fun _ _ => 1) Nat).partitioned () (fun _ => ())
@@ -952,10 +1520,16 @@ end CallbackControls
 #print axioms resumeCall_acceptance_bound
 #print axioms kernel_interleaving
 #print axioms kernel_partitioned
+#print axioms kernel_batch_transport
+#print axioms kernel_partitioned_transport
 #print axioms CallbackControls.partitioned_callbacks_retain_refusal_and_accepted_state
 #print axioms CallbackControls.repeated_owner_batch_loses_refusal_progress
 #print axioms CallbackControls.grouped_callbacks_retry_without_repolling
 #print axioms CallbackControls.stateful_refusal_breaks_naive_allowance_add
+#print axioms CallbackControls.window_callback_refines_tail
+#print axioms CallbackControls.changing_representation_after_refusal_keeps_retry_state
+#print axioms CallbackControls.moving_only_the_window_does_not_refine_resumption
+#print axioms CallbackControls.window_partition_uses_common_transport
 
 end CallbackBoundary
 

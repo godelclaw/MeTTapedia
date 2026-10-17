@@ -280,7 +280,7 @@ structure WorldModelTypedITVProfile where
     ∀ {State Query : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
       [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (ctx : Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext)
+      (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
       (W : State) (q : Query),
       (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITVWalley
           (State := State) (Query := Query) ctx W q).width +
@@ -397,7 +397,7 @@ structure WorldModelTypedITVProfile where
     ∀ {State Srt : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
       [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (ctx : Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext)
+      (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
       (W : State) (q : Sigma Query),
       (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVWalley
           (State := State) (Srt := Srt) (Query := Query) ctx W q).width +

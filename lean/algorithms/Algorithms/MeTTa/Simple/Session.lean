@@ -5282,7 +5282,7 @@ theorem matchTemplateAfterBindings_getAtoms
     matchTemplateAfterBindings bs (.apply "get-atoms" [spaceExpr]) =
       .apply "get-atoms" [matchTemplateAfterBindings bs spaceExpr] := by
   have hHead : dollarHeadVarName? (.apply "get-atoms" []) = none := by
-    native_decide
+    decide +kernel
   have hHeight :
       patternHeight (.apply "get-atoms" [spaceExpr]) = 1 + patternHeight spaceExpr := by
     simp [patternHeight, Nat.max_eq_right (Nat.zero_le _)]
@@ -5303,7 +5303,7 @@ theorem matchTemplateAfterBindings_getAtomsBang
     matchTemplateAfterBindings bs (.apply "get-atoms!" [spaceExpr]) =
       .apply "get-atoms!" [matchTemplateAfterBindings bs spaceExpr] := by
   have hHead : dollarHeadVarName? (.apply "get-atoms!" []) = none := by
-    native_decide
+    decide +kernel
   have hHeight :
       patternHeight (.apply "get-atoms!" [spaceExpr]) = 1 + patternHeight spaceExpr := by
     simp [patternHeight, Nat.max_eq_right (Nat.zero_le _)]
@@ -10697,21 +10697,47 @@ def applyStmt (s : Session) (stmt : SyntaxStmt) : Session × List Pattern :=
       let s0 := noteApplied (withBundleCompiled s bundle')
       let s' := withMessage s0 s!"lowered directive {head} to selfFact/1"
       (s', [])
-  | .defineRule lhs rhs _premises =>
-      let rule : RewriteRule := {
-        name := mkRuleName s
-        typeContext := []
-        premises := []  -- TODO: convert Pattern premises to Premise type
-        left := lhs
-        right := rhs
-      }
-      let rules' := s.bundle.language.rewrites ++ [rule]
-      let bundle' : SpecBundle := {
-        s.bundle with language := { s.bundle.language with rewrites := rules' }
-      }
-      let s0 := noteApplied (withBundleCompiled s bundle')
-      let s' := withMessage s0 s!"loaded rule {rule.name} via defineRule"
-      (s', [])
+  | .defineRule lhs rhs premiseTerms =>
+      let literal := .apply "rule!" (lhs :: rhs :: premiseTerms)
+      let row : RelationTuple := { relation := "selfFact", tuple := [literal] }
+      let env' := addRelationTuple s.bundle.relationEnv row
+      match syntaxRule? (mkRuleName s) (.defineRule lhs rhs premiseTerms) with
+      | some rule =>
+          let rules' := s.bundle.language.rewrites ++ [rule]
+          let bundle' : SpecBundle := {
+            s.bundle with
+              language := { s.bundle.language with rewrites := rules' }
+          }
+          let s0 := noteApplied (withBundleCompiled s bundle')
+          let s' := withMessage s0 s!"loaded guarded rule {rule.name} via defineRule"
+          (s', [])
+      | none =>
+          let bundle' : SpecBundle := { s.bundle with relationEnv := env' }
+          let s0 := noteApplied (withBundleCompiled s bundle')
+          let s' := withMessage s0 "retained rule! with uninterpreted premise syntax"
+          (s', [])
+
+/-- Parsed premises are installed through the existing structured rule
+converter; no guard is replaced by an empty list. -/
+theorem applyStmt_defineRule_decoded (s : Session) (lhs rhs : Pattern)
+    (terms : List Pattern) (rule : RewriteRule)
+    (decoded : syntaxRule? (mkRuleName s) (.defineRule lhs rhs terms) = some rule) :
+    (applyStmt s (.defineRule lhs rhs terms)).1.bundle.language.rewrites =
+      s.bundle.language.rewrites ++ [rule] := by
+  simp [applyStmt, decoded, withMessage, noteApplied, withBundleCompiled]
+
+/-- Unknown premise syntax remains reflectively present, without activating
+an unconditional rewrite or adding a language-level error. -/
+theorem applyStmt_defineRule_uninterpreted (s : Session) (lhs rhs : Pattern)
+    (terms : List Pattern)
+    (unknown : syntaxRule? (mkRuleName s) (.defineRule lhs rhs terms) = none) :
+    (applyStmt s (.defineRule lhs rhs terms)).1.bundle.language.rewrites =
+        s.bundle.language.rewrites ∧
+      (applyStmt s (.defineRule lhs rhs terms)).1.diag.errors = s.diag.errors ∧
+      [.apply "rule!" (lhs :: rhs :: terms)] ∈
+        (applyStmt s (.defineRule lhs rhs terms)).1.bundle.relationEnv.tuples
+          "selfFact" [.fvar "_"] := by
+  simp [applyStmt, unknown, withMessage, noteApplied, withBundleCompiled, addRelationTuple]
 
 theorem compiledConsistent_applyStmt_eval
     (hEvalPres :

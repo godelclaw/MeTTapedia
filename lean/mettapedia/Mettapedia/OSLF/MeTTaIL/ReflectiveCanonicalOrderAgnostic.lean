@@ -184,7 +184,7 @@ namespace ParallelOrderAgnosticList
 
 /-- The project-specific pointwise relation is propositionally the standard
 `List.Forall₂` relation used by the permutation API. -/
-def toForall₂ {declaration : ReflectivePresentationDecl}
+theorem toForall₂ {declaration : ReflectivePresentationDecl}
     {left right : List Pattern}
     (related : ParallelOrderAgnosticList declaration left right) :
     List.Forall₂ (ParallelOrderAgnostic declaration) left right :=
@@ -194,7 +194,7 @@ def toForall₂ {declaration : ReflectivePresentationDecl}
 
 /-- Convert the standard pointwise relation back to the project-specific
 inductive carrier. -/
-def ofForall₂ {declaration : ReflectivePresentationDecl}
+theorem ofForall₂ {declaration : ReflectivePresentationDecl}
     {left right : List Pattern}
     (related : List.Forall₂ (ParallelOrderAgnostic declaration) left right) :
     ParallelOrderAgnosticList declaration left right := by
@@ -204,7 +204,7 @@ def ofForall₂ {declaration : ReflectivePresentationDecl}
       exact .cons head inductionHypothesis
 
 /-- Pointwise correspondence is preserved by concatenation. -/
-def append {declaration : ReflectivePresentationDecl}
+theorem append {declaration : ReflectivePresentationDecl}
     {left₁ right₁ left₂ right₂ : List Pattern}
     (first : ParallelOrderAgnosticList declaration left₁ right₁)
     (second : ParallelOrderAgnosticList declaration left₂ right₂) :
@@ -216,7 +216,7 @@ def append {declaration : ReflectivePresentationDecl}
 
 /-- Filtering out the reflective parallel unit preserves pointwise
 order-agnostic correspondence. -/
-def filterNotUnit {declaration : ReflectivePresentationDecl}
+theorem filterNotUnit {declaration : ReflectivePresentationDecl}
     {left right : List Pattern}
     (related : ParallelOrderAgnosticList declaration left right) :
     ParallelOrderAgnosticList declaration

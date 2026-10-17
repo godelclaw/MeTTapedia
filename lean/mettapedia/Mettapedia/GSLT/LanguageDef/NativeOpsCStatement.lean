@@ -133,13 +133,21 @@ mutual
               let (whenFalse, afterFalse) ← branchBody? fuel names rest
               some (.branch condition whenTrue whenFalse, afterFalse)
           | _ => some (.branch condition whenTrue [], afterTrue)
-      | .identifier ['f', 'o', 'r'] :: .punctuation ['('] :: rest => do
-          let (header, afterHeader) ← forHeader? fuel names rest
-          let (body, afterBody) ← block? fuel names afterHeader <|> (do
-            let (body, after) ← statement? fuel names afterHeader
-            some ([body], after))
-          some (.forLoop header.type header.counter header.initial header.condition
-            header.increment body, afterBody)
+      | .identifier ['f', 'o', 'r'] :: .punctuation ['('] :: rest =>
+          (do
+            let (header, afterHeader) ← forHeader? fuel names rest
+            let (body, afterBody) ← block? fuel names afterHeader <|> (do
+              let (body, after) ← statement? fuel names afterHeader
+              some ([body], after))
+            some (.forLoop header.type header.counter header.initial header.condition
+              header.increment body, afterBody)) <|>
+          (match rest with
+            | .punctuation [';'] :: .punctuation [';'] :: .punctuation [')'] :: afterHeader => do
+                let (body, afterBody) ← block? fuel names afterHeader <|> (do
+                  let (body, after) ← statement? fuel names afterHeader
+                  some ([body], after))
+                some (.whileLoop (.bool true) body, afterBody)
+            | _ => none)
       | .identifier ['w', 'h', 'i', 'l', 'e'] :: rest => do
           let (condition, afterCondition) ← parenthesized? fuel names rest
           let (body, afterBody) ← block? fuel names afterCondition <|> (do
@@ -341,15 +349,34 @@ theorem for_statement_of_parts (fuel : Nat) (names : TypeNames) (header : CForHe
     statement? (fuel + 1) names (.identifier ['f', 'o', 'r'] :: .punctuation ['('] :: start) =
       some (.forLoop header.type header.counter header.initial header.condition
         header.increment body, after) := by
-  change (do
+  change ((do
     let (header, bodyTokens) ← forHeader? fuel names start
     let (body, afterBody) ← block? fuel names bodyTokens <|> (do
       let (body, after) ← statement? fuel names bodyTokens
       some ([body], after))
     some (CStatement.forLoop header.type header.counter header.initial header.condition
-      header.increment body, afterBody)) = _
+      header.increment body, afterBody)) <|> _) = _
   rw [headerParsed]
   dsimp only [bind, Option.bind]
+  rw [bodyParsed]
+  rfl
+
+/-- The exact empty `for (;;)` header has neither an initializer nor an
+increment. Its omitted guard is true, so the existing pre-test loop retains
+its body, local break/return flow and remaining source tokens. Other partial
+for headers remain outside this reader fragment. -/
+theorem empty_for_statement_of_body (fuel : Nat) (names : TypeNames)
+    (body : List CStatement) (bodyTokens after : List Token)
+    (bodyParsed : block? fuel names bodyTokens = some (body, after)) :
+    statement? (fuel + 1) names
+      (.identifier ['f', 'o', 'r'] :: .punctuation ['('] :: .punctuation [';'] ::
+        .punctuation [';'] :: .punctuation [')'] :: bodyTokens) =
+      some (.whileLoop (.bool true) body, after) := by
+  change (none <|> (do
+    let (body, afterBody) ← block? fuel names bodyTokens <|> (do
+      let (body, after) ← statement? fuel names bodyTokens
+      some ([body], after))
+    some (CStatement.whileLoop (.bool true) body, afterBody))) = _
   rw [bodyParsed]
   rfl
 
@@ -807,5 +834,38 @@ theorem nested_block_is_retained_in_terminated_arm : blockText? types
     nested_block_is_retained_in_terminated_armTokens _ (by decide +kernel) (by rfl)
 
 end CleanupDeclarationControls
+
+namespace EmptyForControls
+
+private def returnTokens : List Token :=
+  [.punctuation ['{'], .identifier "for".toList, .punctuation ['('],
+   .punctuation [';'], .punctuation [';'], .punctuation [')'], .punctuation ['{'],
+   .identifier "return".toList, .identifier "NULL".toList, .punctuation [';'],
+   .punctuation ['}'], .punctuation ['}']]
+
+private def breakTokens : List Token :=
+  [.punctuation ['{'], .identifier "for".toList, .punctuation ['('],
+   .punctuation [';'], .punctuation [';'], .punctuation [')'],
+   .identifier "break".toList, .punctuation [';'], .punctuation ['}']]
+
+theorem retained_return :
+    blockText? [] "{ for (;;) { return NULL; } }".toList =
+      some [.whileLoop (.bool true) [.return (some .null)]] := by
+  exact block_text_of_parts [] "{ for (;;) { return NULL; } }".toList
+    returnTokens _ (by decide +kernel) (by rfl)
+
+theorem retained_break :
+    blockText? [] "{ for (;;) break; }".toList =
+      some [.whileLoop (.bool true) [.break]] := by
+  exact block_text_of_parts [] "{ for (;;) break; }".toList
+    breakTokens _ (by decide +kernel) (by rfl)
+
+theorem missing_semicolon_refused :
+    blockText? [] "{ for (;) break; }".toList = none := by decide +kernel
+
+theorem unspecified_partial_header_is_not_empty :
+    blockText? [] "{ for (; x;) break; }".toList = none := by decide +kernel
+
+end EmptyForControls
 
 end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC

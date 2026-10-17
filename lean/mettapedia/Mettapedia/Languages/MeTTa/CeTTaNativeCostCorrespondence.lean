@@ -2072,6 +2072,159 @@ theorem active_source_keeps_context (interface : Interface) (heap : TargetHeapSe
   subst result
   exact ⟨rfl, rfl⟩
 
+/-- A successful guarded observation writes one reservation built from the
+captured service state. The reserved identity, inner origin and occurrence,
+kind and units are that reservation; nonempty scopes, nonzero units, an
+available counter, destination retention and a complete inherited trace stay
+explicit. -/
+theorem guard_writes_captured_reservation (heap : TargetHeapSemantics World)
+    (kind : Kind) (units : BitVec 64) (state : TargetState World)
+    (finite : TargetFiniteStorage state.memory)
+    (active : state.external.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.external.nextIdentity ∧
+      state.external.nextIdentity < 2 ^ 64 - 1)
+    (location : Nat) (present : some location ∈ state.external.scopes.map Prod.fst)
+    (kept : state.external.retained location = true)
+    (ready : (state.external.store location).traceIncomplete = false) :
+    let observed := Recording.observeScopes (2 ^ 64 - 1) (2 ^ 64 - 1)
+      state.external kind units
+    let charge := Recording.scopeCharge state.external kind units observed.1
+    ∃ post, targetProgramCall chargeGuardProgram heap (external kind units)
+      (.function chargeGuardHeader.name) [.word (kindWord kind), .word units] state
+      (.word (BitVec.ofNat 64 observed.1)) post ∧
+      post = { state with external := observed.2 } ∧
+      (post.external.store location).traceIncomplete = false ∧
+      Mettapedia.Algebra.RunLengthEvents.expand (post.external.store location).history =
+        Mettapedia.Algebra.RunLengthEvents.expand (writeReservations (2 ^ 64 - 1)
+          [⟨charge.identity, state.external.scopes.map Prod.fst, charge.event.2⟩]
+          (fun destination => (state.external.store destination).history) location) := by
+  obtain ⟨post, call, same⟩ := active_program_realized heap kind units state finite active
+  have written := Recording.observeScopes_writes_one (2 ^ 64 - 1) (2 ^ 64 - 1)
+    state.external kind units active nonzero available location present kept ready
+  refine ⟨post, call, same, ?_⟩
+  simpa only [same] using written
+
+/-- Identity exhaustion still runs the admitted guard. The returned word is
+zero. At a present destination, kind, work and span move, the trace sticks
+incomplete, and history keeps its prefix. This is a `Recording.State`
+update, not an entry of the successful chronology. A disabled chain is a
+different transition: it returns zero without charging. -/
+theorem guard_exhaustion_keeps_numeric_work (heap : TargetHeapSemantics World)
+    (kind : Kind) (units : BitVec 64) (state : TargetState World)
+    (finite : TargetFiniteStorage state.memory)
+    (active : state.external.scopes ≠ []) (nonzero : units ≠ 0)
+    (exhausted : state.external.nextIdentity = 0 ∨ 2 ^ 64 - 1 ≤ state.external.nextIdentity)
+    (location : Nat) (present : some location ∈ state.external.scopes.map Prod.fst) :
+    let observed := Recording.observeScopes (2 ^ 64 - 1) (2 ^ 64 - 1)
+      state.external kind units
+    ∃ post, targetProgramCall chargeGuardProgram heap (external kind units)
+        (.function chargeGuardHeader.name) [.word (kindWord kind), .word units] state
+        (.word (BitVec.ofNat 64 observed.1)) post ∧
+      post = { state with external := observed.2 } ∧
+      observed.1 = 0 ∧
+      post.external.nextIdentity = state.external.nextIdentity ∧
+      (post.external.store location).traceIncomplete = true ∧
+      (post.external.store location).history = (state.external.store location).history ∧
+      (post.external.store location).work.toNat =
+        boundedTotal (2 ^ 64 - 1) ((state.external.store location).work.toNat + units.toNat) ∧
+      (post.external.store location).span.toNat =
+        boundedTotal (2 ^ 64 - 1) ((state.external.store location).span.toNat + units.toNat) ∧
+      ((post.external.store location).counts kind).toNat =
+        boundedTotal (2 ^ 64 - 1)
+          (((state.external.store location).counts kind).toNat + units.toNat) := by
+  obtain ⟨post, call, same⟩ := active_program_realized heap kind units state finite active
+  have charged := Recording.observeScopes_exhausted (2 ^ 64 - 1) (2 ^ 64 - 1)
+    state.external kind units active nonzero exhausted location present
+  refine ⟨post, call, same, ?_⟩
+  simpa only [same] using charged
+
+/-- Refused retention still runs the admitted guard and can return a fresh
+identity. The present destination's kind, work and span move, the trace
+sticks incomplete, and history keeps its prefix. The fresh word does not
+make this a successful chronology entry. -/
+theorem guard_refused_retention_keeps_numeric_work (heap : TargetHeapSemantics World)
+    (kind : Kind) (units : BitVec 64) (state : TargetState World)
+    (finite : TargetFiniteStorage state.memory)
+    (active : state.external.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.external.nextIdentity ∧
+      state.external.nextIdentity < 2 ^ 64 - 1)
+    (location : Nat) (present : some location ∈ state.external.scopes.map Prod.fst)
+    (refused : state.external.retained location = false) :
+    let observed := Recording.observeScopes (2 ^ 64 - 1) (2 ^ 64 - 1)
+      state.external kind units
+    ∃ post, targetProgramCall chargeGuardProgram heap (external kind units)
+        (.function chargeGuardHeader.name) [.word (kindWord kind), .word units] state
+        (.word (BitVec.ofNat 64 observed.1)) post ∧
+      post = { state with external := observed.2 } ∧
+      observed.1 = state.external.nextIdentity ∧
+      (post.external.store location).traceIncomplete = true ∧
+      (post.external.store location).history = (state.external.store location).history ∧
+      (post.external.store location).work.toNat =
+        boundedTotal (2 ^ 64 - 1) ((state.external.store location).work.toNat + units.toNat) ∧
+      (post.external.store location).span.toNat =
+        boundedTotal (2 ^ 64 - 1) ((state.external.store location).span.toNat + units.toNat) ∧
+      ((post.external.store location).counts kind).toNat =
+        boundedTotal (2 ^ 64 - 1)
+          (((state.external.store location).counts kind).toNat + units.toNat) := by
+  obtain ⟨post, call, same⟩ := active_program_realized heap kind units state finite active
+  have charged := Recording.observeScopes_refused (2 ^ 64 - 1) (2 ^ 64 - 1)
+    state.external kind units active nonzero available location present refused
+  refine ⟨post, call, same, ?_⟩
+  simpa only [same] using charged
+
+/-- An active chain with no ledger destination still admits the guard.
+The returned word is the reserved counter, and every ledger stays as it
+was. Activity is the nonempty chain. It is not the existence of a destination,
+so an all-null chain remains active. -/
+theorem active_null_chain_keeps_ledgers (heap : TargetHeapSemantics World)
+    (kind : Kind) (units : BitVec 64) (state : TargetState World)
+    (finite : TargetFiniteStorage state.memory)
+    (active : state.external.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.external.nextIdentity ∧
+      state.external.nextIdentity < 2 ^ 64 - 1)
+    (nowhere : ∀ location, ¬ some location ∈ state.external.scopes.map Prod.fst) :
+    let observed := Recording.observeScopes (2 ^ 64 - 1) (2 ^ 64 - 1)
+      state.external kind units
+    ∃ post, targetProgramCall chargeGuardProgram heap (external kind units)
+        (.function chargeGuardHeader.name) [.word (kindWord kind), .word units] state
+        (.word (BitVec.ofNat 64 observed.1)) post ∧
+      post = { state with external := observed.2 } ∧
+      observed.1 = state.external.nextIdentity ∧
+      ∀ location, post.external.store location = state.external.store location := by
+  obtain ⟨post, call, same⟩ := active_program_realized heap kind units state finite active
+  have issued := Recording.observeScopes_issued (2 ^ 64 - 1) (2 ^ 64 - 1)
+    state.external kind units active nonzero available
+  refine ⟨post, call, same, ?_, ?_⟩
+  · simpa only [same] using issued.1
+  · intro location
+    have absent := Recording.observeScopes_absent (2 ^ 64 - 1) (2 ^ 64 - 1)
+      state.external kind units active nonzero location (nowhere location)
+    simpa only [same] using absent
+
+/-- An intermediate weak compare-exchange miss emits no reservation and does
+not change the successful chronology. The expected identity is still live.
+Final exhaustion is the separate `Recording.observeScopes` transition. -/
+theorem intermediate_weak_cas_miss_records_nothing
+    (scopes : Unit → List (Option Nat)) (payload : Unit → Payload)
+    (expected : Nat) (permitSuccess : Bool)
+    (protocolState : Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.State Unit)
+    (store : Nat → Ledger)
+    (checking : protocolState.invocation () =
+      Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.Control.checking expected)
+    (live : ¬ (expected = 0 ∨ 2 ^ 64 - 1 ≤ expected))
+    (missed : ¬ (permitSuccess = true ∧ protocolState.counter = expected)) :
+    (Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.step (2 ^ 64 - 1) protocolState
+      (Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.Request.attempt ()
+        permitSuccess)).2 = none ∧
+      recordReservations (2 ^ 64 - 1) scopes payload
+        (Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.run (2 ^ 64 - 1)
+          [Mettapedia.Algebra.OccurrenceIdentity.WeakReservation.Request.attempt ()
+            permitSuccess]
+          protocolState).2 store = store := by
+  have missedRun := weak_reservation_miss_records_nothing (2 ^ 64 - 1) (2 ^ 64 - 1)
+    scopes payload () expected permitSuccess protocolState store checking live missed
+  exact ⟨missedRun.1, missedRun.2.2⟩
+
 end ScopedServices
 
 namespace CapturedRun
@@ -8029,6 +8182,7 @@ def profile (operations : TaskOperations) (layout : TaskLayout) : StatementBlock
   byteExtent := fun record => if record = type "PrimeEvalStackTask" then some layout.taskBytes else none
   sizeWidth := .bits64
   recordFields := some (recordLayouts layout)
+  recordTypes := [type "PrimeEvalStackTask"]
 
 def services (operations : TaskOperations) (layout : TaskLayout) : StatementBlock.ScopedServices Context :=
   StatementBlock.ObjectBindings.services (profile operations layout) operations.region
@@ -8271,7 +8425,7 @@ private theorem task_scalar_assignment (operations : TaskOperations) (layout : T
     (context : Context) (task : Ptr) (name : String) (scalarType : CType)
     (known : context "task".toList = some (.object (type "PrimeEvalStackTask") task))
     (typed : fieldTypes (type "PrimeEvalStackTask") name.toList = some scalarType)
-    (scalarCell : (profile operations layout).cellExtent scalarType = none)
+    (scalarCell : (profile operations layout).recordExtent scalarType = none)
     (value : CVal) (rhs : CExpr)
     (selected : taskFields layout name.toList =
       some ⟨layout.taskOffset name.toList, valueKind value⟩)
@@ -8460,7 +8614,7 @@ private theorem driver_declaration_keeps_snapshot (operations : TaskOperations) 
     (fun updated => StatementBlock.executeScopedWith (services operations layout)
       emptyLayout 0 63 updated (taskSyntax.body.drop 1)) = _
   unfold StatementBlock.ObjectBindings.declaration
-  have scalarType : (profile operations layout).cellExtent (type "PrimeEvalStackDriver" 1) = none := rfl
+  have scalarType : (profile operations layout).recordExtent (type "PrimeEvalStackDriver" 1) = none := rfl
   rw [scalarType]
   dsimp only
   have actual := global_driver_load operations layout (inputContext input) (by rfl)
@@ -8524,7 +8678,7 @@ private theorem driver_ready_assignment (operations : TaskOperations) (layout : 
     known (by rfl)
   dsimp only [driverField, ident]
   rw [StatementBlock.ObjectBindings.assignment, inferred]
-  have scalarCell : (profile operations layout).cellExtent (type "bool") = none := rfl
+  have scalarCell : (profile operations layout).recordExtent (type "bool") = none := rfl
   simp only [resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, scalarCell]
   change StatementBlock.ObjectBindings.writeValue (profile operations layout) emptyLayout context
     ((ident "driver").field "task_ready".toList true) (.bool true) = _
@@ -9115,7 +9269,7 @@ private theorem task_authority_assignment_keeps_typed_load (operations : TaskOpe
     knownTask (by rfl)
   dsimp only [taskField, ident]
   rw [StatementBlock.ObjectBindings.assignment, inferred]
-  have scalarCell : (profile operations layout).cellExtent (type "bool") = none := rfl
+  have scalarCell : (profile operations layout).recordExtent (type "bool") = none := rfl
   simp only [resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, scalarCell]
   change (read operations layout context (driverField "pure_authority") >>= fun value =>
     StatementBlock.ObjectBindings.writeValue (profile operations layout) emptyLayout context
@@ -10294,6 +10448,7 @@ def leave (layout : Layout) (guard : Ptr) : CProg CVal Unit := do
     | none => CProg.undefined
 
 def recordCall (layout : Layout) : StatementBlock.ObjectBindings.RecordCall where
+  mode := .scalar
   resultType := ⟨"PrimeEvalAuthorityGuard".toList, 0⟩
   invoke := fun arguments => match arguments with
     | [.bool incoming] => enter layout incoming
@@ -10572,6 +10727,7 @@ def constructorValues (operations : Operations) : Calls := fun name arguments =>
   else CProg.undefined
 
 def needRecord (operations : Operations) : StatementBlock.ObjectBindings.RecordCall where
+  mode := .scalar
   resultType := ctype "PrimeNeedActiveGuard"
   invoke := fun arguments => match arguments with
     | [.ptr (some environment)] => operations.needEnter environment
@@ -10699,6 +10855,8 @@ def profile (operations : Operations) (layout : RunLayout) : StatementBlock.Obje
     if record = ctype "PrimeEvalStackTask" then some layout.taskBytes else none
   sizeWidth := .bits64
   recordFields := some (recordLayouts layout)
+  recordTypes := [ctype "PrimeEvalStackTask", ctype "PrimeEvalAuthorityGuard",
+    ctype "PrimeNeedActiveGuard"]
   caseConstants := caseConstants
   recordCalls := recordCalls operations layout
   scalarAliases := fun record =>
@@ -11225,7 +11383,7 @@ private theorem driver_assignment (operations : Operations) (layout : RunLayout)
     (known : context "driver".toList =
       some (.scalar (runType "PrimeEvalStackDriver" 1) (some (.ptr driver))))
     (typed : fieldTypes (runType "PrimeEvalStackDriver") name.toList = some type)
-    (notRecord : (profile operations layout).cellExtent type = none)
+    (notRecord : (profile operations layout).recordExtent type = none)
     (descriptor : driverFields layout name.toList =
       some ⟨layout.driverOffset name.toList, valueKind value⟩)
     (actual : runRead operations layout context operand = pure value) :
@@ -11639,7 +11797,7 @@ private theorem frame_block_is_complete_operation_tree (operations : Operations)
     emptyLayout context (runType "PrimeEvalStackFrame" 1) "frame".toList (some frameInitializer)
     (fun updated => StatementBlock.executeScopedWith (services operations layout) emptyLayout 0
       (fuel + 2) updated [frameBranch]) = _
-  have scalar : (profile operations layout).cellExtent (runType "PrimeEvalStackFrame" 1) = none := rfl
+  have scalar : (profile operations layout).recordExtent (runType "PrimeEvalStackFrame" 1) = none := rfl
   simp only [StatementBlock.ObjectBindings.declaration, scalar, Prog.bind_eq]
   change (runRead operations layout context frameInitializer >>= fun actual =>
     StatementBlock.ObjectBindings.scalarInitialValue (profile operations layout)

@@ -63,7 +63,7 @@ open Mettapedia.OSLF.MeTTaIL.Substitution
     liftBVars_eq_self_of_isWellScopedAt instantiateBVarAt_eq_self_of_isWellScopedAt)
 open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.Languages.MeTTa
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
   (contract contractList contractRoot contractList_eq_map contractRoot_of_ne contract_apply_of_ne
     contractRoot_quote_cases quoted dropped runPattern unitAtom numeral emptySpace addAtom
     spaceOfAtoms storedAtoms variableAtom)
@@ -721,7 +721,7 @@ theorem runsPlain_contract (pattern : Pattern) :
 /-- **Contraction keeps a pattern sealed with plain runs.** -/
 theorem SealedWithPlainRuns.contract {depth : Nat} {pattern : Pattern}
     (kept : SealedWithPlainRuns depth pattern) :
-    SealedWithPlainRuns depth (PrimeCandidate.contract pattern) :=
+    SealedWithPlainRuns depth (Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.contract pattern) :=
   ⟨sealedAt_contract pattern depth kept.1, runsPlain_contract pattern kept.2⟩
 
 /-- **The contraction at a root, through a change of patterns that goes

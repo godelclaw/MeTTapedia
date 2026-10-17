@@ -150,7 +150,7 @@ mutual
 end
 
 mutual
-  private def preserveDerivation
+  private theorem preserveDerivation
       {presentation : SourceDefinition} {category input tree}
       (derivation : SourceDerives presentation category input tree) :
       CompiledDerives (compile presentation) category input tree :=
@@ -160,7 +160,7 @@ mutual
           (List.mem_map.mpr ⟨rule, member, rfl⟩)
           (preserveBody body)
 
-  private def preserveBody
+  private theorem preserveBody
       {presentation : SourceDefinition} {symbols input children}
       (derivation : SourceBodyDerives presentation symbols input children) :
       CompiledBodyDerives (compile presentation)
@@ -182,7 +182,7 @@ theorem compile_preserves
   preserveDerivation derivation
 
 mutual
-  private def reflectDerivation
+  private theorem reflectDerivation
       {presentation : SourceDefinition} {category input tree}
       (derivation : CompiledDerives (compile presentation) category input tree) :
       SourceDerives presentation category input tree :=
@@ -193,7 +193,7 @@ mutual
         subst production
         exact .apply rule ruleMember (reflectBody body)
 
-  private def reflectBody
+  private theorem reflectBody
       {presentation : SourceDefinition} {symbols input children}
       (derivation : CompiledBodyDerives (compile presentation)
         (symbols.map compileSymbol) input children) :
@@ -424,7 +424,7 @@ theorem validateTerminalCompaction_iff
   ⟨validateTerminalCompaction_sound, validateTerminalCompaction_complete⟩
 
 mutual
-  private def preserveCompactedDerivation
+  private theorem preserveCompactedDerivation
       {raw compacted : CompiledGrammar}
       (witness : TerminalCompaction raw compacted)
       {category input tree}
@@ -438,7 +438,7 @@ mutual
         simpa [categoryEq, sourceRuleEq] using
           CompiledDerives.apply compactedProduction compactedMember compactedBody
 
-  private def preserveCompactedBody
+  private theorem preserveCompactedBody
       {raw compacted : CompiledGrammar}
       (witness : TerminalCompaction raw compacted)
       {rawSymbols compactedSymbols input children}
@@ -470,7 +470,7 @@ theorem terminalCompaction_preserves
   preserveCompactedDerivation witness derivation
 
 mutual
-  private def reflectCompactedDerivation
+  private theorem reflectCompactedDerivation
       {raw compacted : CompiledGrammar}
       (witness : TerminalCompaction raw compacted)
       {category input tree}
@@ -487,7 +487,7 @@ mutual
         simpa [categoryEq, sourceRuleEq] using
           CompiledDerives.apply rawProduction rawMember rawBody
 
-  private def reflectCompactedBody
+  private theorem reflectCompactedBody
       {raw compacted : CompiledGrammar}
       (witness : TerminalCompaction raw compacted)
       {compactedSymbols input children}
@@ -667,7 +667,7 @@ mutual
 end
 
 mutual
-  private def certificateReplayCompiledSound
+  private theorem certificateReplayCompiledSound
       {grammar : CompiledGrammar} {fullInput certificate category consumed tree}
       (replay : CertificateReplays grammar fullInput certificate category consumed tree) :
       CompiledDerives grammar category consumed tree :=
@@ -675,7 +675,7 @@ mutual
     | .node production member body =>
         .apply production member (certificateBodyCompiledSound body)
 
-  private def certificateBodyCompiledSound
+  private theorem certificateBodyCompiledSound
       {grammar : CompiledGrammar} {fullInput symbols consumed start stop certificates trees}
       (replay : CertificateBodyReplays grammar fullInput symbols consumed
         start stop certificates trees) :

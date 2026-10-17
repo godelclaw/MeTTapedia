@@ -40,7 +40,7 @@ open Mettapedia.GSLT.Dedukti
 open Mettapedia.GSLT.Dedukti.ConfluenceExamples (freeRule)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings
 

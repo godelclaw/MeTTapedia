@@ -54,7 +54,7 @@ inductive ParallelCostSchedule {Ground : Type u} :
 namespace ParallelCostSchedule
 
 /-- Forget wave boundaries and retain the established logical trace. -/
-def toTrace {Ground : Type u}
+theorem toTrace {Ground : Type u}
     {source target : CostConfig Ground}
     {receipt : Multiset (SpendEvent Ground (CostName Ground))}
     {count waves : Nat}

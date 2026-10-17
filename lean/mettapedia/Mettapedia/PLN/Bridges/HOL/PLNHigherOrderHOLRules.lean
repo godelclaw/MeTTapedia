@@ -5,20 +5,9 @@ namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules
 universe u v
 
 open Mettapedia.Logic.HOL
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore (HOLState HOLProvable HOLProvImp HOLProvEq)
 
 variable {Base : Type u} {Const : Ty Base → Type v}
-
-abbrev HOLQuery (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery (Base := Base) Const
-
-abbrev HOLProvable (φ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvable (Const := Const) φ
-
-abbrev HOLProvImp (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvImp (Const := Const) φ ψ
-
-abbrev HOLProvEq {τ : Ty Base} (t u : Term Const [] τ) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvEq (Const := Const) t u
 
 /-- Provable logical equivalence for closed HOL formulas. -/
 def HOLProvIff (φ ψ : HOLQuery Const) : Prop :=

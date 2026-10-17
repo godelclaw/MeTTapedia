@@ -757,7 +757,7 @@ def readOnlyExpression (catalogue : List External) : Nat → CExpr → Bool
           | [declaration] => declaration.effect == .pure
           | _ => false) && arguments.all (readOnlyExpression catalogue fuel)
     | .unary .increment _ | .unary .decrement _ | .postIncrement _ | .postDecrement _ => false
-    | .unary _ operand | .cast _ operand | .field operand _ _ =>
+    | .unary _ operand | .cast _ operand | .castPointeeConst _ operand | .field operand _ _ =>
         readOnlyExpression catalogue fuel operand
     | .binary _ left right | .index left right =>
         readOnlyExpression catalogue fuel left && readOnlyExpression catalogue fuel right
@@ -800,6 +800,325 @@ def qualifiedReadOnlyFunctionText? (representation : Representation) (names : Ty
   let function ← qualifiedFunctionText? names characters
   qualifiedReadOnlyFunction? representation header aliases qualifications macros
     (characters.length + 1) function
+
+/-! ## Explicit enum comparison representation
+
+An enum spelling can name a logical word in this predicate-only profile.
+This is neither an enum ABI nor permission to perform unsigned arithmetic on
+a C enum. The caller must separately establish the represented input domain,
+the meanings of constants, and preservation of each admitted comparison.
+Ordered comparisons require order preservation as well as equality reflection.
+The body checker excludes calls, writes, arithmetic, shifts and updates.
+-/
+
+abbrev EnumComparisonAliases := List Name
+
+def enumComparisonAliasesValid (representation : Representation)
+    (records : RecordAliases) (enums : EnumComparisonAliases) : Bool :=
+  recordAliasesValid representation records &&
+    (enums.eraseDups.length == enums.length) &&
+    enums.all (fun name => (nativeBaseType? representation name).isNone &&
+      !records.any (fun entry => entry.1 == name))
+
+/-- Only scalar enum prototype positions acquire the supplied logical word
+representation. Enum pointers cannot silently become word pointers. -/
+def enumComparisonPrototypeType? (representation : Representation)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (type : CType) : Option CType :=
+  if enums.contains type.name then
+    if type.pointers == 0 then some ⟨"uint64_t".toList, 0⟩ else none
+  else canonicalPrototypeType? representation records type
+
+/-- Prototype normalization leaves the entire selected body unchanged. -/
+def enumComparisonPrototype? (representation : Representation)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (function : CFunction) :
+    Option CFunction := do
+  let result ← enumComparisonPrototypeType? representation records enums function.result
+  let parameters ← function.parameters.mapM fun parameter => do
+    let type ← enumComparisonPrototypeType? representation records enums parameter.type
+    some { parameter with type := type }
+  some ⟨result, function.name, parameters, function.body⟩
+
+/-- Operands are retained scalar readings, including declared record fields.
+Negative and bitwise source operands are outside this profile. -/
+def enumComparisonOperand : Nat → CExpr → Bool
+  | 0, _ => false
+  | _ + 1, .identifier _ | _ + 1, .word _ | _ + 1, .byte _ | _ + 1, .bool _ => true
+  | fuel + 1, .field base _ _ => enumComparisonOperand fuel base
+  | _, _ => false
+
+def enumComparisonPredicate : Nat → CExpr → Bool
+  | 0, _ => false
+  | _ + 1, .bool _ => true
+  | fuel + 1, .binary .eq first second | fuel + 1, .binary .ne first second |
+    fuel + 1, .binary .lt first second | fuel + 1, .binary .le first second |
+    fuel + 1, .binary .gt first second | fuel + 1, .binary .ge first second =>
+      enumComparisonOperand fuel first && enumComparisonOperand fuel second
+  | fuel + 1, .binary .and first second | fuel + 1, .binary .or first second =>
+      enumComparisonPredicate fuel first && enumComparisonPredicate fuel second
+  | fuel + 1, .unary .not operand => enumComparisonPredicate fuel operand
+  | _, _ => false
+
+def enumComparisonStatement : Nat → CStatement → Bool
+  | 0, _ => false
+  | _ + 1, .empty => true
+  | fuel + 1, .return (some value) => enumComparisonPredicate fuel value
+  | fuel + 1, .branch condition yes no =>
+      enumComparisonPredicate fuel condition &&
+        yes.all (enumComparisonStatement fuel) && no.all (enumComparisonStatement fuel)
+  | _, _ => false
+
+/-- Admit a Boolean predicate through the existing parameter capture and
+typed primitive lowerer. Successful admission confers no physical ABI,
+input representation, pointer validity or enum arithmetic law. -/
+def enumComparisonFunction? (representation : Representation) (header : Header)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (qualifications : List Bool)
+    (macros : PrimitiveBindings) (fuel : Nat) (function : CQualifiedFunction) :
+    Option NativeIR.Function := do
+  if header.result != .bool || !enumComparisonAliasesValid representation records enums ||
+      function.parameters.map CQualifiedParameter.pointeeConst != qualifications ||
+      !function.body.all (enumComparisonStatement fuel) then none else do
+    let canonical ← enumComparisonPrototype? representation records enums function.unqualified
+    primitiveFunction? representation header macros fuel canonical
+
+def enumComparisonFunctionText? (representation : Representation) (names : TypeNames)
+    (header : Header) (records : RecordAliases) (enums : EnumComparisonAliases)
+    (qualifications : List Bool) (macros : PrimitiveBindings) (characters : List Char) :
+    Option NativeIR.Function := do
+  let function ← qualifiedFunctionText? names characters
+  enumComparisonFunction? representation header records enums qualifications macros
+    (characters.length + 1) function
+
+theorem enum_comparison_text_of_parts (representation : Representation) (names : TypeNames)
+    (header : Header) (records : RecordAliases) (enums : EnumComparisonAliases)
+    (qualifications : List Bool) (macros : PrimitiveBindings) (characters : List Char)
+    (tokens : List Token) (function : CQualifiedFunction)
+    (lexed : lex characters = .ok tokens)
+    (parsed : qualifiedFunction? (2 * tokens.length + 4) names (ordinaryFunctionTokens tokens) =
+      some (function, [])) :
+    enumComparisonFunctionText? representation names header records enums qualifications macros characters =
+      enumComparisonFunction? representation header records enums qualifications macros
+        (characters.length + 1) function := by
+  have recognized : qualifiedFunctionText? names characters = some function :=
+    function_text_using_of_parts (qualifiedParameter? names) names characters tokens function lexed parsed
+  unfold enumComparisonFunctionText?
+  rw [recognized]
+  rfl
+
+theorem enum_comparison_function_of_parts (representation : Representation) (header : Header)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (qualifications : List Bool)
+    (macros : PrimitiveBindings) (fuel : Nat) (function : CQualifiedFunction)
+    (canonical : CFunction) (lowered : NativeIR.Function)
+    (admitted : (header.result != .bool || !enumComparisonAliasesValid representation records enums ||
+      function.parameters.map CQualifiedParameter.pointeeConst != qualifications ||
+      !function.body.all (enumComparisonStatement fuel)) = false)
+    (prototype : enumComparisonPrototype? representation records enums function.unqualified = some canonical)
+    (body : primitiveFunction? representation header macros fuel canonical = some lowered) :
+    enumComparisonFunction? representation header records enums qualifications macros fuel function =
+      some lowered := by
+  unfold enumComparisonFunction?
+  rw [admitted]
+  dsimp only [bind, Option.bind]
+  rw [prototype]
+  exact body
+
+theorem enum_comparison_pointer_refused (representation : Representation)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (name : Name)
+    (declared : enums.contains name = true) (pointers : Nat) (pointer : pointers ≠ 0) :
+    enumComparisonPrototypeType? representation records enums ⟨name, pointers⟩ = none := by
+  unfold enumComparisonPrototypeType?
+  rw [declared]
+  simp [pointer]
+
+theorem enum_comparison_arithmetic_refused (fuel : Nat) (first second : CExpr) :
+    enumComparisonPredicate fuel (.binary .add first second) = false := by
+  cases fuel <;> rfl
+
+theorem enum_comparison_call_refused (fuel : Nat) (name : Name) (arguments : List CExpr) :
+    enumComparisonPredicate fuel (.call name arguments) = false := by
+  cases fuel <;> rfl
+
+theorem enum_comparison_effect_refused (fuel : Nat) (expression : CExpr) :
+    enumComparisonStatement fuel (.effect expression) = false := by
+  cases fuel <;> rfl
+
+theorem enum_comparison_prototype_retains_body (representation : Representation)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (original canonical : CFunction)
+    (read : enumComparisonPrototype? representation records enums original = some canonical) :
+    canonical.name = original.name ∧ canonical.body = original.body := by
+  unfold enumComparisonPrototype? at read
+  obtain ⟨result, _, read⟩ := Option.bind_eq_some_iff.mp read
+  obtain ⟨parameters, _, read⟩ := Option.bind_eq_some_iff.mp read
+  cases Option.some.inj read
+  exact ⟨rfl, rfl⟩
+
+theorem enum_comparison_aliases_refused (representation : Representation) (header : Header)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (qualifications : List Bool)
+    (macros : PrimitiveBindings) (fuel : Nat) (function : CQualifiedFunction)
+    (refused : enumComparisonAliasesValid representation records enums = false) :
+    enumComparisonFunction? representation header records enums qualifications macros fuel function =
+      none := by
+  simp [enumComparisonFunction?, refused]
+
+/-- A rejected body cannot reach typedef normalization or primitive lowering. -/
+theorem enum_comparison_body_refused (representation : Representation) (header : Header)
+    (records : RecordAliases) (enums : EnumComparisonAliases) (qualifications : List Bool)
+    (macros : PrimitiveBindings) (fuel : Nat) (function : CQualifiedFunction)
+    (refused : function.body.all (enumComparisonStatement fuel) = false) :
+    enumComparisonFunction? representation header records enums qualifications macros fuel function =
+      none := by
+  simp [enumComparisonFunction?, refused]
+
+namespace EnumComparisonControls
+
+set_option maxHeartbeats 1000000
+set_option maxRecDepth 10000
+
+/-- Exact source of the native binding-kind predicate. Its typedef and enum
+values require the separate representation used at its invocation boundary. -/
+def source : List Char := "static inline bool binding_value_kind_is_contextual(BindingValueKind kind) {\n    return kind == BINDING_VALUE_CONTEXTUAL ||\n           kind == BINDING_VALUE_CONTEXTUAL_PERSISTENT;\n}".toList
+
+def types : TypeNames := ["bool".toList, "BindingValueKind".toList]
+def enums : EnumComparisonAliases := ["BindingValueKind".toList]
+def header : Header := ⟨"binding_value_kind_is_contextual", [⟨"kind", .word⟩], .bool⟩
+def representation : Representation := ⟨"EnumPredicate", ⟨[], [], [], []⟩, []⟩
+def constants : PrimitiveBindings :=
+  [("BINDING_VALUE_CONTEXTUAL".toList, .word 1),
+   ("BINDING_VALUE_CONTEXTUAL_PERSISTENT".toList, .word 2)]
+
+def predicate : CExpr :=
+  .binary .or
+    (.binary .eq (.identifier "kind".toList) (.identifier "BINDING_VALUE_CONTEXTUAL".toList))
+    (.binary .eq (.identifier "kind".toList)
+      (.identifier "BINDING_VALUE_CONTEXTUAL_PERSISTENT".toList))
+
+def parsedFunction : CQualifiedFunction :=
+  ⟨⟨"bool".toList, 0⟩, header.name.toList,
+    [⟨⟨⟨"BindingValueKind".toList, 0⟩, "kind".toList⟩, false⟩],
+    [.return (some predicate)]⟩
+
+def canonical : CFunction :=
+  ⟨⟨"bool".toList, 0⟩, header.name.toList,
+    [⟨⟨"uint64_t".toList, 0⟩, "kind".toList⟩], [.return (some predicate)]⟩
+
+/-- The independent expected IR retains the parameter read, both comparison
+occurrences and the false-selected right branch of the original disjunction. -/
+def lowered : NativeIR.Function :=
+  ⟨header,
+    [.temporary 1 .word (.readLocal "kind"),
+     .temporary 2 .bool (.binary (.compare .eq) (.temporary 1 .word) (.word 1)),
+     .temporary 3 .bool (.copy (.temporary 2 .bool)),
+     .branch (.negated (.temporary 3 .bool))
+       [.temporary 4 .bool (.binary (.compare .eq) (.temporary 1 .word) (.word 2)),
+        .assign (.temporary 3 .bool) (.temporary 4 .bool)] [],
+     .return (.temporary 3 .bool)], 4⟩
+
+private def sourceTokens : List Token :=
+  [.identifier "static".toList, .identifier "inline".toList,
+   .identifier "bool".toList, .identifier "binding_value_kind_is_contextual".toList,
+   .punctuation ['('], .identifier "BindingValueKind".toList, .identifier "kind".toList,
+   .punctuation [')'], .punctuation ['{'], .identifier "return".toList,
+   .identifier "kind".toList, .punctuation ['=', '='],
+   .identifier "BINDING_VALUE_CONTEXTUAL".toList, .punctuation ['|', '|'],
+   .identifier "kind".toList, .punctuation ['=', '='],
+   .identifier "BINDING_VALUE_CONTEXTUAL_PERSISTENT".toList,
+   .punctuation [';'], .punctuation ['}']]
+
+private theorem source_lexed : lex source = .ok sourceTokens := by decide +kernel
+
+private theorem source_parsed :
+    qualifiedFunction? (2 * sourceTokens.length + 4) types (ordinaryFunctionTokens sourceTokens) =
+      some (parsedFunction, []) := by rfl
+
+theorem actual_source_parsed : qualifiedFunctionText? types source = some parsedFunction :=
+  function_text_using_of_parts (qualifiedParameter? types) types source sourceTokens parsedFunction
+    source_lexed source_parsed
+
+theorem actual_prototype_normalized :
+    enumComparisonAliasesValid representation [] enums = true ∧
+    enumComparisonPrototype? representation [] enums parsedFunction.unqualified = some canonical := by
+  exact ⟨rfl, rfl⟩
+
+theorem actual_body_lowered :
+    primitiveFunction? representation header constants 32 canonical = some lowered := by rfl
+
+theorem actual_source_admitted :
+    enumComparisonFunctionText? representation types header [] enums [false] constants source =
+      some lowered := by
+  rw [enum_comparison_text_of_parts representation types header [] enums [false] constants
+    source sourceTokens parsedFunction source_lexed source_parsed]
+  apply enum_comparison_function_of_parts _ _ _ _ _ _ _ _ canonical lowered
+  · rfl
+  · exact actual_prototype_normalized.2
+  · rfl
+
+theorem arithmetic_shift_and_negative_operands_refused :
+    enumComparisonPredicate 12
+      (.binary .eq (.binary .add (.identifier "kind".toList) (.word 1)) (.word 2)) = false ∧
+    enumComparisonPredicate 12
+      (.binary .eq (.binary .shiftLeft (.identifier "kind".toList) (.word 1)) (.word 2)) = false ∧
+    enumComparisonPredicate 12
+      (.binary .eq (.unary .negate (.identifier "kind".toList)) (.word 2)) = false ∧
+    enumComparisonPredicate 12
+      (.binary .eq (.unary .complement (.identifier "kind".toList)) (.word 2)) = false := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem updates_and_effects_refused :
+    enumComparisonPredicate 12
+      (.binary .eq (.postDecrement (.identifier "kind".toList)) (.word 1)) = false ∧
+    enumComparisonPredicate 12
+      (.binary .eq (.unary .increment (.identifier "kind".toList)) (.word 1)) = false ∧
+    enumComparisonPredicate 12 (.call "observe".toList []) = false ∧
+    enumComparisonFunction? representation header [] enums [false] constants 32
+      { parsedFunction with body := [.effect (.call "observe".toList []), .return (some predicate)] } =
+        none := by
+  refine ⟨rfl, rfl, rfl, ?_⟩
+  apply enum_comparison_body_refused
+  rfl
+
+theorem wrong_constant_type_and_result_type_refused :
+    enumComparisonFunction? representation header [] enums [false]
+      [("BINDING_VALUE_CONTEXTUAL".toList, .zero .bool),
+       ("BINDING_VALUE_CONTEXTUAL_PERSISTENT".toList, .word 2)] 32 parsedFunction = none ∧
+    enumComparisonFunction? representation { header with result := .word }
+      [] enums [false] constants 32 parsedFunction = none := by
+  constructor <;> rfl
+
+theorem enum_pointer_and_unassigned_typedef_refused :
+    enumComparisonFunction? representation header [] enums [false] constants 32
+      { parsedFunction with parameters :=
+        [⟨⟨⟨"BindingValueKind".toList, 1⟩, "kind".toList⟩, false⟩] } = none ∧
+    enumComparisonFunction? representation header [] [] [false] constants 32 parsedFunction = none := by
+  constructor <;> rfl
+
+theorem alias_collisions_refused :
+    enumComparisonAliasesValid representation [] ["uint64_t".toList] = false ∧
+    enumComparisonAliasesValid representation [] (enums ++ enums) = false ∧
+    enumComparisonAliasesValid
+      ⟨"EnumPredicate", ⟨[⟨"Record", []⟩], [], [], []⟩, []⟩
+      [("BindingValueKind".toList, "Record")] enums = false := by
+  exact ⟨rfl, rfl, rfl⟩
+
+private theorem extra_source_lexed :
+    lex (source ++ source) = .ok (sourceTokens ++ sourceTokens) := by decide +kernel
+
+private theorem extra_source_parsed :
+    qualifiedFunction? (2 * (sourceTokens ++ sourceTokens).length + 4) types
+      (ordinaryFunctionTokens (sourceTokens ++ sourceTokens)) =
+        some (parsedFunction, sourceTokens) := by rfl
+
+theorem extra_source_function_is_refused :
+    enumComparisonFunctionText? representation types header [] enums [false] constants
+      (source ++ source) = none := by
+  unfold enumComparisonFunctionText? qualifiedFunctionText? functionTextUsing?
+  rw [extra_source_lexed]
+  dsimp only [Except.toOption, bind, Option.bind]
+  rw [show functionUsing? (qualifiedParameter? types)
+    (2 * (sourceTokens ++ sourceTokens).length + 4) types
+    (ordinaryFunctionTokens (sourceTokens ++ sourceTokens)) =
+      some (parsedFunction, sourceTokens) from extra_source_parsed]
+  rfl
+
+end EnumComparisonControls
 
 /-- A stored destination must be rooted in one explicit, unqualified pointer
 parameter. This is a syntactic const discipline, not a memory permission.

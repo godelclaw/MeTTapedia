@@ -1,13 +1,15 @@
-import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceFrontier
+import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceSemantics
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseEventEquality
 
 /-!
-# Complete occurrence keys for retained frontier evidence
+# Firing identity and complete replay records
 
 Selected declaration positions and exact typed sites recover the authored
 declaration from its checked plan. The remaining key retains every matching
 choice, assignment, ordered premise event and target. Equation conversion
-detours stay in the receipt while the physical occurrence key excludes them.
+detours stay in the receipt while the replay record excludes them. Application
+identity separately retains the rule, typed site, assignments and premise
+citations; matcher permutations remain guidance in the lossless replay record.
 -/
 
 set_option autoImplicit false
@@ -15,6 +17,48 @@ set_option autoImplicit false
 namespace Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceKeys
 
 open GeneralExecutionAdmission GeneralTypedSites
+
+/-- Identity of one rule application under a fixed authored snapshot.
+Declaration and provider occurrence citations remain meaningful source data;
+matcher-selection positions and computed endpoints are replay information. -/
+structure FiringIdentity where
+  rule : RulePlan
+  site : SiteData
+  captured : ScopedRuleMatching.Assignment
+  completed : ScopedRuleMatching.Assignment
+  premises : List GeneralPremise.Citation
+  deriving Repr
+
+def firingIdentity (receipt : GeneralRuleJobs.Receipt) : FiringIdentity :=
+  ⟨receipt.job.declaration, receipt.job.site, receipt.captured, receipt.completed,
+    GeneralPremise.citations receipt.premiseHistory⟩
+
+/-- Literal rule/site and final assignment determine both replacement results.
+The certificate table position is not needed for this equality. -/
+theorem same_application_result {plan : Plan} {bound : List Syntax.TypeExpr} {type : Syntax.TypeExpr}
+    {source : Syntax.Pattern} {first second : GeneralRuleJobs.Receipt}
+    (firstValid : first.Valid plan bound type source)
+    (secondValid : second.Valid plan bound type source)
+    (sameRule : first.job.declaration = second.job.declaration)
+    (sameSite : first.job.site = second.job.site)
+    (sameCompleted : first.completed = second.completed) :
+    first.localTarget = second.localTarget ∧ first.target = second.target := by
+  have firstReduced := (GeneralRuleJobs.receipt_root_readout firstValid).2.2.2.1
+  have secondReduced := (GeneralRuleJobs.receipt_root_readout secondValid).2.2.2.1
+  rw [sameRule, sameSite, sameCompleted] at firstReduced
+  have localSame := Option.some.inj (firstReduced.symm.trans secondReduced)
+  exact ⟨localSame, by
+    rw [firstValid.2.2.2.1, secondValid.2.2.2.1, sameSite, localSame]⟩
+
+theorem firingIdentity_preserves_result {plan : Plan} {bound : List Syntax.TypeExpr}
+    {type : Syntax.TypeExpr} {source : Syntax.Pattern} {first second : GeneralRuleJobs.Receipt}
+    (firstValid : first.Valid plan bound type source)
+    (secondValid : second.Valid plan bound type source)
+    (same : firingIdentity first = firingIdentity second) :
+    first.localTarget = second.localTarget ∧ first.target = second.target :=
+  same_application_result firstValid secondValid
+    (congrArg FiringIdentity.rule same) (congrArg FiringIdentity.site same)
+    (congrArg FiringIdentity.completed same)
 
 def equationJob (job : GeneralEquationJobs.Job) : Nat × SiteData := ⟨job.planPosition, job.site⟩
 
@@ -60,7 +104,7 @@ theorem ruleJob_injective {plan : Plan} {bound : List Syntax.TypeExpr}
   subst_vars
   rfl
 
-structure EquationReceipt where
+structure EquationReplayRecord where
   job : Nat × SiteData
   trace : List GeneralScopedMatchMachine.BagChoice
   captured : ScopedRuleMatching.Assignment
@@ -70,7 +114,7 @@ structure EquationReceipt where
   target : Syntax.Pattern
   deriving DecidableEq
 
-structure RuleReceipt where
+structure RuleReplayRecord where
   job : Nat × SiteData
   trace : List GeneralScopedMatchMachine.BagChoice
   captured : ScopedRuleMatching.Assignment
@@ -80,51 +124,51 @@ structure RuleReceipt where
   target : Syntax.Pattern
   deriving DecidableEq
 
-def equationReceipt (receipt : GeneralEquationJobs.Receipt) : EquationReceipt :=
+def equationReplayRecord (receipt : GeneralEquationJobs.Receipt) : EquationReplayRecord :=
   ⟨equationJob receipt.job, receipt.matcherTrace, receipt.captured, receipt.completed,
     receipt.premiseHistory, receipt.rawReduct, receipt.target⟩
 
-def ruleReceipt (receipt : GeneralRuleJobs.Receipt) : RuleReceipt :=
+def ruleReplayRecord (receipt : GeneralRuleJobs.Receipt) : RuleReplayRecord :=
   ⟨ruleJob receipt.job, receipt.matcherTrace, receipt.captured, receipt.completed,
     receipt.premiseHistory, receipt.localTarget, receipt.target⟩
 
-theorem equationReceipt_injective {plan : Plan} {bound : List Syntax.TypeExpr}
+theorem equationReplayRecord_injective {plan : Plan} {bound : List Syntax.TypeExpr}
     {type : Syntax.TypeExpr} {source : Syntax.Pattern} {first second : GeneralEquationJobs.Receipt}
     (firstValid : GeneralEquationJobs.Completion plan bound type source first)
     (secondValid : GeneralEquationJobs.Completion plan bound type source second)
-    (same : equationReceipt first = equationReceipt second) : first = second := by
-  have jobs := congrArg EquationReceipt.job same
+    (same : equationReplayRecord first = equationReplayRecord second) : first = second := by
+  have jobs := congrArg EquationReplayRecord.job same
   have jobSame := equationJob_injective firstValid.job secondValid.job jobs
   cases first
   cases second
-  simp only [equationReceipt, EquationReceipt.mk.injEq] at same
+  simp only [equationReplayRecord, EquationReplayRecord.mk.injEq] at same
   rcases same with ⟨_, trace, captured, completed, history, reduct, target⟩
   subst_vars
   rfl
 
-theorem ruleReceipt_injective {plan : Plan} {bound : List Syntax.TypeExpr}
+theorem ruleReplayRecord_injective {plan : Plan} {bound : List Syntax.TypeExpr}
     {type : Syntax.TypeExpr} {source : Syntax.Pattern} {first second : GeneralRuleJobs.Receipt}
     (firstValid : first.Valid plan bound type source)
     (secondValid : second.Valid plan bound type source)
-    (same : ruleReceipt first = ruleReceipt second) : first = second := by
-  have jobs := congrArg RuleReceipt.job same
+    (same : ruleReplayRecord first = ruleReplayRecord second) : first = second := by
+  have jobs := congrArg RuleReplayRecord.job same
   have jobSame := ruleJob_injective firstValid.1 secondValid.1 jobs
   cases first
   cases second
-  simp only [ruleReceipt, RuleReceipt.mk.injEq] at same
+  simp only [ruleReplayRecord, RuleReplayRecord.mk.injEq] at same
   rcases same with ⟨_, trace, captured, completed, history, reduct, target⟩
   subst_vars
   rfl
 
-def occurrence (receipt : GeneralOccurrenceSemantics.Receipt) : Syntax.Pattern × RuleReceipt :=
-  ⟨receipt.representative, ruleReceipt receipt.firing⟩
+def replayOccurrence (receipt : GeneralOccurrenceSemantics.Receipt) : Syntax.Pattern × RuleReplayRecord :=
+  ⟨receipt.representative, ruleReplayRecord receipt.firing⟩
 
-theorem occurrence_ignores_detours (representative : Syntax.Pattern)
+theorem replayOccurrence_ignores_detours (representative : Syntax.Pattern)
     (first second : List GeneralOccurrenceSemantics.Conversion) (firing : GeneralRuleJobs.Receipt) :
-    occurrence ⟨representative, first, firing⟩ = occurrence ⟨representative, second, firing⟩ := rfl
+    replayOccurrence ⟨representative, first, firing⟩ = replayOccurrence ⟨representative, second, firing⟩ := rfl
 
-theorem occurrence_target {first second : GeneralOccurrenceSemantics.Receipt}
-    (same : occurrence first = occurrence second) : first.target = second.target :=
+theorem replayOccurrence_target {first second : GeneralOccurrenceSemantics.Receipt}
+    (same : replayOccurrence first = replayOccurrence second) : first.target = second.target :=
   congrArg (fun key => key.2.target) same
 
 end Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceKeys

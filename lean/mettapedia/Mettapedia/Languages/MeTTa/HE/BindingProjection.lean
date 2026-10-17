@@ -176,6 +176,49 @@ theorem observe_forApplications_append (bindings : Bindings)
   · exact observe_forApplications_sublist bindings _ _ (List.sublist_append_left _ _)
   · exact observe_forApplications_sublist bindings _ _ (List.sublist_append_right _ _)
 
+/-- An answer's environment behind its caller's: an assignment of the caller
+wins, and both equality authorities are kept. -/
+def withCaller (caller answer : Bindings) : Bindings :=
+  { assignments := caller.assignments ++ answer.assignments,
+    equalities := caller.equalities ++ answer.equalities }
+
+theorem lookup_withCaller (caller answer : Bindings) (key : String) :
+    (withCaller caller answer).lookup key =
+      match caller.lookup key with
+      | some value => some value
+      | none => answer.lookup key := by
+  simp only [withCaller, Bindings.lookup, List.lookup_append]
+  cases caller.assignments.lookup key <;> rfl
+
+/-- A call publishes its answer with the answer's environment projected onto
+what its roots read (the call, the expected type, the answer and its delayed
+goals). The caller observes the same atoms when each of its reads is a key it
+assigns itself, a key the roots read, or a key the answer leaves unassigned:
+the answer's other assignments belong to the callee. -/
+theorem observe_withCaller_project (caller answer : Bindings)
+    (roots observed : Applications)
+    (reads : ∀ request ∈ observed,
+      ∀ key ∈ applySupport (withCaller caller answer) request.2 request.1,
+        (caller.lookup key).isSome ∨ key ∈ applicationSupport answer roots ∨
+          answer.lookup key = none) :
+    observe (withCaller caller (forApplications answer roots)) observed =
+      observe (withCaller caller answer) observed := by
+  apply List.map_congr_left
+  intro request member
+  apply applyFull_eq_of_support (first := withCaller caller answer)
+    (second := withCaller caller (forApplications answer roots))
+    (by simp [withCaller, forApplications])
+  intro key dependency
+  rw [lookup_withCaller, lookup_withCaller]
+  cases hcaller : caller.lookup key with
+  | some value => rfl
+  | none =>
+      simp only [forApplications, lookup_project]
+      rcases reads request member key dependency with assigned | rooted | absent
+      · simp [hcaller] at assigned
+      · simp [rooted]
+      · split <;> simp [absent]
+
 namespace Controls
 
 def aliasStore : Bindings :=
@@ -246,6 +289,30 @@ theorem equality_authority_kept :
     (forApplications equalityAlias [(.var "z", 7)]).equalities = [("z", "x")] ∧
       observe (forApplications equalityAlias [(.var "z", 7)]) [(.var "z", 7)] =
         [.symbol "7"] := by decide
+
+def callerEnv : Bindings := ⟨[("c", .symbol "p0")], []⟩
+
+/-- The callee bound the root variable `p` and a local `tmp`. -/
+def answerEnv : Bindings :=
+  ⟨[("p", .symbol "p1"), ("tmp", .symbol "Scratch")], []⟩
+
+def answerRoots : Applications := [(.var "p", 7)]
+
+/-- Positive: the caller reads its own variable and the root's; the callee's
+local assignment is dropped and nothing the caller sees changes. -/
+theorem caller_observes_the_same :
+    (forApplications answerEnv answerRoots).assignments = [("p", .symbol "p1")] ∧
+      observe (withCaller callerEnv (forApplications answerEnv answerRoots))
+          [(.var "c", 7), (.var "p", 7)] =
+        observe (withCaller callerEnv answerEnv) [(.var "c", 7), (.var "p", 7)] := by
+  decide
+
+/-- Negative: a caller that reads the callee's local variable is outside the
+premise; projection changes what it sees. -/
+theorem reading_a_callee_local_changes_the_observation :
+    observe (withCaller callerEnv (forApplications answerEnv answerRoots))
+        [(.var "tmp", 7)] ≠
+      observe (withCaller callerEnv answerEnv) [(.var "tmp", 7)] := by decide
 
 end Controls
 

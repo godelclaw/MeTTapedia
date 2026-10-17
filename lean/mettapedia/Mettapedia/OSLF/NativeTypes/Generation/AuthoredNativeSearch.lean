@@ -3,8 +3,8 @@ import Mettapedia.OSLF.NativeTypes.Generation.AuthoredPipeline
 /-!
 # Retained search catalogues for generated native judgments
 
-Preparation keeps the generated prefix across queries. The fair wire search
-continues after that prefix, and budget exhaustion retains unknown. Search
+Preparation keeps the generated factories across queries. The fair wire search
+continues after those factories, and budget exhaustion retains unknown. Search
 certifies derivability in the selected native grammar, not all semantic truth.
 -/
 
@@ -18,43 +18,71 @@ open Mettapedia.OSLF.NativeTypes.Certificates
 
 variable (installed : AuthoredPipeline.Installed)
 
-structure Prepared where
-  seeds : List (Tree (NativeLogic.presentation installed.operational.logic installed.signature))
-  generatedSeeds : seeds = installed.nativeSeeds
+/-- Each forced priority candidate is retained across queries on the same
+immutable installation. Caching does not change a candidate or its slot. -/
+def cachePrefix (factories : DeferredSeededSearch.Prefix
+    (NativeLogic.presentation installed.operational.logic installed.signature)) :
+    DeferredSeededSearch.Prefix
+      (NativeLogic.presentation installed.operational.logic installed.signature) :=
+  factories.map fun factory =>
+    let cached := Thunk.mk factory
+    fun _ => cached.get
 
-def prepare : installed.Prepared := ⟨installed.nativeSeeds, rfl⟩
+theorem cachePrefix_exact (factories : DeferredSeededSearch.Prefix
+    (NativeLogic.presentation installed.operational.logic installed.signature)) :
+    installed.cachePrefix factories = factories := by
+  unfold cachePrefix
+  have same : (fun factory : Unit → Option
+      (Tree (NativeLogic.presentation installed.operational.logic installed.signature)) =>
+      let cached := Thunk.mk factory
+      fun _ => cached.get) = id := by
+    funext factory argument
+    cases argument
+    rfl
+  rw [same, List.map_id]
+
+structure Prepared where
+  factories : DeferredSeededSearch.Prefix
+    (NativeLogic.presentation installed.operational.logic installed.signature)
+  generatedPrefix : factories = installed.nativeSeedFactories
+
+def prepare : installed.Prepared :=
+  ⟨installed.cachePrefix installed.nativeSeedFactories,
+    installed.cachePrefix_exact installed.nativeSeedFactories⟩
 
 namespace Prepared
 
 variable {installed} (prepared : installed.Prepared)
 
 def search (judgment : Judgment installed.symbols) (budget : Nat) : installed.SearchState :=
-  NativeLogic.searchWithSeeds installed.operational.logic prepared.seeds judgment budget
+  NativeLogic.searchWithDeferred installed.operational.logic prepared.factories judgment budget
 
 def resume (judgment : Judgment installed.symbols) (budget : Nat)
     (state : installed.SearchState) : installed.SearchState :=
-  NativeLogic.resumeWithSeeds installed.operational.logic prepared.seeds judgment budget state
+  NativeLogic.resumeWithDeferred installed.operational.logic prepared.factories judgment budget state
 
 theorem search_exact (judgment : Judgment installed.symbols) (budget : Nat) :
     prepared.search judgment budget = installed.search judgment budget := by
-  simp only [search, Installed.search, prepared.generatedSeeds]
+  simp only [search, Installed.search, prepared.generatedPrefix]
 
 theorem resume_exact (judgment : Judgment installed.symbols) (budget : Nat)
     (state : installed.SearchState) :
     prepared.resume judgment budget state = installed.resume judgment budget state := by
-  simp only [resume, Installed.resume, prepared.generatedSeeds]
+  simp only [resume, Installed.resume, prepared.generatedPrefix]
 
 theorem resume_add (judgment : Judgment installed.symbols) (first second : Nat) :
     prepared.search judgment (first + second) =
-      prepared.resume judgment second (prepared.search judgment first) :=
-  NativeLogic.seeded_resume (D := installed.signature) installed.operational.logic
-    prepared.seeds judgment first second
+      prepared.resume judgment second (prepared.search judgment first) := by
+  simp only [prepared.search_exact, prepared.resume_exact]
+  exact installed.resume_add judgment first second
 
 theorem stable (judgment : Judgment installed.symbols) (budget extra : Nat)
     (tree : Tree (NativeLogic.presentation installed.operational.logic installed.signature))
     (found : (prepared.search judgment budget).found = some tree) :
-    prepared.search judgment (budget + extra) = prepared.search judgment budget :=
-  NativeLogic.seeded_stable _ _ _ _ _ _ found
+    prepared.search judgment (budget + extra) = prepared.search judgment budget := by
+  rw [prepared.search_exact] at found ⊢
+  rw [prepared.search_exact]
+  exact installed.stable judgment budget extra tree found
 
 theorem sound (judgment : Judgment installed.symbols) (budget : Nat)
     (tree : Tree (NativeLogic.presentation installed.operational.logic installed.signature))
@@ -63,16 +91,18 @@ theorem sound (judgment : Judgment installed.symbols) (budget : Nat)
       NativeLogic.CertificatePermitted installed.operational.logic (NativeLogic.embed _ tree) ∧
       ∃ derivation : Derivation installed.signature judgment,
         Certificates.Refinement.erase derivation = NativeLogic.embed _ tree :=
-  NativeLogic.seeded_sound _ _ _ _ _ found
+  by
+    apply installed.sound judgment budget tree
+    rwa [prepared.search_exact] at found
 
 theorem discovery (judgment : Judgment installed.symbols)
     (certificate : Certificates.Refinement.Certificate installed.signature)
     (selected : NativeLogic.CertificatePermitted installed.operational.logic certificate)
     (accepted : Certificates.Refinement.check certificate judgment = true) :
     ∃ found, (prepared.search judgment
-      (SeededSearch.discoveryBound prepared.seeds.length
+      (DeferredSeededSearch.discoveryBound prepared.factories.length
         (Tree.wireSize (NativeLogic.restrict installed.operational.logic certificate selected)))).found = some found := by
-  rw [prepared.search_exact, prepared.generatedSeeds]
+  rw [prepared.search_exact, prepared.generatedPrefix]
   exact installed.discovery judgment certificate selected accepted
 
 def query (judgment : Judgment installed.symbols) (budget : Nat) : BindingPipeline.Installed.NativeAnswer :=
@@ -108,8 +138,8 @@ theorem query_zero (judgment : Judgment installed.symbols)
     (selected : installed.operational.logic.permits judgment) :
     prepared.query judgment 0 = .unknown := by
   have accepted := (NativeLogic.accepts_exact installed.operational.logic judgment).mpr selected
-  simp [query, accepted, search, NativeLogic.searchWithSeeds,
-    SeededSearch.search, SeededSearch.run, Search.initial]
+  simp [query, accepted, search, NativeLogic.searchWithDeferred, DeferredSeededSearch.search,
+    DeferredSeededSearch.run, Search.initial]
 
 end Prepared
 

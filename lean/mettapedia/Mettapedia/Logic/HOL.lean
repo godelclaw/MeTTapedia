@@ -25,6 +25,14 @@ import Mettapedia.Logic.HOL.TransitionInvariant
 import Mettapedia.Logic.HOL.DerivationExtensionality
 import Mettapedia.Logic.HOL.ProofSyntax
 import Mettapedia.Logic.HOL.ProofSyntaxStructural
+import Mettapedia.Logic.HOL.ContextualTrinity
+import Mettapedia.Logic.HOL.BetaNormalization
+import Mettapedia.Logic.HOL.ConversionTiers
+import Mettapedia.Logic.HOL.CheckableFragment
+import Mettapedia.Logic.HOL.Semantics.StandardTransport
+import Mettapedia.Logic.HOL.TwoMembershipModels
+import Mettapedia.Logic.HOL.StandardSemanticsBubbles
+import Mettapedia.Logic.HOL.InstitutionTrinity
 import Mettapedia.Logic.HOL.ProofSyntaxModulo
 import Mettapedia.Logic.HOL.ProofSyntaxModuloStructural
 import Mettapedia.Logic.HOL.ProofSyntaxModuloKripke

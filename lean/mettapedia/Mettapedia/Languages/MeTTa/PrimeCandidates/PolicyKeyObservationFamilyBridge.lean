@@ -43,7 +43,7 @@ def observationRealization
     {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : PolicyKeyAdmission.Admission dependencies revision request key) :
     (observationFamily request).ReadoutRealization key where
   run := fun policy => (admission.realize policy).run
   agrees := fun policy state => (admission.realize policy).run_key state
@@ -55,7 +55,7 @@ def toGenericAdmission
     {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : PolicyKeyAdmission.Admission dependencies revision request key) :
     PolicyFamilyAdmittedAt dependencies revision (observationFamily request)
       key where
   realization := observationRealization admission
@@ -72,7 +72,7 @@ def ofGenericAdmissionPolicyOnly
     (generic : PolicyFamilyAdmittedAt dependencies revision
       (observationFamily request) key)
     (policyOnly : ¬ request.requiresExactReplay) :
-    PolicyKeyAdmission dependencies revision request key where
+    PolicyKeyAdmission.Admission dependencies revision request key where
   realize := fun policy =>
     { run := generic.realization.run policy
       agrees := by
@@ -87,7 +87,7 @@ does not change any executable keyed policy function. -/
     {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : PolicyKeyAdmission.Admission dependencies revision request key)
     (policyOnly : ¬ request.requiresExactReplay)
     (policy : request.Policy) (encoded : Key) :
     (ofGenericAdmissionPolicyOnly (toGenericAdmission admission) policyOnly
@@ -102,7 +102,7 @@ theorem activeToGeneric
     {revision currentRevision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : PolicyKeyAdmission.Admission dependencies revision request key}
     (active : admission.Active currentRevision) :
     (toGenericAdmission admission).Active currentRevision :=
   ⟨active.current⟩
@@ -113,7 +113,7 @@ theorem activeToGeneric
     {revision currentRevision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : PolicyKeyAdmission.Admission dependencies revision request key}
     (active : admission.Active currentRevision)
     (policy : request.Policy) (encoded : Key) :
     (activeToGeneric active).runKey policy encoded =
@@ -127,7 +127,7 @@ theorem policyKeyAdmission_supportsObservationFamily
     {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : PolicyKeyAdmission.Admission dependencies revision request key) :
     (observationFamily request).SupportsReadout key :=
   ⟨observationRealization admission⟩
 
@@ -138,7 +138,7 @@ theorem policyKeyAdmission_refinesPolicyVector_fromObservationUniversal
     {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State -> Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : PolicyKeyAdmission.Admission dependencies revision request key) :
     ReplayKey.Refines key (policyVectorKey request) := by
   have factors :=
     ((observationFamily request).supportsReadout_iff_vectorFactors key).1
@@ -170,7 +170,7 @@ def collapsedKey : Bool -> Unit := fun _ => ()
 
 /-- A constant policy genuinely admits the collapsed key. -/
 def collapsedAdmission :
-    PolicyKeyAdmission dependencies () constantRequest collapsedKey where
+    PolicyKeyAdmission.Admission dependencies () constantRequest collapsedKey where
   realize := fun _ =>
     { run := fun _ => true
       agrees := by funext state; cases state <;> rfl }

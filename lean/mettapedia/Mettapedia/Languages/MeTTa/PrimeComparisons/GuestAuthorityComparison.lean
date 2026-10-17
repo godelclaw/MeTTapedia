@@ -1,3 +1,5 @@
+import Mettapedia.GSLT.LanguageDef.AuthorityLedger
+import Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
 import Mettapedia.GSLT.LanguageDef.HeterogeneousTheory
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareAuthority
 import Mettapedia.Languages.Megalodon.ImplicationalSemanticAuthority
@@ -232,5 +234,30 @@ theorem component_scopes_are_exact :
 #print axioms megalodon_certificate_rejected_at_dtt_kind
 #print axioms no_replay_breaking_dtt_to_megalodon
 #print axioms component_scopes_are_exact
+
+end Mettapedia.Languages.MeTTa.PrimeComparisons.GuestAuthorityComparison
+
+
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.GuestAuthorityComparison
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.GSLT.LanguageDef.PresentationEvidence
+open Mettapedia.GSLT.LanguageDef.AuthorityLedger
+
+/-- A status notice for the exploratory nucleus candidate presentation. -/
+def primeProbeEvidence : Evidence Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef.language :=
+  .authoredProbe "metta-prime-spec-probe: exploratory presentation; this entry supplies a status notice, not an operational realization"
+
+
+theorem primeProbeEvidence_kind : primeProbeEvidence.kind = .authoredProbe := rfl
+
+/-- The exact realization and probe notice supply different kinds of
+evidence.  This distinguishes these entries without ranking their languages. -/
+theorem exact_and_probe_kinds_differ (model : Mettapedia.Languages.MeTTa.MeTTaZero.Model)
+    (space : model.Space) (spaceTerm : Pattern) :
+    primeProbeEvidence.kind ≠ (zeroQueryEvidence model space spaceTerm).kind := by
+  rw [primeProbeEvidence_kind, zeroQueryEvidence_kind]
+  decide
+
+#print axioms exact_and_probe_kinds_differ
 
 end Mettapedia.Languages.MeTTa.PrimeComparisons.GuestAuthorityComparison

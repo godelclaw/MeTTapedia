@@ -24,7 +24,7 @@ mutual
   /-- Keyed canonicalization preserves stopped structural alignment.  The
   client supplies semantic evidence for exact rigid free variables and for
   the explicitly stopped collapsing pairs. -/
-  def canonicalStopAligned_canonicalizeByDepths
+  theorem canonicalStopAligned_canonicalizeByDepths
       {Key : Type} [LinearOrder Key]
       {stop relation : Pattern → Pattern → Prop}
       (leftKey rightKey : Nat → Nat → Pattern → Key)
@@ -106,7 +106,7 @@ mutual
 
   /-- Listwise companion of
   `canonicalStopAligned_canonicalizeByDepths`. -/
-  def canonicalStopAlignedList_canonicalizeByDepths
+  theorem canonicalStopAlignedList_canonicalizeByDepths
       {Key : Type} [LinearOrder Key]
       {stop relation : Pattern → Pattern → Prop}
       (leftKey rightKey : Nat → Nat → Pattern → Key)

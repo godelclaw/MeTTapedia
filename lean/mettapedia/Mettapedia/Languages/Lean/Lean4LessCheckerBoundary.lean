@@ -1,4 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.SemanticEvidence
+import Mettapedia.GSLT.LanguageDef.KernelCheckingClasses
+import Mettapedia.Logic.EqualityRecipe
 
 /-!
 # Lean as a checker boundary: Lean4Lean/Lean4Less integration boundary
@@ -12,7 +14,8 @@ have already discharged these laws.
 The split is deliberate:
 
 * a native proof system retains Lean expressions as proof objects;
-* a computing kernel decides the independently stated declaration judgment;
+* a computing kernel decides its independently stated algorithmic judgment;
+* soundness into ideal typing/equality is a separate, potentially incomplete map;
 * exact SemanticService parity follows fibrewise, without decoding or tag erasure;
 * proof irrelevance, K-like reduction, and quotients form an explicit equality
   profile package rather than becoming properties of SemanticService;
@@ -89,9 +92,11 @@ theorem equality_profiles_are_distinct : leanProfile ≠ leanMinusProfile := by
 
 /-! ## The independently stated guest judgment -/
 
-/-- The minimal semantic contract extracted from a Lean-like kernel.  The
-judgment is stated before the Boolean checker, and conversion is separately
-decided. -/
+-- The two carrier universes are intentionally independent.
+set_option linter.checkUnivs false in
+/-- An exact contract for a declared algorithmic profile. Its judgment is
+stated before the Boolean checker. Ideal Lean typing/equality is a separate
+relation: these fields must not assert an exact ideal decision procedure. -/
 structure GuestKernelSpec where
   Expr : Type uExpr
   Declaration : Type uDecl
@@ -149,6 +154,134 @@ def accepted_fibre_equiv_native_fibre (spec : GuestKernelSpec)
   (spec.exactParity).fibreEquiv declaration
 
 end GuestKernelSpec
+
+/-! ## Algorithmic acceptance and ideal judgments -/
+
+/-- A sound interpretation of an algorithmic profile in ideal judgments.
+Neither certificate completeness nor exact ideal conversion is assumed. -/
+structure IdealBoundary (spec : GuestKernelSpec) where
+  converts : spec.Expr → spec.Expr → Prop
+  judges : spec.Expr → spec.Declaration → Prop
+  conversionSymm : ∀ {left right}, converts left right → converts right left
+  conversionTrans : ∀ {left middle right}, converts left middle → converts middle right → converts left right
+  conversionSound : ∀ {left right}, spec.Converts left right → converts left right
+  judgmentSound : ∀ {proof declaration}, spec.judges proof declaration → judges proof declaration
+
+namespace GuestKernelSpec
+
+def conversionChecker (spec : GuestKernelSpec) : Checker (spec.Expr × spec.Expr) Unit where
+  check pair _ := spec.decideConversion pair.1 pair.2
+
+theorem conversionAuthority (spec : GuestKernelSpec) :
+    spec.conversionChecker.Authority (fun pair => spec.Converts pair.1 pair.2) where
+  sound _ _ accepted := (spec.conversion_correct _ _).mp accepted
+  complete _ valid := ⟨(), (spec.conversion_correct _ _).mpr valid⟩
+
+end GuestKernelSpec
+
+namespace IdealBoundary
+
+variable {spec : GuestKernelSpec} (boundary : IdealBoundary spec)
+
+/-- Exact algorithmic authority projects soundly into the ideal judgment.
+The projection records its exact source scope rather than laundering a
+sound implementation into a complete ideal checker. -/
+theorem conversionProjection :
+    spec.conversionChecker.AuthorityProjection
+      (fun pair => spec.Converts pair.1 pair.2)
+      (fun pair => boundary.converts pair.1 pair.2) where
+  authority := spec.conversionAuthority
+  project _ := boundary.conversionSound
+
+theorem judgmentProjection :
+    spec.nativeKernel.toChecker.AuthorityProjection
+      (fun declaration => Nonempty (spec.proofSystem.ProofFibre declaration))
+      (fun declaration => ∃ proof, boundary.judges proof declaration) where
+  authority := spec.authority
+  project _ proved := by
+    obtain ⟨proof⟩ := proved
+    exact ⟨proof.1, boundary.judgmentSound proof.2⟩
+
+/-- An actual nontransitivity witness separates algorithmic comparison
+from any sound equivalence interpretation. No such witness for the complete
+Lean implementation is asserted by this abstract theorem. -/
+theorem nontransitivity_gap (left middle right : spec.Expr)
+    (first : spec.Converts left middle) (second : spec.Converts middle right)
+    (refused : ¬ spec.Converts left right) :
+    boundary.converts left right ∧ ¬ spec.conversionChecker.Authority
+      (fun pair => boundary.converts pair.1 pair.2) := by
+  have ideal := boundary.conversionTrans
+    (boundary.conversionSound first) (boundary.conversionSound second)
+  exact ⟨ideal, boundary.conversionProjection.not_target_authority_of_gap
+    (claim := (left, right)) ideal refused⟩
+
+/-- A budgeted family which enumerates exactly the original algorithm's
+successes cannot fill an ideal gap. More fuel changes run length, not the
+equality policy of that algorithm. -/
+theorem fuel_does_not_fill_gap
+    (budgeted : Nat → spec.Expr → spec.Expr → Bool)
+    (sameSuccesses : ∀ left right,
+      (∃ fuel, budgeted fuel left right = true) ↔ spec.Converts left right)
+    (left right : spec.Expr) (ideal : boundary.converts left right)
+    (refused : ¬ spec.Converts left right) :
+    boundary.converts left right ∧ ∀ fuel, budgeted fuel left right = false := by
+  refine ⟨ideal, fun fuel => ?_⟩
+  cases accepted : budgeted fuel left right with
+  | false => rfl
+  | true => exact False.elim (refused ((sameSuccesses left right).mp ⟨fuel, accepted⟩))
+
+/-- Ideal equality is reflexive on formed expressions, not necessarily on
+arbitrary raw syntax. The native fibre retains that formation obligation.
+No decoder from unvalidated raw expressions into this fibre is supplied. -/
+def ScopedExpr := { expression : spec.Expr // boundary.converts expression expression }
+
+def scopedConverts (left right : boundary.ScopedExpr) : Prop :=
+  spec.Converts left.1 right.1
+
+def scopedConversionChecker : Checker (boundary.ScopedExpr × boundary.ScopedExpr) Unit where
+  check pair _ := spec.decideConversion pair.1.1 pair.2.1
+
+theorem scopedConversionAuthority : boundary.scopedConversionChecker.Authority
+    (fun pair => boundary.scopedConverts pair.1 pair.2) where
+  sound _ _ accepted := (spec.conversion_correct _ _).mp accepted
+  complete _ valid := ⟨(), (spec.conversion_correct _ _).mpr valid⟩
+
+theorem scopedEquivalence : Equivalence
+    (fun left right : boundary.ScopedExpr => boundary.converts left.1 right.1) :=
+  ⟨fun expression => expression.2, fun related => boundary.conversionSymm related,
+    fun first second => boundary.conversionTrans first second⟩
+
+variable [DecidableEq spec.Expr]
+
+instance : DecidableEq boundary.ScopedExpr := inferInstanceAs (DecidableEq (Subtype _))
+
+/-- Explicit composition is exact for the generated relation. Equating this
+with full ideal Lean equality would require a separate generation theorem. -/
+theorem recipeProjection :
+    (Mettapedia.Logic.EqualityRecipe.checker boundary.scopedConversionChecker).AuthorityProjection
+      (fun pair => Relation.EqvGen boundary.scopedConverts pair.1 pair.2)
+      (fun pair => boundary.converts pair.1.1 pair.2.1) where
+  authority := Mettapedia.Logic.EqualityRecipe.authority _ boundary.scopedConversionAuthority
+  project pair generated := by
+    have mapped := Relation.EqvGen.mono
+      (fun _ _ related => boundary.conversionSound related) _ _ generated
+    exact boundary.scopedEquivalence.eqvGen_iff.mp mapped
+
+/-- This is the missing completeness obligation, not an instance of it.
+It is equivalent to actual certificate completeness for ideal conversion. -/
+theorem recipe_complete_iff_generation :
+    (Mettapedia.Logic.EqualityRecipe.checker boundary.scopedConversionChecker).CertificateComplete
+      (fun pair => boundary.converts pair.1.1 pair.2.1) ↔
+    ∀ left right : boundary.ScopedExpr, boundary.converts left.1 right.1 →
+      Relation.EqvGen boundary.scopedConverts left right := by
+  constructor
+  · intro complete left right ideal
+    obtain ⟨proof, accepted⟩ := complete (left, right) ideal
+    exact boundary.recipeProjection.authority.sound _ proof accepted
+  · intro generated pair ideal
+    exact boundary.recipeProjection.authority.complete pair (generated _ _ ideal)
+
+end IdealBoundary
 
 /-! ## Profile translation and explicit casts -/
 

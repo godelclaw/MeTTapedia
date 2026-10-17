@@ -34,7 +34,9 @@ theorem generic_equation_resolution {request : Request}
   have equationMember := List.fst_mem_of_mem_zipIdx licensed.1
   have equationChecked := GeneralExecutionTotalAdmission.checkGeneric_equation checked equationMember
   exact GeneralPremise.Static.premises_resolved
-    (GeneralExecutionTotalAdmission.checkGeneric_readout checked).1 equationChecked
+    (GeneralExecutionTotalAdmission.checkGeneric_readout checked).1
+    (GeneralPremise.Static.DynamicAvailability.of_empty
+      (GeneralExecutionTotalAdmission.checkGeneric_no_dynamic checked)) equationChecked
     (by
       change request.plan.rules.length ≤ (GeneralPlanEnvironment.environment request.plan).language.rewrites.length
       simp only [GeneralPlanEnvironment.environment, List.length_map]
@@ -51,6 +53,8 @@ theorem generic_rule_resolution {request : Request} (admitted : Admitted request
     (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).unresolved = []
   exact GeneralPremise.Static.root_resolved
     (GeneralExecutionTotalAdmission.checkGeneric_readout checked).1
+    (GeneralPremise.Static.DynamicAvailability.of_empty
+      (GeneralExecutionTotalAdmission.checkGeneric_no_dynamic checked))
     (GeneralRuleJobs.Job.selected_rule licensed)
     (admitted.rule_job_focus_open representative job licensed)
 

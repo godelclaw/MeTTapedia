@@ -246,4 +246,178 @@ theorem fully_checked_compatible_assembly :
 theorem fully_checked_conflict_rejected :
     mergeCheckedCatalog? snapshot checkedPair checkedPair = none := by decide
 
+
+/-! ## Portable presentation/text controls -/
+
+namespace PortableText
+
+open Mettapedia.GSLT.LanguageDef.CettaWire (Term)
+open Mettapedia.GSLT.LanguageDef.ModuleAlgebra
+open Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NativeAuthoring (ImportContract)
+open Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotation
+open Mettapedia.GSLT.LanguageDef.InferenceCettaWire.AuthoredRule.Controls
+
+/-- The transport workload includes syntax operators, collection laws, binders,
+scoped/quantified premises, explicit substitutions and rule-local dependencies.
+Static language admission remains a separate operation. -/
+def language : LanguageDef where
+  name := "Portable λ\n\"scope\""
+  types := [⟨"Name", .ast⟩, ⟨"Proc", .ast⟩, ⟨"Text", .builtinString⟩]
+  terms := [
+    { label := "Bind", category := "Proc",
+      params := [.abstractionNamed (some "x") "body" (.arrow (.base "Name") (.base "Proc"))],
+      syntaxPattern := [.terminal "bind", .nonTerminal "body",
+        .op (.map (.zip "names" "bodies") ["name", "body"]
+          [.op (.opt [.delimiter "(" ")"]), .separator ","])],
+      evalPolicy? := some .rewrite },
+    { label := "Par", category := "Proc",
+      params := [.simple "parts" (.collection .hashBag (.base "Proc"))],
+      syntaxPattern := [.op (.sep "parts" "|" (some (.var "parts")))],
+      algebra? := some ⟨true, some "Nil"⟩ }]
+  equations := [
+    { name := "scope-equation", typeContext := annotatedRule.typeContext,
+      premises := annotatedRule.premises, left := annotatedRule.left,
+      right := annotatedRule.right, bindings := annotatedRule.bindings }]
+  rewrites := [annotatedRule, annotatedRule]
+
+def theory : ExtendedLanguageDef (calculusLayer.product exportLayer) where
+  toLanguageDef := language
+  extension := (proofCalculus, ["Proc", "Name"])
+
+def codec := Portable.productCodec Portable.calculusCodec Portable.exportsCodec
+
+def theoryText : String := Portable.renderTheory "calculus+exports/1" codec theory
+
+theorem complete_scoped_text_roundtrip :
+    Portable.readTheory? "calculus+exports/1" codec theoryText = some theory :=
+  Portable.readTheory_renderTheory _ _ _
+
+theorem rule_occurrences_survive :
+    (Portable.readTheory? "calculus+exports/1" codec theoryText).map
+      (fun read => read.rewrites.length) = some 2 := by
+  rw [complete_scoped_text_roundtrip]
+  rfl
+
+theorem scoped_body_survives :
+    (Portable.readTheory? "calculus+exports/1" codec theoryText).map
+      (fun read => read.equations.head?.map Equation.right) =
+      some (some (.lambda (some "display") (.subst (.bvar 1) (.bvar 0)))) := by
+  rw [complete_scoped_text_roundtrip]
+  rfl
+
+theorem product_layers_survive :
+    (Portable.readTheory? "calculus+exports/1" codec theoryText).map
+      (fun read => read.extension) = some (proofCalculus, ["Proc", "Name"]) := by
+  rw [complete_scoped_text_roundtrip]
+  rfl
+
+def origin : Term := .application "Origin" [.string "library/example", .natural 7]
+def entry : Entry Term Term (ExtendedLanguageDef (calculusLayer.product exportLayer)) :=
+  ⟨origin, .string "ProcessTheory", theory⟩
+def otherOriginEntry : Entry Term Term (ExtendedLanguageDef (calculusLayer.product exportLayer)) :=
+  { entry with origin := .application "Origin" [.string "library/other", .natural 7] }
+
+theorem duplicate_source_entries_survive_text :
+    Portable.readEntries? "calculus+exports/1" codec
+      (Portable.renderEntries "calculus+exports/1" codec [entry, entry]) = some [entry, entry] :=
+  Portable.readEntries_renderEntries _ _ _
+
+theorem shared_origin_is_shared_only_at_admission :
+    Portable.checkedEntries? .coherentOrigin
+      (Portable.renderEntries "calculus+exports/1" codec [entry, entry]) =
+      some [Portable.rawEntry "calculus+exports/1" codec entry] := by
+  rw [Portable.checkedEntries_renderEntries]
+  simp [ImportContract.check?, List.unionCompatible?, List.insertCompatible?]
+
+private theorem label_collision (first second : Entry Term Term Term)
+    (different : first ≠ second) (sameLabel : first.label = second.label) :
+    ImportContract.coherentOrigin.check? [first, second] = none := by
+  have incompatible : ImportContract.coherentOrigin.entryCompatible first second = false := by
+    rw [ImportContract.coherentOrigin_formula]
+    simp only [if_neg different, sameLabel]
+    split <;> rfl
+  simp [ImportContract.check?, List.unionCompatible?, List.insertCompatible?,
+    Ne.symm different, incompatible]
+
+theorem independent_origins_cannot_claim_one_label :
+    Portable.checkedEntries? .coherentOrigin
+      (Portable.renderEntries "calculus+exports/1" codec [entry, otherOriginEntry]) = none := by
+  rw [Portable.checkedEntries_renderEntries]
+  apply label_collision
+  · intro same
+    have origins := congrArg Entry.origin same
+    have differentOrigins : origin ≠ otherOriginEntry.origin := by decide +kernel
+    exact differentOrigins origins
+  · rfl
+
+theorem composition_uses_existing_join :
+    Portable.checkedEntries? .coherentOrigin
+      (Portable.renderEntries "calculus+exports/1" codec ([entry] ++ [otherOriginEntry])) =
+      ImportContract.coherentOrigin.join?
+        [Portable.rawEntry "calculus+exports/1" codec entry]
+        [Portable.rawEntry "calculus+exports/1" codec otherOriginEntry] :=
+  Portable.checkedEntries_append _ _ _ _ _
+
+def module : Module upstreamLimits :=
+  ⟨⟨"PortableScoped", [], [⟨"ProcessTheory",
+    Portable.specification "calculus+exports/1" codec theory⟩]⟩, by decide⟩
+
+def moduleText : String := renderText upstreamLimits module
+
+theorem envelope_and_full_payload_roundtrip :
+    readText? upstreamLimits moduleText = some module := readText_renderText _ _
+
+theorem recovered_export_elaborates :
+    (readText? upstreamLimits moduleText).bind (fun parsed =>
+      parsed.val.exports.head?.bind (fun exported =>
+        Portable.admitSpecification? "calculus+exports/1" codec exported.spec)) =
+      some theory := by
+  rw [envelope_and_full_payload_roundtrip]
+  change Portable.admitSpecification? _ _ (Portable.specification _ _ theory) = some theory
+  exact Portable.specification_roundtrip _ _ _
+
+theorem wrong_layer_schema_is_not_reinterpreted :
+    Portable.readTheory? "different-layer/1" codec theoryText = none := by
+  exact Portable.readTheory_renderTheory_otherSchema _ _ _ _ _ (by decide)
+
+theorem dropping_rules_changes_the_portable_presentation :
+    NativeAuthoring.Wire.language language ≠ NativeAuthoring.Wire.language
+      { language with rewrites := [] } := by
+  intro same
+  have := congrArg LanguageDef.rewrites (NativeAuthoring.Wire.language_injective same)
+  cases this
+
+theorem capturing_a_bound_slot_changes_text :
+    Text.render (InferenceCettaWire.encodePattern (.lambda none (.bvar 1))) ≠
+      Text.render (InferenceCettaWire.encodePattern (.lambda none (.bvar 0))) := by
+  intro same
+  have patterns := InferenceCettaWire.encodePattern_injective (Text.render_injective same)
+  cases patterns
+
+/-- Executable lexical refusal controls complement the structural theorems. -/
+def refusedTextSamples : List String := [
+  "(module:document (LanguageDefV2",
+  "!(module:document 7)",
+  "(module:document 7)\n(module:document 8)",
+  "(module:document (module:codepoints (LCons 1114112 LNil)))"]
+
+#guard refusedTextSamples.all (fun source => (Text.read? source).isNone)
+
+theorem unicode_quotes_and_newlines_roundtrip :
+    Text.read? (Text.render (.string "λ\n\"scope\"\\x")) =
+      some (.string "λ\n\"scope\"\\x") := Text.read_render _
+
+theorem variable_looking_symbol_stays_data :
+    Text.read? (Text.render (.symbol "$x")) = some (.symbol "$x") := Text.read_render _
+
+theorem reserved_head_stays_a_constructor :
+    Text.read? (Text.render (.application "module:codepoints" [.natural 4])) =
+      some (.application "module:codepoints" [.natural 4]) := Text.read_render _
+
+theorem byte_level_roundtrip :
+    Text.readBytes? (Text.renderBytes (.string "scope λ")) =
+      some (.string "scope λ") := Text.readBytes_renderBytes _
+
+end PortableText
+
 end Mettapedia.GSLT.LanguageDef.ModuleFormat.Controls

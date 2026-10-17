@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mathlib.Data.Nat.Choose.Basic
 import Mathlib.Data.Finset.Basic
 

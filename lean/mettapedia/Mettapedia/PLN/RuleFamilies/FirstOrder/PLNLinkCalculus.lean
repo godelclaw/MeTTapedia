@@ -62,7 +62,8 @@ private lemma minW₅_nonneg (a b c d e : WTV) : 0 ≤ minW₅ a b c d e := by
   refine le_min c.weight_nonneg ?_
   exact le_min d.weight_nonneg e.weight_nonneg
 
-/-- Revision (independent evidence): add weights, weighted-average strengths. -/
+/-- Revision (evidence from disjoint observations): add weights, weighted-average
+strengths. -/
 noncomputable def revision (t₁ t₂ : WTV) : WTV :=
   revisionWTV t₁ t₂
 
@@ -85,7 +86,7 @@ Weight follows the PeTTa/MeTTa convention: min of the *link* weights only.
 -/
 noncomputable def sourceRule (tA tB tC tBA tBC : WTV) : WTV where
   strength :=
-    clamp01 (plnSourceRuleStrength tBA.strength tBC.strength tA.strength tB.strength tC.strength)
+    clamp01 (plnInductionStrength tBA.strength tBC.strength tA.strength tB.strength tC.strength)
   weight := minW₂ tBA tBC
   strength_nonneg := clamp01_nonneg _
   strength_le_one := clamp01_le_one _

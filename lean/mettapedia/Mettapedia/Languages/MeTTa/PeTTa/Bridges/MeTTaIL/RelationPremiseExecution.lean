@@ -21,11 +21,56 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RelationPremiseExecut
 open Mettapedia.GSLT.LanguageDef
 open CettaWire MeTTaILFirstOrderRuleCompilation
 open Mettapedia.OSLF.MeTTaIL.Syntax Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
 open Effects (State)
 open Eval RuleExecutionProgram
 open MatchAutomataBindingExecution (bindingsTerm bindingTerm patternOptionTerm bindingsOptionTerm)
+
+/-- The retained names-only helper uses the checked variable source view. -/
+def _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation.VariablePremisePlan.matchTuple? (seed : Bindings) (plan : VariablePremisePlan)
+    (values : List Pattern) : Option Bindings := do
+  let extension ← relationArguments? seed plan.arguments values
+  mergeBindings seed extension
+
+theorem _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation.VariablePremisePlan.matchTuple?_toPlan (seed : Bindings)
+    (plan : VariablePremisePlan) (values : List Pattern) :
+    plan.matchTuple? seed values = plan.toPlan.matchTuple? seed values := by
+  simp [VariablePremisePlan.matchTuple?, PremisePlan.matchTuple?,
+    VariablePremisePlan.toPlan, relationPatternArguments?_metavariables]
+
+theorem _root_.Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation.VariablePremisePlan.matchTuples_exact (seed : Bindings)
+    (plan : VariablePremisePlan) (tuples : List (List Pattern)) :
+    tuples.filterMap (plan.matchTuple? seed) =
+      tuples.flatMap fun tuple =>
+        (matchRelationArgs seed (plan.arguments.map Pattern.fvar) tuple).filterMap
+          (mergeBindings seed) := by
+  have specialized : plan.matchTuple? seed = plan.toPlan.matchTuple? seed := by
+    funext values
+    exact plan.matchTuple?_toPlan seed values
+  rw [specialized, PremisePlan.matchTuples_exact]
+  simp [VariablePremisePlan.toPlan, erasePatterns_eq_map, List.map_map,
+    PatternPlan.erase, Function.comp_def]
+
+/-- Source list execution is the general ordered fold on the checked image. -/
+def runVariablePremisePlans (relations : RelationEnv) (language : LanguageDef)
+    (plans : List VariablePremisePlan) (seed : Bindings) : List Bindings :=
+  runPremisePlans relations language (plans.map VariablePremisePlan.toPlan) seed
+
+@[simp] theorem runVariablePremisePlans_nil (relations : RelationEnv)
+    (language : LanguageDef) (seed : Bindings) :
+    runVariablePremisePlans relations language [] seed = [seed] := rfl
+
+@[simp] theorem runVariablePremisePlans_cons (relations : RelationEnv)
+    (language : LanguageDef) (plan : VariablePremisePlan)
+    (plans : List VariablePremisePlan) (seed : Bindings) :
+    runVariablePremisePlans relations language (plan :: plans) seed =
+      (plan.run relations language seed).flatMap
+        (runVariablePremisePlans relations language plans) := by
+  simp only [runVariablePremisePlans, List.map_cons, runPremisePlans,
+    VariablePremisePlan.toPlan_run]
+  rfl
 
 /-- Variable names retain the canonical ordered list wire. -/
 def namesTerm (names : List String) : Term := encodeList .string names
@@ -399,7 +444,7 @@ theorem relation_arguments_returns (state : State) (seed : Bindings) (names : Li
       (optionValue (relationArguments? seed names values)) :=
   relation_arguments_captured_returns [] state seed names values _ _ _ (by simp)
 
-private theorem tuple_body_returns (state : State) (seed : Bindings) (plan : PremisePlan) (values : List Pattern) :
+private theorem tuple_body_returns (state : State) (seed : Bindings) (plan : VariablePremisePlan) (values : List Pattern) :
     PureReturns program (environment .tuple (namesValue plan.arguments) (patternsValue values) seed) state
       (equation .tuple).body state (optionValue (plan.matchTuple? seed values)) := by
   let caller := environment .tuple (namesValue plan.arguments) (patternsValue values) seed
@@ -412,7 +457,7 @@ private theorem tuple_body_returns (state : State) (seed : Bindings) (plan : Pre
       apply none_case_returns caller state "extended" _ (.symbol "None")
         (a "gslt:automata:merge" [v "seed", v "extended"]) _
       · simpa [extendedFound, bindingsOptionTerm, CettaWireAtom.encode] using extendedReturned
-      · simpa [PremisePlan.matchTuple?, extendedFound, bindingsOptionTerm, CettaWireAtom.encode] using
+      · simpa [VariablePremisePlan.matchTuple?, extendedFound, bindingsOptionTerm, CettaWireAtom.encode] using
           symbol_returns program caller state "None"
   | some extended =>
       let selected := ("extended", bindingsValue extended) :: caller
@@ -420,12 +465,12 @@ private theorem tuple_body_returns (state : State) (seed : Bindings) (plan : Pre
         (a "gslt:automata:merge" [v "seed", v "extended"]) (bindingsValue extended) _
       · simp [caller, environment, Helper.first, Helper.second, Subst.lookup]
       · simpa [extendedFound, bindingsOptionTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany] using extendedReturned
-      · simpa [PremisePlan.matchTuple?, extendedFound] using
+      · simpa [VariablePremisePlan.matchTuple?, extendedFound] using
           merge_captured selected state seed extended "seed" "extended"
             (by simp [selected, caller, environment, Helper.first, Helper.second, applySubst, Subst.lookup])
 
 theorem match_tuple_captured_returns (caller : Subst) (state : State) (seed : Bindings)
-    (plan : PremisePlan) (values : List Pattern) (one two three : Atom)
+    (plan : VariablePremisePlan) (values : List Pattern) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [namesValue plan.arguments, patternsValue values, bindingsValue seed]) :
     PureReturns program caller state (a "gslt:rule:match-tuple" [one, two, three]) state
@@ -433,7 +478,7 @@ theorem match_tuple_captured_returns (caller : Subst) (state : State) (seed : Bi
   helper_call .tuple caller state _ _ seed one two three _ captured
     (tuple_body_returns state seed plan values)
 
-theorem match_tuple_returns (state : State) (seed : Bindings) (plan : PremisePlan) (values : List Pattern) :
+theorem match_tuple_returns (state : State) (seed : Bindings) (plan : VariablePremisePlan) (values : List Pattern) :
     PureReturns program [] state
       (a "gslt:rule:match-tuple" [namesValue plan.arguments, patternsValue values, bindingsValue seed]) state
       (optionValue (plan.matchTuple? seed values)) :=
@@ -445,7 +490,7 @@ private theorem cons_result_template : PureData.Template program (a "LCons" [v "
   simp only [List.mem_cons, List.not_mem_nil, or_false] at member
   rcases member with rfl | rfl <;> exact .captured _
 
-private theorem tuples_body_returns (state : State) (seed : Bindings) (plan : PremisePlan)
+private theorem tuples_body_returns (state : State) (seed : Bindings) (plan : VariablePremisePlan)
     (tuples : List (List Pattern)) :
     PureReturns program (environment .tuples (namesValue plan.arguments) (tuplesValue tuples) seed) state
       (equation .tuples).body state (resultsValue (tuples.filterMap (plan.matchTuple? seed))) := by
@@ -504,7 +549,7 @@ private theorem tuples_body_returns (state : State) (seed : Bindings) (plan : Pr
 
 /-- Finite supplied tuples retain their order and duplicate occurrences. -/
 theorem match_tuples_captured_returns (caller : Subst) (state : State) (seed : Bindings)
-    (plan : PremisePlan) (tuples : List (List Pattern)) (one two three : Atom)
+    (plan : VariablePremisePlan) (tuples : List (List Pattern)) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [namesValue plan.arguments, tuplesValue tuples, bindingsValue seed]) :
     PureReturns program caller state (a "gslt:rule:match-tuples" [one, two, three]) state
@@ -512,27 +557,27 @@ theorem match_tuples_captured_returns (caller : Subst) (state : State) (seed : B
   helper_call .tuples caller state _ _ seed one two three _ captured
     (tuples_body_returns state seed plan tuples)
 
-theorem match_tuples_returns (state : State) (seed : Bindings) (plan : PremisePlan) (tuples : List (List Pattern)) :
+theorem match_tuples_returns (state : State) (seed : Bindings) (plan : VariablePremisePlan) (tuples : List (List Pattern)) :
     PureReturns program [] state
       (a "gslt:rule:match-tuples" [namesValue plan.arguments, tuplesValue tuples, bindingsValue seed]) state
       (resultsValue (tuples.filterMap (plan.matchTuple? seed))) :=
   match_tuples_captured_returns [] state seed plan tuples _ _ _ (by simp)
 
 /-- Tuple execution has the existing canonical premise-matching meaning. -/
-theorem match_tuples_canonical_returns (state : State) (seed : Bindings) (plan : PremisePlan)
+theorem match_tuples_canonical_returns (state : State) (seed : Bindings) (plan : VariablePremisePlan)
     (tuples : List (List Pattern)) :
     PureReturns program [] state
       (a "gslt:rule:match-tuples" [namesValue plan.arguments, tuplesValue tuples, bindingsValue seed]) state
       (resultsValue (tuples.flatMap fun tuple =>
         (Mettapedia.OSLF.MeTTaIL.Engine.matchRelationArgs seed (plan.arguments.map Pattern.fvar) tuple).filterMap
           (mergeBindings seed))) := by
-  rw [← PremisePlan.matchTuples_exact]
+  rw [← VariablePremisePlan.matchTuples_exact]
   exact match_tuples_returns state seed plan tuples
 
-def matchTuplesQuery (seed : Bindings) (plan : PremisePlan) (tuples : List (List Pattern)) : Atom :=
+def matchTuplesQuery (seed : Bindings) (plan : VariablePremisePlan) (tuples : List (List Pattern)) : Atom :=
   a "gslt:rule:match-tuples" [namesValue plan.arguments, tuplesValue tuples, bindingsValue seed]
 
-theorem match_tuples_completed_iff (state : State) (seed : Bindings) (plan : PremisePlan)
+theorem match_tuples_completed_iff (state : State) (seed : Bindings) (plan : VariablePremisePlan)
     (tuples : List (List Pattern)) (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (matchTuplesQuery seed plan tuples) } =
       .complete after answers input output) ↔
@@ -541,7 +586,7 @@ theorem match_tuples_completed_iff (state : State) (seed : Bindings) (plan : Pre
   pure_returns_completed_iff program [] state state _ _ (match_tuples_returns state seed plan tuples)
     after answers input output
 
-theorem match_tuples_derivation_iff (state : State) (seed : Bindings) (plan : PremisePlan)
+theorem match_tuples_derivation_iff (state : State) (seed : Bindings) (plan : VariablePremisePlan)
     (tuples : List (List Pattern)) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state, control := .evaluate [] (matchTuplesQuery seed plan tuples) }
       (.complete after answers input output) ↔
@@ -969,7 +1014,7 @@ private def queryEquation : SpaceSemantics.Equation :=
 
 private def queryEnvironment
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) : Subst :=
+    (plan : VariablePremisePlan) (seed : Bindings) : Subst :=
   [("seed", bindingsValue seed), ("rows", rowsValue rows),
    ("names", namesValue plan.arguments), ("relation", encoded (.string plan.relation))]
 
@@ -989,7 +1034,7 @@ private theorem query_shape : queryEquation.body =
 
 private theorem query_clause
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) :
+    (plan : VariablePremisePlan) (seed : Bindings) :
     clauses program "gslt:rule:relation-query"
       [encoded (.string plan.relation), namesValue plan.arguments, rowsValue rows, bindingsValue seed] =
       [.evaluate (queryEnvironment rows plan seed) queryEquation.body] := by
@@ -1003,7 +1048,7 @@ private theorem query_clause
 
 private theorem query_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) :
+    (plan : VariablePremisePlan) (seed : Bindings) :
     PureReturns program (queryEnvironment rows plan seed) state queryEquation.body state
       (resultsValue (plan.run (providerEnv rows) language seed)) := by
   let caller := queryEnvironment rows plan seed
@@ -1058,18 +1103,20 @@ private theorem query_body_returns (state : State) (language : LanguageDef)
     exact .nil _ _
   rw [query_shape]
   apply PureData.let_bindings_return bindingsComputed
-  simpa only [PremisePlan.run, providerEnv, caller, schemas, arguments, builtin, provided, tuples, queryResult] using
-    match_tuples_captured_returns tuplesBound state seed plan tuples
+  have tupleReturned := match_tuples_captured_returns tuplesBound state seed plan tuples
       (v "names") (v "tuples") (v "seed")
       (by simp [tuplesBound, providedBound, builtinBound, argumentsBound, schemasBound,
         caller, queryEnvironment, applySubst, Subst.lookup])
+  unfold VariablePremisePlan.matchTuple? at tupleReturned
+  simpa only [VariablePremisePlan.run, providerEnv, caller, schemas, arguments,
+    builtin, provided, tuples, queryResult] using tupleReturned
 
 /-- The retained query prepares its schemas and substituted arguments, gathers
 canonical builtin and provider occurrences, then performs canonical literal
 matching. All intermediate lists and binding order come from actual execution. -/
 theorem relation_query_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) (one two three four : Atom)
+    (plan : VariablePremisePlan) (seed : Bindings) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (.string plan.relation), namesValue plan.arguments, rowsValue rows, bindingsValue seed]) :
     PureReturns program caller state (a "gslt:rule:relation-query" [one, two, three, four]) state
@@ -1088,20 +1135,20 @@ theorem relation_query_captured_returns (caller : Subst) (state : State) (langua
 
 def relationQueryTerm
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) : Term :=
+    (plan : VariablePremisePlan) (seed : Bindings) : Term :=
   .application "gslt:rule:relation-query"
     [.string plan.relation, namesTerm plan.arguments, providerRowsTerm rows, bindingsTerm seed]
 
 theorem relation_query_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) :
+    (plan : VariablePremisePlan) (seed : Bindings) :
     PureReturns program [] state (encoded (relationQueryTerm rows plan seed)) state
       (resultsValue (plan.run (providerEnv rows) language seed)) :=
   relation_query_captured_returns [] state language rows plan seed _ _ _ _ (by simp)
 
 theorem relation_query_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) (after : State) (answers input output : List Atom) :
+    (plan : VariablePremisePlan) (seed : Bindings) (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel
       { state, control := .evaluate [] (encoded (relationQueryTerm rows plan seed)) } =
         .complete after answers input output) ↔
@@ -1112,7 +1159,7 @@ theorem relation_query_completed_iff (state : State) (language : LanguageDef)
 
 theorem relation_query_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : PremisePlan) (seed : Bindings) (after : State) (answers input output : List Atom) :
+    (plan : VariablePremisePlan) (seed : Bindings) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (relationQueryTerm rows plan seed)) }
       (.complete after answers input output) ↔
@@ -1125,14 +1172,98 @@ theorem relation_query_derivation_iff (state : State) (language : LanguageDef)
 
 /-- The existing relation-premise wire retains its variable schemas; query
 preparation performs substitution after those schemas are read. -/
-def premiseTerm (plan : PremisePlan) : Term :=
+def variablePremiseTerm (plan : VariablePremisePlan) : Term :=
   .application "RelationQuery" [.string plan.relation,
     InferenceCettaWire.encodePatterns (plan.arguments.map Pattern.fvar)]
 
 /-- Every authored premise occurrence is retained in order. -/
+def variablePremisesTerm (plans : List VariablePremisePlan) : Term := encodeList variablePremiseTerm plans
+
+/-- General authored premise syntax is retained as data. Execution through
+names-only helpers requires the checked variable source view below. -/
+def premiseTerm (plan : PremisePlan) : Term :=
+  InferenceCettaWire.AuthoredRule.premiseTerm plan.erase
+
 def premisesTerm (plans : List PremisePlan) : Term := encodeList premiseTerm plans
 
-private abbrev premisesValue (plans : List PremisePlan) : Atom := encoded (premisesTerm plans)
+theorem variablePremiseTerm_toPlan (plan : VariablePremisePlan) :
+    premiseTerm plan.toPlan = variablePremiseTerm plan := by
+  unfold premiseTerm
+  rw [VariablePremisePlan.toPlan_erase]
+  rfl
+
+theorem variablePremisesTerm_toPlan (plans : List VariablePremisePlan) :
+    premisesTerm (plans.map VariablePremisePlan.toPlan) = variablePremisesTerm plans := by
+  simp only [premisesTerm, variablePremisesTerm, encodeList_map]
+  congr 1
+  funext plan
+  exact variablePremiseTerm_toPlan plan
+
+/-- The view carries only decidable local premise shape, never execution
+correspondence. Its retraction is earned by the compilation owner's checker. -/
+abbrev VariableRuleView (plan : RulePlan) :=
+  { premises : List VariablePremisePlan // premises.map VariablePremisePlan.toPlan = plan.premises }
+
+def variableRuleView? (plan : RulePlan) : Option (VariableRuleView plan) :=
+  match accepted : plan.variablePremises? with
+  | none => none
+  | some premises => some ⟨premises, plan.variablePremises?_exact premises accepted⟩
+
+def variableRuleView (plan : RulePlan)
+    (admitted : plan.variablePremises?.isSome = true) : VariableRuleView plan :=
+  match accepted : plan.variablePremises? with
+  | none => False.elim (by simp [accepted] at admitted)
+  | some premises => ⟨premises, plan.variablePremises?_exact premises accepted⟩
+
+abbrev VariableSourceProgram (source : List RewriteRule) :=
+  { compiled : RuleProgram source //
+    ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true }
+
+def variableSourceProgram? {source : List RewriteRule} (compiled : RuleProgram source) :
+    Option (VariableSourceProgram source) :=
+  if admitted : compiled.plans.all (fun plan => plan.variablePremises?.isSome) = true then
+    some ⟨compiled, List.all_eq_true.mp admitted⟩ else none
+
+def compileVariableSourceProgram? (source : List RewriteRule) :
+    Option (VariableSourceProgram source) := do
+  let compiled ← compileProgram? source
+  variableSourceProgram? compiled
+
+namespace VariableSourceProgram
+
+def plans {source : List RewriteRule} (compiled : VariableSourceProgram source) : List RulePlan :=
+  compiled.val.plans
+
+theorem erase_eq_source {source : List RewriteRule} (compiled : VariableSourceProgram source) :
+    eraseRulePlans compiled.plans = source := compiled.val.erase_eq_source
+
+def ruleView {source : List RewriteRule} (compiled : VariableSourceProgram source)
+    (plan : RulePlan) (member : plan ∈ compiled.plans) : VariableRuleView plan :=
+  variableRuleView plan (compiled.property plan member)
+
+theorem noncontextual_premises {source : List RewriteRule}
+    (compiled : VariableSourceProgram source) :
+    ∀ rule ∈ source, Mettapedia.OSLF.MeTTaIL.ContextualStep.NoncontextualPremises rule.premises :=
+  compiled.val.noncontextual_premises
+
+theorem run_eq_rootFrontier (relations : RelationEnv) (language : LanguageDef)
+    (compiled : VariableSourceProgram language.rewrites) (subject : Pattern) :
+    compiled.plans.flatMap (fun plan => plan.run relations language subject) =
+      rewriteStepWithPremisesUsing relations language subject :=
+  compiled.val.run_eq_rootFrontier relations language subject
+
+theorem rootFrontier_firstOrder (relations : RelationEnv) (language : LanguageDef)
+    (relationsFirstOrder : FirstOrderRelations relations)
+    (compiled : VariableSourceProgram language.rewrites)
+    (subject : Pattern) (subjectFirstOrder : isMatchCorrectAux subject = true) (target : Pattern)
+    (member : target ∈ rewriteStepWithPremisesUsing relations language subject) :
+    isMatchCorrectAux target = true :=
+  compiled.val.rootFrontier_firstOrder relations language relationsFirstOrder
+    subject subjectFirstOrder target member
+
+end VariableSourceProgram
+
+private abbrev premisesValue (plans : List VariablePremisePlan) : Atom := encoded (variablePremisesTerm plans)
 
 private def argumentNamesEquation : SpaceSemantics.Equation :=
   (equations "gslt:rule:argument-names")[0]'(by decide +kernel)
@@ -1231,11 +1362,11 @@ private def FoldHelper.last : FoldHelper → String
   | .results => "results"
 private def foldEquation (helper : FoldHelper) : SpaceSemantics.Equation :=
   (equations helper.head)[0]'(by cases helper <;> decide +kernel)
-private def foldEnvironment (helper : FoldHelper) (plans : List PremisePlan)
+private def foldEnvironment (helper : FoldHelper) (plans : List VariablePremisePlan)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (last : Atom) : Subst :=
   [(helper.last, last), ("rows", rowsValue rows), ("premises", premisesValue plans)]
 
-private theorem fold_clause (helper : FoldHelper) (plans : List PremisePlan)
+private theorem fold_clause (helper : FoldHelper) (plans : List VariablePremisePlan)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (last : Atom) :
     clauses program helper.head [premisesValue plans, rowsValue rows, last] =
       [.evaluate (foldEnvironment helper plans rows last) (foldEquation helper).body] := by
@@ -1247,7 +1378,7 @@ private theorem fold_clause (helper : FoldHelper) (plans : List PremisePlan)
   cases helper <;> simp [formals, foldEnvironment, FoldHelper.last,
     SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
 
-private theorem fold_call (helper : FoldHelper) (caller : Subst) (state : State) (plans : List PremisePlan)
+private theorem fold_call (helper : FoldHelper) (caller : Subst) (state : State) (plans : List VariablePremisePlan)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (last one two three answer : Atom)
     (captured : [one, two, three].map (applySubst caller) = [premisesValue plans, rowsValue rows, last])
     (returned : PureReturns program (foldEnvironment helper plans rows last) state
@@ -1307,14 +1438,14 @@ private theorem result_append_captured_returns (caller : Subst) (state : State) 
       (by simpa only [results_as_list] using captured)
 
 private theorem foldResults_body_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
     (allSeeds : ∀ seed : Bindings,
       PureReturns program (foldEnvironment .premises plans rows (bindingsValue seed)) state
-        (foldEquation .premises).body state (resultsValue (runPremisePlans (providerEnv rows) language plans seed)))
+        (foldEquation .premises).body state (resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)))
     (results : List Bindings) :
     PureReturns program (foldEnvironment .results plans rows (resultsValue results)) state
       (foldEquation .results).body state
-      (resultsValue (results.flatMap (runPremisePlans (providerEnv rows) language plans))) := by
+      (resultsValue (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))) := by
   induction results with
   | nil =>
       let caller := foldEnvironment .results plans rows (resultsValue [])
@@ -1330,9 +1461,9 @@ private theorem foldResults_body_returns (state : State) (language : LanguageDef
   | cons seed results ih =>
       let caller := foldEnvironment .results plans rows (resultsValue (seed :: results))
       let selected := ("rest", resultsValue results) :: ("seed", bindingsValue seed) :: caller
-      let headValue := resultsValue (runPremisePlans (providerEnv rows) language plans seed)
+      let headValue := resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)
       let headBound := ("head", headValue) :: selected
-      let tailValue := resultsValue (results.flatMap (runPremisePlans (providerEnv rows) language plans))
+      let tailValue := resultsValue (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))
       let tailBound := ("tail", tailValue) :: headBound
       have headReturned := fold_call .premises selected state plans rows (bindingsValue seed)
         (v "premises") (v "rows") (v "seed") headValue
@@ -1357,18 +1488,18 @@ private theorem foldResults_body_returns (state : State) (language : LanguageDef
               caller, foldEnvironment, FoldHelper.last]
           exact .nil _ _
         have appended := result_append_captured_returns tailBound state
-          (runPremisePlans (providerEnv rows) language plans seed)
-          (results.flatMap (runPremisePlans (providerEnv rows) language plans))
+          (runVariablePremisePlans (providerEnv rows) language plans seed)
+          (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))
           (by simp [tailBound, tailValue, headBound, headValue, applySubst, Subst.lookup])
         simpa only [foldResultsConsBody, List.flatMap_cons] using
           PureData.let_bindings_return computed state foldResultsConsResult _ appended
 
 private theorem premises_body_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) :
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) :
     ∀ seed : Bindings,
       PureReturns program (foldEnvironment .premises plans rows (bindingsValue seed)) state
         (foldEquation .premises).body state
-        (resultsValue (runPremisePlans (providerEnv rows) language plans seed)) := by
+        (resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)) := by
   induction plans with
   | nil =>
       intro seed
@@ -1376,7 +1507,7 @@ private theorem premises_body_returns (state : State) (language : LanguageDef)
       rw [premises_shape]
       apply case_returns program caller caller state state state (v "premises") (.symbol "LNil")
         (a "LCons" [v "seed", .symbol "LNil"]) _ _ premisesCases (read_cases_encoded _) _ _ _
-      · simpa [caller, foldEnvironment, FoldHelper.last, premisesValue, premisesTerm, encodeList,
+      · simpa [caller, foldEnvironment, FoldHelper.last, premisesValue, variablePremisesTerm, encodeList,
           CettaWireAtom.encode, applySubst, Subst.lookup] using variable_returns program caller state "premises"
       · simp [premisesCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
       · convert PureData.template_return program caller state
@@ -1397,7 +1528,7 @@ private theorem premises_body_returns (state : State) (language : LanguageDef)
         (by simp [namesBound, selected, caller, foldEnvironment, FoldHelper.last, applySubst, Subst.lookup])
       have continued := fold_call .results choicesBound state plans rows (resultsValue choices)
         (v "rest") (v "rows") (v "choices")
-        (resultsValue (choices.flatMap (runPremisePlans (providerEnv rows) language plans)))
+        (resultsValue (choices.flatMap (runVariablePremisePlans (providerEnv rows) language plans)))
         (by simp [choicesBound, namesBound, selected, caller, foldEnvironment, FoldHelper.last,
           applySubst, Subst.lookup])
         (foldResults_body_returns state language rows plans ih choices)
@@ -1406,7 +1537,7 @@ private theorem premises_body_returns (state : State) (language : LanguageDef)
         (premisesValue (plan :: plans)) premisesConsBody _ _ premisesCases (read_cases_encoded _) _ _ _
       · simpa [caller, foldEnvironment, FoldHelper.last, applySubst, Subst.lookup] using
           variable_returns program caller state "premises"
-      · simp [premisesCases, premisesValue, premisesTerm, premiseTerm, encodeList,
+      · simp [premisesCases, premisesValue, variablePremisesTerm, variablePremiseTerm, encodeList,
           CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
           SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom,
           Subst.lookup, selected, caller, foldEnvironment, FoldHelper.last]
@@ -1418,87 +1549,129 @@ private theorem premises_body_returns (state : State) (language : LanguageDef)
           · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, choicesBound, choices, namesBound,
               selected, caller, foldEnvironment, FoldHelper.last]
           exact .nil _ _
-        simpa only [premisesConsBody, runPremisePlans, choices] using
+        simpa only [premisesConsBody, runVariablePremisePlans_cons, choices] using
           PureData.let_bindings_return computed state premisesConsResult _ continued
 
 /-- The retained premise fold realizes the existing ordered interpreter for
 every seed, including branching and duplicate successful tuple occurrences. -/
 theorem premises_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
     (seed : Bindings) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [premisesValue plans, rowsValue rows, bindingsValue seed]) :
     PureReturns program caller state (a "gslt:rule:premises" [one, two, three]) state
-      (resultsValue (runPremisePlans (providerEnv rows) language plans seed)) :=
+      (resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)) :=
   fold_call .premises caller state plans rows (bindingsValue seed) one two three _ captured
     (premises_body_returns state language rows plans seed)
 
 def premisesQueryTerm (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List PremisePlan) (seed : Bindings) : Term :=
-  .application "gslt:rule:premises" [premisesTerm plans, providerRowsTerm rows, bindingsTerm seed]
+    (plans : List VariablePremisePlan) (seed : Bindings) : Term :=
+  .application "gslt:rule:premises" [variablePremisesTerm plans, providerRowsTerm rows, bindingsTerm seed]
 
 theorem premises_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) (seed : Bindings) :
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) (seed : Bindings) :
     PureReturns program [] state (encoded (premisesQueryTerm rows plans seed)) state
-      (resultsValue (runPremisePlans (providerEnv rows) language plans seed)) :=
+      (resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)) :=
   premises_captured_returns [] state language rows plans seed _ _ _ (by simp)
 
 /-- Each incoming choice continues the same authored premise suffix; append
 retains choice order and all duplicate binding observations. -/
 theorem premise_results_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
     (results : List Bindings) (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [premisesValue plans, rowsValue rows, resultsValue results]) :
     PureReturns program caller state (a "gslt:rule:premise-results" [one, two, three]) state
-      (resultsValue (results.flatMap (runPremisePlans (providerEnv rows) language plans))) :=
+      (resultsValue (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))) :=
   fold_call .results caller state plans rows (resultsValue results) one two three _ captured
     (foldResults_body_returns state language rows plans (premises_body_returns state language rows plans) results)
 
 def premiseResultsQueryTerm (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List PremisePlan) (results : List Bindings) : Term :=
-  .application "gslt:rule:premise-results" [premisesTerm plans, providerRowsTerm rows, bindingResultsTerm results]
+    (plans : List VariablePremisePlan) (results : List Bindings) : Term :=
+  .application "gslt:rule:premise-results" [variablePremisesTerm plans, providerRowsTerm rows, bindingResultsTerm results]
 
 theorem premise_results_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
     (results : List Bindings) :
     PureReturns program [] state (encoded (premiseResultsQueryTerm rows plans results)) state
-      (resultsValue (results.flatMap (runPremisePlans (providerEnv rows) language plans))) :=
+      (resultsValue (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))) :=
   premise_results_captured_returns [] state language rows plans results _ _ _ (by simp)
 
 theorem premises_completed_iff (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) (seed : Bindings)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) (seed : Bindings)
     (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state, control := .evaluate [] (encoded (premisesQueryTerm rows plans seed)) } =
       .complete after answers input output) ↔
-      after = state ∧ answers = [resultsValue (runPremisePlans (providerEnv rows) language plans seed)] ∧
+      after = state ∧ answers = [resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)] ∧
         input = [] ∧ output = [] :=
   pure_returns_completed_iff program [] state state _ _ (premises_returns state language rows plans seed)
     after answers input output
 
 theorem premises_derivation_iff (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) (seed : Bindings)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) (seed : Bindings)
     (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (premisesQueryTerm rows plans seed)) }
       (.complete after answers input output) ↔
-      after = state ∧ answers = [resultsValue (runPremisePlans (providerEnv rows) language plans seed)] ∧
+      after = state ∧ answers = [resultsValue (runVariablePremisePlans (providerEnv rows) language plans seed)] ∧
         input = [] ∧ output = [] :=
   pure_returns_derivation_iff program [] state state _ _ (premises_returns state language rows plans seed)
     after answers input output
 
 theorem premise_results_derivation_iff (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
     (results : List Bindings) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (premiseResultsQueryTerm rows plans results)) }
       (.complete after answers input output) ↔
-      after = state ∧ answers = [resultsValue (results.flatMap (runPremisePlans (providerEnv rows) language plans))] ∧
+      after = state ∧ answers = [resultsValue (results.flatMap (runVariablePremisePlans (providerEnv rows) language plans))] ∧
         input = [] ∧ output = [] :=
   pure_returns_derivation_iff program [] state state _ _ (premise_results_returns state language rows plans results)
     after answers input output
 
+/-- The names-only source fold realizes a general plan only through this
+explicit checked local retraction. -/
+theorem checked_premises_captured_returns (caller : Subst) (state : State)
+    (language : LanguageDef) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
+    (plans : List PremisePlan)
+    (view : { specialized : List VariablePremisePlan // specialized.map VariablePremisePlan.toPlan = plans })
+    (seed : Bindings) (one two three : Atom)
+    (captured : [one, two, three].map (applySubst caller) =
+      [encoded (premisesTerm plans), rowsValue rows, bindingsValue seed]) :
+    PureReturns program caller state (a "gslt:rule:premises" [one, two, three]) state
+      (resultsValue (runPremisePlans (providerEnv rows) language plans seed)) := by
+  have variablesCaptured : [one, two, three].map (applySubst caller) =
+      [encoded (variablePremisesTerm view.val), rowsValue rows, bindingsValue seed] := by
+    simpa only [← view.property, variablePremisesTerm_toPlan] using captured
+  have returned := premises_captured_returns caller state language rows view.val seed
+    one two three variablesCaptured
+  simpa only [runVariablePremisePlans, view.property] using returned
+
 namespace Controls
+
+private def legacySourcePlan : RulePlan :=
+  { name := "legacy-variable-source", typeContext := [],
+    premises := [⟨"r", [.metavariable "x", .metavariable "x"]⟩],
+    left := .metavariable "x", right := .metavariable "x" }
+
+private def constructedSourcePlan : RulePlan :=
+  { legacySourcePlan with premises := [⟨"r", [.application "wrap" [.metavariable "x"]]⟩] }
+
+theorem variable_source_view_accepts :
+    (variableRuleView? legacySourcePlan).isSome = true := by decide +kernel
+
+theorem variable_source_view_refuses_constructed :
+    variableRuleView? constructedSourcePlan = none := by decide +kernel
+
+theorem general_compiler_keeps_constructed_query :
+    (compileProgram? [constructedSourcePlan.erase]).isSome = true := by decide +kernel
+
+theorem legacy_source_checker_refuses_constructed_query :
+    (compileVariableSourceProgram? [constructedSourcePlan.erase]).isSome = false := by decide +kernel
+
+theorem legacy_source_checker_accepts_variables :
+    (compileVariableSourceProgram? [legacySourcePlan.erase]).isSome = true := by decide +kernel
+
 
 /-- Test inputs select retained tuple and preparation operations without
 defining another premise interpreter. Expected values use the shared matcher
@@ -1506,15 +1679,15 @@ and canonical builtin relation tuples. -/
 inductive Input where
   | argument (name : String) (value : Pattern)
   | arguments (names : List String) (values : List Pattern)
-  | tuple (plan : PremisePlan) (values : List Pattern)
-  | tuples (plan : PremisePlan) (values : List (List Pattern))
+  | tuple (plan : VariablePremisePlan) (values : List Pattern)
+  | tuples (plan : VariablePremisePlan) (values : List (List Pattern))
   | names (values : List String)
   | builtin (relation : String) (arguments : List Pattern)
   | argumentNames (names : List String)
   | provider (relation : String) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-  | query (plan : PremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-  | premises (plans : List PremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-  | results (plans : List PremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
+  | query (plan : VariablePremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
+  | premises (plans : List VariablePremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
+  | results (plans : List VariablePremisePlan) (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
       (choices : List Bindings)
 
 structure Fixture where
@@ -1642,9 +1815,9 @@ def Fixture.expectedTerm (fixture : Fixture) : Term :=
   | .provider relation rows => tuplesTerm (providerTuples rows relation)
   | .query plan rows => bindingResultsTerm (plan.run (providerEnv rows) (LanguageDef.empty fixture.name) fixture.seed)
   | .premises plans rows => bindingResultsTerm
-      (runPremisePlans (providerEnv rows) (LanguageDef.empty fixture.name) plans fixture.seed)
+      (runVariablePremisePlans (providerEnv rows) (LanguageDef.empty fixture.name) plans fixture.seed)
   | .results plans rows choices => bindingResultsTerm
-      (choices.flatMap (runPremisePlans (providerEnv rows) (LanguageDef.empty fixture.name) plans))
+      (choices.flatMap (runVariablePremisePlans (providerEnv rows) (LanguageDef.empty fixture.name) plans))
 
 theorem Fixture.returns (fixture : Fixture) (state : State) :
     PureReturns program [] state (CettaWireAtom.encode fixture.queryTerm) state
@@ -1681,6 +1854,12 @@ theorem Fixture.returns (fixture : Fixture) (state : State) :
       exact premises_returns state (LanguageDef.empty name) rows plans seed
   | results plans rows choices =>
       exact premise_results_returns state (LanguageDef.empty name) rows plans choices
+
+#print axioms variable_source_view_accepts
+#print axioms variable_source_view_refuses_constructed
+#print axioms general_compiler_keeps_constructed_query
+#print axioms legacy_source_checker_refuses_constructed_query
+#print axioms legacy_source_checker_accepts_variables
 
 end Controls
 

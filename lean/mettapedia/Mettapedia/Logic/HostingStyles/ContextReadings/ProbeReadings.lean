@@ -80,7 +80,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef (language queryFirstCandidatePresentation)
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language (Model QueryFirstModel kernelGSLT)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Framework
 
 /-! ## The readings -/

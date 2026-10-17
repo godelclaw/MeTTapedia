@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelITV
+import Mettapedia.PLN.WorldModel.WorldModelITV
 import Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 
 /-!
@@ -18,7 +18,7 @@ open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 def CtxOfInterval : WMIntervalSemantics → Type
   | .bayesNormal => BinaryContext
   | .bayesExact => BinaryContext
-  | .walleyIDM => IDMPredictiveContext
+  | .walleyIDM => Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext
 
 /-- ITV semantics selected by the interval semantics axis. -/
 noncomputable def semanticsOfInterval :

@@ -10,6 +10,11 @@ instantiated writes. Literal atom support remains separately available.
 The conflicting add/remove example distinguishes both finalization orders,
 while an actual admitted row-major execution has its own dependent material
 continuation and inverse decoder.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

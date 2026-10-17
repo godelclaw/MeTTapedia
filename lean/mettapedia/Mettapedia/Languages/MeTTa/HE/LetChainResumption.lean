@@ -1,5 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.NondeterminismCarrier
 import Mettapedia.Languages.MeTTa.HE.ProducerChoicePoint
+import Mettapedia.GSLT.Dynamics.ContextualEffectHandlers
 
 /-!
 # Let/Chain Resumption Refinement
@@ -497,6 +498,158 @@ example : consume (fun pair => if isErrorAtom pair.1 then [pair] else [])
   simp [consume, reference, fault, success, isErrorAtom]
 
 end ProducerCompletion
+
+/-! ## HE completion over explicit effect frames
+
+The free producer program below represents a finite execution between HE
+evaluation boundaries; its answer is the existing atom-and-bindings carrier.
+Nested evaluated expressions must install their own boundary. It is not a
+replacement for HE's grammar, applicability, or native ownership semantics.
+Empty alternatives have already been discarded by the producer, as in
+`collapse-bind`. Held error-shaped syntax is not interpreted here.
+-/
+
+namespace CompletionDiscipline
+
+open Mettapedia.GSLT.Dynamics.ContextualEffectHandlers
+
+variable {State Intent : Type}
+
+/-- Normalize only the completed answer frontier; committed state and the
+ordered effect-intent trace survive success priority. -/
+def normalize (result : SharedResult State ResultPair Intent) :
+    SharedResult State ResultPair Intent :=
+  { result with answers := ProducerCompletion.reference result.answers }
+
+def evaluate (producer : Program State ResultPair Intent) (state : State) :
+    SharedResult State ResultPair Intent := normalize (runShared producer state)
+
+/-- An evaluated argument fault replaces its enclosing application; its
+success continuation is not entered. -/
+def argument (next : ResultPair → Program State ResultPair Intent)
+    (result : ResultPair) : Program State ResultPair Intent :=
+  if isErrorAtom result.1 then .pure result else next result
+
+theorem argument_error (next : ResultPair → Program State ResultPair Intent)
+    (result : ResultPair) (error : isErrorAtom result.1 = true) :
+    argument next result = .pure result := by simp [argument, error]
+
+theorem argument_success (next : ResultPair → Program State ResultPair Intent)
+    (result : ResultPair) (success : isErrorAtom result.1 = false) :
+    argument next result = next result := by simp [argument, success]
+
+theorem priority_of_no_errors (returns : ResultList)
+    (noErrors : ∀ result ∈ returns, isErrorAtom result.1 = false) :
+    ProducerCompletion.reference returns = returns := by
+  have successes : returns.filter (fun result => !isErrorAtom result.1) = returns := by
+    apply List.filter_eq_self.mpr
+    intro result member
+    simp [noErrors result member]
+  cases returns with
+  | nil => rfl
+  | cons result rest => simp [ProducerCompletion.reference, successes]
+
+/-- The caller sees only the completed producer and retains each selected
+occurrence's bindings when entering its body. -/
+def bindCompleted (producer : Program State ResultPair Intent)
+    (next : ResultPair → Program State ResultPair Intent) (state : State) :
+    SharedResult State ResultPair Intent :=
+  let produced := evaluate producer state
+  let consumed := Completion.consumeList (argument next) produced.answers produced.state
+  normalize ⟨consumed.answers, consumed.state, produced.intents ++ consumed.intents⟩
+
+/-- Streaming distributes the argument consumer through producer choice. -/
+def bindStreaming (producer : Program State ResultPair Intent)
+    (next : ResultPair → Program State ResultPair Intent) (state : State) :
+    SharedResult State ResultPair Intent :=
+  normalize (runShared (producer.bind (argument next)) state)
+
+/-- A sufficient finite-fragment admission theorem. It preserves the ordered
+result pairs, shared state and intents, hence also answer bags. It is not an
+unconditional theorem about divergent, state-reading, or faulty producers. -/
+theorem pure_nonerror_streaming (producer : Program State ResultPair Intent)
+    (pure : Completion.Pure producer)
+    (next : ResultPair → Program State ResultPair Intent) (state : State)
+    (noErrors : ∀ result ∈ (runShared producer state).answers,
+      isErrorAtom result.1 = false) :
+    bindStreaming producer next state = bindCompleted producer next state := by
+  unfold bindStreaming bindCompleted evaluate normalize
+  rw [priority_of_no_errors _ noErrors]
+  rw [Completion.pure_streaming_eq_completion pure]
+  rfl
+
+/-- Effects before a single terminal return may remain native: streaming does
+not interleave a consumer with unfinished producer alternatives. -/
+theorem single_nonerror_streaming (producer : Program State ResultPair Intent)
+    (single : Completion.Single producer)
+    (next : ResultPair → Program State ResultPair Intent) (state : State)
+    (noErrors : ∀ result ∈ (runShared producer state).answers,
+      isErrorAtom result.1 = false) :
+    bindStreaming producer next state = bindCompleted producer next state := by
+  unfold bindStreaming bindCompleted evaluate normalize
+  rw [priority_of_no_errors _ noErrors]
+  rw [Completion.single_streaming_eq_completion single]
+  rfl
+
+theorem normalize_keeps_effects (result : SharedResult State ResultPair Intent) :
+    (normalize result).state = result.state ∧
+    (normalize result).intents = result.intents := ⟨rfl, rfl⟩
+
+abbrev Frame (State Intent : Type) := Completion.Frame State ResultPair Intent
+
+def initial (producer : Program State ResultPair Intent) (state : State) : Frame State Intent :=
+  ⟨[producer], [], state, []⟩
+
+def decode (frame : Frame State Intent) : SharedResult State ResultPair Intent :=
+  normalize frame.owed
+
+theorem initial_decode (producer : Program State ResultPair Intent) (state : State) :
+    decode (initial producer state) = evaluate producer state := by
+  simp [decode, initial, Completion.Frame.owed, Completion.consumeList, evaluate]
+
+theorem step_preserves (frame next : Frame State Intent)
+    (transition : frame.step = some next) : decode next = decode frame := by
+  exact congrArg normalize (Completion.Frame.step_preserves_owed frame next transition)
+
+theorem drive_preserves (fuel : Nat) (frame : Frame State Intent) :
+    decode (frame.drive fuel) = decode frame := by
+  exact congrArg normalize (Completion.Frame.drive_preserves_owed fuel frame)
+
+/-- Every published frame result is the independently evaluated HE completion,
+including state and effect order. A bounded pause retains the same residual. -/
+theorem published_correspondence (producer : Program State ResultPair Intent)
+    (state : State) (fuel : Nat) (result : SharedResult State ResultPair Intent)
+    (published : ((initial producer state).drive fuel).publish? = some result) :
+    normalize result = evaluate producer state := by
+  rw [Completion.Frame.publish_eq_owed _ _ published]
+  change decode ((initial producer state).drive fuel) = _
+  rw [drive_preserves, initial_decode]
+
+private def ok : ResultPair := (.symbol "ok", Bindings.empty)
+private def bad : ResultPair :=
+  (.expression [.symbol "Error", .symbol "call", .symbol "fault"], Bindings.empty)
+
+private def effectful : Program Nat ResultPair String :=
+  .choose (.intent "first" (.pure bad)) (.intent "second" (.pure ok))
+
+/-- A suppressed error does not undo the effects that produced it. -/
+example : evaluate effectful 0 = ⟨[ok], 0, ["first", "second"]⟩ := by
+  simp [evaluate, normalize, effectful, runShared,
+    ProducerCompletion.reference, ok, bad, isErrorAtom]
+
+/-- Fault propagation prevents the consumer's write from running. -/
+example : runShared (argument (fun _ => .write 99 (.pure ok)) bad :
+    Program Nat ResultPair String) 0 = ⟨[bad], 0, []⟩ := by
+  simp [argument, bad, isErrorAtom, runShared]
+
+/-- A completed frame preserves multiplicity and pause/resume, while the
+first instruction of a choice publishes nothing. -/
+example :
+    ((initial (.choose (.pure ok) (.pure ok)) 0 : Frame Nat String).drive 1).publish? = none ∧
+    ((initial (.choose (.pure ok) (.pure ok)) 0 : Frame Nat String).drive 3).publish? =
+      some ⟨[ok, ok], 0, []⟩ := ⟨rfl, rfl⟩
+
+end CompletionDiscipline
 
 /-! ## Positive and negative examples -/
 

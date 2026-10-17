@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingTransport
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # HE matcher outputs present exactly their input equation
@@ -14,6 +15,8 @@ this layer.
 
 Main results:
 * `matchAtoms_solution_iff` — executable matcher outputs present the equation.
+* `matchAtomsList_solution_iff` — a list result presents the selected seed and
+  the component equations, without requiring expression admission.
 * `mergeBindings_solution_iff` — merge presents solution intersection.
 * `addVarBinding_solution_iff` / `addVarEquality_solution_iff` — the
   incremental helpers present exactly one added constraint.
@@ -27,180 +30,6 @@ namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
 open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
-
-/-! ## Satisfaction: structural helpers -/
-
-/-- The empty binding record constrains nothing. -/
-theorem hesat_empty (μ : String → Metta.Atom) :
-    HEBindingSatisfied μ Bindings.empty :=
-  ⟨fun _ _ h => by simp [Bindings.empty] at h,
-   fun _ _ h => by simp [Bindings.empty] at h⟩
-
-@[simp] theorem hesat_empty_iff (μ : String → Metta.Atom) :
-    HEBindingSatisfied μ Bindings.empty ↔ True :=
-  iff_true_intro (hesat_empty μ)
-
-private theorem eq_of_walk {μ : String → Metta.Atom} {b : Bindings}
-    (hsat : ∀ x y, (x, y) ∈ b.equalities → μ x = μ y) :
-    ∀ {x y : String},
-      (EqualityClosure.edgeGraph b.equalities).Walk x y → μ x = μ y
-  | _, _, .nil => rfl
-  | _, _, .cons hadj tail => by
-      rcases (EqualityClosure.edgeGraph_adj_iff.mp hadj).2 with hedge | hedge
-      · exact (hsat _ _ hedge).trans (eq_of_walk hsat tail)
-      · exact (hsat _ _ hedge).symm.trans (eq_of_walk hsat tail)
-
-/-- A satisfying valuation is constant on every explicit equality class. -/
-theorem HEBindingSatisfied.eq_of_mem_eqClass {μ : String → Metta.Atom}
-    {b : Bindings} (hsat : HEBindingSatisfied μ b) {v w : String}
-    (hmem : w ∈ b.eqClass v) : μ v = μ w :=
-  (EqualityClosure.mem_eqClass_iff_reachable.mp hmem).elim
-    fun walk => eq_of_walk hsat.2 walk
-
-private theorem mem_of_lookup_eq_some {k : String} {a : Atom} :
-    ∀ {l : List (String × Atom)}, l.lookup k = some a → (k, a) ∈ l
-  | [], h => by simp [List.lookup] at h
-  | (k', a') :: l, h => by
-      rw [List.lookup] at h
-      cases hk : (k == k') with
-      | false =>
-          rw [hk] at h
-          exact List.mem_cons_of_mem _ (mem_of_lookup_eq_some h)
-      | true =>
-          rw [hk] at h
-          have hkk : k = k' := eq_of_beq hk
-          have haa : a' = a := Option.some.inj h
-          subst hkk
-          subst haa
-          exact List.mem_cons_self ..
-
-/-- A satisfying valuation sends a variable to (the solution image of) every
-value carried anywhere in its equality class. -/
-theorem HEBindingSatisfied.eq_applyClassSolution_of_mem_classValues
-    {μ : String → Metta.Atom} {b : Bindings}
-    (hsat : HEBindingSatisfied μ b) {v : String} {value : Atom}
-    (hmem : value ∈ b.classValues v) :
-    μ v = applyClassSolution μ (toLeaTTaAtom value) := by
-  unfold Bindings.classValues at hmem
-  rcases List.mem_filterMap.mp hmem with ⟨w, hw, hlookup⟩
-  have hclass : w ∈ b.eqClass v :=
-    EqualityClosure.mem_eqClassOrdered_iff.mp hw
-  have hassign : (w, value) ∈ b.assignments :=
-    mem_of_lookup_eq_some hlookup
-  exact (hsat.eq_of_mem_eqClass hclass).trans (hsat.1 w value hassign)
-
-theorem isBound_eq_false_of_classValues_nil {b : Bindings} {v : String}
-    (h : b.classValues v = []) : b.isBound v = false := by
-  by_contra habs
-  have hbound : b.isBound v = true := by simpa using habs
-  rw [Bindings.isBound, Option.isSome_iff_exists] at hbound
-  rcases hbound with ⟨a, ha⟩
-  have hself : v ∈ b.eqClassOrdered v :=
-    EqualityClosure.mem_eqClassOrdered_iff.mpr
-      (EqualityClosure.mem_eqClass_iff_reachable.mpr .rfl)
-  have hmem : a ∈ b.classValues v := by
-    unfold Bindings.classValues
-    exact List.mem_filterMap.mpr ⟨v, hself, ha⟩
-  rw [h] at hmem
-  simp at hmem
-
-theorem hesat_assign_of_not_isBound {b : Bindings} {v : String}
-    {val : Atom} (hnb : b.isBound v = false) (μ : String → Metta.Atom) :
-    HEBindingSatisfied μ (b.assign v val) ↔
-      (HEBindingSatisfied μ b ∧
-        μ v = applyClassSolution μ (toLeaTTaAtom val)) := by
-  have hassign : b.assign v val =
-      ⟨b.assignments ++ [(v, val)], b.equalities⟩ := by
-    simp [Bindings.assign, hnb]
-  rw [hassign]
-  constructor
-  · intro hsat
-    exact ⟨⟨fun x value hx => hsat.1 x value (List.mem_append_left _ hx),
-        hsat.2⟩,
-      hsat.1 v val (List.mem_append_right _ (by simp))⟩
-  · rintro ⟨hsat, hval⟩
-    refine ⟨fun x value hx => ?_, hsat.2⟩
-    rcases List.mem_append.mp hx with hx | hx
-    · exact hsat.1 x value hx
-    · simp only [List.mem_singleton, Prod.mk.injEq] at hx
-      rcases hx with ⟨rfl, rfl⟩
-      exact hval
-
-theorem hesat_addEquality {b : Bindings} {a c : String}
-    (μ : String → Metta.Atom) :
-    HEBindingSatisfied μ (b.addEquality a c) ↔
-      (HEBindingSatisfied μ b ∧ μ a = μ c) := by
-  have heq : b.addEquality a c =
-      ⟨b.assignments, b.equalities ++ [(a, c)]⟩ := rfl
-  rw [heq]
-  constructor
-  · intro hsat
-    exact ⟨⟨hsat.1, fun x y hx => hsat.2 x y (List.mem_append_left _ hx)⟩,
-      hsat.2 a c (List.mem_append_right _ (by simp))⟩
-  · rintro ⟨hsat, hac⟩
-    refine ⟨hsat.1, fun x y hx => ?_⟩
-    rcases List.mem_append.mp hx with hx | hx
-    · exact hsat.2 x y hx
-    · simp only [List.mem_singleton, Prod.mk.injEq] at hx
-      rcases hx with ⟨rfl, rfl⟩
-      exact hac
-
-/-! ## The translated equation, by constructor -/
-
-@[simp] theorem applyToLea_symbol (μ : String → Metta.Atom)
-    (s : String) :
-    applyClassSolution μ (toLeaTTaAtom (.symbol s)) = .sym s := by
-  simp [toLeaTTaAtom, applyClassSolution]
-
-@[simp] theorem applyToLea_var (μ : String → Metta.Atom)
-    (v : String) :
-    applyClassSolution μ (toLeaTTaAtom (.var v)) = μ v := by
-  simp [toLeaTTaAtom, applyClassSolution]
-
-@[simp] theorem applyToLea_grounded (μ : String → Metta.Atom)
-    (g : GroundedValue) :
-    applyClassSolution μ (toLeaTTaAtom (.grounded g)) =
-      .gnd (toLeaTTaGround g) := by
-  simp [toLeaTTaAtom, applyClassSolution]
-
-@[simp] theorem applyToLea_expression (μ : String → Metta.Atom)
-    (es : List Atom) :
-    applyClassSolution μ (toLeaTTaAtom (.expression es)) =
-      .expr ((toLeaTTaAtoms es).map (applyClassSolution μ)) := by
-  simp [toLeaTTaAtom, applyClassSolution]
-
-theorem solutionTheory_toLeaTTaAtoms_eq_map (l : List Atom) :
-    toLeaTTaAtoms l = l.map toLeaTTaAtom := by
-  induction l with
-  | nil => rfl
-  | cons a l ih => simp [ih]
-
-private theorem toLeaTTaAtoms_replicate (k : Nat) (a : Atom) :
-    toLeaTTaAtoms (List.replicate k a) =
-      List.replicate k (toLeaTTaAtom a) := by
-  induction k with
-  | zero => rfl
-  | succ k ih => simp [List.replicate_succ, ih]
-
-/-- A constant list agrees with a mapped list exactly when every image is the
-constant.  This is the solution reading of the class-wide reconciliation
-worklists built by `addVarBinding`/`addVarEquality`. -/
-theorem replicate_eq_map_iff (μ : String → Metta.Atom) (k : Atom) :
-    ∀ l : List Atom,
-      (List.replicate l.length (applyClassSolution μ (toLeaTTaAtom k)) =
-        List.map (applyClassSolution μ ∘ toLeaTTaAtom) l) ↔
-      ∀ o ∈ l, applyClassSolution μ (toLeaTTaAtom o) =
-        applyClassSolution μ (toLeaTTaAtom k)
-  | [] => by simp
-  | o :: l => by
-      simp only [List.length_cons, List.replicate_succ, List.map_cons,
-        List.cons.injEq, List.forall_mem_cons, Function.comp]
-      rw [replicate_eq_map_iff μ k l]
-      constructor
-      · rintro ⟨h1, h2⟩
-        exact ⟨h1.symm, h2⟩
-      · rintro ⟨h1, h2⟩
-        exact ⟨h1.symm, h2⟩
 
 /-! ## Fold plumbing for `mergeBindings` -/
 
@@ -607,6 +436,31 @@ theorem matchAtoms_solution_iff {l r : Atom} {b : Bindings} {fuel : Nat}
       MettaEquationSatisfied μ (toLeaTTaAtom l, toLeaTTaAtom r) :=
   (solutionPack fuel).1 h μ
 
+/-- A raw list result presents exactly one incoming seed together with all
+component equations.  This law does not promote the result to an accepted
+expression match. -/
+theorem matchAtomsList_solution_iff
+    {ls rs : List Atom} {acc : List Bindings} {out : Bindings} {fuel : Nat}
+    (h : out ∈ matchAtomsList ls rs acc fuel) :
+    ∃ seed ∈ acc, ∀ μ : String → Metta.Atom,
+      HEBindingSatisfied μ out ↔
+        HEBindingSatisfied μ seed ∧
+          MettaAtomListsSatisfied μ (toLeaTTaAtoms ls) (toLeaTTaAtoms rs) :=
+  (solutionPack fuel).2.1 h
+
+/-- With a singleton incoming frontier, the selected seed is determined. -/
+theorem matchAtomsList_singleton_solution_iff
+    {ls rs : List Atom} {seed out : Bindings} {fuel : Nat}
+    (h : out ∈ matchAtomsList ls rs [seed] fuel)
+    (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ out ↔
+      HEBindingSatisfied μ seed ∧
+        MettaAtomListsSatisfied μ (toLeaTTaAtoms ls) (toLeaTTaAtoms rs) := by
+  obtain ⟨selected, hselected, hiff⟩ := matchAtomsList_solution_iff h
+  simp only [List.mem_singleton] at hselected
+  subst selected
+  exact hiff μ
+
 /-- Merging presents exactly solution intersection. -/
 theorem mergeBindings_solution_iff {left right out : Bindings} {fuel : Nat}
     (h : out ∈ mergeBindings left right fuel) (μ : String → Metta.Atom) :
@@ -677,3 +531,31 @@ example {b : Bindings}
   simp [MettaEquationSatisfied] at heq
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE
+open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-- A specification match result and any repaired-LeaTTa result for the translated
+equation present the same complete binding solution theory.  This theorem is
+direct: it compares the spec relation with LeaTTa and has no HE executable
+matcher or merger premise. -/
+theorem specMatch_leaMatch_solutionTheoryEquiv
+    {query pattern : Atom} {specOut : Bindings}
+    {leaOut : Metta.Bindings}
+    (hspec : Spec.Match.Merge.MatchRel
+      Spec.Match.Merge.equalityGroundedSemantic
+      query pattern specOut)
+    (hlea : leaOut ∈ Metta.matchAtoms
+      (toLeaTTaAtom pattern) (toLeaTTaAtom query)) :
+    LeaBindingSolutionTheoryEquiv specOut leaOut := by
+  intro valuation
+  rw [matchRel_solution_iff hspec valuation,
+    leaMatchAtoms_solution_iff valuation
+      (toLeaTTaAtom_noFloat pattern)
+      (toLeaTTaAtom_noFloat query) hlea]
+  simp only [MettaEquationSatisfied]
+  exact eq_comm
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory

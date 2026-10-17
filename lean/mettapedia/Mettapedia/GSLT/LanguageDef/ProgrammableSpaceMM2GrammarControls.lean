@@ -12,6 +12,11 @@ rewrite of a programme.
 Malformed BTM and non-MM2 factors fail this admitted-language boundary.
 The runtime's separate suspended unsupported-syntax obligation is exercised
 by the portable native fixtures; it is not a transition of this language.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

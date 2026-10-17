@@ -88,10 +88,13 @@ theorem frameWork_resume (space : Space) (dispatch : GroundedDispatch) (work : T
     (frame : Frame) (results : ResultSet) :
     frameWork work frame results =
       1 + expandedWork space dispatch work (resume space frame results) := by
-  cases frame <;>
-    simp [frameWork, frameOverhead, frameRequests, expandedWork, resume, controlWork, stackWork,
-      Nat.add_comm]
-  omega
+  cases frame with
+  | invocationReturn mode original fuel live =>
+      cases mode <;>
+        simp [frameWork, frameOverhead, frameRequests, expandedWork, resume, controlWork, stackWork]
+  | _ =>
+      simp [frameWork, frameOverhead, frameRequests, expandedWork, resume, controlWork, stackWork,
+        Nat.add_comm] <;> omega
 
 theorem stackWork_append (space : Space) (dispatch : GroundedDispatch) (work : Task → Nat)
     (first second : List Frame) (results : ResultSet) :

@@ -58,7 +58,7 @@ open Mettapedia.GSLT.Dedukti (Theory Tabled tableEvaluator rewritingTheory)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-! ## The two notions, for evaluators -/
 

@@ -41,7 +41,9 @@ and says what they can do for the probe with the run constructor.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -750,4 +752,4 @@ theorem determinedEvaluator_respectsStatics : RespectsStatics determinedEvaluato
 #print axioms tableRunEvaluator_not_respectsStatics
 #print axioms determinedEvaluator_respectsStatics
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

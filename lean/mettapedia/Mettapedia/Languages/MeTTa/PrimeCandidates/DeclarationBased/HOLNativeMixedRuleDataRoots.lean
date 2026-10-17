@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedRuleData
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternMatching
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodecMatching
 
 /-!
 # Executing the authored mixed computation roots
@@ -24,7 +24,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
 open Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
-open DeclarationAwarePatternCodec DeclarationAwareSubstitutionLanguage
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec DeclarationAwareSubstitutionLanguage
 
 def executeRule (recursive : Pattern → List Pattern) (rule : RewriteRule)
     (source : Pattern) : List Pattern :=

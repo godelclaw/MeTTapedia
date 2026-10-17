@@ -7012,7 +7012,7 @@ abbrev RhoMatchedStaticFramesApex
 namespace RhoMatchedStaticFramesApex
 
 /-- Common-frame canonical equality constructs the parent-level apex. -/
-noncomputable def ofCanonical
+theorem ofCanonical
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

@@ -1,4 +1,4 @@
-import Mettapedia.Machines.BranchLocalNeed.ReferenceSemantics
+import Mettapedia.Machines.BranchLocalNeed.FrontierLaws
 import Mettapedia.Machines.RevisionDependencySet
 
 /-!
@@ -2170,13 +2170,9 @@ theorem steps_closed
 theorem advance_closed
     {machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
     (valid : discipline.machineClosed machine) (member : next ∈ advance spec machine) :
-    discipline.machineClosed next := by
-  unfold advance at member
-  cases stepped : step spec machine with
-  | nil => simp only [stepped, List.mem_singleton] at member; subst next; exact valid
-  | cons first rest =>
-      apply discipline.step_closed valid
-      simpa only [stepped] using member
+    discipline.machineClosed next :=
+  NeedFrontierLaws.advance_preserves spec discipline.machineClosed
+    (fun valid member => discipline.step_closed valid member) valid member
 
 /-- The bounded frontier retains the invariant even before any branch has
 returned. Pausing never substitutes an ancestor heap for a refined branch. -/
@@ -2184,19 +2180,250 @@ theorem runFrontier_closed (fuel : Nat)
     {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
     (valid : ∀ machine ∈ states, discipline.machineClosed machine)
     {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
-    (member : next ∈ runFrontier spec fuel states) : discipline.machineClosed next := by
-  induction fuel generalizing states with
-  | zero => exact valid next member
-  | succ fuel ih =>
-      simp only [runFrontier] at member
-      split at member
-      · exact valid next member
-      · apply ih (states := states.flatMap (advance spec)) (member := member)
-        intro candidate found
-        rcases List.mem_flatMap.mp found with ⟨parent, selected, stepped⟩
-        exact discipline.advance_closed (valid parent selected) stepped
+    (member : next ∈ runFrontier spec fuel states) : discipline.machineClosed next :=
+  NeedFrontierLaws.runFrontier_preserves spec discipline.machineClosed
+    (fun valid member => discipline.step_closed valid member) fuel valid member
 
 end ReferenceDiscipline
+
+/-- Computable reference inventories for a language's existing discipline.
+The four equations validate each enumeration against its independent predicate;
+heap and continuation assembly is shared by every admitted instance. -/
+structure ReferenceInventory
+    {spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (discipline : ReferenceDiscipline spec) where
+  origin : Origin → Finset CellId
+  localState : Local → Finset CellId
+  resume : Resume → Finset CellId
+  value : Value → Finset CellId
+  origin_exact : ∀ p o, discipline.origin p o ↔ ∀ c ∈ origin o, p c
+  local_exact : ∀ p l, discipline.localState p l ↔ ∀ c ∈ localState l, p c
+  resume_exact : ∀ p k, discipline.resume p k ↔ ∀ c ∈ resume k, p c
+  value_exact : ∀ p v, discipline.value p v ↔ ∀ c ∈ value v, p c
+
+namespace ReferenceInventory
+
+variable {spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {discipline : ReferenceDiscipline spec} (inventory : ReferenceInventory discipline)
+
+def cache : Cache Value StableFault → Finset CellId
+  | .value v => inventory.value v
+  | _ => ∅
+
+def outcome : Produced Value StableFault RetryableFault → Finset CellId
+  | .value v => inventory.value v
+  | _ => ∅
+
+def frame : Frame Resume → Finset CellId
+  | .commit cell _ => {cell}
+  | .resume token => inventory.resume token
+
+def stack : List (Frame Resume) → Finset CellId
+  | [] => ∅
+  | first :: rest => inventory.frame first ∪ stack rest
+
+/-- Roots held by the active control and saved continuation. Receipt archives
+are a separate retention policy; these roots alone do not retain an archive. -/
+def control : Control Local Resume Value StableFault RetryableFault → Finset CellId
+  | .force cell saved => insert cell (inventory.stack saved)
+  | .run localState saved => inventory.localState localState ∪ inventory.stack saved
+  | .returned result saved => inventory.outcome result ∪ inventory.stack saved
+  | .halted result => inventory.outcome result
+
+def record (cell : CellRecord Origin Value StableFault) : Finset CellId :=
+  inventory.origin cell.origin ∪ inventory.cache cell.cache
+
+theorem cache_exact (p : CellId → Prop) (cached : Cache Value StableFault) :
+    discipline.cache p cached ↔ ∀ c ∈ inventory.cache cached, p c := by
+  cases cached <;> simp [ReferenceDiscipline.cache, cache, inventory.value_exact]
+
+theorem outcome_exact (p : CellId → Prop) (result : Produced Value StableFault RetryableFault) :
+    discipline.outcome p result ↔ ∀ c ∈ inventory.outcome result, p c := by
+  cases result <;> simp [ReferenceDiscipline.outcome, outcome, inventory.value_exact]
+
+theorem frame_exact (p : CellId → Prop) (saved : Frame Resume) :
+    discipline.frame p saved ↔ ∀ c ∈ inventory.frame saved, p c := by
+  cases saved <;> simp [ReferenceDiscipline.frame, frame, inventory.resume_exact]
+
+theorem stack_exact (p : CellId → Prop) (saved : List (Frame Resume)) :
+    discipline.stack p saved ↔ ∀ c ∈ inventory.stack saved, p c := by
+  induction saved with
+  | nil => simp [ReferenceDiscipline.stack, stack]
+  | cons first rest ih =>
+      rw [discipline.stack_cons, inventory.frame_exact, ih]
+      change (∀ c ∈ inventory.frame first, p c) ∧ (∀ c ∈ inventory.stack rest, p c) ↔
+        ∀ c ∈ inventory.frame first ∪ inventory.stack rest, p c
+      simp only [Finset.mem_union, or_imp, forall_and]
+
+theorem control_exact (p : CellId → Prop)
+    (current : Control Local Resume Value StableFault RetryableFault) :
+    discipline.control p current ↔ ∀ c ∈ inventory.control current, p c := by
+  cases current <;> simp [ReferenceDiscipline.control, control, inventory.local_exact,
+    inventory.outcome_exact, inventory.stack_exact, or_imp, forall_and]
+
+theorem record_exact (p : CellId → Prop) (cell : CellRecord Origin Value StableFault) :
+    discipline.origin p cell.origin ∧ discipline.cache p cell.cache ↔
+      ∀ c ∈ inventory.record cell, p c := by
+  rw [inventory.origin_exact, inventory.cache_exact]
+  simp [record, or_imp, forall_and]
+
+/-- The concrete heap view uses allocation identities from the retained
+history and the validated outgoing-reference inventory. Weights remain an
+explicit representation parameter, not an assumed native memory measurement. -/
+def resourceHeap (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (closed : discipline.heapClosed heap) (weight : CellRecord Origin Value StableFault → Nat) :
+    Mettapedia.Machines.ResourceOwnership.Heap CellId (CellRecord Origin Value StableFault) :=
+  heap.resourceHeap recorded inventory.record weight fun cell record found child reference =>
+    (inventory.record_exact (heapLive heap) record).mp (closed cell record found) child reference
+
+/-- One owner roots the operational cells of its active control and saved
+continuation. The payload graph preserves sharing, roles and captured origins. -/
+def controlRoots {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (current : Control Local Resume Value StableFault RetryableFault) :
+    Mettapedia.Machines.ResourceOwnership.Roots Owner CellId :=
+  (inventory.control current).image fun cell => (owner, cell)
+
+theorem controlRoots_valid {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (recorded : machine.world.heap.Recorded) (closed : discipline.machineClosed machine)
+    (weight : CellRecord Origin Value StableFault → Nat) :
+    Mettapedia.Machines.ResourceOwnership.ValidRoots
+      (inventory.resourceHeap machine.world.heap recorded closed.1 weight)
+      (inventory.controlRoots owner machine.control) := by
+  intro pair member
+  obtain ⟨cell, root, rfl⟩ := Finset.mem_image.mp member
+  apply (machine.world.heap.allocated_iff_lookup recorded cell).mpr
+  exact (inventory.control_exact (heapLive machine.world.heap) machine.control).mp closed.2 cell root
+
+/-- The existing executable dependency census computes exactly the reachable
+execution cells. The heap, edges and root list are all constructed here. -/
+theorem control_census_exact {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (recorded : machine.world.heap.Recorded) (closed : discipline.machineClosed machine)
+    (weight : CellRecord Origin Value StableFault → Nat) (cell : CellId) :
+    cell ∈ Mettapedia.Machines.ResourceOwnership.census
+        (inventory.resourceHeap machine.world.heap recorded closed.1 weight)
+        (inventory.controlRoots owner machine.control) ↔
+      Mettapedia.Machines.ResourceOwnership.Live
+        (inventory.resourceHeap machine.world.heap recorded closed.1 weight)
+        (inventory.controlRoots owner machine.control) cell :=
+  Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _
+    (inventory.controlRoots_valid owner machine recorded closed weight) cell
+
+/-- Restriction preserves the reference-bearing payloads of retained cells
+when their outgoing references remain in the retained set. -/
+theorem restrict_heapClosed (heap : Heap Origin Value StableFault) (kept : Finset CellId)
+    (recorded : heap.Recorded) (closed : discipline.heapClosed heap)
+    (edges : ∀ cell record, heap.lookup cell = some record → cell ∈ kept →
+      inventory.record record ⊆ kept) : discipline.heapClosed (heap.restrict kept) := by
+  intro cell record found
+  rw [Heap.lookup_restrict _ _ recorded] at found
+  split at found
+  next retained =>
+    apply (inventory.record_exact _ record).mpr
+    intro child reference
+    obtain ⟨target, lookup⟩ :=
+      (inventory.record_exact _ record).mp (closed cell record found) child reference
+    refine ⟨target, ?_⟩
+    rw [Heap.lookup_restrict _ _ recorded, if_pos (edges cell record found retained reference)]
+    exact lookup
+  next _ => cases found
+
+/-- The common executable census supplies the edge-closure obligation for
+the actual source heap; it is not assumed as a collector correctness law. -/
+theorem census_restrict_heapClosed {Owner : Type*} [DecidableEq Owner]
+    (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (closed : discipline.heapClosed heap) (weight : CellRecord Origin Value StableFault → Nat)
+    (roots : Mettapedia.Machines.ResourceOwnership.Roots Owner CellId)
+    (valid : Mettapedia.Machines.ResourceOwnership.ValidRoots
+      (inventory.resourceHeap heap recorded closed weight) roots) :
+    discipline.heapClosed (heap.restrict
+      (Mettapedia.Machines.ResourceOwnership.census
+        (inventory.resourceHeap heap recorded closed weight) roots)) := by
+  apply inventory.restrict_heapClosed heap _ recorded closed
+  intro cell record found retained child reference
+  apply (Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _ valid child).mpr
+  apply Mettapedia.Machines.ResourceOwnership.live_step _ _
+    ((Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _ valid cell).mp retained)
+    (c := ⟨record, inventory.record record, weight record⟩)
+  · change (heap.lookup cell).map _ = _
+    simp only [found, Option.map_some]
+  · exact reference
+
+/-- The source collector's finite census agrees with the independently
+specified common collector, reading back complete source cell records. -/
+theorem census_restrict_lookup {Owner : Type*} [DecidableEq Owner]
+    (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (closed : discipline.heapClosed heap) (weight : CellRecord Origin Value StableFault → Nat)
+    (roots : Mettapedia.Machines.ResourceOwnership.Roots Owner CellId)
+    (valid : Mettapedia.Machines.ResourceOwnership.ValidRoots
+      (inventory.resourceHeap heap recorded closed weight) roots) (cell : CellId) :
+    (heap.restrict (Mettapedia.Machines.ResourceOwnership.census
+      (inventory.resourceHeap heap recorded closed weight) roots)).lookup cell =
+        ((Mettapedia.Machines.ResourceOwnership.collect
+          (inventory.resourceHeap heap recorded closed weight) roots).lookup cell).map
+            Mettapedia.Machines.ResourceOwnership.Cell.value := by
+  rw [Heap.lookup_restrict _ _ recorded]
+  by_cases live : Mettapedia.Machines.ResourceOwnership.Live
+      (inventory.resourceHeap heap recorded closed weight) roots cell
+  · rw [if_pos ((Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _ valid cell).mpr live),
+      Mettapedia.Machines.ResourceOwnership.lookup_collect_of_live _ _ live]
+    change heap.lookup cell = ((heap.lookup cell).map
+      (fun record => ⟨record, inventory.record record, weight record⟩)).map
+        Mettapedia.Machines.ResourceOwnership.Cell.value
+    cases heap.lookup cell <;> rfl
+  · have absent : cell ∉ Mettapedia.Machines.ResourceOwnership.census
+        (inventory.resourceHeap heap recorded closed weight) roots :=
+      fun member => live ((Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _ valid cell).mp member)
+    rw [if_neg absent, Mettapedia.Machines.ResourceOwnership.lookup_collect_of_not_live _ _ live,
+      Option.map_none]
+
+/-- Collect only unreachable operational cells. The source lookup and update
+history are both restricted; counters, receipts, control and work remain as
+supplied. An observer which dereferences history needs additional archive pins. -/
+def collectMachine {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (recorded : machine.world.heap.Recorded) (closed : discipline.machineClosed machine)
+    (weight : CellRecord Origin Value StableFault → Nat) :
+    Machine Origin Local Resume Rule Value StableFault RetryableFault Effect :=
+  let kept := Mettapedia.Machines.ResourceOwnership.census
+    (inventory.resourceHeap machine.world.heap recorded closed.1 weight)
+    (inventory.controlRoots owner machine.control)
+  { machine with world := { machine.world with heap := machine.world.heap.restrict kept } }
+
+theorem collectMachine_recorded {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (recorded : machine.world.heap.Recorded) (closed : discipline.machineClosed machine)
+    (weight : CellRecord Origin Value StableFault → Nat) :
+    (inventory.collectMachine owner machine recorded closed weight).world.heap.Recorded :=
+  machine.world.heap.restrict_recorded _
+
+/-- Both saved continuations and every retained cell resolve in the collected
+source heap. The roots and their validity come from the actual configuration. -/
+theorem collectMachine_closed {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (recorded : machine.world.heap.Recorded) (closed : discipline.machineClosed machine)
+    (weight : CellRecord Origin Value StableFault → Nat) :
+    discipline.machineClosed (inventory.collectMachine owner machine recorded closed weight) := by
+  have valid := inventory.controlRoots_valid owner machine recorded closed weight
+  constructor
+  · exact inventory.census_restrict_heapClosed machine.world.heap recorded closed.1 weight _ valid
+  · apply (inventory.control_exact _ machine.control).mpr
+    intro cell reference
+    have live := (inventory.control_exact _ machine.control).mp closed.2 cell reference
+    have retained := Mettapedia.Machines.ResourceOwnership.live_of_root
+      (inventory.resourceHeap machine.world.heap recorded closed.1 weight)
+      (inventory.controlRoots owner machine.control)
+      (Finset.mem_image.mpr ⟨cell, reference, rfl⟩)
+      ((machine.world.heap.allocated_iff_lookup recorded cell).mpr live)
+    obtain ⟨record, lookup⟩ := live
+    refine ⟨record, ?_⟩
+    change (machine.world.heap.restrict _).lookup cell = some record
+    rw [Heap.lookup_restrict _ _ recorded, if_pos
+      ((Mettapedia.Machines.ResourceOwnership.mem_census_iff_live _ _ valid cell).mpr retained)]
+    exact lookup
+
+end ReferenceInventory
 
 /-! ## Axiom audits -/
 

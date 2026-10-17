@@ -11,8 +11,10 @@ answers retain both their atoms and bindings. Rule templates in the read-only
 space are separate from these live equation instances.
 
 The scoped freshener is executable on represented configurations and realizes
-the independent hygiene judgment. This module does not replace the recursive
-controller's legacy query policy or identify it with native runtime states.
+the independent hygiene judgment. The recursive controller itself renames each
+equation apart from a narrower scope: the call, its type, its bindings and the
+atoms its continuation still holds (`equationScope`). This module does not
+identify either scope with native runtime states.
 -/
 
 set_option autoImplicit false
@@ -23,63 +25,19 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open RecursiveTasks RecursiveEncoding LeaTTaBridge
 open Spec.Match.Merge Spec.Match.ModelTheory Spec.Eval.Steps
 
-def bindingAtoms (bindings : Bindings) : List Atom :=
-  bindings.assignments.flatMap (fun entry => [.var entry.1, entry.2]) ++
-    bindings.equalities.flatMap (fun edge => [.var edge.1, .var edge.2])
+open private atomVariables_eq_typeVars
+  from Mettapedia.Languages.MeTTa.HE.EquationFreshening
 
-def resultAtoms (results : ResultSet) : List Atom :=
-  results.flatMap fun entry => entry.1 :: bindingAtoms entry.2
-
-/-- Every atom and binding field retained by a request. -/
-def taskAtoms : Task → List Atom
-  | .atom value expected bindings _
-  | .expression value expected bindings _
-  | .func value expected bindings _
-  | .call value expected bindings _
-  | .tupleCalls value expected bindings _ => [value, expected] ++ bindingAtoms bindings
-  | .args values types bindings _ => values ++ types ++ bindingAtoms bindings
-  | .tuple value bindings _ => value :: bindingAtoms bindings
-  | .functions value expected bindings _ types =>
-      [value, expected] ++ types ++ bindingAtoms bindings
-  | .bindingAlternatives value operatorType resultType _ alternatives =>
-      [value, operatorType, resultType] ++ alternatives.flatMap bindingAtoms
-  | .heads operatorType arguments _ alternatives =>
-      operatorType :: (arguments ++ resultAtoms alternatives)
-  | .argumentHeads original remaining types _ alternatives =>
-      original :: (remaining ++ types ++ resultAtoms alternatives)
-  | .tupleHeads tail _ alternatives => tail :: resultAtoms alternatives
-  | .calls expected _ alternatives
-  | .atoms expected _ alternatives => expected :: resultAtoms alternatives
-  | .equations expected incoming _ alternatives
-  | .grounded expected incoming _ alternatives =>
-      expected :: (bindingAtoms incoming ++ resultAtoms alternatives)
-
-/-- Every atom and binding field retained by a continuation. -/
-def frameAtoms : Frame → List Atom
-  | .filter | .tupleSingleton => []
-  | .heads operatorType arguments _ => operatorType :: arguments
-  | .argumentHeads original remaining types _ => original :: (remaining ++ types)
-  | .tupleHeads tail _ => [tail]
-  | .calls expected _ => [expected]
-  | .functionTail head
-  | .argumentTail head
-  | .tupleTail head => [head]
-  | .append remaining => taskAtoms remaining
-  | .prepend selected => resultAtoms selected
-  | .fallback value expected bindings _ types =>
-      [value, expected] ++ types ++ bindingAtoms bindings
-
-def controlAtoms : Control → List Atom
-  | .work task => taskAtoms task
-  | .returning results => resultAtoms results
-
-/-- The current control, entire continuation stack, and ordered answer prefix. -/
-def liveAtoms (configuration : Configuration) : List Atom :=
-  controlAtoms configuration.control ++
-    configuration.stack.flatMap frameAtoms ++ resultAtoms configuration.emitted
-
-def configurationNames (configuration : Configuration) : List String :=
-  (liveAtoms configuration).flatMap fun atom => (toLeaTTaAtom atom).vars
+/-- The low structural inventory agrees with the existing translated reading. -/
+theorem configurationNames_translated (configuration : Configuration) :
+    configurationNames configuration =
+      (liveAtoms configuration).flatMap (fun atom => (toLeaTTaAtom atom).vars) := by
+  unfold configurationNames
+  rw [atomListVariables_eq_flatMap]
+  apply congrArg (fun read => (liveAtoms configuration).flatMap read)
+  funext atom
+  exact (atomVariables_eq_typeVars atom).trans
+    (LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars atom).symm
 
 theorem bindingAtoms_names (bindings : Bindings) :
     (bindingAtoms bindings).flatMap (fun atom => (toLeaTTaAtom atom).vars) =
@@ -90,6 +48,7 @@ theorem bindingAtoms_names (bindings : Bindings) :
 theorem retained_atom_name_mem {configuration : Configuration} {atom : Atom} {name : String}
     (member : atom ∈ liveAtoms configuration) (occurrence : AtomOccurs atom name) :
     name ∈ configurationNames configuration := by
+  rw [configurationNames_translated]
   exact List.mem_flatMap.mpr ⟨atom, member, atomOccurs_iff_mem_translated_vars.mp occurrence⟩
 
 theorem control_atom_mem {configuration : Configuration} {atom : Atom}

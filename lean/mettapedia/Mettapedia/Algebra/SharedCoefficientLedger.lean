@@ -75,6 +75,13 @@ theorem splitPrefix_reconstruct [DecidableEq Identity] [DecidableEq Dependency] 
             simpa [splitPrefix] using ih later
           · simp [splitPrefix, same]
 
+@[simp] theorem splitPrefix_self [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    (ledger : Ledger Identity Dependency V) :
+    splitPrefix ledger ledger = ⟨ledger, [], []⟩ := by
+  induction ledger with
+  | nil => rfl
+  | cons factor rest ih => simp [splitPrefix, ih]
+
 def PrefixSplit.ordered (parts : PrefixSplit Identity Dependency V) : Ledger Identity Dependency V :=
   parts.shared ++ parts.leftFresh ++ parts.rightFresh
 
@@ -95,6 +102,19 @@ theorem merge_valid [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq
     {left right merged : Ledger Identity Dependency V}
     (accepted : merge? left right = some merged) : Valid merged :=
   ((merge_accepted_iff left right merged).mp accepted).2
+
+/-- Two references to the same valid production history share its factors.
+An invalid duplicate identity is still refused, even on the diagonal. -/
+theorem merge_self_iff [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    (ledger : Ledger Identity Dependency V) :
+    merge? ledger ledger = some ledger ↔ Valid ledger := by
+  rw [merge_accepted_iff]
+  simp [PrefixSplit.ordered]
+
+theorem merge_self [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    (ledger : Ledger Identity Dependency V) (valid : Valid ledger) :
+    merge? ledger ledger = some ledger :=
+  (merge_self_iff ledger).mpr valid
 
 /-- The stateful API installs a merged ledger only after successful validation. -/
 def commitMerge [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
@@ -322,13 +342,18 @@ theorem mem_selected (entry : Nat) (world : Scoped Identity Dependency V Owner)
       factor ∈ world.productions.drop entry ∧ world.claims factor.identity = none := by
   simp [selected]
 
+private def claimSnapshot [DecidableEq Identity]
+    (snapshot : Ledger Identity Dependency V) (owner : Owner)
+    (world : Scoped Identity Dependency V Owner) : Scoped Identity Dependency V Owner where
+  productions := world.productions
+  claims identity := if identity ∈ identities snapshot then some owner
+    else world.claims identity
+
 /-- The observation claims its snapshot before executing any readout callback.
 It never rewrites the production list or an already owned contribution. -/
 def handle [DecidableEq Identity] (entry : Nat) (owner : Owner)
-    (world : Scoped Identity Dependency V Owner) : Scoped Identity Dependency V Owner where
-  productions := world.productions
-  claims identity := if identity ∈ identities (selected entry world) then some owner
-    else world.claims identity
+    (world : Scoped Identity Dependency V Owner) : Scoped Identity Dependency V Owner :=
+  claimSnapshot (selected entry world) owner world
 
 theorem selected_claimed [DecidableEq Identity] (entry : Nat) (owner : Owner)
     (world : Scoped Identity Dependency V Owner) {factor : Factor Identity Dependency V}
@@ -336,7 +361,7 @@ theorem selected_claimed [DecidableEq Identity] (entry : Nat) (owner : Owner)
     (handle entry owner world).claims factor.identity = some owner := by
   have member : factor.identity ∈ identities (selected entry world) :=
     List.mem_map.mpr ⟨factor, present, rfl⟩
-  simp only [handle, member, if_true]
+  simp only [handle, claimSnapshot, member, if_true]
 
 /-- Handling a nested scope cannot move a contribution away from its existing
 owner, including one inherited from a shared producer. -/
@@ -350,7 +375,7 @@ theorem prior_claim_preserved [DecidableEq Identity] (entry : Nat) (owner : Owne
     have free := ((mem_selected entry world factor).mp present).2
     rw [equal, claimed] at free
     cases free
-  simp [handle, absent, claimed]
+  simp [handle, claimSnapshot, absent, claimed]
 
 /-- Re-entering the same snapshot cannot charge any of its handled factors a
 second time. New callback productions require a later, larger world. -/
@@ -377,13 +402,13 @@ theorem outside_snapshot_unchanged [DecidableEq Identity] (entry : Nat) (owner :
     (world : Scoped Identity Dependency V Owner) {identity : Identity}
     (outside : identity ∉ identities (selected entry world)) :
     (handle entry owner world).claims identity = world.claims identity := by
-  simp [handle, outside]
+  simp [handle, claimSnapshot, outside]
 
 theorem handle_supported [DecidableEq Identity] (entry : Nat) (owner : Owner)
     (world : Scoped Identity Dependency V Owner) (supported : world.Supported) :
     (handle entry owner world).Supported := by
   intro identity claimant claimed
-  dsimp [handle] at claimed ⊢
+  dsimp [handle, claimSnapshot] at claimed ⊢
   split at claimed
   · next member =>
       obtain ⟨factor, present, equal⟩ := List.mem_map.mp member
@@ -391,6 +416,138 @@ theorem handle_supported [DecidableEq Identity] (entry : Nat) (owner : Owner)
       refine ⟨factor, ?_, equal⟩
       exact List.mem_of_mem_drop ((mem_selected entry world factor).mp present).1
   · exact supported identity claimant claimed
+
+/-! ## Captures in a joined production view
+
+A joined view can insert fresh productions before an inherited production.
+An integer offset is then insufficient to identify what the scope has already
+captured. Selection uses physical identities and the world's independently
+established logical order. These account operations do not establish world
+lineage, demand authority or a licence to reorder that world.
+-/
+
+/-- Select fresh, unclaimed identities in the current world's logical order. -/
+def selectedSince [DecidableEq Identity] (capture : Ledger Identity Dependency V)
+    (world : Scoped Identity Dependency V Owner) : Ledger Identity Dependency V :=
+  (selected 0 world).filter fun factor => decide (factor.identity ∉ identities capture)
+
+theorem mem_selectedSince [DecidableEq Identity] (capture : Ledger Identity Dependency V)
+    (world : Scoped Identity Dependency V Owner) (factor : Factor Identity Dependency V) :
+    factor ∈ selectedSince capture world ↔
+      factor ∈ world.productions ∧ world.claims factor.identity = none ∧
+        factor.identity ∉ identities capture := by
+  simp [selectedSince, selected, and_comm]
+
+/-- Both positional and occurrence captures use the same snapshot-claim operation. -/
+def handleSince [DecidableEq Identity] (capture : Ledger Identity Dependency V)
+    (owner : Owner) (world : Scoped Identity Dependency V Owner) :
+    Scoped Identity Dependency V Owner :=
+  claimSnapshot (selectedSince capture world) owner world
+
+theorem selectedSince_claimed [DecidableEq Identity] (capture : Ledger Identity Dependency V)
+    (owner : Owner) (world : Scoped Identity Dependency V Owner)
+    {factor : Factor Identity Dependency V} (present : factor ∈ selectedSince capture world) :
+    (handleSince capture owner world).claims factor.identity = some owner := by
+  have member : factor.identity ∈ identities (selectedSince capture world) :=
+    List.mem_map.mpr ⟨factor, present, rfl⟩
+  simp only [handleSince, claimSnapshot, member, if_true]
+
+theorem handleSince_prior_claim_preserved [DecidableEq Identity]
+    (capture : Ledger Identity Dependency V) (owner : Owner)
+    (world : Scoped Identity Dependency V Owner) {identity : Identity} {prior : Owner}
+    (claimed : world.claims identity = some prior) :
+    (handleSince capture owner world).claims identity = some prior := by
+  have absent : identity ∉ identities (selectedSince capture world) := by
+    rintro member
+    obtain ⟨factor, present, equal⟩ := List.mem_map.mp member
+    have free := ((mem_selectedSince capture world factor).mp present).2.1
+    rw [equal, claimed] at free
+    cases free
+  simp [handleSince, claimSnapshot, absent, claimed]
+
+theorem selectedSince_after_handle [DecidableEq Identity]
+    (capture : Ledger Identity Dependency V) (owner : Owner)
+    (world : Scoped Identity Dependency V Owner) :
+    selectedSince capture (handleSince capture owner world) = [] := by
+  apply List.eq_nil_iff_forall_not_mem.mpr
+  intro factor present
+  obtain ⟨inWorld, unclaimed, fresh⟩ :=
+    (mem_selectedSince capture (handleSince capture owner world) factor).mp present
+  change factor ∈ world.productions at inWorld
+  cases original : world.claims factor.identity with
+  | none =>
+      have owned := selectedSince_claimed capture owner world
+        ((mem_selectedSince capture world factor).mpr ⟨inWorld, original, fresh⟩)
+      rw [owned] at unclaimed
+      cases unclaimed
+  | some prior =>
+      rw [handleSince_prior_claim_preserved capture owner world original] at unclaimed
+      cases unclaimed
+
+theorem handleSince_supported [DecidableEq Identity]
+    (capture : Ledger Identity Dependency V) (owner : Owner)
+    (world : Scoped Identity Dependency V Owner) (supported : world.Supported) :
+    (handleSince capture owner world).Supported := by
+  intro identity claimant claimed
+  dsimp [handleSince, claimSnapshot] at claimed ⊢
+  split at claimed
+  · next member =>
+      obtain ⟨factor, present, equal⟩ := List.mem_map.mp member
+      exact List.mem_map.mpr
+        ⟨factor, ((mem_selectedSince capture world factor).mp present).1, equal⟩
+  · exact supported identity claimant claimed
+
+/-- New factors can occupy earlier positions. Every captured factor must
+still agree in identity, dependency and coefficient, without reordering the
+captured factors. Known claims cannot disappear. Full world admission is an
+additional execution-contract obligation. -/
+def extendsOccurrenceCapture [DecidableEq Identity] [DecidableEq Dependency]
+    [DecidableEq V] [DecidableEq Owner]
+    (entry world : Scoped Identity Dependency V Owner) : Bool :=
+  decide (Valid world.productions ∧ entry.productions.Sublist world.productions) &&
+    entry.productions.all (fun factor => match entry.claims factor.identity with
+      | none => true
+      | some owner => decide (world.claims factor.identity = some owner))
+
+theorem extendsOccurrenceCapture_valid [DecidableEq Identity] [DecidableEq Dependency]
+    [DecidableEq V] [DecidableEq Owner] {entry world : Scoped Identity Dependency V Owner}
+    (extended : extendsOccurrenceCapture entry world = true) :
+    Valid world.productions ∧ entry.productions.Sublist world.productions := by
+  simpa only [decide_eq_true_eq]
+    using (show decide (Valid world.productions ∧ entry.productions.Sublist world.productions) = true
+      from (Bool.and_eq_true_iff.mp extended).1)
+
+theorem extendsOccurrenceCapture_preserves_claim [DecidableEq Identity]
+    [DecidableEq Dependency] [DecidableEq V] [DecidableEq Owner]
+    {entry world : Scoped Identity Dependency V Owner}
+    (supported : entry.Supported) (extended : extendsOccurrenceCapture entry world = true)
+    {identity : Identity} {owner : Owner} (claimed : entry.claims identity = some owner) :
+    world.claims identity = some owner := by
+  obtain ⟨factor, present, equal⟩ := List.mem_map.mp (supported identity owner claimed)
+  simp only [extendsOccurrenceCapture, Bool.and_eq_true_iff] at extended
+  have allowed := List.all_eq_true.mp extended.2 factor present
+  simpa [equal, claimed] using allowed
+
+/-- Validate the captured account before acquiring any fresh contribution. -/
+def handleSince? [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    [DecidableEq Owner] (entry world : Scoped Identity Dependency V Owner) (owner : Owner) :
+    Option (Scoped Identity Dependency V Owner × Ledger Identity Dependency V) :=
+  if extendsOccurrenceCapture entry world then
+    some (handleSince entry.productions owner world, selectedSince entry.productions world)
+  else none
+
+theorem handleSince_spec [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    [DecidableEq Owner] {entry world result : Scoped Identity Dependency V Owner}
+    {owner : Owner} {observed : Ledger Identity Dependency V}
+    (accepted : handleSince? entry world owner = some (result, observed)) :
+    result.productions = world.productions ∧
+      observed = selectedSince entry.productions world ∧
+      selectedSince entry.productions result = [] := by
+  unfold handleSince? at accepted
+  split at accepted
+  · cases accepted
+    exact ⟨rfl, rfl, selectedSince_after_handle _ _ _⟩
+  · cases accepted
 
 /-! A transported world must also retain claims. Renaming only its production
 list does not establish equivalence of nested observations. -/
@@ -422,7 +579,7 @@ theorem handle_claim_transport [DecidableEq Identity] [DecidableEq Identity']
     (entry : Nat) (observer : Owner) (identity : Identity) :
     (handle entry (owner observer) target).claims (name identity) =
       ((handle entry observer source).claims identity).map owner := by
-  simp only [handle, selected_transport name dependency owner source target productions claims,
+  simp only [handle, claimSnapshot, selected_transport name dependency owner source target productions claims,
     identities_rename, List.mem_map_of_injective names]
   split <;> simp_all
 
@@ -436,6 +593,61 @@ theorem selected_denotation_transport [Monoid V] {Owner' : Type uOwner'}
     (claims : ∀ identity, target.claims (name identity) = (source.claims identity).map owner)
     (entry : Nat) : denote (selected entry target) = denote (selected entry source) := by
   rw [selected_transport name dependency owner source target productions claims, denote_rename]
+
+/-- Occurrence captures cross ownership transport together with the claim
+map. A name map that coalesces productions cannot preserve this selection. -/
+theorem selectedSince_transport [DecidableEq Identity] [DecidableEq Identity']
+    {Owner' : Type uOwner'} {name : Identity → Identity'}
+    (names : Function.Injective name) (dependency : Dependency → Dependency')
+    (owner : Owner → Owner') (capture : Ledger Identity Dependency V)
+    (source : Scoped Identity Dependency V Owner)
+    (target : Scoped Identity' Dependency' V Owner')
+    (productions : target.productions = rename name dependency source.productions)
+    (claims : ∀ identity, target.claims (name identity) = (source.claims identity).map owner) :
+    selectedSince (rename name dependency capture) target =
+      rename name dependency (selectedSince capture source) := by
+  simp only [selectedSince,
+    selected_transport name dependency owner source target productions claims,
+    rename, List.filter_map]
+  congr 1
+  apply List.filter_congr
+  intro factor _
+  have sameNames : identities (capture.map (Factor.rename name dependency)) =
+      (identities capture).map name := identities_rename name dependency capture
+  have sameMembership : name factor.identity ∈ identities (capture.map (Factor.rename name dependency)) ↔
+      factor.identity ∈ identities capture := by
+    rw [sameNames]
+    exact List.mem_map_of_injective names
+  simp only [Function.comp_apply, Factor.rename, sameMembership]
+
+theorem handleSince_claim_transport [DecidableEq Identity] [DecidableEq Identity']
+    {Owner' : Type uOwner'} {name : Identity → Identity'}
+    (names : Function.Injective name) (dependency : Dependency → Dependency')
+    (owner : Owner → Owner') (capture : Ledger Identity Dependency V)
+    (source : Scoped Identity Dependency V Owner)
+    (target : Scoped Identity' Dependency' V Owner')
+    (productions : target.productions = rename name dependency source.productions)
+    (claims : ∀ identity, target.claims (name identity) = (source.claims identity).map owner)
+    (observer : Owner) (identity : Identity) :
+    (handleSince (rename name dependency capture) (owner observer) target).claims (name identity) =
+      ((handleSince capture observer source).claims identity).map owner := by
+  simp only [handleSince, claimSnapshot,
+    selectedSince_transport names dependency owner capture source target productions claims,
+    identities_rename, List.mem_map_of_injective names]
+  split <;> simp_all
+
+theorem selectedSince_denotation_transport [Monoid V] [DecidableEq Identity]
+    [DecidableEq Identity'] {Owner' : Type uOwner'} {name : Identity → Identity'}
+    (names : Function.Injective name) (dependency : Dependency → Dependency')
+    (owner : Owner → Owner') (capture : Ledger Identity Dependency V)
+    (source : Scoped Identity Dependency V Owner)
+    (target : Scoped Identity' Dependency' V Owner')
+    (productions : target.productions = rename name dependency source.productions)
+    (claims : ∀ identity, target.claims (name identity) = (source.claims identity).map owner) :
+    denote (selectedSince (rename name dependency capture) target) =
+      denote (selectedSince capture source) := by
+  rw [selectedSince_transport names dependency owner capture source target productions claims,
+    denote_rename]
 
 /-- Both worlds may know a claim, but then they must name the same observer. -/
 def compatibleAt [DecidableEq Owner] (left right : Scoped Identity Dependency V Owner)
@@ -454,6 +666,25 @@ def merge? [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V] [Deci
       if productions.all (fun factor => compatibleAt left right factor.identity) then
         some ⟨productions, fun identity => (left.claims identity).or (right.claims identity)⟩
       else none
+
+/-- Re-presenting a scope with a valid production ledger preserves its claims
+without charging shared physical productions again. This equality does not
+establish support for the claims or grant execution authority. -/
+theorem merge_self [DecidableEq Identity] [DecidableEq Dependency] [DecidableEq V]
+    [DecidableEq Owner] (world : Scoped Identity Dependency V Owner)
+    (valid : Valid world.productions) : merge? world world = some world := by
+  have compatible :
+      world.productions.all (fun factor => compatibleAt world world factor.identity) = true := by
+    apply List.all_eq_true.mpr
+    intro factor _
+    unfold compatibleAt
+    cases world.claims factor.identity <;> simp
+  have claims : (fun identity => (world.claims identity).or (world.claims identity)) =
+      world.claims := by
+    funext identity
+    cases world.claims identity <;> rfl
+  simp only [merge?, SharedCoefficientLedger.merge_self world.productions valid,
+    compatible, ↓reduceIte, claims]
 
 /-- Successful scoped merging exposes both its production comparison and
 the agreement check on owners; the claim map is their pointwise union. -/
@@ -557,6 +788,23 @@ theorem handled_snapshot_not_reselected [DecidableEq Identity] [DecidableEq Depe
   rw [claimed] at unclaimed
   cases unclaimed
 
+/-- A completed claim cannot be resurrected by inserting other productions
+before it or by entering a later scope with a different occurrence capture. -/
+theorem handled_occurrence_snapshot_not_reselected [DecidableEq Identity]
+    [DecidableEq Dependency] [DecidableEq V] [DecidableEq Owner]
+    (capture laterCapture : Ledger Identity Dependency V) (owner : Owner)
+    (before after : Scoped Identity Dependency V Owner) (supported : before.Supported)
+    (extended : extendsOccurrenceCapture (handleSince capture owner before) after = true)
+    {factor : Factor Identity Dependency V} (observed : factor ∈ selectedSince capture before) :
+    factor ∉ selectedSince laterCapture after := by
+  have claimed := extendsOccurrenceCapture_preserves_claim
+    (handleSince_supported capture owner before supported) extended
+    (selectedSince_claimed capture owner before observed)
+  intro reselected
+  have unclaimed := ((mem_selectedSince laterCapture after factor).mp reselected).2.1
+  rw [claimed] at unclaimed
+  cases unclaimed
+
 /-- Appending an unclaimed production makes precisely that new production
 available after the previous snapshot. No commutative algebra law is used. -/
 theorem selected_append_unclaimed (entry : Nat)
@@ -577,7 +825,7 @@ theorem selected_fresh_after_handle [DecidableEq Identity]
     selected entry
         ⟨world.productions ++ [factor], (handle entry owner world).claims⟩ = [factor] := by
   have free : (handle entry owner world).claims factor.identity = none := by
-    simp [handle, outside, unclaimed]
+    simp [handle, claimSnapshot, outside, unclaimed]
   have enlarged := selected_append_unclaimed entry (handle entry owner world) factor within free
   change selected entry
       ⟨world.productions ++ [factor], (handle entry owner world).claims⟩ =

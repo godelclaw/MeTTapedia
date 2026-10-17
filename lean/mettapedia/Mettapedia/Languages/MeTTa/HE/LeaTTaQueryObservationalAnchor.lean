@@ -22,11 +22,9 @@ spec specification:
 * `resolveAtom_semantically_inert` / `instantiate_semantically_inert` — the
   observable application step is semantically inert: under every valuation
   satisfying the bindings, the instantiated atom is identified with the raw
-  atom.  So the observable emitted by `queryOp` is determined by the binding
-  solution theory, which is precisely the equivalence the conformance seal
-  is stated in: nothing finer than solution theory is observable through
-  `queryOp`, and the seal's equivalence is derived from that observation
-  rather than chosen for convenience.
+  atom. This is equality under satisfying structural valuations. It does
+  not identify literal residual spellings or their string observations;
+  those require a separately declared readout and observer policy.
 -/
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecSoundness
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.EquationQueryStep
@@ -598,10 +596,10 @@ theorem queryOp_hit_specEquationQueryStep_sound
     queryOp_hit_observational_sound
       (rhs := freshRhs) hinvariant hmatch hmerge hloop
   refine ⟨specMerged, ?_, hnextInvariant⟩
-  refine ⟨specMatched, hdisjoint, hspecMatch, hspecMerge, ?_, hobservable⟩
-  exact ⟨leaClassSolution merged,
-    (hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
-      hnextInvariant.runtime.canonical.1⟩
+  refine ⟨specMatched, hdisjoint, hspecMatch, hspecMerge.logicalMerge ?_, hobservable⟩
+  exact ⟨_, LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied
+    ((hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
+      hnextInvariant.runtime.canonical.1)⟩
 
 /-- The same seal at the executable one-candidate worklist boundary.  Actual
 membership in `queryOpItemsOfRule` is decomposed into its repaired freshening,
@@ -738,10 +736,10 @@ theorem queryOpItemsOfRule_specEquationQueryStep_sound
   · exact hitemEq
   · refine ⟨specMatched,
       varsDisjoint_of_freshenRuleAvoiding_pattern hfreshPattern,
-      hspecMatch, hspecMerge, ?_, hobservable⟩
-    exact ⟨leaClassSolution merged,
-      (hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
-        hnextInvariant.runtime.canonical.1⟩
+      hspecMatch, hspecMerge.logicalMerge ?_, hobservable⟩
+    exact ⟨_, LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied
+      ((hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
+        hnextInvariant.runtime.canonical.1)⟩
 
 /-- A query hit started from empty bindings is unconditionally anchored: the
 direct matcher soundness theorem supplies a model of the match output, and

@@ -1,7 +1,7 @@
 import Mathlib.Data.Multiset.Count
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
-import Mettapedia.PLN.WorldModel.WorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-!
 # Sufficient Statistic Encoder

@@ -1,3 +1,4 @@
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 import Mettapedia.NARS.TruthFunctions
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
@@ -211,5 +212,42 @@ structure PLNNARSRuleBridgeBundle : Prop where
 theorem plnNarsRuleBridgeBundle : PLNNARSRuleBridgeBundle := by
   refine ⟨weightTransformBundle, ruleCorrespondenceBundle,
     revisionCoherenceBundle, informativenessAdjunctionBundle⟩
+
+/-! ## The strength × confidence comparison of arXiv:2412.19524
+
+Goertzel, *PLN and NARS often yield similar strength × confidence*
+(arXiv:2412.19524), compares the two systems by the product of strength and
+confidence.  The frequency and confidence formulas below are the ones of that
+comparison; they differ from the deduction of `Mettapedia.NARS.TruthFunctions`
+(`truthDeduction`, frequency `f₁ f₂`), which follows the NARS library.
+-/
+
+/-- Deduction frequency of the arXiv:2412.19524 comparison. -/
+noncomputable def narsDeductionFrequency (f1 f2 : ℝ) : ℝ :=
+  f1 * f2 / (f1 + f2 - f1 * f2)
+
+/-- Deduction confidence of the arXiv:2412.19524 comparison. -/
+noncomputable def narsDeductionConfidence (f1 f2 c1 c2 : ℝ) : ℝ :=
+  c1 * c2 * (f1 + f2 - f1 * f2)
+
+/-- Strength × confidence ("power") of that deduction. -/
+noncomputable def narsDeductionPower (f1 f2 c1 c2 : ℝ) : ℝ :=
+  narsDeductionFrequency f1 f2 * narsDeductionConfidence f1 f2 c1 c2
+
+/-- The power simplifies to `f₁ f₂ c₁ c₂`, the product form of PLN's simplified
+    deduction. -/
+theorem nars_power_eq (f1 f2 c1 c2 : ℝ) (h : f1 + f2 - f1 * f2 ≠ 0) :
+    narsDeductionPower f1 f2 c1 c2 = f1 * f2 * c1 * c2 := by
+  unfold narsDeductionPower narsDeductionFrequency narsDeductionConfidence
+  field_simp [h]
+
+/-- Under equal strength/frequency and confidence, PLN and NARS give the same power. -/
+theorem pln_nars_power_agreement (s c : ℝ) (h : s + s - s*s ≠ 0) :
+    -- PLN power (simplified): s * s * c * c
+    Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation.plnDeductionSimplified s s * c * c =
+    -- NARS power: also s * s * c * c
+    narsDeductionPower s s c c := by
+  unfold Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation.plnDeductionSimplified
+  rw [nars_power_eq s s c c h]
 
 end Mettapedia.NARS.Bridges.PLN.RuleCorrespondence

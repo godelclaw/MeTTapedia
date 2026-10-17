@@ -147,7 +147,7 @@ theorem slotBinders_of_multiBase {parameter : TermParam} {domain body : String}
   | multiAbstractionNamed _ _ type =>
       cases type with
       | base sort =>
-          simp [multiBase?, slotBinders] at shape
+          simp [multiBase?] at shape
           obtain ⟨rfl, rfl⟩ := shape
           rfl
       | arrow domainType codomain =>
@@ -157,7 +157,7 @@ theorem slotBinders_of_multiBase {parameter : TermParam} {domain body : String}
               | base domainSort =>
                   cases codomain with
                   | base bodySort =>
-                      simp [multiBase?, slotBinders] at shape
+                      simp [multiBase?] at shape
                       obtain ⟨rfl, rfl⟩ := shape
                       rfl
                   | arrow _ _ => simp [multiBase?] at shape
@@ -633,10 +633,10 @@ theorem printSized (n : Nat) :
         termSize term < n →
           HasType language FreeTypeContext.empty (typeContext Γ) (toPattern term) (.base sort)) ∧
     (∀ (parameters : List TermParam) (counts : List Nat)
-        (aligned : counts.length = parameters.length)
-        (allBound : ∀ parameter ∈ parameters, (bindingDecl? parameter).isSome)
+        (_aligned : counts.length = parameters.length)
+        (_allBound : ∀ parameter ∈ parameters, (bindingDecl? parameter).isSome)
         {Γ : List String} (declarations : List (List String × String))
-        (same : declarations = slots parameters counts)
+        (_same : declarations = slots parameters counts)
         (arguments : Args (signature language) declarations Γ),
         argsSize arguments < n →
           ArgumentsHaveTypes language FreeTypeContext.empty (typeContext Γ)
@@ -881,9 +881,9 @@ theorem printInj (labels : (language.terms.map (·.label)).Nodup) (n : Nat) :
     (∀ {Γ : List String} {sort : String} (left right : Term (signature language) Γ sort),
         termSize left < n → toPattern left = toPattern right → left = right) ∧
     (∀ (parameters : List TermParam) (counts : List Nat)
-        (aligned : counts.length = parameters.length)
+        (_aligned : counts.length = parameters.length)
         {Γ : List String} {declarations : List (List String × String)}
-        (same : declarations = slots parameters counts)
+        (_same : declarations = slots parameters counts)
         (left right : Args (signature language) declarations Γ),
         argsSize left < n →
           patternsOfDecl parameters counts declarations left =

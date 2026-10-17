@@ -12,12 +12,9 @@ Concrete positive/negative fixtures for provenance-overlap behavior:
 namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlapRegression
 
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke (PointedKripke)
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlap
 
-abbrev PointedKripke := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.PointedKripke
-abbrev WeightedSourcePointedKripke :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedSourcePointedKripke
-abbrev WeightedState := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState
 
 def wpLeft (pk : PointedKripke) : WeightedSourcePointedKripke :=
   { source := "srcA", weight := 2, point := pk }

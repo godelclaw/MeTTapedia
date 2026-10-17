@@ -21,7 +21,7 @@ open StructuralDescent.Controls
 def snapshot (language : LanguageDef) : Snapshot where
   language := language
   freeTypes := []
-  provider := ⟨[], []⟩
+  provider := {signatures := [], rows := []}
 
 def lambdaPlan := Plan.compile
   (snapshot Mettapedia.OSLF.Binding.LambdaAuthoredFullRuleProfile.language) rootPermissions
@@ -47,7 +47,8 @@ private theorem environment_eq {first second : Environment}
     (language : first.language = second.language) (free : first.free = second.free)
     (provider : first.provider = second.provider)
     (specifications : first.specifications = second.specifications)
-    (reflection : first.reflection = second.reflection) : first = second := by
+    (reflection : first.reflection = second.reflection)
+    (dynamic : first.dynamic = second.dynamic) : first = second := by
   cases first
   cases second
   cases language
@@ -55,6 +56,7 @@ private theorem environment_eq {first second : Environment}
   cases provider
   cases specifications
   cases reflection
+  cases dynamic
   rfl
 
 private theorem stratification_only (stratification : Bool) :

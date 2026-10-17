@@ -36,7 +36,7 @@ open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory termSetoid TermStep)
 open Mettapedia.GSLT.Dedukti (Theory RuleTable rewritingTheory TermContext)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (atomAt atomInterface unquotedSorts BoundFirstOrder scopedRewriting AtomsFree binderContext
     applicationConstructor abstractionConstructor productConstructor)

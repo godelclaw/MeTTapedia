@@ -558,3 +558,46 @@ theorem instantiate_value_free_within (footprint : List String)
 #print axioms Mettapedia.OSLF.MeTTaIL.RuleBinding.instantiate_value_free_within
 
 end Mettapedia.OSLF.MeTTaIL.RuleBinding
+
+
+namespace Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+set_option autoImplicit false
+
+/-- The declared object-binder context of an original rule endpoint. -/
+def siteBinders? (rule : RewriteRule) : RulePatternSite → Option (List TypeExpr)
+  | .left | .right => some []
+  | .premise index quantifiers argument => do
+      let premise ← rule.premises[index]?
+      match ← quantifiedBody? quantifiers premise with
+      | .freshness _ => if argument == 0 then some [] else none
+      | .congruence _ _ => if argument < 2 then some [] else none
+      | .scopedStep step => if argument < 2 then some step.binders else none
+      | .relationQuery _ args => if argument < args.length then some [] else none
+      | .forAll _ _ _ => none
+
+/-- Sorting retains precisely the context counted by occurrence admission. -/
+theorem siteBinders?_length (rule : RewriteRule) (site : RulePatternSite) :
+    (siteBinders? rule site).map List.length = siteBinderDepth? rule site := by
+  cases site with
+  | left => rfl
+  | right => rfl
+  | premise index quantifiers argument =>
+      simp only [siteBinders?, siteBinderDepth?]
+      cases found : rule.premises[index]? with
+      | none => rfl
+      | some premise =>
+          cases body : quantifiedBody? quantifiers premise with
+          | none => simp [body]
+          | some inner =>
+              cases inner <;> simp [body]
+
+/-- Both sides of an actual scoped premise retain its complete declaration. -/
+theorem siteBinders?_scopedStep (rule : RewriteRule) (index : Nat)
+    (step : ScopedStepPremise)
+    (found : rule.premises[index]? = some (.scopedStep step))
+    (argument : Nat) (valid : argument < 2) :
+    siteBinders? rule (.premise index 0 argument) = some step.binders := by
+  simp [siteBinders?, found, quantifiedBody?, valid]
+
+end Mettapedia.OSLF.MeTTaIL.RuleBinding

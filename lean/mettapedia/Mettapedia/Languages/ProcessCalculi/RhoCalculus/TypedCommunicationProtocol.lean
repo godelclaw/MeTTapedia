@@ -177,7 +177,7 @@ def source (data : ClosedCommData) : RhoProcess :=
             ⟨⟨data.channelSafe, data.payloadSafe⟩, data.restSafe⟩⟩⟩⟩
 
 /-- The declaration-derived direct COMM step. -/
-def rawStep (data : ClosedCommData) :
+theorem rawStep (data : ClosedCommData) :
     RhoStep data.source.1
       (.collection .hashBag
         (semanticCommSubst data.body data.payload :: data.rest) none) :=

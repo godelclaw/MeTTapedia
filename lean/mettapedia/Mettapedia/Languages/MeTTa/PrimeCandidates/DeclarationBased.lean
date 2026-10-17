@@ -3,8 +3,8 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.BoundaryJudgm
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareCheckedContext
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareDataLanguage
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareAuthority
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternMatching
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodecMatching
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionCompiler
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionExecution
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionExecutionBeta
@@ -272,7 +272,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.Polarize
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedImmediateDemand
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedEquationBoundaries
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.PolarizedNeedNaturalExamples
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireData
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireData
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceMILWorkload
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceService
@@ -463,6 +463,8 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.AlgebraicParallelSub
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Conversion.NativeIndexedFamilyConfluence
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeListRuntimeRepresentation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FirstClassGSLT
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingDeclarations
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredTypeExpressions
 import Mettapedia.GSLT.Dynamics.RevisionedOccurrenceExactImage
 import Mettapedia.GSLT.LanguageDef.GSLTILCoherentCompilation
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalStructure
@@ -793,3 +795,7 @@ internal-language result is exact on the returned-fibre image; it is not a
 claim of semantic-CwF initiality or a universal property for the full command
 language.  Those stronger statements remain machine-visible open boundaries.
 -/
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingEquationServices
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireDataConversion
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamily
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamilyControls

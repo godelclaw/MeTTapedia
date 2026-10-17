@@ -26,6 +26,7 @@ open Mettapedia.KR.ConceptGeometry.IntensionalInheritance.Interpretation
 universe u v w
 
 open Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV capConf MAX_CONF)
 
 /-- Repackage an STV as the WM/PeTTa `(strength, confidence)` truth value. This is a
 shape bridge only: no numerical content changes. -/
@@ -253,6 +254,7 @@ section InferenceBridge
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV capConf MAX_CONF)
 
 variable {Carrier : Type u} {Obj : Type v} {Attr : Type w} [Fintype Obj]
 

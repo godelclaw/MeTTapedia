@@ -140,6 +140,59 @@ end
 
 end Program
 
+namespace Program
+
+mutual
+  /-- An observation of each actual leaf emission commutes with the complete
+  ordered fused evaluation, without identifying equal observations. -/
+  theorem evalAll_map [DecidableEq Head] {Observed : Type}
+      (observe : Result → Observed) (runPlan : CompiledRule Rule Plan → List Result)
+      (program : Program Head Rule Plan) (subjects : List (OPM.Subject Head)) :
+      (program.evalAll runPlan subjects).map observe =
+        program.evalAll (fun leaf => (runPlan leaf).map observe) subjects := by
+    cases program with
+    | failure => rfl
+    | drop next =>
+        cases subjects with
+        | nil => rfl
+        | cons subject subjects => exact evalAll_map observe runPlan next subjects
+    | tryRule compiled patterns onFailure =>
+        simp only [evalAll]
+        split
+        · rw [List.map_append, evalAll_map observe runPlan onFailure subjects]
+        · exact evalAll_map observe runPlan onFailure subjects
+    | switch branches default =>
+        cases subjects with
+        | nil => exact evalAll_map observe runPlan default []
+        | cons subject subjects =>
+            cases subject with
+            | node head children =>
+                simp only [evalAll, List.map_append]
+                rw [evalBranchAll_map observe runPlan _ _ branches,
+                  evalAll_map observe runPlan default _]
+  termination_by sizeOf program
+
+  theorem evalBranchAll_map [DecidableEq Head] {Observed : Type}
+      (observe : Result → Observed) (runPlan : CompiledRule Rule Plan → List Result)
+      (query : OPM.ConstructorKey Head) (subjects : List (OPM.Subject Head))
+      (branches : Branches Head Rule Plan) :
+      (evalBranchAll runPlan query subjects branches).map observe =
+        evalBranchAll (fun leaf => (runPlan leaf).map observe) query subjects branches := by
+    cases branches with
+    | nil => rfl
+    | cons key program rest =>
+        simp only [evalBranchAll]
+        split
+        · exact evalAll_map observe runPlan program subjects
+        · exact evalBranchAll_map observe runPlan query subjects rest
+  termination_by sizeOf branches
+end
+
+#print axioms evalAll_map
+#print axioms evalBranchAll_map
+
+end Program
+
 mutual
   /-- Fuse a wildcard-column decision program with an independently supplied
   partial rule compiler.  A common-column projection remains explicit in the

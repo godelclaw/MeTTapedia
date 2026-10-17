@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
@@ -57,7 +57,7 @@ variable {Atom State : Type*} [EvidenceType State] [BinaryWorldModel State (Atom
 
 /-! ### Deduction
 
-The deduction rewrite template is already defined in `PLNWorldModelCalculus.lean`.
+The deduction rewrite template is already defined in `WorldModelCalculus.lean`.
 We provide a canonical instantiation with a generic `combine` function and
 explicit screening-off side condition. -/
 

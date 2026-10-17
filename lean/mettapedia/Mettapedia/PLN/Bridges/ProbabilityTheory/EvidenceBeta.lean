@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 import Mettapedia.ProbabilityTheory.Exchangeability.Core
 import Mettapedia.PLN.Evidence.EvidenceCounts
@@ -37,7 +37,7 @@ PLN BinaryEvidence (k, m) captures exactly the sufficient statistic, and:
 
 - de Finetti's representation theorem (Exchangeability.lean)
 - Beta-Bernoulli conjugacy (BetaBernoulli.lean)
-- PLN BinaryEvidence quantale (EvidenceQuantale.lean)
+- PLN BinaryEvidence quantale (BinaryEvidence.lean)
 
 -/
 
@@ -973,14 +973,7 @@ inductive CredibleIntervalBackend where
   | exactInvCDF
   deriving DecidableEq, Repr
 
-/-- Clip a real to the probability simplex `[0,1]`. -/
-@[reducible] noncomputable def clamp01 (x : ℝ) : ℝ := min 1 (max 0 x)
-
-theorem clamp01_nonneg (x : ℝ) : 0 ≤ clamp01 x := by
-  exact le_min (by norm_num) (le_max_left 0 x)
-
-theorem clamp01_le_one (x : ℝ) : clamp01 x ≤ 1 := by
-  exact min_le_left 1 (max 0 x)
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction (clamp01 clamp01_nonneg clamp01_le_one)
 
 /-- Standard Normal quantiles for common confidence levels.
     For 95% interval: z = 1.96 (actually 1.959964...)

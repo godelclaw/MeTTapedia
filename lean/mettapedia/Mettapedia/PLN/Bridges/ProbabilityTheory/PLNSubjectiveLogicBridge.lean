@@ -18,6 +18,7 @@ namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNSubjectiveLogicBridge
 
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Bridges.Languages.PLNMeTTaCore
+open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
 
 /-- Minimal binomial-opinion record: belief, disbelief, uncertainty, base rate. -/
 structure BinomialOpinion where
@@ -177,7 +178,7 @@ keeps that boundary theorem-visible.
 
 /-- Prior-loaded projected readout for `(6,0)` evidence:
 `(6 + 1) / (6 + 0 + 2) = 7/8`, confidence `6/(6+1)`. -/
-noncomputable def priorLoadedProjectionSTV_6_0 : STV where
+noncomputable def priorLoadedProjectionSTV_6_0 : DeductionSTV where
   strength := (7 / 8 : ℝ)
   confidence := (6 / 7 : ℝ)
   strength_nonneg := by norm_num
@@ -187,7 +188,7 @@ noncomputable def priorLoadedProjectionSTV_6_0 : STV where
 
 /-- Prior-loaded projected readout for `(0,2)` evidence:
 `(0 + 1) / (0 + 2 + 2) = 1/4`, confidence `2/(2+1)`. -/
-noncomputable def priorLoadedProjectionSTV_0_2 : STV where
+noncomputable def priorLoadedProjectionSTV_0_2 : DeductionSTV where
   strength := (1 / 4 : ℝ)
   confidence := (2 / 3 : ℝ)
   strength_nonneg := by norm_num
@@ -201,7 +202,7 @@ theorem semanticPLNRevision_priorLoadedProjection_strength_eq :
     (semanticPLNRevision priorLoadedProjectionSTV_6_0
         priorLoadedProjectionSTV_0_2).strength = (23 / 32 : ℝ) := by
   norm_num [semanticPLNRevision, Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceCalculus.revisionTV,
-    Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceCalculus.c2w, Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.clamp01,
+    Mettapedia.PLN.TruthValues.PLNWeightTV.c2w, Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.clamp01,
     priorLoadedProjectionSTV_6_0, priorLoadedProjectionSTV_0_2]
 
 /-- The corresponding shared-prior update over combined raw evidence is `7/10`. -/

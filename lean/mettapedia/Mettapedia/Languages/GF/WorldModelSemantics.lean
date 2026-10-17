@@ -4,8 +4,8 @@ import Mettapedia.Languages.GF.OSLFBridge_handcrafted
 import Mettapedia.Languages.GF.Typing
 import Mettapedia.Languages.GF.LinguisticInvariance
 import Mettapedia.Languages.GF.EquationCanonicalSection
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.MeTTaIL.Syntax
 import Mettapedia.OSLF.Framework.TypeSynthesis

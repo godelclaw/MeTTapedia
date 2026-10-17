@@ -166,7 +166,9 @@ theorem mettaAtomsToTerms_eq_map (atoms : List Metta.Atom) :
 /-- The enlarged bridge signature is onto neutral MeTTa atoms. -/
 theorem termToMettaAtom_mettaAtomToTerm (atom : Metta.Atom) :
     termToMettaAtom (mettaAtomToTerm atom) = atom := by
-  induction atom with
+  induction atom using Metta.Atom.rec
+    (motive_2 := fun atoms => ∀ candidate ∈ atoms,
+      termToMettaAtom (mettaAtomToTerm candidate) = candidate) with
   | sym symbol => rfl
   | var name => rfl
   | gnd grounded => rfl
@@ -181,6 +183,12 @@ theorem termToMettaAtom_mettaAtomToTerm (atom : Metta.Atom) :
           (fun candidate =>
             termToMettaAtom (mettaAtomToTerm candidate)) atoms = atoms
       exact (List.map_congr_left ih).trans (List.map_id atoms)
+  | nil => simp_all
+  | cons head tail ihHead ihTail =>
+      rename_i candidate member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ihHead
+      · exact ihTail candidate member
 
 /-- Decoding is injective.  In the expression case, equality of decoded lists
 first fixes the arity and then exposes every recursively decoded child. -/

@@ -4,7 +4,7 @@ import Mettapedia.PLN.TruthValues.PLNInformationGeometry
 import Mettapedia.PLN.TruthValues.PLNAmplitudePhase
 import Mettapedia.PLN.TruthValues.PLNDidacticWitnesses
 import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
-import Mettapedia.PLN.WorldModel.PLNWorldModelITV
+import Mettapedia.PLN.WorldModel.WorldModelITV
 import Mettapedia.KR.ConceptOntology.ConstructionBasePredictiveITV
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyMultinomialIDMExamples
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.ProjectiveCredal

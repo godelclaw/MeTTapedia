@@ -26,7 +26,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionSemantics
 
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
 open Mettapedia.OSLF.MeTTaIL.Syntax
 

@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.NativeTypes.Generation.BindingStability
-import Mettapedia.OSLF.NativeTypes.Generation.BindingControls
+import Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls
 
 open Mettapedia.OSLF.Framework
 
@@ -48,27 +48,27 @@ theorem actual_source_compilation : compileLaw? language law (.arrow term term) 
   exact (Option.some_get actual_scoped_law_compiles).symm
 
 theorem actual_original_law_selected
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    law ∈ selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational := by
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    law ∈ selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational := by
   change law ∈ [law]
   exact List.Mem.head _
 
 theorem captured_source_instance
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    SourceInstance (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.provider
-      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-        (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational) first second := by
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    SourceInstance (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.provider
+      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+        (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational) first second := by
   exact .source law (actual_original_law_selected vertex) (.arrow term term) (by decide +kernel)
     compiled actual_source_compilation [] (.nil 0) rfl capturedBody ambient ordinary
 
 theorem captured_consequence
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.provider
-      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-        (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational) first second :=
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.provider
+      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+        (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational) first second :=
   .source (captured_source_instance vertex)
 
 def binderFirst : Term sourceSignature [term] (.arrow term (.arrow term term)) :=
@@ -84,19 +84,19 @@ def substitutionSecond : Term sourceSignature [term] (.arrow term term) :=
   .op (.subst term (.arrow term term)) (.cons second (.cons (.var .zero) .nil))
 
 theorem actual_binder_context_preserved
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.provider
-      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-        (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational) binderFirst binderSecond :=
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.provider
+      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+        (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational) binderFirst binderSecond :=
   .constructor (.lambda term (.arrow term term)) (.cons (captured_consequence vertex) .nil)
 
 theorem intrinsic_substitution_context_preserved
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.provider
-      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-        (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational)
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.provider
+      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+        (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational)
       substitutionFirst substitutionSecond :=
   .constructor (.subst term (.arrow term term))
     (.cons (captured_consequence vertex) (.cons (.reflexive (.var .zero)) .nil))
@@ -108,11 +108,11 @@ def contraction : Sub sourceSignature [term, term] [term] := fun _ position =>
   | .succ (.succ impossible) => nomatch impossible
 
 theorem simultaneous_substitution_preserved
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
-    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-      (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.provider
-      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language
-        (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).languageFragment.operational)
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
+    Consequence (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+      (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.provider
+      (selectedEquationLaws (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language
+        (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).languageFragment.operational)
       (bind contraction first) (bind contraction second) :=
   .substituted contraction (captured_consequence vertex)
 
@@ -135,24 +135,24 @@ theorem captured_variable_is_not_replaced_by_dependency :
   rfl
 
 theorem actual_generated_substitution_readout
-    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingControls.chosen.language) :
+    (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.chosen.language) :
     Valuation.read
-        (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+        (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
         (Valuation.interpret
-          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
           (bind contraction first)) oneVariable =
       Valuation.read
-        (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+        (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
         (Valuation.interpret
-          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
           second)
         (fun type position => Valuation.read
-          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+          (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
           (Valuation.interpret
-            (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.generated vertex).snapshot.language vertex.2)
+            (literalConstructors (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.generated vertex).snapshot.language vertex.2)
             (contraction type position)) oneVariable) :=
   generated_binding_substitution_readout _ _
-    (Mettapedia.OSLF.NativeTypes.Generation.BindingControls.whole_original_equation_stream_checks vertex)
+    (Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls.whole_original_equation_stream_checks vertex)
     (captured_consequence vertex) contraction oneVariable
 
 end Mettapedia.OSLF.NativeTypes.Generation.BindingStabilityControls

@@ -22,7 +22,7 @@ namespace CostStaticAtomEnvironment
 common-restoration apex at every depth.  The proof identifies the complete
 semantic keys first; it does not infer restoration equality from the raw
 variable spelling alone. -/
-noncomputable def sourceVariable_commonRestorationApex
+theorem sourceVariable_commonRestorationApex
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -122,7 +122,7 @@ source variables with the same name share a
 common-restoration apex at every depth.  The proof identifies the complete
 semantic keys first; it does not infer restoration equality from the raw
 variable spelling alone. -/
-noncomputable def sourceVariable_twoDepthApex
+theorem sourceVariable_twoDepthApex
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}

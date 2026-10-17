@@ -104,11 +104,14 @@ theorem decodeHyps_apply_derives (signature : TermSignature) (definitions : Defi
               | none => simp [Statements.decodeHyps, first] at decoded
               | some value =>
                   rcases value with ⟨source, middleSource, remaining⟩
+                  have noDummies : middleSource.dummies = [] := by
+                    by_contra nonempty
+                    simp [Statements.decodeHyps, first, nonempty] at decoded
                   cases others : Statements.decodeHyps arity arguments fuel middleSource remaining with
-                  | none => simp [Statements.decodeHyps, first, others] at decoded
+                  | none => simp [Statements.decodeHyps, first, noDummies, others] at decoded
                   | some earlier =>
                       have sameSources : earlier ++ [source] = sources := by
-                        simpa [Statements.decodeHyps, first, others] using decoded
+                        simpa [Statements.decodeHyps, first, noDummies, others] using decoded
                       subst sources
                       cases firstStep : unifyStep store .apply before .hyp with
                       | none => simp [unifyRun, firstStep] at accepted

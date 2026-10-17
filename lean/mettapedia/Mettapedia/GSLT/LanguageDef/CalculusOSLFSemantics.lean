@@ -108,7 +108,7 @@ universe uMeaning
 proposition-valued model by retaining inhabitation of each semantic fibre.
 This adapter lets OSLF reuse established intrinsic semantics without defining
 a second rule interpretation. -/
-def ofProofRelevant {Meaning : Pattern → Type uMeaning}
+theorem ofProofRelevant {Meaning : Pattern → Type uMeaning}
     (semantics :
       Mettapedia.GSLT.LanguageDef.InferenceProofRelevantSemanticExtension.CalculusLanguageSemantics
         definition Meaning) :

@@ -11,9 +11,8 @@ namespace Mettapedia.PLN.Comparisons.PeTTa.PeTTaLibPLNFormalAnalysis
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions
 
-abbrev TV := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.TV
-abbrev MAX_CONF := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.MAX_CONF
-abbrev capConf := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.capConf
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV)
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (MAX_CONF capConf)
 
 /-!
 # Formal Analysis of PeTTa `lib_pln.metta`
@@ -111,31 +110,31 @@ theorem capConf_eq_self_of_mem_core (c : ℝ) (h0 : 0 ≤ c) (h1 : c ≤ MAX_CON
 
 namespace CanonicalUpstream
 
-/-- Upstream canonical deduction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical deduction confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthDeductionConf (pq qr : TV) : ℝ :=
   pq.s * qr.s * pq.c * qr.c
 
-/-- Upstream canonical induction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical induction confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthInductionConf (ba bc : TV) : ℝ :=
   Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.w2c (bc.s * bc.c * ba.c)
 
-/-- Upstream canonical abduction confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical abduction confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthAbductionConf (ab cb : TV) : ℝ :=
   Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.w2c (ab.s * ab.c * cb.c)
 
-/-- Upstream canonical modus-ponens confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical modus-ponens confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthModusPonensConf (p pq : TV) : ℝ :=
   p.s * pq.s * p.c * pq.c
 
-/-- Upstream canonical disjunction helper from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical disjunction helper from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthOr (a b : ℝ) : ℝ :=
   1 - (1 - a) * (1 - b)
 
-/-- Upstream canonical symmetric-modus-ponens confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical symmetric-modus-ponens confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthSymmetricModusPonensConf (a ab : TV) : ℝ :=
   a.c * ab.c * truthOr a.s ab.s
 
-/-- Upstream canonical transitive-similarity confidence from `/home/zar/claude/hyperon/PLN/lib_pln.metta`. -/
+/-- Upstream canonical transitive-similarity confidence from the upstream PLN library `lib_pln.metta`. -/
 noncomputable def truthTransitiveSimilarityConf (ab bc : TV) : ℝ :=
   ab.c * bc.c * truthOr ab.s bc.s
 
@@ -637,7 +636,7 @@ theorem historical_induction_raw_min_conf_strictly_below_current_on_positive_inp
   rw [induction_conf_eq_min_of_bounded_inputs a b c ba bc
     (le_of_lt hba0) hba1 (le_of_lt hbc0) hbc1]
   unfold Mettapedia.PLN.TruthValues.PLNBugAnalysis.inductionConfBuggy
-    Mettapedia.PLN.TruthValues.PLNBugAnalysis.w2c'
+    Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   let m : ℝ := min ba.c bc.c
   change m / (m + 1) < m
   have hm0 : 0 < m := by
@@ -686,7 +685,7 @@ theorem historical_abduction_raw_min_conf_strictly_below_current_on_positive_inp
   rw [abduction_conf_eq_min_of_bounded_inputs a b c ab cb
     (le_of_lt hab0) hab1 (le_of_lt hcb0) hcb1]
   unfold Mettapedia.PLN.TruthValues.PLNBugAnalysis.inductionConfBuggy
-    Mettapedia.PLN.TruthValues.PLNBugAnalysis.w2c'
+    Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   let m : ℝ := min ab.c cb.c
   change m / (m + 1) < m
   have hm0 : 0 < m := by
@@ -750,7 +749,7 @@ example :
 example :
     Mettapedia.PLN.TruthValues.PLNBugAnalysis.inductionConfBuggy 0.9 0.9 = 0.9 / 1.9 := by
   unfold Mettapedia.PLN.TruthValues.PLNBugAnalysis.inductionConfBuggy
-    Mettapedia.PLN.TruthValues.PLNBugAnalysis.w2c'
+    Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   simp [min_self]
   norm_num
 

@@ -1,6 +1,6 @@
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
 import Mettapedia.NARS.Logic.Inheritance
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # PLN evidence readout for NARS dual inheritance

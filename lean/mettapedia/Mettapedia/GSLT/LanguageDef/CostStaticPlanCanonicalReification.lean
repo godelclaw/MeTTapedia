@@ -61,7 +61,7 @@ namespace CostStaticRegionNode
 
 /-- Transport a raw endpoint alignment to the two authored source skeletons,
 retaining exact reached-plan provenance at every reflective stop. -/
-noncomputable def sourceCanonicalStopAligned_of_rawAlignment
+theorem sourceCanonicalStopAligned_of_rawAlignment
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -99,7 +99,7 @@ alignment of their atom-reified authored frames.
 The only transports are equality of the target binder fibre and equality of
 the authored result sort.  No equality of semantic environments, concrete
 collection choices, reached plans, or boundary occurrences is required. -/
-noncomputable def reifiedSourceCanonicalStopAligned_of_rawAlignment
+theorem reifiedSourceCanonicalStopAligned_of_rawAlignment
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -141,7 +141,7 @@ noncomputable def reifiedSourceCanonicalStopAligned_of_rawAlignment
   simpa only [reifiedSourceFrame_pattern] using reified
 
 /-- Same-declaration specialization built from ordinary canonical equality. -/
-noncomputable def reifiedSourceCanonicalStopAligned_of_canonicalize_eq
+theorem reifiedSourceCanonicalStopAligned_of_canonicalize_eq
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -202,7 +202,7 @@ This is the reusable composition boundary for a language-specific provider:
 the generic layer performs plan descent, semantic-atom reification, and keyed
 canonical congruence.  The caller supplies only the semantic meaning of an
 exact source variable and of one provenance-bearing stopped pair. -/
-noncomputable def reifiedSourceCanonicalAlignment_of_rawAlignment
+theorem reifiedSourceCanonicalAlignment_of_rawAlignment
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -258,7 +258,7 @@ noncomputable def reifiedSourceCanonicalAlignment_of_rawAlignment
       planAligned availableDepth scopeDepth)
 
 /-- Same-declaration specialization of the complete keyed composition. -/
-noncomputable def reifiedSourceCanonicalAlignment_of_canonicalize_eq
+theorem reifiedSourceCanonicalAlignment_of_canonicalize_eq
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)

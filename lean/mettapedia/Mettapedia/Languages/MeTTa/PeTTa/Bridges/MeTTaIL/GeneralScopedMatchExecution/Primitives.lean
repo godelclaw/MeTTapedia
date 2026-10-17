@@ -9,6 +9,8 @@ The encodings retain the original requests, task agendas, assignments and
 physical bag-choice histories. The primitive operations use the common scoped
 source quotation and preserve the original capture and residual semantics.
 -/
+set_option Elab.async false
+
 section MatcherWire
 /-! Data encodings of the original scoped matcher. The original assignments,
 tasks, residual choice histories and emitted answer occurrences remain present. -/

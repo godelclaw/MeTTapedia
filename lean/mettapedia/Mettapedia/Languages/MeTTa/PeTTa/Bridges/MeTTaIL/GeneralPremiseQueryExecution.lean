@@ -3,7 +3,8 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ScopedRuleInstantiationE
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseSchedulerExecution
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseQueryCorrectness
 
-/-! Native source realization of every original general-premise query frame. -/
+/-! Native source realization of the finite-provider general-premise query
+frames. Registered native services have their separate execution contract. -/
 
 set_option autoImplicit false
 
@@ -623,7 +624,8 @@ private def startBody : Atom :=
 private theorem start_shape : taskBody 0 = startBody := by decide +kernel
 
 theorem query_expand_start_returns (state : State) (environment : Environment) (request : Query.Request)
-    (free : List (String × TypeExpr)) :
+    (free : List (String × TypeExpr))
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations) :
     PureReturns runtime [] state
       (a "gslt:premise:query-expand-in" [environmentValue environment free, queryValue request,
         taskValue (Query.Task.start (environment := environment) (request := request))]) state
@@ -675,12 +677,13 @@ theorem query_expand_start_returns (state : State) (environment : Environment) (
               { tasks := [.rows ⟨signature, found, 0⟩] } := by
             simp only [Query.expand]
             split
-            · rename_i missing
-              simp [found] at missing
-            · rename_i other selected
-              have same : other = signature := Option.some.inj (selected.symm.trans found)
-              subst other
-              rfl
+            · rename_i impossible
+              rw [found] at impossible
+              cases impossible
+            · rename_i actual selected
+              have same : actual = signature := Option.some.inj (selected.symm.trans found)
+              subst actual
+              simp only [dif_neg unregistered]
           rw [original]
           let selected := ("signature", encoded (signatureTerm signature)) :: counted
           unfold startSignatureBody
@@ -1513,7 +1516,8 @@ private theorem start_shape : taskBody 0 = startBody := by decide +kernel
 
 theorem query_expand_start_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program) (state : State) (environment : Environment) (request : Query.Request)
-    (free : List (String × TypeExpr)) :
+    (free : List (String × TypeExpr))
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations) :
     PureReturns program [] state
       (a "gslt:premise:query-expand-in" [environmentValue environment free, queryValue request,
         taskValue (Query.Task.start (environment := environment) (request := request))]) state
@@ -1562,12 +1566,13 @@ theorem query_expand_start_returns (program : Program)
               { tasks := [.rows ⟨signature, found, 0⟩] } := by
             simp only [Query.expand]
             split
-            · rename_i missing
-              simp [found] at missing
-            · rename_i other selected
-              have same : other = signature := Option.some.inj (selected.symm.trans found)
-              subst other
-              rfl
+            · rename_i impossible
+              rw [found] at impossible
+              cases impossible
+            · rename_i actual selected
+              have same : actual = signature := Option.some.inj (selected.symm.trans found)
+              subst actual
+              simp only [dif_neg unregistered]
           rw [original]
           let selected := ("signature", encoded (signatureTerm signature)) :: counted
           unfold startSignatureBody
@@ -2646,7 +2651,9 @@ open Eval
 theorem query_expand_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program)
     (state : State) (environment : Environment) (request : Query.Request)
-    (task : Query.Task environment request) (footprint : List String)
+    (task : Query.Task environment request)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations)
+    (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (captures : ∀ frame : Query.ArgumentsFrame environment request, task = .arguments frame →
       ∀ name ∈ ConditionalEquationExecution.assignmentFreeNames frame.assignment, name ∈ footprint) :
@@ -2656,7 +2663,7 @@ theorem query_expand_returns (program : Program)
   cases task with
   | start =>
       exact query_expand_start_returns program agreement lower state environment request
-        (environment.free.entriesOn footprint)
+        (environment.free.entriesOn footprint) unregistered
   | rows frame => exact query_expand_rows_returns program agreement lower state environment request frame footprint provider
   | arguments frame =>
       exact query_expand_arguments_returns program agreement lower state environment request frame footprint
@@ -2664,11 +2671,16 @@ theorem query_expand_returns (program : Program)
   | matcher frame =>
       exact query_expand_matcher_returns program agreement lower state environment request frame
         (environment.free.entriesOn footprint)
+  | dynamicInputs frame => exact False.elim (unregistered frame.registered)
+  | dynamicRows frame => exact False.elim (unregistered frame.registered)
+
 
 theorem query_expand_captured_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program)
     (caller : Subst) (state : State) (environment : Environment) (request : Query.Request)
-    (task : Query.Task environment request) (footprint : List String)
+    (task : Query.Task environment request)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations)
+    (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (captures : ∀ frame : Query.ArgumentsFrame environment request, task = .arguments frame →
       ∀ name ∈ ConditionalEquationExecution.assignmentFreeNames frame.assignment, name ∈ footprint)
@@ -2678,7 +2690,7 @@ theorem query_expand_captured_returns (program : Program)
     PureReturns program caller state (a "gslt:premise:query-expand-in" [one, two, three]) state
       (expansionValue (Query.expand environment request task)) :=
   helper_capture program agreement .expand caller state _ _ _ rfl captured
-    (query_expand_returns program agreement lower state environment request task footprint provider captures)
+    (query_expand_returns program agreement lower state environment request task unregistered footprint provider captures)
 
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.GeneralExecution.QueryExecution.Parameterized
@@ -2703,13 +2715,15 @@ open Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching Mettapedia.OSLF.MeTTaIL.GeneralP
 theorem query_expand_within_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program)
     (state : State) (environment : Environment) (request : Query.Request)
-    (task : Query.Task environment request) (footprint : List String)
+    (task : Query.Task environment request)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations)
+    (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Query.taskFreeWithin footprint task) :
     PureReturns program [] state (a "gslt:premise:query-expand-in"
       [environmentValue environment (environment.free.entriesOn footprint), queryValue request, taskValue task]) state
       (expansionValue (Query.expand environment request task)) := by
-  apply query_expand_returns program agreement lower state environment request task footprint provider
+  apply query_expand_returns program agreement lower state environment request task unregistered footprint provider
   intro frame same
   subst task
   exact Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_free_names_covered _ _ covered.1
@@ -2717,6 +2731,7 @@ theorem query_expand_within_returns (program : Program)
 theorem query_expand_prefix_returns (program : Program)
     (agreement : ProgramAgreementOn ownedHeads runtime program) (lower : LowerOperations program)
     (state : State) (environment : Environment) (request : Query.Request)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (fuel : Nat) (task : Query.Task environment request)
     (member : task ∈ (Query.run environment request fuel (Query.start environment request)).agenda) :
     PureReturns program [] state (a "gslt:premise:query-expand-in"
@@ -2724,9 +2739,11 @@ theorem query_expand_prefix_returns (program : Program)
         (ConditionalEquationExecution.assignmentFreeNames request.initial ++ providerFreeNames environment.provider)),
         queryValue request, taskValue task]) state
       (expansionValue (Query.expand environment request task)) :=
-  query_expand_within_returns program agreement lower state environment request task _
+  query_expand_within_returns program agreement lower state environment request task
+    (by simp only [finiteProvider, List.not_mem_nil, not_false_eq_true]) _
     (fun _ occurs => List.mem_append_right _ occurs)
-    ((Query.run_finite_free_within environment request fuel).1 _ member)
+    ((Query.run_finite_free_within environment request
+      (Query.DynamicOutputsFreeWithin.of_unregistered _ _ finiteProvider) fuel).1 _ member)
 
 
 end Trajectory
@@ -3293,6 +3310,7 @@ theorem expand_query_progress_returns (program : Program)
     (machine : Query.State environment request) (cursor : Nat)
     (tail : Execution.Continuation environment
       (.premise request.context (.relationQuery request.relation request.arguments) request.initial) outer)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations)
     (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Query.stateFreeWithin
@@ -3337,7 +3355,7 @@ theorem expand_query_progress_returns (program : Program)
         · simp [selected, caller, queryMachineCaller, queryContextCaller, queryRequestCaller, queryTaskCaller,
             taskCaller, environmentCaller, callee, Helper.names, QueryExecution.taskValue, applySubst, Subst.lookup]
         · exact QueryExecution.Parameterized.Trajectory.query_expand_within_returns program queryAgreement lower
-            state environment request current footprint provider (covered.1 current (by simp [agenda]))
+            state environment request current unregistered footprint provider (covered.1 current (by simp [agenda]))
       · unfold commitBody
         apply branch_returns program expanded final state _
           (encoded (encodeOption queryStateTerm (some (Query.tick environment request machine)))) commitCases pendingData _
@@ -3369,6 +3387,7 @@ theorem expand_query_within_returns (program : Program)
     (machine : Query.State environment request) (cursor : Nat)
     (tail : Execution.Continuation environment
       (.premise request.context (.relationQuery request.relation request.arguments) request.initial) outer)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations)
     (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Query.stateFreeWithin
@@ -3383,7 +3402,7 @@ theorem expand_query_within_returns (program : Program)
       | nil => exact expand_query_empty_returns program agreement lower state environment outer request machine cursor tail _ found agenda
       | cons current rest =>
           exact expand_query_progress_returns program agreement queryAgreement schedulerAgreement lower
-            state environment outer request machine cursor tail footprint provider covered found current rest agenda
+            state environment outer request machine cursor tail unregistered footprint provider covered found current rest agenda
 
 
 end QueryFrame

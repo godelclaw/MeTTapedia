@@ -1,4 +1,6 @@
 import Mettapedia.OSLF.NativeTypes.Generation.NativeDeclarations
+import Mettapedia.GSLT.LanguageDef.BindingSignature
+import Mettapedia.OSLF.Syntax.SignatureMorphism
 
 /-!
 # Admission of authored parameters to contextual binding semantics
@@ -206,5 +208,176 @@ theorem check_exact (language : LanguageDef) : check language = true ↔ Admitte
     obtain ⟨scope, result, supported⟩ := admitted declaration member parameter parameterMember
     rw [(parameterMeaning?_exact _ _ _).mpr supported]
     rfl
+
+private theorem declared_base_formed {language : LanguageDef} {name : String}
+    (declared : name ∈ language.typeNames) :
+    NativeSignature.AdmittedType language (.base name) := by
+  obtain ⟨index, bound, same⟩ := List.mem_iff_getElem.mp declared
+  have bound' : index < language.types.length := by
+    simpa only [LanguageDef.typeNames, List.length_map] using bound
+  have named : language.types[index].name = name := by
+    simpa only [LanguageDef.typeNames, List.getElem_map] using same
+  exact named ▸ NativeSignature.AdmittedType.sort ⟨index, bound'⟩
+
+private theorem binderSpine_formed {language : LanguageDef} {type : TypeExpr}
+    {domains : List String} {result : String} (spine : BinderSpine type domains result)
+    (declared : ∀ name ∈ type.baseNames, name ∈ language.typeNames) :
+    NativeSignature.AdmittedType language type := by
+  induction spine with
+  | result sort => exact declared_base_formed (declared sort (List.mem_singleton_self _))
+  | binder domain spine inductionHypothesis =>
+      apply NativeSignature.AdmittedType.function
+      · exact declared_base_formed (declared domain (List.mem_append_left _ (List.mem_singleton_self _)))
+      · exact inductionHypothesis (fun name member => declared name (List.mem_append_right _ member))
+
+/-- Validated declared sorts and the independent binding-parameter meaning
+supply the original finite native header formation for every constructor. -/
+theorem admittedHeaders_of_validate {language : LanguageDef} (valid : language.validate = [])
+    (admitted : Admitted language) :
+    ∀ index, NativeSignature.AdmittedHeader language index := by
+  intro index
+  constructor
+  · intro parameter member
+    obtain ⟨scope, result, meaning⟩ := admitted language.terms[index.val]
+      (List.getElem_mem index.isLt) parameter member
+    have declared : ∀ name ∈ parameter.typeExpr.baseNames, name ∈ language.typeNames := by
+      intro name nameMember
+      exact LanguageDef.termParam_baseName_mem_of_validate_eq_nil language valid
+        language.terms[index.val] (List.getElem_mem index.isLt) parameter member name nameMember
+    cases meaning with
+    | data name sort =>
+        exact ⟨.base result, rfl, declared_base_formed (declared result (List.mem_singleton_self _))⟩
+    | shorthand binder bodyName sort =>
+        have formed : NativeSignature.AdmittedType language (.base result) :=
+          declared_base_formed (declared result (List.mem_singleton_self _))
+        exact ⟨.arrow (.base result) (.base result), rfl, .function formed formed⟩
+    | binding binder bodyName domain spine =>
+        exact ⟨_, rfl, binderSpine_formed (BinderSpine.binder domain spine) declared⟩
+  · have member := LanguageDef.termCategory_mem_of_validate_eq_nil language valid
+      language.terms[index.val] (List.getElem_mem index.isLt)
+    obtain ⟨position, bound, same⟩ := List.mem_iff_getElem.mp member
+    have bound' : position < language.types.length := by
+      simpa only [LanguageDef.typeNames, List.length_map] using bound
+    exact ⟨⟨position, bound'⟩, by simpa only [LanguageDef.typeNames, List.getElem_map] using same⟩
+
+
+end Mettapedia.OSLF.NativeTypes.Generation.BindingSemanticAdmission
+
+
+namespace Mettapedia.OSLF.NativeTypes.Generation.BindingSemanticAdmission
+open Mettapedia.OSLF.MeTTaIL.Syntax
+
+/-- Admission uses the independently authored finite sort inventory and all
+four original type constructors. It does not inspect a native decoder result. -/
+inductive DeclaredType (language : LanguageDef) : TypeExpr → Prop where
+  | base (position : Fin language.types.length) :
+      DeclaredType language (.base language.types[position.val].name)
+  | arrow {domain codomain : TypeExpr} (left : DeclaredType language domain)
+      (right : DeclaredType language codomain) : DeclaredType language (.arrow domain codomain)
+  | multiBinder {domain : TypeExpr} (formed : DeclaredType language domain) :
+      DeclaredType language (.multiBinder domain)
+  | collection (kind : CollType) {element : TypeExpr} (formed : DeclaredType language element) :
+      DeclaredType language (.collection kind element)
+
+
+/-- The source sorts remain the original expressions with independent
+finite-declaration formation evidence. There is no second type-expression AST. -/
+abbrev DeclaredSort (language : LanguageDef) := {source : TypeExpr // DeclaredType language source}
+
+abbrev sourceSignature (language : LanguageDef) : Mettapedia.OSLF.Binding.Signature :=
+  (Mettapedia.GSLT.LanguageDef.BindingSyntax.signatureOf language).reindexSorts
+    (fun source : DeclaredSort language => source.val)
+
+
+namespace DeclaredSort
+
+variable {language : LanguageDef}
+
+def arrow (domain codomain : DeclaredSort language) : DeclaredSort language :=
+  ⟨.arrow domain.val codomain.val, .arrow domain.property codomain.property⟩
+
+def multiBinder (domain : DeclaredSort language) : DeclaredSort language :=
+  ⟨.multiBinder domain.val, .multiBinder domain.property⟩
+
+def collection (kind : CollType) (element : DeclaredSort language) : DeclaredSort language :=
+  ⟨.collection kind element.val, .collection kind element.property⟩
+
+end DeclaredSort
+
+
+/-- Formation of the original type expression is exactly finite declared
+base-name support, including beneath arrows, sequences and collections. -/
+theorem declaredType_iff_baseNames {language : LanguageDef} (source : TypeExpr) :
+    DeclaredType language source ↔
+      ∀ name ∈ source.baseNames, name ∈ language.typeNames := by
+  constructor
+  · intro formed
+    induction formed with
+    | base position =>
+        intro name member
+        have same : name = language.types[position.val].name := by
+          simpa only [TypeExpr.baseNames, List.mem_singleton] using member
+        subst name
+        exact List.mem_map.mpr ⟨language.types[position.val], List.getElem_mem position.isLt, rfl⟩
+    | arrow domain codomain leftIH rightIH =>
+        intro name member
+        rcases List.mem_append.mp member with left | right
+        · exact leftIH name left
+        · exact rightIH name right
+    | multiBinder domain ih => exact ih
+    | collection kind element ih => exact ih
+  · intro supported
+    induction source with
+    | base name =>
+        have present := supported name (List.mem_singleton_self name)
+        obtain ⟨row, member, named⟩ := List.mem_map.mp present
+        obtain ⟨index, selected⟩ := List.mem_iff_get.mp member
+        have formed := DeclaredType.base (language := language) index
+        change DeclaredType language (.base (language.types.get index).name) at formed
+        rw [selected] at formed
+        simpa only [named] using formed
+    | arrow domain codomain leftIH rightIH =>
+        exact .arrow (leftIH fun name member => supported name (List.mem_append_left _ member))
+          (rightIH fun name member => supported name (List.mem_append_right _ member))
+    | multiBinder domain ih => exact .multiBinder (ih supported)
+    | collection kind element ih => exact .collection kind (ih supported)
+
+
+/-- Check only the original finite declaration support of every base name. -/
+def declaredTypeCheck (language : LanguageDef) (source : TypeExpr) : Bool :=
+  source.baseNames.all (fun name => decide (name ∈ language.typeNames))
+
+theorem declaredTypeCheck_exact (language : LanguageDef) (source : TypeExpr) :
+    declaredTypeCheck language source = true ↔ DeclaredType language source := by
+  rw [declaredType_iff_baseNames]
+  simp only [declaredTypeCheck, List.all_eq_true, decide_eq_true_eq]
+
+/-- Source admission retains the literal TypeExpr and never computes a
+representation in another calculus. -/
+def sort? (language : LanguageDef) (source : TypeExpr) : Option (DeclaredSort language) :=
+  if accepted : declaredTypeCheck language source = true then
+    some ⟨source, (declaredTypeCheck_exact language source).mp accepted⟩
+  else none
+
+theorem sort?_readback {language : LanguageDef} (source : DeclaredSort language) :
+    sort? language source.val = some source := by
+  unfold sort?
+  rw [dif_pos ((declaredTypeCheck_exact language source.val).mpr source.property)]
+
+theorem sort?_source {language : LanguageDef} {source : TypeExpr} {sorted : DeclaredSort language}
+    (accepted : sort? language source = some sorted) : sorted.val = source := by
+  unfold sort? at accepted
+  split at accepted
+  · cases accepted
+    rfl
+  · cases accepted
+
+theorem sort?_exact (language : LanguageDef) (source : TypeExpr) :
+    (∃ sorted, sort? language source = some sorted) ↔ DeclaredType language source := by
+  constructor
+  · rintro ⟨sorted, accepted⟩
+    exact sort?_source accepted ▸ sorted.property
+  · intro formed
+    exact ⟨⟨source, formed⟩, sort?_readback ⟨source, formed⟩⟩
 
 end Mettapedia.OSLF.NativeTypes.Generation.BindingSemanticAdmission

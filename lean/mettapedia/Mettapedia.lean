@@ -1,3 +1,5 @@
+import Mettapedia.Languages.GuardedAtomRule
+import Mettapedia.Languages.MeTTa.PrimeComparisons.StudyBuild
 import Mettapedia.Languages.FiniteChoice
 import Mettapedia.Machines.Cursor.SharedFactorCost
 import Mettapedia.Machines.Cursor.ProducerOccurrenceLog
@@ -60,6 +62,8 @@ import Mettapedia.GraphTheory.Walk
 
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
+import Mettapedia.ProbabilityTheory.MarkovChain
+import Mettapedia.Algorithms.Retrieval
 import Mettapedia.ProbabilityTheory.Moments
 import Mettapedia.ProbabilityTheory.Exchangeability
 import Mettapedia.ProbabilityTheory.Cox
@@ -129,6 +133,8 @@ import Mettapedia.Algebra.TemporalQuantale
 
 -- Category Theory (Hypercube/OSLF framework for quantales)
 import Mettapedia.CategoryTheory.FuzzyFrame
+import Mettapedia.CategoryTheory.NondeterminismProbability
+import Mettapedia.CategoryTheory.SchedulerResolution
 import Mettapedia.CategoryTheory.LambdaTheory
 import Mettapedia.CategoryTheory.PLNInstance
 import Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
@@ -178,9 +184,12 @@ import Mettapedia.Logic.Relation.PathConfluenceExamples
 import Mettapedia.Logic.Relation.DecodedPath
 import Mettapedia.Logic.WorldModel
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
+import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
+import Mettapedia.PLN.Bridges.CognitiveArchitecture
 import Mettapedia.Logic.GunkyMereology
 import Mettapedia.Logic.StoneGunkDuality
 import Mettapedia.Logic.Metaphysics
+import Mettapedia.Logic.Arithmetic
 import Mettapedia.Logic.LawsOfForm
 import Mettapedia.Logic.TheoryModel
 import Mettapedia.Logic.GrothendieckInstitution
@@ -189,6 +198,8 @@ import Mettapedia.Logic.HOL.PropositionalSliceRoutes
 import Mettapedia.GSLT.LanguageDef.TheoryGraphProofTransport
 import Mettapedia.Logic.Diagonal
 import Mettapedia.Logic.Propositions
+import Mettapedia.Logic.NonPerception
+import Mettapedia.Logic.NonPerception.Instances
 import Mettapedia.GSLT.LanguageDef.BootstrapCell
 import Mettapedia.UniversalAI.SolomonoffPrior
 import Mettapedia.UniversalAI.UniversalMachineBoundary
@@ -214,21 +225,20 @@ import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleConnection
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
 import Mettapedia.PLN.Bridges.CategoryTheory.PLNEnrichedCategory
 import Mettapedia.PLN.Bridges.KR
-import Mettapedia.PLN.Evidence.PLNEvidence
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.PLN_KS_Bridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 import Mettapedia.CategoryTheory.GeneralizedOpenMaps.Weighted
 import Mettapedia.OSLF.Bridges.CategoryTheory.OpenMap
 import Mettapedia.OSLF.Bridges.CategoryTheory.OpenMapRegression
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLConsequence
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridgeRegression
 import Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelTwoSortBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+import Mettapedia.PLN.WorldModel.WorldModelInstitution
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence
@@ -322,10 +332,24 @@ import Mettapedia.Languages.Megalodon.HenkinProofSoundness
 import Mettapedia.Languages.Megalodon.HenkinProofSoundnessExamples
 import Mettapedia.Languages.Megalodon.HenkinTransitionInvariantImport
 import Mettapedia.Languages.Megalodon.ConversionElaboration
+import Mettapedia.Languages.Megalodon.NormalizationGrowth
+import Mettapedia.Languages.Megalodon.NormalizationSharing
+import Mettapedia.Logic.ProofCheckingResources
+import Mettapedia.Logic.InferenceKernelAtlas
 import Mettapedia.Logic.HOL.Syntax.PartialConstSubstitution
 import Mettapedia.Logic.HOL.ConstantSubstitutionSemantics
 import Mettapedia.Logic.HOL.TypeSubstitutionDerivation
 import Mettapedia.Logic.HOL.ProofSyntaxTypeSubstitution
+import Mettapedia.Logic.HOL.ContextualTrinity
+import Mettapedia.Logic.HOL.BetaNormalization
+import Mettapedia.Logic.HOL.ConversionTiers
+import Mettapedia.Logic.HOL.CheckableFragment
+import Mettapedia.Logic.HOL.Semantics.StandardTransport
+import Mettapedia.Logic.HOL.TwoMembershipModels
+import Mettapedia.Logic.HOL.StandardSemanticsBubbles
+import Mettapedia.Logic.HOL.InstitutionTrinity
+import Mettapedia.Languages.HOLLight.RetainedElaboration
+import Mettapedia.Languages.HOLLight.IntensionalFloor
 import Mettapedia.Logic.HOL.ImpredicativeProofTranslation
 import Mettapedia.Logic.HOL.TypeSubstitutionSemantics
 import Mettapedia.Logic.HOL.TypeSubstitutionCompositionSemantics
@@ -407,17 +431,11 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveDe
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.DependentComputation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveThunkComputation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ThunkComputation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeConversionNeedConsumer
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.ScopedComputation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.ScopedComputationTyping
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.ScopedComputationSemantics
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.ScopedComputationPreservation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ScopedComputationExamples
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationQualification
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.ScopedComputationEffectTree
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeHOLFragmentDenotation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeUniverseModelBoundary
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeMatchedTransportDenotation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedComputation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedComputationTyping
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.ScopedNeedMachine
@@ -473,17 +491,6 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.Polarize
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedImmediateDemand
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedEquationBoundaries
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.PolarizedNeedNaturalExamples
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireData
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceService
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceMILWorkload
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceService
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceWorkload
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceFunction
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.MILNativeMaterialization
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.MILNativeMaterializationExamples
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedHigherOrderInference
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedProviderWorkload
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedDistinctionObserver
 import Mettapedia.GSLT.LanguageDef.SortedABTRenaming
 import Mettapedia.GSLT.LanguageDef.SortedABTSubstitution
 import Mettapedia.GSLT.LanguageDef.SortedABTSubstitutionExamples
@@ -500,12 +507,8 @@ import Mettapedia.TypeTheory.ContextualKleisliProductBoundary
 import Mettapedia.TypeTheory.ContextualComputationAlgebra
 import Mettapedia.TypeTheory.ContextualComputationAlgebraProducts
 import Mettapedia.TypeTheory.ContextualAlgebraSequencing
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeConversionAlgebraService
 import Mettapedia.TypeTheory.ContextualThunkStrategy
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleFragment
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitivePresheafSemantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeFormedPresheafControls
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplay
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplayTransport
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplayCoherence
@@ -552,7 +555,6 @@ import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLImpredicativeRep
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLDefinitionAdmission
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLImpredicativeProofCompilation
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLDependentProofExecution
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveHOLInvariant
 import Mettapedia.Languages.GF.GFWMConnections
 import Mettapedia.Languages.GF.GFWMConnectionsRegression
 import Mettapedia.Languages.GF.GFWMObligationAdapter
@@ -839,6 +841,7 @@ import Mettapedia.GSLT.Causality.AdaptiveExpressibility
 import Mettapedia.GSLT.Causality.BlameScale
 import Mettapedia.GSLT.Causality.DoCalculus.TruncatedFactorization
 import Mettapedia.Languages.MeTTa.PrimeOptions.Manifest
+import Mettapedia.Languages.MeTTa.PrimeOptions.LayerAtlas
 import Mettapedia.GSLT.Causality.WeightedResponseTypes
 import Mettapedia.GSLT.Causality.ContextOperators
 import Mettapedia.GSLT.Causality.ContextBindings
@@ -848,6 +851,8 @@ import Mettapedia.GSLT.Causality.StructuralModels
 import Mettapedia.GSLT.Causality.AdaptiveContexts
 import Mettapedia.GSLT.Causality.ContextChoicePoints
 import Mettapedia.GSLT.Dynamics.OrderedDemand
+import Mettapedia.GSLT.Dynamics.PriorityFairness
+import Mettapedia.GSLT.Dynamics.BoundedOvertaking
 import Mettapedia.GSLT.Dynamics.ServiceEffectProtocol
 import Mettapedia.GSLT.Core.BranchingTemporal
 import Mettapedia.GSLT.Core.LambdaTheoryCategory
@@ -975,6 +980,7 @@ import Mettapedia.SetTheory.OpenTower.Hosting
 import Mettapedia.SetTheory.OpenTower.ZFCStages
 import Mettapedia.SetTheory.OpenTower.Stability
 import Mettapedia.SetTheory.OpenTower.NoIsolatedCompletion
+import Mettapedia.SetTheory.OpenTower.AntiFounded
 import Mettapedia.Languages.MeTTa.PrimeOptions.OpenTower
 import Mettapedia.SetTheory.Profiles.ProfileMaterialContracts
 import Mettapedia.SetTheory.Profiles.ProfileExecutableMaterialContracts
@@ -985,6 +991,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ExecutableW
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.ExecutableWrittenCheckingControls
 import Mettapedia.TypeTheory.UniverseLevel.AssignmentResolution
 import Mettapedia.GSLT.Poly.SortedSignature
+import Mettapedia.GSLT.Poly.SortedTraversal
 import Mettapedia.GSLT.Poly.SortedSignatureControls
 import Mettapedia.GSLT.Poly.FirstOrderLanguage
 import Mettapedia.GSLT.Poly.FirstOrderLanguageControls

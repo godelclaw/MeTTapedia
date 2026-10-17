@@ -467,7 +467,7 @@ namespace RhoReachedPlanPairCommonApex
 /-- Turn an actual alignment of reached-plan abstracts into the exact root
 cospan apex.  The two callbacks are precisely the recursive plan stops and
 rigid variables exposed by that alignment. -/
-noncomputable def ofAlignedAbstracts
+theorem ofAlignedAbstracts
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -623,7 +623,7 @@ quotation disciplines agree, and so — unlike `RhoReachedPlanPairCommonApex.toT
 (`not_quoteStatusAgrees_rho`).  The two callbacks are again the recursive plan
 stops and the rigid variables exposed by the alignment, each now stated at an
 arbitrary independent pair of depths. -/
-noncomputable def ofAlignedAbstracts
+theorem ofAlignedAbstracts
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -969,7 +969,7 @@ def RhoCanonicalPairRecursiveStep (declarationColor : CostStaticColor) : Prop :=
 /-- Close a proof-relevant recursive step by the same well-founded measure as
 the ordinary paired elaborator.  Parent-cospan parameters occur only inside the
 retained semantic action and do not alter termination. -/
-noncomputable def RhoCanonicalPairRecursiveResult.nonempty_of_step
+theorem RhoCanonicalPairRecursiveResult.nonempty_of_step
     {declarationColor : CostStaticColor}
     (step : RhoCanonicalPairRecursiveStep declarationColor)
     {targetFree : WellSorted.FreeTypeContext}
@@ -1730,7 +1730,7 @@ namespace RhoStaticPlanStopCommonApex
 thickened, and common-reified restoration apex at one requested depth.  This
 bridge is used only after a case-specific proof has earned the stronger
 depth-uniform leaf relation. -/
-noncomputable def ofSourcePatternLeafAligned
+theorem ofSourcePatternLeafAligned
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
     {leftValues : TypedCostRegionBoundaryTable.Values rhoCIGSLT color
@@ -1949,7 +1949,7 @@ def AfterSameColorAlignedLeaf
 actually delegated a same-colour leaf.  This also catches a collapsing stop
 whose producer selected the structural-eligibility tag; the proof-relevant
 alignment, rather than that tag, determines whether recursion is required. -/
-noncomputable def preferSameColorAlignedLeaf
+theorem preferSameColorAlignedLeaf
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2093,7 +2093,7 @@ def AfterSameColorQuotePair
 /-- Consume a hidden or explicit same-colour Quote stop from the rich recursive
 result.  The `stopReason` tag need not have chosen the raw-stop disjunct:
 `CanonicalStopAligned` itself identifies the collapsing leaf. -/
-noncomputable def ofRecursiveSameColorQuotePair
+theorem ofRecursiveSameColorQuotePair
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2373,7 +2373,7 @@ theorem sameColor_parallelRoots_of_residual
 same-colour mixed stop whenever either reached plan is a certified boundary.
 The strict side comes from the boundary occurrence; the other side contributes
 only its retained weak root bound. -/
-noncomputable def ofRecursiveSameColorBoundarySide
+theorem ofRecursiveSameColorBoundarySide
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2491,7 +2491,7 @@ The two singleton boundary certificates then select exact atoms in the root
 environments. Recursive closure is invoked only for their strictly smaller
 contents; the resulting depth-indexed apex is compressed to the uniform leaf
 relation consumed by keyed canonical congruence. -/
-noncomputable def boundaryPair_sourcePatternLeafAligned_of_closeSmaller
+theorem boundaryPair_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2653,7 +2653,7 @@ noncomputable def boundaryPair_sourcePatternLeafAligned_of_closeSmaller
 boundary views have been exposed.  Applications and collections share this
 semantic proof: the views identify the singleton entries, while the retained
 type route supplies admissibility of the reached target fibre. -/
-noncomputable def boundaryViews_sourcePatternLeafAligned_of_closeSmaller
+theorem boundaryViews_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2805,7 +2805,7 @@ At a foreign application the reached payload is itself the sole certified
 boundary content, while the plan abstraction is the boundary atom.  The
 retained application typing forces a base target fibre, so recursive-domain
 admissibility is local and does not require a route witness from the root. -/
-noncomputable def boundaryApplications_sourcePatternLeafAligned_of_closeSmaller
+theorem boundaryApplications_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2996,7 +2996,7 @@ either a structural collection fibre or an authored bare-collection base
 fibre.  The retained type route is therefore the authoritative admissibility
 witness: it transports the admissible root fibre to the exact reached source
 type, and certification identifies that type with the boundary target. -/
-noncomputable def boundaryCollections_sourcePatternLeafAligned_of_closeSmaller
+theorem boundaryCollections_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -3197,7 +3197,7 @@ namespace RhoStaticPlanStopCommonApex
 /-- Extend an apex-aware callback for stops with at least one authored-source
 root to every plan stop.  Certified-boundary pairs retain their already-proved
 uniform leaf relation and are lifted only at the requested apex depth. -/
-noncomputable def of_nonBoundaryRemainder
+theorem of_nonBoundaryRemainder
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3305,7 +3305,7 @@ noncomputable def of_nonBoundaryRemainder
 milestones.  It closes the certified-boundary quadrant, consumes every
 delegated same-colour raw leaf, proves the same-colour Quote terminal, and
 recurses on any remaining same-colour stop with one certified-boundary side. -/
-noncomputable def ofRecursiveSameColorQuotePair
+theorem ofRecursiveSameColorQuotePair
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3366,7 +3366,7 @@ namespace RhoMatchedStaticFramesApex
 /-- Construct the exact matched-frame apex from raw canonical descent.
 Membership-certified source variables are discharged internally; plan stops
 remain as the sole semantic callback. -/
-noncomputable def ofProvenancedRawAlignment
+theorem ofProvenancedRawAlignment
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}

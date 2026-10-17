@@ -1,7 +1,6 @@
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary
-import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitaryCompleteness
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelInfinitaryRegression
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompleteness

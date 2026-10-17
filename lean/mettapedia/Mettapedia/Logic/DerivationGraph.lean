@@ -11,6 +11,8 @@ against the actual cited premises and the claimed conclusion.
 
 The logical soundness theorem uses the existing `RuleWitness` and `Derives`.
 It applies to any finite graph and does not depend on exported theorem names.
+Checked judgments can also be constructed by local inference, without any
+source cursor, backend or retained navigation state.
 -/
 
 set_option autoImplicit false
@@ -18,6 +20,7 @@ set_option autoImplicit false
 namespace Mettapedia.Logic.DerivationGraph
 
 universe u v w
+universe u' v' w'
 
 variable {J : Type u} {W : Type v} {Origin : Type w}
 
@@ -199,21 +202,60 @@ theorem replayFrom_preserves_lookup {rules : List J → J → Prop}
           rw [Array.getElem?_push, if_neg (Nat.ne_of_lt inside)]
           exact found
 
+/-- Replay interprets concatenation as composition of partial cache maps.
+This equality covers rejection as well as successful execution, without
+resetting the cache or relocating the suffix's absolute premise addresses. -/
+theorem replayFrom_append_eq {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) (cache : Array J)
+    (first later : List (Node J interface.W Origin)) :
+    replayFrom interface cache (first ++ later) =
+      (replayFrom interface cache first).bind (fun middle =>
+        replayFrom interface middle later) := by
+  induction first generalizing cache with
+  | nil => rfl
+  | cons node rest ih =>
+      simp only [List.cons_append, replayFrom]
+      cases node.replay interface cache with
+      | none => rfl
+      | some next => exact ih next
+
 theorem replayFrom_append {rules : List J → J → Prop}
     (interface : RuleWitness.{u, v} rules) {cache middle result : Array J}
     {first later : List (Node J interface.W Origin)}
     (initial : replayFrom interface cache first = some middle)
     (remaining : replayFrom interface middle later = some result) :
     replayFrom interface cache (first ++ later) = some result := by
-  induction first generalizing cache with
-  | nil => cases Option.some.inj initial; exact remaining
-  | cons node rest ih =>
-      cases first : node.replay interface cache with
-      | none => simp [replayFrom, first] at initial
-      | some next =>
-          have suffix : replayFrom interface next rest = some middle := by
-            simpa [replayFrom, first] using initial
-          simpa [replayFrom, first] using ih suffix
+  rw [replayFrom_append_eq, initial]
+  exact remaining
+
+/-- A successful whole trace exposes its exact retained intermediate cache.
+Conversely, checking the suffix from that cache checks the concatenation. -/
+theorem replayFrom_append_eq_some_iff {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) (cache result : Array J)
+    (first later : List (Node J interface.W Origin)) :
+    replayFrom interface cache (first ++ later) = some result ↔
+      ∃ middle, replayFrom interface cache first = some middle ∧
+        replayFrom interface middle later = some result := by
+  constructor
+  · intro accepted
+    rw [replayFrom_append_eq] at accepted
+    cases checked : replayFrom interface cache first with
+    | none => rw [checked] at accepted; cases accepted
+    | some middle =>
+        rw [checked] at accepted
+        exact ⟨middle, rfl, accepted⟩
+  · rintro ⟨middle, initial, remaining⟩
+    exact replayFrom_append interface initial remaining
+
+/-- Later instructions cannot repair a rejected prefix. -/
+theorem replayFrom_append_of_rejected {rules : List J → J → Prop}
+    (interface : RuleWitness.{u, v} rules) {cache : Array J}
+    {first : List (Node J interface.W Origin)}
+    (rejected : replayFrom interface cache first = none)
+    (later : List (Node J interface.W Origin)) :
+    replayFrom interface cache (first ++ later) = none := by
+  rw [replayFrom_append_eq, rejected]
+  rfl
 
 private def Buildable {rules : List J → J → Prop}
     (interface : RuleWitness.{u, v} rules) (Origin : Type w) (judgment : J) : Prop :=
@@ -297,6 +339,57 @@ theorem out_of_bounds_refused (cache : Array J) (index : Nat)
 /-- Relocate parent addresses without changing the rule, result or occurrence origin. -/
 def Node.relocate (address : Nat → Nat) (node : Node J W Origin) : Node J W Origin :=
   { node with parents := node.parents.map address }
+
+/-- Transform the complete payload of each occurrence while retaining its
+ordered physical parent references. -/
+def Node.map {J' : Type u'} {W' : Type v'} {Origin' : Type w'}
+    (conclusion : J → J') (witness : W → W') (origin : Origin → Origin')
+    (node : Node J W Origin) : Node J' W' Origin' :=
+  ⟨conclusion node.conclusion, witness node.witness, node.parents, origin node.origin⟩
+
+/-- Changing rule codes with exact local checking preserves each original
+node replay, including refusal and ordered repeated references. -/
+theorem Node.replay_mapWitness {rules rules' : List J → J → Prop}
+    (source : RuleWitness.{u, v} rules) (target : RuleWitness.{u, v'} rules')
+    (codeMap : source.W → target.W)
+    (same : ∀ code premises conclusion,
+      target.isInstance (codeMap code) premises conclusion = source.isInstance code premises conclusion)
+    (cache : Array J) (node : Node J source.W Origin) :
+    (node.map id codeMap id).replay target cache = node.replay source cache := by
+  simp [Node.replay, Node.map, same]
+
+/-- The full DAG translation shares the same cache and source addresses;
+it does not unfold the DAG into a tree. -/
+theorem replayFrom_mapWitness {rules rules' : List J → J → Prop}
+    (source : RuleWitness.{u, v} rules) (target : RuleWitness.{u, v'} rules')
+    (codeMap : source.W → target.W)
+    (same : ∀ code premises conclusion,
+      target.isInstance (codeMap code) premises conclusion = source.isInstance code premises conclusion)
+    (nodes : List (Node J source.W Origin)) (cache : Array J) :
+    replayFrom target cache (nodes.map (Node.map id codeMap id)) = replayFrom source cache nodes := by
+  induction nodes generalizing cache with
+  | nil => rfl
+  | cons node rest ih =>
+      simp only [List.map_cons, replayFrom, Node.replay_mapWitness source target codeMap same]
+      cases node.replay source cache with
+      | none => rfl
+      | some next => exact ih next
+
+theorem replay_mapWitness {rules rules' : List J → J → Prop}
+    (source : RuleWitness.{u, v} rules) (target : RuleWitness.{u, v'} rules')
+    (codeMap : source.W → target.W)
+    (same : ∀ code premises conclusion,
+      target.isInstance (codeMap code) premises conclusion = source.isInstance code premises conclusion)
+    (nodes : List (Node J source.W Origin)) :
+    replay target (nodes.map (Node.map id codeMap id)) = replay source nodes :=
+  replayFrom_mapWitness source target codeMap same nodes #[]
+
+/-- Payload transformation and physical address relocation commute. -/
+theorem Node.map_relocate {J' : Type u'} {W' : Type v'} {Origin' : Type w'}
+    (conclusion : J → J') (witness : W → W') (origin : Origin → Origin')
+    (address : Nat → Nat) (node : Node J W Origin) :
+    Node.map conclusion witness origin (Node.relocate address node) =
+      Node.relocate address (Node.map conclusion witness origin node) := rfl
 
 /-- Full positional lookup agreement includes refusal of absent addresses. -/
 def LookupAgreement (source target : Array J) (address : Nat → Nat) : Prop :=
@@ -585,5 +678,94 @@ theorem replayFrom_parents_lt_result {rules : List J → J → Prop}
             have earlier := lookupPremises_indices_lt selected index cited
             omega
           · exact ih later selectedNode member index cited
+
+/-! ## Checked judgments independent of storage navigation -/
+
+section CheckedJudgments
+
+variable {rules : List J → J → Prop}
+
+/-- A retained judgment with its derivability invariant. -/
+structure CheckedJudgment (rules : List J → J → Prop) where
+  private mk ::
+  judgment : J
+  valid : Derives rules judgment
+
+namespace CheckedJudgment
+
+/-- Logical introduction from a derivation already checked by Lean's kernel.
+This consumes proof evidence, not an unchecked judgment-shaped datum. Native
+capability construction remains a separate implementation obligation. -/
+def ofDerivation (judgment : J) (derivation : Derives rules judgment) :
+    CheckedJudgment rules :=
+  ⟨judgment, derivation⟩
+
+/-- LCF construction checks the actual premises before publishing a conclusion.
+The rule system is fixed by the premise and result types. -/
+def infer (interface : RuleWitness.{u, v} rules) (witness : interface.W)
+    (premises : List (CheckedJudgment rules)) (conclusion : J) :
+    Option (CheckedJudgment rules) :=
+  if accepted : interface.isInstance witness (premises.map judgment) conclusion = true then
+    some ⟨conclusion, .node _ _ (interface.sound _ _ _ accepted) (by
+      intro premise member
+      obtain ⟨checked, _present, same⟩ := List.mem_map.mp member
+      exact same ▸ checked.valid)⟩
+  else none
+
+theorem infer_isSome_iff (interface : RuleWitness.{u, v} rules) (witness : interface.W)
+    (premises : List (CheckedJudgment rules)) (conclusion : J) :
+    (infer interface witness premises conclusion).isSome = true ↔
+      interface.isInstance witness (premises.map judgment) conclusion = true := by
+  unfold infer
+  split <;> simp_all
+
+/-- Certificate replay and LCF construction return the same kind of judgment.
+The certificate is not retained by the returned value. -/
+def mint (interface : RuleWitness.{u, v} rules)
+    (nodes : List (Node J interface.W Origin)) (root : Nat) :
+    Option (CheckedJudgment rules) :=
+  match replayed : replay interface nodes with
+  | none => none
+  | some cache =>
+      match found : cache[root]? with
+      | none => none
+      | some claim => some ⟨claim, root_sound interface replayed found⟩
+
+theorem mint_iff (interface : RuleWitness.{u, v} rules)
+    (nodes : List (Node J interface.W Origin)) (root : Nat) (claim : J) :
+    (mint interface nodes root).map judgment = some claim ↔
+      ∃ cache, replay interface nodes = some cache ∧ cache[root]? = some claim := by
+  unfold mint
+  split
+  · rename_i replayed
+    simp [replayed]
+  · rename_i cache replayed
+    split
+    · rename_i found
+      simp [replayed, found]
+    · rename_i actual found
+      simp [replayed, found]
+
+/-- Every checked LCF judgment has an independently replayable certificate,
+and every replayed root has the original derivation meaning. This existence
+law does not recover erased derivations at runtime: an exporter must retain
+the source evidence or record inference dependencies. -/
+theorem exists_mint_iff (interface : RuleWitness.{u, v} rules) (origin : Origin)
+    (claim : J) :
+    (∃ (nodes : List (Node J interface.W Origin)) (root : Nat),
+      (mint interface nodes root).map judgment = some claim) ↔
+      Derives rules claim := by
+  constructor
+  · rintro ⟨nodes, root, accepted⟩
+    obtain ⟨cache, replayed, found⟩ := (mint_iff interface nodes root claim).mp accepted
+    exact root_sound interface replayed found
+  · intro derived
+    obtain ⟨nodes, cache, root, replayed, found⟩ :=
+      exists_replay_of_derives interface origin derived
+    exact ⟨nodes, root, (mint_iff interface nodes root claim).mpr ⟨cache, replayed, found⟩⟩
+
+end CheckedJudgment
+
+end CheckedJudgments
 
 end Mettapedia.Logic.DerivationGraph

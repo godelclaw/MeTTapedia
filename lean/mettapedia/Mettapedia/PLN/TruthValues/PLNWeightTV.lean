@@ -37,7 +37,7 @@ STV (strength, confidence) ← for users/interfaces
 
 ## References
 
-- EvidenceQuantale.lean: BinaryEvidence quantale definitions
+- BinaryEvidence.lean: BinaryEvidence quantale definitions
 - PLNInferenceCalculus.lean: Inference rules (being refactored to use WTV)
 - PLNBugAnalysis.lean: Documents why weight-space operations are correct
 -/
@@ -252,7 +252,8 @@ noncomputable def mpWTV (tvAB tvA : WTV) : WTV where
 
 /-! ### Revision (Hplus) -/
 
-/-- Revision: combine independent evidence sources.
+/-- Revision: combine evidence from disjoint observations (additive revision is
+exact exactly then).
 
 **Weight-native**: `w_out = w₁ + w₂` (direct addition!)
 

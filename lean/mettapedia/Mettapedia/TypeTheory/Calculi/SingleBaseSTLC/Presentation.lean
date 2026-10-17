@@ -251,7 +251,7 @@ theorem Term.graph_eq_iff
     exact member
   · intro pointwise
     ext pair
-    simp only [Term.graph, Set.mem_setOf_eq]
+    simp only [Term.graph, Set.mem_ofPred_eq]
     constructor
     · intro equalLeft
       exact equalLeft.trans (pointwise pair.1)

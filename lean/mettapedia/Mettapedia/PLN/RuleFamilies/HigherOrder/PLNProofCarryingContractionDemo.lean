@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Core.PLNEndToEnd
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules
 
 /-!
 # Proof-Carrying Factor-Graph Contraction Demo
@@ -12,15 +12,14 @@ This file packages one explicit "PLN-style rule firing" story in the corrected W
   a soft-gated perturbation and a collider abduction counterexample.
 
 The demo is intentionally thin.  It does not add a new BN proof stack; it gives a worked
-numeric wrapper around the already-proved exactness / no-go endpoints exposed by
-`PLNEndToEnd`.
+numeric wrapper around the already-proved exactness / no-go theorems of
+`PLNXiDerivedBNRules`.
 -/
 
 namespace Mettapedia.PLN.RuleFamilies.HigherOrder.PLNProofCarryingContractionDemo
 
 open scoped BigOperators
 open Finset
-open Mettapedia.PLN.Core
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
 /-! ## Provenance Interface -/
@@ -135,7 +134,7 @@ def forkStep_B_given_A : ProofCarryingContraction where
     , "positivity: P(H=1) in (0,1)"
     , "exact semantic baseline by finite factor-graph elimination" ]
   provenance :=
-    [ "PLNEndToEnd.forkFormulaExact"
+    [ "PLNXiDerivedBNRules.xi_source_queryStrength_eq_plnInduction_of_forkBN"
     , "PLNXiDerivedBNRules.Typed.xi_sourceRule_rewrite_of_forkBN_sigma_concrete" ]
   gate := some "exact"
 
@@ -148,7 +147,7 @@ def chainStep_C_given_A : ProofCarryingContraction where
     , "positivity: P(B=1) in (0,1)"
     , "exact semantic baseline by finite factor-graph elimination" ]
   provenance :=
-    [ "PLNEndToEnd.chainFormulaExact"
+    [ "PLNXiDerivedBNRules.xi_deduction_queryStrength_eq_plnDeduction_of_chainBN"
     , "PLNXiDerivedBNRules.Typed.xi_deduction_rewrite_of_chainBN_sigma_concrete" ]
   gate := some "exact"
 
@@ -161,7 +160,7 @@ def chainStep_D_given_A : ProofCarryingContraction where
     , "positivity: P(C=1) in (0,1)"
     , "exact semantic baseline by finite factor-graph elimination" ]
   provenance :=
-    [ "PLNEndToEnd.chainFormulaExact"
+    [ "PLNXiDerivedBNRules.xi_deduction_queryStrength_eq_plnDeduction_of_chainBN"
     , "PLNXiDerivedBNRules.Typed.xi_deduction_rewrite_of_chainBN_sigma_concrete" ]
   gate := some "exact"
 
@@ -251,7 +250,7 @@ def softGateStep_C_given_A : ProofCarryingContraction where
     , "exact semantic baseline by finite factor-graph elimination" ]
   provenance :=
     [ "soft_gate_blocks_exact_contraction"
-    , "PLNEndToEnd.chainFormulaExact (blocked here by Sigma)" ]
+    , "PLNXiDerivedBNRules.xi_deduction_queryStrength_eq_plnDeduction_of_chainBN (blocked here by Sigma)" ]
   gate := some "blocked"
 
 /-! ## Collider Negative Control -/
@@ -268,7 +267,7 @@ theorem colliderNaiveAbduction_value :
 theorem collider_negative_control_blocks_naive_abduction :
     plnAbductionStrength (1 : ℝ) (1 : ℝ) (1 / 2 : ℝ) (3 / 4 : ℝ) (1 / 2 : ℝ) ≠
       (colliderExactProb_B_true_given_A_true : ℝ) := by
-  simpa [colliderExactProb_B_true_given_A_true] using PLNEndToEnd.colliderNotExact
+  simpa [colliderExactProb_B_true_given_A_true] using Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules.plnAbductionStrength_not_exact_collider
 
 def colliderNegativeControl : ProofCarryingContraction where
   query := "P(B=1 | A=1) in OR-gate collider"
@@ -277,7 +276,7 @@ def colliderNegativeControl : ProofCarryingContraction where
     [ "collider topology does not discharge the old naive abduction rule"
     , "exact semantic answer remains the truthmaker" ]
   provenance :=
-    [ "PLNEndToEnd.colliderNotExact"
+    [ "PLNXiDerivedBNRules.plnAbductionStrength_not_exact_collider"
     , "collider_negative_control_blocks_naive_abduction" ]
   gate := some "blocked"
 

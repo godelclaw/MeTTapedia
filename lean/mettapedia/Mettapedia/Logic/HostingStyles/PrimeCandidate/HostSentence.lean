@@ -1,8 +1,8 @@
 import Mettapedia.Logic.HostingStyles.TopDegreeAnchors
 import Mettapedia.Logic.HostingStyles.PrimeCandidate.ChoiceExtension
 import Mettapedia.Logic.HostingStyles.PrimeCandidate.ProbeData
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.KernelReading
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ProofCodes
+import Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.KernelReading
+import Mettapedia.Logic.HostingStyles.ProofCodes
 
 /-!
 # A candidate as a host: one sentence, and its first instances
@@ -46,7 +46,9 @@ evaluator of the premises: see `RunExtension`, `DeterminedTables` and
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -553,4 +555,4 @@ theorem choice_isEmpty_contextMap_framework (base : BasePremiseEvaluator) {B : T
 #print axioms choice_not_hostOf_tabular_terms
 #print axioms choice_isEmpty_contextMap_framework
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

@@ -30,7 +30,7 @@ def language : LanguageDef := {
 def free : FreeTypeContext := fun name => if name = "a" then some term else none
 
 def environment : Environment := {
-  language := language, free := free, provider := ⟨[], []⟩, specifications := [(0, binding)] }
+  language := language, free := free, provider := {signatures := [], rows := []}, specifications := [(0, binding)] }
 
 def before : Assignment := [("X", ⟨[], 1, .bvar 0⟩)]
 def after : Assignment := [("X", ⟨[], 0, .fvar "a"⟩)]

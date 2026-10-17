@@ -1,5 +1,6 @@
 import Mettapedia.Machines.RecursiveFiniteProducer
 import Mettapedia.Machines.EquationCut
+import Mettapedia.Machines.AnswerCardinality
 
 /-!
 # Ordered equation admission for recursive collection producers
@@ -19,6 +20,13 @@ result is one shared `RecursiveFiniteProducer.Code`, not an expanded tree.
 The source body uses the existing local instruction grammar, interpreted
 independently: its recursive calls re-enter the ordered source equations,
 whereas compiled recursive calls re-enter the compiled decision tree.
+
+`RetainedFrontier` publishes one matched equation at a time. It keeps every
+authored equation and that invocation's captured items and parameter, then
+calls the existing `bodyResults` helper on that equation alone. `tailResults`
+is supplied already computed. The frontier is not an index into a precomputed
+answer list, and it is not a body or call cursor: `append`, `map`, `mapHead`,
+`ifZero`, `ifEmpty`, `callTail` and `callPredecessor` are not frames here.
 -/
 
 set_option autoImplicit false
@@ -191,18 +199,23 @@ theorem select_sound (input : Shape) (program : List (Equation Value))
         simp only [select, unmatched, Bool.false_eq_true, ↓reduceIte] at selected
         simpa [equationsResults, unmatched] using ih selected
 
-structure DecisionTree (Value : Type v) where
-  zeroEmpty : Code Value
-  zeroCons : Code Value
-  positiveEmpty : Code Value
-  positiveCons : Code Value
+structure ShapeTree (Branch : Type v) where
+  zeroEmpty : Branch
+  zeroCons : Branch
+  positiveEmpty : Branch
+  positiveCons : Branch
 deriving Repr
 
-def DecisionTree.branch (tree : DecisionTree Value) (input : Shape) : Code Value :=
+def ShapeTree.branch {Branch : Type v} (tree : ShapeTree Branch) (input : Shape) : Branch :=
   if input.positive then
     if input.nonempty then tree.positiveCons else tree.positiveEmpty
   else
     if input.nonempty then tree.zeroCons else tree.zeroEmpty
+
+abbrev DecisionTree (Value : Type v) := ShapeTree (Code Value)
+
+def DecisionTree.branch (tree : DecisionTree Value) (input : Shape) : Code Value :=
+  ShapeTree.branch tree input
 
 def DecisionTree.code (tree : DecisionTree Value) : Code Value :=
   .ifZero (.ifEmpty tree.zeroEmpty tree.zeroCons)
@@ -247,7 +260,7 @@ theorem compileTree_branches (program : List (Equation Value)) (tree : DecisionT
   rename_i nc
   cases accepted
   rcases input with ⟨nonempty, positive⟩
-  cases nonempty <;> cases positive <;> simp_all [DecisionTree.branch]
+  cases nonempty <;> cases positive <;> simp_all [DecisionTree.branch, ShapeTree.branch]
 
 theorem compileTree_checked (program : List (Equation Value)) (tree : DecisionTree Value)
     (accepted : compileTree program = some tree) : check false false tree.code = true := by
@@ -259,7 +272,8 @@ theorem compileTree_checked (program : List (Equation Value)) (tree : DecisionTr
     (compileTree_branches program tree accepted ⟨false, true⟩)).2
   have pc := (compileBranch_sound _ _ _
     (compileTree_branches program tree accepted ⟨true, true⟩)).2
-  simpa [DecisionTree.code, DecisionTree.branch, check] using And.intro (And.intro ze zc) (And.intro pe pc)
+  simpa [DecisionTree.code, DecisionTree.branch, ShapeTree.branch, check] using
+    And.intro (And.intro ze zc) (And.intro pe pc)
 
 /-- Once recursive tail calls agree, the eager relational source body has
 exactly the compiled body's single collection. This is an induction through
@@ -342,7 +356,7 @@ theorem DecisionTree.eager_branch (construct : Item → Value → Value)
       eager construct callbackConstruct tree.code items parameter
         (tree.branch (shape items parameter)) := by
   cases items <;> cases parameter <;>
-    simp [DecisionTree.code, DecisionTree.branch, shape, eager]
+    simp [DecisionTree.code, DecisionTree.branch, ShapeTree.branch, shape, eager]
 
 theorem source_equations_shape (construct : Item → Value → Value)
     (callbackConstruct : Nat → Value → Value → Value) (program : List (Equation Value))
@@ -584,5 +598,654 @@ theorem local_commit_keeps_outer_answers :
   rfl
 
 end Examples
+
+/-! Optional workers retain the same instruction grammar and shape classes.
+They distinguish no answer from a returned empty collection. Unsupported
+instructions refuse compilation; no-match observation remains a separate
+dialect boundary. These are finite pure workers, not effect permissions. -/
+
+def optionalSupported : Code Value → Bool
+  | .unsupported => false
+  | .append left right | .ifZero left right | .ifEmpty left right =>
+      optionalSupported left && optionalSupported right
+  | .mapHead body | .map _ body => optionalSupported body
+  | _ => true
+
+/-- No matching family is represented explicitly. Ambiguous uncommitted
+equations refuse admission even if a particular body might fail. -/
+def compileOptionalBranch (input : Shape) (program : List (Equation Value)) :
+    Option (Option (Code Value)) :=
+  if noMatch input program then some none
+  else do
+    let body ← select input program
+    if optionalSupported body then some (some body) else none
+
+def compileOptionalTree (program : List (Equation Value)) :
+    Option (ShapeTree (Option (Code Value))) := do
+  let zeroEmpty ← compileOptionalBranch ⟨false, false⟩ program
+  let zeroCons ← compileOptionalBranch ⟨true, false⟩ program
+  let positiveEmpty ← compileOptionalBranch ⟨false, true⟩ program
+  let positiveCons ← compileOptionalBranch ⟨true, true⟩ program
+  pure ⟨zeroEmpty, zeroCons, positiveEmpty, positiveCons⟩
+
+/-- An independent optional execution fold. Sequencing propagates an empty
+result; its recursive invocations are supplied by the compiled shape tree. -/
+def optionalBody (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailRun : Nat → Option (List Value)) (items : List Item) (parameter : Nat) :
+    Code Value → Option (List Value)
+  | .empty => some []
+  | .singleton value => some [value]
+  | .append left right => do
+      let earlier ← optionalBody construct callbackConstruct tailRun items parameter left
+      let later ← optionalBody construct callbackConstruct tailRun items parameter right
+      pure (earlier ++ later)
+  | .mapHead body => match items with
+      | [] => none
+      | head :: _ => (optionalBody construct callbackConstruct tailRun items parameter body).map
+          (List.map (construct head))
+  | .map callback body =>
+      (optionalBody construct callbackConstruct tailRun items parameter body).map
+        (List.map (callback.run callbackConstruct))
+  | .ifZero yes no => if parameter = 0 then
+      optionalBody construct callbackConstruct tailRun items parameter yes
+      else optionalBody construct callbackConstruct tailRun items parameter no
+  | .ifEmpty yes no => if items = [] then
+      optionalBody construct callbackConstruct tailRun items parameter yes
+      else optionalBody construct callbackConstruct tailRun items parameter no
+  | .callTail => match items with
+      | [] => none
+      | _ :: _ => tailRun parameter
+  | .callPredecessor => match items, parameter with
+      | _ :: _, count + 1 => tailRun count
+      | _, _ => none
+  | .unsupported => none
+
+def optionalRun (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tree : ShapeTree (Option (Code Value))) : List Item → Nat → Option (List Value)
+  | [], parameter => (tree.branch (shape ([] : List Item) parameter)).bind
+      (optionalBody construct callbackConstruct (fun _ => none) [] parameter)
+  | head :: tail, parameter => (tree.branch (shape (head :: tail) parameter)).bind
+      (optionalBody construct callbackConstruct
+        (optionalRun construct callbackConstruct tree tail) (head :: tail) parameter)
+
+theorem optionalBody_occurrences (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailRun : Nat → Option (List Value)) (items : List Item) (parameter : Nat)
+    (body : Code Value) :
+    (optionalBody construct callbackConstruct tailRun items parameter body).toList =
+      bodyResults construct callbackConstruct (fun count => (tailRun count).toList)
+        items parameter body := by
+  induction body with
+  | empty => rfl
+  | singleton value => rfl
+  | append left right leftIH rightIH =>
+      cases earlier : optionalBody construct callbackConstruct tailRun items parameter left <;>
+        cases later : optionalBody construct callbackConstruct tailRun items parameter right <;>
+        simp [optionalBody, bodyResults, ←leftIH, ←rightIH, earlier, later]
+  | mapHead body ih =>
+      cases items with
+      | nil => rfl
+      | cons head tail =>
+          cases done : optionalBody construct callbackConstruct tailRun (head :: tail) parameter body <;>
+            simp [optionalBody, bodyResults, ←ih, done]
+  | map callback body ih =>
+      cases done : optionalBody construct callbackConstruct tailRun items parameter body <;>
+        simp [optionalBody, bodyResults, ←ih, done]
+  | ifZero yes no yesIH noIH =>
+      by_cases zero : parameter = 0
+      · rw [optionalBody, if_pos zero, bodyResults, if_pos zero]; exact yesIH
+      · rw [optionalBody, if_neg zero, bodyResults, if_neg zero]; exact noIH
+  | ifEmpty yes no yesIH noIH =>
+      by_cases empty : items = []
+      · rw [optionalBody, if_pos empty, bodyResults, if_pos empty]; exact yesIH
+      · rw [optionalBody, if_neg empty, bodyResults, if_neg empty]; exact noIH
+  | callTail => cases items <;> rfl
+  | callPredecessor => cases items <;> cases parameter <;> rfl
+  | unsupported => rfl
+
+theorem compileOptionalBranch_occurrences (input : Shape) (program : List (Equation Value))
+    (branch : Option (Code Value))
+    (accepted : compileOptionalBranch input program = some branch)
+    (construct : Item → Value → Value) (callbackConstruct : Nat → Value → Value → Value)
+    (tailRun : Nat → Option (List Value)) (items : List Item) (parameter : Nat) :
+    (branch.bind (optionalBody construct callbackConstruct tailRun items parameter)).toList =
+      equationsResults (fun head => head.accepts input)
+        (bodyResults construct callbackConstruct (fun count => (tailRun count).toList)
+          items parameter) program := by
+  unfold compileOptionalBranch at accepted
+  split at accepted
+  next absent =>
+    cases accepted
+    simpa using (equationsResults_noMatch input program _ absent).symm
+  next present =>
+    cases selected : select input program with
+    | none => simp [selected] at accepted
+    | some body =>
+        simp [selected] at accepted
+        rcases accepted with ⟨_, rfl⟩
+        simpa using (optionalBody_occurrences construct callbackConstruct tailRun
+          items parameter body).trans (select_sound input program body selected _).symm
+
+theorem compileOptionalTree_branches (program : List (Equation Value))
+    (tree : ShapeTree (Option (Code Value)))
+    (accepted : compileOptionalTree program = some tree) (input : Shape) :
+    compileOptionalBranch input program = some (tree.branch input) := by
+  unfold compileOptionalTree at accepted
+  cases he : compileOptionalBranch ⟨false, false⟩ program <;> simp [he] at accepted
+  rename_i ze
+  cases hc : compileOptionalBranch ⟨true, false⟩ program <;> simp [hc] at accepted
+  rename_i zc
+  cases pe : compileOptionalBranch ⟨false, true⟩ program <;> simp [pe] at accepted
+  rename_i ne
+  cases pc : compileOptionalBranch ⟨true, true⟩ program <;> simp [pc] at accepted
+  rename_i nc
+  cases accepted
+  rcases input with ⟨nonempty, positive⟩
+  cases nonempty <;> cases positive <;> simp_all [ShapeTree.branch]
+
+/-- Compiled recursion re-enters the shared shape tree; source recursion
+re-enters every equation. The compiler, not a caller assertion, relates them. -/
+theorem optionalRun_refines_source (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (program : List (Equation Value)) (tree : ShapeTree (Option (Code Value)))
+    (accepted : compileOptionalTree program = some tree) (items : List Item) (parameter : Nat) :
+    (optionalRun construct callbackConstruct tree items parameter).toList =
+      source construct callbackConstruct program items parameter := by
+  induction items generalizing parameter with
+  | nil =>
+      rw [optionalRun, source_equations_shape]
+      exact compileOptionalBranch_occurrences _ _ _
+        (compileOptionalTree_branches program tree accepted _) _ _ (fun _ => none) [] parameter
+  | cons head tail ih =>
+      rw [optionalRun, source_equations_shape]
+      have compared := compileOptionalBranch_occurrences _ _ _
+        (compileOptionalTree_branches program tree accepted (shape (head :: tail) parameter))
+        construct callbackConstruct (optionalRun construct callbackConstruct tree tail)
+        (head :: tail) parameter
+      simpa only [ih] using compared
+
+namespace OptionalControls
+
+def maybeHead : List (Equation Nat) := [⟨⟨.cons, .any⟩, false, .mapHead (.singleton 7)⟩]
+
+theorem maybeHead_compiles : compileOptionalTree maybeHead =
+    some ⟨none, some (.mapHead (.singleton 7)), none, some (.mapHead (.singleton 7))⟩ := by rfl
+
+theorem no_answer_differs_from_empty_collection :
+    optionalRun Nat.add (fun _ left _ => left)
+      ⟨none, some .empty, none, some .empty⟩ ([] : List Nat) 0 = none ∧
+    optionalRun Nat.add (fun _ left _ => left)
+      ⟨none, some .empty, none, some .empty⟩ [1] 0 = some [] := by decide
+
+theorem duplicate_equations_refuse :
+    compileOptionalTree ([⟨⟨.any, .any⟩, false, .singleton 7⟩,
+      ⟨⟨.any, .any⟩, false, .singleton 7⟩] : List (Equation Nat)) = none := by decide
+
+theorem unsupported_refuses :
+    compileOptionalTree ([⟨⟨.any, .any⟩, false, .unsupported⟩] : List (Equation Nat)) = none := by decide
+
+end OptionalControls
+
+/-! ### Equation publication, not a body or call cursor
+
+One invocation retains its authored equations, the ordinal of the next
+untried occurrence, and the captured items and parameter. A matching
+equation is published by one call to `bodyResults`. Commit seals later
+occurrences without deleting them. An empty residual is finished only by
+the closing step. Answer evidence is the yielded occurrence list; it is
+not the phase.
+
+This is not the producer worker. `RecursiveFiniteProducer.step` already
+suspends `append`, `mapHead`, `map`, `ifZero`, `ifEmpty`, `callTail` and
+`callPredecessor` for one admitted collection. Those frames are absent
+here, and that cursor does not retain authored equation occurrences or the
+source product of `bodyResults` append. A stepper that yields inside a
+source call would need a body frame and a call frame whose callee is a
+fresh equation frontier. Native body continuations are not represented.
+-/
+
+section RetainedFrontier
+
+open AnswerCardinality
+
+inductive NoRuleReading where
+  | observe (policy : NoRulePolicy)
+  | decline
+  deriving DecidableEq, Repr
+
+inductive FrontierPhase where
+  | running
+  | finished
+  | declined
+  deriving DecidableEq, Repr
+
+/-- Authored equations stay in `authored`. `items` and `parameter` are the
+captured invocation bindings. `ordinal` is the next untried occurrence. -/
+structure RetainedFrontier (Item : Type u) (Value : Type v) where
+  authored : List (Equation Value)
+  ordinal : Nat
+  matched : Bool
+  sealed : Bool
+  items : List Item
+  parameter : Nat
+  reading : NoRuleReading
+  phase : FrontierPhase
+  deriving Repr
+
+def openFrontier (program : List (Equation Value)) (items : List Item) (parameter : Nat)
+    (reading : NoRuleReading) : RetainedFrontier Item Value where
+  authored := program
+  ordinal := 0
+  matched := false
+  sealed := false
+  items := items
+  parameter := parameter
+  reading := reading
+  phase := .running
+
+/-- Untried authored occurrences remain. A sealed commit and a closing step
+are not pending. -/
+def RetainedFrontier.isPending (frontier : RetainedFrontier Item Value) : Bool :=
+  match frontier.phase with
+  | .running => !frontier.sealed && decide (frontier.ordinal < frontier.authored.length)
+  | .finished | .declined => false
+
+inductive FrontierPulse (Item : Type u) (Value : Type v) where
+  | observed (occurrences : List (List Value)) (next : RetainedFrontier Item Value)
+  | skipped (next : RetainedFrontier Item Value)
+  | finished (occurrences : List (List Value)) (next : RetainedFrontier Item Value)
+  | declined (next : RetainedFrontier Item Value)
+  deriving Repr
+
+def matchesAny (headOk : Head → Bool) : List (Equation Value) → Bool
+  | [] => false
+  | equation :: rest => headOk equation.head || matchesAny headOk rest
+
+def stepFrontier (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) : FrontierPulse Item Value :=
+  match frontier.phase with
+  | .finished => .finished [] frontier
+  | .declined => .declined frontier
+  | .running =>
+      if frontier.sealed then
+        .finished [] { frontier with phase := .finished }
+      else
+        match frontier.authored.drop frontier.ordinal with
+        | [] =>
+            if frontier.matched then
+              .finished [] { frontier with phase := .finished }
+            else
+              match frontier.reading with
+              | .decline => .declined { frontier with phase := .declined }
+              | .observe policy =>
+                  .finished (observeRuleBodies policy fallback [])
+                    { frontier with phase := .finished }
+        | equation :: _ =>
+            if equation.head.matches frontier.items frontier.parameter then
+              .observed
+                (bodyResults construct callbackConstruct tailResults frontier.items
+                  frontier.parameter equation.body)
+                { frontier with
+                    ordinal := frontier.ordinal + 1
+                    matched := true
+                    sealed := equation.commit }
+            else
+              .skipped { frontier with ordinal := frontier.ordinal + 1 }
+
+/-- Step budget. Fuel `0` returns the same frontier and is not completion.
+A skip or an observation consumes one step. Extra fuel on a finished or
+declined frontier does not replay. -/
+def driveFrontier (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value) :
+    Nat → RetainedFrontier Item Value → List (List Value) × RetainedFrontier Item Value
+  | 0, frontier => ([], frontier)
+  | fuel + 1, frontier =>
+      match stepFrontier construct callbackConstruct tailResults fallback frontier with
+      | .observed occurrences next =>
+          let later := driveFrontier construct callbackConstruct tailResults fallback fuel next
+          (occurrences ++ later.1, later.2)
+      | .skipped next =>
+          driveFrontier construct callbackConstruct tailResults fallback fuel next
+      | .finished occurrences next => (occurrences, next)
+      | .declined next => ([], next)
+
+def suffixOccurrences (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) : List (List Value) :=
+  match frontier.phase with
+  | .finished | .declined => []
+  | .running =>
+      if frontier.sealed then []
+      else
+        let remaining := frontier.authored.drop frontier.ordinal
+        let answers := equationsResults (fun head => head.matches frontier.items frontier.parameter)
+          (bodyResults construct callbackConstruct tailResults frontier.items frontier.parameter)
+          remaining
+        if frontier.matched ||
+            matchesAny (fun head => head.matches frontier.items frontier.parameter) remaining then
+          answers
+        else
+          match frontier.reading with
+          | .decline => []
+          | .observe policy => observeRuleBodies policy fallback []
+
+private theorem drop_succ_of_drop_cons {α : Type _} {xs : List α} {index : Nat}
+    {head : α} {tail : List α} (exposed : xs.drop index = head :: tail) :
+    xs.drop (index + 1) = tail := by
+  induction index generalizing xs with
+  | zero =>
+      cases xs with
+      | nil =>
+          simp only [List.drop_nil] at exposed
+          cases exposed
+      | cons item rest =>
+          simp only [List.drop_zero] at exposed
+          cases exposed
+          simp only [List.drop_succ_cons, List.drop_zero]
+  | succ index ih =>
+      cases xs with
+      | nil =>
+          simp only [List.drop_nil] at exposed
+          cases exposed
+      | cons _ rest =>
+          simp only [List.drop_succ_cons] at exposed
+          simpa only [List.drop_succ_cons] using ih exposed
+
+theorem equationsResults_of_no_match (headOk : Head → Bool)
+    (runBody : Code Value → List (List Value)) (program : List (Equation Value))
+    (absent : matchesAny headOk program = false) :
+    equationsResults headOk runBody program = [] := by
+  induction program with
+  | nil => rfl
+  | cons equation rest ih =>
+      have headMiss : headOk equation.head = false := by
+        cases hit : headOk equation.head
+        · rfl
+        · simp only [matchesAny, hit, Bool.true_or] at absent
+          cases absent
+      have restMiss : matchesAny headOk rest = false := by
+        simp only [matchesAny, headMiss, Bool.false_or] at absent
+        exact absent
+      simp only [equationsResults, headMiss, ih restMiss]
+      rfl
+
+theorem driveFrontier_zero (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) :
+    driveFrontier construct callbackConstruct tailResults fallback 0 frontier = ([], frontier) := rfl
+
+theorem driveFrontier_finished_stable (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (done : frontier.phase = .finished) (fuel : Nat) :
+    driveFrontier construct callbackConstruct tailResults fallback fuel frontier = ([], frontier) := by
+  cases fuel with
+  | zero => rfl
+  | succ fuel => simp only [driveFrontier, stepFrontier, done]
+
+theorem driveFrontier_declined_stable (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (stopped : frontier.phase = .declined) (fuel : Nat) :
+    driveFrontier construct callbackConstruct tailResults fallback fuel frontier = ([], frontier) := by
+  cases fuel with
+  | zero => rfl
+  | succ fuel => simp only [driveFrontier, stepFrontier, stopped]
+
+theorem driveFrontier_succ (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (fuel : Nat) (frontier : RetainedFrontier Item Value) :
+    driveFrontier construct callbackConstruct tailResults fallback (fuel + 1) frontier =
+      match stepFrontier construct callbackConstruct tailResults fallback frontier with
+      | .observed occurrences next =>
+          (occurrences ++
+              (driveFrontier construct callbackConstruct tailResults fallback fuel next).1,
+            (driveFrontier construct callbackConstruct tailResults fallback fuel next).2)
+      | .skipped next =>
+          driveFrontier construct callbackConstruct tailResults fallback fuel next
+      | .finished occurrences next => (occurrences, next)
+      | .declined next => ([], next) := rfl
+
+private theorem fuel_add_succ (earlier later : Nat) :
+    earlier + 1 + later = (earlier + later) + 1 := by
+  rw [Nat.add_assoc, Nat.add_comm 1 later, ← Nat.add_assoc]
+
+theorem driveFrontier_sealed_finishes (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (running : frontier.phase = .running)
+    (isSealed : frontier.sealed = true) (extra : Nat) :
+    driveFrontier construct callbackConstruct tailResults fallback (extra + 1) frontier =
+      ([], { frontier with phase := .finished }) := by
+  rw [driveFrontier_succ]
+  simp only [stepFrontier, running, isSealed, ↓reduceIte]
+
+theorem stepFrontier_preserves_capture (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) :
+    match stepFrontier construct callbackConstruct tailResults fallback frontier with
+    | .observed _ next | .skipped next | .finished _ next | .declined next =>
+        next.authored = frontier.authored ∧ next.items = frontier.items ∧
+          next.parameter = frontier.parameter := by
+  cases phase : frontier.phase
+  · cases sealed : frontier.sealed
+    · cases remaining : frontier.authored.drop frontier.ordinal with
+      | nil =>
+          cases matched : frontier.matched <;> cases reading : frontier.reading <;>
+            simp [stepFrontier, phase, sealed, remaining, matched, reading]
+      | cons equation rest =>
+          cases headMatch : equation.head.matches frontier.items frontier.parameter <;>
+            simp [stepFrontier, phase, sealed, remaining, headMatch]
+    · simp [stepFrontier, phase, sealed]
+  · simp [stepFrontier, phase]
+  · simp [stepFrontier, phase]
+
+theorem observed_step_remains_running (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (occurrences : List (List Value))
+    (next : RetainedFrontier Item Value)
+    (stepped : stepFrontier construct callbackConstruct tailResults fallback frontier =
+      .observed occurrences next) :
+    next.phase = .running ∧ next.authored = frontier.authored ∧
+      next.items = frontier.items ∧ next.parameter = frontier.parameter := by
+  unfold stepFrontier at stepped
+  (repeat' split at stepped) <;> simp_all
+  all_goals rcases stepped with ⟨_, rfl⟩; exact ⟨rfl, rfl, rfl, rfl⟩
+
+private theorem finished_step_phase (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (occurrences : List (List Value))
+    (next : RetainedFrontier Item Value)
+    (stepped : stepFrontier construct callbackConstruct tailResults fallback frontier =
+      .finished occurrences next) : next.phase = .finished := by
+  unfold stepFrontier at stepped
+  (repeat' split at stepped) <;> simp_all
+  all_goals rcases stepped with ⟨_, rfl⟩; rfl
+
+private theorem declined_step_phase (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (next : RetainedFrontier Item Value)
+    (stepped : stepFrontier construct callbackConstruct tailResults fallback frontier =
+      .declined next) : next.phase = .declined := by
+  unfold stepFrontier at stepped
+  (repeat' split at stepped) <;> simp_all
+  all_goals subst next; rfl
+
+/-- Fuel splits into a loaned equation-publication prefix and the residual
+frontier. Resuming that residual does not replay the prefix. The loan is one
+whole `bodyResults` list per matched equation, not a yield inside the body. -/
+theorem driveFrontier_split_resumes (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (earlier later : Nat) (frontier : RetainedFrontier Item Value) :
+    ((driveFrontier construct callbackConstruct tailResults fallback earlier frontier).1 ++
+        (driveFrontier construct callbackConstruct tailResults fallback later
+          (driveFrontier construct callbackConstruct tailResults fallback earlier frontier).2).1,
+      (driveFrontier construct callbackConstruct tailResults fallback later
+        (driveFrontier construct callbackConstruct tailResults fallback earlier frontier).2).2) =
+      driveFrontier construct callbackConstruct tailResults fallback (earlier + later) frontier := by
+  induction earlier generalizing frontier with
+  | zero => simp only [driveFrontier, Nat.zero_add, List.nil_append]
+  | succ earlier ih =>
+      cases pulse : stepFrontier construct callbackConstruct tailResults fallback frontier with
+      | observed occurrences next =>
+          rw [driveFrontier_succ (fuel := earlier)]
+          simp only [pulse]
+          rw [fuel_add_succ earlier later, driveFrontier_succ (fuel := earlier + later)]
+          simp only [pulse]
+          have resumed := ih next
+          rw [← resumed]
+          simp only [List.append_assoc]
+      | skipped next =>
+          rw [driveFrontier_succ (fuel := earlier)]
+          simp only [pulse]
+          rw [fuel_add_succ earlier later, driveFrontier_succ (fuel := earlier + later)]
+          simp only [pulse]
+          exact ih next
+      | finished occurrences next =>
+          have done := finished_step_phase construct callbackConstruct tailResults
+            fallback frontier occurrences next pulse
+          have stable := driveFrontier_finished_stable construct callbackConstruct tailResults
+            fallback next done later
+          rw [driveFrontier_succ (fuel := earlier)]
+          simp only [pulse]
+          rw [fuel_add_succ earlier later, driveFrontier_succ (fuel := earlier + later)]
+          simp only [pulse, stable, List.append_nil]
+      | declined next =>
+          have done := declined_step_phase construct callbackConstruct tailResults
+            fallback frontier next pulse
+          have stable := driveFrontier_declined_stable construct callbackConstruct tailResults
+            fallback next done later
+          rw [driveFrontier_succ (fuel := earlier)]
+          simp only [pulse]
+          rw [fuel_add_succ earlier later, driveFrontier_succ (fuel := earlier + later)]
+          simp only [pulse, stable, List.nil_append]
+
+theorem driveFrontier_running_eq (construct : Item → Value → Value)
+    (callbackConstruct : Nat → Value → Value → Value)
+    (tailResults : Nat → List (List Value)) (fallback : List Value)
+    (frontier : RetainedFrontier Item Value) (running : frontier.phase = .running)
+    (openSeal : frontier.sealed = false) :
+    let remaining := frontier.authored.drop frontier.ordinal
+    let result := driveFrontier construct callbackConstruct tailResults fallback
+      (remaining.length + 1) frontier
+    result.1 = suffixOccurrences construct callbackConstruct tailResults fallback frontier ∧
+      result.2.authored = frontier.authored ∧ result.2.items = frontier.items ∧
+      result.2.parameter = frontier.parameter ∧
+      result.2.phase = if frontier.matched ||
+          matchesAny (fun head => head.matches frontier.items frontier.parameter) remaining then
+        .finished else match frontier.reading with
+          | .decline => .declined
+          | .observe _ => .finished := by
+  intro remaining result
+  suffices ∀ (frontier : RetainedFrontier Item Value), frontier.phase = .running →
+      frontier.sealed = false →
+      ∀ (suffix : List (Equation Value)), frontier.authored.drop frontier.ordinal = suffix →
+        (driveFrontier construct callbackConstruct tailResults fallback (suffix.length + 1)
+            frontier).1 =
+          suffixOccurrences construct callbackConstruct tailResults fallback frontier ∧
+        (driveFrontier construct callbackConstruct tailResults fallback (suffix.length + 1)
+            frontier).2.authored = frontier.authored ∧
+        (driveFrontier construct callbackConstruct tailResults fallback (suffix.length + 1)
+            frontier).2.items = frontier.items ∧
+        (driveFrontier construct callbackConstruct tailResults fallback (suffix.length + 1)
+            frontier).2.parameter = frontier.parameter ∧
+        (driveFrontier construct callbackConstruct tailResults fallback (suffix.length + 1)
+            frontier).2.phase = if frontier.matched ||
+            matchesAny (fun head => head.matches frontier.items frontier.parameter) suffix then
+          .finished else match frontier.reading with
+            | .decline => .declined
+            | .observe _ => .finished from
+    this frontier running openSeal remaining rfl
+  intro frontier running openSeal suffix exposed
+  induction suffix generalizing frontier with
+  | nil =>
+      cases matched : frontier.matched <;> cases reading : frontier.reading <;>
+        simp [exposed, List.length_nil, driveFrontier_succ, stepFrontier, running,
+          openSeal, matched, reading, suffixOccurrences, matchesAny, equationsResults,
+          observeRuleBodies, Bool.or_false, ↓reduceIte]
+  | cons equation rest ih =>
+      have nextDrop : frontier.authored.drop (frontier.ordinal + 1) = rest :=
+        drop_succ_of_drop_cons exposed
+      cases headMatch : equation.head.matches frontier.items frontier.parameter
+      · have stepSkip : stepFrontier construct callbackConstruct tailResults fallback frontier =
+            .skipped { frontier with ordinal := frontier.ordinal + 1 } := by
+          simp [stepFrontier, running, openSeal, exposed, headMatch, ↓reduceIte]
+        have later := ih { frontier with ordinal := frontier.ordinal + 1 } running openSeal nextDrop
+        have anyRest :
+            matchesAny (fun head => head.matches frontier.items frontier.parameter)
+              (equation :: rest) =
+            matchesAny (fun head => head.matches frontier.items frontier.parameter) rest := by
+          simp [matchesAny, headMatch, Bool.false_or]
+        have fuel : (equation :: rest).length + 1 = (rest.length + 1) + 1 := by
+          simp [List.length_cons]
+        rw [fuel, driveFrontier_succ, stepSkip]
+        simp [suffixOccurrences, running, openSeal, exposed, nextDrop, anyRest, equationsResults,
+          headMatch, ↓reduceIte] at later ⊢
+        exact later
+      · cases committed : equation.commit
+        · have stepObs : stepFrontier construct callbackConstruct tailResults fallback frontier =
+              .observed
+                (bodyResults construct callbackConstruct tailResults frontier.items
+                  frontier.parameter equation.body)
+                { frontier with
+                    ordinal := frontier.ordinal + 1
+                    matched := true
+                    sealed := false } := by
+            simp [stepFrontier, running, openSeal, exposed, headMatch, committed, ↓reduceIte]
+          have later := ih
+            { frontier with
+                ordinal := frontier.ordinal + 1
+                matched := true
+                sealed := false }
+            running rfl nextDrop
+          have fuel : (equation :: rest).length + 1 = (rest.length + 1) + 1 := by
+            simp [List.length_cons]
+          rw [fuel, driveFrontier_succ, stepObs]
+          simp [suffixOccurrences, running, openSeal, exposed, nextDrop, matchesAny, headMatch,
+            Bool.or_true, equationsResults, committed, ↓reduceIte] at later ⊢
+          simp [later.1, later.2.1, later.2.2.1, later.2.2.2.1, later.2.2.2.2]
+        · have stepObs : stepFrontier construct callbackConstruct tailResults fallback frontier =
+              .observed
+                (bodyResults construct callbackConstruct tailResults frontier.items
+                  frontier.parameter equation.body)
+                { frontier with
+                    ordinal := frontier.ordinal + 1
+                    matched := true
+                    sealed := true } := by
+            simp [stepFrontier, running, openSeal, exposed, headMatch, committed, ↓reduceIte]
+          have closed := driveFrontier_sealed_finishes construct callbackConstruct tailResults
+            fallback
+            { frontier with
+                ordinal := frontier.ordinal + 1
+                matched := true
+                sealed := true }
+            running rfl rest.length
+          simp only [running] at closed
+          have fuel : (equation :: rest).length + 1 = (rest.length + 1) + 1 := by
+            simp [List.length_cons]
+          rw [fuel, driveFrontier_succ, stepObs]
+          simp [closed, suffixOccurrences, running, openSeal, exposed, matchesAny, headMatch,
+            equationsResults, committed]
+
+#print axioms driveFrontier_split_resumes
+#print axioms driveFrontier_running_eq
+#print axioms observed_step_remains_running
+#print axioms driveFrontier_finished_stable
+#print axioms equationsResults_of_no_match
+
+end RetainedFrontier
 
 end Mettapedia.Machines.SourceProducerAdmission

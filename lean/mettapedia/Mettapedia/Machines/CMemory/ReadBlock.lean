@@ -1,4 +1,6 @@
 import Mettapedia.Machines.CMemory.ReadLoops
+import Mettapedia.Machines.CMemory.ProductiveBlocks
+import Mettapedia.Machines.CMemory.WP
 
 /-!
 # Scoped read blocks with retained C control flow
@@ -10,9 +12,10 @@ iteration fuel are separate from undefined reads and completed C outcomes.
 
 The outer counted-block operation executes each supplied body through this
 block service; it propagates returns and exits breaks without incrementing.
-This fragment does not execute allocation, physical stores or arbitrary nested
-imperative loops. It reuses the shared heap primitives and their lifetime
-requirements, rather than defining another memory model.
+The generic pre-test loop composes supplied physical guard and body programs,
+including their effects and retained control. Its finite variant law keeps
+semantic iteration allowance distinct from scheduler suspension. These blocks
+reuse the shared heap primitives and their lifetime requirements.
 -/
 
 set_option autoImplicit false
@@ -134,9 +137,20 @@ theorem resume_normal_completion_enters_continuation
 def declaredValue (type : CType) (value : CVal) : CProg CVal CVal :=
   if type = ⟨"bool".toList, 0⟩ then truth value >>= fun selected => pure (.bool selected)
   else if type = ⟨"int".toList, 0⟩ then signedWord value >>= fun signed => pure (.i32 signed)
+  else if type = ⟨"uint8_t".toList, 0⟩ then byte value >>= fun unsigned => pure (.u8 unsigned)
   else if type = ⟨"uint32_t".toList, 0⟩ then word value >>= fun unsigned => pure (.u32 unsigned)
   else if type = ⟨"Space".toList, 1⟩ then pointer value >>= fun address => pure (.ptr address)
   else CProg.undefined
+
+/-- An already byte-valued initializer retains its full unsigned storage value. -/
+theorem declared_byte_retains_value (value : UInt8) :
+    declaredValue ⟨"uint8_t".toList, 0⟩ (.u8 value) = pure (.u8 value) := rfl
+
+/-- Integer conversion is not inferred from a declaration's spelling. -/
+theorem declared_byte_does_not_reinterpret_word (value : UInt32) :
+    declaredValue ⟨"uint8_t".toList, 0⟩ (.u32 value) = CProg.undefined := by
+  change (CProg.undefined >>= fun actual : UInt8 => pure (CVal.u8 actual)) = _
+  exact undefined_bind _
 
 theorem declared_pointer_retains_nullable_value (value : Option Ptr) :
     declaredValue ⟨"Space".toList, 1⟩ (.ptr value) = pure (.ptr value) := rfl
@@ -333,5 +347,247 @@ theorem body_fuel_is_not_false_return :
       1 environment = pure .exhausted := rfl
 
 end Controls
+
+
+/-! ## Physical pre-test loops and retained control -/
+
+/-- A pre-test loop keeps its actual guard and body operations. It consumes
+an iteration allowance only after a true guard, exits a break locally, and
+preserves an explicit return or an unfinished body. Scheduler suspension
+remains a separate property of the surrounding operation tree. -/
+def whileWith {Context : Type}
+    (test : Context → CProg CVal Bool)
+    (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context : Context) : CProg CVal (Result Context) := do
+  let selected ← test context
+  if selected then match fuel with
+    | 0 => pure .exhausted
+    | fuel + 1 => do
+        let result ← body context
+        match result with
+        | .finished (.next updated) => whileWith test body fuel updated
+        | .finished (.broken updated) => pure (.finished (.next updated))
+        | result => pure result
+  else pure (.finished (.next context))
+
+theorem while_guard_false {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context : Context) (stopped : test context = pure false) :
+    whileWith test body fuel context = pure (.finished (.next context)) := by
+  rw [whileWith.eq_def, stopped]
+  rfl
+
+theorem while_guard_true_without_allowance {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (context : Context) (running : test context = pure true) :
+    whileWith test body 0 context = pure .exhausted := by
+  rw [whileWith.eq_def, running]
+  rfl
+
+theorem while_next_keeps_updated_context {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context updated : Context)
+    (running : test context = pure true)
+    (next : body context = pure (.finished (.next updated))) :
+    whileWith test body (fuel + 1) context = whileWith test body fuel updated := by
+  rw [whileWith.eq_def, running]
+  simp only [Prog.pure_eq, Prog.bind_eq, Prog.ret_bind, ↓reduceIte, next]
+
+theorem while_break_keeps_updated_context {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context updated : Context)
+    (running : test context = pure true)
+    (broken : body context = pure (.finished (.broken updated))) :
+    whileWith test body (fuel + 1) context = pure (.finished (.next updated)) := by
+  rw [whileWith.eq_def, running]
+  simp only [Prog.pure_eq, Prog.bind_eq, Prog.ret_bind, ↓reduceIte, broken]
+
+theorem while_return_keeps_value_and_context {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context updated : Context) (value : Option CVal)
+    (running : test context = pure true)
+    (returned : body context = pure (.finished (.returned updated value))) :
+    whileWith test body (fuel + 1) context = pure (.finished (.returned updated value)) := by
+  rw [whileWith.eq_def, running]
+  simp only [Prog.pure_eq, Prog.bind_eq, Prog.ret_bind, ↓reduceIte, returned]
+
+theorem while_body_exhaustion_is_not_completion {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context : Context) (running : test context = pure true)
+    (unfinished : body context = pure .exhausted) :
+    whileWith test body (fuel + 1) context = pure .exhausted := by
+  rw [whileWith.eq_def, running]
+  simp only [Prog.pure_eq, Prog.bind_eq, Prog.ret_bind, ↓reduceIte, unfinished]
+
+/-- An invalid guard is retained as the same undefined memory operation. -/
+theorem while_invalid_guard_is_not_false {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (Result Context))
+    (fuel : Nat) (context : Context) (invalid : test context = CProg.undefined) :
+    whileWith test body fuel context = CProg.undefined := by
+  rw [whileWith.eq_def, invalid]
+  exact ReadExpressions.undefined_bind _
+
+namespace WhileControls
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+open ExecutableStorage ProductiveBlocks
+
+def counter : Ptr := ⟨21, 0⟩
+def test (_ : Unit) : CProg CVal Bool := do
+  let value ← CProg.loadU32 counter
+  pure (decide (value < 3))
+def body (_ : Unit) : CProg CVal (Result Unit) := do
+  let value ← CProg.loadU32 counter
+  CProg.store counter (.u32 (value + 1))
+  pure (.finished (.next ()))
+def storage : Storage CVal := [(21, ⟨true, [some (.u32 0)]⟩)]
+def initial : State CVal (Result Unit) := ⟨whileWith test body 3 (), storage, []⟩
+
+def observation (result : Outcome (State CVal (Result Unit))
+    (Verdict CVal (Result Unit)) (AllocationRequest CVal)) : Nat × Option CVal :=
+  match result with
+  | .finished (.returned final) =>
+      (match final.answer with | .finished _ => 1 | .exhausted => 2,
+        load final.storage counter)
+  | .exhausted saved => (0, load saved.storage counter)
+  | .finished (.fault saved) => (3, load saved.storage counter)
+  | _ => (4, none)
+
+theorem completed_loop_keeps_all_three_effects :
+    observation ((machine.run 11 initial).2) = (1, some (.u32 3)) := by decide +kernel
+
+theorem scheduler_pause_preserves_prior_effect :
+    observation ((machine.run 3 initial).2) = (0, some (.u32 1)) := by decide +kernel
+
+def saved : State CVal (Result Unit) :=
+  match (machine.run 3 initial).2 with
+  | .exhausted state => state
+  | _ => initial
+
+theorem resume_does_not_replay_prior_iteration :
+    observation ((machine.run 8 saved).2) = (1, some (.u32 3)) ∧
+    (machine.run 8 saved).1.map (fun receipt => receipt.operation) =
+      [.load counter, .load counter, .store counter (.u32 2),
+       .load counter, .load counter, .store counter (.u32 3), .load counter] := by
+  constructor
+  · decide +kernel
+  · rfl
+
+theorem loop_allowance_exhaustion_is_not_scheduler_pause :
+    observation ((machine.run 2 ⟨whileWith test body 0 (), storage, []⟩).2) =
+      (2, some (.u32 0)) := by decide +kernel
+
+theorem malformed_guard_does_not_exit_normally :
+    observation ((machine.run 2
+      ⟨whileWith test body 3 (), [(21, ⟨true, [some (.bool false)]⟩)], []⟩).2) =
+      (3, some (.bool false)) := by decide +kernel
+
+end WhileControls
+
+open Mettapedia.GSLT.SeparationAlgebra
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open CellPermission
+
+/-- A concrete context extension transports the loop only when both the
+actual guard and every complete body flow commute with that extension.
+The map applies to return, break and exhaustion as well as normal progress. -/
+theorem while_context_extension {Source Target : Type}
+    (extend : Source → Target)
+    (sourceTest : Source → CProg CVal Bool)
+    (sourceBody : Source → CProg CVal (Result Source))
+    (targetTest : Target → CProg CVal Bool)
+    (targetBody : Target → CProg CVal (Result Target))
+    (guard : ∀ context, targetTest (extend context) = sourceTest context)
+    (body : ∀ context, targetBody (extend context) =
+      (sourceBody context >>= fun result => pure (result.mapContext extend)))
+    (fuel : Nat) (context : Source) :
+    whileWith targetTest targetBody fuel (extend context) =
+      (whileWith sourceTest sourceBody fuel context >>=
+        fun result => pure (result.mapContext extend)) := by
+  induction fuel generalizing context with
+  | zero =>
+      rw [whileWith.eq_def, whileWith.eq_def, guard]
+      simp only [Prog.bind_eq, Prog.bind_assoc]
+      congr 1
+      funext selected
+      cases selected <;> rfl
+  | succ fuel ih =>
+      rw [whileWith.eq_def, whileWith.eq_def, guard]
+      simp only [Prog.bind_eq, Prog.bind_assoc]
+      congr 1
+      funext selected
+      cases selected with
+      | false => rfl
+      | true =>
+          simp only [↓reduceIte, body, Prog.bind_eq, Prog.bind_assoc,
+            Prog.pure_eq, Prog.ret_bind]
+          congr 1
+          funext result
+          cases result with
+          | exhausted => rfl
+          | finished flow =>
+              cases flow with
+              | next updated => exact ih updated
+              | broken updated => rfl
+              | returned updated value => rfl
+
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+/-- A physical guard and body preserve the supplied invariant, and each
+normal iteration strictly lowers its natural variant. An allowance covering
+that variant excludes the loop's semantic exhaustion outcome. The guard and
+body remain actual operation trees, so their reads, effects and scheduler
+continuations are not replaced by tests of this invariant. -/
+theorem while_normal_body_rank {Context : Type}
+    (test : Context → CProg CVal Bool)
+    (body : Context → CProg CVal (Result Context))
+    (rank : Context → Nat) (invariant final : Context → Heap L → Prop)
+    (guard : ∀ context, CTriple (invariant context) (test context)
+      (fun selected heap => invariant context heap ∧
+        (selected = true → 0 < rank context) ∧
+        (selected = false → final context heap)))
+    (iteration : ∀ context, CTriple
+      (fun heap => invariant context heap ∧ 0 < rank context) (body context)
+      (fun result heap => ∃ updated,
+        result = .finished (.next updated) ∧ invariant updated heap ∧
+          rank updated < rank context))
+    (fuel : Nat) (context : Context) (enough : rank context ≤ fuel) :
+    CTriple (invariant context) (whileWith test body fuel context)
+      (fun result heap => ∃ updated,
+        result = .finished (.next updated) ∧ final updated heap) := by
+  induction fuel generalizing context with
+  | zero =>
+      intro heap held
+      change (whileWith test body _ context).wp act
+        (fun result heap => ∃ updated,
+          result = .finished (.next updated) ∧ final updated heap) heap
+      rw [whileWith.eq_def, wp_bind']
+      refine wp_consequence act (guard context) held ?_
+      intro selected reached observed
+      cases selected with
+      | false =>
+          simp only [Bool.false_eq_true, ↓reduceIte, wp_pure]
+          exact ⟨context, rfl, observed.2.2 rfl⟩
+      | true =>
+          have positive := observed.2.1 rfl
+          omega
+  | succ fuel ih =>
+      intro heap held
+      change (whileWith test body _ context).wp act
+        (fun result heap => ∃ updated,
+          result = .finished (.next updated) ∧ final updated heap) heap
+      rw [whileWith.eq_def, wp_bind']
+      refine wp_consequence act (guard context) held ?_
+      intro selected reached observed
+      cases selected with
+      | false =>
+          simp only [Bool.false_eq_true, ↓reduceIte, wp_pure]
+          exact ⟨context, rfl, observed.2.2 rfl⟩
+      | true =>
+          simp only [↓reduceIte, wp_bind']
+          refine wp_consequence act (iteration context) ⟨observed.1, observed.2.1 rfl⟩ ?_
+          rintro result after ⟨updated, rfl, held, smaller⟩
+          exact ih updated (by omega) after held
+
 
 end Mettapedia.Machines.CMemory.ReadBlock

@@ -26,6 +26,7 @@ structure Environment where
   provider : ProviderSnapshot
   specifications : List (Nat × RuleBindingSpec)
   reflection : Reflection.ReflectionProfile := Reflection.ReflectionProfile.empty
+  dynamic : DynamicProvider := DynamicProvider.empty
 
 /-- The plan stores declaration indices independently of declaration names. -/
 def specification? (environment : Environment) (index : Nat) : Option RuleBindingSpec :=
@@ -108,6 +109,24 @@ theorem ArgumentsHold.extension {context : Context} {index : Nat}
   | nil => exact .refl _
   | cons head _ inductionHypothesis => exact head.extension.trans inductionHypothesis
 
+/-- Resolve the native provider's inputs in the original caller assignment.
+Output positions remain their authored schemas until the returned row is
+processed by the ordinary structural matcher. -/
+inductive DynamicInputs (context : Context) : Nat → Assignment → List Pattern →
+    List RelationArgMode → List Pattern → Prop where
+  | nil {index : Nat} {initial : Assignment} :
+      DynamicInputs context index initial [] [] []
+  | input {index : Nat} {initial : Assignment} {schema value : Pattern}
+      {schemas values : List Pattern} {modes : List RelationArgMode} :
+      instantiateAt? context.rule context.spec context.bound.length
+        (context.site index) [] 0 initial schema = some value →
+      DynamicInputs context (index + 1) initial schemas modes values →
+      DynamicInputs context index initial (schema :: schemas) (.input :: modes) (value :: values)
+  | output {index : Nat} {initial : Assignment} {schema : Pattern}
+      {schemas values : List Pattern} {modes : List RelationArgMode} :
+      DynamicInputs context (index + 1) initial schemas modes values →
+      DynamicInputs context index initial (schema :: schemas) (.output :: modes) (schema :: values)
+
 inductive QueryHolds (environment : Environment) (context : Context)
     (relation : String) (arguments : List Pattern) (initial : Assignment) :
     Nat → Assignment → Prop where
@@ -118,6 +137,18 @@ inductive QueryHolds (environment : Environment) (context : Context)
       ArgumentsHold context 0 initial arguments row.values signature.modes final →
       TypedAssignment environment context final →
       QueryHolds environment context relation arguments initial rowIndex final
+  | dynamicRow {nativeIndex : Nat} {signature : Signature} {final : Assignment}
+      {resolved : List Pattern} {rows : List (List Pattern)} {values : List Pattern} :
+      relation ∈ environment.provider.dynamicRelations →
+      signature? environment.provider relation arguments.length = some signature →
+      DynamicInputs context 0 initial arguments signature.modes resolved →
+      environment.dynamic.Source relation resolved rows →
+      rows[nativeIndex]? = some values →
+      RowTyped environment.language environment.free context.bound signature ⟨relation, values⟩ →
+      ArgumentsHold context 0 initial arguments values signature.modes final →
+      TypedAssignment environment context final →
+      QueryHolds environment context relation arguments initial
+        (environment.provider.rows.length + nativeIndex) final
 
 theorem QueryHolds.extension {environment : Environment} {context : Context}
     {relation : String} {arguments : List Pattern} {initial final : Assignment} {rowIndex : Nat}
@@ -125,6 +156,7 @@ theorem QueryHolds.extension {environment : Environment} {context : Context}
     Extension initial final := by
   cases held with
   | row _ _ _ arguments _ => exact arguments.extension
+  | dynamicRow _ _ _ _ _ _ arguments _ => exact arguments.extension
 
 inductive TracedArgumentsHold (context : Context) : Nat → Assignment → List Pattern →
     List Pattern → List RelationArgMode → Assignment →
@@ -170,6 +202,19 @@ inductive TracedQuery (environment : Environment) (context : Context)
       TracedArgumentsHold context 0 initial arguments row.values signature.modes final origins →
       TypedAssignment environment context final →
       TracedQuery environment context relation arguments initial rowIndex final origins
+  | dynamicRow {nativeIndex : Nat} {signature : Signature} {final : Assignment}
+      {resolved : List Pattern} {rows : List (List Pattern)} {values : List Pattern}
+      {origins : List (Nat × List GeneralScopedMatchMachine.BagChoice)} :
+      relation ∈ environment.provider.dynamicRelations →
+      signature? environment.provider relation arguments.length = some signature →
+      DynamicInputs context 0 initial arguments signature.modes resolved →
+      environment.dynamic.Source relation resolved rows →
+      rows[nativeIndex]? = some values →
+      RowTyped environment.language environment.free context.bound signature ⟨relation, values⟩ →
+      TracedArgumentsHold context 0 initial arguments values signature.modes final origins →
+      TypedAssignment environment context final →
+      TracedQuery environment context relation arguments initial
+        (environment.provider.rows.length + nativeIndex) final origins
 
 theorem TracedQuery.readout {environment : Environment} {context : Context}
     {relation : String} {arguments : List Pattern} {initial final : Assignment} {rowIndex : Nat}
@@ -179,6 +224,8 @@ theorem TracedQuery.readout {environment : Environment} {context : Context}
   cases traced with
   | row selected declared typed arguments finalTyped =>
       exact .row selected declared typed arguments.readout finalTyped
+  | dynamicRow registered declared resolved source selected typed arguments finalTyped =>
+      exact .dynamicRow registered declared resolved source selected typed arguments.readout finalTyped
 
 /-- Runtime histories retain every provider declaration, quantified occurrence
 and directed child firing. Matcher traces are retained by the query machine

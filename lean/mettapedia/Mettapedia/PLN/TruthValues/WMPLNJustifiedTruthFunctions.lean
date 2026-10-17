@@ -100,10 +100,9 @@ The historical raw-min formula `w2c (min cBA cBC)` is analyzed in
 confidence as if it were already an evidence weight.
 -/
 
-abbrev TV := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.TV
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV)
 abbrev MettaTV := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.TV
-abbrev MAX_CONF := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.MAX_CONF
-abbrev capConf := Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.capConf
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (MAX_CONF capConf)
 
 /-- A no-op type coercion. The Lean code has two aliases (`TV` and
 `MettaTV`) for the same `(strength, confidence)` pair, and this is the

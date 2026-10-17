@@ -26,19 +26,26 @@ def checkEquation (plan : Plan) (equation : EquationPlan) : Bool :=
   GeneralPremise.Static.checkRule (GeneralPlanEnvironment.environment plan).language
     plan.snapshot.provider equation.rule equation.binding.spec
 
+/-- The ordinary compiled plan currently installs the finite-row provider.
+Registered native services need their separately checked implementation and
+source-image admission before they can establish totality here. -/
 def checkGeneric (plan : Plan) : Bool :=
-  GeneralPremise.Static.checkLanguage (GeneralPlanEnvironment.environment plan) &&
+  plan.snapshot.provider.dynamicRelations.isEmpty &&
+    GeneralPremise.Static.checkLanguage (GeneralPlanEnvironment.environment plan) &&
     plan.equations.all (checkEquation plan)
 
 inductive Obligation where
   | foundation (reason : GeneralExecutionAdmission.Obligation)
   | childTotality
+  | nativeServicesUnavailable (relations : List String)
   | ruleTotality (declarationIndex : Nat)
   | equationTotality (declarationIndex : Nat) (direction : ScopedEquationExecution.Orientation)
   | unsupportedTotalProfile
   deriving DecidableEq, Repr
 
 def genericObligations (plan : Plan) : List Obligation :=
+  (if plan.snapshot.provider.dynamicRelations.isEmpty then []
+    else [.nativeServicesUnavailable plan.snapshot.provider.dynamicRelations]) ++
   (if GeneralPremise.Static.checkLanguage (GeneralPlanEnvironment.environment plan) then []
     else [.childTotality]) ++
   ((plan.rules.filter fun rule => !(checkRule plan rule)).map fun rule =>
@@ -50,7 +57,26 @@ theorem checkGeneric_readout {plan : Plan} (checked : checkGeneric plan = true) 
     GeneralPremise.Static.checkLanguage (GeneralPlanEnvironment.environment plan) = true ∧
     ∀ equation ∈ plan.equations, checkEquation plan equation = true := by
   simp only [checkGeneric, Bool.and_eq_true] at checked
-  exact ⟨checked.1, List.all_eq_true.mp checked.2⟩
+  exact ⟨checked.1.2, List.all_eq_true.mp checked.2⟩
+
+theorem checkGeneric_no_dynamic {plan : Plan} (checked : checkGeneric plan = true) :
+    plan.snapshot.provider.dynamicRelations = [] := by
+  simp only [checkGeneric, Bool.and_eq_true] at checked
+  exact List.isEmpty_iff.mp checked.1.1
+
+/-- A finite-only plan cannot certify an uninstalled native implementation. -/
+theorem checkGeneric_native_refused {plan : Plan}
+    (registered : plan.snapshot.provider.dynamicRelations ≠ []) : checkGeneric plan = false := by
+  cases found : plan.snapshot.provider.dynamicRelations with
+  | nil => exact False.elim (registered found)
+  | cons relation relations => simp only [checkGeneric, found, List.isEmpty_cons, Bool.false_and]
+
+theorem native_unavailable_obligation {plan : Plan}
+    (registered : plan.snapshot.provider.dynamicRelations ≠ []) :
+    Obligation.nativeServicesUnavailable plan.snapshot.provider.dynamicRelations ∈ genericObligations plan := by
+  cases found : plan.snapshot.provider.dynamicRelations with
+  | nil => exact False.elim (registered found)
+  | cons relation relations => simp [genericObligations, found]
 
 theorem checkGeneric_equation {plan : Plan} (checked : checkGeneric plan = true)
     {equation : EquationPlan} (member : equation ∈ plan.equations) :
@@ -80,7 +106,8 @@ theorem genericObligations_empty {plan : Plan} (checked : checkGeneric plan = tr
     intro equation member
     rw [readout.2 equation member]
     simp only [Bool.not_true, Bool.false_eq_true, not_false_eq_true]
-  simp only [genericObligations, readout.1, if_true,
+  simp only [genericObligations, checkGeneric_no_dynamic checked, List.isEmpty_nil,
+    readout.1, if_true,
     rulesEmpty, equationsEmpty, List.map_nil, List.nil_append]
 
 def checkTotality (plan : Plan) : Bool :=

@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.CoreEmbedding
 import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.Inst0BridgeDerived

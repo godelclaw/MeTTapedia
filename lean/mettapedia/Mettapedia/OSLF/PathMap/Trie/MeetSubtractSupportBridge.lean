@@ -79,7 +79,7 @@ theorem pathSupport_subtract_eq_sdiff (t₁ t₂ : FTrie Unit)
     have h1 := lookup_of_pathSupport_mem _ p h₁ hp₁
     have h2 : t₂.lookup p = none := by
       by_contra habs
-      push_neg at habs
+      push Not at habs
       cases hv : t₂.lookup p with
       | none => contradiction
       | some v =>

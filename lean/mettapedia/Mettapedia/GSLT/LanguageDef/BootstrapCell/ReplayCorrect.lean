@@ -77,23 +77,6 @@ theorem checkRaw_correct (definition : ValidatedCalculusLanguageDef) :
   ReplayCorrect.iff_eq_replay.mpr (funext fun goal => funext fun certificate =>
     checkRaw_eq_replay definition goal certificate)
 
-/-- **Negative control.**  The too-strong kernel is not a `ReplayCorrect`
-implementation. -/
-theorem tooStrong_not_replay_correct :
-    ¬ ReplayCorrect (CheckingWeakness.modusPonens ()) (CheckingWeakness.tooStrong ()) := by
-  intro core
-  have faithful : CheckingWeakness.Faithful CheckingWeakness.modusPonens
-      CheckingWeakness.tooStrong := by
-    rintro ⟨⟨⟩, goal, certificate⟩
-    refine ⟨core.sound goal certificate, ?_⟩
-    rintro ⟨derivation, erased⟩
-    have erased' : derivation.erase = certificate := erased
-    show CheckingWeakness.tooStrong () goal certificate = true
-    rw [← erased']
-    exact core.complete goal derivation
-  exact CheckingWeakness.tooStrong_not_weakest
-    ((CheckingWeakness.isWeakestAdmissible_iff_faithful _).mpr faithful)
-
 /-! ## Semantic qualification: the separate interface -/
 
 /-- A meaning closed under every local rule application, supplied separately

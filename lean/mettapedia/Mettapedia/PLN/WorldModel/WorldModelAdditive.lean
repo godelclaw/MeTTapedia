@@ -1,5 +1,5 @@
 import Mathlib.Data.Multiset.Fold
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # Additive World-Model Extensions

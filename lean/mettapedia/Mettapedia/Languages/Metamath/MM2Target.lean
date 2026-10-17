@@ -10,6 +10,17 @@ The Metamath transformations consume an operational MM2 presentation through
 this behavioral capability.  The target is not selected by a name, digest,
 or equality with one privileged object.  OSLF is applied to the actual
 supplied target GSLT before its native transition types are used.
+
+The targets supplied in this tree are the support model's executors
+(`ReflectiveExecution`, `MM2RuleScopedExecution`), so "ordinary MM2", "the MM2
+scheduler" and "actual MORK" in the Metamath modules name that model: one-way
+matching and sinks finalized in authored order.  The kernel (`Mainline`) fires as the
+rule-scoped executor does on ground stored atoms when every `+` sink precedes every
+`-` sink (`MM2SupportKernelBridge.fireDirective_eq_ruleScoped_ground`); no theorem yet
+relates the reflective executor to the kernel.  The exported
+verifier also runs on the kernel binary itself: the unit fixtures `test_stack_simple`,
+`test_stack_fhyps` and `test_dv_yz_required` are accepted and `test22`, `test24`,
+`test26` and `test27` are rejected for the stated reasons.
 -/
 
 namespace Mettapedia.Languages.Metamath.MM2Transformation

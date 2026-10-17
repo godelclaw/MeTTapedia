@@ -45,7 +45,7 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef (reflectionPresentation)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
   (contract contractList contractRoot contractList_eq_map contractRoot_quote_cases
     contract_apply_of_ne quoted dropped unitAtom QuoteDropSorted)
 open Mettapedia.Logic.HostingStyles.AmbientSpace (tokens_apply_eq_zero_iff tokens_eq_zero_of_mem)

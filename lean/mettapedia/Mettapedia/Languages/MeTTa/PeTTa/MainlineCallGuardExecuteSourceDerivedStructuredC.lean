@@ -499,8 +499,9 @@ def decisionOfRelation? (relation : String) : Option Decision :=
 /-- Compile one source relation premise to one visible decision call. -/
 def lowerPremiseCondition? (premise : PremisePlan) : Option Pattern := do
   let decision ← decisionOfRelation? premise.relation
-  guard (premise.arguments.length = decisionArity decision)
-  pure (call decision.externalName (variableExpressions premise.arguments))
+  let names ← premise.argumentNames?
+  guard (names.length = decisionArity decision)
+  pure (call decision.externalName (variableExpressions names))
 
 /-- Wrap a successful action in every authored guard, retaining premise
 order. -/

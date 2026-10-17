@@ -32,6 +32,9 @@ import Mettapedia.GSLT.Distinction.SimulationComposition
 import Mettapedia.GSLT.Distinction.SimulationCompositionControls
 import Mettapedia.GSLT.Distinction.OrderedSimulationSpans
 import Mettapedia.GSLT.Distinction.OrderedSimulationSpansControls
+import Mettapedia.GSLT.Distinction.OrderedAdministration
+import Mettapedia.GSLT.Distinction.OrderedAdministrationControls
+import Mettapedia.GSLT.Distinction.FrontierObservation
 import Mettapedia.GSLT.Distinction.ActionCommutation
 import Mettapedia.GSLT.Distinction.RunOutcomes
 import Mettapedia.GSLT.Distinction.StatusObservers

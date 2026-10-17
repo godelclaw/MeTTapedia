@@ -132,6 +132,103 @@ namespace MachineCore
 
 variable {Term Image : Type}
 
+/-! ## Selected machine families
+
+A configuration retains one fixed package selection and the selected machine's
+own question and state types. A selection may include a language, loaded
+library rows and primitive realizations; it is not a common guest logic.
+Mutable provider/world revisions remain inside the selected state or require
+an independently justified crossing to another package.
+-/
+
+/-- Construct a common computational carrier for independently supplied
+machines, without identifying their questions or control states. -/
+def familyCore {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection)) :
+    MachineCore (Σ selection, Question selection) where
+  State := Σ selection, (kernels selection).State
+  load question := ⟨question.1, (kernels question.1).load question.2⟩
+  step state := ((kernels state.1).step state.2).map (Sigma.mk state.1)
+
+@[simp] theorem familyCore_load {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (selection : Selection) (question : Question selection) :
+    (familyCore kernels).load ⟨selection, question⟩ =
+      ⟨selection, (kernels selection).load question⟩ := rfl
+
+/-- Every successful family transition is an actual transition of the retained
+kernel. Conversely, that transition constructs the corresponding family step. -/
+theorem familyCore_step_some_iff {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (state next : (familyCore kernels).State) :
+    (familyCore kernels).step state = some next ↔
+      ∃ inner : (kernels state.1).State,
+        (kernels state.1).step state.2 = some inner ∧ next = ⟨state.1, inner⟩ := by
+  constructor
+  · intro advanced
+    obtain ⟨inner, actual, packed⟩ := Option.map_eq_some_iff.mp advanced
+    exact ⟨inner, actual, packed.symm⟩
+  · rintro ⟨inner, actual, rfl⟩
+    simp [familyCore, actual]
+
+theorem familyCore_step_keeps_selection {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    {state next : (familyCore kernels).State}
+    (advanced : (familyCore kernels).step state = some next) : next.1 = state.1 := by
+  obtain ⟨_, _, packed⟩ := (familyCore_step_some_iff kernels state next).mp advanced
+  rw [packed]
+
+@[simp] theorem familyCore_step_none_iff {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (state : (familyCore kernels).State) :
+    (familyCore kernels).step state = none ↔ (kernels state.1).step state.2 = none := by
+  exact Option.map_eq_none_iff
+
+/-- No finite chain of family transitions silently changes the selected
+kernel, including chains from a resumed retained configuration. -/
+theorem familyCore_reachable_keeps_selection {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    {state last : (familyCore kernels).State}
+    (reached : Relation.ReflTransGen
+      (fun before after => (familyCore kernels).step before = some after) state last) :
+    last.1 = state.1 := by
+  induction reached using Relation.ReflTransGen.head_induction_on with
+  | refl => rfl
+  | head advanced _ ih => exact ih.trans (familyCore_step_keeps_selection kernels advanced)
+
+/-- Select a package, then decode a question using that package's own reader.
+Either stage can refuse. The reader retains the selected package in the result. -/
+def decodeSelected {Selection : Type} {Question : Selection → Type}
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection))
+    (image : Image) : Option (Σ selection, Question selection) :=
+  (select image).bind fun selection => (decode selection image).map (Sigma.mk selection)
+
+/-- Successful decoding includes both actual reader equations and the retained
+dependent question; the selected interpretation cannot be inferred from bytes. -/
+theorem decodeSelected_some_iff {Selection : Type} {Question : Selection → Type}
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection))
+    (image : Image) (question : Σ selection, Question selection) :
+    decodeSelected select decode image = some question ↔
+      ∃ selection inner, select image = some selection ∧
+        decode selection image = some inner ∧ question = ⟨selection, inner⟩ := by
+  constructor
+  · intro decoded
+    obtain ⟨selection, selected, body⟩ := Option.bind_eq_some_iff.mp decoded
+    obtain ⟨inner, parsed, packed⟩ := Option.map_eq_some_iff.mp body
+    exact ⟨selection, inner, selected, parsed, packed.symm⟩
+  · rintro ⟨selection, inner, selected, parsed, rfl⟩
+    simp [decodeSelected, selected, parsed]
+
+theorem decodeSelected_none_iff {Selection : Type} {Question : Selection → Type}
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection)) (image : Image) :
+    decodeSelected select decode image = none ↔
+      select image = none ∨ ∃ selection,
+        select image = some selection ∧ decode selection image = none := by
+  cases selected : select image <;> simp [decodeSelected, selected]
+
 /-- Load a code image only after its decoder supplies a source question.
 Decoder refusal creates no machine configuration. -/
 def loadCode (core : MachineCore Term) (decode : Image → Option Term)
@@ -165,6 +262,57 @@ theorem loadCode_encode (core : MachineCore Term) (encode : Term → Image)
     (roundtrip : ∀ question, decode (encode question) = some question) (question : Term) :
     core.loadCode decode (encode question) = some (core.load question) := by
   simp [loadCode, roundtrip]
+
+/-- Selected loading composes the two partial readers with the actual kernel
+loader. No failed selection or reader is replaced by a default interpretation. -/
+theorem familyCore_loadCode_eq {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection)) (image : Image) :
+    (familyCore kernels).loadCode (decodeSelected select decode) image =
+      (select image).bind fun selection =>
+        ((kernels selection).loadCode (decode selection) image).map (Sigma.mk selection) := by
+  cases selected : select image <;>
+    simp [loadCode, decodeSelected, selected, familyCore, Option.map_map, Function.comp_def]
+
+theorem familyCore_loadCode_some_iff {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection))
+    (image : Image) (state : (familyCore kernels).State) :
+    (familyCore kernels).loadCode (decodeSelected select decode) image = some state ↔
+      ∃ selection question, select image = some selection ∧
+        decode selection image = some question ∧ state = ⟨selection, (kernels selection).load question⟩ := by
+  rw [loadCode_some_iff]
+  constructor
+  · rintro ⟨question, decoded, loaded⟩
+    obtain ⟨selection, inner, selected, parsed, rfl⟩ :=
+      (decodeSelected_some_iff select decode image question).mp decoded
+    exact ⟨selection, inner, selected, parsed, loaded.symm⟩
+  · rintro ⟨selection, question, selected, parsed, rfl⟩
+    refine ⟨⟨selection, question⟩, ?_, rfl⟩
+    exact (decodeSelected_some_iff select decode image _).mpr
+      ⟨selection, question, selected, parsed, rfl⟩
+
+theorem familyCore_loadCode_keeps_selection {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection))
+    {image : Image} {state : (familyCore kernels).State}
+    (loaded : (familyCore kernels).loadCode (decodeSelected select decode) image = some state) :
+    select image = some state.1 := by
+  obtain ⟨selection, _, selected, _, rfl⟩ :=
+    (familyCore_loadCode_some_iff kernels select decode image state).mp loaded
+  exact selected
+
+theorem familyCore_loadCode_none_iff {Selection : Type} {Question : Selection → Type}
+    (kernels : (selection : Selection) → MachineCore (Question selection))
+    (select : Image → Option Selection)
+    (decode : (selection : Selection) → Image → Option (Question selection)) (image : Image) :
+    (familyCore kernels).loadCode (decodeSelected select decode) image = none ↔
+      select image = none ∨ ∃ selection,
+        select image = some selection ∧ decode selection image = none := by
+  rw [loadCode_none_iff, decodeSelected_none_iff]
 
 /-- A VM's fetched instruction must be legal in its actual retained state.
 Instances relate this independent legality judgment to their executable step;

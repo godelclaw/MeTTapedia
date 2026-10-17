@@ -18,8 +18,13 @@ import Mettapedia.TypeTheory.UniverseLevel.ZFSetTower
 import Mettapedia.TypeTheory.ApplicationExtensionalCollapse
 import Mettapedia.TypeTheory.BehavioralIdentityObserverFactorization
 import Mettapedia.TypeTheory.BubbleConversion
+import Mettapedia.TypeTheory.BubbleJoin
+import Mettapedia.TypeTheory.BubbleJoinCongruence
+import Mettapedia.TypeTheory.BubbleJoinDisjoint
+import Mettapedia.TypeTheory.BubbleJoinEngine
 import Mettapedia.TypeTheory.BubbleSelection
 import Mettapedia.TypeTheory.BubbleWeakness
+import Mettapedia.TypeTheory.HypercubeBubbles
 import Mettapedia.TypeTheory.CategoryIndexedFamilyCwf
 import Mettapedia.TypeTheory.CategoryIndexedFamilyTypeFormers
 import Mettapedia.TypeTheory.CategoryIndexedFamilyThinDescentTypeFormers

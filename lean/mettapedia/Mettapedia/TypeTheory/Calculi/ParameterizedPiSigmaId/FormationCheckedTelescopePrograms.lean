@@ -1,3 +1,4 @@
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.StructuralConversionPaths
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TelescopeArgumentChecking
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveRegularity
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveTelescopeSpine
@@ -27,6 +28,13 @@ namespace FormationCheckedTelescopePrograms
 open FormationSensitive TelescopeAbstraction TelescopeArgumentChecking
 
 variable {Head Evidence : Type} {R : Rules Head} {n m : Nat}
+
+/-- A closed formed term weakens into any target context. Its declaration
+and type remain closed under the actual renaming operation. -/
+theorem liftClosed_typing {term type : Tm Head 0}
+    (typed : Typing R .nil term type) (target : Ctx Head n) :
+    Typing R target (liftClosed term) (liftClosed type) :=
+  typed.renameTyping (ρ := Fin.elim0) (fun index => Fin.elim0 index)
 
 /-- Closure forms all products in the original telescope order. -/
 theorem close_formed
@@ -202,6 +210,59 @@ theorem checked_return_then_consume
   refine ⟨⟨targetFormation, ?_⟩, secondSteps.trans firstSteps, retained⟩
   simpa only [Ctx.lookup_snoc_zero, subst_prior, consSub_succ] using second
 
+open StructuralConversionCode
+
+/-- Emit the existing structural conversion code for applying one closed
+telescope. Every step is beta, possibly under the remaining applications.
+No authored root code or head equation is available. -/
+def applicationCode : {n : Nat} → (context : Ctx Head n) → Sub Head n m →
+    Tm Head n → Code Head (fun _ => Empty) m
+  | _, .nil, _, term => .refl (liftClosed term)
+  | _, .snoc prior _, sigma, term =>
+      .trans
+        (Code.mapContext (fun function => .app function (sigma 0))
+          (fun step => .congAppFun step (sigma 0))
+          (applicationCode prior (fun index => sigma index.succ) (.lam term)))
+        (.single (.betaPi (subst (liftSub (fun index => sigma index.succ)) term) (sigma 0)))
+
+abbrev noRoot : {n : Nat} → Empty → Option (Tm Head n × Tm Head n) :=
+  (RootDecoder.ofEmpty (RootComputation.empty : RootComputation Head) rfl).decode
+
+theorem applicationCode_checked [DecidableEq Head]
+    (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
+    (applicationCode context sigma term).check (fun _ _ => False) noRoot
+      (applyClosed context sigma (liftClosed (closeTerm context term)))
+      (subst sigma term) = true := by
+  induction context with
+  | nil =>
+      simpa only [applicationCode, closeTerm, applyClosed, subst_empty] using
+        Code.check_refl (fun _ _ : Head => False) noRoot (liftClosed term : Tm Head m)
+  | snoc prior domain ih =>
+      have earlier := ih (sigma := fun index => sigma index.succ) (term := .lam term)
+      have underApplication := Code.check_mapContext (fun _ _ : Head => False) noRoot
+        (fun function => .app function (sigma 0)) (fun step => .congAppFun step (sigma 0))
+        (fun _ => rfl) earlier
+      have beta : Code.check (fun _ _ : Head => False) noRoot
+          (.single (.betaPi (subst (liftSub (fun index => sigma index.succ)) term) (sigma 0)))
+          (.app (.lam (subst (liftSub (fun index => sigma index.succ)) term)) (sigma 0))
+          (subst sigma term) = true := by
+        simp only [Code.check, Code.decode, StepCode.decode, subst_open, decide_true]
+      simpa only [applicationCode, closeTerm, applyClosed, subst] using
+        Code.check_trans (fun _ _ : Head => False) noRoot underApplication beta
+
+/-- This counts selected beta occurrences. It does not count term copying,
+decoder comparisons, or the machine instructions implementing those tasks. -/
+theorem applicationCode_stepCount
+    (context : Ctx Head n) (sigma : Sub Head n m) (term : Tm Head n) :
+    (applicationCode context sigma term).stepCount = n := by
+  induction context with
+  | nil => rfl
+  | snoc prior domain ih =>
+      simp only [applicationCode, Code.stepCount, Code.stepCount_mapContext, ih]
+
+#print axioms applicationCode_checked
+#print axioms applicationCode_stepCount
+
 #print axioms close_formed
 #print axioms close_typed
 #print axioms checked_substitution
@@ -210,6 +271,104 @@ theorem checked_return_then_consume
 #print axioms checked_program
 #print axioms checked_projection_loop
 #print axioms checked_return_then_consume
+
+end FormationCheckedTelescopePrograms
+end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+
+namespace Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+namespace FormationCheckedTelescopePrograms
+
+open FormationSensitive TelescopeAbstraction
+variable {Head : Type} {n m : Nat}
+
+/-- Each literal input position is passed through its selected closed map. -/
+def adaptedArguments (adapters : Fin n → Tm Head 0) : Sub Head n n :=
+  fun index => .app (liftClosed (adapters index)) (.var index)
+
+/-- Compose the actual constructor with the finite adapter vector, then
+abstract its original input telescope through the existing closure operation. -/
+def adaptClosed (input output : Ctx Head n) (adapters : Fin n → Tm Head 0)
+    (function : Tm Head 0) : Tm Head 0 :=
+  closeTerm input (applyClosed output (adaptedArguments adapters) (liftClosed function))
+
+private theorem apply_closedArrow {rules : Rules Head} {context : Ctx Head n}
+    {domain codomain : Tm Head 0} {function argument : Tm Head n}
+    (functionTyped : Typing rules context function (liftClosed (.pi domain (liftClosed codomain))))
+    (argumentTyped : Typing rules context argument (liftClosed domain)) :
+    Typing rules context (.app function argument) (liftClosed codomain) := by
+  change Typing rules context function
+    (.pi (liftClosed domain) (rename (liftRen Fin.elim0) (liftClosed codomain))) at functionTyped
+  rw [rename_liftClosed] at functionTyped
+  simpa only [inst0, subst_liftClosed] using (Typing.appElim functionTyped argumentTyped)
+
+/-- Literal primitive map types earn the actual context morphism used by
+application; their endpoints remain tied to both original telescopes. -/
+theorem adaptedArguments_typed {rules : Rules Head} (input output : Ctx Head n)
+    (domains codomains : Fin n → Tm Head 0) (adapters : Fin n → Tm Head 0)
+    (inputRead : ∀ index, Ctx.lookup input index = liftClosed (domains index))
+    (outputRead : ∀ index, Ctx.lookup output index = liftClosed (codomains index))
+    (primitive : ∀ index, Typing rules .nil (adapters index)
+      (.pi (domains index) (liftClosed (codomains index)))) :
+    FormationSensitive.CtxMor rules output input (adaptedArguments adapters) := by
+  intro index
+  have adapter := liftClosed_typing (primitive index) input
+  have value : Typing rules input (.var index) (liftClosed (domains index)) :=
+    (inputRead index) ▸ Typing.var index
+  have applied := apply_closedArrow adapter value
+  simpa only [adaptedArguments, outputRead, subst_liftClosed] using applied
+
+/-- The composed operator is a formed closed program, derived from its
+individual adapters and the original constructor's declared type. -/
+theorem adaptClosed_typing {rules : Rules Head}
+    (universes : UniverseRegularity rules)
+    (joins : ∀ {u v}, rules.isUniverse u → rules.isUniverse v →
+      ∃ w, rules.isUniverse w ∧ rules.join u v w)
+    (input output : Ctx Head n) (inputFormed : ContextFormation rules input)
+    (domains codomains : Fin n → Tm Head 0) (adapters : Fin n → Tm Head 0)
+    (inputRead : ∀ index, Ctx.lookup input index = liftClosed (domains index))
+    (outputRead : ∀ index, Ctx.lookup output index = liftClosed (codomains index))
+    (primitive : ∀ index, Typing rules .nil (adapters index)
+      (.pi (domains index) (liftClosed (codomains index))))
+    {function result : Tm Head 0}
+    (functionTyped : Typing rules .nil function (closeType output (liftClosed result))) :
+    Typing rules .nil (adaptClosed input output adapters function)
+      (closeType input (liftClosed result)) := by
+  have arguments := adaptedArguments_typed input output domains codomains adapters
+    inputRead outputRead primitive
+  have application := apply_typed arguments (liftClosed_typing functionTyped input)
+  simp only [subst_liftClosed] at application
+  exact close_typed universes joins inputFormed application
+
+/-- The existing telescope certificate records the administrative applications
+of the adapted program without a second evaluator or recursive certificate fold. -/
+def adaptClosedCode (input output : Ctx Head n) (adapters : Fin n → Tm Head 0)
+    (function : Tm Head 0) (values : Sub Head n m) :=
+  applicationCode input values
+    (applyClosed output (adaptedArguments adapters) (liftClosed function))
+
+theorem adaptedArguments_substitute (adapters : Fin n → Tm Head 0)
+    (values : Sub Head n m) :
+    subComp values (adaptedArguments adapters) =
+      fun index => .app (liftClosed (adapters index)) (values index) := by
+  funext index
+  simp only [subComp, adaptedArguments, subst, subst_liftClosed]
+
+theorem adaptClosedCode_checked [DecidableEq Head]
+    (input output : Ctx Head n) (adapters : Fin n → Tm Head 0)
+    (function : Tm Head 0) (values : Sub Head n m) :
+    (adaptClosedCode input output adapters function values).check (fun _ _ => False) noRoot
+      (applyClosed input values (liftClosed (adaptClosed input output adapters function)))
+      (applyClosed output (fun index => .app (liftClosed (adapters index)) (values index))
+        (liftClosed function)) = true := by
+  have checked := applicationCode_checked input values
+    (applyClosed output (adaptedArguments adapters) (liftClosed function))
+  simpa only [adaptClosedCode, adaptClosed, applyClosed_subst, adaptedArguments_substitute,
+    subst_liftClosed] using checked
+
+theorem adaptClosedCode_stepCount (input output : Ctx Head n)
+    (adapters : Fin n → Tm Head 0) (function : Tm Head 0) (values : Sub Head n m) :
+    (adaptClosedCode input output adapters function values).stepCount = n :=
+  applicationCode_stepCount input values _
 
 end FormationCheckedTelescopePrograms
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

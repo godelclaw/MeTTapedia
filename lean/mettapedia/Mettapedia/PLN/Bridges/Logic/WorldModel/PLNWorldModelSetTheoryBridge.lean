@@ -25,7 +25,9 @@ open LO
 open LO.FirstOrder
 open LO.FirstOrder.SetTheory
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine
 
@@ -34,36 +36,6 @@ abbrev SetTheory := Theory SetLang
 abbrev SetQuery := FOLQuery SetLang
 abbrev SetPointed := PointedFOL SetLang
 abbrev SetState := FOLState SetLang
-
-/-- Set-theory model-side condition for WM states. -/
-abbrev stateModelsTheory (T : SetTheory) (W : SetState) : Prop :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.stateModelsTheory T W
-
-/-- Set-theory singleton-strength consequence schema. -/
-abbrev singletonStrengthLEOnTheory (T : SetTheory) (φ ψ : SetQuery) : Prop :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.singletonStrengthLEOnTheory T φ ψ
-
-/-- Set-theory pointwise implication on `T`-models. -/
-abbrev pointwiseImpliesOnTheory (T : SetTheory) (φ ψ : SetQuery) : Prop :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory T φ ψ
-
-/-- Set-theoretic semantic consequence iff singleton WM consequence (implication
-fragment). -/
-theorem consequence_iff_singletonStrengthLEOnTheory
-    (T : SetTheory) (φ ψ : SetQuery) :
-    T ⊨[SmallStruc SetLang] (φ ➝ ψ) ↔ singletonStrengthLEOnTheory T φ ψ := by
-  simpa [SetLang, SetQuery, SetTheory] using
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.consequence_iff_singletonStrengthLEOnTheory
-      (L := SetLang) (T := T) (φ := φ) (ψ := ψ))
-
-/-- Set-theoretic provability iff singleton WM consequence (implication
-fragment). -/
-theorem provable_imp_iff_singletonStrengthLEOnTheory
-    (T : SetTheory) (φ ψ : SetQuery) :
-    (T ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOnTheory T φ ψ := by
-  simpa [SetLang, SetQuery, SetTheory] using
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.provable_imp_iff_singletonStrengthLEOnTheory
-      (L := SetLang) (T := T) (φ := φ) (ψ := ψ))
 
 /-- Steelman singleton-explicit form:
 set-theoretic semantic consequence is equivalent to universal singleton WM
@@ -77,7 +49,7 @@ theorem consequence_iff_all_model_singleton_strength
           BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery)
             ({S} : SetState) ψ := by
   exact
-    (consequence_iff_singletonStrengthLEOnTheory (T := T) (φ := φ) (ψ := ψ))
+    (consequence_iff_singletonStrengthLEOn (T := T) (φ := φ) (ψ := ψ))
 
 /-- Steelman singleton-explicit form:
 set-theoretic provability is equivalent to universal singleton WM
@@ -91,30 +63,7 @@ theorem provable_imp_iff_all_model_singleton_strength
           BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery)
             ({S} : SetState) ψ := by
   exact
-    (provable_imp_iff_singletonStrengthLEOnTheory (T := T) (φ := φ) (ψ := ψ))
-
-/-- Set-theoretic semantic implication consequence gives multiset WM strength
-inequality on `T`-states. -/
-theorem multiset_strength_le_of_consequence
-    (T : SetTheory) (W : SetState) (φ ψ : SetQuery)
-    (hW : stateModelsTheory T W)
-    (hcons : T ⊨[SmallStruc SetLang] (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) W φ ≤
-      BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) W ψ := by
-  simpa [SetLang, SetState, SetQuery, SetTheory] using
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.multiset_strength_le_of_consequence
-      (L := SetLang) (T := T) (W := W) (φ := φ) (ψ := ψ) hW hcons)
-
-/-- Set-theoretic provability transport to multiset WM consequence. -/
-theorem multiset_strength_le_of_provable_imp
-    (T : SetTheory) (W : SetState) (φ ψ : SetQuery)
-    (hW : stateModelsTheory T W)
-    (hprov : T ⊢ (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) W φ ≤
-      BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) W ψ := by
-  simpa [SetLang, SetState, SetQuery, SetTheory] using
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.multiset_strength_le_of_provable_imp
-      (L := SetLang) (T := T) (W := W) (φ := φ) (ψ := ψ) hW hprov)
+    (provable_imp_iff_singletonStrengthLEOn (T := T) (φ := φ) (ψ := ψ))
 
 /-- Singleton negative criterion:
 if a pointed structure satisfies `φ` but not `ψ`, singleton WM strength inequality
@@ -129,8 +78,7 @@ theorem singleton_strength_not_of_satisfies_and_not_satisfies
           ({S} : SetState) ψ) := by
   intro hle
   have himp :=
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.singletonStrengthLE_singleton_iff_imp
-      (S := S) (φ := φ) (ψ := ψ)).1 hle
+    (singletonStrengthLE_singleton_iff_imp folSatisfies S φ ψ).1 hle
   exact hnotψ (himp hφ)
 
 /-- Outside-theory-scope counterexample family:
@@ -195,22 +143,6 @@ theorem provable_imp_to_multiset_and_endpoint_contract
       (T := T) (W := W) (φ := φ) (ψ := ψ) hW hprov
   · exact endpointContract_of_hyperdoctrine (H := H)
 
-/-- Set-theory consequence packaged as a state-indexed WM consequence rule. -/
-def wmConsequenceRuleOn_of_consequence
-    (T : SetTheory) (φ ψ : SetQuery)
-    (hcons : T ⊨[SmallStruc SetLang] (φ ➝ ψ)) :
-    WMConsequenceRuleOn SetState SetQuery :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.wmConsequenceRuleOn_of_consequence
-    (L := SetLang) (T := T) (φ := φ) (ψ := ψ) hcons
-
-/-- Set-theory provability packaged as a state-indexed WM consequence rule. -/
-def wmConsequenceRuleOn_of_provable_imp
-    (T : SetTheory) (φ ψ : SetQuery)
-    (hprov : T ⊢ (φ ➝ ψ)) :
-    WMConsequenceRuleOn SetState SetQuery :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.wmConsequenceRuleOn_of_provable_imp
-    (L := SetLang) (T := T) (φ := φ) (ψ := ψ) hprov
-
 /-! ## Concrete theory wrappers (Z, ZF, ZC, ZFC) -/
 
 abbrev stateModelsZ : SetState → Prop := stateModelsTheory 𝗭
@@ -220,23 +152,23 @@ abbrev stateModelsZFC : SetState → Prop := stateModelsTheory 𝗭𝗙𝗖
 
 theorem provable_imp_iff_singletonStrengthLEOnZ
     (φ ψ : SetQuery) :
-    (𝗭 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOnTheory 𝗭 φ ψ :=
-  provable_imp_iff_singletonStrengthLEOnTheory (T := 𝗭) (φ := φ) (ψ := ψ)
+    (𝗭 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOn folSatisfies (fun S => S ⊧* 𝗭) φ ψ :=
+  provable_imp_iff_singletonStrengthLEOn (T := 𝗭) (φ := φ) (ψ := ψ)
 
 theorem provable_imp_iff_singletonStrengthLEOnZF
     (φ ψ : SetQuery) :
-    (𝗭𝗙 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
-  provable_imp_iff_singletonStrengthLEOnTheory (T := 𝗭𝗙) (φ := φ) (ψ := ψ)
+    (𝗭𝗙 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOn folSatisfies (fun S => S ⊧* 𝗭𝗙) φ ψ :=
+  provable_imp_iff_singletonStrengthLEOn (T := 𝗭𝗙) (φ := φ) (ψ := ψ)
 
 theorem provable_imp_iff_singletonStrengthLEOnZC
     (φ ψ : SetQuery) :
-    (𝗭𝗖 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOnTheory 𝗭𝗖 φ ψ :=
-  provable_imp_iff_singletonStrengthLEOnTheory (T := 𝗭𝗖) (φ := φ) (ψ := ψ)
+    (𝗭𝗖 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOn folSatisfies (fun S => S ⊧* 𝗭𝗖) φ ψ :=
+  provable_imp_iff_singletonStrengthLEOn (T := 𝗭𝗖) (φ := φ) (ψ := ψ)
 
 theorem provable_imp_iff_singletonStrengthLEOnZFC
     (φ ψ : SetQuery) :
-    (𝗭𝗙𝗖 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOnTheory 𝗭𝗙𝗖 φ ψ :=
-  provable_imp_iff_singletonStrengthLEOnTheory (T := 𝗭𝗙𝗖) (φ := φ) (ψ := ψ)
+    (𝗭𝗙𝗖 ⊢ (φ ➝ ψ)) ↔ singletonStrengthLEOn folSatisfies (fun S => S ⊧* 𝗭𝗙𝗖) φ ψ :=
+  provable_imp_iff_singletonStrengthLEOn (T := 𝗭𝗙𝗖) (φ := φ) (ψ := ψ)
 
 theorem multiset_strength_le_of_provable_imp_ZF
     (W : SetState) (φ ψ : SetQuery)

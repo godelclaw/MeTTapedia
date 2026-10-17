@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+import Mettapedia.PLN.WorldModel.WorldModelAdditive
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 
 /-!

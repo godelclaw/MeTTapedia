@@ -266,6 +266,248 @@ theorem shared_choice_order_is_observable :
 
 end Canary
 
+/-! ## Completing a producer before entering its consumers
+
+The shared handler makes this distinction observable. `Completion.consume`
+first finishes the producer; `Program.bind` instead puts each consumer inside
+the producer's choice tree. The agreement theorem admits finite, effect-free
+producer syntax and arbitrary consumers. State reads are deliberately excluded:
+a consumer can change the state seen by a producer resumed afterwards.
+-/
+
+namespace Completion
+
+variable {State : Type uState} {Answer : Type uAnswer}
+  {Other : Type uOtherAnswer} {Intent : Type uIntent}
+
+/-- The syntactic finite-choice fragment with no state reads, writes or intents.
+This is a sufficient admission condition, not a test for semantic purity. -/
+inductive Pure : Program State Answer Intent → Prop where
+  | pure (answer : Answer) : Pure (.pure answer)
+  | choose {left right : Program State Answer Intent} :
+      Pure left → Pure right → Pure (.choose left right)
+
+/-- Enter each retained answer's consumer against the preceding final state. -/
+def consumeList (next : Answer → Program State Other Intent) :
+    List Answer → State → SharedResult State Other Intent
+  | [], state => ⟨[], state, []⟩
+  | answer :: rest, state =>
+      let first := runShared (next answer) state
+      let later := consumeList next rest first.state
+      ⟨first.answers ++ later.answers, later.state, first.intents ++ later.intents⟩
+
+/-- Completion is an evaluation boundary, not distribution of a continuation
+through the producer's alternatives. No producer observation is rolled back. -/
+def consume (producer : Program State Answer Intent)
+    (next : Answer → Program State Other Intent) (state : State) :
+    SharedResult State Other Intent :=
+  let produced := runShared producer state
+  let consumed := consumeList next produced.answers produced.state
+  ⟨consumed.answers, consumed.state, produced.intents ++ consumed.intents⟩
+
+theorem consumeList_append (next : Answer → Program State Other Intent)
+    (left right : List Answer) (state : State) :
+    consumeList next (left ++ right) state =
+      let first := consumeList next left state
+      let later := consumeList next right first.state
+      ⟨first.answers ++ later.answers, later.state, first.intents ++ later.intents⟩ := by
+  induction left generalizing state with
+  | nil => simp [consumeList]
+  | cons answer rest ih =>
+      simp only [List.cons_append, consumeList, ih]
+      simp only [List.append_assoc]
+
+theorem pure_state {producer : Program State Answer Intent} (pure : Pure producer)
+    (state : State) : (runShared producer state).state = state := by
+  induction pure with
+  | pure answer => rfl
+  | choose left right leftIH rightIH =>
+      simpa only [runShared, leftIH] using rightIH
+
+theorem pure_intents {producer : Program State Answer Intent} (pure : Pure producer)
+    (state : State) : (runShared producer state).intents = [] := by
+  induction pure generalizing state with
+  | pure answer => rfl
+  | choose left right leftIH rightIH => simp [runShared, leftIH, rightIH]
+
+theorem pure_answers_independent {producer : Program State Answer Intent}
+    (pure : Pure producer) (first second : State) :
+    (runShared producer first).answers = (runShared producer second).answers := by
+  induction pure generalizing first second with
+  | pure answer => rfl
+  | @choose left right hl hr leftIH rightIH =>
+      exact congrArg₂ List.append (leftIH first second)
+        (rightIH (runShared left first).state (runShared left second).state)
+
+/-- A finite producer with no effects or state dependence may stream into any
+consumer without changing answers, final shared state or intent order. -/
+theorem pure_streaming_eq_completion {producer : Program State Answer Intent}
+    (pure : Pure producer) (next : Answer → Program State Other Intent) (state : State) :
+    runShared (producer.bind next) state = consume producer next state := by
+  have strengthen : ∀ (p : Program State Answer Intent), Pure p → ∀ s,
+      runShared (p.bind next) s = consumeList next (runShared p s).answers s := by
+    intro p hp
+    induction hp with
+    | pure answer =>
+        intro s
+        simp [Program.bind, runShared, consumeList]
+    | @choose left right hl hr ihl ihr =>
+        intro s
+        simp only [Program.bind, runShared, ihl, ihr, pure_state hl,
+          consumeList_append]
+        rw [pure_answers_independent hr
+          (consumeList next (runShared left s).answers s).state s]
+  simpa only [consume, pure_state pure, pure_intents pure, List.nil_append]
+    using strengthen producer pure state
+
+/-- A discarded pure attempt can be replayed without changing any of the
+state/intent observations of this handler. Native costs are not erased. -/
+theorem pure_replay {producer : Program State Answer Intent} (pure : Pure producer)
+    (fallback : Program State Other Intent) (state : State) :
+    (let attempt := runShared producer state
+     let final := runShared fallback attempt.state
+     ({ final with intents := attempt.intents ++ final.intents })) =
+      runShared fallback state := by
+  simp only [pure_state pure, pure_intents pure, List.nil_append]
+
+/-- A producer with one terminal return and no choice. Reads, writes and
+intents are permitted, but must precede that return. -/
+inductive Single : Program State Answer Intent → Prop where
+  | pure (answer : Answer) : Single (.pure answer)
+  | read (next : State → Program State Answer Intent) :
+      (∀ state, Single (next state)) → Single (.read next)
+  | write (state : State) {next : Program State Answer Intent} :
+      Single next → Single (.write state next)
+  | intent (request : Intent) {next : Program State Answer Intent} :
+      Single next → Single (.intent request next)
+
+/-- An effectful single-return producer can transfer directly to its consumer:
+no later producer branch remains whose effects could cross that boundary. -/
+theorem single_streaming_eq_completion {producer : Program State Answer Intent}
+    (single : Single producer) (next : Answer → Program State Other Intent) (state : State) :
+    runShared (producer.bind next) state = consume producer next state := by
+  induction single generalizing state with
+  | pure answer => simp [Program.bind, runShared, consume, consumeList]
+  | read continuation single ih =>
+      simpa only [Program.bind, runShared, consume] using ih state state
+  | write written single ih =>
+      simpa only [Program.bind, runShared, consume] using ih written
+  | intent request single ih =>
+      simp only [Program.bind, runShared, ih]
+      simp [consume, runShared]
+
+/-! An explicit completion frame executes one free-program instruction per
+step. Raw answers stay in its bank; exhaustion is a separate observation. -/
+
+structure Frame (State : Type uState) (Answer : Type uAnswer) (Intent : Type uIntent) where
+  pending : List (Program State Answer Intent)
+  savedRev : List Answer
+  state : State
+  intents : List Intent
+
+/-- Independent big-step meaning of the whole work still represented. -/
+def Frame.owed (frame : Frame State Answer Intent) : SharedResult State Answer Intent :=
+  let future := consumeList (fun p => p) frame.pending frame.state
+  ⟨frame.savedRev.reverse ++ future.answers, future.state, frame.intents ++ future.intents⟩
+
+def Frame.step (frame : Frame State Answer Intent) : Option (Frame State Answer Intent) :=
+  match frame.pending with
+  | [] => none
+  | .pure answer :: rest => some { frame with pending := rest, savedRev := answer :: frame.savedRev }
+  | .choose left right :: rest => some { frame with pending := left :: right :: rest }
+  | .read next :: rest => some { frame with pending := next frame.state :: rest }
+  | .write state next :: rest => some { frame with pending := next :: rest, state := state }
+  | .intent request next :: rest =>
+      some { frame with pending := next :: rest, intents := frame.intents ++ [request] }
+
+/-- Stepping preserves the whole ordered answer/state/intent observation. -/
+theorem Frame.step_preserves_owed (frame next : Frame State Answer Intent)
+    (transition : frame.step = some next) : next.owed = frame.owed := by
+  rcases frame with ⟨pending, saved, state, intents⟩
+  cases pending with
+  | nil => simp [Frame.step] at transition
+  | cons program rest =>
+      cases program <;> simp only [Frame.step, Option.some.injEq] at transition <;>
+        subst next <;>
+        simp [Frame.owed, consumeList, runShared, List.reverse_cons, List.append_assoc]
+
+/-- No prefix escapes the completion frame. -/
+def Frame.publish? (frame : Frame State Answer Intent) : Option (SharedResult State Answer Intent) :=
+  match frame.pending with
+  | [] => some ⟨frame.savedRev.reverse, frame.state, frame.intents⟩
+  | _ :: _ => none
+
+theorem Frame.publish_eq_owed (frame : Frame State Answer Intent)
+    (result : SharedResult State Answer Intent) (published : frame.publish? = some result) :
+    result = frame.owed := by
+  rcases frame with ⟨pending, saved, state, intents⟩
+  cases pending with
+  | nil => simpa [Frame.publish?, Frame.owed, consumeList] using published.symm
+  | cons p ps => simp [Frame.publish?] at published
+
+def Frame.drive : Nat → Frame State Answer Intent → Frame State Answer Intent
+  | 0, frame => frame
+  | fuel + 1, frame => match frame.step with
+    | none => frame
+    | some next => Frame.drive fuel next
+
+theorem Frame.drive_preserves_owed (fuel : Nat) (frame : Frame State Answer Intent) :
+    (frame.drive fuel).owed = frame.owed := by
+  induction fuel generalizing frame with
+  | zero => rfl
+  | succ fuel ih =>
+      cases transition : frame.step with
+      | none => simp [Frame.drive, transition]
+      | some next =>
+          simpa only [Frame.drive, transition, ih] using
+            Frame.step_preserves_owed frame next transition
+
+theorem Frame.drive_add (first second : Nat) (frame : Frame State Answer Intent) :
+    frame.drive (first + second) = (frame.drive first).drive second := by
+  induction first generalizing frame with
+  | zero => simp only [Nat.zero_add, Frame.drive]
+  | succ first ih =>
+      cases transition : frame.step with
+      | none =>
+          have stopped : ∀ fuel, frame.drive fuel = frame := by
+            intro fuel
+            cases fuel <;> simp [Frame.drive, transition]
+          simp [Frame.drive, transition, stopped]
+      | some next =>
+          simpa only [Nat.succ_add, Frame.drive, transition] using ih next
+
+namespace Controls
+
+def writes : Program Nat Nat String :=
+  .choose (.write 1 (.pure 10)) (.write 2 (.pure 20))
+
+def readAfter (_ : Nat) : Program Nat Nat String := .read fun state => .pure state
+
+theorem producer_effects_must_complete :
+    (consume writes readAfter 0).answers = [2, 2] ∧
+    (runShared (writes.bind readAfter) 0).answers = [1, 2] := ⟨rfl, rfl⟩
+
+/-- Even a single-return consumer can expose a later producer's state read. -/
+def reads : Program Nat Nat String := .choose (.pure 0) (.read fun state => .pure state)
+
+def increment (answer : Nat) : Program Nat Nat String :=
+  .read fun state => .write (state + 1) (.pure answer)
+
+theorem read_only_is_not_independent :
+    (consume reads increment 0).answers = [0, 0] ∧
+    (runShared (reads.bind increment) 0).answers = [0, 1] := ⟨rfl, rfl⟩
+
+def emits : Program Nat Nat String := .intent "published" (.pure 7)
+
+/-- An unchanged space/state projection says nothing about other observations. -/
+theorem unchanged_state_does_not_justify_replay :
+    (runShared emits 0).state = 0 ∧
+    (runShared (emits.bind fun _ => emits) 0).intents = ["published", "published"] ∧
+    (runShared emits 0).intents = ["published"] := ⟨rfl, rfl, rfl⟩
+
+end Controls
+end Completion
+
 /-! ## Axiom audit -/
 
 #print axioms Canary.shared_and_isolated_are_distinct

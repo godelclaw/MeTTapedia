@@ -1,4 +1,5 @@
 import Mathlib.Data.Finset.Fold
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 import Mathlib.Data.Fintype.Fin
 import Mathlib.Data.List.Basic
 
@@ -697,6 +698,195 @@ theorem drain_trim_trace (budget : Nat) (state : State Value clients) (client : 
       have newCursor : (trim state).positions client = some position := present
       simpa only [unread, present, newCursor] using
         congrArg (fun rows => (numberFrom position rows).take budget) suffix
+
+/-- Replay the returned value and keep the occurrence position. -/
+def Reply.map {Other : Type u} (f : Value → Other) : Reply Value → Reply Other
+  | .answer position value => .answer position (f value)
+  | .paused => .paused
+  | .completed => .completed
+  | .cancelled => .cancelled
+  | .invalid => .invalid
+
+/-- Map every retained occurrence value. Base, cursors, completion and the row
+limit stay, so an absolute position still names the same occurrence. -/
+def State.map {Other : Type u} (f : Value → Other) (state : State Value clients) :
+    State Other clients :=
+  ⟨state.base, state.rows.map f, state.positions, state.completed, state.limit⟩
+
+theorem map_pastEnd {Other : Type u} (f : Value → Other) (state : State Value clients) :
+    pastEnd (state.map f) = pastEnd state := by
+  simp [pastEnd, State.map, List.length_map]
+
+theorem map_preserves_occurrence_positions {Other : Type u} (f : Value → Other)
+    (state : State Value clients) (client : Fin clients) :
+    (state.map f).base = state.base ∧
+      (state.map f).positions client = state.positions client ∧
+      (state.map f).completed = state.completed ∧
+      (state.map f).limit = state.limit ∧
+      pastEnd (state.map f) = pastEnd state := by
+  exact ⟨rfl, rfl, rfl, rfl, map_pastEnd f state⟩
+
+theorem map_id (state : State Value clients) : state.map id = state := by
+  simp [State.map, List.map_id]
+
+theorem map_setPosition {Other : Type u} (f : Value → Other) (state : State Value clients)
+    (client : Fin clients) (position : Option Nat) :
+    setPosition (state.map f) client position = (setPosition state client position).map f := by
+  simp [setPosition, State.map]
+
+theorem map_peek {Other : Type u} (f : Value → Other) (state : State Value clients)
+    (client : Fin clients) :
+    peek (state.map f) client = (peek state client).map f := by
+  cases cursor : state.positions client with
+  | none => simp [peek, State.map, Reply.map, cursor]
+  | some position =>
+      simp only [peek, State.map, cursor, List.getElem?_map, pastEnd, List.length_map]
+      by_cases lower : state.base ≤ position
+      · simp only [if_pos lower]
+        cases row : state.rows[position - state.base]? with
+        | some value => simp [Reply.map]
+        | none =>
+            by_cases last : position = state.base + state.rows.length
+            · simp only [last, if_pos, Option.map_none]
+              by_cases done : state.completed = true
+              · simp [done, Reply.map]
+              · simp [done, Reply.map]
+            · simp [Reply.map, Option.map_none, last]
+      · simp [if_neg lower, Reply.map]
+
+theorem map_pull {Other : Type u} (f : Value → Other) (state : State Value clients)
+    (client : Fin clients) :
+    pull (state.map f) client =
+      ((pull state client).1.map f, (pull state client).2.map f) := by
+  simp only [pull, map_peek]
+  cases peek state client <;> simp [Reply.map, map_setPosition]
+
+theorem map_unread {Other : Type u} (f : Value → Other) (state : State Value clients)
+    (client : Fin clients) :
+    unread (state.map f) client = (unread state client).map f := by
+  cases cursor : state.positions client with
+  | none => simp [unread, State.map, cursor]
+  | some position => simp [unread, State.map, cursor, List.map_drop]
+
+theorem map_cutoff {Other : Type u} (f : Value → Other) (state : State Value clients) :
+    cutoff (state.map f) = cutoff state := by
+  simp only [cutoff, pastEnd, State.map, List.length_map]
+
+theorem map_trim {Other : Type u} (f : Value → Other) (state : State Value clients) :
+    trim (state.map f) = (trim state).map f := by
+  unfold trim
+  rw [map_cutoff]
+  simp only [State.map, List.map_drop]
+
+theorem append_map {Other : Type u} (f : Value → Other) (state : State Value clients)
+    (value : Value) :
+    append (state.map f) (f value) =
+      ((append state value).1, (append state value).2.map f) := by
+  unfold append
+  simp only [State.map, List.length_map]
+  split
+  · rfl
+  · split
+    · simp [List.map_append]
+    · rfl
+
+theorem map_complete {Other : Type u} (f : Value → Other) (state : State Value clients) :
+    complete (state.map f) = (complete state).map f := by
+  simp [complete, State.map]
+
+/-! ## Cursor travel
+
+Delivery budgets can be measured from retained cursor positions without
+comparing payloads. The relation excludes retirement and revival: those
+change the set of observers and require their own ownership laws.
+-/
+
+open scoped BigOperators
+
+/-- Travel of one retained cursor. Equal payloads never identify positions. -/
+def cursorAdvance (start finish : Option Nat) : Nat :=
+  match start, finish with
+  | some s, some f => f - s
+  | _, _ => 0
+
+/-- A retained cursor moves forward; an absent cursor stays absent. -/
+def CursorStep (start finish : Option Nat) : Prop :=
+  match start, finish with
+  | none, none => True
+  | some s, some f => s ≤ f
+  | _, _ => False
+
+/-- Sum of per-consumer cursor travel. Cancelled cursors contribute nothing. -/
+def cohortAdvance {clients : Nat}
+    (start finish : Fin clients → Option Nat) : Nat :=
+  ∑ client, cursorAdvance (start client) (finish client)
+
+theorem cursorAdvance_refl (position : Option Nat) :
+    cursorAdvance position position = 0 := by
+  cases position with
+  | none => rfl
+  | some n => simp [cursorAdvance]
+
+theorem cursorStep_refl (position : Option Nat) : CursorStep position position := by
+  cases position with
+  | none => simp [CursorStep]
+  | some _ => simp [CursorStep]
+
+theorem cursorAdvance_add (start mid finish : Option Nat)
+    (left : CursorStep start mid) (right : CursorStep mid finish) :
+    cursorAdvance start finish = cursorAdvance start mid + cursorAdvance mid finish := by
+  cases start with
+  | none =>
+      cases mid with
+      | none =>
+          cases finish with
+          | none => simp [cursorAdvance]
+          | some _ => simp [CursorStep] at right
+      | some _ => simp [CursorStep] at left
+  | some s =>
+      cases mid with
+      | none => simp [CursorStep] at left
+      | some m =>
+          cases finish with
+          | none => simp [CursorStep] at right
+          | some f =>
+              simp only [CursorStep, cursorAdvance] at left right ⊢
+              omega
+
+theorem cursorStep_trans {start mid finish : Option Nat}
+    (left : CursorStep start mid) (right : CursorStep mid finish) :
+    CursorStep start finish := by
+  cases start with
+  | none =>
+      cases mid with
+      | none =>
+          cases finish with
+          | none => simp [CursorStep]
+          | some _ => simp [CursorStep] at right
+      | some _ => simp [CursorStep] at left
+  | some s =>
+      cases mid with
+      | none => simp [CursorStep] at left
+      | some m =>
+          cases finish with
+          | none => simp [CursorStep] at right
+          | some f =>
+              simp only [CursorStep] at left right ⊢
+              omega
+
+theorem cohortAdvance_refl {clients : Nat} (positions : Fin clients → Option Nat) :
+    cohortAdvance positions positions = 0 := by
+  simp [cohortAdvance, cursorAdvance_refl]
+
+theorem cohortAdvance_add {clients : Nat}
+    (start mid finish : Fin clients → Option Nat)
+    (left : ∀ client, CursorStep (start client) (mid client))
+    (right : ∀ client, CursorStep (mid client) (finish client)) :
+    cohortAdvance start finish = cohortAdvance start mid + cohortAdvance mid finish := by
+  unfold cohortAdvance
+  rw [← Finset.sum_add_distrib]
+  exact Finset.sum_congr rfl (fun client _ =>
+    cursorAdvance_add _ _ _ (left client) (right client))
 
 namespace Controls
 

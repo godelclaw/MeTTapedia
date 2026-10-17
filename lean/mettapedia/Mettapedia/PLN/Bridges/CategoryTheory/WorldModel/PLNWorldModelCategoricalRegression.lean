@@ -53,10 +53,10 @@ def holFixtureModel :
     (constDen := by intro τ c; nomatch c)
 
 abbrev holFalseQuery :
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.HOLQuery
+    Mettapedia.Logic.HOL.HOLQuery
       (Base := HOLFixtureBase) HOLFixtureConst := .bot
 abbrev holTrueQuery :
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.HOLQuery
+    Mettapedia.Logic.HOL.HOLQuery
       (Base := HOLFixtureBase) HOLFixtureConst := .top
 
 def holFixtureState :
@@ -86,9 +86,8 @@ theorem hol_pointwise_bool_fixture :
         (State := Multiset (HenkinModel.{0, 0, 0} HOLFixtureBase HOLFixtureConst))
         (Query := Mettapedia.Logic.HOL.HOLQuery HOLFixtureConst)
         holFixtureState holTrueQuery :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_pointwise
-    (Base := HOLFixtureBase) (Const := HOLFixtureConst)
-    (W := holFixtureState) (φ := holFalseQuery) (ψ := holTrueQuery)
+  Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_le_of_pointwise
+    Mettapedia.Logic.HOL.holSatisfies holFixtureState holFalseQuery holTrueQuery
     holFalse_to_true_pointwise
 
 /-- Ch.8 concrete counting fixture: the evidence-level endpoint on the pullback
@@ -104,39 +103,37 @@ theorem counting_endpoint_selectTrue_fixture :
     _ _ _ _ _ (_root_.CategoryTheory.IsPullback.id_horiz _) _ _
 
 /-- Ch.8 concrete FOL fixture (proof-theoretic path):
-consume `provable_imp_iff_singletonStrengthLEOnTheory` to obtain provability,
+consume `provable_imp_iff_singletonStrengthLEOn` to obtain provability,
 then build and execute a `wmConsequenceRuleOn_of_provable_imp` endpoint on a
 singleton state. -/
 theorem fol_provable_bridge_rule_singleton_fixture
     {L : Language.{u}}
-    (S : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.PointedFOL L) :
+    (S : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.PointedFOL L) :
     BinaryWorldModel.queryStrength
         (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
+        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L)
         ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L) ≤
+        (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L) ≤
       BinaryWorldModel.queryStrength
         (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
+        (Query := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L)
         ({S} : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLState L)
-        (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L) := by
+        (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L) := by
   let T : Theory L := (∅ : Theory L)
-  let φ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L :=
-    (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
-  let ψ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L :=
-    (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.FOLQuery L)
+  let φ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L :=
+    (⊥ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L)
+  let ψ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L :=
+    (⊤ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.FOLQuery L)
   have hpoint :
-      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory
-        T φ ψ := by
+      Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImpliesOn
+        Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies (fun S => S ⊧* T) φ ψ := by
     intro S' _hT hφ
     simp [ψ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies]
-  have hsing :
-      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.singletonStrengthLEOnTheory
-        T φ ψ :=
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-      (T := T) (φ := φ) (ψ := ψ)).1 hpoint
+  have hsing :=
+    (Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImpliesOn_iff_singletonStrengthLEOn
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies (fun S => S ⊧* T) φ ψ).1 hpoint
   have hprov : T ⊢ (φ ➝ ψ) :=
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.provable_imp_iff_singletonStrengthLEOnTheory
+    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.provable_imp_iff_singletonStrengthLEOn
       (T := T) (φ := φ) (ψ := ψ)).2 hsing
   let rule :=
     Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.wmConsequenceRuleOn_of_provable_imp

@@ -1,6 +1,6 @@
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Data.Multiset.Basic
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # Abstract MLN Semantics

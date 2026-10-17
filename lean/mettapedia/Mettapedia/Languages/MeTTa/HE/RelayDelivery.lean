@@ -25,6 +25,12 @@ Below an invocation, a plain item may also drop its environment early.
 
 `deliver_eq_out` states that a delivered run publishes exactly the sequential
 output. The examples show that each side condition is needed.
+
+`normalize_append_normalize`: normalizing parts and then their concatenation
+is normalizing the concatenation once, since the normalization reads only
+whether some item is not `Empty` and whether some item succeeds, and keeps
+both. A run of normalizing relays may therefore leave the work to its
+outermost one (`normalize_normalize` is the one-part case).
 -/
 
 set_option autoImplicit false
@@ -49,6 +55,65 @@ inductive Run (V E : Type) where
   | leaf (items : List (Item V E))
   | seq (first second : Run V E)
   | relay (r : Relay E) (body : Run V E)
+
+/-! ## The shared buffer
+
+Natively, a run's relays share one buffer. A relay opens a range at the
+buffer's current length; its children append; at its pop it finishes its
+range in place, or, when it leaves without publishing, drops the range.
+Finishing and dropping touch nothing below the range's start, so the results
+earlier siblings committed stay, and executing a run on the buffer leaves the
+prefix followed by the delivered output. -/
+
+/-- The run's buffer and its open ranges, innermost first. -/
+structure Buffer (V E : Type) where
+  items : List (Item V E)
+  starts : List Nat
+
+namespace Buffer
+
+variable {V E : Type}
+
+def openRange (b : Buffer V E) : Buffer V E :=
+  ⟨b.items, b.items.length :: b.starts⟩
+
+def emit (b : Buffer V E) (xs : List (Item V E)) : Buffer V E :=
+  ⟨b.items ++ xs, b.starts⟩
+
+/-- The innermost range, finished in place by `f`. -/
+def finishWith (b : Buffer V E) (f : List (Item V E) → List (Item V E)) :
+    Buffer V E :=
+  match b.starts with
+  | s :: rest => ⟨b.items.take s ++ f (b.items.drop s), rest⟩
+  | [] => b
+
+/-- The innermost range, dropped: its relay left without publishing. -/
+def unwind (b : Buffer V E) : Buffer V E :=
+  match b.starts with
+  | s :: rest => ⟨b.items.take s, rest⟩
+  | [] => b
+
+theorem finishWith_prefix (b : Buffer V E) (s : Nat) (rest : List Nat)
+    (f : List (Item V E) → List (Item V E)) (h : b.starts = s :: rest)
+    (hs : s ≤ b.items.length) :
+    (b.finishWith f).items.take s = b.items.take s := by
+  simp only [finishWith, h]
+  rw [List.take_append_of_le_length (by simp [List.length_take, hs])]
+  simp [List.take_take]
+
+theorem unwind_prefix (b : Buffer V E) (s : Nat) (rest : List Nat)
+    (h : b.starts = s :: rest) :
+    (b.unwind).items = b.items.take s := by
+  simp [unwind, h]
+
+/-- A relay that opens a range, receives `xs` and leaves without publishing
+restores the buffer it found. -/
+theorem unwind_after_open (b : Buffer V E) (xs : List (Item V E)) :
+    ((b.openRange).emit xs).unwind = b := by
+  cases b
+  simp [openRange, emit, unwind]
+
+end Buffer
 
 /-- The value and environment classes, and the invocation transform. -/
 structure Model (V E : Type) where
@@ -116,6 +181,14 @@ def deliver (above : Bool) : Run V E → List (Item V E)
   | .leaf xs => xs
   | .seq a b => deliver above a ++ deliver above b
   | .relay r body => m.finish above r (deliver (above || isInvoke r) body)
+
+/-- Executing a run on the buffer: leaves append, a relay opens a range,
+runs its body and finishes the range in place. -/
+def exec (above : Bool) : Run V E → Buffer V E → Buffer V E
+  | .leaf xs, b => b.emit xs
+  | .seq a c, b => exec above c (exec above a b)
+  | .relay r body, b =>
+      ((exec (above || isInvoke r) body) b.openRange).finishWith (m.finish above r)
 
 /-- The laws the native classification and transform satisfy. -/
 structure Laws : Prop where
@@ -327,6 +400,204 @@ theorem deliver_eq_out (laws : m.Laws) (t : Run V E) :
     m.deliver false t = m.out t :=
   (deliver_rel laws t false).2 rfl
 
+theorem exec_spec (above : Bool) :
+    ∀ (t : Run V E) (b : Buffer V E),
+      exec m above t b = ⟨b.items ++ m.deliver above t, b.starts⟩
+  | .leaf xs, b => rfl
+  | .seq a c, b => by
+      simp only [exec, exec_spec above a b, exec_spec above c, deliver, List.append_assoc]
+  | .relay r body, b => by
+      simp only [exec, Buffer.openRange, exec_spec (above || isInvoke r) body,
+        Buffer.finishWith, deliver]
+      simp
+
+/-- A delivered run on the native buffer publishes exactly the sequential
+output after what the buffer held. -/
+theorem exec_eq_out (laws : m.Laws) (t : Run V E) (b : Buffer V E) :
+    exec m false t b = ⟨b.items ++ m.out t, b.starts⟩ := by
+  rw [exec_spec, deliver_eq_out laws]
+
+/-! ## Normalization composes
+
+The visible-frontier normalization reads two flags of its list: whether some
+item is not `Empty`, and whether some item succeeds. It keeps every success,
+so it keeps both flags; and a longer list only raises them. Hence normalizing
+parts and then their concatenation equals normalizing the concatenation once:
+a run of normalizing relays may leave the work to its outermost one. -/
+
+/-- Some item is not `Empty`. -/
+def someValue (xs : List (Item V E)) : Bool := xs.any (fun x => !m.isEmpty x.value)
+
+/-- Some item succeeds: neither `Empty` nor an error. -/
+def someSuccess (xs : List (Item V E)) : Bool :=
+  xs.any (fun x => !m.isEmpty x.value && !m.isError x.value)
+
+/-- The items a frontier with these flags keeps. -/
+def keepFor (value success : Bool) (x : Item V E) : Bool :=
+  (!value || !m.isEmpty x.value) && (!success || !m.isError x.value)
+
+theorem someSuccess_le_someValue (xs : List (Item V E)) :
+    m.someSuccess xs = true → m.someValue xs = true := by
+  simp only [someSuccess, someValue, List.any_eq_true, Bool.and_eq_true]
+  rintro ⟨x, hx, hne, -⟩
+  exact ⟨x, hx, hne⟩
+
+theorem normalize_eq_filter (xs : List (Item V E)) :
+    m.normalize xs = xs.filter (m.keepFor (m.someValue xs) (m.someSuccess xs)) := by
+  unfold normalize filterIf
+  by_cases hv : xs.any (fun x => !m.isEmpty x.value) = true
+  · have hs : (xs.filter (fun x => !m.isEmpty x.value)).any
+        (fun x => !m.isEmpty x.value && !m.isError x.value) = m.someSuccess xs := by
+      unfold someSuccess
+      induction xs with
+      | nil => rfl
+      | cons y ys ih =>
+        by_cases hy : m.isEmpty y.value = true
+        · simp [hy]
+        · simp [hy]
+    rw [if_pos hv, hs]
+    have hv' : m.someValue xs = true := hv
+    by_cases hsucc : m.someSuccess xs = true
+    · rw [if_pos hsucc, hv', hsucc, List.filter_filter]
+      congr 1
+      funext x
+      simp [keepFor, Bool.and_comm]
+    · have hf : m.someSuccess xs = false := by simpa using hsucc
+      rw [if_neg hsucc, hv', hf]
+      congr 1
+      funext x
+      simp [keepFor]
+  · have hf : m.someValue xs = false := by simpa [someValue] using hv
+    have hsf : m.someSuccess xs = false := by
+      cases h : m.someSuccess xs
+      · rfl
+      · exact absurd (m.someSuccess_le_someValue xs h) (by simp [hf])
+    have hsucc : ¬ xs.any (fun x => !m.isEmpty x.value && !m.isError x.value) = true := by
+      simpa [someSuccess] using hsf
+    rw [if_neg hv, if_neg hsucc, hf, hsf]
+    exact (List.filter_eq_self.mpr (by intro x _; simp [Model.keepFor])).symm
+
+theorem someSuccess_normalize (xs : List (Item V E)) :
+    m.someSuccess (m.normalize xs) = m.someSuccess xs := by
+  rw [m.normalize_eq_filter]
+  unfold someSuccess
+  apply Bool.eq_iff_iff.mpr
+  simp only [List.any_eq_true, List.mem_filter, Bool.and_eq_true]
+  constructor
+  · rintro ⟨x, ⟨hx, -⟩, h⟩
+    exact ⟨x, hx, h⟩
+  · rintro ⟨x, hx, hne, herr⟩
+    refine ⟨x, ⟨hx, ?_⟩, hne, herr⟩
+    simp [keepFor, hne, herr]
+
+theorem someValue_normalize (xs : List (Item V E)) :
+    m.someValue (m.normalize xs) = m.someValue xs := by
+  apply Bool.eq_iff_iff.mpr
+  constructor
+  · intro h
+    rw [m.normalize_eq_filter] at h
+    simp only [someValue, List.any_eq_true, List.mem_filter] at h ⊢
+    obtain ⟨x, ⟨hx, -⟩, hne⟩ := h
+    exact ⟨x, hx, hne⟩
+  · intro h
+    by_cases hs : m.someSuccess xs = true
+    · have := m.someSuccess_normalize xs
+      exact m.someSuccess_le_someValue _ (this.trans hs)
+    · have hsf : m.someSuccess xs = false := by simpa using hs
+      rw [m.normalize_eq_filter]
+      simp only [someValue, List.any_eq_true, List.mem_filter] at h ⊢
+      obtain ⟨x, hx, hne⟩ := h
+      exact ⟨x, ⟨hx, by simp [keepFor, hsf, hne]⟩, hne⟩
+
+theorem keepFor_mono {v v' s s' : Bool} (hv : v = true → v' = true)
+    (hs : s = true → s' = true) (x : Item V E) :
+    m.keepFor v' s' x = true → m.keepFor v s x = true := by
+  cases v <;> cases v' <;> cases s <;> cases s' <;> simp_all [keepFor]
+
+/-- Normalizing the parts, then their concatenation, is normalizing once. -/
+theorem normalize_append_normalize (xs ys : List (Item V E)) :
+    m.normalize (m.normalize xs ++ m.normalize ys) = m.normalize (xs ++ ys) := by
+  have hv : m.someValue (m.normalize xs ++ m.normalize ys) = m.someValue (xs ++ ys) := by
+    simp only [someValue, List.any_append] at *
+    rw [show (m.normalize xs).any (fun x => !m.isEmpty x.value) = m.someValue xs from
+          m.someValue_normalize xs,
+        show (m.normalize ys).any (fun x => !m.isEmpty x.value) = m.someValue ys from
+          m.someValue_normalize ys]
+    rfl
+  have hs : m.someSuccess (m.normalize xs ++ m.normalize ys) = m.someSuccess (xs ++ ys) := by
+    simp only [someSuccess, List.any_append] at *
+    rw [show (m.normalize xs).any (fun x => !m.isEmpty x.value && !m.isError x.value) =
+          m.someSuccess xs from m.someSuccess_normalize xs,
+        show (m.normalize ys).any (fun x => !m.isEmpty x.value && !m.isError x.value) =
+          m.someSuccess ys from m.someSuccess_normalize ys]
+    rfl
+  rw [m.normalize_eq_filter (m.normalize xs ++ m.normalize ys), hv, hs,
+      m.normalize_eq_filter (xs ++ ys), m.normalize_eq_filter xs, m.normalize_eq_filter ys,
+      List.filter_append, List.filter_append, List.filter_filter, List.filter_filter]
+  have hxv : m.someValue xs = true → m.someValue (xs ++ ys) = true := by
+    simp only [someValue, List.any_append, Bool.or_eq_true]; exact Or.inl
+  have hxs : m.someSuccess xs = true → m.someSuccess (xs ++ ys) = true := by
+    simp only [someSuccess, List.any_append, Bool.or_eq_true]; exact Or.inl
+  have hyv : m.someValue ys = true → m.someValue (xs ++ ys) = true := by
+    simp only [someValue, List.any_append, Bool.or_eq_true]; exact Or.inr
+  have hys : m.someSuccess ys = true → m.someSuccess (xs ++ ys) = true := by
+    simp only [someSuccess, List.any_append, Bool.or_eq_true]; exact Or.inr
+  congr 1
+  · congr 1; funext x
+    cases h : m.keepFor (m.someValue (xs ++ ys)) (m.someSuccess (xs ++ ys)) x
+    · simp
+    · simp [m.keepFor_mono hxv hxs x h]
+  · congr 1; funext x
+    cases h : m.keepFor (m.someValue (xs ++ ys)) (m.someSuccess (xs ++ ys)) x
+    · simp
+    · simp [m.keepFor_mono hyv hys x h]
+
+/-- Normalization is idempotent. -/
+theorem normalize_normalize (xs : List (Item V E)) :
+    m.normalize (m.normalize xs) = m.normalize xs := by
+  have h := m.normalize_append_normalize xs []
+  simpa [normalize, filterIf] using h
+
+
+/-! ## A completed producer may stream its successes
+
+When nothing the producer does can be observed before it completes, its
+consumer may take each success as it arrives: the errors wait for the end and
+are published only when nothing succeeded. The answers, with `Empty` dropped
+as delivery drops it, are the normalized collection's, in the same order. -/
+
+/-- The streamed publication: the successes in arrival order, then the errors
+when nothing succeeded. -/
+def streamed (xs : List (Item V E)) : List (Item V E) :=
+  xs.filter (fun x => !m.isEmpty x.value && !m.isError x.value) ++
+    (if m.someSuccess xs then [] else
+      xs.filter (fun x => !m.isEmpty x.value && m.isError x.value))
+
+theorem streamed_eq_normalize (xs : List (Item V E)) :
+    m.streamed xs = (m.normalize xs).filter (fun x => !m.isEmpty x.value) := by
+  rw [m.normalize_eq_filter, List.filter_filter]
+  unfold streamed
+  cases hs : m.someSuccess xs
+  · have hnone : ∀ x ∈ xs, (!m.isEmpty x.value && !m.isError x.value) = false := by
+      intro x hx
+      cases h : (!m.isEmpty x.value && !m.isError x.value)
+      · rfl
+      · have hany : m.someSuccess xs = true := List.any_eq_true.mpr ⟨x, hx, h⟩
+        rw [hs] at hany; exact absurd hany Bool.false_ne_true
+    rw [if_neg Bool.false_ne_true,
+      List.filter_congr (q := fun _ => false) hnone, List.filter_false, List.nil_append]
+    apply List.filter_congr
+    intro x hx
+    have h := hnone x hx
+    cases he : m.isEmpty x.value <;> cases hr : m.isError x.value <;>
+      simp_all [keepFor]
+  · have hv := m.someSuccess_le_someValue xs hs
+    rw [if_pos rfl, List.append_nil, hv]
+    apply List.filter_congr
+    intro x _
+    cases he : m.isEmpty x.value <;> cases hr : m.isError x.value <;>
+      simp [keepFor, he, hr]
+
 /-! ## Examples -/
 
 /-- Values: plain atoms, `Empty`, an error, and an open value. -/
@@ -434,6 +705,49 @@ example : native.deliver false (.leaf [⟨.emptyVal, producerEnv⟩, ⟨.atom 3,
 environment is what the answers carry. -/
 example : native.clear plainAnswers ≠
     native.out (.relay (.invoke callerOuter) (.leaf plainAnswers)) := by decide
+
+
+/-- Positive: an `Empty` and an error below, a success beside them; normalizing
+each part and then the whole is normalizing once. -/
+example :
+    let xs : List (Item Val Env) := [⟨.emptyVal, producerEnv⟩, ⟨.errorVal, producerEnv⟩]
+    let ys : List (Item Val Env) := [⟨.atom 3, producerEnv⟩, ⟨.emptyVal, producerEnv⟩]
+    native.normalize (native.normalize xs ++ native.normalize ys) =
+      native.normalize (xs ++ ys) ∧
+    native.normalize (xs ++ ys) = [⟨.atom 3, producerEnv⟩] := by decide
+
+/-- Negative: the parts normalized but not the whole keep an `Empty` and an
+error that the whole drops; the outermost normalization is still needed. -/
+example :
+    let xs : List (Item Val Env) := [⟨.emptyVal, producerEnv⟩, ⟨.errorVal, producerEnv⟩]
+    let ys : List (Item Val Env) := [⟨.atom 3, producerEnv⟩]
+    native.normalize xs ++ native.normalize ys ≠ native.normalize (xs ++ ys) := by decide
+
+/-- Negative: an error alone survives normalization; a success elsewhere in
+the run removes it only when the run is normalized as a whole. -/
+example :
+    native.normalize [⟨.errorVal, producerEnv⟩] = [⟨Val.errorVal, producerEnv⟩] := by decide
+
+/-- Positive: an error before a success; streaming holds the error, and the
+success alone is published, as normalizing the collection publishes it. -/
+example :
+    let xs : List (Item Val Env) :=
+      [⟨.errorVal, producerEnv⟩, ⟨.emptyVal, producerEnv⟩, ⟨.atom 3, producerEnv⟩]
+    native.streamed xs = [⟨.atom 3, producerEnv⟩] ∧
+    native.streamed xs = (native.normalize xs).filter (fun x => !native.isEmpty x.value) := by
+  decide
+
+/-- Positive: only errors; they are published at the end. -/
+example :
+    native.streamed [⟨.errorVal, producerEnv⟩, ⟨.emptyVal, producerEnv⟩] =
+      [⟨.errorVal, producerEnv⟩] := by decide
+
+/-- Negative: handing every item on as it arrives publishes the error that a
+later success removes. -/
+example :
+    let xs : List (Item Val Env) := [⟨.errorVal, producerEnv⟩, ⟨.atom 3, producerEnv⟩]
+    xs.filter (fun x => !native.isEmpty x.value) ≠
+      (native.normalize xs).filter (fun x => !native.isEmpty x.value) := by decide
 
 end Model
 

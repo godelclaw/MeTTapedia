@@ -57,8 +57,8 @@ variable
 language.  It maps the common base through the left extension and preserves
 the independent right increment through its coproduct injection. -/
 noncomputable def rightLeg :
-    rightCompatibility.combinedLanguage ⟶
-      combinedCompatibility.combinedLanguage :=
+    object rightCompatibility.combinedLanguage ⟶
+      object combinedCompatibility.combinedLanguage :=
   Mettapedia.CategoryTheory.CoproductExtensionPushout.rightLeg
     (Coproduct.leftArrow leftCompatibility)
     (Coproduct.cofan rightCompatibility)

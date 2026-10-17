@@ -1,10 +1,10 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mettapedia.PLN.Core.CompletePLN
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelTwoSortBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+import Mettapedia.PLN.WorldModel.WorldModelInstitution
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 import Mettapedia.PLN.Evidence.PLNJointEvidence
@@ -71,7 +71,7 @@ import Mettapedia.PLN.WorldModel.GenericWorldModelForgetting
 import Mettapedia.PLN.WorldModel.Semitopology.PLNSemitopology
 import Mettapedia.PLN.WorldModel.Semitopology.PLNSemitopologyProvenanceBridge
 import Mettapedia.PLN.WorldModel.Audit.PLNWorldModelAudit
-import Mettapedia.PLN.WorldModel.PLNWorldModelPreorder
+import Mettapedia.PLN.WorldModel.WorldModelPreorder
 import Mettapedia.PLN.Bridges.ProbabilityTheory.PLNGaussianEMExtension
 import Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction
 import Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel

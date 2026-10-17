@@ -14,6 +14,7 @@ namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
 open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge (AtomOccurs SemanticLoopFree)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
 /-! ## Embedding expression-frontier certificates -/
@@ -198,13 +199,15 @@ theorem matchEqualityClosureBoundSound_of_outputBound
     (fun first second hbound =>
       MatchEqualityClosureBoundSound.varVar
         (hbound.edge (by simp)))
-    (fun hnonvar _hbound =>
-      MatchEqualityClosureBoundSound.varNonVar (hnonvar := hnonvar))
-    (fun hnonvar _hbound =>
-      MatchEqualityClosureBoundSound.nonVarVar (hnonvar := hnonvar))
+    (fun hnonvar hoccurs _hbound =>
+      MatchEqualityClosureBoundSound.varNonVar
+        (hnonvar := hnonvar) (hoccurs := hoccurs))
+    (fun hnonvar hoccurs _hbound =>
+      MatchEqualityClosureBoundSound.nonVarVar
+        (hnonvar := hnonvar) (hoccurs := hoccurs))
     (fun value _hbound => MatchEqualityClosureBoundSound.grounded)
-    (fun hlist ih hbound =>
-      MatchEqualityClosureBoundSound.expr (ih hbound))
+    (fun hlist hloop ih hbound =>
+      MatchEqualityClosureBoundSound.expr (hloop := hloop) (ih hbound))
     (by
       intro _seed _hbound
       exact MatchListEqualityClosureBoundSound.nil)
@@ -249,13 +252,15 @@ theorem matchListEqualityClosureBoundSound_of_outputBound
     (fun first second hbound =>
       MatchEqualityClosureBoundSound.varVar
         (hbound.edge (by simp)))
-    (fun hnonvar _hbound =>
-      MatchEqualityClosureBoundSound.varNonVar (hnonvar := hnonvar))
-    (fun hnonvar _hbound =>
-      MatchEqualityClosureBoundSound.nonVarVar (hnonvar := hnonvar))
+    (fun hnonvar hoccurs _hbound =>
+      MatchEqualityClosureBoundSound.varNonVar
+        (hnonvar := hnonvar) (hoccurs := hoccurs))
+    (fun hnonvar hoccurs _hbound =>
+      MatchEqualityClosureBoundSound.nonVarVar
+        (hnonvar := hnonvar) (hoccurs := hoccurs))
     (fun value _hbound => MatchEqualityClosureBoundSound.grounded)
-    (fun hlist ih hbound =>
-      MatchEqualityClosureBoundSound.expr (ih hbound))
+    (fun hlist hloop ih hbound =>
+      MatchEqualityClosureBoundSound.expr (hloop := hloop) (ih hbound))
     (by
       intro _seed _hbound
       exact MatchListEqualityClosureBoundSound.nil)
@@ -774,27 +779,24 @@ noncomputable def
       Bindings.empty matched)
     (hlive : HELiveMergeCertified trace allowed seed matched) :
     HELiveMergeSolutionCertified trace allowed seed matched p.nextSubst := by
-  let hexpr : DeclMatchSpec.MatchRel
-      (.expression (List.replicate (rest.length + 1) first))
-      (.expression (rest ++ [value])) matched := .expr hmatch
-  let hexec := DeclMatchSpec.matchAtoms_complete hexpr
+  let hexec := DeclMatchSpec.matchAtomsList_complete hmatch
   let matchFuel := Classical.choose hexec
   have hmatchMem : matched ∈
-      matchAtoms
-        (.expression (List.replicate (rest.length + 1) first))
-        (.expression (rest ++ [value])) matchFuel :=
+      matchAtomsList (List.replicate (rest.length + 1) first)
+        (rest ++ [value]) [Bindings.empty] matchFuel :=
     Classical.choose_spec hexec
+  have hlistTheory : ∀ valuation,
+      HEBindingSatisfied valuation matched ↔
+        MettaAtomListsSatisfied valuation
+          (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
+          (toLeaTTaAtoms (rest ++ [value])) := by
+    intro valuation
+    simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
   intro valuation
   constructor
   · rintro ⟨hseed, hmatched⟩
-    have hmatchedEquation :=
-      (matchAtoms_solution_iff hmatchMem valuation).mp hmatched
-    have hlists : MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-        (toLeaTTaAtoms (rest ++ [value])) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
-        applyClassSolution, MettaAtomListsSatisfied] using hmatchedEquation
+    have hlists := (hlistTheory valuation).mp hmatched
     have hlast :=
       reconcileList_satisfied_implies_last valuation first value rest hlists
     have hfirstMem : first ∈ seed.classValues key := by
@@ -814,14 +816,7 @@ noncomputable def
         applyClassSolution] using hhead
     have hlists :=
       classValues_reconcileList_satisfied hseed hclass hheadEq
-    have hmatchedEquation : MettaEquationSatisfied valuation
-        (toLeaTTaAtom
-            (.expression (List.replicate (rest.length + 1) first)),
-          toLeaTTaAtom (.expression (rest ++ [value]))) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
-        applyClassSolution, MettaAtomListsSatisfied] using hlists
-    exact ⟨hseed,
-      (matchAtoms_solution_iff hmatchMem valuation).mpr hmatchedEquation⟩
+    exact ⟨hseed, (hlistTheory valuation).mpr hlists⟩
 
 /-- Symmetric class-wide non-variable/variable reconciliation.  The hidden
 runtime matcher keeps HE's stored-value/proposed-value orientation; equality
@@ -848,27 +843,24 @@ noncomputable def
       Bindings.empty matched)
     (hlive : HELiveMergeCertified trace allowed seed matched) :
     HELiveMergeSolutionCertified trace allowed seed matched p.nextSubst := by
-  let hexpr : DeclMatchSpec.MatchRel
-      (.expression (List.replicate (rest.length + 1) first))
-      (.expression (rest ++ [value])) matched := .expr hmatch
-  let hexec := DeclMatchSpec.matchAtoms_complete hexpr
+  let hexec := DeclMatchSpec.matchAtomsList_complete hmatch
   let matchFuel := Classical.choose hexec
   have hmatchMem : matched ∈
-      matchAtoms
-        (.expression (List.replicate (rest.length + 1) first))
-        (.expression (rest ++ [value])) matchFuel :=
+      matchAtomsList (List.replicate (rest.length + 1) first)
+        (rest ++ [value]) [Bindings.empty] matchFuel :=
     Classical.choose_spec hexec
+  have hlistTheory : ∀ valuation,
+      HEBindingSatisfied valuation matched ↔
+        MettaAtomListsSatisfied valuation
+          (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
+          (toLeaTTaAtoms (rest ++ [value])) := by
+    intro valuation
+    simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
   intro valuation
   constructor
   · rintro ⟨hseed, hmatched⟩
-    have hmatchedEquation :=
-      (matchAtoms_solution_iff hmatchMem valuation).mp hmatched
-    have hlists : MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-        (toLeaTTaAtoms (rest ++ [value])) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
-        applyClassSolution, MettaAtomListsSatisfied] using hmatchedEquation
+    have hlists := (hlistTheory valuation).mp hmatched
     have hlast :=
       reconcileList_satisfied_implies_last valuation first value rest hlists
     have hfirstMem : first ∈ seed.classValues key := by
@@ -889,14 +881,7 @@ noncomputable def
         applyClassSolution] using hhead
     have hlists :=
       classValues_reconcileList_satisfied hseed hclass hheadEq.symm
-    have hmatchedEquation : MettaEquationSatisfied valuation
-        (toLeaTTaAtom
-            (.expression (List.replicate (rest.length + 1) first)),
-          toLeaTTaAtom (.expression (rest ++ [value]))) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
-        applyClassSolution, MettaAtomListsSatisfied] using hlists
-    exact ⟨hseed,
-      (matchAtoms_solution_iff hmatchMem valuation).mpr hmatchedEquation⟩
+    exact ⟨hseed, (hlistTheory valuation).mpr hlists⟩
 
 /-- Whole joined-class equality reconciliation adds no solutions beyond the
 candidate equality edge.  A satisfying candidate makes every stored class
@@ -929,16 +914,19 @@ noncomputable def
       (seed.addEquality left right) matched) :
     HELiveMergeSolutionCertified trace allowed
       (seed.addEquality left right) matched p.nextSubst := by
-  let hexpr : DeclMatchSpec.MatchRel
-      (.expression (List.replicate (rest.length + 2) first))
-      (.expression (second :: third :: rest)) matched := .expr hmatch
-  let hexec := DeclMatchSpec.matchAtoms_complete hexpr
+  let hexec := DeclMatchSpec.matchAtomsList_complete hmatch
   let matchFuel := Classical.choose hexec
   have hmatchMem : matched ∈
-      matchAtoms
-        (.expression (List.replicate (rest.length + 2) first))
-        (.expression (second :: third :: rest)) matchFuel :=
+      matchAtomsList (List.replicate (rest.length + 2) first)
+        (second :: third :: rest) [Bindings.empty] matchFuel :=
     Classical.choose_spec hexec
+  have hlistTheory : ∀ valuation,
+      HEBindingSatisfied valuation matched ↔
+        MettaAtomListsSatisfied valuation
+          (toLeaTTaAtoms (List.replicate (rest.length + 2) first))
+          (toLeaTTaAtoms (second :: third :: rest)) := by
+    intro valuation
+    simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
   intro valuation
   constructor
@@ -960,15 +948,8 @@ noncomputable def
       (heBindingSatisfied_addEquality_iff
         valuation seed left right).mpr ⟨hseed, hequality⟩
     have hlists := classValues_replicateTail_satisfied hcandidate hvalues
-    have hmatchedEquation : MettaEquationSatisfied valuation
-        (toLeaTTaAtom
-            (.expression (List.replicate (rest.length + 2) first)),
-          toLeaTTaAtom (.expression (second :: third :: rest))) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom, applyClassSolution,
-        MettaAtomListsSatisfied, Nat.add_assoc, Nat.add_comm,
-        Nat.add_left_comm] using hlists
-    exact ⟨hcandidate,
-      (matchAtoms_solution_iff hmatchMem valuation).mpr hmatchedEquation⟩
+    refine ⟨hcandidate, (hlistTheory valuation).mpr ?_⟩
+    simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using hlists
 
 /-- Equality insertion changes no direct HE value.  Consequently the
 class-indexed value relation is monotone under an added HE edge even when that
@@ -1542,6 +1523,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveVarNonVar_same_congrue
     {value first : Atom} {rest : List Atom}
     (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hsame : first = value)
@@ -1557,7 +1539,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveVarNonVar_same_congrue
       (.var key) value seed p.nextSubst := {
     toHELiveMatchMergeCoreCertified :=
       hmerge.toSolutionCertified.toHELiveMergeCertified
-        |>.withCoreVarNonVarMatch hnonvar
+        |>.withCoreVarNonVarMatch hnonvar hoccurs
     congruence := hmerge.congruence
   }
   exact ⟨by simpa only [hright] using hcore⟩
@@ -1578,6 +1560,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveNonVarVar_same_congrue
     {key : String} {first : Atom} {rest : List Atom}
     (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hsame : first = value)
@@ -1593,7 +1576,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveNonVarVar_same_congrue
       value (.var key) seed p.nextSubst := {
     toHELiveMatchMergeCoreCertified :=
       hmerge.toSolutionCertified.toHELiveMergeCertified
-        |>.withCoreNonVarVarMatch hnonvar
+        |>.withCoreNonVarVarMatch hnonvar hoccurs
     congruence := hmerge.congruence
   }
   exact ⟨by simpa only [hright] using hcore⟩
@@ -2434,13 +2417,14 @@ theorem
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hdifferent : first ≠ value)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeSolutionProgressCertified trace allowed
       (.var key) value seed (key, toLeaTTaAtom value)) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.live.operational.toAssignmentConflictMergeLive
       hclass hconsistent hdifferent
-  let houter := hmerge.withVarNonVarMatch hnonvar
+  let houter := hmerge.withVarNonVarMatch hnonvar hoccurs
     (h.subst_subset_trace _ h.entry_mem)
   exact ⟨{
     subst := h.subst
@@ -2471,13 +2455,14 @@ theorem
       seed (key, toLeaTTaAtom value))
     (hclass : seed.classValues key = first :: rest)
     (hinconsistent : Bindings.valuesConsistent (first :: rest) = false)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeSolutionProgressCertified trace allowed
       (.var key) value seed (key, toLeaTTaAtom value)) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.live.operational.toAssignmentReconcileMergeLive
       hclass hinconsistent
-  let houter := hmerge.withVarNonVarMatch hnonvar
+  let houter := hmerge.withVarNonVarMatch hnonvar hoccurs
     (h.subst_subset_trace _ h.entry_mem)
   exact ⟨{
     subst := h.subst
@@ -2605,6 +2590,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
     {rest : List Atom}
     (hvalue : toLeaTTaAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hclass : before.classValues key = first :: rest)
     (hentry : (key, leaValue) ∈ trace)
     (hpending : ¬ LeaEliminationTraceEntryRealized before
@@ -2640,7 +2626,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
         simpa only [hvalue] using hinner
       obtain ⟨hprogress⟩ :=
         hinner'.toAssignmentReconcileSolutionProgress
-          hclass hconsistent hvalueNonvar
+          hclass hconsistent hvalueNonvar hoccurs
       have hprogress' : HELiveMatchMergeSolutionProgressCertified trace
           (eliminationTraceAliases trace) (.var key) value before
           (key, leaValue) := by
@@ -2681,7 +2667,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
         simpa only [hvalue] using hinner
       obtain ⟨hprogress⟩ :=
         hinner'.toAssignmentConflictSolutionProgress
-          hclass hconsistent hdifferent hvalueNonvar
+          hclass hconsistent hdifferent hvalueNonvar hoccurs
       have hprogress' : HELiveMatchMergeSolutionProgressCertified trace
           (eliminationTraceAliases trace) (.var key) value before
           (key, leaValue) := by
@@ -2855,7 +2841,10 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_hidden_value_inner
         hnonvar hsound hbound hbefore hvalue hvalueNonvar hclass hentry
         hpending hexpressions hallExpressions
     exact certifiedValueConflictProgress_of_hidden_value_inner hvalue
-      hvalueNonvar hclass hentry hpending hatom hlist
+      hvalueNonvar
+      (HEEliminationTraceOccursSafe.of_satisfied htraceSatisfied key value
+        (by simpa only [hvalue] using hentry) hvalueNonvar)
+      hclass hentry hpending hatom hlist
   · intro before left right hnonvar hsound hbound hbefore hinconsistent
       hentry hpending hallExpressions
     obtain ⟨hatom, hlist⟩ :=
@@ -2878,13 +2867,14 @@ theorem HELiveHiddenMatchStructuralCertified.toAssignmentConflictCoreCongruent
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hdifferent : first ≠ value)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       (.var key) value seed subst) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.operational.toAssignmentConflictMergeLive
       hclass hconsistent hdifferent
-  let hcore := hmerge.toHELiveMergeCertified.withCoreVarNonVarMatch hnonvar
+  let hcore := hmerge.toHELiveMergeCertified.withCoreVarNonVarMatch hnonvar hoccurs
   exact ⟨{
     toHELiveMatchMergeCoreCertified := hcore
     congruence := by
@@ -2906,12 +2896,13 @@ theorem HELiveHiddenListMatchStructuralCertified.toAssignmentReconcileCoreCongru
       seed subst)
     (hclass : seed.classValues key = first :: rest)
     (hinconsistent : Bindings.valuesConsistent (first :: rest) = false)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       (.var key) value seed subst) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.operational.toAssignmentReconcileMergeLive hclass hinconsistent
-  let hcore := hmerge.toHELiveMergeCertified.withCoreVarNonVarMatch hnonvar
+  let hcore := hmerge.toHELiveMergeCertified.withCoreVarNonVarMatch hnonvar hoccurs
   exact ⟨{
     toHELiveMatchMergeCoreCertified := hcore
     congruence := by
@@ -2932,13 +2923,14 @@ theorem HELiveHiddenMatchStructuralCertified.toNonVarVarConflictCoreCongruent
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hdifferent : first ≠ value)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       value (.var key) seed subst) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.operational.toAssignmentConflictMergeLive
       hclass hconsistent hdifferent
-  let hcore := hmerge.toHELiveMergeCertified.withCoreNonVarVarMatch hnonvar
+  let hcore := hmerge.toHELiveMergeCertified.withCoreNonVarVarMatch hnonvar hoccurs
   exact ⟨{
     toHELiveMatchMergeCoreCertified := hcore
     congruence := by
@@ -2959,12 +2951,13 @@ theorem HELiveHiddenListMatchStructuralCertified.toNonVarVarReconcileCoreCongrue
       seed subst)
     (hclass : seed.classValues key = first :: rest)
     (hinconsistent : Bindings.valuesConsistent (first :: rest) = false)
-    (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
+    (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       value (.var key) seed subst) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.operational.toAssignmentReconcileMergeLive hclass hinconsistent
-  let hcore := hmerge.toHELiveMergeCertified.withCoreNonVarVarMatch hnonvar
+  let hcore := hmerge.toHELiveMergeCertified.withCoreNonVarVarMatch hnonvar hoccurs
   exact ⟨{
     toHELiveMatchMergeCoreCertified := hcore
     congruence := by
@@ -3051,6 +3044,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveVarNonVar_congruent_of
     (p : HEProjectedTailHeadResidualPackage state (.var key) leftRest)
     {value : Atom} (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hstrict : p.nextRemainingFuel < fuel →
       Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
         (.var key) p.nextRight seed p.nextSubst))
@@ -3080,15 +3074,15 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveVarNonVar_congruent_of
         | false =>
             obtain ⟨inner⟩ := hreconcile hclass hconsistent
             exact (inner.toAssignmentReconcileCoreCongruent
-              hclass hconsistent hnonvar).map
+              hclass hconsistent hnonvar hoccurs).map
                 (fun h => h.reindexRight hright.symm)
         | true =>
             by_cases hsame : first = value
-            · exact p.exists_coreLiveVarNonVar_same_congruent hright hnonvar
+            · exact p.exists_coreLiveVarNonVar_same_congruent hright hnonvar hoccurs
                 hclass hconsistent hsame hsolved.1
             · obtain ⟨inner⟩ := hconflict hclass hconsistent hsame
               exact (inner.toAssignmentConflictCoreCongruent
-                hclass hconsistent hsame hnonvar).map
+                hclass hconsistent hsame hnonvar hoccurs).map
                   (fun h => h.reindexRight hright.symm)
   · exact hstrict hlt
 
@@ -3107,6 +3101,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveNonVarVar_congruent_of
     (p : HEProjectedTailHeadResidualPackage state value leftRest)
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hstrict : p.nextRemainingFuel < fuel →
       Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
         value p.nextRight seed p.nextSubst))
@@ -3136,15 +3131,15 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveNonVarVar_congruent_of
         | false =>
             obtain ⟨inner⟩ := hreconcile hclass hconsistent
             exact (inner.toNonVarVarReconcileCoreCongruent
-              hclass hconsistent hnonvar).map
+              hclass hconsistent hnonvar hoccurs).map
                 (fun h => h.reindexRight hright.symm)
         | true =>
             by_cases hsame : first = value
-            · exact p.exists_coreLiveNonVarVar_same_congruent hright hnonvar
+            · exact p.exists_coreLiveNonVarVar_same_congruent hright hnonvar hoccurs
                 hclass hconsistent hsame hsolved.1
             · obtain ⟨inner⟩ := hconflict hclass hconsistent hsame
               exact (inner.toNonVarVarConflictCoreCongruent
-                hclass hconsistent hsame hnonvar).map
+                hclass hconsistent hsame hnonvar hoccurs).map
                   (fun h => h.reindexRight hright.symm)
   · exact hstrict hlt
 
@@ -3337,6 +3332,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
       covered.state (.var key) leftRest)
     {value : Atom} (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hconflict : ∀ {first : Atom} {rest : List Atom},
       seed.classValues key = first :: rest →
       Bindings.valuesConsistent (first :: rest) = true →
@@ -3353,7 +3349,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
       (.var key) p.nextRight seed p.nextSubst) := by
   cases hclass : seed.classValues key with
   | nil =>
-      exact p.exists_coreResidualVarNonVar_fresh hright hnonvar
+      exact p.exists_coreResidualVarNonVar_fresh hright hnonvar hoccurs
         (p.freshAssignmentEntry_of_originalCoverage
           covered.originalCoverage hright hnonvar) hclass
   | cons first rest =>
@@ -3364,7 +3360,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
             inner.toAssignmentReconcileMergeLive hclass hconsistent
           let hcore : HELiveMatchMergeCoreCertified trace allowed
               (.var key) p.nextRight seed :=
-            (hmerge.withCoreVarNonVarMatch hnonvar).reindexRight hright.symm
+            (hmerge.withCoreVarNonVarMatch hnonvar hoccurs).reindexRight hright.symm
           exact ⟨{
             toHELiveMatchMergeCoreSolutionCertified :=
               hcore.withProjectedHeadSolutions p
@@ -3373,13 +3369,13 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
                 hcore.liveMerge.after trace
               have hcoreAfter : hcore.liveMerge.after = hmerge.after :=
                 HELiveMatchMergeCoreCertified.reindexRight_liveAfter
-                  (hmerge.withCoreVarNonVarMatch hnonvar) hright.symm
+                  (hmerge.withCoreVarNonVarMatch hnonvar hoccurs) hright.symm
               rw [hcoreAfter, hafter]
               exact inner.afterAssignmentsSound
           }⟩
       | true =>
           by_cases hsame : first = value
-          · exact p.exists_coreResidualVarNonVar_same hright hnonvar
+          · exact p.exists_coreResidualVarNonVar_same hright hnonvar hoccurs
               hclass hconsistent hsame
           · obtain ⟨inner⟩ := hconflict hclass hconsistent hsame
             obtain ⟨hmerge, hafter⟩ :=
@@ -3387,7 +3383,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
                 hclass hconsistent hsame
             let hcore : HELiveMatchMergeCoreCertified trace allowed
                 (.var key) p.nextRight seed :=
-              (hmerge.withCoreVarNonVarMatch hnonvar).reindexRight
+              (hmerge.withCoreVarNonVarMatch hnonvar hoccurs).reindexRight
                 hright.symm
             exact ⟨{
               toHELiveMatchMergeCoreSolutionCertified :=
@@ -3397,7 +3393,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
                   hcore.liveMerge.after trace
                 have hcoreAfter : hcore.liveMerge.after = hmerge.after :=
                   HELiveMatchMergeCoreCertified.reindexRight_liveAfter
-                    (hmerge.withCoreVarNonVarMatch hnonvar) hright.symm
+                    (hmerge.withCoreVarNonVarMatch hnonvar hoccurs) hright.symm
                 rw [hcoreAfter, hafter]
                 exact inner.afterAssignmentsSound
             }⟩
@@ -3418,6 +3414,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
       covered.state value leftRest)
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
+    (hoccurs : ¬ AtomOccurs value key)
     (hconflict : ∀ {first : Atom} {rest : List Atom},
       seed.classValues key = first :: rest →
       Bindings.valuesConsistent (first :: rest) = true →
@@ -3434,7 +3431,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
       value p.nextRight seed p.nextSubst) := by
   cases hclass : seed.classValues key with
   | nil =>
-      exact p.exists_coreResidualNonVarVar_fresh hright hnonvar
+      exact p.exists_coreResidualNonVarVar_fresh hright hnonvar hoccurs
         (p.freshNonVarVarEntry_of_originalCoverage
           covered.originalCoverage hright hnonvar) hclass
   | cons first rest =>
@@ -3445,7 +3442,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
             inner.toAssignmentReconcileMergeLive hclass hconsistent
           let hcore : HELiveMatchMergeCoreCertified trace allowed
               value p.nextRight seed :=
-            (hmerge.withCoreNonVarVarMatch hnonvar).reindexRight hright.symm
+            (hmerge.withCoreNonVarVarMatch hnonvar hoccurs).reindexRight hright.symm
           exact ⟨{
             toHELiveMatchMergeCoreSolutionCertified :=
               hcore.withProjectedHeadSolutions p
@@ -3454,13 +3451,13 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
                 hcore.liveMerge.after trace
               have hcoreAfter : hcore.liveMerge.after = hmerge.after :=
                 HELiveMatchMergeCoreCertified.reindexRight_liveAfter
-                  (hmerge.withCoreNonVarVarMatch hnonvar) hright.symm
+                  (hmerge.withCoreNonVarVarMatch hnonvar hoccurs) hright.symm
               rw [hcoreAfter, hafter]
               exact inner.afterAssignmentsSound
           }⟩
       | true =>
           by_cases hsame : first = value
-          · exact p.exists_coreResidualNonVarVar_same hright hnonvar
+          · exact p.exists_coreResidualNonVarVar_same hright hnonvar hoccurs
               hclass hconsistent hsame
           · obtain ⟨inner⟩ := hconflict hclass hconsistent hsame
             obtain ⟨hmerge, hafter⟩ :=
@@ -3468,7 +3465,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
                 hclass hconsistent hsame
             let hcore : HELiveMatchMergeCoreCertified trace allowed
                 value p.nextRight seed :=
-              (hmerge.withCoreNonVarVarMatch hnonvar).reindexRight
+              (hmerge.withCoreNonVarVarMatch hnonvar hoccurs).reindexRight
                 hright.symm
             exact ⟨{
               toHELiveMatchMergeCoreSolutionCertified :=
@@ -3478,7 +3475,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
                   hcore.liveMerge.after trace
                 have hcoreAfter : hcore.liveMerge.after = hmerge.after :=
                   HELiveMatchMergeCoreCertified.reindexRight_liveAfter
-                    (hmerge.withCoreNonVarVarMatch hnonvar) hright.symm
+                    (hmerge.withCoreNonVarVarMatch hnonvar hoccurs) hright.symm
                 rw [hcoreAfter, hafter]
                 exact inner.afterAssignmentsSound
             }⟩
@@ -3960,7 +3957,10 @@ private theorem boundedMatcherPack
               hlists
               (heSolutionAtomsSizeBound_of_expression_lt valuation hleft)
               (heSolutionAtomsSizeBound_of_expression_lt valuation hright)
-          exact ⟨out, .expr hlist, houtSat, houtNonvar, houtBound⟩
+          exact ⟨out, .expr hlist
+      (heSemanticLoopFree_of_satisfied_nonvariable houtSat
+        (fun {key target} => houtNonvar key target)),
+      houtSat, houtNonvar, houtBound⟩
     · intro rights seed hseed hseedNonvar hseedBound hlists
         hleftsBound hrightsBound
       cases rights with
@@ -4068,7 +4068,10 @@ theorem exists_expressionMatchRel_solutionSizeBound
       (by simp [HEAssignmentsNonVariable, Bindings.empty])
       (heBindingSolutionSizeBound_empty valuation bound)
       hlists hleftBound hrightBound
-  exact ⟨out, .expr hlist, houtSat, houtNonvar, houtBound⟩
+  exact ⟨out, .expr hlist
+      (heSemanticLoopFree_of_satisfied_nonvariable houtSat
+        (fun {key target} => houtNonvar key target)),
+      houtSat, houtNonvar, houtBound⟩
 
 private theorem addVarBindingRel_satisfied
     {valuation : String → Metta.Atom} {seed out : Bindings}
@@ -6355,6 +6358,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualNonVarVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_nonVarVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.nonVarVarConflict p hright rfl
                   hclass hconsistent hdifferent)
@@ -6373,6 +6378,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualVarNonVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_varNonVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.assignmentConflict p hright rfl
                   hclass hconsistent hdifferent)
@@ -6395,6 +6402,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualVarNonVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_varNonVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.assignmentConflict p hright rfl
                   hclass hconsistent hdifferent)
@@ -6405,6 +6414,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualVarNonVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_varNonVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.assignmentConflict p hright rfl
                   hclass hconsistent hdifferent)
@@ -6420,6 +6431,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualNonVarVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_nonVarVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.nonVarVarConflict p hright rfl
                   hclass hconsistent hdifferent)
@@ -6450,6 +6463,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
           simpa only [hright] using
             p.exists_coreResidualNonVarVar_of_hiddenLiveConflicts
               covered hright rfl
+              (not_atomOccurs_of_nonVarVar_equation rfl
+                (by simpa only [hright] using hequation))
               (fun {first rest} hclass hconsistent hdifferent =>
                 callbacks.nonVarVarConflict p hright rfl
                   hclass hconsistent hdifferent)

@@ -60,7 +60,10 @@ mutual
         exact checkSide_bindings rule annotation spec site (path ++ [0]) (depth + arity) body
     | subst body replacement => simp only [checkSide]
     | collection kind elements rest =>
-        simp only [checkSide]
+        have restSame : restSupported {rule with bindings := annotation} spec site (path ++ [elements.length])
+            depth rest = restSupported rule spec site (path ++ [elements.length]) depth rest := by
+          cases rest <;> simp only [restSupported, arguments_bindings]
+        simp only [checkSide, restSame]
         rw [checkArguments_bindings rule annotation spec site path depth 0 elements]
   termination_by sizeOf pattern
   decreasing_by all_goals sizeOf_pattern_dec

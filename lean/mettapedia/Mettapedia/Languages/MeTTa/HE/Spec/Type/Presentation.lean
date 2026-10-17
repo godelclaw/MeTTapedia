@@ -369,3 +369,687 @@ theorem unresolved_variable_presentation_is_rigid :
     (RuntimeTypePackage.published (.var "t")).observed = .var "t" := rfl
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+/-! ## Shared substitution and determined template readout -/
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+open RuntimeRefinement
+
+/-- The type presentation uses the shared atom variable-occurrence algebra. -/
+theorem TypeSubst.typeVars_eq_vars (atom : Atom) :
+    TypeSubst.typeVars atom = vars atom := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms => TypeSubst.typeVarsList atoms = vars.varsList atoms) with
+  | symbol name => rfl
+  | var name => rfl
+  | grounded value => rfl
+  | expression atoms ih => exact ih
+  | nil => rfl
+  | cons atom atoms head tail =>
+    simp only [TypeSubst.typeVarsList, vars.varsList, head, tail]
+
+/-- A total source valuation is the shared simultaneous substitution with all
+variable entries supplied. -/
+theorem applyTypeValuation_eq_subst (valuation : String → Atom) (atom : Atom) :
+    applyTypeValuation valuation atom = subst (some ∘ valuation) atom := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms => atoms.map (applyTypeValuation valuation) =
+        subst.substList (some ∘ valuation) atoms) with
+  | symbol name => simp only [applyTypeValuation, subst]
+  | var name => simp only [applyTypeValuation, subst, Function.comp_apply, Option.getD_some]
+  | grounded value => simp only [applyTypeValuation, subst]
+  | expression atoms ih => simpa only [applyTypeValuation, subst] using congrArg Atom.expression ih
+  | nil => rfl
+  | cons atom atoms head tail =>
+    simp only [List.map_cons, subst.substList, head, tail]
+
+/-- An observed first-order pattern determines precisely its variable values. -/
+theorem applyTypeValuation_eq_iff_on_typeVars (left right : String → Atom) (atom : Atom) :
+    applyTypeValuation left atom = applyTypeValuation right atom ↔
+      ∀ name ∈ TypeSubst.typeVars atom, left name = right name := by
+  simp only [applyTypeValuation_eq_subst, TypeSubst.typeVars_eq_vars,
+    subst_eq_iff_on_vars, subst, Function.comp_apply, Option.getD_some]
+
+/-- Equal solutions of a pattern give equal readouts for every template whose
+variables are covered by that pattern. -/
+theorem applyTypeValuation_template_eq_of_pattern_eq
+    (left right : String → Atom) (pattern template : Atom)
+    (covered : ∀ name ∈ TypeSubst.typeVars template, name ∈ TypeSubst.typeVars pattern)
+    (same : applyTypeValuation left pattern = applyTypeValuation right pattern) :
+    applyTypeValuation left template = applyTypeValuation right template := by
+  apply (applyTypeValuation_eq_iff_on_typeVars left right template).mpr
+  intro name member
+  exact (applyTypeValuation_eq_iff_on_typeVars left right pattern).mp same name
+    (covered name member)
+
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement
+
+/-! ## Structural renaming helpers -/
+
+mutual
+
+/-- Whole-type renaming depends only on the names occurring in the atom. -/
+theorem renameTypeVars_congr_on_typeVars
+    {left right : String → String} (atom : Atom)
+    (agrees : ∀ name, name ∈ TypeSubst.typeVars atom →
+      left name = right name) :
+    renameTypeVars left atom = renameTypeVars right atom := by
+  cases atom with
+  | symbol name => simp [renameTypeVars]
+  | var name =>
+      simp only [renameTypeVars, Atom.var.injEq]
+      exact agrees name (by simp [TypeSubst.typeVars])
+  | grounded value => simp [renameTypeVars]
+  | expression atoms =>
+      simp only [renameTypeVars, Atom.expression.injEq]
+      apply renameTypeVarsList_congr_on_typeVars
+      intro name member
+      exact agrees name (by simpa [TypeSubst.typeVars] using member)
+
+/-- List companion of `renameTypeVars_congr_on_typeVars`. -/
+theorem renameTypeVarsList_congr_on_typeVars
+    {left right : String → String} (atoms : List Atom)
+    (agrees : ∀ name, name ∈ TypeSubst.typeVarsList atoms →
+      left name = right name) :
+    atoms.map (renameTypeVars left) =
+      atoms.map (renameTypeVars right) := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [List.map_cons, List.cons.injEq]
+      constructor
+      · apply renameTypeVars_congr_on_typeVars atom
+        intro name member
+        exact agrees name (by
+          simp only [TypeSubst.typeVarsList, List.mem_append]
+          exact Or.inl member)
+      · apply renameTypeVarsList_congr_on_typeVars atoms
+        intro name member
+        exact agrees name (by
+          simp only [TypeSubst.typeVarsList, List.mem_append]
+          exact Or.inr member)
+
+end
+
+mutual
+
+/-- Successive whole-type renamings compose. -/
+theorem renameTypeVars_comp
+    (outer inner : String → String) (atom : Atom) :
+    renameTypeVars outer (renameTypeVars inner atom) =
+      renameTypeVars (outer ∘ inner) atom := by
+  cases atom with
+  | symbol name => simp [renameTypeVars]
+  | var name => simp [renameTypeVars, Function.comp_apply]
+  | grounded value => simp [renameTypeVars]
+  | expression atoms =>
+      simp only [renameTypeVars, Atom.expression.injEq]
+      exact renameTypeVarsList_comp outer inner atoms
+
+/-- List companion of `renameTypeVars_comp`. -/
+theorem renameTypeVarsList_comp
+    (outer inner : String → String) (atoms : List Atom) :
+    (atoms.map (renameTypeVars inner)).map
+        (renameTypeVars outer) =
+      atoms.map (renameTypeVars (outer ∘ inner)) := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [List.map_cons, List.cons.injEq]
+      exact ⟨renameTypeVars_comp outer inner atom,
+        renameTypeVarsList_comp outer inner atoms⟩
+
+end
+
+/-- Renaming every type variable by the identity function is inert. -/
+theorem renameTypeVars_id (atom : Atom) :
+    renameTypeVars id atom = atom := by
+  induction atom using Atom.rec (motive_2 := fun atoms =>
+    atoms.map (renameTypeVars id) = atoms) with
+  | symbol name => simp [renameTypeVars]
+  | var name => simp [renameTypeVars]
+  | grounded value => simp [renameTypeVars]
+  | expression atoms ih => simp [renameTypeVars, ih]
+  | nil => rfl
+  | cons atom atoms ihAtom ihAtoms => simp [ihAtom, ihAtoms]
+
+mutual
+
+/-- If a structural type renaming leaves an atom literally unchanged, it
+fixes every variable name occurring in that atom. -/
+theorem renameTypeVars_eq_self_fixed_on_typeVars
+    (rename : String → String) (atom : Atom)
+    (equation : renameTypeVars rename atom = atom) :
+    ∀ name, name ∈ TypeSubst.typeVars atom → rename name = name := by
+  cases atom with
+  | symbol symbol => simp [TypeSubst.typeVars]
+  | var variableName =>
+      intro name member
+      have nameEquation : name = variableName := by
+        simpa [TypeSubst.typeVars] using member
+      subst name
+      simpa [renameTypeVars] using equation
+  | grounded value => simp [TypeSubst.typeVars]
+  | expression atoms =>
+      have listEquation :
+          atoms.map (renameTypeVars rename) = atoms := by
+        simpa [renameTypeVars] using equation
+      exact renameTypeVarsList_eq_self_fixed_on_typeVars
+        rename atoms listEquation
+
+/-- List companion of
+`renameTypeVars_eq_self_fixed_on_typeVars`. -/
+theorem renameTypeVarsList_eq_self_fixed_on_typeVars
+    (rename : String → String) (atoms : List Atom)
+    (equation : atoms.map (renameTypeVars rename) = atoms) :
+    ∀ name,
+      name ∈ TypeSubst.typeVarsList atoms → rename name = name := by
+  cases atoms with
+  | nil => simp [TypeSubst.typeVarsList]
+  | cons atom atoms =>
+      have parts := List.cons.inj equation
+      intro name member
+      rw [TypeSubst.typeVarsList, List.mem_append] at member
+      rcases member with headMember | tailMember
+      · exact renameTypeVars_eq_self_fixed_on_typeVars
+          rename atom parts.1 name headMember
+      · exact renameTypeVarsList_eq_self_fixed_on_typeVars
+          rename atoms parts.2 name tailMember
+
+end
+
+mutual
+
+/-- Whole-type renaming maps the finite variable support pointwise. -/
+theorem typeVars_renameTypeVars
+    (rename : String → String) (atom : Atom) :
+    TypeSubst.typeVars (renameTypeVars rename atom) =
+      (TypeSubst.typeVars atom).map rename := by
+  cases atom with
+  | symbol name => simp [renameTypeVars, TypeSubst.typeVars]
+  | var name => simp [renameTypeVars, TypeSubst.typeVars]
+  | grounded value => simp [renameTypeVars, TypeSubst.typeVars]
+  | expression atoms =>
+      simpa [renameTypeVars, TypeSubst.typeVars] using
+        typeVarsList_renameTypeVars rename atoms
+
+/-- List companion of `typeVars_renameTypeVars`. -/
+theorem typeVarsList_renameTypeVars
+    (rename : String → String) (atoms : List Atom) :
+    TypeSubst.typeVarsList
+        (atoms.map (renameTypeVars rename)) =
+      (TypeSubst.typeVarsList atoms).map rename := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [List.map_cons, TypeSubst.typeVarsList,
+        List.map_append]
+      exact congrArg₂ List.append
+        (typeVars_renameTypeVars rename atom)
+        (typeVarsList_renameTypeVars rename atoms)
+
+end
+
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement
+
+mutual
+
+/-- Valuation after whole-type renaming is valuation conjugation on variable
+names. -/
+theorem applyTypeValuation_renameTypeVars
+    (valuation : String → Atom) (rename : String → String) (atom : Atom) :
+    applyTypeValuation valuation (renameTypeVars rename atom) =
+      applyTypeValuation (valuation ∘ rename) atom := by
+  cases atom with
+  | symbol name => simp [renameTypeVars, applyTypeValuation]
+  | var name => simp [renameTypeVars, applyTypeValuation]
+  | grounded value => simp [renameTypeVars, applyTypeValuation]
+  | expression atoms =>
+      simp only [renameTypeVars, applyTypeValuation,
+        Atom.expression.injEq]
+      exact applyTypeValuationList_renameTypeVars
+        valuation rename atoms
+
+/-- List companion of `applyTypeValuation_renameTypeVars`. -/
+theorem applyTypeValuationList_renameTypeVars
+    (valuation : String → Atom) (rename : String → String)
+    (atoms : List Atom) :
+    (atoms.map (renameTypeVars rename)).map
+        (applyTypeValuation valuation) =
+      atoms.map (applyTypeValuation (valuation ∘ rename)) := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [List.map_cons, List.cons.injEq]
+      exact ⟨applyTypeValuation_renameTypeVars
+          valuation rename atom,
+        applyTypeValuationList_renameTypeVars
+          valuation rename atoms⟩
+
+end
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement Spec.Type.Presentation.ScopeObservation
+
+@[simp] theorem renameTypeVars_perm_inverse (permutation : Equiv.Perm String)
+    (atom : Atom) :
+    renameTypeVars permutation.symm (renameTypeVars permutation atom) = atom := by
+  rw [renameTypeVars_comp]
+  have inverse : (permutation.symm : String → String) ∘ permutation = id := by
+    funext name
+    simp
+  rw [inverse, renameTypeVars_id]
+
+theorem renameTypeVars_perm_injective (permutation : Equiv.Perm String) :
+    Function.Injective (renameTypeVars permutation) := by
+  intro left right same
+  simpa only [renameTypeVars_perm_inverse] using
+    congrArg (renameTypeVars permutation.symm) same
+
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open ScopeObservation Spec.Type.RuntimeRefinement
+open Spec.Bindings.ScopeObservation
+
+namespace TypeSubst
+
+/-- Simultaneously rename the keys and values of an ordered presentation. -/
+def renameVars (rename : String → String) (substitution : TypeSubst) : TypeSubst :=
+  substitution.map (fun entry => (rename entry.1, renameTypeVars rename entry.2))
+
+@[simp] theorem renameVars_nil (rename : String → String) :
+    renameVars rename [] = [] := rfl
+
+@[simp] theorem renameVars_cons (rename : String → String) (key : String)
+    (value : Atom) (rest : TypeSubst) :
+    renameVars rename ((key, value) :: rest) =
+      (rename key, renameTypeVars rename value) :: renameVars rename rest := rfl
+
+theorem renameVars_comp (outer inner : String → String) (substitution : TypeSubst) :
+    renameVars outer (renameVars inner substitution) =
+      renameVars (outer ∘ inner) substitution := by
+  simp [renameVars, List.map_map, Function.comp_def, renameTypeVars_comp]
+
+@[simp] theorem renameVars_id (substitution : TypeSubst) :
+    renameVars id substitution = substitution := by
+  simp [renameVars, renameTypeVars_id]
+
+@[simp] theorem renameVars_inverse (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) :
+    renameVars permutation.symm (renameVars permutation substitution) = substitution := by
+  rw [renameVars_comp]
+  have inverse : (permutation.symm : String → String) ∘ permutation = id := by
+    funext name
+    simp
+  rw [inverse, renameVars_id]
+
+@[simp] theorem lookup_renameVars (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) (name : String) :
+    (renameVars permutation substitution).lookup (permutation name) =
+      (substitution.lookup name).map (renameTypeVars permutation) := by
+  induction substitution with
+  | nil => rfl
+  | cons entry rest ih =>
+      obtain ⟨key, value⟩ := entry
+      by_cases same : name = key <;>
+        simp [renameVars_cons, lookup, permutation.injective.eq_iff, ih, same]
+
+mutual
+
+/-- Ordered substitution application commutes with one simultaneous variable
+permutation. No choice of representative is changed independently. -/
+theorem apply_renameVars (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) (atom : Atom) :
+    (renameVars permutation substitution).apply (renameTypeVars permutation atom) =
+      renameTypeVars permutation (substitution.apply atom) := by
+  cases atom with
+  | symbol name => simp [renameTypeVars, apply]
+  | grounded value => simp [renameTypeVars, apply]
+  | var name =>
+      simp only [renameTypeVars, apply, lookup_renameVars]
+      cases substitution.lookup name <;> simp [renameTypeVars]
+  | expression atoms =>
+      simp only [renameTypeVars, apply, Atom.expression.injEq]
+      exact applyList_renameVars permutation substitution atoms
+
+/-- List companion of `apply_renameVars`. -/
+theorem applyList_renameVars (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) (atoms : List Atom) :
+    (atoms.map (renameTypeVars permutation)).map
+        (apply (renameVars permutation substitution)) =
+      (atoms.map (apply substitution)).map (renameTypeVars permutation) := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [List.map_cons, List.cons.injEq]
+      exact ⟨apply_renameVars permutation substitution atom,
+        applyList_renameVars permutation substitution atoms⟩
+
+end
+
+theorem erase_renameVars (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) (name : String) :
+    (renameVars permutation substitution).erase (permutation name) =
+      renameVars permutation (substitution.erase name) := by
+  induction substitution with
+  | nil => rfl
+  | cons entry rest ih =>
+      obtain ⟨key, value⟩ := entry
+      by_cases same : key = name
+      · subst key
+        simpa [erase, renameVars, List.filter_cons] using ih
+      · simpa [erase, renameVars, List.filter_cons, same,
+          permutation.injective.eq_iff] using congrArg
+            (List.cons (permutation key, renameTypeVars permutation value)) ih
+
+theorem applyAssignment_renameVars (permutation : Equiv.Perm String)
+    (name : String) (value atom : Atom) :
+    applyAssignment (permutation name) (renameTypeVars permutation value)
+        (renameTypeVars permutation atom) =
+      renameTypeVars permutation (applyAssignment name value atom) :=
+  apply_renameVars permutation [(name, value)] atom
+
+theorem bind_renameVars (permutation : Equiv.Perm String)
+    (substitution : TypeSubst) (name : String) (value : Atom) :
+    (renameVars permutation substitution).bind
+        (permutation name) (renameTypeVars permutation value) =
+      renameVars permutation (substitution.bind name value) := by
+  simp only [bind, apply_renameVars, erase_renameVars, renameVars_cons]
+  apply congrArg (List.cons _)
+  simp only [renameVars, List.map_map, Function.comp_def]
+  apply List.map_congr_left
+  intro entry _
+  exact congrArg (Prod.mk (permutation entry.1))
+    (applyAssignment_renameVars permutation name (substitution.apply value) entry.2)
+
+theorem keys_renameVars (rename : String → String) (substitution : TypeSubst) :
+    (renameVars rename substitution).keys = substitution.keys.map rename := by
+  simp [renameVars, keys, List.map_map, Function.comp_def]
+
+/-- One bijective coordinate change preserves unique keys and the absence
+of assigned variables from stored values. -/
+theorem Normal.rename (permutation : Equiv.Perm String) {substitution : TypeSubst}
+    (normal : substitution.Normal) : (substitution.renameVars permutation).Normal := by
+  refine ⟨?_, ?_⟩
+  · rw [keys_renameVars]
+    exact normal.1.map permutation.injective
+  · intro name value member candidate occurs assigned
+    obtain ⟨⟨oldName, oldValue⟩, stored, pair⟩ := List.mem_map.mp member
+    cases pair
+    rw [typeVars_renameTypeVars] at occurs
+    obtain ⟨oldCandidate, candidateOccurs, rfl⟩ := List.mem_map.mp occurs
+    rw [keys_renameVars] at assigned
+    obtain ⟨oldKey, keyMember, same⟩ := List.mem_map.mp assigned
+    have sameKey := permutation.injective same
+    subst oldKey
+    exact normal.2 oldName oldValue stored oldCandidate candidateOccurs keyMember
+
+end TypeSubst
+
+/-- Every ordinary applied match transports its actual ordered output. -/
+theorem AppliedReducedTypeMatchRel.rename
+    (permutation : Equiv.Perm String) {incoming output : TypeSubst}
+    {left right : Atom}
+    (derivation : AppliedReducedTypeMatchRel incoming left right output) :
+    AppliedReducedTypeMatchRel (incoming.renameVars permutation)
+      (renameTypeVars permutation left) (renameTypeVars permutation right)
+      (output.renameVars permutation) := by
+  induction derivation using AppliedReducedTypeMatchRel.rec
+      (motive_2 := fun incoming left right output _ =>
+        AppliedTypePresentationMatchRel (incoming.renameVars permutation)
+          (renameTypeVars permutation left) (renameTypeVars permutation right)
+          (output.renameVars permutation))
+      (motive_3 := fun incoming left right output _ =>
+        AppliedReducedTypeListMatchRel (incoming.renameVars permutation)
+          (left.map (renameTypeVars permutation))
+          (right.map (renameTypeVars permutation)) (output.renameVars permutation)) with
+  | identical substitution atom => exact .identical _ _
+  | bindLeft absent =>
+      rw [← TypeSubst.bind_renameVars]
+      simp only [renameTypeVars]
+      apply AppliedReducedTypeMatchRel.bindLeft
+      simpa only [typeVars_renameTypeVars, List.mem_map,
+        permutation.injective.eq_iff, exists_eq_right] using absent
+  | bindRight nonvariable absent =>
+      rw [← TypeSubst.bind_renameVars]
+      simp only [renameTypeVars]
+      apply AppliedReducedTypeMatchRel.bindRight
+      · intro other same
+        have original := congrArg (renameTypeVars permutation.symm) same
+        simp only [renameTypeVars_perm_inverse, renameTypeVars] at original
+        exact nonvariable _ original
+      · simpa only [typeVars_renameTypeVars, List.mem_map,
+          permutation.injective.eq_iff, exists_eq_right] using absent
+  | expression _children ih =>
+      simpa only [renameTypeVars] using AppliedReducedTypeMatchRel.expression ih
+  | ordinary leftApply rightApply _applied ih =>
+      exact .ordinary
+        ((TypeSubst.apply_renameVars permutation _ _).trans
+          (congrArg (renameTypeVars permutation) leftApply))
+        ((TypeSubst.apply_renameVars permutation _ _).trans
+          (congrArg (renameTypeVars permutation) rightApply)) ih
+  | nil substitution => exact .nil _
+  | cons _head _tail headIH tailIH => exact .cons headIH tailIH
+
+/-- The ordinary post-substitution boundary is equivariant. -/
+theorem AppliedTypePresentationMatchRel.rename
+    (permutation : Equiv.Perm String) {incoming output : TypeSubst}
+    {left right : Atom}
+    (derivation : AppliedTypePresentationMatchRel incoming left right output) :
+    AppliedTypePresentationMatchRel (incoming.renameVars permutation)
+      (renameTypeVars permutation left) (renameTypeVars permutation right)
+      (output.renameVars permutation) := by
+  cases derivation with
+  | ordinary leftApply rightApply applied =>
+      exact .ordinary
+        ((TypeSubst.apply_renameVars permutation _ _).trans
+          (congrArg (renameTypeVars permutation) leftApply))
+        ((TypeSubst.apply_renameVars permutation _ _).trans
+          (congrArg (renameTypeVars permutation) rightApply))
+        (AppliedReducedTypeMatchRel.rename permutation applied)
+
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-! ## Literal functionality of the ordinary ordered presentation -/
+
+private theorem reflexive_family :
+    (∀ {s o : TypeSubst} {l r : Atom}, AppliedReducedTypeMatchRel s l r o → l = r → o = s) ∧
+    (∀ {s o : TypeSubst} {l r : Atom}, AppliedTypePresentationMatchRel s l r o → l = r → o = s) ∧
+    (∀ {s o : TypeSubst} {l r : List Atom}, AppliedReducedTypeListMatchRel s l r o → l = r → o = s) := by
+  let reduced := fun (s : TypeSubst) (l r : Atom) (o : TypeSubst)
+    (_ : AppliedReducedTypeMatchRel s l r o) => l = r → o = s
+  let applied := fun (s : TypeSubst) (l r : Atom) (o : TypeSubst)
+    (_ : AppliedTypePresentationMatchRel s l r o) => l = r → o = s
+  let list := fun (s : TypeSubst) (l r : List Atom) (o : TypeSubst)
+    (_ : AppliedReducedTypeListMatchRel s l r o) => l = r → o = s
+  have identical (s : TypeSubst) (a : Atom) : reduced s a a s (.identical s a) := by
+    intro _
+    rfl
+  have bindLeft {s : TypeSubst} {name : String} {r : Atom}
+      (absent : name ∉ TypeSubst.typeVars r) :
+      reduced s (.var name) r (s.bind name r) (.bindLeft absent) := by
+    intro same
+    cases same
+    exact (absent (by simp [TypeSubst.typeVars])).elim
+  have bindRight {s : TypeSubst} {l : Atom} {name : String}
+      (nonvariable : ∀ other, l ≠ .var other) (absent : name ∉ TypeSubst.typeVars l) :
+      reduced s l (.var name) (s.bind name l) (.bindRight nonvariable absent) := by
+    intro same
+    exact (nonvariable name same).elim
+  have expression {s o : TypeSubst} {l r : List Atom}
+      (h : AppliedReducedTypeListMatchRel s l r o) (ih : list s l r o h) :
+      reduced s (.expression l) (.expression r) o (.expression h) := by
+    intro same
+    exact ih (Atom.expression.inj same)
+  have ordinary {s o : TypeSubst} {l r rl rr : Atom}
+      (hl : s.apply l = rl) (hr : s.apply r = rr)
+      (h : AppliedReducedTypeMatchRel s rl rr o) (ih : reduced s rl rr o h) :
+      applied s l r o (.ordinary hl hr h) := by
+    intro same
+    exact ih (hl.symm.trans ((congrArg s.apply same).trans hr))
+  have nil (s : TypeSubst) : list s [] [] s (.nil s) := by intro _; rfl
+  have cons {s n o : TypeSubst} {l r : Atom} {ls rs : List Atom}
+      (h : AppliedTypePresentationMatchRel s l r n)
+      (t : AppliedReducedTypeListMatchRel n ls rs o)
+      (ih : applied s l r n h) (it : list n ls rs o t) :
+      list s (l :: ls) (r :: rs) o (.cons h t) := by
+    intro same
+    have eqs := List.cons.inj same
+    have middle := ih eqs.1
+    exact (it eqs.2).trans middle
+  exact ⟨fun h => AppliedReducedTypeMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h,
+    fun h => AppliedTypePresentationMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h,
+    fun h => AppliedReducedTypeListMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h⟩
+
+/-- Matching an atom with itself does not change its incoming presentation. -/
+theorem AppliedReducedTypeMatchRel.reflexive_output
+    {incoming output : TypeSubst} {left right : Atom}
+    (derivation : AppliedReducedTypeMatchRel incoming left right output)
+    (same : left = right) : output = incoming := reflexive_family.1 derivation same
+
+/-- Applying the same operand twice leaves the presentation unchanged. -/
+theorem AppliedTypePresentationMatchRel.reflexive_output
+    {incoming output : TypeSubst} {left right : Atom}
+    (derivation : AppliedTypePresentationMatchRel incoming left right output)
+    (same : left = right) : output = incoming := reflexive_family.2.1 derivation same
+
+/-- A pointwise self-match leaves the complete ordered presentation unchanged. -/
+theorem AppliedReducedTypeListMatchRel.reflexive_output
+    {incoming output : TypeSubst} {left right : List Atom}
+    (derivation : AppliedReducedTypeListMatchRel incoming left right output)
+    (same : left = right) : output = incoming := reflexive_family.2.2 derivation same
+
+private theorem functional_family :
+    (∀ {s o : TypeSubst} {l r : Atom}, AppliedReducedTypeMatchRel s l r o →
+      ∀ {other}, AppliedReducedTypeMatchRel s l r other → o = other) ∧
+    (∀ {s o : TypeSubst} {l r : Atom}, AppliedTypePresentationMatchRel s l r o →
+      ∀ {other}, AppliedTypePresentationMatchRel s l r other → o = other) ∧
+    (∀ {s o : TypeSubst} {l r : List Atom}, AppliedReducedTypeListMatchRel s l r o →
+      ∀ {other}, AppliedReducedTypeListMatchRel s l r other → o = other) := by
+  let reduced := fun (s : TypeSubst) (l r : Atom) (o : TypeSubst)
+    (_ : AppliedReducedTypeMatchRel s l r o) =>
+      ∀ {other}, AppliedReducedTypeMatchRel s l r other → o = other
+  let applied := fun (s : TypeSubst) (l r : Atom) (o : TypeSubst)
+    (_ : AppliedTypePresentationMatchRel s l r o) =>
+      ∀ {other}, AppliedTypePresentationMatchRel s l r other → o = other
+  let list := fun (s : TypeSubst) (l r : List Atom) (o : TypeSubst)
+    (_ : AppliedReducedTypeListMatchRel s l r o) =>
+      ∀ {other}, AppliedReducedTypeListMatchRel s l r other → o = other
+  have identical (s : TypeSubst) (a : Atom) : reduced s a a s (.identical s a) := by
+    intro other two
+    exact (two.reflexive_output rfl).symm
+  have bindLeft {s : TypeSubst} {name : String} {r : Atom}
+      (absent : name ∉ TypeSubst.typeVars r) :
+      reduced s (.var name) r (s.bind name r) (.bindLeft absent) := by
+    intro other two
+    cases two with
+    | identical => exact (absent (by simp [TypeSubst.typeVars])).elim
+    | bindLeft => rfl
+    | bindRight nonvariable _ => exact (nonvariable _ rfl).elim
+  have bindRight {s : TypeSubst} {l : Atom} {name : String}
+      (nonvariable : ∀ other, l ≠ .var other) (absent : name ∉ TypeSubst.typeVars l) :
+      reduced s l (.var name) (s.bind name l) (.bindRight nonvariable absent) := by
+    intro other two
+    cases two with
+    | identical => exact (nonvariable _ rfl).elim
+    | bindLeft => exact (nonvariable _ rfl).elim
+    | bindRight => rfl
+  have expression {s o : TypeSubst} {l r : List Atom}
+      (h : AppliedReducedTypeListMatchRel s l r o) (ih : list s l r o h) :
+      reduced s (.expression l) (.expression r) o (.expression h) := by
+    intro other two
+    cases two with
+    | identical => exact h.reflexive_output rfl
+    | expression otherChildren => exact ih otherChildren
+  have ordinary {s o : TypeSubst} {l r rl rr : Atom}
+      (hl : s.apply l = rl) (hr : s.apply r = rr)
+      (h : AppliedReducedTypeMatchRel s rl rr o) (ih : reduced s rl rr o h) :
+      applied s l r o (.ordinary hl hr h) := by
+    intro other two
+    cases two with
+    | ordinary otherLeft otherRight secondMatch =>
+        have alignedLeft := hl.symm.trans otherLeft
+        have alignedRight := hr.symm.trans otherRight
+        cases alignedLeft
+        cases alignedRight
+        exact ih secondMatch
+  have nil (s : TypeSubst) : list s [] [] s (.nil s) := by
+    intro other two
+    cases two
+    rfl
+  have cons {s n o : TypeSubst} {l r : Atom} {ls rs : List Atom}
+      (h : AppliedTypePresentationMatchRel s l r n)
+      (t : AppliedReducedTypeListMatchRel n ls rs o)
+      (ih : applied s l r n h) (it : list n ls rs o t) :
+      list s (l :: ls) (r :: rs) o (.cons h t) := by
+    intro other two
+    cases two with
+    | cons otherHead otherTail =>
+        have middle := ih otherHead
+        cases middle
+        exact it otherTail
+  exact ⟨fun h => AppliedReducedTypeMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h,
+    fun h => AppliedTypePresentationMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h,
+    fun h => AppliedReducedTypeListMatchRel.rec
+      (motive_1 := reduced) (motive_2 := applied) (motive_3 := list)
+      identical bindLeft bindRight expression ordinary nil cons h⟩
+
+/-- One ordinary reduced match has one literal output presentation. -/
+theorem AppliedReducedTypeMatchRel.output_eq
+    {incoming first second : TypeSubst} {left right : Atom}
+    (one : AppliedReducedTypeMatchRel incoming left right first)
+    (two : AppliedReducedTypeMatchRel incoming left right second) : first = second :=
+  functional_family.1 one two
+
+/-- One applied ordinary match has one literal output presentation. -/
+theorem AppliedTypePresentationMatchRel.output_eq
+    {incoming first second : TypeSubst} {left right : Atom}
+    (one : AppliedTypePresentationMatchRel incoming left right first)
+    (two : AppliedTypePresentationMatchRel incoming left right second) : first = second :=
+  functional_family.2.1 one two
+
+/-- A fixed ordered match list has one literal output presentation. -/
+theorem AppliedReducedTypeListMatchRel.output_eq
+    {incoming first second : TypeSubst} {left right : List Atom}
+    (one : AppliedReducedTypeListMatchRel incoming left right first)
+    (two : AppliedReducedTypeListMatchRel incoming left right second) : first = second :=
+  functional_family.2.2 one two
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation

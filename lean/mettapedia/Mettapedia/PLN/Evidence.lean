@@ -5,7 +5,6 @@ import Mettapedia.PLN.Evidence.BinEvNat
 import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem
 import Mettapedia.PLN.Evidence.Convergence
-import Mettapedia.PLN.Evidence.EvidenceQuantale
 import Mettapedia.PLN.Evidence.EvidenceHplusQuantale
 import Mettapedia.PLN.Evidence.EvidenceIntervalBounds
 import Mettapedia.PLN.Evidence.EvidenceIntuitionisticProbability
@@ -24,7 +23,6 @@ import Mettapedia.PLN.Evidence.EvidenceSTVBridge
 import Mettapedia.PLN.Evidence.IdentityEvidence
 import Mettapedia.PLN.Evidence.ComplexEvidenceCarrier
 import Mettapedia.PLN.Evidence.EvidenceKSBridge
-import Mettapedia.PLN.Evidence.PLNEvidence
 import Mettapedia.PLN.Evidence.EvidentialLedger
 import Mettapedia.PLN.Evidence.SourceReliability
 

@@ -420,7 +420,7 @@ theorem applicationPackageSuccess_transport_common_scopes
                 (expectedTypes.map (renameTypeVars permutation) ++
                   [renameTypeVars permutation returnType])) := by
         rw [operatorEquation, shape]
-        simp [renameTypeVars, List.map_append]
+        simp [List.map_append]
       obtain ⟨rightSubstitution, rightFold⟩ :=
         (presentationArgumentList_success_perm_iff
           permutation expectedTypes leftArguments).mpr
@@ -557,7 +557,7 @@ theorem applicationPackageSuccess_transport_separated_scopes
                 (expectedTypes.map (renameTypeVars permutation) ++
                   [renameTypeVars permutation returnType])) := by
         rw [operatorEquation, shape]
-        simp [renameTypeVars, List.map_append]
+        simp [List.map_append]
       obtain ⟨rightSubstitution, rightFold⟩ :=
         (presentationArgumentList_success_perm_iff
           permutation expectedTypes leftArguments).mpr

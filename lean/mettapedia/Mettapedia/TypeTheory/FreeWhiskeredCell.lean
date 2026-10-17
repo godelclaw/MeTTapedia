@@ -27,6 +27,9 @@ universe uObject uHom uGenerator uTarget uOtherGenerator
 
 /-! ## The raw one-dimensional boundary -/
 
+-- Bundling joins the levels only in this record's sort. Objects and arrows
+-- retain their separate universe parameters in the fields and cell syntax.
+set_option linter.checkUnivs false in
 /-- Objects and composable one-cells before any unit or associativity laws are
 imposed.  Identities already retained inside a particular one-cell syntax do
 not need to be selected again at this common boundary. -/

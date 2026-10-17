@@ -43,9 +43,9 @@ A small housing community/co-op ("Maple Court") with:
 -/
 
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 namespace Mettapedia.Examples.PLN.MapleCourtDemo
 

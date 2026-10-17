@@ -319,8 +319,7 @@ theorem procDrop_canonical : IsCanonical procDrop := by
   simpa [procDrop, IsCanonical, IsCanonicalList] using quoteZero_canonical
 
 theorem procOutput_canonical : IsCanonical procOutput := by
-  simpa [procOutput, procZero, IsCanonical, IsCanonicalList] using
-    And.intro quoteZero_canonical procZero_canonical
+  simp [procOutput, procZero, IsCanonical, IsCanonicalList]
 
 theorem procDrop_not_zero : procDrop ≠ procZero := by
   intro same
@@ -346,16 +345,16 @@ theorem procDrop_prime : IsPrime procDrop :=
 theorem procOutput_prime : IsPrime procOutput :=
   ⟨procOutput_closed, procOutput_canonical, procOutput_not_zero, procOutput_not_bag⟩
 
-def pairPrimes : ∀ pattern ∈ [procDrop, procOutput], IsPrime pattern := by
+theorem pairPrimes : ∀ pattern ∈ [procDrop, procOutput], IsPrime pattern := by
   intro pattern membership
-  simp [List.mem_cons, List.mem_singleton] at membership
+  simp [List.mem_cons] at membership
   rcases membership with rfl | rfl
   · exact procDrop_prime
   · exact procOutput_prime
 
-def swapPrimes : ∀ pattern ∈ [procOutput, procDrop], IsPrime pattern := by
+theorem swapPrimes : ∀ pattern ∈ [procOutput, procDrop], IsPrime pattern := by
   intro pattern membership
-  simp [List.mem_cons, List.mem_singleton] at membership
+  simp [List.mem_cons] at membership
   rcases membership with rfl | rfl
   · exact procOutput_prime
   · exact procDrop_prime
@@ -390,12 +389,12 @@ theorem bagContents_pair :
     bagContents [procDrop, procOutput] = [procDrop, procOutput] := by
   refine bagContents_eq_self ?_ ?_
   · intro pattern membership
-    simp [List.mem_cons, List.mem_singleton] at membership
+    simp [List.mem_cons] at membership
     rcases membership with rfl | rfl
     · exact procDrop_not_zero
     · exact procOutput_not_zero
   · intro pattern membership elements
-    simp [List.mem_cons, List.mem_singleton] at membership
+    simp [List.mem_cons] at membership
     rcases membership with rfl | rfl
     · exact procDrop_not_bag elements
     · exact procOutput_not_bag elements
@@ -411,19 +410,19 @@ theorem canonicalize_orderedPar :
     have permutation := List.mergeSort_perm [procDrop, procOutput]
       (fun left right => decide (patternCode left ≤ patternCode right))
     have lengths := List.Perm.length_eq permutation
-    simpa [sortPatterns, lengths] using (Nat.le_refl 2)
+    simp [sortPatterns, lengths]
   unfold orderedPar
   change collapseBag (normalizeBagElements (canonicalizeList [procDrop, procOutput])) = _
   rw [canonList, normalizeBagElements_eq_sort_bagContents, bagContents_pair]
   exact collapseBag_eq_bag_of_length_ge_two sortedLength
 
-def nestedClosed : ∀ pattern ∈ [orderedPar], RhoClosedTermWellSorted rhoProc pattern := by
+theorem nestedClosed : ∀ pattern ∈ [orderedPar], RhoClosedTermWellSorted rhoProc pattern := by
   intro pattern membership
-  simp [List.mem_singleton] at membership
+  simp at membership
   subst membership
   exact orderedPar_closed
 
-def flatClosed : ∀ pattern ∈ [procDrop, procOutput], RhoClosedTermWellSorted rhoProc pattern :=
+theorem flatClosed : ∀ pattern ∈ [procDrop, procOutput], RhoClosedTermWellSorted rhoProc pattern :=
   fun pattern membership => (pairPrimes pattern membership).1
 
 /-- `CanonicalBag` flattens a nested bag. Permutation does not. -/
@@ -469,16 +468,16 @@ theorem canonical_flattens :
       (List.mergeSort_perm [procDrop, procOutput]
         (fun left right => decide (patternCode left ≤ patternCode right))))
 
-def withZeroClosed : ∀ pattern ∈ [procDrop, procZero], RhoClosedTermWellSorted rhoProc pattern := by
+theorem withZeroClosed : ∀ pattern ∈ [procDrop, procZero], RhoClosedTermWellSorted rhoProc pattern := by
   intro pattern membership
-  simp [List.mem_cons, List.mem_singleton] at membership
+  simp [List.mem_cons] at membership
   rcases membership with rfl | rfl
   · exact procDrop_closed
   · exact procZero_closed
 
-def onlyDropClosed : ∀ pattern ∈ [procDrop], RhoClosedTermWellSorted rhoProc pattern := by
+theorem onlyDropClosed : ∀ pattern ∈ [procDrop], RhoClosedTermWellSorted rhoProc pattern := by
   intro pattern membership
-  simp [List.mem_singleton] at membership
+  simp at membership
   subst membership
   exact procDrop_closed
 

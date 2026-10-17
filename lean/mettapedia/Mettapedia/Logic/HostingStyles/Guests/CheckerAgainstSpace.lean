@@ -32,7 +32,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.GSLT.LanguageDef.Authored
 open Mettapedia.Languages.MM0
 open Mettapedia.Languages.MM0.Presentation.Calculus
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-- **The candidate with a space as a term reduces in the sort of processes

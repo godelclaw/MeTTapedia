@@ -6,22 +6,12 @@ namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLLinkBridge
 universe u v w
 
 open Mettapedia.Logic.HOL
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore (HOLState HOLProvable HOLProvImp HOLProvEq)
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules (HOLProvIff)
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 open scoped ENNReal
 
 variable {Base : Type u} {Const : Ty Base → Type v}
-
-abbrev HOLQuery (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery (Base := Base) Const
-
-abbrev HOLState (Base : Type u) (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState Base Const
-
-abbrev HOLProvImp (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvImp (Const := Const) φ ψ
-
-abbrev HOLProvIff (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules.HOLProvIff (Base := Base) (Const := Const) φ ψ
 
 abbrev HOLLinkJudgment :=
   Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Judgment (HOLQuery (Base := Base) Const)

@@ -1,5 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.DeclarationFormation
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.IntrinsicNativeListRelator
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.FormationSensitiveLevelInstantiation
 
 /-!
 # Formation-sensitive native List and mapRel constructors
@@ -628,5 +629,136 @@ theorem consRelApp_hasType {context : Tower.Ctx n}
 #print axioms consRelType_hasType
 #print axioms consApp_hasType
 #print axioms consRelApp_hasType
+
+/-! ## Reusable level instantiation of the actual formed declarations -/
+
+namespace Instantiated
+
+open IntrinsicMaps
+
+/-- The original relational iota evidence commutes with actual head maps. -/
+def mapRelIota (map : Tower.Head → Tower.Head) {left right : Tower.Tm n}
+    (evidence : IntrinsicRelator.IotaEvidence n left right) :
+    IntrinsicRelator.IotaEvidence n (left.mapHead map) (right.mapHead map) := by
+  cases evidence with
+  | nil => exact .nil _ _ _ _ _ _
+  | cons => exact .cons _ _ _ _ _ _ _ _ _ _ _ _
+
+/-- Instantiate the existing combined List/relator declarations and their
+original root evidence. This is not a second List signature. -/
+def levelInstance (level : LevelExpr Nat) :
+    LevelInstance IntrinsicRelator.rawSignature (sameLevelSubstitution level) where
+  computation := IntrinsicRelator.combinedProofRelevantIotaComputation.support
+  computationMap := by
+    intro scope left right step
+    rcases step with ⟨evidence⟩
+    cases evidence with
+    | list evidence => exact ⟨.list (mapIotaEvidence _ evidence)⟩
+    | rel evidence => exact ⟨.rel (mapRelIota _ evidence)⟩
+
+abbrev rules (level : LevelExpr Nat) : Rules Tower.Head := (levelInstance level).rules
+
+abbrev Typing (level : LevelExpr Nat) {n : Nat} :=
+  FormationSensitive.Typing (rules level) (n := n)
+
+/-- All formation premises are transported by the existing level morphism. -/
+theorem transport (level : LevelExpr Nat) {context : Tower.Ctx n}
+    {term type : Tower.Tm n} (typed : FormationSensitiveNativeList.Typing context term type) :
+    Typing level (substLevelsCtx (sameLevelSubstitution level) context)
+      (substLevelsTm (sameLevelSubstitution level) term)
+      (substLevelsTm (sameLevelSubstitution level) type) :=
+  (levelInstance level).refinedTyping typed
+
+/-- A primitive constant retains its actual lookup and formed declaration
+type in every new ambient context. -/
+theorem constant_typed (level : LevelExpr Nat) (context : Tower.Ctx n)
+    {name : DeclName} {type : Tower.Tm 0} {universeHead : Tower.Head}
+    (known : IntrinsicRelator.rules.constantType name = some type)
+    (formed : FormationSensitiveNativeList.Typing .nil type (.head universeHead))
+    (isUniverse : IntrinsicRelator.rules.isUniverse universeHead) :
+    Typing level context (.const name)
+      (liftClosed (substLevelsTm (sameLevelSubstitution level) type)) := by
+  apply FormationSensitive.Typing.const
+  · exact (levelInstance level).morphism.constantType known
+  · exact transport level formed
+  · exact (levelInstance level).morphism.isUniverse isUniverse
+
+theorem listConstant_typed (level : LevelExpr Nat) (context : Tower.Ctx n) :
+    Typing level context (.const Intrinsic.listName) (liftClosed (listTypeAt level)) :=
+  constant_typed level context (by decide) listType_hasType (.sort _)
+
+theorem nilConstant_typed (level : LevelExpr Nat) (context : Tower.Ctx n) :
+    Typing level context (.const Intrinsic.nilName) (liftClosed (nilTypeAt level)) :=
+  constant_typed level context (by decide) nilType_hasType (.sort _)
+
+theorem consConstant_typed (level : LevelExpr Nat) (context : Tower.Ctx n) :
+    Typing level context (.const Intrinsic.consName) (liftClosed (consTypeAt level)) :=
+  constant_typed level context (by decide) consType_hasType (.sort _)
+
+theorem listApp_of_constant {target : Rules Tower.Head} (level : LevelExpr Nat) {context : Tower.Ctx n} {element : Tower.Tm n}
+    (known : FormationSensitive.Typing target context (.const Intrinsic.listName)
+      (liftClosed (listTypeAt level)))
+    (formed : FormationSensitive.Typing target context element (sortTm level)) :
+    FormationSensitive.Typing target context (Intrinsic.listApp element) (sortTm level) := by
+  have application := FormationSensitive.Typing.appElim known formed
+  simpa [listTypeAt, Intrinsic.listType, Intrinsic.listApp,
+    sameLevelSubstitution, substLevelsTm, substLevelsHead, liftClosed,
+    LevelExpr.subst, Intrinsic.elementLevel, Tm.mapHead, sortTm,
+    Presentation.rename, Presentation.inst0, Presentation.subst] using application
+
+theorem listApp_typed (level : LevelExpr Nat) {context : Tower.Ctx n} {element : Tower.Tm n}
+    (formed : Typing level context element (sortTm level)) :
+    Typing level context (Intrinsic.listApp element) (sortTm level) :=
+  listApp_of_constant level (listConstant_typed level context) formed
+
+theorem nilApp_of_constant {target : Rules Tower.Head} (level : LevelExpr Nat) {context : Tower.Ctx n} {element : Tower.Tm n}
+    (known : FormationSensitive.Typing target context (.const Intrinsic.nilName)
+      (liftClosed (nilTypeAt level)))
+    (formed : FormationSensitive.Typing target context element (sortTm level)) :
+    FormationSensitive.Typing target context (Intrinsic.nilApp element) (Intrinsic.listApp element) := by
+  have application := FormationSensitive.Typing.appElim known formed
+  simpa [nilTypeAt, Intrinsic.nilType, Intrinsic.nilApp,
+    Intrinsic.listApp, sameLevelSubstitution, substLevelsTm,
+    substLevelsHead, LevelExpr.subst, Intrinsic.elementLevel, Tm.mapHead,
+    liftClosed, sortTm, Presentation.rename,
+    Presentation.inst0, Presentation.subst, Presentation.subst0,
+    Presentation.liftRen, Presentation.liftSub] using application
+
+theorem nilApp_typed (level : LevelExpr Nat) {context : Tower.Ctx n} {element : Tower.Tm n}
+    (formed : Typing level context element (sortTm level)) :
+    Typing level context (Intrinsic.nilApp element) (Intrinsic.listApp element) :=
+  nilApp_of_constant level (nilConstant_typed level context) formed
+
+theorem consApp_of_constant {target : Rules Tower.Head} (level : LevelExpr Nat) {context : Tower.Ctx n}
+    {element head tail : Tower.Tm n}
+    (known : FormationSensitive.Typing target context (.const Intrinsic.consName)
+      (liftClosed (consTypeAt level)))
+    (formed : FormationSensitive.Typing target context element (sortTm level))
+    (headTyped : FormationSensitive.Typing target context head element)
+    (tailTyped : FormationSensitive.Typing target context tail (Intrinsic.listApp element)) :
+    FormationSensitive.Typing target context (Intrinsic.consApp element head tail) (Intrinsic.listApp element) := by
+  have arrows : Intrinsic.consBodyType =
+      arrow (.var 0) (arrow (Intrinsic.listApp (.var 0)) (Intrinsic.listApp (.var 0))) := by decide
+  have first := FormationSensitive.Typing.appElim known formed
+  change FormationSensitive.Typing target context (.app (.const Intrinsic.consName) element)
+    (inst0 element (rename (liftRen Fin.elim0) Intrinsic.consBodyType)) at first
+  have firstNormalized : FormationSensitive.Typing target context (.app (.const Intrinsic.consName) element)
+      (arrow element (arrow (Intrinsic.listApp element) (Intrinsic.listApp element))) := by
+    simpa [arrows, liftClosed, Presentation.inst0, Presentation.subst0] using first
+  have second := FormationSensitive.Typing.appElim firstNormalized headTyped
+  have secondNormalized : FormationSensitive.Typing target context (.app (.app (.const Intrinsic.consName) element) head)
+      (arrow (Intrinsic.listApp element) (Intrinsic.listApp element)) := by
+    simpa only [Presentation.inst0_rename_wk] using second
+  simpa only [Intrinsic.consApp, arrow, Presentation.inst0_rename_wk] using
+    FormationSensitive.Typing.appElim secondNormalized tailTyped
+
+theorem consApp_typed (level : LevelExpr Nat) {context : Tower.Ctx n}
+    {element head tail : Tower.Tm n} (formed : Typing level context element (sortTm level))
+    (headTyped : Typing level context head element)
+    (tailTyped : Typing level context tail (Intrinsic.listApp element)) :
+    Typing level context (Intrinsic.consApp element head tail) (Intrinsic.listApp element) :=
+  consApp_of_constant level (consConstant_typed level context) formed headTyped tailTyped
+
+end Instantiated
 
 end Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.FormationSensitiveNativeList

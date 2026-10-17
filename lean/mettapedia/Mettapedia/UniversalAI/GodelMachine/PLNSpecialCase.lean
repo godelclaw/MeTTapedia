@@ -1,7 +1,7 @@
 import Mettapedia.UniversalAI.GodelMachine.SolomonoffBridge
 import Mettapedia.UniversalAI.SolomonoffExchangeable
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mathlib.Data.Bool.Count
 
 /-!

@@ -28,9 +28,9 @@ along the weakness order is `id`-on-terms with rule-subset containment.
 
 ## References
 
-- `PLNWorldModel.lean` — `BinaryWorldModel` class, `WMJudgment`, `WMQueryJudgment`
-- `PLNWorldModelCalculus.lean` — query-rewrite layer
-- `PLNWorldModelOverlap.lean` — `OverlapLayer`
+- `BinaryWorldModel.lean` — `BinaryWorldModel` class, `WMJudgment`, `WMQueryJudgment`
+- `WorldModelCalculus.lean` — query-rewrite layer
+- `WorldModelOverlap.lean` — `OverlapLayer`
 - `GenericWorldModelForgetting.lean` — `ForgettingLayer`
 - `PLNSelectorLanguageDef.lean` — analogous PLN selector LanguageDef (pattern)
 -/

@@ -1,5 +1,5 @@
 import Mettapedia.Logic.HostingStyles.ContextReadings.Readings
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ReductionRank
+import Mettapedia.Logic.HostingStyles.ReductionRank
 
 /-!
 # What a reading conserves, and what it cannot receive

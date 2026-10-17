@@ -25,6 +25,13 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.EquationContextExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramResumptionExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerPartrec
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerEmission
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteEmissionExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoLexCanonicalExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoRunnerExecution
 import Mettapedia.Languages.MeTTa.PeTTa.DispatchCoverage
 import Mettapedia.Languages.MeTTa.PeTTa.BodyClosureFusion
 import Mettapedia.Languages.MeTTa.PeTTa.LPSoundness
@@ -194,6 +201,55 @@ Public import interface for the PeTTa formalization.
   replacement checks while reconstructing each current receipt. Effectful
   providers, general equation profiles and broader modal transport remain
   separate integrations.
+- `Bridges.MeTTaIL.GeneralProgramResumptionExecution`: a program run keeps
+  every job's machine state. The authored resumption continues each retained
+  machine, so resuming the driver's observation gives the driver's observation
+  with the added budgets. The authored publication releases complete jobs in
+  order and stops at the first job that is not complete; what it prints grows
+  by prefix under every resumption. The shared publication cursor delivers
+  only that prefix's new occurrences; splitting a budget preserves their
+  complete ordered delivery and absolute ordinals.
+- `Bridges.MeTTaIL.GeneralLiveRunnerExecution`: whole runs of any admitted
+  plan. A machine keeps the retained run of its state; a tick adds work and
+  resumes it, then commits the first released receipt and begins a search at
+  its target, or stops. For an equation-free, stratified plan every reached
+  machine's states form a reduction sequence of the plan's GSLT from the source,
+  every receipt is kept whole, and a normal ending means the state has no step.
+  Every state gets its own environment, so open terms run too. The theorems
+  hold for every number of ticks; none assumes that the program terminates.
+- `Bridges.MeTTaIL.GeneralLiveRunnerPartrec`: the live runner on the
+  partial-recursive machine. Started at a code and an input, it ends normally
+  at `Halt w` for some page exactly when `w` is Mathlib's evaluation of the
+  code on the input, and it keeps running for every page when the code
+  diverges.
+- `Bridges.MeTTaIL.GeneralLiveRunnerEmission`: the emitter. An admitted,
+  equation-free, stratified plan becomes a MeTTa module with `name:begin` and
+  `name:run` entries, or a refusal with its reason. The PeTTa run of every
+  emitted module's entries is the live runner's model, and the shared source
+  reader reads the emitted text back as exactly that module
+  (`ReadAfterRender`: lexer, token parser, token reader and scanner, each
+  proved against the rendering).
+- `Bridges.MeTTaIL.CompleteExecution`: the complete machine
+  (`gslt_descent_execution.metta`, `gslt_complete.metta`) proved head by head
+  against `OSLF/MeTTaIL/Complete`: scheduled descent, fair rule jobs, equation
+  lanes, steps modulo equations, the runner over them and fair exploration of
+  every run. Every reached search stays within the plan's declared footprint.
+- `Bridges.MeTTaIL.CompleteEmissionExecution`: modules emitted for the complete
+  machine run their language. For every footprinted plan the emitter accepts
+  (every compiled plan it accepts is), the PeTTa runs of `name:run` and
+  `name:explore` print the runner's trace and the explored states of the model.
+- `Bridges.MeTTaIL.RhoLexCanonicalExecution`: the authored rho canonicalizer
+  computes the lexicographic canonical form of every closed rho process: its
+  serializer, comparator, insertion sort, bag splicing, unit removal, collapse
+  and name equation each compute their Lean counterparts.
+- `Bridges.MeTTaIL.RhoRunnerExecution`: the authored rho runner on the driver,
+  its resumption and the canonicalizer. Its trace starts at the canonical form;
+  each state reaches the next by a depth-one rho step followed by the
+  canonical form; it reports quiescence only where no rho step is left at any
+  depth. A retained `RhoSearch` continues one pending COMM search through
+  `rho:run:resume-search`, keeping its canonical process and full program
+  observation. This operation does not itself consume a receipt or enforce
+  exclusive ownership of the search.
 
 ## Selected Pattern rewrite view
 

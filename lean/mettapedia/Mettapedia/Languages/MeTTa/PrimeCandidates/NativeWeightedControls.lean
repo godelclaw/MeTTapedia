@@ -5,6 +5,7 @@ import Mathlib.Algebra.FreeMonoid.Basic
 import Mettapedia.Algebra.RationalComplexAmplitude
 import Mettapedia.Algebra.FiniteCoordinateBuffer
 import Mettapedia.GSLT.Dynamics.WeightedResumptionControls
+import Mettapedia.GSLT.Dynamics.WeightedBranchingCardinality
 
 /-!
 # Native weighted occurrence and sharing controls
@@ -161,8 +162,8 @@ def sharedRecordingController : Controller WorkState (Outcome × List Nat) Unit 
   Controller.fixed Mettapedia.GSLT.Core.BranchingTemporal.Scheduler.breadthFirst
 
 def sharedRecording (capacity : Nat) (fuel : Nat) :=
-  Snapshot.run (occurrenceSystem sharedProgram)
-    (Recording.controller sharedRecordingController (fun _ selected _ _ => selected) (some capacity))
+  Recording.runSelected (occurrenceSystem sharedProgram)
+    sharedRecordingController (fun _ selected _ _ => selected)
     fuel (Recording.start
       (Snapshot.initial sharedRecordingController [WorkOccurrence.root sharedInput]) (some capacity))
 
@@ -188,10 +189,10 @@ theorem recording_bound_does_not_prune_captures :
   refine ⟨rfl, rfl, rfl⟩
 
 theorem recording_resume_preserves_native_snapshot :
-    Snapshot.run (occurrenceSystem sharedProgram)
-      (Recording.controller sharedRecordingController (fun _ selected _ _ => selected) (some 3))
+    Recording.runSelected (occurrenceSystem sharedProgram)
+      sharedRecordingController (fun _ selected _ _ => selected)
       2 (sharedRecording 3 1) = sharedRecording 3 3 := by
-  exact (Recording.run_split _ _ _ _ 1 2 _).symm
+  exact (Recording.runSelected_split _ _ _ 1 2 _).symm
 
 theorem shared_body_agrees_with_unweighted_answers :
     resultValues
@@ -1414,9 +1415,9 @@ theorem scheduled_native_resume :
   (Snapshot.run_add _ agenda 17 333 _).symm
 
 def record (capacity : Option Nat) (fuel : Nat) :=
-  Snapshot.run (authoredSystem (predicateProgram (.symbol "True"))
+  Recording.runSelected (authoredSystem (predicateProgram (.symbol "True"))
     predicateAnnotation naturalCoefficient)
-    (Recording.controller agenda (fun _ node _ _ => node) capacity) fuel
+    agenda (fun _ node _ _ => node) fuel
     (Recording.start (Snapshot.initial agenda
       [(.inl (WorkOccurrence.root (initial (call "id" [integer 7]))), 1)]) capacity)
 
@@ -1432,7 +1433,7 @@ theorem scheduled_recording_preserves_weighted_result :
   · unfold record run
     have same := authored_recording_erasure
       (predicateProgram (.symbol "True")) predicateAnnotation naturalCoefficient
-      agenda (fun _ node _ _ => node) (some 1) 300
+      agenda (fun _ node _ _ => node) 300
       (Recording.start (Snapshot.initial agenda
         [(.inl (WorkOccurrence.root (initial (call "id" [integer 7]))), 1)]) (some 1))
     simpa only [Recording.erase, Recording.start, Snapshot.mapMemory] using
@@ -1446,17 +1447,17 @@ theorem scheduled_recording_reports_omission :
   decide +kernel
 
 theorem scheduled_recording_resume :
-    Snapshot.run (authoredSystem (predicateProgram (.symbol "True"))
+    Recording.runSelected (authoredSystem (predicateProgram (.symbol "True"))
       predicateAnnotation naturalCoefficient)
-      (Recording.controller agenda (fun _ node _ _ => node) (some 1)) 283
+      agenda (fun _ node _ _ => node) 283
       (record (some 1) 17) = record (some 1) 300 :=
-  (Snapshot.run_add _ _ 17 283 _).symm
+  (Recording.runSelected_split _ _ _ 17 283 _).symm
 
 def tracedRecord (capacity fuel : Nat) :=
-  Snapshot.run (authoredOccurrenceSystem (predicateProgram (.symbol "True"))
+  Recording.runSelected (authoredOccurrenceSystem (predicateProgram (.symbol "True"))
     predicateAnnotation naturalCoefficient)
-    (Recording.controller (Controller.fixed Scheduler.breadthFirst)
-      (fun _ node _ _ => node) (some capacity)) fuel
+    (Controller.fixed Scheduler.breadthFirst)
+      (fun _ node _ _ => node) fuel
     (Recording.start (Snapshot.initial (Controller.fixed Scheduler.breadthFirst)
       [WorkOccurrence.root
         (.inl (WorkOccurrence.root (initial (call "id" [integer 7]))), 1)]) (some capacity))
@@ -1484,10 +1485,10 @@ theorem truncated_trace_preserves_native_completion :
       Snapshot.initial (Controller.fixed Scheduler.breadthFirst)
       [WorkOccurrence.root
         (.inl (WorkOccurrence.root (initial (call "id" [integer 7]))), (1 : Nat))]
-    have same (capacity : Nat) := Recording.run_erasure
+    have same (capacity : Nat) := Recording.runSelected_erasure
       (authoredOccurrenceSystem (predicateProgram (.symbol "True"))
         predicateAnnotation naturalCoefficient)
-      (Controller.fixed Scheduler.breadthFirst) (fun _ node _ _ => node) (some capacity)
+      (Controller.fixed Scheduler.breadthFirst) (fun _ node _ _ => node)
       300 (Recording.start unrecorded (some capacity))
     have one := congrArg Snapshot.search (same 1)
     have full := congrArg Snapshot.search (same 300)
@@ -1578,5 +1579,80 @@ theorem nested_native_replay_finishes :
   decide +kernel
 
 end RecordedNative
+
+/-! ## Single retained replies and successful-value cardinality -/
+
+namespace Cardinality
+
+open WeightedBranchingResumption WeightedBranchingCardinality
+
+/-- A native accepted reply is the original halted occurrence, including its
+world, receipts, trace and coefficient. Halted faults remain distinct outcomes. -/
+theorem accepted_native_reply_halted {V : Type} [Semiring V]
+    (program : Program) (clause : WeighClause V Row) (fuel : Nat)
+    (before after : WorkState) (coefficient : V)
+    (accepted : singleResult? (contributions (source program clause) fuel before) =
+      some (some (after, coefficient))) : isHalted after.state = true := by
+  apply native_returned_is_halted program clause fuel before after coefficient
+  rw [(singleResult_item_iff _ (after, coefficient)).mp accepted]
+  exact List.mem_cons_self
+
+/-- Reply conversion preserves the real Need transition account; coefficient
+readout does not replace the number of machine instructions already performed. -/
+theorem accepted_native_reply_cost {V : Type} [Semiring V]
+    (program : Program) (clause : WeighClause V Row) (fuel : Nat)
+    (initialMachine : NativeMachine) (after : WorkState) (coefficient : V)
+    (accepted : singleResult? (contributions (source program clause) fuel
+      (WorkOccurrence.root initialMachine)) = some (some (after, coefficient))) :
+    after.state.work.transitions = initialMachine.work.transitions + after.trace.length := by
+  apply native_retained_transition_cost program clause initialMachine fuel
+    (leaf := (.inl after, coefficient))
+  rw [(singleResult_item_iff _ (after, coefficient)).mp accepted]
+  exact List.mem_cons_self
+
+def valueContributions (leaves : List ((WorkState ⊕ WorkState) × Nat)) :
+    WeightedResumption.Contributions Atom Nat :=
+  (returnedContributions leaves).filterMap fun item =>
+    match haltedOutcome item.1.state with
+    | some (.value value) => some (value, item.2)
+    | _ => none
+
+def answerCut (fuel : Nat) := contributions (source loopProgram (.scalar (2 : Nat)))
+  fuel (WorkOccurrence.root loopInput)
+
+/-- The actual authored answer program closes with one value and its retained
+world. One coefficient can exceed one without creating another answer. -/
+theorem authored_single_reply_and_count :
+    (singleResult? (answerCut 40)).map Option.isSome = some true ∧
+      valueContributions (answerCut 40) = [(integer 7, 2)] ∧
+      WeightedResumption.total
+        (WeightedResumption.countingContributions (valueContributions (answerCut 40))) = 1 := by
+  decide +kernel
+
+theorem authored_pending_cut_is_not_a_reply :
+    singleResult? (answerCut 1) = none ∧ valueContributions (answerCut 1) = [] := by
+  decide +kernel
+
+/-- Declining specialization returns the actual captured Need world, not a
+fresh invocation or a recomputed coefficient. -/
+theorem authored_pending_fallback_keeps_entire_cut :
+    chooseRepresentation (answerCut 1) = .inr (answerCut 1) := by
+  exact chooseRepresentation_refusal _ authored_pending_cut_is_not_a_reply.1
+
+theorem duplicate_native_choices_refuse_single_reply :
+    singleResult? firstCaptures = none ∧ firstCaptures.length = 2 := by
+  decide +kernel
+
+def faultCut := contributions (source ([] : Program) (.scalar (1 : Nat)))
+  40 (WorkOccurrence.root (initial (.var "missing")))
+
+/-- A single completed fault is a reply, but contributes zero successful
+values. Neither packet cardinality nor lack of pending work proves success. -/
+theorem completed_fault_is_not_a_successful_value :
+    (singleResult? faultCut).map Option.isSome = some true ∧
+      (returnedContributions faultCut).length = 1 ∧ valueContributions faultCut = [] := by
+  decide +kernel
+
+end Cardinality
 
 end Mettapedia.Languages.MeTTa.PrimeCandidates.NativeWeightedControls

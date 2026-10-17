@@ -210,8 +210,7 @@ without changing that evidence's proof identity. -/
 theorem oneHole_discharge (evidence : Derivation definition goal) :
     oneHole.discharge (.cons evidence .nil) = evidence := by
   simp [oneHole, OpenDerivation.discharge,
-    OpenDerivationList.ofClosed, OpenDerivationList.get,
-    OpenDerivation.bind]
+    OpenDerivationList.ofClosed, OpenDerivationList.get]
 
 /-- First occurrence of a duplicated, propositionally equal obligation. -/
 def firstDuplicate : OpenDerivation definition [goal, goal] goal :=

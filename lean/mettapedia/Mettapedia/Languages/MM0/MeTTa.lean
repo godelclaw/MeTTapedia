@@ -4,6 +4,14 @@ import Mettapedia.Languages.MM0.MeTTa.Formats.Textual.TextualAuthoredSource
 import Mettapedia.Languages.MM0.MeTTa.Formats.Textual.TextualParserLinkage
 import Mettapedia.Languages.MM0.MeTTa.Formats.MMU.MMUSubmission
 import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.MMBProofRunSoundness
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.ExecutedSoundness
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.ProofRunExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.TheoremExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.TheoremCommandExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.SlotExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.AssertionMatchExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.RecursiveMatchExecution
+import Mettapedia.Languages.MM0.MeTTa.Formats.MMB.TheoremSignatureExecution
 
 /-!
 # The MM0 checker written in MeTTa
@@ -36,8 +44,15 @@ only its own layer and earlier ones.
     reaching the session protocol.
   * `MMB`: the binary proof format run as a stack machine. Each machine step
     keeps typed stores and justified stack and heap entries
-    (`MMBProofRunSoundness.step_preserves_evidence`); a theorem for a whole
-    run is not stated.
+    (`MMBProofRunSoundness.step_preserves_evidence`). `ExecutedSoundness`
+    connects original binary assertion/file acceptance to kernel derivability
+    under independently established declaration correspondence.
+    `ProofRunExecution` follows the actual quoted reference, save and
+    hypothesis commands through finite runs, including refusal and untouched
+    suffixes. `TheoremExecution` qualifies original theorem lookup, typed
+    ordered child checking and chronological proof recording under the binary
+    program; the complete binary theorem wrapper still needs its decoder,
+    stack-consumption and structural-matching joins.
 
 No theorem here covers the byte scanners or the rest of the readers'
 execution.

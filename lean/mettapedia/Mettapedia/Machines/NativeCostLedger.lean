@@ -356,10 +356,12 @@ theorem chargeScopes_weakReservation_invariant {Caller : Type*} [DecidableEq Cal
   exact chargeScopes_reserved_invariant runMaximum identityMaximum
     state.counter identity scopes payload store unique bounded granted
 
-/-- An observation of successful reservations, delivered in their actual
-issuance order. The list is the protocol's mathematical observation, not
-extra runtime receipt storage. Each invocation carries its captured scopes
-and payload; unsuccessful attempts produce no entry to deliver. -/
+/-- Complete chronology of reservations that already succeeded. Each entry
+is an issued caller and identity, with the scopes and payload captured for
+that caller. A weak-CAS miss has no entry. Identity-zero exhaustion and
+refused retention are `Recording.Charge` results; they are not elements of
+this list. The list is the mathematical observation, not extra runtime
+receipt storage. -/
 def recordReservations {Caller : Type*} (maximum : Nat)
     (scopes : Caller → List (Option Nat)) (payload : Caller → Payload) :
     List (Caller × Nat) → (Nat → Ledger) → Nat → Ledger
@@ -368,8 +370,9 @@ def recordReservations {Caller : Type*} (maximum : Nat)
       recordReservations maximum scopes payload rest
         (chargeScopes maximum (scopes caller) (identity, payload caller) store)
 
-/-- Every containing view receives exactly the successful physical events,
-in chronological order, after its complete inherited history. -/
+/-- Every containing view receives the successful physical events in
+chronological order, after its inherited history. A location is selected
+by membership in the captured chain. The public identity is not that key. -/
 theorem recordReservations_history {Caller : Type*} (maximum : Nat)
     (scopes : Caller → List (Option Nat)) (payload : Caller → Payload)
     (issued : List (Caller × Nat)) (store : Nat → Ledger) (location : Nat) :
@@ -402,6 +405,63 @@ theorem recordReservations_append {Caller : Type*} (maximum : Nat)
   | cons reservation rest ih =>
       rcases reservation with ⟨caller, identity⟩
       exact ih _
+
+/-- An empty captured chain records none of the supplied reservations. -/
+theorem recordReservations_disabled {Caller : Type*} (maximum : Nat)
+    (payload : Caller → Payload) (issued : List (Caller × Nat))
+    (store : Nat → Ledger) :
+    recordReservations maximum (fun _ => []) payload issued store = store := by
+  induction issued generalizing store with
+  | nil => rfl
+  | cons reservation rest ih =>
+      rcases reservation with ⟨caller, identity⟩
+      rw [recordReservations, chargeScopes_disabled]
+      exact ih _
+
+private theorem totals_units (events : List Event) :
+    (totals events).2 = (events.map fun event => event.2.units).sum := by
+  induction events with
+  | nil => rfl
+  | cons event rest ih =>
+      rw [totals, List.map_cons, List.sum_cons, Prod.snd_add,
+        show (eventGrade event).2 = event.2.units from rfl, List.map_cons, List.sum_cons]
+      exact congrArg (event.2.units + ·) (by simpa [totals] using ih)
+
+private theorem reservation_units_filter {Caller : Type*}
+    (scopes : Caller → List (Option Nat)) (payload : Caller → Payload)
+    (issued : List (Caller × Nat)) (location : Nat) :
+    ((issued.filterMap fun reservation =>
+      if some location ∈ scopes reservation.1 then
+        some (reservation.2, payload reservation.1) else none).map
+      fun event => event.2.units) =
+      issued.filterMap fun reservation =>
+        if some location ∈ scopes reservation.1 then
+          some (payload reservation.1).units else none := by
+  induction issued with
+  | nil => rfl
+  | cons reservation rest ih =>
+      rcases reservation with ⟨caller, identity⟩
+      by_cases present : some location ∈ scopes caller
+      · simp only [List.filterMap_cons, if_pos present, List.map_cons, ih]
+      · simp only [List.filterMap_cons, if_neg present, ih]
+
+/-- Work at one location in the successful chronology: inherited work plus
+the units of issued reservations that captured the location. A weak-CAS
+miss, an identity-zero exhaustion charge and a refused-retention charge
+are outside `issued`. This sum is not a path length and not a count of
+receipt kinds. -/
+theorem recordReservations_work {Caller : Type*} (maximum : Nat)
+    (scopes : Caller → List (Option Nat)) (payload : Caller → Payload)
+    (issued : List (Caller × Nat)) (store : Nat → Ledger) (location : Nat) :
+    (snapshot (recordReservations maximum scopes payload issued store location)).2 =
+      (snapshot (store location)).2 +
+        (issued.filterMap fun reservation =>
+          if some location ∈ scopes reservation.1 then
+            some (payload reservation.1).units else none).sum := by
+  rw [snapshot, recordReservations_history, totals_append, Prod.snd_add]
+  refine congrArg ((totals (RunLengthEvents.expand (store location))).2 + ·) ?_
+  rw [← reservation_units_filter]
+  exact totals_units _
 
 /-- All interleaved attempts preserve freshness and one charge per physical
 identity in every ledger. Lost comparisons and spurious failures may delay
@@ -438,6 +498,42 @@ theorem recordReservations_weakRun_invariant {Caller : Type*} [DecidableEq Calle
             Option.toList_some, List.singleton_append, recordReservations] using
             ih _ (chargeScopes runMaximum (scopes caller) (identity, payload caller) store)
               (fun location => (charged location).1) (fun location => (charged location).2)
+
+/-- An intermediate weak attempt emits no reservation. The expected value is
+still a live identity, and the exchange does not linearize: the counter moved
+or the weak exchange failed. The successful chronology therefore stays the
+store that was already there. Final identity exhaustion is a different
+transition. It is `Recording.observeScopes` when `OccurrenceIdentity.reserve`
+returns none, and that transition still applies a `Recording.Charge` whose
+identity is zero. -/
+theorem weak_reservation_miss_records_nothing {Caller : Type*} [DecidableEq Caller]
+    (maximum identityMaximum : Nat)
+    (scopes : Caller → List (Option Nat)) (payload : Caller → Payload)
+    (caller : Caller) (expected : Nat) (permitSuccess : Bool)
+    (protocolState : OccurrenceIdentity.WeakReservation.State Caller)
+    (store : Nat → Ledger)
+    (checking : protocolState.invocation caller =
+      OccurrenceIdentity.WeakReservation.Control.checking expected)
+    (live : ¬ (expected = 0 ∨ identityMaximum ≤ expected))
+    (missed : ¬ (permitSuccess = true ∧ protocolState.counter = expected)) :
+    (OccurrenceIdentity.WeakReservation.step identityMaximum protocolState
+      (OccurrenceIdentity.WeakReservation.Request.attempt caller permitSuccess)).2 = none ∧
+    (OccurrenceIdentity.WeakReservation.run identityMaximum
+      [OccurrenceIdentity.WeakReservation.Request.attempt caller permitSuccess]
+      protocolState).2 = [] ∧
+    recordReservations maximum scopes payload
+      (OccurrenceIdentity.WeakReservation.run identityMaximum
+        [OccurrenceIdentity.WeakReservation.Request.attempt caller permitSuccess]
+        protocolState).2 store = store := by
+  have missedStep :
+      (OccurrenceIdentity.WeakReservation.step identityMaximum protocolState
+        (OccurrenceIdentity.WeakReservation.Request.attempt caller permitSuccess)).2 = none := by
+    simp only [OccurrenceIdentity.WeakReservation.step, checking, if_neg live, if_neg missed]
+  refine ⟨missedStep, ?_, ?_⟩
+  · simp only [OccurrenceIdentity.WeakReservation.run, missedStep, Option.toList_none,
+      List.nil_append]
+  · simp only [OccurrenceIdentity.WeakReservation.run, missedStep, Option.toList_none,
+      List.nil_append, recordReservations]
 
 /-- Two contenders issue two events despite reading the same initial value.
 Repeated scope entry charges each containing view only once; a losing and a
@@ -762,6 +858,60 @@ theorem boundedFinishTimes_exact (maximum : Nat) (duration initial : Nat → Nat
       rw [boundedFinishTimes, CausalReceipt.finishTimes, installed]
       exact ih (CausalReceipt.advanceFinish duration initial event)
 
+/-- A reservation record captures its own destination chain and payload.
+This data does not itself certify successful identity issuance. -/
+structure IssuedReservation where
+  identity : Nat
+  scopes : List (Option Nat)
+  payload : Payload
+
+/-- Record captured reservations using the existing chronological recorder.
+Issuance and retention conditions are separate obligations of its caller. -/
+def writeReservations (maximum : Nat) (issued : List IssuedReservation)
+    (store : Nat → Ledger) : Nat → Ledger :=
+  recordReservations maximum IssuedReservation.scopes IssuedReservation.payload
+    (issued.map fun reservation => (reservation, reservation.identity)) store
+
+theorem writeReservations_history (maximum : Nat) (issued : List IssuedReservation)
+    (store : Nat → Ledger) (location : Nat) :
+    RunLengthEvents.expand (writeReservations maximum issued store location) =
+      RunLengthEvents.expand (store location) ++
+        issued.filterMap (fun reservation =>
+          if some location ∈ reservation.scopes then
+            some (reservation.identity, reservation.payload) else none) := by
+  rw [writeReservations, recordReservations_history, List.filterMap_map]
+  rfl
+
+theorem writeReservations_work (maximum : Nat) (issued : List IssuedReservation)
+    (store : Nat → Ledger) (location : Nat) :
+    (snapshot (writeReservations maximum issued store location)).2 =
+      (snapshot (store location)).2 +
+        (issued.filterMap fun reservation =>
+          if some location ∈ reservation.scopes then
+            some reservation.payload.units else none).sum := by
+  rw [writeReservations, recordReservations_work, List.filterMap_map]
+  rfl
+
+theorem writeReservations_append (maximum : Nat)
+    (first second : List IssuedReservation) (store : Nat → Ledger) :
+    writeReservations maximum (first ++ second) store =
+      writeReservations maximum second (writeReservations maximum first store) := by
+  unfold writeReservations
+  rw [List.map_append, recordReservations_append]
+
+theorem writeReservations_inactive (maximum : Nat) (issued : List IssuedReservation)
+    (inactive : ∀ reservation ∈ issued, reservation.scopes = []) (store : Nat → Ledger) :
+    writeReservations maximum issued store = store := by
+  induction issued generalizing store with
+  | nil => rfl
+  | cons reservation rest ih =>
+      have empty := inactive reservation (by simp)
+      have remaining : ∀ entry ∈ rest, entry.scopes = [] :=
+        fun entry member => inactive entry (List.mem_cons_of_mem reservation member)
+      simp only [writeReservations, List.map_cons, recordReservations]
+      rw [empty, chargeScopes_disabled]
+      exact ih remaining store
+
 namespace Recording
 
 /-- One observed operation, with a representable numerical increment.
@@ -897,6 +1047,34 @@ theorem run_incomplete_history {width : Nat} (maximum : Nat) (charges : List (Ch
   | cons charge rest ih =>
       exact (ih _ (append_incomplete _ _ _ incomplete)).trans
         (append_incomplete_history _ _ _ incomplete)
+
+/-- Identity zero is a completed charge. Kind, work and span have already
+moved. The trace stays incomplete and the event is absent from history. -/
+theorem append_zero_identity {width : Nat} (maximum : Nat) (state : State width)
+    (charge : Charge width) (nonzero : charge.units ≠ 0) (zero : charge.identity = 0) :
+    (append maximum state charge).traceIncomplete = true ∧
+      (append maximum state charge).history = state.history := by
+  have incomplete :
+      (state.traceIncomplete || decide (charge.identity = 0) || !charge.retained) = true := by
+    rw [zero, decide_eq_true (rfl : (0 : Nat) = 0)]
+    cases state.traceIncomplete <;> cases charge.retained <;> rfl
+  refine ⟨?_, ?_⟩
+  · simp only [append, if_neg nonzero, incomplete]
+  · simp only [append, if_neg nonzero, incomplete, if_true]
+
+/-- Refused retention is a completed charge on the same `State`. The numeric
+update stands, `traceIncomplete` sticks, and history keeps its prefix. -/
+theorem append_refused {width : Nat} (maximum : Nat) (state : State width)
+    (charge : Charge width) (nonzero : charge.units ≠ 0) (refused : charge.retained = false) :
+    (append maximum state charge).traceIncomplete = true ∧
+      (append maximum state charge).history = state.history := by
+  have incomplete :
+      (state.traceIncomplete || decide (charge.identity = 0) || !charge.retained) = true := by
+    rw [refused]
+    cases state.traceIncomplete <;> cases decide (charge.identity = 0) <;> rfl
+  refine ⟨?_, ?_⟩
+  · simp only [append, if_neg nonzero, incomplete]
+  · simp only [append, if_neg nonzero, incomplete, if_true]
 
 theorem append_overflow {width : Nat} (maximum : Nat) (state : State width)
     (charge : Charge width) (overflow : state.overflow = true) :
@@ -1256,6 +1434,21 @@ theorem chargeScopes_work {width : Nat} (maximum : Nat) (scopes : List (Option N
       append_work maximum (store location) (localCharge charge retained location)
   · simp only [if_neg present, Nat.add_zero]
     exact (Nat.min_eq_right (word_fits (store location).work)).symm
+
+/-- Sequential span follows the same per-location saturation as work.
+Destination retention does not change the increment. -/
+theorem chargeScopes_span {width : Nat} (maximum : Nat) (scopes : List (Option Nat))
+    (charge : Charge width) (retained : Nat → Bool) (store : Nat → State width)
+    (location : Nat) :
+    (chargeScopes maximum scopes charge retained store location).span.toNat =
+      boundedTotal (2 ^ width - 1)
+        ((store location).span.toNat + if some location ∈ scopes then charge.units.toNat else 0) := by
+  rw [chargeScopes_at]
+  by_cases present : some location ∈ scopes
+  · simpa only [if_pos present, localCharge] using
+      append_span maximum (store location) (localCharge charge retained location)
+  · simp only [if_neg present, Nat.add_zero]
+    exact (Nat.min_eq_right (word_fits (store location).span)).symm
 
 theorem chargeScopes_count {width : Nat} (maximum : Nat) (scopes : List (Option Nat))
     (charge : Charge width) (retained : Nat → Bool) (store : Nat → State width)
@@ -1885,6 +2078,163 @@ theorem run_stream [DecidableEq Node] [DecidableEq Answer]
       rw [stream, run_append, ih]
       exact run_next maximum system base commands initialStore _
 
+/-- Authenticate an entire allowance-bearing request, rather than an
+arbitrary valid prefix. Fewer frames are sufficient only when their checked
+execution exhausts the frontier. Refusal publishes no replacement snapshot. -/
+def request? [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (frames : List (Frame Node Answer width))
+    (snapshot : Snapshot Node Answer (Memory × (Nat → State width))) :
+    Option (Snapshot Node Answer (Memory × (Nat → State width))) :=
+  match run maximum system base commands initialStore frames snapshot with
+  | .error _ => none
+  | .ok result =>
+      if frames.length ≤ allowance ∧
+          (frames.length = allowance ∨ result.search.frontier = []) then
+        some result else none
+
+theorem request?_phase [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (frames : List (Frame Node Answer width))
+    (snapshot result : Snapshot Node Answer (Memory × (Nat → State width)))
+    (accepted : request? maximum system base commands initialStore allowance frames snapshot =
+      some result) :
+    run maximum system base commands initialStore frames snapshot = .ok result ∧
+      frames.length ≤ allowance ∧
+      (frames.length = allowance ∨ result.search.frontier = []) := by
+  unfold request? at accepted
+  cases walked : run maximum system base commands initialStore frames snapshot with
+  | error failure => simp only [walked] at accepted; cases accepted
+  | ok after =>
+      simp only [walked] at accepted
+      split at accepted
+      · cases Option.some.inj accepted
+        exact ⟨rfl, by assumption⟩
+      · cases accepted
+
+/-- The complete state, scoped meter store and answer occurrences agree
+with the independently defined run for the request's declared allowance. -/
+theorem request?_sound [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (frames : List (Frame Node Answer width))
+    (snapshot result : Snapshot Node Answer (Memory × (Nat → State width)))
+    (accepted : request? maximum system base commands initialStore allowance frames snapshot =
+      some result) :
+    result = Snapshot.run system (scopedController maximum base commands initialStore)
+      allowance snapshot := by
+  obtain ⟨walked, bound, boundary⟩ :=
+    request?_phase maximum system base commands initialStore allowance frames snapshot result accepted
+  have state := run_sound maximum system base commands initialStore frames snapshot result walked
+  rcases boundary with full | empty
+  · simpa only [full] using state
+  · obtain ⟨extra, allowanceEq⟩ := Nat.exists_eq_add_of_le bound
+    rw [allowanceEq, Snapshot.run_add, ← state]
+    exact (Snapshot.run_eq_self_of_frontier_nil system
+      (scopedController maximum base commands initialStore) result empty extra).symm
+
+theorem request?_stream [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (snapshot : Snapshot Node Answer (Memory × (Nat → State width))) :
+    request? maximum system base commands initialStore allowance
+      (stream system (scopedController maximum base commands initialStore)
+        (observe commands) allowance snapshot) snapshot =
+      some (Snapshot.run system (scopedController maximum base commands initialStore)
+        allowance snapshot) := by
+  have boundary := Mettapedia.GSLT.Core.InferenceControl.Recording.stream_request_boundary
+    system (scopedController maximum base commands initialStore) (observe commands) allowance snapshot
+  simp only [request?, run_stream, if_pos boundary]
+
+/-- A valid prefix with pending work does not authenticate a longer request,
+even when every retained phase and every retained charge is correct. -/
+theorem request?_short_open_refused [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (frames : List (Frame Node Answer width))
+    (snapshot result : Snapshot Node Answer (Memory × (Nat → State width)))
+    (walked : run maximum system base commands initialStore frames snapshot = .ok result)
+    (short : frames.length < allowance) (pending : result.search.frontier ≠ []) :
+    request? maximum system base commands initialStore allowance frames snapshot = none := by
+  simp only [request?, walked, pending, or_false, Nat.ne_of_lt short, and_false, ↓reduceIte]
+
+/-- Successive authenticated requests use the complete paid cut left by the
+preceding request. Their allowances compose against the original controller. -/
+theorem request?_split_sound [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (firstBudget secondBudget : Nat)
+    (firstFrames secondFrames : List (Frame Node Answer width))
+    (snapshot cut result : Snapshot Node Answer (Memory × (Nat → State width)))
+    (first : request? maximum system base commands initialStore firstBudget firstFrames snapshot =
+      some cut)
+    (second : request? maximum system base commands initialStore secondBudget secondFrames cut =
+      some result) :
+    result = Snapshot.run system (scopedController maximum base commands initialStore)
+      (firstBudget + secondBudget) snapshot := by
+  rw [Snapshot.run_add, ← request?_sound maximum system base commands initialStore
+    firstBudget firstFrames snapshot cut first]
+  exact request?_sound maximum system base commands initialStore secondBudget secondFrames
+    cut result second
+
+/-- Authenticate the complete bounded recording at the request's held
+allowance. Both omission status and the whole-request boundary are checked. -/
+def readRequest? [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (record : Prefix (Frame Node Answer width))
+    (snapshot : Snapshot Node Answer (Memory × (Nat → State width))) :
+    Option (Snapshot Node Answer (Memory × (Nat → State width))) :=
+  record.complete?.bind fun frames =>
+    request? maximum system base commands initialStore allowance frames snapshot
+
+theorem readRequest?_sound [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (record : Prefix (Frame Node Answer width))
+    (snapshot result : Snapshot Node Answer (Memory × (Nat → State width)))
+    (accepted : readRequest? maximum system base commands initialStore allowance record snapshot =
+      some result) :
+    result = Snapshot.run system (scopedController maximum base commands initialStore)
+      allowance snapshot := by
+  unfold readRequest? at accepted
+  cases kept : record.complete? with
+  | none => simp only [kept, Option.bind_none] at accepted; cases accepted
+  | some frames =>
+      simp only [kept, Option.bind_some] at accepted
+      exact request?_sound maximum system base commands initialStore allowance frames
+        snapshot result accepted
+
+theorem readRequest?_truncated [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (allowance : Nat)
+    (record : Prefix (Frame Node Answer width))
+    (snapshot : Snapshot Node Answer (Memory × (Nat → State width)))
+    (omitted : record.omitted ≠ 0) :
+    readRequest? maximum system base commands initialStore allowance record snapshot = none := by
+  simp [readRequest?, Prefix.complete?, omitted]
+
+/-- Phase readout validates the retained frames. Whole-request admission
+additionally checks the held allowance through `readRequest?`. -/
 def readout [DecidableEq Node] [DecidableEq Answer]
     (maximum : Nat) (system : BranchingSystem Node Answer)
     (base : Controller Node Answer Memory)
@@ -1929,6 +2279,33 @@ theorem recorded_replay [DecidableEq Node] [DecidableEq Answer]
   | some record =>
       simp only [retained, Option.bind_some] at complete ⊢
       simp [readout, complete, run_stream]
+
+/-- A source-issued recording that fits authenticates the whole request,
+including its complete controller memory and scoped cost accounts. -/
+theorem recorded_request_replay [DecidableEq Node] [DecidableEq Answer]
+    (maximum : Nat) (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (commands : Memory → Node → Option Answer → List Node → List (ScopedCharge width))
+    (initialStore : Nat → State width) (capacity fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × (Nat → State width)))
+    (fits : (stream system (scopedController maximum base commands initialStore)
+      (observe commands) fuel snapshot).length ≤ capacity) :
+    ((Snapshot.run system
+      (Mettapedia.GSLT.Core.InferenceControl.Recording.controller
+        (scopedController maximum base commands initialStore) (observe commands) (some capacity)) fuel
+      (Mettapedia.GSLT.Core.InferenceControl.Recording.start snapshot (some capacity))).memory.2).bind
+        (fun record => readRequest? maximum system base commands initialStore fuel record snapshot) =
+      some (Snapshot.run system (scopedController maximum base commands initialStore) fuel snapshot) := by
+  have complete := (Mettapedia.GSLT.Core.InferenceControl.Recording.complete_record_iff system
+    (scopedController maximum base commands initialStore) (observe commands) capacity fuel snapshot).mpr fits
+  cases retained : (Snapshot.run system
+      (Mettapedia.GSLT.Core.InferenceControl.Recording.controller
+        (scopedController maximum base commands initialStore) (observe commands) (some capacity)) fuel
+      (Mettapedia.GSLT.Core.InferenceControl.Recording.start snapshot (some capacity))).memory.2 with
+  | none => simp [retained] at complete
+  | some record =>
+      simp only [retained, Option.bind_some] at complete ⊢
+      simp only [readRequest?, complete, Option.bind_some, request?_stream]
 
 end PhaseReplay
 
@@ -2164,6 +2541,55 @@ theorem bounded_recording_does_not_invent_complete_replay :
       start = none := by
   rfl
 
+/-- A correct first selection is insufficient evidence for a request that
+had enough allowance to select the second occurrence as well. -/
+theorem missing_selection_refuses_whole_request :
+    PhaseReplay.run 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) [first] start =
+        .ok (Snapshot.tick ControllerControls.source control start) ∧
+    PhaseReplay.request? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 2 [first] start = none := by
+  exact ⟨rfl, rfl⟩
+
+theorem completed_request_accepts_unused_allowance :
+    PhaseReplay.request? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 100 [first, second] start =
+        some (Snapshot.run ControllerControls.source control 2 start) := by
+  rfl
+
+theorem over_budget_selection_refused :
+    PhaseReplay.request? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 1 [first, second] start = none := by
+  rfl
+
+theorem duplicated_selection_refused :
+    PhaseReplay.request? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 2 [first, first] start = none := by
+  rfl
+
+theorem damaged_request_phase_refused :
+    PhaseReplay.request? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 2 [first, omitted second] start = none := by
+  rfl
+
+/-- An omission-free record can still contain only a proper request prefix.
+The recording tag alone does not certify the declared allowance. -/
+theorem complete_prefix_does_not_certify_the_longer_request :
+    ((Mettapedia.GSLT.Core.InferenceControl.Recording.Prefix.initial 1).append [first]).complete? =
+      some [first] ∧
+    PhaseReplay.readRequest? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 2
+      ((Mettapedia.GSLT.Core.InferenceControl.Recording.Prefix.initial 1).append [first])
+      start = none := by
+  exact ⟨rfl, rfl⟩
+
+theorem truncated_record_refuses_even_an_empty_allowance :
+    PhaseReplay.readRequest? 255 ControllerControls.source ControllerControls.base
+      ControllerControls.commands (fun _ => initial 8) 0
+      ((Mettapedia.GSLT.Core.InferenceControl.Recording.Prefix.initial 0).append [first])
+      start = none := by
+  rfl
+
 end PhaseReplayControls
 
 /-- A read captures the preceding observation before its temporary scope
@@ -2256,10 +2682,14 @@ def scopeCharge {width : Nat} (state : ScopeState width) (kind : Kind)
   ⟨identity, inner.1.map state.origins |>.getD 0, inner.2, kind, units, true⟩
 
 /-- Observe a valid operation after its identity reservation linearizes.
-Disabled observation and zero work reserve no identity. Refusal returns zero
-but still charges active views and makes their missing history explicit.
-Weak-CAS completion and physical scope/allocator realization are separate
-from this captured-context execution. -/
+A nonempty scope chain is active even when every frame is null: a null
+frame is not a ledger destination, and activity is not the presence of a
+destination. Disabled observation and zero work reserve no identity.
+Counter refusal returns identity zero but still charges each present
+destination and leaves that destination's history unchanged. Refused
+retention does the same numeric charge without treating the identity as
+exhausted. Weak-CAS completion and physical scope or allocator realization
+are separate from this captured-context execution. -/
 def observeScopes {width : Nat} (runMaximum identityMaximum : Nat)
     (state : ScopeState width) (kind : Kind) (units : BitVec width) : Nat × ScopeState width :=
   if state.scopes = [] ∨ units = 0 then (0, state) else
@@ -2308,6 +2738,732 @@ theorem observeScopes_issued {width : Nat} (runMaximum identityMaximum : Nat)
       ⟨available.1, available.2, rfl, rfl⟩
   simp only [observeScopes, active, nonzero, false_or, if_false, reserved, Option.getD_some]
   exact ⟨trivial, trivial, available.1, available.2⟩
+
+/-- One successful observation is one issued reservation.
+The identity is the reserved counter, and the payload is the captured inner
+frame together with this call's kind and units. Retention at the destination,
+a positive available counter, nonzero units and a complete inherited trace are
+hypotheses. The atomic reservation and the compiled service remain separate. -/
+theorem observeScopes_writes_one {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width)
+    (active : state.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum)
+    (location : Nat) (present : some location ∈ state.scopes.map Prod.fst)
+    (kept : state.retained location = true)
+    (ready : (state.store location).traceIncomplete = false) :
+    let observed := observeScopes runMaximum identityMaximum state kind units
+    let charge := scopeCharge state kind units observed.1
+    (observed.2.store location).traceIncomplete = false ∧
+      RunLengthEvents.expand (observed.2.store location).history =
+        RunLengthEvents.expand (writeReservations runMaximum
+          [⟨charge.identity, state.scopes.map Prod.fst, charge.event.2⟩]
+          (fun destination => (state.store destination).history) location) := by
+  have reserved := (OccurrenceIdentity.reserve_issued_iff identityMaximum
+    state.nextIdentity state.nextIdentity (state.nextIdentity + 1)).mpr
+      ⟨available.1, available.2, rfl, rfl⟩
+  have reduced : observeScopes runMaximum identityMaximum state kind units =
+      (state.nextIdentity, { state with
+        nextIdentity := state.nextIdentity + 1
+        store := chargeScopes runMaximum (state.scopes.map Prod.fst)
+          (scopeCharge state kind units state.nextIdentity) state.retained state.store }) := by
+    simp only [observeScopes, active, nonzero, false_or, if_false, reserved, Option.getD_some]
+  set issuedCharge := scopeCharge state kind units state.nextIdentity
+  have atLocation :
+      chargeScopes runMaximum (state.scopes.map Prod.fst) issuedCharge state.retained
+        state.store location =
+        append runMaximum (state.store location) (localCharge issuedCharge state.retained location) := by
+    rw [chargeScopes_at, if_pos present]
+  have localUnits : (localCharge issuedCharge state.retained location).units ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using nonzero
+  have localIdentity : (localCharge issuedCharge state.retained location).identity ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using Nat.ne_of_gt available.1
+  have localKept : (localCharge issuedCharge state.retained location).retained = true := by
+    simp [localCharge, kept]
+  have flag :
+      ((state.store location).traceIncomplete ||
+        decide ((localCharge issuedCharge state.retained location).identity = 0) ||
+        !(localCharge issuedCharge state.retained location).retained) = false := by
+    rw [ready, decide_eq_false localIdentity, localKept]
+    rfl
+  have appendedComplete :
+      (append runMaximum (state.store location)
+        (localCharge issuedCharge state.retained location)).traceIncomplete = false := by
+    rw [append, if_neg localUnits]
+    simp only [flag]
+  have appendedHistory :
+      RunLengthEvents.expand (append runMaximum (state.store location)
+        (localCharge issuedCharge state.retained location)).history =
+        RunLengthEvents.expand (state.store location).history ++
+          [(localCharge issuedCharge state.retained location).event] := by
+    rw [append, if_neg localUnits]
+    simp only [flag, Bool.false_eq_true, if_false]
+    exact RunLengthEvents.expand_appendEvent _ _ _
+  simp only [reduced]
+  refine ⟨?_, ?_⟩
+  · simpa only [atLocation] using appendedComplete
+  · rw [atLocation, appendedHistory, localCharge_event, writeReservations_history]
+    simp only [List.filterMap_cons, List.filterMap_nil, if_pos present]
+    rfl
+
+/-- Payload of one captured frame. The identity word is not part of it:
+origin and occurrence come from the innermost frame, and kind and units
+come from the call. -/
+def framePayload {width : Nat} (state : ScopeState width) (kind : Kind)
+    (units : BitVec width) : Payload :=
+  let inner := state.scopes.headD (none, 0)
+  ⟨inner.1.map state.origins |>.getD 0, inner.2, kind, units.toNat⟩
+
+theorem scopeCharge_event {width : Nat} (state : ScopeState width) (kind : Kind)
+    (units : BitVec width) (identity : Nat) :
+    (scopeCharge state kind units identity).event = (identity, framePayload state kind units) := by
+  unfold scopeCharge framePayload Charge.event
+  rfl
+
+/-- The scope chain, origin map and retention service survive observation.
+Only the identity counter and the destination store are candidates for change. -/
+theorem observeScopes_preserves_frame {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width) :
+    (observeScopes runMaximum identityMaximum state kind units).2.scopes = state.scopes ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.origins = state.origins ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.retained = state.retained := by
+  unfold observeScopes
+  split <;> (dsimp; exact ⟨rfl, rfl, rfl⟩)
+
+/-- A destination absent from the captured chain is not charged. This holds
+for a successful identity, for identity zero, and for refused retention.
+An active chain whose frames are all null therefore leaves every ledger
+unchanged: activity is the nonempty chain, not a present destination. -/
+theorem observeScopes_absent {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width)
+    (active : state.scopes ≠ []) (nonzero : units ≠ 0) (location : Nat)
+    (absent : ¬ some location ∈ state.scopes.map Prod.fst) :
+    (observeScopes runMaximum identityMaximum state kind units).2.store location =
+      state.store location := by
+  simp only [observeScopes, active, nonzero, false_or, if_false]
+  rw [chargeScopes_at, if_neg absent]
+
+/-- Identity exhaustion is a completed charge. The returned word is zero and
+the counter stays where it refused. Each present destination still adds the
+operation to kind, work and span, sticks `traceIncomplete`, and does not
+extend history. Zero units are not this transition. -/
+theorem observeScopes_exhausted {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width)
+    (active : state.scopes ≠ []) (nonzero : units ≠ 0)
+    (exhausted : state.nextIdentity = 0 ∨ identityMaximum ≤ state.nextIdentity)
+    (location : Nat) (present : some location ∈ state.scopes.map Prod.fst) :
+    let observed := observeScopes runMaximum identityMaximum state kind units
+    observed.1 = 0 ∧
+      observed.2.nextIdentity = state.nextIdentity ∧
+      (observed.2.store location).traceIncomplete = true ∧
+      (observed.2.store location).history = (state.store location).history ∧
+      (observed.2.store location).work.toNat =
+        boundedTotal (2 ^ width - 1) ((state.store location).work.toNat + units.toNat) ∧
+      (observed.2.store location).span.toNat =
+        boundedTotal (2 ^ width - 1) ((state.store location).span.toNat + units.toNat) ∧
+      ((observed.2.store location).counts kind).toNat =
+        boundedTotal (2 ^ width - 1) (((state.store location).counts kind).toNat + units.toNat) := by
+  have refused := (OccurrenceIdentity.reserve_refused_iff identityMaximum
+    state.nextIdentity state.nextIdentity).mpr ⟨exhausted, rfl⟩
+  have reduced : observeScopes runMaximum identityMaximum state kind units =
+      (0, { state with
+        nextIdentity := state.nextIdentity
+        store := chargeScopes runMaximum (state.scopes.map Prod.fst)
+          (scopeCharge state kind units 0) state.retained state.store }) := by
+    simp only [observeScopes, active, nonzero, false_or, if_false, refused, Option.getD_none]
+  set issuedCharge := scopeCharge state kind units 0
+  have atLocation :
+      chargeScopes runMaximum (state.scopes.map Prod.fst) issuedCharge state.retained
+        state.store location =
+        append runMaximum (state.store location) (localCharge issuedCharge state.retained location) := by
+    rw [chargeScopes_at, if_pos present]
+  have localUnits : (localCharge issuedCharge state.retained location).units ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using nonzero
+  have localZero : (localCharge issuedCharge state.retained location).identity = 0 := by
+    unfold issuedCharge
+    rfl
+  have stuck := append_zero_identity runMaximum (state.store location)
+    (localCharge issuedCharge state.retained location) localUnits localZero
+  have worked := chargeScopes_work runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location
+  have spanned := chargeScopes_span runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location
+  have counted := chargeScopes_count runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location kind
+  rw [reduced]
+  refine ⟨rfl, rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa only [atLocation] using stuck.1
+  · simpa only [atLocation] using stuck.2
+  · rw [worked, if_pos present]
+    unfold issuedCharge
+    rfl
+  · rw [spanned, if_pos present]
+    unfold issuedCharge
+    rfl
+  · have kindSame : kind = issuedCharge.kind := by unfold issuedCharge; rfl
+    rw [counted, if_pos ⟨present, kindSame⟩]
+    unfold issuedCharge
+    rfl
+
+/-- Refused retention is not identity exhaustion. When the counter can issue,
+the returned word is that counter. The present destination still adds kind,
+work and span, sticks `traceIncomplete`, and keeps its previous history. -/
+theorem observeScopes_refused {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width)
+    (active : state.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum)
+    (location : Nat) (present : some location ∈ state.scopes.map Prod.fst)
+    (refused : state.retained location = false) :
+    let observed := observeScopes runMaximum identityMaximum state kind units
+    observed.1 = state.nextIdentity ∧
+      (observed.2.store location).traceIncomplete = true ∧
+      (observed.2.store location).history = (state.store location).history ∧
+      (observed.2.store location).work.toNat =
+        boundedTotal (2 ^ width - 1) ((state.store location).work.toNat + units.toNat) ∧
+      (observed.2.store location).span.toNat =
+        boundedTotal (2 ^ width - 1) ((state.store location).span.toNat + units.toNat) ∧
+      ((observed.2.store location).counts kind).toNat =
+        boundedTotal (2 ^ width - 1) (((state.store location).counts kind).toNat + units.toNat) := by
+  have reserved := (OccurrenceIdentity.reserve_issued_iff identityMaximum
+    state.nextIdentity state.nextIdentity (state.nextIdentity + 1)).mpr
+      ⟨available.1, available.2, rfl, rfl⟩
+  have reduced : observeScopes runMaximum identityMaximum state kind units =
+      (state.nextIdentity, { state with
+        nextIdentity := state.nextIdentity + 1
+        store := chargeScopes runMaximum (state.scopes.map Prod.fst)
+          (scopeCharge state kind units state.nextIdentity) state.retained state.store }) := by
+    simp only [observeScopes, active, nonzero, false_or, if_false, reserved, Option.getD_some]
+  set issuedCharge := scopeCharge state kind units state.nextIdentity
+  have atLocation :
+      chargeScopes runMaximum (state.scopes.map Prod.fst) issuedCharge state.retained
+        state.store location =
+        append runMaximum (state.store location) (localCharge issuedCharge state.retained location) := by
+    rw [chargeScopes_at, if_pos present]
+  have localUnits : (localCharge issuedCharge state.retained location).units ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using nonzero
+  have localRefused : (localCharge issuedCharge state.retained location).retained = false := by
+    simp [localCharge, refused]
+  have stuck := append_refused runMaximum (state.store location)
+    (localCharge issuedCharge state.retained location) localUnits localRefused
+  have worked := chargeScopes_work runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location
+  have spanned := chargeScopes_span runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location
+  have counted := chargeScopes_count runMaximum (state.scopes.map Prod.fst)
+    issuedCharge state.retained state.store location kind
+  rw [reduced]
+  refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
+  · simpa only [atLocation] using stuck.1
+  · simpa only [atLocation] using stuck.2
+  · rw [worked, if_pos present]
+    unfold issuedCharge
+    rfl
+  · rw [spanned, if_pos present]
+    unfold issuedCharge
+    rfl
+  · have kindSame : kind = issuedCharge.kind := by unfold issuedCharge; rfl
+    rw [counted, if_pos ⟨present, kindSame⟩]
+    unfold issuedCharge
+    rfl
+
+/-- One successful observation extends the present destination by the event
+taken from this prestate. The identity is the reserved counter. Origin and
+occurrence are the innermost frame. -/
+theorem observeScopes_retained_event {width : Nat} (runMaximum identityMaximum : Nat)
+    (state : ScopeState width) (kind : Kind) (units : BitVec width)
+    (active : state.scopes ≠ []) (nonzero : units ≠ 0)
+    (available : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum)
+    (location : Nat) (present : some location ∈ state.scopes.map Prod.fst)
+    (kept : state.retained location = true)
+    (ready : (state.store location).traceIncomplete = false) :
+    (observeScopes runMaximum identityMaximum state kind units).1 = state.nextIdentity ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.nextIdentity =
+        state.nextIdentity + 1 ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.scopes = state.scopes ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.origins = state.origins ∧
+      (observeScopes runMaximum identityMaximum state kind units).2.retained = state.retained ∧
+      ((observeScopes runMaximum identityMaximum state kind units).2.store location).traceIncomplete =
+        false ∧
+      RunLengthEvents.expand
+          ((observeScopes runMaximum identityMaximum state kind units).2.store location).history =
+        RunLengthEvents.expand (state.store location).history ++
+          [(state.nextIdentity, framePayload state kind units)] := by
+  have reserved := (OccurrenceIdentity.reserve_issued_iff identityMaximum
+    state.nextIdentity state.nextIdentity (state.nextIdentity + 1)).mpr
+      ⟨available.1, available.2, rfl, rfl⟩
+  have reduced : observeScopes runMaximum identityMaximum state kind units =
+      (state.nextIdentity, { state with
+        nextIdentity := state.nextIdentity + 1
+        store := chargeScopes runMaximum (state.scopes.map Prod.fst)
+          (scopeCharge state kind units state.nextIdentity) state.retained state.store }) := by
+    simp only [observeScopes, active, nonzero, false_or, if_false, reserved, Option.getD_some]
+  set issuedCharge := scopeCharge state kind units state.nextIdentity
+  have atLocation :
+      chargeScopes runMaximum (state.scopes.map Prod.fst) issuedCharge state.retained
+        state.store location =
+        append runMaximum (state.store location) (localCharge issuedCharge state.retained location) := by
+    rw [chargeScopes_at, if_pos present]
+  have localUnits : (localCharge issuedCharge state.retained location).units ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using nonzero
+  have localIdentity : (localCharge issuedCharge state.retained location).identity ≠ 0 := by
+    unfold issuedCharge
+    simpa [localCharge, scopeCharge] using Nat.ne_of_gt available.1
+  have localKept : (localCharge issuedCharge state.retained location).retained = true := by
+    simp [localCharge, kept]
+  have flag :
+      ((state.store location).traceIncomplete ||
+        decide ((localCharge issuedCharge state.retained location).identity = 0) ||
+        !(localCharge issuedCharge state.retained location).retained) = false := by
+    rw [ready, decide_eq_false localIdentity, localKept]
+    rfl
+  have appendedComplete :
+      (append runMaximum (state.store location)
+        (localCharge issuedCharge state.retained location)).traceIncomplete = false := by
+    rw [append, if_neg localUnits]
+    simp only [flag]
+  have appendedHistory :
+      RunLengthEvents.expand (append runMaximum (state.store location)
+        (localCharge issuedCharge state.retained location)).history =
+        RunLengthEvents.expand (state.store location).history ++
+          [(localCharge issuedCharge state.retained location).event] := by
+    rw [append, if_neg localUnits]
+    simp only [flag, Bool.false_eq_true, if_false]
+    exact RunLengthEvents.expand_appendEvent _ _ _
+  rw [reduced]
+  refine ⟨rfl, rfl, rfl, rfl, rfl, ?_, ?_⟩
+  · simpa only [atLocation] using appendedComplete
+  · simp only [atLocation, appendedHistory, localCharge_event]
+    unfold issuedCharge
+    rw [scopeCharge_event]
+
+/-- Events of a successful sequence, in call order. Every event uses the
+original captured frame. The identity words are the successive counters. -/
+def chargedEvents {width : Nat} (commands : List (Kind × BitVec width))
+    (state : ScopeState width) (first : Nat) : List Event :=
+  match commands with
+  | [] => []
+  | command :: rest =>
+      (first, framePayload state command.1 command.2) :: chargedEvents rest state (first + 1)
+
+/-- The same frame yields the same events. Store and identity updates do not
+change origin, occurrence, kind or units. -/
+theorem chargedEvents_frame {width : Nat} (commands : List (Kind × BitVec width))
+    (first second : ScopeState width) (identity : Nat)
+    (sameScopes : first.scopes = second.scopes)
+    (sameOrigins : first.origins = second.origins) :
+    chargedEvents commands first identity = chargedEvents commands second identity := by
+  induction commands generalizing identity with
+  | nil => rfl
+  | cons command rest ih =>
+      unfold chargedEvents framePayload
+      rw [sameScopes, sameOrigins, ih]
+
+/-- Caller is the payload because a pure observation sequence keeps one
+scope chain. The paired number is the identity returned for that call. -/
+def reservationChronology {width : Nat} (commands : List (Kind × BitVec width))
+    (state : ScopeState width) (first : Nat) : List (Payload × Nat) :=
+  (chargedEvents commands state first).map fun event => (event.2, event.1)
+
+private theorem chronology_present :
+    ∀ events : List Event,
+      ((events.map fun event => (event.2, event.1)).filterMap
+        fun reservation => some (reservation.2, reservation.1)) = events
+  | [] => rfl
+  | event :: rest => by
+      rw [List.map_cons, List.filterMap_cons, chronology_present rest]
+
+private theorem chronology_absent :
+    ∀ events : List Event,
+      ((events.map fun event => (event.2, event.1)).filterMap
+        fun _ : Payload × Nat => (none : Option Event)) = ([] : List Event)
+  | [] => rfl
+  | _ :: rest => by
+      rw [List.map_cons, List.filterMap_cons, chronology_absent rest]
+
+private theorem chronology_filter {width : Nat}
+    (commands : List (Kind × BitVec width)) (state : ScopeState width)
+    (first location : Nat) :
+    (reservationChronology commands state first).filterMap (fun reservation =>
+      if some location ∈ (fun _ : Payload => state.scopes.map Prod.fst) reservation.1 then
+        some (reservation.2, reservation.1) else none) =
+      if some location ∈ state.scopes.map Prod.fst then
+        chargedEvents commands state first else [] := by
+  simp only [reservationChronology]
+  by_cases member : some location ∈ state.scopes.map Prod.fst
+  · simp only [if_pos member]
+    exact chronology_present (chargedEvents commands state first)
+  · simp only [if_neg member]
+    exact chronology_absent (chargedEvents commands state first)
+
+/-- Fold `observeScopes`. Each command sees the external state left by the
+previous command. This is the existing observation machine, iterated. -/
+def observeSequence {width : Nat} (runMaximum identityMaximum : Nat) :
+    List (Kind × BitVec width) → ScopeState width → ScopeState width
+  | [], state => state
+  | command :: rest, state =>
+      observeSequence runMaximum identityMaximum rest
+        (observeScopes runMaximum identityMaximum state command.1 command.2).2
+
+theorem observeSequence_preserves_frame {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width) :
+    (observeSequence runMaximum identityMaximum commands state).scopes = state.scopes ∧
+      (observeSequence runMaximum identityMaximum commands state).origins = state.origins ∧
+      (observeSequence runMaximum identityMaximum commands state).retained = state.retained := by
+  induction commands generalizing state with
+  | nil => simp [observeSequence]
+  | cons command rest ih =>
+      let stepped := (observeScopes runMaximum identityMaximum state command.1 command.2).2
+      have frame := observeScopes_preserves_frame runMaximum identityMaximum
+        state command.1 command.2
+      have tail := ih stepped
+      exact ⟨tail.1.trans frame.1, tail.2.1.trans frame.2.1, tail.2.2.trans frame.2.2⟩
+
+theorem observeSequence_take_succ {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width)
+    (index : Nat) (within : index < commands.length) :
+    observeSequence runMaximum identityMaximum (commands.take (index + 1)) state =
+      (observeScopes runMaximum identityMaximum
+        (observeSequence runMaximum identityMaximum (commands.take index) state)
+        (commands.get ⟨index, within⟩).1 (commands.get ⟨index, within⟩).2).2 := by
+  induction commands generalizing state index with
+  | nil => cases within
+  | cons command rest ih =>
+      cases index with
+      | zero =>
+          simp [observeSequence, List.take_succ_cons, List.take_zero]
+      | succ index =>
+          have restWithin : index < rest.length := by
+            simp only [List.length_cons] at within
+            exact Nat.lt_of_succ_lt_succ within
+          simpa [observeSequence, List.take_succ_cons, List.get_cons_succ] using
+            ih ((observeScopes runMaximum identityMaximum state command.1 command.2).2)
+              index restWithin
+
+theorem observeSequence_nextIdentity {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width)
+    (active : state.scopes ≠ [])
+    (nonzero : ∀ command ∈ commands, command.2 ≠ 0)
+    (available : ∀ index, index < commands.length →
+      0 < state.nextIdentity + index ∧ state.nextIdentity + index < identityMaximum) :
+    (observeSequence runMaximum identityMaximum commands state).nextIdentity =
+      state.nextIdentity + commands.length := by
+  induction commands generalizing state with
+  | nil => simp [observeSequence]
+  | cons command rest ih =>
+      have commandNonzero : command.2 ≠ 0 := nonzero command (by exact List.mem_cons_self)
+      have restNonzero : ∀ entry ∈ rest, entry.2 ≠ 0 :=
+        fun entry member => nonzero entry (List.mem_cons_of_mem command member)
+      have stepAvailable : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum :=
+        available 0 (by simp)
+      let stepped := (observeScopes runMaximum identityMaximum state command.1 command.2).2
+      have frame := observeScopes_preserves_frame runMaximum identityMaximum
+        state command.1 command.2
+      have advanced := observeScopes_issued runMaximum identityMaximum state command.1 command.2
+        active commandNonzero stepAvailable
+      have tailActive : stepped.scopes ≠ [] := by rw [frame.1]; exact active
+      have tailAvailable : ∀ index, index < rest.length →
+          0 < stepped.nextIdentity + index ∧ stepped.nextIdentity + index < identityMaximum := by
+        intro index within
+        have fromStart := available (index + 1) (by
+          simp only [List.length_cons] at *
+          omega)
+        rw [advanced.2.1]
+        omega
+      have tail := ih stepped tailActive restNonzero tailAvailable
+      have same :
+          stepped = (observeScopes runMaximum identityMaximum state command.1 command.2).2 := rfl
+      simp only [observeSequence]
+      rw [← same, tail, advanced.2.1, List.length_cons, Nat.add_assoc, Nat.add_comm 1 rest.length]
+
+/-- Expanded history of the observation fold. A present destination receives
+one event per command; an absent destination, including every destination of
+an all-null chain, receives none. Repeated frames do not add events, because
+`chargeScopes` already selects locations by membership. -/
+theorem observeSequence_events {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width) (location : Nat)
+    (active : state.scopes ≠ [])
+    (nonzero : ∀ command ∈ commands, command.2 ≠ 0)
+    (available : ∀ index, index < commands.length →
+      0 < state.nextIdentity + index ∧ state.nextIdentity + index < identityMaximum)
+    (keptReady : some location ∈ state.scopes.map Prod.fst →
+      state.retained location = true ∧ (state.store location).traceIncomplete = false) :
+    RunLengthEvents.expand
+        ((observeSequence runMaximum identityMaximum commands state).store location).history =
+      RunLengthEvents.expand (state.store location).history ++
+        if some location ∈ state.scopes.map Prod.fst then
+          chargedEvents commands state state.nextIdentity else [] := by
+  induction commands generalizing state with
+  | nil => simp [observeSequence, chargedEvents]
+  | cons command rest ih =>
+      have commandNonzero : command.2 ≠ 0 := nonzero command (by exact List.mem_cons_self)
+      have restNonzero : ∀ entry ∈ rest, entry.2 ≠ 0 :=
+        fun entry member => nonzero entry (List.mem_cons_of_mem command member)
+      have stepAvailable : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum :=
+        available 0 (by simp)
+      let stepped := (observeScopes runMaximum identityMaximum state command.1 command.2).2
+      have frame := observeScopes_preserves_frame runMaximum identityMaximum
+        state command.1 command.2
+      have advanced := observeScopes_issued runMaximum identityMaximum state command.1 command.2
+        active commandNonzero stepAvailable
+      have tailActive : stepped.scopes ≠ [] := by rw [frame.1]; exact active
+      have tailAvailable : ∀ index, index < rest.length →
+          0 < stepped.nextIdentity + index ∧ stepped.nextIdentity + index < identityMaximum := by
+        intro index within
+        have fromStart := available (index + 1) (by
+          simp only [List.length_cons] at *
+          omega)
+        rw [advanced.2.1]
+        omega
+      by_cases member : some location ∈ state.scopes.map Prod.fst
+      · obtain ⟨_, nextEq, scopesEq, originsEq, retainedEq, incomplete, historyEq⟩ :=
+          observeScopes_retained_event runMaximum identityMaximum state command.1 command.2
+            active commandNonzero stepAvailable location member (keptReady member).1 (keptReady member).2
+        have tailReady : some location ∈ stepped.scopes.map Prod.fst →
+            stepped.retained location = true ∧
+              (stepped.store location).traceIncomplete = false := by
+          intro _
+          refine ⟨?_, incomplete⟩
+          rw [retainedEq]
+          exact (keptReady member).1
+        have tail := ih stepped tailActive restNonzero tailAvailable tailReady
+        simp only [observeSequence]
+        rw [tail, if_pos (show some location ∈ stepped.scopes.map Prod.fst from by
+          rw [scopesEq]; exact member), if_pos member, historyEq, nextEq]
+        have eventsEq : chargedEvents rest stepped (state.nextIdentity + 1) =
+            chargedEvents rest state (state.nextIdentity + 1) :=
+          chargedEvents_frame rest stepped state _ scopesEq originsEq
+        rw [eventsEq, List.append_assoc, List.singleton_append]
+        simp only [chargedEvents]
+      · have absentStore := observeScopes_absent runMaximum identityMaximum state
+          command.1 command.2 active commandNonzero location member
+        have tailReady : some location ∈ stepped.scopes.map Prod.fst →
+            stepped.retained location = true ∧
+              (stepped.store location).traceIncomplete = false := by
+          intro steppedMember
+          exact False.elim (member (by rw [← frame.1]; exact steppedMember))
+        have tail := ih stepped tailActive restNonzero tailAvailable tailReady
+        simp only [observeSequence]
+        rw [tail, if_neg (show ¬ some location ∈ stepped.scopes.map Prod.fst from by
+          rw [frame.1]; exact member), if_neg member, absentStore, List.append_nil]
+
+/-- The ordered writer account of one observation sequence. Each chronology
+entry is the identity and payload of one folded call. A location is charged
+only when it belongs to the captured chain. -/
+theorem reservationChronology_history {width : Nat} (maximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width)
+    (first : Nat) (store : Nat → Ledger) (location : Nat) :
+    RunLengthEvents.expand (recordReservations maximum
+        (fun _ : Payload => state.scopes.map Prod.fst) (fun payload => payload)
+        (reservationChronology commands state first) store location) =
+      RunLengthEvents.expand (store location) ++
+        if some location ∈ state.scopes.map Prod.fst then
+          chargedEvents commands state first else [] := by
+  rw [recordReservations_history]
+  exact congrArg (RunLengthEvents.expand (store location) ++ ·)
+    (chronology_filter commands state first location)
+
+theorem observeSequence_history {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width) (location : Nat)
+    (active : state.scopes ≠ [])
+    (nonzero : ∀ command ∈ commands, command.2 ≠ 0)
+    (available : ∀ index, index < commands.length →
+      0 < state.nextIdentity + index ∧ state.nextIdentity + index < identityMaximum)
+    (keptReady : some location ∈ state.scopes.map Prod.fst →
+      state.retained location = true ∧ (state.store location).traceIncomplete = false) :
+    RunLengthEvents.expand
+        ((observeSequence runMaximum identityMaximum commands state).store location).history =
+      RunLengthEvents.expand (recordReservations runMaximum
+        (fun _ : Payload => state.scopes.map Prod.fst) (fun payload => payload)
+        (reservationChronology commands state state.nextIdentity)
+        (fun destination => (state.store destination).history) location) := by
+  exact (observeSequence_events runMaximum identityMaximum commands state location
+      active nonzero available keptReady).trans
+    (reservationChronology_history runMaximum commands state state.nextIdentity
+      (fun destination => (state.store destination).history) location).symm
+
+/-- The identity at position `index` is the result of `observeScopes` on the
+prefix state, and its payload is that prefix state's captured frame. -/
+theorem observeSequence_identity_at {width : Nat} (runMaximum identityMaximum : Nat)
+    (commands : List (Kind × BitVec width)) (state : ScopeState width)
+    (active : state.scopes ≠ [])
+    (nonzero : ∀ command ∈ commands, command.2 ≠ 0)
+    (available : ∀ index, index < commands.length →
+      0 < state.nextIdentity + index ∧ state.nextIdentity + index < identityMaximum)
+    (index : Nat) (within : index < commands.length) :
+    (observeScopes runMaximum identityMaximum
+        (observeSequence runMaximum identityMaximum (commands.take index) state)
+        (commands.get ⟨index, within⟩).1 (commands.get ⟨index, within⟩).2).1 =
+      state.nextIdentity + index ∧
+      (observeSequence runMaximum identityMaximum (commands.take index) state).scopes =
+        state.scopes ∧
+      (observeSequence runMaximum identityMaximum (commands.take index) state).origins =
+        state.origins ∧
+      (scopeCharge (observeSequence runMaximum identityMaximum (commands.take index) state)
+        (commands.get ⟨index, within⟩).1 (commands.get ⟨index, within⟩).2
+        (state.nextIdentity + index)).event.2 =
+        framePayload state (commands.get ⟨index, within⟩).1
+          (commands.get ⟨index, within⟩).2 := by
+  let before := observeSequence runMaximum identityMaximum (commands.take index) state
+  let command := commands.get ⟨index, within⟩
+  have prefixLength : (commands.take index).length = index :=
+    List.length_take_of_le (Nat.le_of_lt within)
+  have prefixFrame := observeSequence_preserves_frame runMaximum identityMaximum
+    (commands.take index) state
+  have prefixActive : before.scopes ≠ [] := by
+    rw [prefixFrame.1]
+    exact active
+  have prefixNonzero : ∀ entry ∈ commands.take index, entry.2 ≠ 0 :=
+    fun entry member => nonzero entry (List.mem_of_mem_take member)
+  have prefixAvailable : ∀ position, position < (commands.take index).length →
+      0 < state.nextIdentity + position ∧ state.nextIdentity + position < identityMaximum := by
+    intro position withinPrefix
+    rw [prefixLength] at withinPrefix
+    exact available position (Nat.lt_trans withinPrefix within)
+  have beforeNext := observeSequence_nextIdentity runMaximum identityMaximum
+    (commands.take index) state active prefixNonzero prefixAvailable
+  have commandNonzero : command.2 ≠ 0 :=
+    nonzero command (List.get_mem commands ⟨index, within⟩)
+  have callAvailable : 0 < before.nextIdentity ∧ before.nextIdentity < identityMaximum := by
+    rw [beforeNext, prefixLength]
+    exact available index within
+  have issued := observeScopes_issued runMaximum identityMaximum before command.1 command.2
+    prefixActive commandNonzero callAvailable
+  refine ⟨?_, prefixFrame.1, prefixFrame.2.1, ?_⟩
+  · rw [issued.1, beforeNext, prefixLength]
+  · rw [scopeCharge_event]
+    unfold framePayload
+    rw [prefixFrame.1, prefixFrame.2.1]
+
+/-- Reading captures the preceding snapshot, enters a temporary scope, performs
+the existing observed charge, and restores the caller's scope chain. The
+allocator frontier and every containing account remain in the returned state.
+The returned event is the read's physical charge, not evidence of retention at
+every destination. -/
+def inspectState (runMaximum identityMaximum : Nat) (state : ScopeState 64)
+    (location : Option Nat) (occurrence : Nat) : Observation × Event × ScopeState 64 :=
+  let before := observe (location.map state.store |>.getD (initial 64 true))
+  let entered := { state with scopes := (location, occurrence) :: state.scopes }
+  let after := observeScopes runMaximum identityMaximum entered .costRead 1
+  let event := (scopeCharge entered .costRead 1 after.1).event
+  (before, event, { after.2 with scopes := state.scopes })
+
+theorem inspectState_preceding (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location : Option Nat) (occurrence : Nat) :
+    (inspectState runMaximum identityMaximum state location occurrence).1 =
+      observe (location.map state.store |>.getD (initial 64 true)) := rfl
+
+/-- The composed scope/allocator execution agrees with the independently
+specified whole-store inspection. This includes a null selected ledger and
+outer aliases, rather than validating only the selected ledger's projection. -/
+theorem inspectState_scoped_inspection (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location : Option Nat) (occurrence : Nat) :
+    ((inspectState runMaximum identityMaximum state location occurrence).1,
+      (inspectState runMaximum identityMaximum state location occurrence).2.2.store) =
+      inspectScopes runMaximum state.store location (state.scopes.map Prod.fst)
+        ((OccurrenceIdentity.reserve identityMaximum state.nextIdentity).1.getD 0)
+        (location.map state.origins |>.getD 0) occurrence state.retained := by
+  cases location <;>
+    simp [inspectState, observeScopes, scopeCharge, inspectScopes, readCharge]
+
+/-- Restoring the caller does not restore its earlier allocator frontier or
+account store. Only the temporary scope frame is removed. -/
+theorem inspectState_context (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location : Option Nat) (occurrence : Nat) :
+    let after := (inspectState runMaximum identityMaximum state location occurrence).2.2
+    after.scopes = state.scopes ∧ after.origins = state.origins ∧
+      after.retained = state.retained ∧
+      after.nextIdentity = (OccurrenceIdentity.reserve identityMaximum state.nextIdentity).2 := by
+  simp [inspectState, observeScopes]
+
+/-- One physical read charges each containing ledger once, even when the
+temporary scope repeats a location already present in the caller's chain. -/
+theorem inspectState_work (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location : Option Nat) (occurrence destination : Nat) :
+    ((inspectState runMaximum identityMaximum state location occurrence).2.2.store destination).work.toNat =
+      boundedTotal (2 ^ 64 - 1) ((state.store destination).work.toNat +
+        if some destination = location ∨ some destination ∈ state.scopes.map Prod.fst
+        then 1 else 0) := by
+  have accounted := observeScopes_work runMaximum identityMaximum
+    { state with scopes := (location, occurrence) :: state.scopes }
+    .costRead 1 (by simp) (by decide) destination
+  dsimp only at accounted
+  have one : (1 : BitVec 64).toNat = 1 := by decide
+  simpa only [inspectState, List.map_cons, List.mem_cons, Prod.fst, one] using accounted
+
+/-- Successful issuance is derived from the allocator used by the actual
+temporary-scope execution. A caller supplies no independent freshness claim. -/
+theorem inspectState_issued (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location : Option Nat) (occurrence : Nat)
+    (available : 0 < state.nextIdentity ∧ state.nextIdentity < identityMaximum) :
+    (inspectState runMaximum identityMaximum state location occurrence).2.1.1 =
+        state.nextIdentity ∧
+      (inspectState runMaximum identityMaximum state location occurrence).2.2.nextIdentity =
+        state.nextIdentity + 1 := by
+  have issued := observeScopes_issued runMaximum identityMaximum
+    { state with scopes := (location, occurrence) :: state.scopes }
+    .costRead 1 (by simp) (by decide) available
+  exact ⟨issued.1, issued.2.1⟩
+
+/-- The per-ledger read law remains the old inspection contract, now joined
+to allocator advancement and the complete containing-account population. -/
+theorem inspectState_at_read_location (runMaximum identityMaximum : Nat)
+    (state : ScopeState 64) (location occurrence : Nat) :
+    ((inspectState runMaximum identityMaximum state (some location) occurrence).1,
+      (inspectState runMaximum identityMaximum state (some location) occurrence).2.2.store location) =
+      inspect runMaximum (state.store location)
+        ((OccurrenceIdentity.reserve identityMaximum state.nextIdentity).1.getD 0)
+        (state.origins location) occurrence (state.retained location) := by
+  have whole := inspectState_scoped_inspection runMaximum identityMaximum state
+    (some location) occurrence
+  have atLocation := congrArg (fun result => (result.1, result.2 location)) whole
+  exact atLocation.trans (inspectScopes_at_read_location runMaximum state.store location
+    (state.scopes.map Prod.fst)
+    ((OccurrenceIdentity.reserve identityMaximum state.nextIdentity).1.getD 0)
+    (state.origins location) occurrence state.retained)
+
+namespace InspectionControls
+
+private def context : ScopeState 64 :=
+  ⟨[(some 4, 10), (some 9, 11), (some 4, 12)],
+    fun location => if location = 4 then 40 else 90,
+    8, fun _ => initial 64, fun _ => true⟩
+
+theorem aliased_read_restores_context_and_keeps_one_charge :
+    let read := inspectState 255 255 context (some 4) 30
+    read.1.work = 0 ∧ read.2.1 = (8, ⟨40, 30, .costRead, 1⟩) ∧
+      read.2.2.nextIdentity = 9 ∧ read.2.2.scopes = context.scopes ∧
+      (read.2.2.store 4).work.toNat = 1 ∧ (read.2.2.store 9).work.toNat = 1 ∧
+      (read.2.2.store 5).work.toNat = 0 := by decide
+
+theorem another_read_retains_the_first_read_and_its_debit :
+    let first := inspectState 255 255 context (some 4) 30
+    let second := inspectState 255 255 first.2.2 (some 4) 30
+    second.1.work = 1 ∧ second.2.2.nextIdentity = 10 ∧
+      (second.2.2.store 4).work.toNat = 2 ∧
+      (RunLengthEvents.expand (second.2.2.store 4).history).map Prod.fst = [8, 9] := by decide
+
+/-- A null selected ledger is an incomplete zero observation, while the read
+still reserves an identity and charges its live containing scopes. -/
+theorem null_read_is_not_an_unobserved_noop :
+    let read := inspectState 255 255 context none 30
+    read.1.work = 0 ∧ read.1.traceIncomplete = true ∧
+      read.2.1 = (8, ⟨0, 30, .costRead, 1⟩) ∧ read.2.2.nextIdentity = 9 ∧
+      (read.2.2.store 4).work.toNat = 1 ∧ (read.2.2.store 9).work.toNat = 1 := by decide
+
+theorem refused_identity_keeps_the_numerical_read :
+    let read := inspectState 255 8 context (some 4) 30
+    read.2.1.1 = 0 ∧ read.2.2.nextIdentity = 8 ∧
+      (read.2.2.store 4).work.toNat = 1 ∧
+      (read.2.2.store 4).traceIncomplete = true ∧
+      (read.2.2.store 4).history = [] ∧
+      (read.2.2.store 9).work.toNat = 1 ∧
+      (read.2.2.store 9).traceIncomplete = true := by decide
+
+end InspectionControls
 
 /-- Missing event identity does not silently make an observed operation
 free. No destination retains an event with the refusal sentinel as a name. -/

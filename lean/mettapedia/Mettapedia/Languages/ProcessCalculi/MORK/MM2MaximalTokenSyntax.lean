@@ -172,7 +172,7 @@ theorem compile_parser_pack_exact :
     parserPackPlanOption = some parserPackPlan := by
   decide +kernel
 
-def parserPackAgreement :
+theorem parserPackAgreement :
     ParserPackPlanAgreement mm2TerminalScalars? mm2ParserProfile
       compiledRules parserPackPlan :=
   ParserPackPlanAgreement.of_compilation compile_parser_pack_exact

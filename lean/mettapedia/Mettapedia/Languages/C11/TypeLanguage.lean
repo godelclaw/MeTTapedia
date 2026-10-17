@@ -320,3 +320,92 @@ example : (CType.function int .unprototyped).composite (.function int (.prototyp
     .function int (.prototype (.cons unqualified int .nil) false) := by decide
 
 end Mettapedia.Languages.C11
+
+namespace Mettapedia.Languages.C11.CharacterPointerViews
+
+abbrev unsignedCharacter : CType := .arithmetic (.integer (.unsigned (.standard .char)))
+abbrev signedCharacter : CType := .arithmetic (.integer (.signed (.standard .char)))
+abbrev destination : CType := .pointer { const := true } unsignedCharacter
+
+inductive Character : CType → Prop where
+  | plain : Character .character
+  | signed : Character signedCharacter
+  | unsigned : Character unsignedCharacter
+
+def character (type : CType) : Bool :=
+  type == .character || type == signedCharacter || type == unsignedCharacter
+
+theorem character_iff (type : CType) : character type = true ↔ Character type := by
+  simp only [character, Bool.or_eq_true, beq_iff_eq]
+  constructor
+  · rintro ((rfl | rfl) | rfl)
+    · exact .plain
+    · exact .signed
+    · exact .unsigned
+  · intro value
+    cases value with
+    | plain => exact Or.inl (Or.inl rfl)
+    | signed => exact Or.inl (Or.inr rfl)
+    | unsigned => exact Or.inr rfl
+
+/-- The source qualifier is retained; the destination adds readonly access.
+This is an admitted source profile, not a claim that other casts are C UB. -/
+inductive ReadOnly : CType → CType → Prop where
+  | character (constant : Bool) (pointee : CType) (kind : Character pointee) :
+      ReadOnly (.pointer { const := constant } pointee) destination
+
+def accepted (source target : CType) : Bool := match source with
+  | .pointer qualifiers pointee =>
+      !qualifiers.volatile && !qualifiers.restrict && !qualifiers.atomic &&
+        character pointee && target == destination
+  | _ => false
+
+theorem accepted_iff (source target : CType) :
+    accepted source target = true ↔ ReadOnly source target := by
+  cases source with
+  | pointer qualifiers pointee =>
+      cases qualifiers with
+      | mk constant volatile restricted atomic =>
+          simp only [accepted, Bool.and_eq_true, Bool.not_eq_true', beq_iff_eq,
+            character_iff]
+          constructor
+          · rintro ⟨⟨⟨⟨rfl, rfl⟩, rfl⟩, kind⟩, rfl⟩
+            exact .character constant pointee kind
+          · intro readOnly
+            cases readOnly
+            simp_all
+  | _ =>
+      constructor
+      · intro impossible
+        cases impossible
+      · intro impossible
+        cases impossible
+
+
+end Mettapedia.Languages.C11.CharacterPointerViews
+
+namespace Mettapedia.Languages.C11.CharacterPointerViews.Controls
+
+theorem plain_to_const_unsigned :
+    ReadOnly (.pointer {} .character) destination := .character false _ .plain
+
+theorem const_source_is_not_stripped :
+    ReadOnly (.pointer { const := true } .character) destination :=
+  .character true _ .plain
+
+theorem character_types_need_not_be_compatible :
+    CType.character.compatible unsignedCharacter = false ∧
+      accepted (.pointer {} .character) destination = true := by decide
+
+theorem unsupported_qualifier_and_depth_are_refused :
+    accepted (.pointer { volatile := true } .character) destination = false ∧
+    accepted (.pointer { atomic := true } .character) destination = false ∧
+    accepted (.pointer { restrict := true } .character) destination = false ∧
+    accepted (.pointer {} (.pointer {} .character)) destination = false := by decide
+
+theorem nonpointer_and_nonreadonly_destinations_are_refused :
+    accepted .character destination = false ∧
+    accepted (.pointer {} .character) (.pointer {} unsignedCharacter) = false ∧
+    accepted (.pointer {} .character) (.pointer { const := true } .character) = false := by decide
+
+end Mettapedia.Languages.C11.CharacterPointerViews.Controls

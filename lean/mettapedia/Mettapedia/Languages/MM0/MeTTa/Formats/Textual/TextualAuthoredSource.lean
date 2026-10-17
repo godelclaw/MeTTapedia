@@ -115,37 +115,37 @@ end
 
 /-- Retained source order of the authored assertion environment target. -/
 private def groundCapabilitySyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/experiments/gslt2parse_foundation/presentations/shared/ground_relations_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/shared/ground_relations_v1.metta"
       sha256 "cf6eae2778f3afc5db8358eba83c7d0e856f7a184bb963af315fe5822db27314"
 private def groundProviderSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_relations_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/shared/cetta_petta_ground_relations_v1.metta"
       sha256 "64c59d3cb00ee87e834ab9f0e7d3568c0e3cc6b52c5427618229f5a66d784e5b"
 private def sourceFoldSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/source_fold_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/source_fold_v1.metta"
       sha256 "e0ebb182137c5b117051bf12b7b2c5247e710397ff1a1522d281d4325256da0c"
 private def sortEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/sort_environment_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/sort_environment_v1.metta"
       sha256 "3d6c33aeaae750f3fe3090048633b3301c8ed5678e72dfe7f6be76209edff4b4"
 private def termEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/term_environment_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/term_environment_v1.metta"
       sha256 "5c2c3197f8a52fbe1623818dfa9ebb659d01da84d24ad2173762c02cc28f97bf"
 private def secondaryLexerSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/secondary_lexer_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/secondary_lexer_v1.metta"
       sha256 "a1c24d261cbb1e50e2132047a5d6990327d1c86f8e7373d5f3e5ec4493b6707e"
 private def notationEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/notation_environment_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/notation_environment_v1.metta"
       sha256 "a972ec3cfebb09ee1ad2eda1763841f696ec1f407670ce7329afe3510041fa9a"
 private def dynamicPrattSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/common/dynamic_pratt_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/common/dynamic_pratt_v1.metta"
       sha256 "fa8004f1363009cb2f32b72b647a54a5763084557bc6b86d96ebcb2f88ff8ca1"
 private def mathParserSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/math_parser_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/math_parser_v1.metta"
       sha256 "bf197e06eea1fae15ed7c7e666704f6ac46d727db464cbf87f537fb1c75fafa4"
 private def expressionEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/expression_environment_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/expression_environment_v1.metta"
       sha256 "2a72b6e18c981dc8c25c4574d9d551db08c7d7ec187e3a4de8f68cf1566ba5bd"
 private def assertionEnvironmentSyntax : SExpr := metta_sexpr_pinned_file% petta
-      "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/assertion_environment_v1.metta"
+      "../../../../../../../../metta/mm0/syntax/assertion_environment_v1.metta"
       sha256 "61c48a11c8a1825b0b383432aadac951959e89e764f52428283fb46917931d70"
 
 def sourceSyntax : List SExpr := [groundCapabilitySyntax, groundProviderSyntax,

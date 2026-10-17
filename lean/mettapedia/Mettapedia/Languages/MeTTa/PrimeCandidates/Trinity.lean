@@ -11,7 +11,6 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.Stream.AdmittedBySetSo
 import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.Stream.Joined
 import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.Stream.Hyperset
 import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.GradedIdentity.Typed
-import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.GradedIdentity.Joined
 import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.Reverse.Program
 import Mettapedia.Languages.MeTTa.PrimeCandidates.Trinity.Reverse.Joined
 import Mettapedia.GSLT.Dynamics.DemandAgreement

@@ -7,8 +7,9 @@ document parsing and hash computation: theory primitives, signature terms,
 definitions, and known propositions enter through an explicit finite
 environment.
 
-Normalization is fuel-bounded.  Exhausting fuel is rejection, matching the
-fail-closed role of Megalodon's beta and term resource limits.
+Normalization is fuel-bounded. Exhausting fuel produces no accepted result;
+it does not establish nonderivability. Native adapters must distinguish a
+resource stop from a completed logical refusal.
 -/
 
 set_option autoImplicit false

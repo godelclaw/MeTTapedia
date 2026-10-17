@@ -94,7 +94,7 @@ def descend
   .under contexts inner
 
 /-- Compose every retained contextual layer to the enclosing apex. -/
-def toApex
+theorem toApex
     {source : CIGSLT}
     {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}

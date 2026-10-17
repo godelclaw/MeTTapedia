@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.InferenceInstantiationBridge
+import Mettapedia.OSLF.MeTTaIL.PatternTokens
 
 /-!
 # First-order rule packages for the generic inference checker
@@ -255,5 +256,153 @@ theorem FODerivable.mono {R S : List FORule} (hRS : R ⊆ S) {goal : Pattern}
     (derivation : FODerivable R goal) : FODerivable S goal := by
   induction derivation with
   | rule r hr args hlen hvalid _ ih => exact .rule r (hRS hr) args hlen hvalid ih
+
+/-! ## Full storage under first-order instantiation -/
+
+open Mettapedia.OSLF.MeTTaIL
+
+/-- Each argument's complete structural payload is paid for by the ordered
+argument vector, including names, binder metadata and binary indices. -/
+theorem argument_weight_le {argument : Pattern} {arguments : List Pattern}
+    (member : argument ∈ arguments) :
+    PatternTokens.weight argument ≤ PatternTokens.listWeight arguments := by
+  induction arguments with
+  | nil => simp at member
+  | cons head tail ih =>
+      rcases List.mem_cons.mp member with same | later
+      · subst argument
+        simp only [PatternTokens.listWeight]
+        omega
+      · have bound := ih later
+        simp only [PatternTokens.listWeight]
+        omega
+
+mutual
+  /-- Actual source binding application grows a binder-free schema by at
+  most the product of its fixed payload and the supplied value budget. No
+  substitution or collection-rest operation is included in this fragment. -/
+  theorem applyBindings_weight (bindings : Bindings) (bound : Nat)
+      (bounded : ∀ entry ∈ bindings, PatternTokens.weight entry.2 ≤ bound)
+      {formals : List (String × Nat)} (schema : Pattern)
+      (fragment : BindingSchemaFragment formals schema) :
+      PatternTokens.weight (applyBindings bindings schema) ≤
+        PatternTokens.weight schema * (bound + 1) := by
+    cases schema with
+    | bvar index =>
+        simp only [applyBindings, PatternTokens.weight]
+        nlinarith
+    | fvar name =>
+        cases found : bindings.find? (fun entry => entry.1 == name) with
+        | none =>
+            simp only [applyBindings, found, PatternTokens.weight]
+            nlinarith
+        | some entry =>
+            have value := bounded entry (List.mem_of_find?_eq_some found)
+            simp only [applyBindings, found]
+            simp only [PatternTokens.weight]
+            nlinarith
+    | apply constructor arguments =>
+        cases fragment with
+        | apply items =>
+            have values := applyBindings_listWeight bindings bound bounded arguments items
+            simp only [applyBindings, PatternTokens.weight]
+            nlinarith
+    | collection collectionType elements rest =>
+        cases fragment with
+        | collection items =>
+            have values := applyBindings_listWeight bindings bound bounded elements items
+            simp only [applyBindings, List.append_nil, PatternTokens.weight, PatternTokens.optionWeight]
+            nlinarith
+    | lambda _ _ => cases fragment
+    | multiLambda _ _ _ => cases fragment
+    | subst _ _ => cases fragment
+  termination_by sizeOf schema
+  decreasing_by all_goals sizeOf_pattern_dec
+
+  /-- The ordered premise vector retains every substituted occurrence. -/
+  theorem applyBindings_listWeight (bindings : Bindings) (bound : Nat)
+      (bounded : ∀ entry ∈ bindings, PatternTokens.weight entry.2 ≤ bound)
+      {formals : List (String × Nat)} (schemas : List Pattern)
+      (fragment : BindingSchemasFragment formals schemas) :
+      PatternTokens.listWeight (schemas.map (applyBindings bindings)) ≤
+        PatternTokens.listWeight schemas * (bound + 1) := by
+    cases schemas with
+    | nil => simp [PatternTokens.listWeight]
+    | cons schema schemas =>
+        cases fragment with
+        | cons head tail =>
+            have first := applyBindings_weight bindings bound bounded schema head
+            have later := applyBindings_listWeight bindings bound bounded schemas tail
+            simp only [List.map_cons, PatternTokens.listWeight]
+            nlinarith
+  termination_by sizeOf schemas
+  decreasing_by all_goals sizeOf_pattern_dec
+end
+
+private theorem bindings_argument_weight (names : List String) (arguments : List Pattern) :
+    ∀ entry ∈ names.zip arguments,
+      PatternTokens.weight entry.2 ≤ PatternTokens.listWeight arguments := by
+  induction names generalizing arguments with
+  | nil => simp
+  | cons name names ih =>
+      cases arguments with
+      | nil => simp
+      | cons argument arguments =>
+          intro entry member
+          rcases List.mem_cons.mp member with same | later
+          · subst entry
+            simp only [PatternTokens.listWeight]
+            omega
+          · have bound := ih arguments entry later
+            simp only [PatternTokens.listWeight]
+            omega
+
+/-- An instantiated source conclusion has linear full-payload growth for
+each fixed first-order schema; repeated metavariables retain their copies. -/
+theorem FORule.instConclusion_weight (rule : FORule) (arguments : List Pattern)
+    (fragment : BindingSchemaFragment rule.formals rule.conclusion) :
+    PatternTokens.weight (rule.instConclusion arguments) ≤
+      PatternTokens.weight rule.conclusion * (PatternTokens.listWeight arguments + 1) :=
+  applyBindings_weight (rule.bindings arguments) (PatternTokens.listWeight arguments)
+    (bindings_argument_weight rule.vars arguments) rule.conclusion fragment
+
+theorem FORule.instPremises_weight (rule : FORule) (arguments : List Pattern)
+    (fragment : BindingSchemasFragment rule.formals rule.premises) :
+    PatternTokens.listWeight (rule.instPremises arguments) ≤
+      PatternTokens.listWeight rule.premises * (PatternTokens.listWeight arguments + 1) :=
+  applyBindings_listWeight (rule.bindings arguments) (PatternTokens.listWeight arguments)
+    (bindings_argument_weight rule.vars arguments) rule.premises fragment
+
+namespace StorageControls
+
+def repeated : FORule := ⟨"repeat", ["x"], [], .apply "Pair" [.fvar "x", .fvar "x"]⟩
+
+/-- The source operation really copies both occurrences of its argument. -/
+theorem repeated_argument (argument : Pattern) :
+    repeated.instConclusion [argument] = .apply "Pair" [argument, argument] := by
+  simp [repeated, FORule.instConclusion, FORule.bindings, applyBindings]
+
+theorem repeated_argument_storage (argument : Pattern) :
+    PatternTokens.weight (repeated.instConclusion [argument]) =
+      8 + 2 * PatternTokens.weight argument := by
+  rw [repeated_argument]
+  have name : ("Pair" : String).utf8ByteSize = 4 := by decide +kernel
+  simp only [PatternTokens.weight, PatternTokens.listWeight, name]
+  omega
+
+/-- A substitution node runs a different operation and cannot use the
+first-order structural-instantiation bound. -/
+theorem substitution_excluded (formals : List (String × Nat)) (body replacement : Pattern) :
+    ¬ BindingSchemaFragment formals (.subst body replacement) := by
+  intro fragment
+  cases fragment
+
+theorem residual_collection_excluded (formals : List (String × Nat))
+    (kind : CollType) (elements : List Pattern) (rest : String) :
+    ¬ BindingSchemaFragment formals (.collection kind elements (some rest)) := by
+  intro fragment
+  cases fragment
+
+end StorageControls
 
 end Mettapedia.GSLT.LanguageDef.FirstOrderRules

@@ -23,8 +23,8 @@ set_option autoImplicit false
 
 namespace Mettapedia.TypeTheory.ProofRelevantRouteFamilyBridge
 
-open CategoryTheory
-open scoped CategoryTheory
+open _root_.Mettapedia.CategoryTheory
+open scoped _root_.Mettapedia.CategoryTheory
 open Mettapedia.GSLT.IndexedOperational
 open Mettapedia.GSLT.ProofRelevant
 open Mettapedia.GSLT.Ultrainfinite

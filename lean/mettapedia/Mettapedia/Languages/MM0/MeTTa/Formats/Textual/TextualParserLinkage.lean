@@ -34,11 +34,11 @@ open scoped ParserPackTextArtifact
 
 def syntaxSource : SExpr :=
   metta_sexpr_file% petta
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/syntax_v1.metta"
+    "../../../../../../../../metta/mm0/syntax/syntax_v1.metta"
 
 def packSource : ParserPackTextArtifact.Artifact :=
   parser_pack_text_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/generated/parser_pack_v1.abi"
+    "../../../../../../../../metta/mm0/syntax/generated/parser_pack_v1.abi"
 
 /-- Canonical structured source admission preserves the full authored rule
 inventory. This is distinct from parsing an MM0 input with those rules. -/

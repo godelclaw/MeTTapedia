@@ -59,7 +59,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-! ## Beta keeps the free variables of a term below a bound -/

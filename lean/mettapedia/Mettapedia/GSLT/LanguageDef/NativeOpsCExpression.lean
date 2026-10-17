@@ -77,6 +77,14 @@ mutual
         | .punctuation ['-'] :: rest => do
             let (operand, afterOperand) ← prefix? fuel names rest
             some (.unary .negate operand, afterOperand)
+        | .punctuation ['('] :: .identifier ['c', 'o', 'n', 's', 't'] :: rest => do
+            let (type, afterType) ← cType? names rest
+            if type.pointers != 1 then none else
+              match afterType with
+              | .punctuation [')'] :: afterClose => do
+                  let (operand, afterOperand) ← prefix? fuel names afterClose
+                  some (.castPointeeConst type operand, afterOperand)
+              | _ => none
         | .punctuation ['('] :: rest =>
             match cType? names rest with
             | some (type, .punctuation [')'] :: afterType) =>
@@ -100,6 +108,12 @@ mutual
               | .number characters :: .punctuation [')'] :: after => do
                   let value ← wordChars? characters
                   postfix? fuel names (.word value) after
+              | _ => none
+            else if name == "UINT32_C".toList then
+              match rest with
+              | .number characters :: .punctuation [')'] :: after => do
+                  let value ← fixedWidthChars? 32 characters
+                  postfix? fuel names (.unsignedInteger value) after
               | _ => none
             else if name == "UINT8_C".toList then
               match rest with
@@ -132,9 +146,13 @@ mutual
         | .number characters :: rest =>
             match unsignedChars? characters with
             | some value => postfix? fuel names (.unsignedInteger value) rest
-            | none => do
-                let value ← decimalChars? characters
-                postfix? fuel names (.decimal value) rest
+            | none =>
+                (do
+                  let value ← decimalChars? characters
+                  postfix? fuel names (.decimal value) rest) <|>
+                (do
+                  let value ← hexadecimal32? characters
+                  postfix? fuel names value rest)
         | _ => none
 
   def postfix? (fuel : Nat) (names : TypeNames) (base : CExpr)
@@ -248,7 +266,7 @@ theorem oversized_word_macro_refused : expressionText? exampleTypes
     "UINT64_C(18446744073709551616)".toList = none := by cbv
 
 theorem trailing_call_argument_comma_refused : expressionText? exampleTypes
-    "f(x,)".toList = none := by cbv
+    "f(x,)".toList = none := by decide +kernel
 
 /-- The unsigned suffix remains explicit syntax. Its C integer type still
 requires an ABI and range check; recognition does not widen the operand. -/
@@ -317,4 +335,72 @@ theorem incomplete_prefix_decrement_refused :
 theorem incomplete_index_decrement_refused :
     expressionText? exampleTypes "store->leases[--]".toList = none := by cbv
 
+namespace HexadecimalControls
+
+theorem actual_hash_expression :
+    expressionText? exampleTypes
+      "(handle * UINT32_C(0x9E3779B1)) >> index->handle_table_shift".toList =
+      some (.binary .shiftRight
+        (.binary .mul (.identifier "handle".toList) (.unsignedInteger 2654435761))
+        (.field (.identifier "index".toList) "handle_table_shift".toList true)) := by cbv
+
+theorem small_hexadecimal_is_signed : expressionText? exampleTypes "0x7F".toList =
+    some (.decimal 127) := by cbv
+
+theorem large_hexadecimal_is_unsigned : expressionText? exampleTypes "0xFFFFFFFF".toList =
+    some (.unsignedInteger 4294967295) := by cbv
+
+theorem unsigned_hexadecimal_suffix : expressionText? exampleTypes "0Xffu".toList =
+    some (.unsignedInteger 255) := by cbv
+
+theorem overflowing_macro_refused : expressionText? exampleTypes
+    "UINT32_C(0x100000000)".toList = none := by decide +kernel
+
+theorem malformed_macro_refused : expressionText? exampleTypes
+    "UINT32_C(0x)".toList = none := by decide +kernel
+
+theorem byte_macro_remains_width_checked : expressionText? exampleTypes
+    "UINT8_C(0x100)".toList = none := by decide +kernel
+
+theorem word_macro_accepts_hexadecimal : expressionText? exampleTypes
+    "UINT64_C(0x100000000)".toList = some (.word 4294967296) := by cbv
+
+end HexadecimalControls
+
 end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+
+namespace Mettapedia.GSLT.LanguageDef.NativeOps.NativeC.ReadonlyCastControls
+set_option maxRecDepth 8000
+
+def names : TypeNames := ["uint8_t".toList, "uint32_t".toList, "char".toList]
+def returnedBytes : CExpr := .call "get_bytes".toList []
+def bytePointer : CType := ⟨"uint8_t".toList, 1⟩
+
+theorem qualified_cast_retains_syntax :
+    expressionText? names "(const uint8_t *)get_bytes()".toList =
+      some (.castPointeeConst bytePointer returnedBytes) := by
+  have tokenized : lex "(const uint8_t *)get_bytes()".toList = .ok
+      [.punctuation ['('], .identifier "const".toList, .identifier "uint8_t".toList,
+        .punctuation ['*'], .punctuation [')'], .identifier "get_bytes".toList,
+        .punctuation ['('], .punctuation [')']] := by decide +kernel
+  rw [expressionText?, tokenized]
+  rfl
+
+theorem qualified_cast_keeps_actual_field_source :
+    expressionText? names "(const uint8_t *)atom->spelling->bytes".toList =
+      some (.castPointeeConst bytePointer
+        (.field (.field (.identifier "atom".toList) "spelling".toList true)
+          "bytes".toList true)) := by cbv
+
+theorem unsupported_qualification_and_depth_not_erased :
+    expressionText? names "(const uint8_t **)bytes".toList = none ∧
+    expressionText? names "(const uint8_t *const)bytes".toList = none ∧
+    expressionText? names "(volatile uint8_t *)bytes".toList = none ∧
+    expressionText? names "(const uint8_t)bytes".toList = none := by cbv
+
+theorem unsigned_integer_cast_still_has_its_original_syntax :
+    expressionText? names "(uint32_t)7".toList =
+      some (.cast ⟨"uint32_t".toList, 0⟩ (.decimal 7)) := by cbv
+
+
+end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC.ReadonlyCastControls

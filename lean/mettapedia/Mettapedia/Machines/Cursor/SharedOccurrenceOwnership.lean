@@ -467,6 +467,89 @@ theorem observe_split (first second : Nat) (state : Configuration Address Output
           have stopped : ∀ p address, peek state.log client ≠ .answer p address := by simp [reply]
           simp only [observe_stopped _ _ _ _ stopped, List.nil_append]
 
+/-- Send every log value and every publication address. Consumer and caller
+identities stay, so an owning handle still names the same cursor. -/
+def Configuration.map {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress)
+    (state : Configuration Address Output clients) :
+    Configuration DestinationAddress Output clients :=
+  ⟨state.log.map address,
+    state.published.image (fun pair => (pair.1, address pair.2))⟩
+
+omit [DecidableEq Address] in
+theorem map_log {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress)
+    (state : Configuration Address Output clients) :
+    (state.map address).log = state.log.map address := rfl
+
+omit [DecidableEq Address] in
+theorem map_published {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress)
+    (state : Configuration Address Output clients) :
+    (state.map address).published =
+      state.published.image (fun pair => (pair.1, address pair.2)) := rfl
+
+theorem logRoots_map {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress) (state : State Address clients) :
+    logRoots Output (state.map address) =
+      (logRoots Output state).image (fun pair => (pair.1, address pair.2)) := by
+  ext pair
+  rcases pair with ⟨owner, located⟩
+  cases owner with
+  | inl client =>
+      simp only [Finset.mem_image, mem_logRoots_consumer, SharedOccurrenceLog.map_unread,
+        List.mem_map]
+      constructor
+      · rintro ⟨value, held, rfl⟩
+        exact ⟨(Sum.inl client, value), (mem_logRoots_consumer state client value).mpr held, rfl⟩
+      · rintro ⟨⟨source, value⟩, held, same⟩
+        cases source with
+        | inl _ =>
+            cases same
+            exact ⟨value, (mem_logRoots_consumer state client value).mp held, rfl⟩
+        | inr caller => exact absurd held (caller_not_in_logRoots state caller value)
+  | inr caller =>
+      apply iff_of_false
+      · exact caller_not_in_logRoots (state.map address) caller located
+      · intro held
+        simp only [Finset.mem_image] at held
+        rcases held with ⟨⟨source, value⟩, member, same⟩
+        cases source with
+        | inl _ => cases same
+        | inr _ =>
+            cases same
+            exact caller_not_in_logRoots state caller value member
+
+theorem publishedRoots_map {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress) (published : Roots Output Address) :
+    publishedRoots (published.image (fun pair => (pair.1, address pair.2))) =
+      (publishedRoots (clients := clients) published).image
+        (fun pair => (pair.1, address pair.2)) := by
+  simp only [publishedRoots, Finset.image_image]
+  rfl
+
+/-- Mapped unread rows and mapped publication addresses are the image of the
+old delivery roots. The carrier fields are the log and the publication set. -/
+theorem map_roots {DestinationAddress : Type} [DecidableEq DestinationAddress]
+    (address : Address → DestinationAddress)
+    (state : Configuration Address Output clients) :
+    roots (state.map address) =
+      (roots state).image (fun pair => (pair.1, address pair.2)) := by
+  simp only [roots, Configuration.map, Finset.image_union, logRoots_map, publishedRoots_map]
+
+theorem map_id (state : Configuration Address Output clients) : state.map id = state := by
+  cases state with
+  | mk log published =>
+      simp only [Configuration.map, SharedOccurrenceLog.map_id]
+      congr 1
+      ext pair
+      simp only [Finset.mem_image, Prod.exists]
+      constructor
+      · rintro ⟨owner, located, member, rfl⟩
+        exact member
+      · intro member
+        exact ⟨pair.1, pair.2, member, by cases pair; rfl⟩
+
 namespace Controls
 
 open Mettapedia.Machines.ResourceOwnership (rootAddresses census ValidRoots mem_census_iff_live

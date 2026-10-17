@@ -42,7 +42,7 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory termSetoid TermStep)
 open Mettapedia.GSLT.Dedukti (Theory rewritingTheory)
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-! ## Beside the matching probe, on terms -/

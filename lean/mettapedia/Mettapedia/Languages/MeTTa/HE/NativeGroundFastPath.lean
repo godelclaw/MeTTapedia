@@ -293,8 +293,8 @@ theorem open_ground_matchAtoms_symbol (s : String) (target : Atom)
     simp only [matchAtoms, simpleMatch, getMetaType, Atom.symbolType]
     simp only [BEq.beq, Atom.beq]
     constructor
-    · intro h; split at h <;> simp_all [Bindings.hasLoop, Bindings.empty]
-    · intro h; split at h <;> simp_all [Bindings.hasLoop, Bindings.empty]
+    · intro h; split at h <;> simp_all [Bindings.hasLoop_empty]
+    · intro h; split at h <;> simp_all [Bindings.hasLoop_empty]
   | .grounded _ =>
     simp [matchAtoms, simpleMatch, getMetaType, Atom.symbolType, Atom.groundedType]
   | .expression _ =>
@@ -325,8 +325,8 @@ theorem open_ground_matchAtoms_grounded (g : GroundedValue) (target : Atom)
     simp only [matchAtoms, simpleMatch, getMetaType, Atom.groundedType]
     simp only [BEq.beq, Atom.beq]
     constructor
-    · intro h; split at h <;> simp_all [Bindings.hasLoop, Bindings.empty]
-    · intro h; split at h <;> simp_all [Bindings.hasLoop, Bindings.empty]
+    · intro h; split at h <;> simp_all [Bindings.hasLoop_empty]
+    · intro h; split at h <;> simp_all [Bindings.hasLoop_empty]
   | .expression _ =>
     simp [matchAtoms, simpleMatch, getMetaType, Atom.groundedType, Atom.expressionType]
 
@@ -369,7 +369,7 @@ private theorem groundMatchRelSelfAux :
     | .grounded g =>
         exact MatchRel.grounded g
     | .expression es =>
-        apply MatchRel.expr
+        refine MatchRel.expr ?_ Spec.Match.Merge.semanticLoopFree_empty
         have hlist : ∀ (xs : List Atom),
             (∀ x, x ∈ xs → x ∈ es) →
             MatchListAccRel xs xs Bindings.empty Bindings.empty := by
@@ -417,7 +417,7 @@ private theorem groundMatchRelSelfUniqueAux :
     | .expression es =>
         intro b h
         cases h with
-        | expr hlist =>
+        | expr hlist _ =>
             have hlistUnique : ∀ (xs : List Atom),
                 (∀ x, x ∈ xs → x ∈ es) →
                 ∀ {out},
@@ -486,9 +486,9 @@ theorem matchAtoms_ground_leaf_self (a : Atom) (n : Nat)
   match a with
   | .var _ => simp [isGroundAtom] at hg
   | .symbol s =>
-    simp [matchAtoms, getMetaType, Atom.symbolType, Bindings.hasLoop, Bindings.empty]
+    simp [matchAtoms, getMetaType, Atom.symbolType, Bindings.hasLoop_empty]
   | .grounded g =>
-    simp [matchAtoms, getMetaType, Atom.groundedType, Bindings.hasLoop, Bindings.empty]
+    simp [matchAtoms, getMetaType, Atom.groundedType, Bindings.hasLoop_empty]
   | .expression es => exact absurd rfl (hleaf es)
 
 /-- **matchAtomsList on equal ground children: ih at fuel n → result at fuel n+1.**

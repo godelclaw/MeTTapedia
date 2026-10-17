@@ -44,7 +44,7 @@ open Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.Framework.PredFiniteSufficient (matchPattern_applyBindings_complete)
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList)
 
 /-! ## A side of a rule, as the pattern that the evaluator matches -/

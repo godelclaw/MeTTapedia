@@ -463,6 +463,22 @@ does not restrict how many incoming edges share a node. -/
 def Decreasing (g : Graph Node Label) (rank : Node → Nat) : Prop :=
   ∀ node child, child ∈ g.children node → rank child < rank node
 
+/-- Once a decreasing graph rank fits, the whole finite observation is stable.
+This preserves all child positions and sharing; no tree-sized rank is needed. -/
+theorem observe_stable_of_decreasing
+    (graph : Graph Node Label) (rank : Node → Nat) (decreasing : Decreasing graph rank)
+    (depth extra : Nat) (node : Node) (fits : rank node < depth) :
+    observe graph (depth + extra) node = observe graph depth node := by
+  induction depth generalizing node with
+  | zero => omega
+  | succ depth ih =>
+    simp only [Nat.succ_add, observe]
+    congr 1
+    apply List.map_congr_left
+    intro child member
+    exact ih child (by have := decreasing node child member; omega)
+
+
 /-- Once both finite unfoldings fit, increasing the observation budget cannot
 change an ordering result. This justifies comparing a DAG without expanding it
 to an arbitrary common tree depth. -/

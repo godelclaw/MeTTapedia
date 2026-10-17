@@ -1,3 +1,6 @@
+import Mettapedia.Util.LinearHash
+import Mettapedia.Languages.ProcessCalculi.MORK.Space
+import Mettapedia.OSLF.MeTTaIL.Match
 import Mettapedia.Languages.MeTTa.OSLFCore.RewriteRules
 import Mettapedia.Languages.MeTTa.OSLFCore.Types
 import Mettapedia.OSLF.MeTTaIL.Syntax
@@ -683,3 +686,199 @@ example : typeExprToAtom (.arrow (.base "Name") (.base "Proc")) =
 end Tests
 
 end Mettapedia.Languages.MeTTa.OSLFCore.Bridge
+
+
+namespace Mettapedia.Languages.MeTTa.OSLFCore.Bridge.GroundData
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.Match
+
+mutual
+  /-- Captured Atom data contains no executable schema or substitution nodes. -/
+  theorem applyBindings_encode (substitution : Mettapedia.OSLF.MeTTaIL.Match.Bindings) (atom : Atom) :
+      applyBindings substitution (encode atom) = encode atom := by
+    cases atom with
+    | symbol name | var name =>
+        simp only [encode, literal, Mettapedia.GSLT.Parsing.SourceSExprPatternCodec.encode,
+          applyBindings, List.map_cons, List.map_nil]
+    | grounded value =>
+        cases value with
+        | int value | string value =>
+            simp only [encode, literal, Mettapedia.GSLT.Parsing.SourceSExprPatternCodec.encode,
+              applyBindings, List.map_cons, List.map_nil]
+        | bool value =>
+            cases value <;> simp only [encode, applyBindings, List.map_nil]
+        | custom type payload =>
+            simp only [encode, literal, Mettapedia.GSLT.Parsing.SourceSExprPatternCodec.encode,
+              applyBindings, List.map_cons, List.map_nil]
+    | expression values =>
+        simp only [encode, applyBindings, List.map_cons, List.map_nil,
+          List.append_nil, applyBindings_encodeList substitution values]
+  termination_by sizeOf atom
+
+  theorem applyBindings_encodeList (substitution : Mettapedia.OSLF.MeTTaIL.Match.Bindings) (atoms : List Atom) :
+      (encodeList atoms).map (applyBindings substitution) = encodeList atoms := by
+    cases atoms with
+    | nil => simp only [encodeList, List.map_nil]
+    | cons atom atoms =>
+        simp only [encodeList, List.map_cons,
+          applyBindings_encode substitution atom, applyBindings_encodeList substitution atoms]
+  termination_by sizeOf atoms
+end
+
+open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst atomFreeVars)
+
+mutual
+  /-- The ground-atom codec with MeTTa variables read as metavariables. -/
+  def schema : Atom → Pattern
+    | .var name => .fvar name
+    | .expression values =>
+        .apply "ground-atom-expression-v1" [.collection .vec (schemaList values) none]
+    | atom => Mettapedia.Languages.MeTTa.OSLFCore.Bridge.GroundData.encode atom
+
+  def schemaList : List Atom → List Pattern
+    | [] => []
+    | atom :: atoms => schema atom :: schemaList atoms
+end
+
+/-- Captured guest variables remain inert Atom data inside a schema filling. -/
+def bindings (substitution : Subst) : Mettapedia.OSLF.MeTTaIL.Match.Bindings :=
+  substitution.map fun entry => (entry.1, GroundData.encode entry.2)
+
+theorem bindings_lookup (substitution : Subst) (name : String) :
+    (bindings substitution).lookup name =
+      (substitution.lookup name).map GroundData.encode := by
+  induction substitution with
+  | nil => rfl
+  | cons entry tail ih =>
+      rcases entry with ⟨key, value⟩
+      by_cases same : key == name
+      · simp [bindings, Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup, Subst.lookup, List.find?, same]
+      · simpa [bindings, Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup, Subst.lookup, List.find?, same] using ih
+
+private theorem apply_fvar {substitution : Mettapedia.OSLF.MeTTaIL.Match.Bindings} {name : String} {value : Pattern}
+    (selected : substitution.lookup name = some value) :
+    applyBindings substitution (.fvar name) = value := by
+  unfold Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup at selected
+  obtain ⟨entry, found, same⟩ := Option.map_eq_some_iff.mp selected
+  simp only [applyBindings, found]
+  exact same
+
+
+mutual
+  /-- The existing displayed schema agrees with actual Atom substitution,
+  with no symbol/nullary collapse or reevaluation of a captured guest value. -/
+  theorem schema_instantiation (substitution : Subst) (atom : Atom) (captured : Mettapedia.OSLF.MeTTaIL.Match.Bindings)
+      (agrees : ∀ name ∈ atomFreeVars atom,
+        captured.lookup name = some (GroundData.encode (applySubst substitution (.var name)))) :
+      applyBindings captured (schema atom) =
+        GroundData.encode (applySubst substitution atom) := by
+    cases atom with
+    | symbol name => exact GroundData.applyBindings_encode _ _
+    | grounded value => exact GroundData.applyBindings_encode _ _
+    | var name =>
+        simpa only [schema] using apply_fvar (agrees name (by simp [atomFreeVars]))
+    | expression values =>
+        have agreesValues : ∀ name ∈ atomFreeVars.atomFreeVarsList values,
+            captured.lookup name = some (GroundData.encode (applySubst substitution (.var name))) := agrees
+        simp only [schema, applyBindings, List.map_cons, List.map_nil, List.append_nil,
+          applySubst, GroundData.encode, schemaList_instantiation substitution values captured agreesValues]
+  termination_by sizeOf atom
+
+  theorem schemaList_instantiation (substitution : Subst) (atoms : List Atom) (captured : Mettapedia.OSLF.MeTTaIL.Match.Bindings)
+      (agrees : ∀ name ∈ atomFreeVars.atomFreeVarsList atoms,
+        captured.lookup name = some (GroundData.encode (applySubst substitution (.var name)))) :
+      (schemaList atoms).map (applyBindings captured) =
+        GroundData.encodeList (applySubst.applySubstList substitution atoms) := by
+    cases atoms with
+    | nil => simp only [schemaList, List.map_nil, applySubst.applySubstList, GroundData.encodeList]
+    | cons atom atoms =>
+        have first : ∀ name ∈ atomFreeVars atom,
+            captured.lookup name = some (GroundData.encode (applySubst substitution (.var name))) := by
+          intro name present
+          exact agrees name (List.mem_append_left _ present)
+        have rest : ∀ name ∈ atomFreeVars.atomFreeVarsList atoms,
+            captured.lookup name = some (GroundData.encode (applySubst substitution (.var name))) := by
+          intro name present
+          exact agrees name (List.mem_append_right _ present)
+        simp only [schemaList, List.map_cons, applySubst.applySubstList, GroundData.encodeList,
+          schema_instantiation substitution atom captured first, schemaList_instantiation substitution atoms captured rest]
+  termination_by sizeOf atoms
+end
+
+/-- Fill every authored outer variable from the original first-match source
+lookup. An unbound source variable remains explicit inert Atom data. -/
+def bindingsFor (substitution : Subst) (template : Atom) : Mettapedia.OSLF.MeTTaIL.Match.Bindings :=
+  (atomFreeVars template).eraseDups.map fun name =>
+    (name, GroundData.encode (applySubst substitution (.var name)))
+
+private theorem mapped_lookup (names : List String) (values : String → Pattern) (name : String)
+    (present : name ∈ names) :
+    Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup (names.map fun key => (key, values key)) name = some (values name) := by
+  induction names with
+  | nil => cases present
+  | cons first rest ih =>
+      by_cases same : first = name
+      · subst first
+        simp [Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup]
+      · have later : name ∈ rest := (List.mem_cons.mp present).resolve_left (Ne.symm same)
+        simpa [Mettapedia.OSLF.MeTTaIL.Match.Bindings.lookup, same] using ih later
+
+theorem bindingsFor_lookup (substitution : Subst) (template : Atom) (name : String)
+    (present : name ∈ atomFreeVars template) :
+    (bindingsFor substitution template).lookup name =
+      some (GroundData.encode (applySubst substitution (.var name))) :=
+  mapped_lookup (atomFreeVars template).eraseDups
+    (fun sourceName => GroundData.encode (applySubst substitution (.var sourceName))) name
+    (List.mem_eraseDups.mpr present)
+
+/-- Total native schema filling agrees with the original partial source
+substitution, including its literal treatment of unbound source variables. -/
+theorem schema_substitution (substitution : Subst) (atom : Atom) :
+    applyBindings (bindingsFor substitution atom) (schema atom) =
+      GroundData.encode (applySubst substitution atom) :=
+  schema_instantiation substitution atom (bindingsFor substitution atom)
+    (bindingsFor_lookup substitution atom)
+
+theorem instantiated_schema_decodes (substitution : Subst) (atom : Atom) :
+    GroundData.decode (applyBindings (bindingsFor substitution atom) (schema atom)) =
+      some (applySubst substitution atom) := by
+  rw [schema_substitution substitution atom]
+  exact GroundData.decode_encode _
+
+
+end Mettapedia.Languages.MeTTa.OSLFCore.Bridge.GroundData
+
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.OSLFCore.Bridge.GroundData
+
+open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst atomFreeVars)
+open Mettapedia.OSLF.MeTTaIL.Match
+
+@[simp] theorem bindingsFor_unique (substitution : Subst) (template : Atom) :
+    (bindingsFor substitution template).hasUniqueNames = true := by
+  have names : ((bindingsFor substitution template).map Prod.fst) =
+      (atomFreeVars template).eraseDups := by
+    simp only [bindingsFor, List.map_map, Function.comp_def]
+    exact List.map_id _
+  unfold Bindings.hasUniqueNames
+  rw [names]
+  exact (Mettapedia.Util.LinearHash.eraseDupsLength_eq_true_iff_nodup _).mpr
+    (Mettapedia.Util.LinearHash.eraseDups_nodup _)
+
+@[simp] theorem bindingsFor_ground (substitution : Subst) (template : Atom) :
+    (bindingsFor substitution template).valuesGround = true := by
+  have namesGround : ∀ names : List String,
+      Bindings.valuesGround (names.map fun name =>
+        (name, encode (applySubst substitution (.var name)))) = true := by
+    intro names
+    induction names with
+    | nil => rfl
+    | cons name names ih =>
+        simp only [List.map_cons, Bindings.valuesGround, encode_isGround, Bool.true_and, ih]
+  exact namesGround _
+
+end Mettapedia.Languages.MeTTa.OSLFCore.Bridge.GroundData

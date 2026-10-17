@@ -1,6 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.Replay
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCalculus
-import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCalculusCalibration
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.CheckingWeakness
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReflexiveLayer
 import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCoreHOL

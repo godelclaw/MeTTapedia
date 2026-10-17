@@ -2,7 +2,12 @@ import Mettapedia.GSLT.Distinction.SimulationComposition
 import Mettapedia.GSLT.Distinction.ProductiveBlocksControls
 
 /-!
-# Controls for composing cost simulations
+# Controls for composing machine implementations
+
+`FiniteBlocks` gives a size-dependent implementation with no uniform local
+instruction bound. Its local proofs compose, preserve duplicate publications
+and retain the exact suffix across a pause. The existing forward-only controls
+separately show why completion reflection cannot be inferred from preservation.
 
 * **The product, not the sum** (`product_holds`, `sum_bound_fails`,
   `product_bound_tight`).  A source publishing in one transition, a middle
@@ -518,6 +523,46 @@ theorem relabeled_chain_reflected (fuel' : ℕ)
   (chain.relabel (fun value => value + 100) id id).reflected
     (state := false) (state' := 0) ⟨0, rfl, by omega, rfl⟩ final
 
+/-! ## Machine-category consumers -/
+
+namespace MachineCategory
+
+open _root_.CategoryTheory
+
+def quickObject : ObservedMachine ℕ Unit Empty := .of quick
+def mediumObject : ObservedMachine ℕ Unit Empty := .of medium
+def slowObject : ObservedMachine ℕ Unit Empty := .of slow
+
+def first : quickObject ⟶ mediumObject :=
+  Stage.ofProgress quickMedium 3 stage_one quick_progress
+
+def second : mediumObject ⟶ slowObject :=
+  Stage.ofProgress mediumSlow 3 stage_two medium_progress
+
+/-- The categorical composite retains the actual fused execution boundary. -/
+theorem composite_observation :
+    quickObject.machine.observe 2 false = slowObject.machine.observe 10 (0 : ℕ) :=
+  (first ≫ second).final_eq (state := false) (state' := (0 : ℕ))
+    ⟨(0 : ℕ), rfl, by omega, rfl⟩ trivial trivial
+
+/-- Three target steps per source step at each stage compose to nine. -/
+theorem composite_cost : (first ≫ second).cost = 9 := rfl
+
+/-- Observation agreement does not make a costed round trip an identity. -/
+theorem roundtrip_not_identity :
+    CategoryTheory.CategoryStruct.comp
+        (X := ObservedMachine.of checker) (Y := ObservedMachine.of interpreter)
+        (Z := ObservedMachine.of checker) checkerToInterpreter interpreterToChecker ≠
+      𝟙 (ObservedMachine.of checker) :=
+  checker_roundtrip_not_identity
+
+/-- Relabeling exposes the new event through the existing machine runner. -/
+theorem relabel_publication :
+    ((ObservedMachine.relabelFunctor Nat.succ id id).obj quickObject).machine.observe
+        2 false = ⟨[2], .finished ()⟩ := rfl
+
+end MachineCategory
+
 /-! ## Completion reflection does not identify stuckness with divergence -/
 
 def stuckSpin : Controls.Wedge → Controls.Wedge → Prop :=
@@ -721,3 +766,122 @@ theorem service_cannot_earn_wrong_environment :
 end HandlerControls
 
 end Mettapedia.GSLT.Distinction.ProductiveBlocks.CompositionControls
+
+namespace Mettapedia.GSLT.Distinction.ProductiveBlocks.CompositionControls.FiniteBlocks
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- One logical publication keeps both equal occurrences. -/
+def logical : Machine Nat Nat Unit Empty where
+  step
+    | 0 => some (.finish ())
+    | n + 1 => some (.publish [n + 1, n + 1] n)
+
+/-- The second component counts pending internal work before the next logical
+publication. The next operation starts with its own, size-dependent work. -/
+def backend : Machine (Nat × Nat) Nat Unit Empty where
+  step
+    | (n, debt + 1) => some (.silent (n, debt))
+    | (0, 0) => some (.finish ())
+    | (n + 1, 0) => some (.publish [n + 1, n + 1] (n, n))
+
+def related (n : Nat) (state : Nat × Nat) : Prop :=
+  n = state.1 ∧ state.2 ≤ n
+
+theorem debt_before_boundary (n debt count : Nat) (bound : count ≤ debt) :
+    backend.run count (n, debt) = ([], .exhausted (n, debt - count)) := by
+  induction count generalizing debt with
+  | zero => rfl
+  | succ count ih =>
+      cases debt with
+      | zero => omega
+      | succ debt =>
+          simpa only [Machine.run, backend, Nat.succ_sub_succ_eq_sub] using
+            ih debt (Nat.le_of_succ_le_succ bound)
+
+theorem discharge_debt (n debt fuel : Nat) :
+    backend.run (debt + fuel) (n, debt) = backend.run fuel (n, 0) := by
+  induction debt with
+  | zero => simp only [Nat.zero_add]
+  | succ debt ih =>
+      rw [Nat.succ_add]
+      simpa only [Machine.run, backend] using ih
+
+theorem one_forth {n : Nat} {state : Nat × Nat} (retained : related n state) :
+    ∃ count, (backend.run count state).1 = (logical.run 1 n).1 ∧
+      OutcomeRel related (logical.run 1 n).2 (backend.run count state).2 := by
+  rcases state with ⟨n', debt⟩
+  rcases retained with ⟨rfl, _⟩
+  refine ⟨debt + 1, ?_, ?_⟩
+  · rw [discharge_debt]
+    cases n <;> rfl
+  · rw [discharge_debt]
+    cases n with
+    | zero => exact .finished ()
+    | succ n => exact .exhausted ⟨rfl, le_rfl⟩
+
+theorem one_back {n : Nat} {state : Nat × Nat} (retained : related n state) :
+    ∃ count, (logical.run count n).1 = (backend.run 1 state).1 ∧
+      OutcomeRel related (logical.run count n).2 (backend.run 1 state).2 := by
+  rcases state with ⟨n', debt⟩
+  rcases retained with ⟨rfl, bound⟩
+  cases debt with
+  | zero =>
+      refine ⟨1, ?_, ?_⟩
+      · cases n <;> rfl
+      · cases n with
+        | zero => exact .finished ()
+        | succ n => exact .exhausted ⟨rfl, le_rfl⟩
+  | succ debt =>
+      exact ⟨0, rfl, .exhausted ⟨rfl, Nat.le_trans (Nat.le_succ debt) bound⟩⟩
+
+/-- This actual representation has finite local implementations but admits no
+single uniform instruction bound for its logical publication operation. -/
+theorem no_uniform_cost (cost : Nat) : ¬ CostSimulation logical backend related cost := by
+  intro simulation
+  obtain ⟨count, bound, next, ran, _⟩ := simulation.publish
+    (state := cost + 1) (state' := (cost + 1, cost + 1))
+    (show related (cost + 1) (cost + 1, cost + 1) from ⟨rfl, le_rfl⟩) rfl
+  have waiting := debt_before_boundary (cost + 1) (cost + 1) count
+    (bound.trans (Nat.le_succ cost))
+  have events := congrArg Prod.fst (waiting.symm.trans ran)
+  cases events
+
+theorem whole_prefixes (fuel n debt : Nat) (admitted : debt ≤ n) :
+    ∃ count, (backend.run count (n, debt)).1 = (logical.run fuel n).1 ∧
+      OutcomeRel related (logical.run fuel n).2 (backend.run count (n, debt)).2 :=
+  logical.run_related_of_one backend related one_forth fuel ⟨rfl, admitted⟩
+
+theorem same_completions (n debt : Nat) (admitted : debt ≤ n) (events : List Nat) :
+    (∃ fuel, logical.run fuel n = (events, .finished ())) ↔
+      ∃ count, backend.run count (n, debt) = (events, .finished ()) :=
+  logical.finished_iff_of_one backend related one_forth one_back
+    (state := n) (state' := (n, debt)) ⟨rfl, admitted⟩ events ()
+
+theorem round_trip_one (n debt : Nat) (admitted : debt ≤ n) :
+    ∃ count, (logical.run count n).1 = (logical.run 1 n).1 ∧
+      OutcomeRel (Mettapedia.GSLT.Distinction.SpanTransport.compose related
+        (fun physical abstract => related abstract physical))
+        (logical.run 1 n).2 (logical.run count n).2 := by
+  have reverse : ∀ {physical abstract}, related abstract physical →
+      ∃ count, (logical.run count abstract).1 = (backend.run 1 physical).1 ∧
+        OutcomeRel (fun p a => related a p)
+          (backend.run 1 physical).2 (logical.run count abstract).2 := by
+    intro physical abstract retained
+    obtain ⟨count, eventEq, outcome⟩ := one_back retained
+    exact ⟨count, eventEq, outcome.symm⟩
+  exact logical.run_one_related_comp backend logical related (fun p a => related a p)
+    one_forth reverse ⟨(n, debt), ⟨rfl, admitted⟩, ⟨rfl, admitted⟩⟩
+
+theorem retained_publications :
+    backend.run 3 (2, 2) = ([2, 2], .exhausted (1, 1)) := rfl
+
+theorem resume_appends_each_occurrence :
+    backend.run 6 (2, 2) = ([2, 2, 1, 1], .finished ()) := rfl
+
+theorem resumed_suffix : backend.run 3 (1, 1) = ([1, 1], .finished ()) := rfl
+
+theorem restart_repeats_prefix :
+    ([2, 2] ++ (backend.run 6 (2, 2)).1) ≠ (backend.run 6 (2, 2)).1 := by decide
+
+end Mettapedia.GSLT.Distinction.ProductiveBlocks.CompositionControls.FiniteBlocks

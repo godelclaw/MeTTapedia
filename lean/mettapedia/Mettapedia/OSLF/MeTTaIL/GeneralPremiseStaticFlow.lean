@@ -151,6 +151,23 @@ theorem Refinement.Holds.extension {initial final : Assignment} {refinement : Re
     (held : refinement.Holds initial) (extension : Extension initial final) : refinement.Holds final :=
   ⟨held.1.extension extension, held.2.1.extension extension, held.2.2.extension extension⟩
 
+/-- A finite static row inventory does not establish an output-shape
+invariant for a registered dynamic relation. -/
+theorem representedOutputNames_dynamic {provider : ProviderSnapshot} {relation : String}
+    (registered : relation ∈ provider.dynamicRelations) (check : Pattern → Bool) :
+    ∀ (index : Nat) (schemas : List Pattern) (modes : List RelationArgMode),
+      representedOutputNames provider relation check index schemas modes = [] := by
+  intro index schemas
+  induction schemas generalizing index with
+  | nil => intro modes; cases modes <;> rfl
+  | cons schema schemas ih =>
+      intro modes
+      cases modes with
+      | nil => rfl
+      | cons mode modes =>
+          cases mode <;> cases schema <;>
+            simp [representedOutputNames, checkProviderRepresentation_dynamic registered, ih]
+
 theorem premiseFlow_holds {environment : Environment} {context : Context}
     {premise : Premise} {initial final : Assignment} {event : Event} {refinement : Refinement}
     (before : refinement.Holds initial)
@@ -160,7 +177,7 @@ theorem premiseFlow_holds {environment : Environment} {context : Context}
   cases held with
   | query query =>
     cases query with
-    | @row row signature final origins selected declared rowTyped arguments finalTyped =>
+    | row selected declared rowTyped arguments finalTyped =>
       have member := List.mem_of_getElem? selected
       have relation := rowTyped.1.trans
         (signature?_readout environment.provider _ _ _ declared).2.1
@@ -168,8 +185,14 @@ theorem premiseFlow_holds {environment : Environment} {context : Context}
       simp only [premiseFlow, declared, Refinement.Holds]
       exact ⟨arguments.readout.produces.append preserved.1,
         ((output_rest arguments.readout).append
-          (output_finite member relation (.initial row) arguments.readout)).append preserved.2.1,
-        (output_atomic member relation (.initial row) arguments.readout).append preserved.2.2⟩
+          (output_finite member relation (.initial _) arguments.readout)).append preserved.2.1,
+        (output_atomic member relation (.initial _) arguments.readout).append preserved.2.2⟩
+    | dynamicRow registered declared _ _ _ _ arguments _ =>
+      have preserved := before.extension arguments.readout.extension
+      simp only [premiseFlow, declared, Refinement.Holds,
+        representedOutputNames_dynamic registered, List.nil_append, List.append_nil]
+      exact ⟨arguments.readout.produces.append preserved.1,
+        (output_rest arguments.readout).append preserved.2.1, preserved.2.2⟩
   | freshness _ _ => exact before
   | step _ _ _ matching _ =>
       have preserved := before.extension matching.matching.extends

@@ -27,6 +27,31 @@ structure InputAdmission (environment : Environment) (request : Request) where
     0 request.arguments signature.modes = true
   values : RootValues request.context.bound.length request.initial
   names : BoundNames request.initial available
+  dynamicAvailable : request.relation ∈ environment.provider.dynamicRelations →
+    ∀ resolved, DynamicInputs request.context 0 request.initial request.arguments signature.modes resolved →
+      ∃ rows, environment.dynamic.Source request.relation resolved rows
+
+/-- Static-only clients require no provider-availability oracle. Registered
+native relations retain their explicit availability obligation. -/
+def InputAdmission.ofUnregistered {environment : Environment} {request : Request}
+    (available : List String) (signature : Signature)
+    (signatureFound : signature? environment.provider request.relation request.arguments.length = some signature)
+    (zero : checkZeroDependencies request.context.spec = true)
+    (schemas : Static.checkQueryInputs request.context.rule request.context.spec
+      request.context.premiseIndex request.context.quantifierDepth available
+      0 request.arguments signature.modes = true)
+    (values : RootValues request.context.bound.length request.initial)
+    (names : BoundNames request.initial available)
+    (unregistered : request.relation ∉ environment.provider.dynamicRelations) :
+    InputAdmission environment request where
+  available := available
+  signature := signature
+  signatureFound := signatureFound
+  zero := zero
+  schemas := schemas
+  values := values
+  names := names
+  dynamicAvailable := by intro registered; exact False.elim (unregistered registered)
 
 def ArgumentsReady {environment : Environment} {request : Request}
     (admission : InputAdmission environment request)
@@ -53,9 +78,20 @@ def MatcherReady {environment : Environment} {request : Request}
     RootValues request.context.bound.length frame.query.initial ∧
     BoundNames frame.query.initial admission.available
 
+/-- Native input resolution reads the unchanged caller assignment; output
+holes are retained rather than being mistaken for computed object values. -/
+def DynamicInputsReady {environment : Environment} {request : Request}
+    (admission : InputAdmission environment request)
+    (frame : DynamicInputsFrame environment request) : Prop :=
+  frame.schemas.length = frame.modes.length ∧
+    Static.checkQueryInputs request.context.rule request.context.spec
+      request.context.premiseIndex request.context.quantifierDepth admission.available
+      frame.index frame.schemas frame.modes = true
+
 def TaskReady {environment : Environment} {request : Request}
     (admission : InputAdmission environment request) : Task environment request → Prop
-  | .start | .rows _ => True
+  | .start | .rows _ | .dynamicRows _ => True
+  | .dynamicInputs frame => DynamicInputsReady admission frame
   | .arguments frame => ArgumentsReady admission frame
   | .matcher frame => MatcherReady admission frame
 
@@ -149,6 +185,105 @@ theorem expandMatcher_ready {environment : Environment} {request : Request}
       subst branch
       exact ready
 
+theorem expandDynamicInputs_ready {environment : Environment} {request : Request}
+    (admission : InputAdmission environment request)
+    (frame : DynamicInputsFrame environment request) (ready : DynamicInputsReady admission frame) :
+    (expandDynamicInputs environment request frame).unresolved = [] ∧
+      ∀ branch ∈ (expandDynamicInputs environment request frame).tasks, TaskReady admission branch := by
+  unfold expandDynamicInputs
+  split
+  · rename_i schemasFound modesFound
+    split
+    · rename_i unavailable
+      have held : DynamicInputs request.context frame.index request.initial frame.schemas frame.modes [] := by
+        rw [schemasFound, modesFound]
+        exact .nil
+      have same := Option.some.inj (frame.signatureFound.symm.trans admission.signatureFound)
+      have whole : DynamicInputs request.context 0 request.initial request.arguments
+          admission.signature.modes frame.resolvedRev.reverse := by
+        simpa only [same, List.append_nil] using frame.finish [] held
+      obtain ⟨rows, source⟩ := admission.dynamicAvailable frame.registered _ whole
+      have computed := (environment.dynamic.rows_exact _ _ _).mpr source
+      rw [unavailable] at computed
+      cases computed
+    · exact ⟨rfl, by intro branch member; simp only [List.mem_singleton] at member; subst branch; trivial⟩
+  · rename_i schema schemas modes schemasFound modesFound
+    have lengths : schemas.length = modes.length := by
+      have actual := ready.1
+      simp only [schemasFound, modesFound, List.length_cons] at actual
+      omega
+    have checks := ready.2
+    simp only [schemasFound, modesFound, Static.checkQueryInputs, Bool.and_eq_true] at checks
+    split
+    · rename_i unavailable
+      have bound : BoundNames request.initial schema.freeFvarNames := by
+        intro name member
+        exact admission.names name (namesAvailable_sound _ _ checks.1.2 name member)
+      obtain ⟨value, interpreted⟩ := checkRootProjectionSchema_sound
+        (operation := Substitution.instantiateBVar) (depth := 0) checks.1.1 admission.values bound
+      change instantiateAt? request.context.rule request.context.spec request.context.bound.length
+        (request.context.site frame.index) [] 0 request.initial schema = some value at interpreted
+      rw [unavailable] at interpreted
+      cases interpreted
+    · refine ⟨rfl, ?_⟩
+      intro branch member
+      simp only [List.mem_singleton] at member
+      subst branch
+      exact ⟨lengths, checks.2⟩
+  · rename_i schema schemas modes schemasFound modesFound
+    have lengths : schemas.length = modes.length := by
+      have actual := ready.1
+      simp only [schemasFound, modesFound, List.length_cons] at actual
+      omega
+    have checks := ready.2
+    simp only [schemasFound, modesFound, Static.checkQueryInputs, Bool.and_eq_true] at checks
+    refine ⟨rfl, ?_⟩
+    intro branch member
+    simp only [List.mem_singleton] at member
+    subst branch
+    exact ⟨lengths, checks.2⟩
+  · rename_i nilMismatch inputMismatch outputMismatch
+    cases schemasFound : frame.schemas with
+    | nil =>
+        have empty : frame.modes = [] := by
+          have lengths := ready.1
+          rw [schemasFound] at lengths
+          exact List.length_eq_zero_iff.mp lengths.symm
+        exact False.elim (nilMismatch schemasFound empty)
+    | cons schema schemas =>
+        cases modesFound : frame.modes with
+        | nil =>
+            have lengths := ready.1
+            simp only [schemasFound, modesFound, List.length_cons, List.length_nil] at lengths
+            omega
+        | cons mode modes =>
+            cases mode with
+            | input => exact False.elim (inputMismatch schema schemas modes schemasFound modesFound)
+            | output => exact False.elim (outputMismatch schema schemas modes schemasFound modesFound)
+
+theorem expandDynamicRows_ready {environment : Environment} {request : Request}
+    (admission : InputAdmission environment request) (frame : DynamicRowsFrame environment request) :
+    (expandDynamicRows environment request frame).unresolved = [] ∧
+      ∀ branch ∈ (expandDynamicRows environment request frame).tasks, TaskReady admission branch := by
+  unfold expandDynamicRows
+  split
+  · exact ⟨rfl, by intro branch member; simp at member⟩
+  · rename_i values found
+    split
+    · rename_i checked
+      have typed := checkRow_sound checked
+      have same := Option.some.inj (frame.signatureFound.symm.trans admission.signatureFound)
+      have shape := signature?_readout environment.provider request.relation
+        request.arguments.length frame.signature frame.signatureFound
+      refine ⟨rfl, ?_⟩
+      intro branch member
+      simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with equality | equality <;> subst branch
+      · exact ⟨typed.2.length.trans shape.2.2.1 |>.symm, shape.2.2.2.symm,
+          by simpa only [same] using admission.schemas, admission.values, admission.names⟩
+      · trivial
+    · exact ⟨rfl, by intro branch member; simp only [List.mem_singleton] at member; subst branch; trivial⟩
+
 theorem expand_ready {environment : Environment} {request : Request}
     (admission : InputAdmission environment request)
     (task : Task environment request) (ready : TaskReady admission task) :
@@ -162,7 +297,18 @@ theorem expand_ready {environment : Environment} {request : Request}
       have present := admission.signatureFound
       rw [missing] at present
       contradiction
-    · exact ⟨rfl, by intro branch member; simp only [List.mem_singleton] at member; subst branch; trivial⟩
+    · rename_i signature found
+      have same := Option.some.inj (found.symm.trans admission.signatureFound)
+      have shape := signature?_readout environment.provider request.relation
+        request.arguments.length signature found
+      split
+      · refine ⟨rfl, ?_⟩
+        intro branch member
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+        rcases member with equality | equality <;> subst branch
+        · trivial
+        · exact ⟨shape.2.2.2.symm, by simpa only [same] using admission.schemas⟩
+      · exact ⟨rfl, by intro branch member; simp only [List.mem_singleton] at member; subst branch; trivial⟩
   | rows frame =>
     rw [expand.eq_2]
     split
@@ -182,6 +328,8 @@ theorem expand_ready {environment : Environment} {request : Request}
             by simpa only [same] using admission.schemas, admission.values, admission.names⟩
         · trivial
       · exact ⟨rfl, by intro branch member; simp only [List.mem_singleton] at member; subst branch; trivial⟩
+  | dynamicInputs frame => exact expandDynamicInputs_ready admission frame ready
+  | dynamicRows frame => exact expandDynamicRows_ready admission frame
   | arguments frame => exact expandArguments_ready admission frame ready
   | matcher frame => exact expandMatcher_ready admission frame ready
 

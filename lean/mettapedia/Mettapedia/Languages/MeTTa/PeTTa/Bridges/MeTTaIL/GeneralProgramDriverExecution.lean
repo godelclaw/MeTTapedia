@@ -2,6 +2,9 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleReadoutCache
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralTypedSiteExecution.Traversal
 import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceLocalCompletion
 import Mettapedia.OSLF.NativeTypes.Semantics.Families
+import Mettapedia.OSLF.Framework.GeneralCanonicalQueryOccurrences
+import Mettapedia.OSLF.MeTTaIL.GeneralRhoFrontierComparison
+import Mettapedia.OSLF.MeTTaIL.GeneralRhoDepthOne
 
 /-!
 # Ordered scoped programs executed by the authored MeTTa driver
@@ -16,6 +19,8 @@ An independently defined target observer reads physical receipt occurrences
 from actual PeTTa completion. For equation-free, stratified plans, saturation
 identifies these occurrences with the original source GSLT's successors and
 transports existential and universal target predicates.
+The quoted execution claims require no registered dynamic relations; native
+primitive service execution requires its own correspondence proof.
 -/
 
 set_option autoImplicit false
@@ -28,7 +33,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching GeneralPremise
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open SpaceSemantics (Program Equation)
 open Eval
 open scoped ProgramQuotation
@@ -348,6 +353,29 @@ private theorem start_captured_returns (caller : Subst) (state : State)
   · simpa using captured.symm
   · exact start_returns state request
 
+/-- The driver continues the original premise machine from any retained state
+whose terms stay within the request footprint, not only from the start. -/
+theorem machine_run_captured_returns (caller : Subst) (state : State)
+    (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = []) (fuel : Nat)
+    (machine : Execution.State request.environment request.goal)
+    (covered : Execution.stateFreeWithin (GeneralRuleJobObservation.requestFootprint request)
+      request.environment request.goal machine)
+    (environmentName fuelName stateName : String)
+    (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
+      [encoded (PremiseOperationsExecution.GeneralExecution.environmentTerm request.environment
+        (request.environment.free.entriesOn (GeneralRuleJobObservation.requestFootprint request))),
+       encoded (.natural fuel), encoded (PremiseOperationsExecution.GeneralExecution.stateTerm machine)]) :
+    PureReturns runtime caller state (a "gslt:premise:machine-run" [v environmentName, v fuelName, v stateName])
+      state (encoded (encodeOption PremiseOperationsExecution.GeneralExecution.stateTerm
+        (some (Execution.run request.environment request.goal fuel machine)))) := by
+  apply old_returns (by rfl)
+  apply (PremiseOperationsExecution.GeneralExecution.CompletedAssembly.captured_machine_run_iff caller state state
+    environmentName fuelName stateName _).mp
+  exact PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.Machine.run_state_captured_within_returns
+    caller state request.environment finiteProvider request.goal fuel machine (GeneralRuleJobObservation.requestFootprint request)
+    (fun _ member => List.mem_append_right _ member) covered _ inputs
+
 private def readoutPayloads (invocation : Invocation) : List (Option Term) :=
   (innerState invocation).answers.map fun result =>
     (GeneralRuleJobExecution.rootProjection invocation.1.val invocation.1.property result).map
@@ -431,7 +459,8 @@ private theorem job_output_template : PureData.Template runtime jobOutput := by
 
 /-- One authored call performs the actual inner run and readout, retaining its
 entire finite state even when the supplied work budget leaves pending tasks. -/
-theorem job_returns (state : State) (invocation : Invocation) :
+theorem job_returns (state : State) (invocation : Invocation)
+    (finiteProvider : invocation.1.val.environment.provider.dynamicRelations = []) :
     PureReturns runtime [] state
       (a "gslt:program:job" [encoded (requestTerm invocation.1.val), encoded (.natural invocation.2)]) state
       (encoded (observationTerm invocation)) := by
@@ -476,7 +505,7 @@ theorem job_returns (state : State) (invocation : Invocation) :
       apply let_returns runtime begun observed state state state _ _ jobReadouts
         (encoded (encodeOption PremiseOperationsExecution.GeneralExecution.stateTerm (some machine))) _
       · apply old_returns (by rfl)
-        apply GeneralRuleJobObservation.job_run_captured_returns begun state request invocation.1.property
+        apply GeneralRuleJobObservation.job_run_captured_returns begun state request finiteProvider invocation.1.property
           invocation.2 "environment" "budget" "initial"
         simp [begun, selected, caller, requestBindings, bindings, Helper.names,
           initial, applySubst, Subst.lookup]
@@ -506,14 +535,16 @@ theorem job_returns (state : State) (invocation : Invocation) :
               using PureData.template_return runtime finished state jobOutput job_output_template
 
 theorem job_captured_returns (caller : Subst) (state : State) (invocation : Invocation)
+    (finiteProvider : invocation.1.val.environment.provider.dynamicRelations = [])
     (request budget : Atom)
     (captured : [request, budget].map (applySubst caller) =
       [encoded (requestTerm invocation.1.val), encoded (.natural invocation.2)]) :
     PureReturns runtime caller state (a "gslt:program:job" [request, budget]) state
       (encoded (observationTerm invocation)) :=
-  helper_capture .job caller state [request, budget] _ _ rfl captured (job_returns state invocation)
+  helper_capture .job caller state [request, budget] _ _ rfl captured (job_returns state invocation finiteProvider)
 
-private theorem append_returns (caller : Subst) (state : State)
+/-- Receipt lists are joined in order, keeping every occurrence. -/
+theorem append_returns (caller : Subst) (state : State)
     (left right : List GeneralRuleJobs.Receipt) (leftName rightName : String)
     (captured : [v leftName, v rightName].map (applySubst caller) =
       [encoded (encodeList ScopedRuleJobReadoutExecution.receiptTerm left),
@@ -571,11 +602,14 @@ def programQuery (invocations : List Invocation) : Atom :=
 
 /-- The actual program driver executes every supplied job and concatenates
 its original successful readouts without changing occurrence order. -/
-theorem program_returns (state : State) (invocations : List Invocation) :
+theorem program_returns (state : State) (invocations : List Invocation)
+    (finiteProvider : ∀ invocation ∈ invocations, invocation.1.val.environment.provider.dynamicRelations = []) :
     PureReturns runtime [] state (programQuery invocations) state
       (encoded (programObservationTerm invocations)) := by
+  revert finiteProvider
   induction invocations with
   | nil =>
+      intro finiteProvider
       let caller := bindings .run [encoded (.symbol "LNil")]
       apply helper_call .run [] state _ _ _ rfl (by rfl)
       rw [run_shape]
@@ -591,6 +625,7 @@ theorem program_returns (state : State) (invocations : List Invocation) :
           rcases member with rfl | rfl <;> exact .symbol _
         exact PureData.template_return runtime caller state _ template
   | cons invocation rest ih =>
+      intro finiteProvider
       let value := encoded (encodeList invocationTerm (invocation :: rest))
       let caller := bindings .run [value]
       let selected :=
@@ -618,7 +653,7 @@ theorem program_returns (state : State) (invocations : List Invocation) :
       · unfold runCons
         apply let_returns runtime selected first state state state _ _ runTail
           (encoded (observationTerm invocation)) _
-        · apply job_captured_returns selected state invocation
+        · apply job_captured_returns selected state invocation (finiteProvider invocation List.mem_cons_self)
           simp [selected, caller, bindings, Helper.names, applySubst, Subst.lookup]
         · simp [first, selected, caller, bindings, Helper.names, observationTerm,
             SpaceSemantics.matchBinding, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
@@ -629,7 +664,7 @@ theorem program_returns (state : State) (invocations : List Invocation) :
           · apply helper_capture .run first state [v "rest"]
               [encoded (encodeList invocationTerm rest)] _ rfl
             · simp [first, selected, caller, bindings, Helper.names, applySubst, Subst.lookup]
-            · exact ih
+            · exact ih (fun item member => finiteProvider item (List.mem_cons_of_mem invocation member))
           · simp [later, first, selected, caller, bindings, Helper.names, programObservationTerm,
               SpaceSemantics.matchBinding, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
               matchAtom, Subst.lookup, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany]
@@ -645,12 +680,13 @@ theorem program_returns (state : State) (invocations : List Invocation) :
                 using PureData.template_return runtime finished state runOutput run_output_template
 
 theorem program_completed_iff (state after : State) (invocations : List Invocation)
+    (finiteProvider : ∀ invocation ∈ invocations, invocation.1.val.environment.provider.dynamicRelations = [])
     (answers input output : List Atom) :
     (∃ evaluatorFuel, Eval.run runtime evaluatorFuel
       {state, control := .evaluate [] (programQuery invocations)} =
         .complete after answers input output) ↔
       after = state ∧ answers = [encoded (programObservationTerm invocations)] ∧ input = [] ∧ output = [] :=
-  pure_returns_completed_iff runtime [] state state _ _ (program_returns state invocations)
+  pure_returns_completed_iff runtime [] state state _ _ (program_returns state invocations finiteProvider)
     after answers input output
 
 /-- Original licensed job enumeration, retaining the supplied per-job budget. -/
@@ -659,6 +695,17 @@ def invocations (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
   (GeneralRuleJobs.jobs plan bound expected source).attach.map fun item =>
     (⟨⟨plan, bound, expected, source, item.val⟩,
       (GeneralRuleJobs.jobs_spec plan bound expected source item.val).mp item.property⟩, budget item.val)
+
+theorem invocations_finiteProvider (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
+    (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
+    (budget : GeneralRuleJobs.Job → Nat) :
+    ∀ invocation ∈ invocations plan bound expected source budget,
+      invocation.1.val.environment.provider.dynamicRelations = [] := by
+  intro invocation present
+  obtain ⟨item, _, same⟩ := List.mem_map.mp present
+  cases same
+  exact finiteProvider
 
 theorem receipts_eq_finishState (invocation : Invocation)
     (saturated : (Execution.treeStart invocation.1.val.environment invocation.1.val.goal).cost ≤ invocation.2) :
@@ -688,7 +735,8 @@ theorem saturated_receipts_eq_completed (plan : GeneralExecutionAdmission.Plan)
 that drain all selected jobs, its flattened receipts are exactly the original
 all-job source readout, with every provenance field retained. -/
 theorem saturated_program_completed_iff (state after : State)
-    (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
+    (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = []) (bound : List TypeExpr)
     (expected : TypeExpr) (source : Pattern) (budget : GeneralRuleJobs.Job → Nat)
     (saturated : ∀ job ∈ GeneralRuleJobs.jobs plan bound expected source,
       (Execution.treeStart (GeneralPlanEnvironment.environment plan)
@@ -702,7 +750,7 @@ theorem saturated_program_completed_iff (state after : State)
          encodeList ScopedRuleJobReadoutExecution.receiptTerm
            (GeneralRuleJobExecution.completedReceipts plan bound expected source)])] ∧
         input = [] ∧ output = [] := by
-  rw [program_completed_iff]
+  rw [program_completed_iff state after _ (invocations_finiteProvider plan finiteProvider bound expected source budget)]
   simp only [programObservationTerm, saturated_receipts_eq_completed plan bound expected source budget saturated]
 
 /-- Packaging retains the original environment, permissions, source and job.
@@ -867,6 +915,7 @@ private theorem execute_shape : (equation .execute).body =
   decide +kernel
 
 private theorem execute_returns_of_enumeration (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (budget : Nat)
     (enumerated : PureReturns runtime [] state (enumerationQuery plan bound expected source) state
       (encoded (encodeList ScopedRuleJobReadoutExecution.jobTerm
@@ -941,6 +990,7 @@ private theorem execute_returns_of_enumeration (state : State) (plan : GeneralEx
       · apply helper_capture .run ready state [v "requests"] [requestsValue] _ rfl
         · simp [ready, generated, selected, caller, executeArguments, bindings, Helper.names, applySubst, Subst.lookup]
         · exact program_returns state _
+            (invocations_finiteProvider plan finiteProvider bound expected source (fun _ => budget))
 
 theorem enumeration_agreement :
     ProgramAgreementOn GeneralTypedSiteExecution.executionHeads GeneralTypedSiteExecution.program runtime := by
@@ -985,13 +1035,15 @@ theorem enumeration_returns (state : State) (plan : GeneralExecutionAdmission.Pl
 /-- Native typed enumeration, request construction, premise execution and
 cached readout compose into the actual presentation-entry call. -/
 theorem execute_returns (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (budget : Nat) :
     PureReturns runtime [] state (executeQuery plan bound expected source budget) state
       (encoded (programObservationTerm (invocations plan bound expected source (fun _ => budget)))) :=
-  execute_returns_of_enumeration state plan bound expected source budget
+  execute_returns_of_enumeration state plan finiteProvider bound expected source budget
     (enumeration_returns state plan bound expected source)
 
 theorem execute_completed_iff (state after : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (budget : Nat)
     (answers input output : List Atom) :
     (∃ evaluatorFuel, Eval.run runtime evaluatorFuel
@@ -999,7 +1051,7 @@ theorem execute_completed_iff (state after : State) (plan : GeneralExecutionAdmi
         .complete after answers input output) ↔
       after = state ∧ answers = [encoded (programObservationTerm
         (invocations plan bound expected source (fun _ => budget)))] ∧ input = [] ∧ output = [] :=
-  pure_returns_completed_iff runtime [] state state _ _ (execute_returns state plan bound expected source budget)
+  pure_returns_completed_iff runtime [] state state _ _ (execute_returns state plan finiteProvider bound expected source budget)
     after answers input output
 
 /-! ## Native observations of the assembled driver -/
@@ -1025,12 +1077,13 @@ theorem readProgramReceipts_functional (value : Atom) (first second : List Gener
 Fuel and proof witnesses establish observation without becoming identities. -/
 def targetOutput := OperationalGSLT.orderedOutput runtime readProgramReceipts
 
-def program_output_equiv (state : State) (jobs : List Invocation) :
+def program_output_equiv (state : State) (jobs : List Invocation)
+    (finiteProvider : ∀ invocation ∈ jobs, invocation.1.val.environment.provider.dynamicRelations = []) :
     {occurrence : Nat × GeneralRuleJobs.Receipt //
       (jobs.flatMap receipts)[occurrence.1]? = some occurrence.2} ≃
     targetOutput.Family {state, control := .evaluate [] (programQuery jobs)} :=
   OperationalGSLT.orderedOutputEquiv runtime readProgramReceipts readProgramReceipts_functional _
-    (OperationalGSLT.pureSingleton_of_returns runtime [] state _ _ (program_returns state jobs))
+    (OperationalGSLT.pureSingleton_of_returns runtime [] state _ _ (program_returns state jobs finiteProvider))
     (jobs.flatMap receipts) ⟨encodeList observationTerm jobs, rfl⟩
 
 /-- Source membership means a successor in the original occurrence GSLT.
@@ -1067,6 +1120,7 @@ def sourceOutput (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr)
 /-- The equivalence is earned from actual driver execution and the original
 all-job completion theorem. It retains every receipt field and ordinal. -/
 def completed_output_equiv (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1090,10 +1144,11 @@ def completed_output_equiv (state : State) (plan : GeneralExecutionAdmission.Pla
         exact occurrence.property⟩
       left_inv := fun _ => Subtype.ext rfl
       right_inv := fun _ => Subtype.ext rfl }
-  exact reindex.trans (program_output_equiv state _)
+  exact reindex.trans (program_output_equiv state _ (invocations_finiteProvider plan finiteProvider bound expected source budget))
 
 @[simp] theorem completed_output_equiv_preserves_occurrence (state : State)
-    (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
+    (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = []) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
     (budget : GeneralRuleJobs.Job → Nat)
@@ -1101,12 +1156,13 @@ def completed_output_equiv (state : State) (plan : GeneralExecutionAdmission.Pla
       (Execution.treeStart (GeneralPlanEnvironment.environment plan)
         (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget job)
     (occurrence : (sourceOutput plan bound expected empty checked).Family source) :
-    (completed_output_equiv state plan bound expected source empty checked budget saturated occurrence).val =
+    (completed_output_equiv state plan finiteProvider bound expected source empty checked budget saturated occurrence).val =
       occurrence.val := rfl
 
 /-- Native membership is preserved and reflected between independently
 defined source successors and target operational observations. -/
 theorem nativeType_iff (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1122,12 +1178,13 @@ theorem nativeType_iff (state : State) (plan : GeneralExecutionAdmission.Plan)
       targetOutput.nativeType.pred :=
   Mettapedia.OSLF.NativeTypes.Semantics.Families.NativeOutput.nativeType_iff
     (sourceOutput plan bound expected empty checked) targetOutput _
-    (fun source => completed_output_equiv state plan bound expected source empty checked
+    (fun source => completed_output_equiv state plan finiteProvider bound expected source empty checked
       (budget source) (saturated source)) source
 
 /-- The complete target observation contains precisely the successors of the
 original source GSLT, with explicit receipt witnesses for each successor. -/
 theorem observed_target_iff_step (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source target : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1141,7 +1198,7 @@ theorem observed_target_iff_step (state : State) (plan : GeneralExecutionAdmissi
       (GeneralOccurrenceSemantics.gslt plan bound expected).Step source target := by
   rw [← GeneralOccurrenceFrontier.LocalEquationFree.completedReceipts_targets_iff_step
     plan bound expected source target empty checked]
-  let comparison := completed_output_equiv state plan bound expected source empty checked budget saturated
+  let comparison := completed_output_equiv state plan finiteProvider bound expected source empty checked budget saturated
   constructor
   · rintro ⟨occurrence, endpoint⟩
     obtain ⟨original, rfl⟩ := comparison.surjective occurrence
@@ -1158,6 +1215,7 @@ theorem observed_target_iff_step (state : State) (plan : GeneralExecutionAdmissi
 /-- A universal property of returned targets holds exactly for all original
 source successors. This theorem requires saturation of every generated job. -/
 theorem forall_observed_targets_iff_steps (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1172,7 +1230,7 @@ theorem forall_observed_targets_iff_steps (state : State) (plan : GeneralExecuti
       ∀ target, (GeneralOccurrenceSemantics.gslt plan bound expected).Step source target → property target := by
   rw [← GeneralOccurrenceFrontier.LocalEquationFree.forall_completedReceipts_iff
     plan bound expected source empty checked property]
-  let comparison := completed_output_equiv state plan bound expected source empty checked budget saturated
+  let comparison := completed_output_equiv state plan finiteProvider bound expected source empty checked budget saturated
   constructor
   · intro universal receipt member
     obtain ⟨index, present⟩ := List.mem_iff_getElem?.mp member
@@ -1187,21 +1245,24 @@ theorem forall_observed_targets_iff_steps (state : State) (plan : GeneralExecuti
 /-- Native enumeration and supplied-list execution return the same physical
 receipt occurrences because both actual calls return the same ordered data. -/
 def execute_output_equiv (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (budget : Nat) :
     targetOutput.Family
       {state, control := .evaluate [] (programQuery (invocations plan bound expected source (fun _ => budget)))} ≃
     targetOutput.Family
       {state, control := .evaluate [] (executeQuery plan bound expected source budget)} :=
-  (program_output_equiv state (invocations plan bound expected source (fun _ => budget))).symm.trans
+  (program_output_equiv state (invocations plan bound expected source (fun _ => budget))
+    (invocations_finiteProvider plan finiteProvider bound expected source (fun _ => budget))).symm.trans
     (OperationalGSLT.orderedOutputEquiv runtime readProgramReceipts readProgramReceipts_functional _
       (OperationalGSLT.pureSingleton_of_returns runtime [] state _ _
-        (execute_returns state plan bound expected source budget))
+        (execute_returns state plan finiteProvider bound expected source budget))
       ((invocations plan bound expected source (fun _ => budget)).flatMap receipts)
       ⟨encodeList observationTerm (invocations plan bound expected source (fun _ => budget)), rfl⟩)
 
 /-- Source evidence is retained by the native presentation-entry call itself,
 including duplicate physical outputs with equal payloads. -/
 def native_output_equiv (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1211,11 +1272,12 @@ def native_output_equiv (state : State) (plan : GeneralExecutionAdmission.Plan)
         (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
     (sourceOutput plan bound expected empty checked).Family source ≃
       targetOutput.Family {state, control := .evaluate [] (executeQuery plan bound expected source budget)} :=
-  (completed_output_equiv state plan bound expected source empty checked (fun _ => budget) saturated).trans
-    (execute_output_equiv state plan bound expected source budget)
+  (completed_output_equiv state plan finiteProvider bound expected source empty checked (fun _ => budget) saturated).trans
+    (execute_output_equiv state plan finiteProvider bound expected source budget)
 
 @[simp] theorem native_output_equiv_preserves_occurrence (state : State)
-    (plan : GeneralExecutionAdmission.Plan) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
+    (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = []) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
     (budget : Nat)
@@ -1223,10 +1285,11 @@ def native_output_equiv (state : State) (plan : GeneralExecutionAdmission.Plan)
       (Execution.treeStart (GeneralPlanEnvironment.environment plan)
         (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget)
     (occurrence : (sourceOutput plan bound expected empty checked).Family source) :
-    (native_output_equiv state plan bound expected source empty checked budget saturated occurrence).val =
+    (native_output_equiv state plan finiteProvider bound expected source empty checked budget saturated occurrence).val =
       occurrence.val := rfl
 
 theorem execute_nativeType_iff (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1242,10 +1305,11 @@ theorem execute_nativeType_iff (state : State) (plan : GeneralExecutionAdmission
       targetOutput.nativeType.pred :=
   Mettapedia.OSLF.NativeTypes.Semantics.Families.NativeOutput.nativeType_iff
     (sourceOutput plan bound expected empty checked) targetOutput _
-    (fun source => native_output_equiv state plan bound expected source empty checked
+    (fun source => native_output_equiv state plan finiteProvider bound expected source empty checked
       (budget source) (saturated source)) source
 
 theorem execute_observed_target_iff_step (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source target : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1257,8 +1321,8 @@ theorem execute_observed_target_iff_step (state : State) (plan : GeneralExecutio
       {state, control := .evaluate [] (executeQuery plan bound expected source budget)},
       occurrence.val.2.target = target) ↔
       (GeneralOccurrenceSemantics.gslt plan bound expected).Step source target := by
-  rw [← observed_target_iff_step state plan bound expected source target empty checked (fun _ => budget) saturated]
-  let comparison := execute_output_equiv state plan bound expected source budget
+  rw [← observed_target_iff_step state plan finiteProvider bound expected source target empty checked (fun _ => budget) saturated]
+  let comparison := execute_output_equiv state plan finiteProvider bound expected source budget
   constructor
   · rintro ⟨occurrence, endpoint⟩
     exact ⟨comparison.symm occurrence, endpoint⟩
@@ -1266,6 +1330,7 @@ theorem execute_observed_target_iff_step (state : State) (plan : GeneralExecutio
     exact ⟨comparison occurrence, endpoint⟩
 
 theorem execute_forall_targets_iff_steps (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1278,14 +1343,15 @@ theorem execute_forall_targets_iff_steps (state : State) (plan : GeneralExecutio
       {state, control := .evaluate [] (executeQuery plan bound expected source budget)},
       property occurrence.val.2.target) ↔
       ∀ target, (GeneralOccurrenceSemantics.gslt plan bound expected).Step source target → property target := by
-  rw [← forall_observed_targets_iff_steps state plan bound expected source empty checked (fun _ => budget) saturated property]
-  let comparison := execute_output_equiv state plan bound expected source budget
+  rw [← forall_observed_targets_iff_steps state plan finiteProvider bound expected source empty checked (fun _ => budget) saturated property]
+  let comparison := execute_output_equiv state plan finiteProvider bound expected source budget
   exact ⟨fun universal occurrence => universal (comparison occurrence),
     fun universal occurrence => universal (comparison.symm occurrence)⟩
 
 /-- Existential outgoing observations transport for any declared target
 predicate, using exactly the same native entry and physical evidence. -/
 theorem execute_may_targets_iff_steps (state : State) (plan : GeneralExecutionAdmission.Plan)
+    (finiteProvider : plan.snapshot.provider.dynamicRelations = [])
     (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (empty : plan.equations = [])
     (checked : checkStepStratification (GeneralPlanEnvironment.environment plan).language = true)
@@ -1301,11 +1367,282 @@ theorem execute_may_targets_iff_steps (state : State) (plan : GeneralExecutionAd
   constructor
   · rintro ⟨occurrence, holds⟩
     exact ⟨occurrence.val.2.target,
-      (execute_observed_target_iff_step state plan bound expected source _ empty checked budget saturated).mp
+      (execute_observed_target_iff_step state plan finiteProvider bound expected source _ empty checked budget saturated).mp
         ⟨occurrence, rfl⟩, holds⟩
   · rintro ⟨target, step, holds⟩
     obtain ⟨occurrence, endpoint⟩ :=
-      (execute_observed_target_iff_step state plan bound expected source target empty checked budget saturated).mpr step
+      (execute_observed_target_iff_step state plan finiteProvider bound expected source target empty checked budget saturated).mpr step
     exact ⟨occurrence, endpoint.symm ▸ holds⟩
+
+
+/-! ## The printed reducts are the canonical ones, in order -/
+
+section CanonicalOrder
+
+open Mettapedia.OSLF.Framework.GeneralCanonicalAgreement (QueryProfile rootPlan providerRelEnv
+  completedReceipts_targets)
+
+/-- **The driver returns the canonical reducts, in order.** For the root plan of
+a query-profile language, a well-sorted source and a budget that drains every
+job, the actual PeTTa run of the presentation entry completes with one
+observation. The receipts it carries have exactly the canonical engine's reducts
+over the provider's own relation environment, one for one and in order. -/
+theorem execute_reducts (state : State) {language : LanguageDef}
+    {provider : GeneralPremise.ProviderSnapshot} (profile : QueryProfile language provider)
+    {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    (sourceTyped : Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+      (GeneralPlanEnvironment.environment (rootPlan language provider)).language
+      (GeneralPlanEnvironment.environment (rootPlan language provider)).free bound type source)
+    (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs (rootPlan language provider) bound type source,
+      (Execution.treeStart (GeneralPlanEnvironment.environment (rootPlan language provider))
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget)
+    (fuel : Nat) :
+    ∃ (evaluatorFuel : Nat) (value : Atom) (receipts : List GeneralRuleJobs.Receipt),
+      Eval.run runtime evaluatorFuel
+          {state, control := .evaluate [] (executeQuery (rootPlan language provider) bound type source
+            budget)} = .complete state [value] [] [] ∧
+        readProgramReceipts value receipts ∧
+        receipts.map GeneralRuleJobs.Receipt.target =
+          ContextualStep.reductsUsing (providerRelEnv provider) language (fuel + 1) source := by
+  let jobs := invocations (rootPlan language provider) bound type source (fun _ => budget)
+  obtain ⟨evaluatorFuel, completed⟩ :=
+    (execute_completed_iff state state (rootPlan language provider) profile.firstOrder.noDynamic bound type source budget
+      [encoded (programObservationTerm jobs)] [] []).mpr ⟨rfl, rfl, rfl, rfl⟩
+  refine ⟨evaluatorFuel, encoded (programObservationTerm jobs), jobs.flatMap receipts, completed,
+    ⟨encodeList observationTerm jobs, rfl⟩, ?_⟩
+  rw [saturated_receipts_eq_completed (rootPlan language provider) bound type source (fun _ => budget)
+    saturated]
+  exact completedReceipts_targets profile sourceTyped fuel
+
+end CanonicalOrder
+
+
+
+/-! ## The rho calculus through the PeTTa driver
+
+Three plans share the original COMM declaration and differ only in their reduction contexts.
+`GeneralRho.Standard.plan` licenses the positions inside the parallel bag, which are the reduction
+contexts of the rho calculus. `GeneralRho.DepthOne.plan` licenses only the root, which suffices on
+canonical processes. `GeneralRho.plan` licenses every site: it also fires COMM under an input
+binder, inside a sent process and inside a quoted name. -/
+
+section Rho
+
+open Mettapedia.Languages.ProcessCalculi.RhoCalculus (semanticCommSubst)
+
+/-- The selected rho plan is stratified: its only rule, COMM, asks for no child step. -/
+theorem rho_stratified :
+    checkStepStratification (GeneralPlanEnvironment.environment GeneralRho.plan).language = true := by
+  change checkStepStratification
+    { GeneralRho.language with
+      rewrites := GeneralRho.plan.rules.map GeneralExecutionAdmission.RulePlan.rule } = true
+  rw [GeneralRho.compiled_rules]
+  rfl
+
+/-- **Rho with every site through the PeTTa driver.** For the all-sites rho plan, with no
+equations and a budget that drains every job, the actual PeTTa run of the presentation entry
+observes a target exactly when it is a step of that plan's GSLT. -/
+theorem rho_execute_observed_target_iff_step (state : State) (bound : List TypeExpr)
+    (expected : TypeExpr) (source target : Pattern) (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.plan bound expected source,
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    (∃ occurrence : targetOutput.Family
+      {state, control := .evaluate [] (executeQuery GeneralRho.plan bound expected source budget)},
+      occurrence.val.2.target = target) ↔
+      (GeneralOccurrenceSemantics.gslt GeneralRho.plan bound expected).Step source target :=
+  execute_observed_target_iff_step state GeneralRho.plan (by rfl) bound expected source target
+    GeneralRho.compilation_has_no_equations rho_stratified budget saturated
+
+/-- **Every original COMM is printed with its reduct.** For a closed original rho redex, an
+input on a channel in parallel with an output on it and a residual bag, with a quotation-sealed
+input body, the actual PeTTa run of the presentation entry observes the COMM reduct. The reduct
+is the independent semantic substitution of the payload into the body, beside the residual. -/
+theorem rho_original_comm_observed (state : State) {channel body payload : Pattern}
+    {rest : List Pattern}
+    (channelTyped : DerivedPresentationSyntax.NameWellSorted rhoReflectivePresentation (fun _ => none) []
+      channel)
+    (bodyTyped : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) ["Name"]
+      body)
+    (sealed : ScopedPattern.binderSafeAt "NQuote" 1 body = true)
+    (payloadTyped : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) []
+      payload)
+    (restTyped : DerivedPresentationSyntax.ProcListWellSorted rhoReflectivePresentation (fun _ => none) []
+      rest)
+    (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.plan [] (.base "Proc")
+        (GeneralRho.source channel body payload rest),
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    ∃ occurrence : targetOutput.Family
+      {state, control := .evaluate [] (executeQuery GeneralRho.plan [] (.base "Proc")
+        (GeneralRho.source channel body payload rest) budget)},
+      occurrence.val.2.target = .collection .hashBag (semanticCommSubst body payload :: rest) none := by
+  have valid := GeneralRho.root_receipt_valid (GeneralRho.derived_name_open channelTyped)
+    (GeneralRho.derived_process_open bodyTyped) sealed (GeneralRho.derived_names_admitted bodyTyped sealed)
+    (GeneralRho.derived_process_open payloadTyped) (GeneralRho.derived_processes_typed restTyped)
+    (GeneralRho.derived_processes_represented restTyped)
+  obtain ⟨_, _, _, answer, _, _, firing, target⟩ :=
+    GeneralRho.arbitrary_original_comm_in_actual_frontier channelTyped bodyTyped sealed payloadTyped
+      restTyped
+  have semantic : (GeneralRho.rootReceipt [] channel body payload rest).target =
+      .collection .hashBag (semanticCommSubst body payload :: rest) none := by
+    rw [← firing]
+    exact target
+  rw [← semantic]
+  exact (rho_execute_observed_target_iff_step state [] (.base "Proc") _ _ budget saturated).mpr
+    ⟨_, _, .refl _, valid, .refl _⟩
+
+/-- **Standard rho through the PeTTa driver.** With the rho calculus's own reduction contexts and a
+budget that drains every job, the actual PeTTa run of the presentation entry observes a target
+exactly when it is a COMM step inside the parallel bag of the source. -/
+theorem rho_standard_execute_observed_target_iff_step (state : State) (bound : List TypeExpr)
+    (expected : TypeExpr) (source target : Pattern) (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.Standard.plan bound expected source,
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.Standard.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    (∃ occurrence : targetOutput.Family
+      {state, control := .evaluate [] (executeQuery GeneralRho.Standard.plan bound expected source budget)},
+      occurrence.val.2.target = target) ↔
+      (GeneralOccurrenceSemantics.gslt GeneralRho.Standard.plan bound expected).Step source target :=
+  execute_observed_target_iff_step state GeneralRho.Standard.plan (by rfl) bound expected source target
+    GeneralRho.Standard.compilation_has_no_equations GeneralRho.Standard.stratified budget saturated
+
+/-- **Every standard COMM is printed with its reduct.** With the standard reduction contexts, the
+actual PeTTa run observes the reduct of every closed original redex at the root of the bag. -/
+theorem rho_standard_original_comm_observed (state : State) {channel body payload : Pattern}
+    {rest : List Pattern}
+    (channelTyped : DerivedPresentationSyntax.NameWellSorted rhoReflectivePresentation (fun _ => none) []
+      channel)
+    (bodyTyped : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) ["Name"]
+      body)
+    (sealed : ScopedPattern.binderSafeAt "NQuote" 1 body = true)
+    (payloadTyped : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) []
+      payload)
+    (restTyped : DerivedPresentationSyntax.ProcListWellSorted rhoReflectivePresentation (fun _ => none) []
+      rest)
+    (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.Standard.plan [] (.base "Proc")
+        (GeneralRho.source channel body payload rest),
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.Standard.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    ∃ occurrence : targetOutput.Family
+      {state, control := .evaluate [] (executeQuery GeneralRho.Standard.plan [] (.base "Proc")
+        (GeneralRho.source channel body payload rest) budget)},
+      occurrence.val.2.target = .collection .hashBag (semanticCommSubst body payload :: rest) none := by
+  have valid := GeneralRho.Standard.root_receipt_valid (GeneralRho.derived_name_open channelTyped)
+    (GeneralRho.derived_process_open bodyTyped) sealed (GeneralRho.derived_names_admitted bodyTyped sealed)
+    (GeneralRho.derived_process_open payloadTyped) (GeneralRho.derived_processes_typed restTyped)
+    (GeneralRho.derived_processes_represented restTyped)
+  obtain ⟨_, _, _, answer, _, _, firing, target⟩ :=
+    GeneralRho.arbitrary_original_comm_in_actual_frontier channelTyped bodyTyped sealed payloadTyped
+      restTyped
+  have semantic : (GeneralRho.rootReceipt [] channel body payload rest).target =
+      .collection .hashBag (semanticCommSubst body payload :: rest) none := by
+    rw [← firing]
+    exact target
+  rw [← semantic]
+  exact (rho_standard_execute_observed_target_iff_step state [] (.base "Proc") _ _ budget saturated).mpr
+    ⟨_, _, .refl _, valid, .refl _⟩
+
+/-- **Canonical rho through the PeTTa driver.** On a closed, quotation-sealed canonical source, with
+a budget that drains every job, the actual PeTTa run of the depth-one plan observes a target exactly
+when it is an authored depth-one rho step. -/
+theorem rho_canonical_observed_iff_step (state : State) {source target : Pattern}
+    (typed : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) [] source)
+    (sealed : ScopedPattern.binderSafeAt "NQuote" 0 source = true)
+    (canonical : Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.IsCanonical source) (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.DepthOne.plan [] (.base "Proc") source,
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.DepthOne.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    (∃ occurrence : targetOutput.Family
+      {state, control := .evaluate [] (executeQuery GeneralRho.DepthOne.plan [] (.base "Proc") source budget)},
+      occurrence.val.2.target = target) ↔
+      Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep.RhoStepAt 1 source target :=
+  (execute_observed_target_iff_step state GeneralRho.DepthOne.plan (by rfl) [] (.base "Proc") source target
+    GeneralRho.DepthOne.compilation_has_no_equations GeneralRho.DepthOne.stratified budget saturated).trans
+    (GeneralRho.DepthOne.step_iff typed sealed (GeneralRho.DepthOne.isCanonical_channelsDecided canonical))
+
+/-- **Rho modulo structural congruence through the PeTTa driver.** Run the depth-one plan on the
+canonical form of a closed, quotation-sealed process; that form is structurally congruent to the
+process. Every observed target is an authored rho step from the canonical form, and every authored
+rho step from the process, at any depth, is observed up to canonical form. -/
+theorem rho_observed_on_canonical (state : State) {process : Pattern}
+    (typed : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) [] process)
+    (sealed : ScopedPattern.binderSafeAt "NQuote" 0 process = true) (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.DepthOne.plan [] (.base "Proc")
+        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize process),
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.DepthOne.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.StructuralCongruence process
+        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize process) ∧
+      (∀ observed, (∃ occurrence : targetOutput.Family
+          {state, control := .evaluate [] (executeQuery GeneralRho.DepthOne.plan [] (.base "Proc")
+            (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize process) budget)},
+          occurrence.val.2.target = observed) →
+        Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep.RhoStep
+          (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize process) observed) ∧
+      (∀ target, Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep.RhoStep process target →
+        ∃ observed, (∃ occurrence : targetOutput.Family
+            {state, control := .evaluate [] (executeQuery GeneralRho.DepthOne.plan [] (.base "Proc")
+              (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize process) budget)},
+            occurrence.val.2.target = observed) ∧
+          Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize observed =
+            Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize target) := by
+  obtain ⟨canonicalTyped, canonicalSealed⟩ :=
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.CanonicalStepperCompleteness.closed_canonicalize typed sealed
+  have exact := fun target => rho_canonical_observed_iff_step state (target := target) canonicalTyped
+    canonicalSealed (Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize_isCanonical process)
+    budget saturated
+  refine ⟨Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize_sound process,
+    fun observed seen => ⟨1, (exact observed).mp seen⟩, fun target step => ?_⟩
+  obtain ⟨observed, depthOne, same⟩ :=
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.CanonicalStepperCompleteness.canonicalStep_complete_of_rhoStep
+      typed sealed step
+  exact ⟨observed, (exact observed).mpr depthOne, same⟩
+
+/-- **Rho through the PeTTa driver on lexicographic forms.** Run the depth-one plan on the
+lexicographic form of a closed, quotation-sealed process; that form is structurally congruent to the
+process and is computed by insertion sort on serializations. Every observed target is an authored rho
+step from the form, and every authored rho step from the process, at any depth, is observed up to
+canonical form. -/
+theorem rho_observed_on_lexCanon (state : State) {process : Pattern}
+    (typed : DerivedPresentationSyntax.ProcWellSorted rhoReflectivePresentation (fun _ => none) [] process)
+    (sealed : ScopedPattern.binderSafeAt "NQuote" 0 process = true) (budget : Nat)
+    (saturated : ∀ job ∈ GeneralRuleJobs.jobs GeneralRho.DepthOne.plan [] (.base "Proc")
+        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process),
+      (Execution.treeStart (GeneralPlanEnvironment.environment GeneralRho.DepthOne.plan)
+        (.root job.site.focusBound job.site.focusType job.site.focus job.ordinal)).cost ≤ budget) :
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.StructuralCongruence process
+        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process) ∧
+      (∀ observed, (∃ occurrence : targetOutput.Family
+          {state, control := .evaluate [] (executeQuery GeneralRho.DepthOne.plan [] (.base "Proc")
+            (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process) budget)},
+          occurrence.val.2.target = observed) →
+        Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep.RhoStep
+          (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process) observed) ∧
+      (∀ target, Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep.RhoStep process target →
+        ∃ observed, (∃ occurrence : targetOutput.Family
+            {state, control := .evaluate [] (executeQuery GeneralRho.DepthOne.plan [] (.base "Proc")
+              (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process) budget)},
+            occurrence.val.2.target = observed) ∧
+          Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize observed =
+            Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical.canonicalize target) := by
+  obtain ⟨lexTyped, lexSealed⟩ :=
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.closed_lexCanon typed sealed
+  have exact := fun target =>
+    (execute_observed_target_iff_step state GeneralRho.DepthOne.plan (by rfl) [] (.base "Proc")
+      (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon process) target
+      GeneralRho.DepthOne.compilation_has_no_equations GeneralRho.DepthOne.stratified budget saturated).trans
+      (GeneralRho.DepthOne.step_iff lexTyped lexSealed
+        (Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon_channelsDecided process))
+  refine ⟨Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexCanon_sound process,
+    fun observed seen => ⟨1, (exact observed).mp seen⟩, fun target step => ?_⟩
+  obtain ⟨observed, depthOne, same⟩ :=
+    Mettapedia.Languages.ProcessCalculi.RhoCalculus.LexCanonical.lexStep_complete typed sealed step
+  exact ⟨observed, (exact observed).mpr depthOne, same⟩
+
+end Rho
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution

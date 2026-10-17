@@ -116,12 +116,107 @@ def expandMatcher (environment : Environment) (request : Request)
             state := GeneralScopedMatchMachine.tick frame.query frame.state
             reachable := GeneralScopedMatchMachine.reachable_tick frame.reachable }] }
 
+def expandDynamicInputs (environment : Environment) (request : Request)
+    (frame : DynamicInputsFrame environment request) :
+    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
+  match schemasFound : frame.schemas, modesFound : frame.modes with
+  | [], [] =>
+      let held : DynamicInputs request.context frame.index request.initial frame.schemas frame.modes [] := by
+        rw [schemasFound, modesFound]
+        exact .nil
+      let inputs : DynamicInputs request.context 0 request.initial request.arguments
+          frame.signature.modes frame.resolvedRev.reverse := by
+        simpa only [List.append_nil] using frame.finish [] held
+      match computed : environment.dynamic.rows? request.relation frame.resolvedRev.reverse with
+      | none => { unresolved := [.dynamicUnavailable request.relation] }
+      | some rows =>
+          { tasks := [.dynamicRows {
+              signature := frame.signature
+              signatureFound := frame.signatureFound
+              registered := frame.registered
+              resolved := frame.resolvedRev.reverse
+              inputs := inputs
+              rows := rows
+              source := (environment.dynamic.rows_exact _ _ _).mp computed
+              cursor := 0 }] }
+  | schema :: schemas, .input :: modes =>
+      match interpreted : instantiateAt? request.context.rule request.context.spec
+          request.context.bound.length (request.context.site frame.index) [] 0 request.initial schema with
+      | none => { unresolved := [.dynamicInputUnavailable frame.index] }
+      | some value =>
+          { tasks := [.dynamicInputs {
+              signature := frame.signature
+              signatureFound := frame.signatureFound
+              registered := frame.registered
+              index := frame.index + 1
+              schemas := schemas
+              modes := modes
+              resolvedRev := value :: frame.resolvedRev
+              finish := fun values tail => by
+                have whole : DynamicInputs request.context frame.index request.initial
+                    frame.schemas frame.modes (value :: values) := by
+                  rw [schemasFound, modesFound]
+                  exact .input interpreted tail
+                simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using
+                  frame.finish (value :: values) whole }] }
+  | schema :: schemas, .output :: modes =>
+      { tasks := [.dynamicInputs {
+          signature := frame.signature
+          signatureFound := frame.signatureFound
+          registered := frame.registered
+          index := frame.index + 1
+          schemas := schemas
+          modes := modes
+          resolvedRev := schema :: frame.resolvedRev
+          finish := fun values tail => by
+            have whole : DynamicInputs request.context frame.index request.initial
+                frame.schemas frame.modes (schema :: values) := by
+              rw [schemasFound, modesFound]
+              exact .output tail
+            simpa only [List.reverse_cons, List.append_assoc, List.singleton_append] using
+              frame.finish (schema :: values) whole }] }
+  | _, _ => { unresolved := [.dynamicArgumentShape frame.index] }
+
+def expandDynamicRows (environment : Environment) (request : Request)
+    (frame : DynamicRowsFrame environment request) :
+    Scheduler.Expansion (Task environment request) (Answer environment request) Obligation :=
+  match selected : frame.rows[frame.cursor]? with
+  | none => {}
+  | some values =>
+      let tail := Task.dynamicRows { frame with cursor := frame.cursor + 1 }
+      if checked : checkRow environment.language environment.free request.context.bound
+          frame.signature ⟨request.relation, values⟩ then
+        { tasks := [.arguments {
+            rowIndex := environment.provider.rows.length + frame.cursor
+            index := 0
+            assignment := request.initial
+            schemas := request.arguments
+            values := values
+            modes := frame.signature.modes
+            origins := []
+            finish := fun final traces held typed => by
+              simpa only [List.nil_append] using
+                TracedQuery.dynamicRow frame.registered frame.signatureFound frame.inputs frame.source
+                  selected (checkRow_sound checked) held typed }, tail] }
+      else { tasks := [tail] }
+
 def expand (environment : Environment) (request : Request) : Task environment request →
     Scheduler.Expansion (Task environment request) (Answer environment request) Obligation
   | .start =>
       match found : signature? environment.provider request.relation request.arguments.length with
       | none => { unresolved := [.signatureUnavailable request.relation request.arguments.length] }
-      | some signature => { tasks := [.rows ⟨signature, found, 0⟩] }
+      | some signature =>
+          if registered : request.relation ∈ environment.provider.dynamicRelations then
+            { tasks := [.rows ⟨signature, found, 0⟩, .dynamicInputs {
+                signature := signature
+                signatureFound := found
+                registered := registered
+                index := 0
+                schemas := request.arguments
+                modes := signature.modes
+                resolvedRev := []
+                finish := fun values held => by simpa only [List.reverse_nil, List.nil_append] using held }] }
+          else { tasks := [.rows ⟨signature, found, 0⟩] }
   | .rows frame =>
       match found : environment.provider.rows[frame.cursor]? with
       | none => {}
@@ -140,6 +235,8 @@ def expand (environment : Environment) (request : Request) : Task environment re
                 finish := fun final traces held typed => by
                   simpa using TracedQuery.row found frame.signatureFound (checkRow_sound checked) held typed }, tail] }
           else { tasks := [tail] }
+  | .dynamicInputs frame => expandDynamicInputs environment request frame
+  | .dynamicRows frame => expandDynamicRows environment request frame
   | .arguments frame => expandArguments environment request frame
   | .matcher frame => expandMatcher environment request frame
 

@@ -11,7 +11,7 @@ open RhoStaticNonBoundaryPlanStopCommonApex
 
 /-- A provenance-carrying stop strictly below a reached process pair restores
 in the fixed semantic cospan of the enclosing static roots. -/
-noncomputable def rho_strictPlanStop_commonRestorationApex
+theorem rho_strictPlanStop_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -108,7 +108,7 @@ noncomputable def rho_strictPlanStop_commonRestorationApex
 
 /-- A paired authored quotation restores in the enclosing semantic cospan by
 recursing only at strictly smaller argument stops. -/
-noncomputable def rho_quoteReachedPair_commonRestorationApex
+theorem rho_quoteReachedPair_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -229,7 +229,7 @@ noncomputable def rho_quoteReachedPair_commonRestorationApex
 
 /-- A reached pair with a bare-parallel side restores by flattening both
 frontiers and recursively restoring only their strictly smaller leaves. -/
-noncomputable def rho_parallelReachedPair_commonRestorationApex
+theorem rho_parallelReachedPair_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -506,7 +506,7 @@ noncomputable def rho_parallelReachedPair_commonRestorationApex
 
 /-- Every genuine foreign-colour stop of two reached source plans restores in
 the fixed parent semantic cospan. -/
-noncomputable def rho_foreignPlanStop_commonRestorationApex
+theorem rho_foreignPlanStop_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -667,7 +667,7 @@ theorem rho_afterSameColorBoundarySideForeign_of_planStops
 /-- At a declaration colour foreign to both static views, the root plans
 provide the provenance required by the general plan-stop restoration theorem,
 independently of the raw-stop budget selected by the caller. -/
-noncomputable def rho_staticPlanStopCommonApex_of_foreign
+theorem rho_staticPlanStopCommonApex_of_foreign
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

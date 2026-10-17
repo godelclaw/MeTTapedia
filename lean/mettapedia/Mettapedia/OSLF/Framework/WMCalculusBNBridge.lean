@@ -2,7 +2,7 @@ import Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 import Mettapedia.OSLF.Framework.WMCalculusContextClosure
 import Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
 import Mettapedia.OSLF.Framework.WMCalculusEncoding
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # WM Calculus — Guarded Inference and Evidence Interpretation

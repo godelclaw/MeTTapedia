@@ -124,7 +124,7 @@ def RhoCanonicalPairBichromaticStep
 /-- Close a bichromatic step by the same well-founded measure as the ordinary
 paired elaborator.  Both retained actions live inside the result; the
 recursion is untouched. -/
-noncomputable def RhoCanonicalPairBichromaticResult.nonempty_of_step
+theorem RhoCanonicalPairBichromaticResult.nonempty_of_step
     {declarationColor : CostStaticColor}
     (step : RhoCanonicalPairBichromaticStep declarationColor)
     {targetFree : WellSorted.FreeTypeContext}

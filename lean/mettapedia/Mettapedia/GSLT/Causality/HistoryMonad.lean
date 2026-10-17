@@ -49,11 +49,11 @@ universe uTerm v uSite uEvent uPoint uTile
 
 section EventHistory
 
-variable {S : GSLT.{uTerm}} {E : Type uTerm}
+variable {S : GSLT.{uTerm}} {E : Type v}
 
 /-- A labelling of the steps of a theory by events, unchanged when a
 configuration is replaced by an equal one. -/
-structure EventLabels (S : GSLT.{uTerm}) (E : Type uTerm) where
+structure EventLabels (S : GSLT.{uTerm}) (E : Type v) where
   labelled : S.Term → S.Term → E → Prop
   sound : ∀ {source target : S.Term} {event : E}, labelled source target event →
     S.Step source target
@@ -115,17 +115,17 @@ theorem history_step_iff (labels : EventLabels S E) {x y : S.Term × FreeMonoid 
     exact ⟨FreeMonoid.of event, ⟨event, labelled, rfl⟩, appended⟩
 
 /-- Attach the empty history. -/
-def historyUnit (labels : EventLabels S E) (total : labels.Total) :
+def historyUnit {E : Type uTerm} (labels : EventLabels S E) (total : labels.Total) :
     GSLT.Morphism S (history labels) :=
   WriterGSLT.embedMorphism labels.grading (EventLabels.grading_total total)
 
 /-- Strip the history. -/
-def historyStrip (labels : EventLabels S E) (total : labels.Total) :
+def historyStrip {E : Type uTerm} (labels : EventLabels S E) (total : labels.Total) :
     GSLT.Morphism (history labels) S :=
   WriterGSLT.eraseMorphism labels.grading (EventLabels.grading_total total)
 
 /-- Stripping the empty history gives the configuration back. -/
-theorem historyStrip_comp_unit (labels : EventLabels S E) (total : labels.Total) :
+theorem historyStrip_comp_unit {E : Type uTerm} (labels : EventLabels S E) (total : labels.Total) :
     GSLT.Morphism.comp (historyStrip labels total) (historyUnit labels total) =
       GSLT.Morphism.id S :=
   WriterGSLT.erase_comp_embed labels.grading (EventLabels.grading_total total)

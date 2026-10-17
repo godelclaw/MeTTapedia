@@ -200,13 +200,13 @@ condition has been checked. -/
 theorem contextComplete_applyITVCtx_canary :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       {demoEvidence} demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence) := by
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) := by
   exact BinaryWorldModel.WMRewriteRule.applyITVCtx
     (State := BinaryEvidence) (Query := ContextDemoQuery)
-    ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+    ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     (r := observedIdentityRule)
     demoRuleSide_ok
     (WMJudgmentCtx.base demoEvidence (by simp))
@@ -254,14 +254,14 @@ theorem contextUnion_queryRevisedEvidence_requiredSubset_canary :
 theorem contextUnion_applyITVCtx_canary :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       (demoEvidence + demoEvidence₂) observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default (demoEvidence + demoEvidence₂)) := by
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default (demoEvidence + demoEvidence₂)) := by
   exact rewriteRule_applyITVCtx_union_revise
     (State := BinaryEvidence) (Query := ContextDemoQuery)
-    ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+    ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     (r := observedIdentityRule)
     demoRuleSide_ok
     (WMJudgmentCtx.base demoEvidence (by simp))
@@ -282,14 +282,14 @@ theorem contextWiden_applyRewriteCtx_canary :
 theorem contextWiden_applyITVCtx_canary :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence) := by
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) := by
   exact itvJudgmentCtx_mono
     (State := BinaryEvidence) (Query := ContextDemoQuery)
-    ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+    ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     (Γ := {demoEvidence}) (Δ := {demoEvidence} ∪ {demoEvidence₂})
     (by intro W hW; exact Or.inl hW)
     contextComplete_applyITVCtx_canary
@@ -311,14 +311,14 @@ theorem requiredContext_subset_applyRewriteCtx_canary :
 theorem requiredContext_subset_applyITVCtx_canary :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence) := by
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) := by
   exact rewriteRule_applyITVCtx_of_required_subset
     (State := BinaryEvidence) (Query := ContextDemoQuery)
-    ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+    ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     (r := observedIdentityRule)
     (Γreq := {demoEvidence}) (Γactive := {demoEvidence} ∪ {demoEvidence₂})
     (by intro W hW; exact Or.inl hW)
@@ -348,7 +348,7 @@ theorem contextMissing_blocks_ITVCtx_canary :
     ¬ ∃ itv,
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         (∅ : Set BinaryEvidence) demoEvidence observed itv := by
   rintro ⟨_, hitv⟩
   exact empty_context_derives_no_state demoEvidence hitv.1
@@ -386,7 +386,7 @@ theorem requiredContext_missing_source_blocks_ITVCtx_canary :
     ¬ ∃ itv,
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         {demoEvidence₂} demoEvidence observed itv := by
   rintro ⟨_, hitv⟩
   exact requiredContext_missing_source_blocks_state_canary hitv.1
@@ -437,50 +437,50 @@ structure ContextGuardBridgeProfile where
   contextCompleteITV :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       {demoEvidence} demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence)
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence)
   contextUnionQuery :
     ⊢q[{demoEvidence} ∪ {demoEvidence₂}]
       (demoEvidence + demoEvidence₂) ⇓ observed ↦ (demoEvidence + demoEvidence₂)
   contextUnionITV :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       (demoEvidence + demoEvidence₂) observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default (demoEvidence + demoEvidence₂))
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default (demoEvidence + demoEvidence₂))
   contextWidenQuery :
     ⊢q[{demoEvidence} ∪ {demoEvidence₂}]
       demoEvidence ⇓ observed ↦ demoEvidence
   contextWidenITV :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence)
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence)
   requiredContextRuleFiring :
     ⊢q[{demoEvidence} ∪ {demoEvidence₂}]
       demoEvidence ⇓ observed ↦ demoEvidence
   requiredContextITV :
     BinaryWorldModel.WMITVJudgmentCtx
       (State := BinaryEvidence) (Query := ContextDemoQuery)
-      ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+      ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       ({demoEvidence} ∪ {demoEvidence₂})
       demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
-        IDMPredictiveContext.default demoEvidence)
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence)
   emptyContextBlocksQuery :
     ¬ ∃ e, ⊢q[(∅ : Set BinaryEvidence)] demoEvidence ⇓ observed ↦ e
   emptyContextBlocksITV :
     ¬ ∃ itv,
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         (∅ : Set BinaryEvidence) demoEvidence observed itv
   wrongSourceBlocksQuery :
     ¬ ∃ e, ⊢q[{demoEvidence₂}] demoEvidence ⇓ observed ↦ e
@@ -488,7 +488,7 @@ structure ContextGuardBridgeProfile where
     ¬ ∃ itv,
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         {demoEvidence₂} demoEvidence observed itv
 
 /-- Public proof-carrying profile for the current WM-PLN context-guard bridge. -/

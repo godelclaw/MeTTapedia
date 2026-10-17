@@ -64,7 +64,7 @@ private theorem empty_binding_application (fuel : Nat) (argument : Atom) :
 
 private theorem empty_default_application (argument : Atom) :
     Bindings.applyDefault Bindings.empty argument = argument :=
-  empty_binding_application 100 argument
+  empty_binding_application (Bindings.resolutionFuel Bindings.empty argument) argument
 
 def shared : TypedApplyState :=
   .initial (.symbol "Same") [boundPick, .var "selected"]

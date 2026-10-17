@@ -1,5 +1,7 @@
 import Mettapedia.Languages.Chaitin.Bridges.MeTTa.WireData
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireData
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireData
+
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 
 /-!
 # Historical Lisp program data in declaration-based Prime

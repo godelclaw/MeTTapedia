@@ -32,7 +32,7 @@ def language : LanguageDef :=
 
 def signature : GeneralPremise.Signature := ⟨"Enabled", [], []⟩
 
-def snapshot : Snapshot := ⟨language, [], ⟨[signature], []⟩⟩
+def snapshot : Snapshot := {language := language, freeTypes := [], provider := {signatures := [signature], rows := []}}
 def declaration : RulePlan := ⟨0, guarded, binding⟩
 def runtimePlan : Plan :=
   ⟨snapshot, permissions, [declaration],
@@ -57,6 +57,7 @@ theorem query_premise_requires_row {environment : GeneralPremise.Environment}
     {context : GeneralPremise.Context} {relation : String} {arguments : List Pattern}
     {tail : List Premise} {initial completed : ScopedRuleMatching.Assignment}
     {history : List GeneralPremise.Event}
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (held : GeneralPremise.PremisesHold environment context
       (.relationQuery relation arguments :: tail) initial completed history) :
     ∃ (index : Nat) (row : GeneralPremise.ProviderRow), environment.provider.rows[index]? = some row := by
@@ -66,6 +67,9 @@ theorem query_premise_requires_row {environment : GeneralPremise.Environment}
       | query queried =>
           cases queried with
           | row selected _ _ _ _ => exact ⟨_, _, selected⟩
+          | dynamicRow registered _ _ _ _ _ _ _ =>
+              rw [finiteProvider] at registered
+              exact False.elim (List.not_mem_nil registered)
 
 theorem no_primitive {bound : List TypeExpr} {expected : TypeExpr} {source target : Pattern}
     {index : Nat} {trace : List GeneralScopedMatchMachine.BagChoice}
@@ -82,7 +86,7 @@ theorem no_primitive {bound : List TypeExpr} {expected : TypeExpr} {source targe
           List.map_nil, List.mem_singleton] using declared
       have starts : rule.premises = [.relationQuery "Enabled" []] := by rw [same]; rfl
       rw [starts] at premises
-      obtain ⟨rowIndex, row, found⟩ := query_premise_requires_row premises
+      obtain ⟨rowIndex, row, found⟩ := query_premise_requires_row rfl premises
       rw [no_provider_rows] at found
       simp at found
 
@@ -107,7 +111,7 @@ theorem guarded_introduction_impossible :
   have guardedPremise : schema.declaration.rule.premises = [.relationQuery "Enabled" []] := rfl
   have premises := introduced.premises
   rw [guardedPremise] at premises
-  obtain ⟨rowIndex, row, found⟩ := query_premise_requires_row premises
+  obtain ⟨rowIndex, row, found⟩ := query_premise_requires_row rfl premises
   rw [no_provider_rows] at found
   simp at found
 

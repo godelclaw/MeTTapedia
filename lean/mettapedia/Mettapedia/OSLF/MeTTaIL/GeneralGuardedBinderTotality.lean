@@ -64,7 +64,7 @@ theorem query_assignment_unchanged {allowed : List Token} {choice : Choice} {bou
     (valid : TracedQuery (environment allowed) (choice.context bound) "allow" [.fvar "Q"]
       initial rowIndex final origins) : final = initial := by
   cases valid with
-  | @row row signature final origins selected declared rowTyped arguments finalTyped =>
+  | @row rowIndex row signature final origins selected declared rowTyped arguments finalTyped =>
       have same : signature = allowSignature :=
         Option.some.inj (declared.symm.trans (query_signature allowed choice bound initial))
       subst signature
@@ -74,6 +74,8 @@ theorem query_assignment_unchanged {allowed : List Token} {choice : Choice} {bou
       | input interpreted remaining =>
           cases remaining
           rfl
+  | dynamicRow registered _ _ _ _ _ _ _ =>
+      exact False.elim (query_unregistered allowed choice bound initial registered)
 
 theorem guard_premise_assignment_unchanged {allowed : List Token} {choice : Choice} {bound : List TypeExpr}
     {initial final : Assignment} {event : Event}

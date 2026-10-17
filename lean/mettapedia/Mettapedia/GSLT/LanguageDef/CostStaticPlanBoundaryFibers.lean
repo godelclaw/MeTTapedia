@@ -135,7 +135,7 @@ end
 
 mutual
   /-- Recontextualization preserves the source abstract skeleton exactly. -/
-  def CostStaticRegionPlan.recontextualizeAbstractEq
+  theorem CostStaticRegionPlan.recontextualizeAbstractEq
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {sourceBound targetBound : List TypeExpr}
@@ -169,7 +169,7 @@ mutual
             children.recontextualizeAbstractEq newOuter
 
   /-- Argument-spine abstract skeletons ignore traversal recontextualization. -/
-  def CostStaticArgumentPlan.recontextualizeAbstractEq
+  theorem CostStaticArgumentPlan.recontextualizeAbstractEq
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {sourceBound targetBound : List TypeExpr}
@@ -192,7 +192,7 @@ mutual
           tail.recontextualizeAbstractEq _⟩
 
   /-- Collection-spine abstract skeletons ignore traversal recontextualization. -/
-  def CostStaticElementPlan.recontextualizeAbstractEq
+  theorem CostStaticElementPlan.recontextualizeAbstractEq
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {sourceBound targetBound : List TypeExpr}
@@ -729,7 +729,7 @@ namespace CostStaticAbstractPatternAlignment
 /- Appending unrelated table suffixes preserves every exact position in an
 aligned skeleton. -/
 mutual
-  def appendEntries
+  theorem appendEntries
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallEntries largeEntries :
@@ -771,7 +771,7 @@ mutual
             smallSuffix largeSuffix elements)
 
   /-- Ordered-list companion of `appendEntries`. -/
-  def CostStaticAbstractPatternListAlignment.appendEntries
+  theorem CostStaticAbstractPatternListAlignment.appendEntries
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallEntries largeEntries :
@@ -795,7 +795,7 @@ end
 /- Prepending unrelated table prefixes shifts every boundary position while
 preserving the selected endpoint entry. -/
 mutual
-  def prependEntries
+  theorem prependEntries
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       (smallPrefix largePrefix :
@@ -841,7 +841,7 @@ mutual
             smallPrefix largePrefix prefixLength_eq elements)
 
   /-- Ordered-list companion of `prependEntries`. -/
-  def CostStaticAbstractPatternListAlignment.prependEntries
+  theorem CostStaticAbstractPatternListAlignment.prependEntries
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       (smallPrefix largePrefix :

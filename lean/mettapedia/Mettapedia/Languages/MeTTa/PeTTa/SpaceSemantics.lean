@@ -633,3 +633,311 @@ theorem query_complete {rows : List Atom} {pattern template row : Atom}
   exact ⟨row, member, by simp [matched]⟩
 
 end Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-- Source declaration indexing retains every source occurrence. Equations
+supply alternatives in their stored order; declarations and ordinary facts
+retain their own order and the common layout records interleaving. -/
+inductive Indexes : List Atom → Program → Prop where
+  | nil : Indexes [] {equations := [], declarations := []}
+  | equation (head : String) (arguments : List Atom) (body : Atom)
+      {forms : List Atom} {program : Program} (tail : Indexes forms program) :
+      Indexes (.expression [.symbol "=", .expression (.symbol head :: arguments), body] :: forms)
+        {program with
+          equations := ⟨head, arguments, body⟩ :: program.equations
+          layout := .equation :: program.layout}
+  | declaration (subject type : Atom) {forms : List Atom} {program : Program}
+      (tail : Indexes forms program) :
+      Indexes (.expression [.symbol ":", subject, type] :: forms)
+        {program with
+          declarations := .expression [.symbol ":", subject, type] :: program.declarations
+          layout := .declaration :: program.layout}
+  | fact (form : Atom) {forms : List Atom} {program : Program}
+      (notEquation : ∀ head arguments body,
+        form ≠ .expression [.symbol "=", .expression (.symbol head :: arguments), body])
+      (notDeclaration : ∀ subject type, form ≠ .expression [.symbol ":", subject, type])
+      (tail : Indexes forms program) :
+      Indexes (form :: forms)
+        {program with
+          facts := form :: program.facts
+          layout := .fact :: program.layout}
+
+theorem Indexes.collected {forms : List Atom} {program : Program}
+    (indexed : Indexes forms program) : collect forms = .ok program := by
+  induction indexed with
+  | nil => rfl
+  | equation head arguments body tail ih => simp [collect, ih, bind, Except.bind]
+  | declaration subject type tail ih => simp [collect, ih, bind, Except.bind]
+  | fact form notEquation notDeclaration tail ih =>
+      simp only [collect, ih, bind, Except.bind]
+
+theorem collect_indexed {forms : List Atom} {program : Program}
+    (collected : collect forms = .ok program) : Indexes forms program := by
+  induction forms generalizing program with
+  | nil =>
+      simp only [collect, Except.ok.injEq] at collected
+      subst collected
+      exact .nil
+  | cons form rest ih =>
+      simp only [collect, bind, Except.bind] at collected
+      cases remaining : collect rest with
+      | error reason => simp [remaining] at collected
+      | ok tail =>
+          simp only [remaining] at collected
+          split at collected
+          · simp only [Except.ok.injEq] at collected
+            subst collected
+            exact .equation _ _ _ (ih remaining)
+          · simp only [Except.ok.injEq] at collected
+            subst collected
+            exact .declaration _ _ (ih remaining)
+          · rename_i notEquation notDeclaration
+            simp only [Except.ok.injEq] at collected
+            subst collected
+            exact .fact form notEquation notDeclaration (ih remaining)
+
+theorem collect_exact (forms : List Atom) (program : Program) :
+    collect forms = .ok program ↔ Indexes forms program :=
+  ⟨collect_indexed, Indexes.collected⟩
+
+/-- The original classifier is total, including unknown source forms. -/
+theorem collect_succeeds (forms : List Atom) : ∃ program, collect forms = .ok program := by
+  induction forms with
+  | nil => exact ⟨_, rfl⟩
+  | cons form rest ih =>
+      obtain ⟨tail, collected⟩ := ih
+      simp only [collect, collected, bind, Except.bind]
+      split <;> exact ⟨_, rfl⟩
+
+/-- Native indexing reuses the original loader. Its error branch is unreachable
+by collect_succeeds, rather than an alternative meaning for unknown syntax. -/
+def index (forms : List Atom) : Program :=
+  match collect forms with
+  | .ok program => program
+  | .error _ => {equations := [], declarations := []}
+
+theorem index_collected (forms : List Atom) : collect forms = .ok (index forms) := by
+  obtain ⟨program, collected⟩ := collect_succeeds forms
+  simp [index, collected]
+
+theorem index_exact (forms : List Atom) : Indexes forms (index forms) :=
+  collect_indexed (index_collected forms)
+
+theorem Indexes.unique {forms : List Atom} {first second : Program}
+    (left : Indexes forms first) (right : Indexes forms second) : first = second := by
+  have same := left.collected.symm.trans right.collected
+  exact Except.ok.inj same
+
+theorem Indexes.sourceOccurrences {forms : List Atom} {program : Program}
+    (indexed : Indexes forms program) : loadedAtoms program = forms :=
+  loadedAtoms_collect indexed.collected
+
+theorem Indexes.sourceMultiplicity {forms : List Atom} {program : Program}
+    (indexed : Indexes forms program) (form : Atom) :
+    (loadedAtoms program).count form = forms.count form := by
+  rw [indexed.sourceOccurrences]
+
+theorem Indexes.balanced {forms : List Atom} {program : Program}
+    (indexed : Indexes forms program) : Balanced program :=
+  balanced_collect indexed.collected
+
+end Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
+
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.ProcessCalculi.MORK (Subst MatchAtomRel)
+
+mutual
+  /-- Source matching includes the evaluator's expression-list view for
+  `cons`, while all atomic patterns use the independent structural judgment. -/
+  inductive ValueMatch : Subst → Atom → Atom → Subst → Prop where
+    | cons {initial middle final : Subst} {first rest head : Atom} {tail : List Atom}
+        (firstMatch : ValueMatch initial first head middle)
+        (restMatch : ValueMatch middle rest (.expression tail) final) :
+        ValueMatch initial (.expression [.symbol "cons", first, rest])
+          (.expression (head :: tail)) final
+    | expression {initial final : Subst} {patterns values : List Atom}
+        (ordinary : ∀ first rest, patterns ≠ [.symbol "cons", first, rest])
+        (matched : ValueMatches initial patterns values final) :
+        ValueMatch initial (.expression patterns) (.expression values) final
+    | atomic {initial final : Subst} {pattern value : Atom}
+        (atomic : ∀ fields, pattern ≠ .expression fields)
+        (matched : MatchAtomRel initial pattern value final) :
+        ValueMatch initial pattern value final
+
+  /-- Ordered argument matching threads every actual incoming binding. -/
+  inductive ValueMatches : Subst → List Atom → List Atom → Subst → Prop where
+    | nil (initial : Subst) : ValueMatches initial [] [] initial
+    | cons {initial middle final : Subst} {pattern value : Atom} {patterns values : List Atom}
+        (first : ValueMatch initial pattern value middle)
+        (remaining : ValueMatches middle patterns values final) :
+        ValueMatches initial (pattern :: patterns) (value :: values) final
+end
+
+private theorem matchValue_expression (initial : Subst) (patterns values : List Atom)
+    (ordinary : ∀ first rest, patterns ≠ [.symbol "cons", first, rest]) :
+    matchValue initial (.expression patterns) (.expression values) =
+      matchValue.matchValues initial patterns values := by
+  rw [matchValue]
+  · intro first rest _ _ same _
+    exact ordinary first rest same
+  · exact ordinary
+
+private theorem matchValue_atomic (initial : Subst) (pattern value : Atom)
+    (atomic : ∀ fields, pattern ≠ .expression fields) :
+    matchValue initial pattern value =
+      Mettapedia.Languages.ProcessCalculi.MORK.matchAtom initial pattern value := by
+  cases pattern with
+  | var _ | symbol _ | grounded _ => simp only [matchValue]
+  | expression fields => exact (atomic fields rfl).elim
+
+mutual
+  theorem matchValue_sound {initial final : Subst} {pattern value : Atom}
+      (computed : matchValue initial pattern value = some final) :
+      ValueMatch initial pattern value final := by
+    by_cases consView : ∃ first rest, pattern = .expression [.symbol "cons", first, rest]
+    · obtain ⟨first, rest, rfl⟩ := consView
+      cases value with
+      | expression values =>
+          cases values with
+          | nil => simp only [matchValue] at computed; contradiction
+          | cons head tail =>
+              cases headMatch : matchValue initial first head with
+              | none => simp only [matchValue, headMatch, bind, Option.bind] at computed; contradiction
+              | some middle =>
+                  have restMatch : matchValue middle rest (.expression tail) = some final := by
+                    simpa only [matchValue, headMatch, bind, Option.bind] using computed
+                  exact .cons (matchValue_sound headMatch) (matchValue_sound restMatch)
+      | var _ | symbol _ | grounded _ => simp only [matchValue] at computed; contradiction
+    · cases pattern with
+      | var name =>
+          have checked : Mettapedia.Languages.ProcessCalculi.MORK.matchAtom initial
+              (.var name) value = some final := by simpa only [matchValue] using computed
+          exact .atomic (by intro fields impossible; cases impossible)
+            (Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_sound checked)
+      | symbol name =>
+          have checked : Mettapedia.Languages.ProcessCalculi.MORK.matchAtom initial
+              (.symbol name) value = some final := by simpa only [matchValue] using computed
+          exact .atomic (by intro fields impossible; cases impossible)
+            (Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_sound checked)
+      | grounded ground =>
+          have checked : Mettapedia.Languages.ProcessCalculi.MORK.matchAtom initial
+              (.grounded ground) value = some final := by simpa only [matchValue] using computed
+          exact .atomic (by intro fields impossible; cases impossible)
+            (Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_sound checked)
+      | expression patterns =>
+          have ordinary : ∀ first rest, patterns ≠ [.symbol "cons", first, rest] := by
+            intro first rest same
+            exact consView ⟨first, rest, congrArg Atom.expression same⟩
+          cases value with
+          | expression values =>
+              exact .expression ordinary
+                (matchValues_sound ((matchValue_expression _ _ _ ordinary).symm ▸ computed))
+          | var _ | symbol _ | grounded _ =>
+              simp only [matchValue] at computed
+              contradiction
+    termination_by sizeOf pattern
+
+  theorem matchValues_sound {initial final : Subst} {patterns values : List Atom}
+      (computed : matchValue.matchValues initial patterns values = some final) :
+      ValueMatches initial patterns values final := by
+    cases patterns with
+    | nil =>
+        cases values with
+        | nil => simp only [matchValue.matchValues, Option.some.injEq] at computed; subst final; exact .nil _
+        | cons _ _ => simp only [matchValue.matchValues] at computed; contradiction
+    | cons pattern patterns =>
+        cases values with
+        | nil => simp only [matchValue.matchValues] at computed; contradiction
+        | cons value values =>
+            cases headMatch : matchValue initial pattern value with
+            | none => simp only [matchValue.matchValues, headMatch, bind, Option.bind] at computed; contradiction
+            | some middle =>
+                have restMatch : matchValue.matchValues middle patterns values = some final := by
+                  simpa only [matchValue.matchValues, headMatch, bind, Option.bind] using computed
+                exact .cons (matchValue_sound headMatch) (matchValues_sound restMatch)
+    termination_by sizeOf patterns
+end
+
+mutual
+  theorem matchValue_complete {initial final : Subst} {pattern value : Atom}
+      (source : ValueMatch initial pattern value final) :
+      matchValue initial pattern value = some final := by
+    cases source with
+    | cons first rest =>
+        simp only [matchValue, matchValue_complete first, matchValue_complete rest, bind, Option.bind]
+    | expression ordinary matched =>
+        rw [matchValue_expression _ _ _ ordinary]
+        exact matchValues_complete matched
+    | atomic atomic matched =>
+        rw [matchValue_atomic _ _ _ atomic]
+        exact Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_complete matched
+    termination_by sizeOf pattern
+
+  theorem matchValues_complete {initial final : Subst} {patterns values : List Atom}
+      (source : ValueMatches initial patterns values final) :
+      matchValue.matchValues initial patterns values = some final := by
+    cases source with
+    | nil => simp only [matchValue.matchValues]
+    | cons first rest =>
+        simp only [matchValue.matchValues, matchValue_complete first,
+          matchValues_complete rest, bind, Option.bind]
+    termination_by sizeOf patterns
+end
+
+@[simp] theorem matchValue_exact (initial : Subst) (pattern value : Atom) (final : Subst) :
+    matchValue initial pattern value = some final ↔ ValueMatch initial pattern value final :=
+  ⟨matchValue_sound, matchValue_complete⟩
+
+@[simp] theorem matchValues_exact (initial : Subst) (patterns values : List Atom) (final : Subst) :
+    matchValue.matchValues initial patterns values = some final ↔ ValueMatches initial patterns values final :=
+  ⟨matchValues_sound, matchValues_complete⟩
+
+/-- Binding patterns preserve the original quoted-constructor distinction.
+Quotation changes the matching interpretation, not the original Atom syntax. -/
+inductive BindingMatch : Subst → Atom → Atom → Subst → Prop where
+  | quoted {initial final : Subst} {literal value : Atom}
+      (matched : MatchAtomRel initial literal value final) :
+      BindingMatch initial (.expression [.symbol "quote", literal]) value final
+  | ordinary {initial final : Subst} {pattern value : Atom}
+      (unquoted : ∀ literal, pattern ≠ .expression [.symbol "quote", literal])
+      (matched : ValueMatch initial pattern value final) :
+      BindingMatch initial pattern value final
+
+theorem matchBinding_sound {initial final : Subst} {pattern value : Atom}
+    (computed : matchBinding initial pattern value = some final) :
+    BindingMatch initial pattern value final := by
+  by_cases quoted : ∃ literal, pattern = .expression [.symbol "quote", literal]
+  · obtain ⟨literal, rfl⟩ := quoted
+    exact .quoted (Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_sound computed)
+  · have unquoted : ∀ literal, pattern ≠ .expression [.symbol "quote", literal] := by
+      intro literal same
+      exact quoted ⟨literal, same⟩
+    rw [matchBinding_ordinary _ _ _ unquoted] at computed
+    exact .ordinary unquoted (matchValue_sound computed)
+
+theorem matchBinding_complete {initial final : Subst} {pattern value : Atom}
+    (source : BindingMatch initial pattern value final) :
+    matchBinding initial pattern value = some final := by
+  cases source with
+  | quoted matched => exact Mettapedia.Languages.ProcessCalculi.MORK.matchAtom_complete matched
+  | ordinary unquoted matched =>
+      rw [matchBinding_ordinary _ _ _ unquoted]
+      exact matchValue_complete matched
+
+@[simp] theorem matchBinding_exact (initial : Subst) (pattern value : Atom) (final : Subst) :
+    matchBinding initial pattern value = some final ↔ BindingMatch initial pattern value final :=
+  ⟨matchBinding_sound, matchBinding_complete⟩
+
+
+end Mettapedia.Languages.MeTTa.PeTTa.SpaceSemantics

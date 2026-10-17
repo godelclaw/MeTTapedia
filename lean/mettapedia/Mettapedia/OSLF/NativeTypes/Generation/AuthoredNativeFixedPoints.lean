@@ -165,4 +165,35 @@ theorem fixedPointPredicates_semantic_typing {n : Nat} (context : ContextExpr in
   exact ⟨installed.checked_semantic_sound _ _ checked.2.1,
     installed.checked_semantic_sound _ _ checked.2.2⟩
 
+open Mettapedia.TypeTheory.ContextualLocalUniverses
+open Mettapedia.TypeTheory.NativeLocalTypeFormers
+open NativeMonotoneFunctions NativeMonotoneReadout NativeMonotoneCertificate NativeMonotoneBaseChange PredicateVariables
+open Mettapedia.GSLT.Topos.NativeFixedPointEncodings
+
+/-- The complete native outputs denote the independent fixed points of the
+operator that the installed evaluator actually reads from its input syntax. -/
+theorem fixedPointPredicates_meaning {n : Nat} (contextCode : ContextExpr installed.symbols n)
+    (domain : TypeExpr installed.symbols n) (operatorCode : TermExpr installed.symbols n)
+    (contextCertificate domainCertificate operatorCertificate monotonicityCertificate :
+      Certificates.Refinement.Certificate installed.signature)
+    (generated : NativeMonotonePredicates.GeneratedPredicates installed.signature n)
+    (result : installed.fixedPointPredicates contextCode domain operatorCode contextCertificate domainCertificate
+      operatorCertificate monotonicityCertificate = .ok generated) :
+    ∃ (context : Scope
+        (CurriedBindingLanguage.Worlds (BindingPipeline.plan installed.operational.generated).snapshot.language) n)
+      (A : NativeType context.1) (operator : (operatorType A).decoded.sections)
+      (certified : monotonicityMeaning A operator = ⊤),
+      installed.generatedModel.evaluateContext contextCode = some context ∧
+      installed.generatedModel.evaluateType context domain = some A ∧
+      installed.generatedModel.evaluateTerm context operatorCode = some ⟨operatorType A, operator⟩ ∧
+      installed.generatedModel.evaluateTerm context generated.leastCode =
+        some ⟨predicate A, predicateName A (leastMeaning (semanticOperator A operator certified))⟩ ∧
+      installed.generatedModel.evaluateTerm context generated.greatestCode =
+        some ⟨predicate A, predicateName A (greatestMeaning (semanticOperator A operator certified))⟩ := by
+  exact NativeMonotonePredicateReadout.certifiedGenerate_sound installed.generatedModel
+    installed.generatedModelRealization contextCode domain operatorCode contextCertificate domainCertificate
+    operatorCertificate monotonicityCertificate generated
+    (installed.fixedPointPredicates_checked contextCode domain operatorCode contextCertificate domainCertificate
+      operatorCertificate monotonicityCertificate generated result).1
+
 end Mettapedia.OSLF.NativeTypes.Generation.AuthoredPipeline.Installed

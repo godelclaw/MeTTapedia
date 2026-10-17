@@ -1540,6 +1540,15 @@ theorem restrictBnd_empty_merge_empty (vars : List VarName) :
     restrictBnd vars ((Bindings.merge [] ([] : Bindings)).head?.getD []) = [] := by
   simp [Bindings.merge, restrictBnd_nil_bindings]
 
+/-- An empty visible projection contributes no additional applicability
+constraints, while preserving the complete incoming caller. -/
+theorem selectedApplicationInitialBindingsFromTheory_of_empty_projection
+    (incoming theory : Bindings) (expression expected : Atom)
+    (hProjection : restrictBnd (expectedApplicationVisibleScope expression expected) theory = []) :
+    selectedApplicationInitialBindingsFromTheory incoming expression expected theory = [incoming] := by
+  simp only [selectedApplicationInitialBindingsFromTheory, hProjection,
+    Bindings.merge, List.foldl_nil]
+
 /-- An empty selected theory contributes exactly the incoming application
 binding.  This is the raw-theory form used after the operator-head cast; it is
 separate from the selected-policy projection because the cast theory need not
@@ -4461,6 +4470,74 @@ def SelectedApplicationExecutionPlan.seeds
   selectedApplicationInitialBindingsFromTheory incoming
     (.expr (.sym op :: args)) (.sym "%Undefined%") plan.headBindings
 
+/-- Exact chronology of an applicability seed: earlier seeds have already
+run, and their resulting state is the entry state of this seed. -/
+def SelectedApplicationExecutionPlan.SeedOrigin
+    {env : MinEnv} {incoming : Bindings} {op : String} {args : List Atom}
+    (fuel : Nat) (st : St)
+    (plan : SelectedApplicationExecutionPlan env st.world incoming op args)
+    (seed : Bindings) (branchState : St) : Prop :=
+  ∃ preceding suffix,
+    plan.seeds = preceding ++ seed :: suffix ∧
+    branchState = preceding.foldl (fun previous bindings =>
+      (evaluateExpectedApplicationFrom
+        (fun nextSt nextBindings nextAtom nextExpected =>
+          mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+        (fun nextSt application =>
+          interpretFuel env (fuel + 1) nextSt
+            [{ stack := atomToStack
+                (Atom.expr [Atom.sym "eval", application]) [],
+               bnd := bindings }] [])
+        bindings previous op args plan.selected).2) st
+
+theorem SelectedApplicationExecutionPlan.SeedOrigin.mem
+    {env : MinEnv} {incoming : Bindings} {op : String} {args : List Atom}
+    {fuel : Nat} {st : St}
+    {plan : SelectedApplicationExecutionPlan env st.world incoming op args}
+    {seed : Bindings} {branchState : St}
+    (h : plan.SeedOrigin fuel st seed branchState) : seed ∈ plan.seeds := by
+  rcases h with ⟨preceding, suffix, hsplit, _⟩
+  simp [hsplit]
+
+theorem SelectedApplicationExecutionPlan.SeedOrigin.invariant
+    {env : MinEnv} {incoming : Bindings} {op : String} {args : List Atom}
+    {fuel : Nat} {st : St}
+    {plan : SelectedApplicationExecutionPlan env st.world incoming op args}
+    {seed : Bindings} {branchState : St}
+    (h : plan.SeedOrigin fuel st seed branchState)
+    (P : St → Prop) (hInitial : P st)
+    (hStep : ∀ previous bindings,
+      P previous →
+        P (evaluateExpectedApplicationFrom
+          (fun nextSt nextBindings nextAtom nextExpected =>
+            mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+          (fun nextSt application =>
+            interpretFuel env (fuel + 1) nextSt
+              [{ stack := atomToStack
+                  (Atom.expr [Atom.sym "eval", application]) [],
+                 bnd := bindings }] [])
+          bindings previous op args plan.selected).2) : P branchState := by
+  rcases h with ⟨preceding, _suffix, _hsplit, rfl⟩
+  let advance := fun previous bindings =>
+    (evaluateExpectedApplicationFrom
+      (fun nextSt nextBindings nextAtom nextExpected =>
+        mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+      (fun nextSt application =>
+        interpretFuel env (fuel + 1) nextSt
+          [{ stack := atomToStack
+              (Atom.expr [Atom.sym "eval", application]) [],
+             bnd := bindings }] [])
+      bindings previous op args plan.selected).2
+  have hFold : ∀ (inputs : List Bindings) (initial : St),
+      P initial → P (inputs.foldl advance initial) := by
+    intro inputs
+    induction inputs with
+    | nil => intro initial hP; exact hP
+    | cons first rest ih =>
+        intro initial hP
+        exact ih (advance initial first) (hStep initial first hP)
+  exact hFold preceding st hInitial
+
 /-- Evidence that one raw policy is exactly the policy executed by the shared
 ordinary selected-application plan from `incoming`.  This is deliberately a
 consumer-side layer over `ExactApplicationPolicy`: typed consumers share the
@@ -5990,8 +6067,8 @@ private theorem expectedResultFoldStep_preserves_state_pred
     (selected : SelectedFunctionType) (P : St → Prop)
     (hEval : ∀ st bindings atom expected,
       P st → P (evalRecursive st bindings atom expected).2)
-    (hReduce : ∀ st application,
-      P st → P (reduceApplication st application).2)
+    (hReduce : ∀ st values,
+      P st → P (reduceApplication st (.expr (.sym op :: values))).2)
     (acc : List (Atom × Bindings) × St)
     (part : List Atom × Bindings) (hAcc : P acc.2) :
     P (expectedResultFoldStep evalRecursive reduceApplication queryVars op
@@ -6004,7 +6081,8 @@ private theorem expectedResultFoldStep_preserves_state_pred
     cases hReduceEq : reduceApplication acc.2 application with
     | mk pairs st' =>
         have hSt' : P st' := by
-          have := hReduce acc.2 application hAcc
+          have := hReduce acc.2 part.1 hAcc
+          change P (reduceApplication acc.2 application).2 at this
           simpa [hReduceEq] using this
         have hFold : P (pairs.foldl
           (fun (inner : List (Atom × Bindings) × St)
@@ -6059,8 +6137,8 @@ private theorem expectedApplicationResultFold_preserves_state_pred
     (P : St → Prop)
     (hEval : ∀ st bindings atom expected,
       P st → P (evalRecursive st bindings atom expected).2)
-    (hReduce : ∀ st application,
-      P st → P (reduceApplication st application).2)
+    (hReduce : ∀ st values,
+      P st → P (reduceApplication st (.expr (.sym op :: values))).2)
     (hInitial : P partialsState.2) :
     P (expectedApplicationResultFold evalRecursive reduceApplication
       initialBindings op args selected partialsState).2 := by
@@ -6080,6 +6158,35 @@ private theorem expectedApplicationResultFold_preserves_state_pred
 predicate preserved by recursive argument/result evaluation and by root
 reduction.  The theorem is seed- and policy-parametric, so DIndG consumers do
 not need a per-operator reconstruction of the two ordered folds. -/
+theorem evaluateExpectedApplicationFrom_preserves_state_pred_on_head
+    (evalRecursive : St → Bindings → Atom → Atom →
+      List (Atom × Bindings) × St)
+    (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (initialBindings : Bindings) (st : St)
+    (op : String) (args : List Atom) (selected : SelectedFunctionType)
+    (P : St → Prop)
+    (hEval : ∀ nextSt bindings atom expected,
+      P nextSt → P (evalRecursive nextSt bindings atom expected).2)
+    (hReduce : ∀ nextSt values,
+      P nextSt → P (reduceApplication nextSt (.expr (.sym op :: values))).2)
+    (hInitial : P st) :
+    P (evaluateExpectedApplicationFrom evalRecursive reduceApplication
+      initialBindings st op args selected).2 := by
+  change P (expectedApplicationResultFold evalRecursive reduceApplication
+    initialBindings op args selected
+    (expectedApplicationArgumentFold evalRecursive initialBindings st args
+      selected)).2
+  apply expectedApplicationResultFold_preserves_state_pred
+    evalRecursive reduceApplication initialBindings op args selected
+    (expectedApplicationArgumentFold evalRecursive initialBindings st args
+      selected) P hEval hReduce
+  exact expectedApplicationArgumentFold_preserves_state_pred
+    evalRecursive initialBindings st args selected P hEval hInitial
+
+/-- The complete live selected-application worker preserves every state
+predicate preserved by recursive argument/result evaluation and by root
+reduction.  The theorem is seed- and policy-parametric, so DIndG consumers do
+not need a per-operator reconstruction of the two ordered folds. -/
 theorem evaluateExpectedApplicationFrom_preserves_state_pred
     (evalRecursive : St → Bindings → Atom → Atom →
       List (Atom × Bindings) × St)
@@ -6094,16 +6201,9 @@ theorem evaluateExpectedApplicationFrom_preserves_state_pred
     (hInitial : P st) :
     P (evaluateExpectedApplicationFrom evalRecursive reduceApplication
       initialBindings st op args selected).2 := by
-  change P (expectedApplicationResultFold evalRecursive reduceApplication
-    initialBindings op args selected
-    (expectedApplicationArgumentFold evalRecursive initialBindings st args
-      selected)).2
-  apply expectedApplicationResultFold_preserves_state_pred
-    evalRecursive reduceApplication initialBindings op args selected
-    (expectedApplicationArgumentFold evalRecursive initialBindings st args
-      selected) P hEval hReduce
-  exact expectedApplicationArgumentFold_preserves_state_pred
-    evalRecursive initialBindings st args selected P hEval hInitial
+  exact evaluateExpectedApplicationFrom_preserves_state_pred_on_head
+    evalRecursive reduceApplication initialBindings st op args selected P hEval
+    (fun nextSt values hState => hReduce nextSt (.expr (.sym op :: values)) hState) hInitial
 
 /-- Once a concrete caller has computed the live argument phase, the complete
 application is exactly the result fold over those rows.  In particular, this
@@ -7477,6 +7577,424 @@ theorem mem_foldl_append_state
             exact Or.inr
               ⟨laterInput, by simp [hlaterInput], branchState, hresult⟩
 
+/-- A delivered occurrence comes from one actual input position. The entry
+state is computed by the preceding inputs, preserving their effects. -/
+theorem mem_foldl_append_state_prefix
+    {Input Output State : Type}
+    (run : State → Input → List Output × State)
+    (inputs : List Input) (prior : List Output) (state : State)
+    (output : Output)
+    (hmem : output ∈
+      (inputs.foldl (fun acc input =>
+        let next := run acc.2 input
+        (acc.1 ++ next.1, next.2)) (prior, state)).1) :
+    output ∈ prior ∨
+      ∃ preceding input suffix,
+        inputs = preceding ++ input :: suffix ∧
+        output ∈
+          (run (preceding.foldl (fun s i => (run s i).2) state) input).1 := by
+  induction inputs generalizing prior state with
+  | nil => exact Or.inl (by simpa using hmem)
+  | cons input inputs ih =>
+      cases hrun : run state input with
+      | mk branchOutputs nextState =>
+          have htail : output ∈
+              (inputs.foldl (fun acc nextInput =>
+                let next := run acc.2 nextInput
+                (acc.1 ++ next.1, next.2))
+                (prior ++ branchOutputs, nextState)).1 := by
+            simpa [hrun] using hmem
+          rcases ih (prior := prior ++ branchOutputs)
+              (state := nextState) htail with hprior | hlater
+          · rcases List.mem_append.mp hprior with hinitial | hbranch
+            · exact Or.inl hinitial
+            · exact Or.inr ⟨[], input, inputs, rfl, by simpa [hrun] using hbranch⟩
+          · rcases hlater with ⟨preceding, laterInput, suffix, hsplit, hresult⟩
+            exact Or.inr ⟨input :: preceding, laterInput, suffix,
+              by simp [hsplit], by simpa [hrun] using hresult⟩
+
+theorem evaluatedArgumentPartFoldStep_append
+    (eval : St → Bindings → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (source : List Atom) (argument : Atom)
+    (prior : List (List Atom × Bindings)) (state : St) (row : List Atom × Bindings) :
+    evaluatedArgumentPartFoldStep eval scope source argument (prior, state) row =
+      let next := evaluatedArgumentPartFoldStep eval scope source argument ([], state) row
+      (prior ++ next.1, next.2) := by
+  unfold evaluatedArgumentPartFoldStep
+  split <;> rfl
+
+/-- Every produced argument row records the physical input occurrence and the
+state reached after its earlier input occurrences. -/
+theorem evaluatedArgumentPartFold_mem_origin
+    (eval : St → Bindings → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (source : List Atom) (argument : Atom)
+    (rows : List (List Atom × Bindings)) (state : St) (output : List Atom × Bindings)
+    (present : output ∈
+      (rows.foldl (evaluatedArgumentPartFoldStep eval scope source argument) ([], state)).1) :
+    ∃ preceding row suffix,
+      rows = preceding ++ row :: suffix ∧
+      output ∈ (evaluatedArgumentPartFoldStep eval scope source argument
+        ([], preceding.foldl (fun next input =>
+          (evaluatedArgumentPartFoldStep eval scope source argument ([], next) input).2) state) row).1 := by
+  let run := fun next row => evaluatedArgumentPartFoldStep eval scope source argument ([], next) row
+  have worker : evaluatedArgumentPartFoldStep eval scope source argument =
+      (fun acc row => let next := run acc.2 row; (acc.1 ++ next.1, next.2)) := by
+    funext acc row
+    exact evaluatedArgumentPartFoldStep_append eval scope source argument acc.1 acc.2 row
+  rw [worker] at present
+  rcases mem_foldl_append_state_prefix run rows [] state output present with impossible | origin
+  · cases impossible
+  · exact origin
+
+theorem expectedApplicationArgumentFold_eval_eval_rows
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (state : St) (first second firstExpected secondExpected : Atom)
+    (selected : SelectedFunctionType)
+    (policies : argumentEvaluationPolicies selected 2 =
+      [(true, firstExpected), (true, secondExpected)]) :
+    expectedApplicationArgumentFold eval incoming state [first, second] selected =
+      let scope := expectedApplicationRetentionScope incoming [first, second]
+      let firstRun := eval state incoming first firstExpected
+      let rows := firstRun.1.map fun result =>
+        ([result.1], restrictBnd scope ((Bindings.merge incoming result.2).head?.getD result.2))
+      rows.foldl
+        (evaluatedArgumentPartFoldStep
+          (fun next bindings atom => eval next bindings atom secondExpected)
+          scope [first, second] second) ([], firstRun.2) := by
+  unfold expectedApplicationArgumentFold
+  simp only [List.length_cons, List.length_nil]
+  rw [policies]
+  rfl
+
+theorem expectedApplicationArgumentFold_eval_eval_origin
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (state : St) (first second firstExpected secondExpected : Atom)
+    (selected : SelectedFunctionType)
+    (policies : argumentEvaluationPolicies selected 2 =
+      [(true, firstExpected), (true, secondExpected)])
+    (output : List Atom × Bindings) (two : output.1.length = 2)
+    (present : output ∈
+      (expectedApplicationArgumentFold eval incoming state [first, second] selected).1) :
+    let scope := expectedApplicationRetentionScope incoming [first, second]
+    let firstRun := eval state incoming first firstExpected
+    let project := fun before result =>
+      restrictBnd scope ((Bindings.merge before result).head?.getD result)
+    let rows := firstRun.1.map fun result => ([result.1], project incoming result.2)
+    ∃ firstResult ∈ firstRun.1, ∃ preceding suffix,
+      rows = preceding ++ ([firstResult.1], project incoming firstResult.2) :: suffix ∧
+      (([firstResult.1].zip [first, second]).find?
+        (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none ∧
+      ∃ secondResult ∈
+        (eval
+          (preceding.foldl (fun next row =>
+            (evaluatedArgumentPartFoldStep
+              (fun next bindings atom => eval next bindings atom secondExpected)
+              scope [first, second] second ([], next) row).2) firstRun.2)
+          (project incoming firstResult.2) second secondExpected).1,
+        output = ([firstResult.1, secondResult.1],
+          project (project incoming firstResult.2) secondResult.2) := by
+  let scope := expectedApplicationRetentionScope incoming [first, second]
+  let firstRun := eval state incoming first firstExpected
+  let project := fun before result =>
+    restrictBnd scope ((Bindings.merge before result).head?.getD result)
+  let rows := firstRun.1.map fun result => ([result.1], project incoming result.2)
+  let evalSecond := fun next bindings atom => eval next bindings atom secondExpected
+  have fold : output ∈
+      (rows.foldl (evaluatedArgumentPartFoldStep evalSecond scope [first, second] second)
+        ([], firstRun.2)).1 := by
+    rw [expectedApplicationArgumentFold_eval_eval_rows eval incoming state first second
+      firstExpected secondExpected selected policies] at present
+    exact present
+  obtain ⟨preceding, row, suffix, split, emitted⟩ :=
+    evaluatedArgumentPartFold_mem_origin evalSecond scope [first, second] second
+      rows firstRun.2 output fold
+  have rowMem : row ∈ rows := by rw [split]; simp
+  obtain ⟨firstResult, firstMem, rowEq⟩ := List.mem_map.mp rowMem
+  subst row
+  refine ⟨firstResult, firstMem, preceding, suffix, split, ?_⟩
+  unfold evaluatedArgumentPartFoldStep at emitted
+  split at emitted
+  · have equality : output = ([firstResult.1], project incoming firstResult.2) := by
+      simpa using emitted
+    rw [equality] at two
+    simp at two
+  · rename_i clean
+    refine ⟨clean, ?_⟩
+    obtain ⟨secondResult, secondMem, outputEq⟩ := List.mem_map.mp emitted
+    exact ⟨secondResult, secondMem, outputEq.symm⟩
+
+section BinaryArgumentReadout
+set_option maxRecDepth 8192
+set_option maxHeartbeats 4000000
+
+/-- A root refusal leaves each actual argument row intact. Changed terminal
+arguments are still delivered as terminals, without running the root. -/
+theorem expectedApplicationResultFold_refusal_eq
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (rows : List (List Atom × Bindings))
+    (state : St) (P : St → Prop) (hState : P state)
+    (hRoot : ∀ next values, P next → ∃ rootBnd,
+      reduce next (.expr (.sym op :: values)) = ([(notReducibleA,rootBnd)],next)) :
+    expectedApplicationResultFold eval reduce incoming op args selected (rows,state) =
+      (rows.map (fun row =>
+        match (row.1.zip args).find?
+          (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+        | some pair => (pair.1,row.2)
+        | none => (.expr (.sym op :: row.1),row.2)),state) := by
+  let emit := fun row : List Atom × Bindings =>
+    match (row.1.zip args).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+    | some pair => (pair.1,row.2)
+    | none => (.expr (.sym op :: row.1),row.2)
+  have step (acc : List (Atom × Bindings) × St) (row : List Atom × Bindings)
+      (hP : P acc.2) :
+      expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming args) op args selected acc row =
+      (acc.1 ++ [emit row],acc.2) := by
+    unfold expectedResultFoldStep
+    cases hChanged : (row.1.zip args).find?
+        (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+    | some pair => simp only [hChanged,emit]
+    | none =>
+      obtain ⟨rootBnd,hReduce⟩ := hRoot acc.2 row.1 hP
+      simp only [hReduce,List.foldl_cons,List.foldl_nil]
+      have hNR : (notReducibleA == notReducibleA) = true := rfl
+      simp only [hNR,Bool.true_or,↓reduceIte,List.nil_append,emit,hChanged]
+  have fold (inputs : List (List Atom × Bindings))
+      (acc : List (Atom × Bindings) × St) (hP : P acc.2) :
+      inputs.foldl (expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming args) op args selected) acc =
+        (acc.1 ++ inputs.map emit,acc.2) := by
+    induction inputs generalizing acc with
+    | nil => simp
+    | cons row rest ih =>
+      rw [List.foldl_cons,step acc row hP,ih (acc.1 ++ [emit row],acc.2) hP]
+      simp [List.append_assoc]
+  exact fold rows ([],state) hState
+
+/-- Both evaluated children preserve the world predicate along the actual
+chronological argument fold, including stopped rows. -/
+theorem expectedApplicationArgumentFold_eval_eval_preserves
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (state : St) (first second firstExpected secondExpected : Atom)
+    (selected : SelectedFunctionType)
+    (policies : argumentEvaluationPolicies selected 2 =
+      [(true,firstExpected),(true,secondExpected)])
+    (P : St → Prop)
+    (hFirst : P (eval state incoming first firstExpected).2)
+    (hSecond : ∀ next bindings, P next → P (eval next bindings second secondExpected).2) :
+    P (expectedApplicationArgumentFold eval incoming state [first,second] selected).2 := by
+  rw [expectedApplicationArgumentFold_eval_eval_rows eval incoming state first second
+    firstExpected secondExpected selected policies]
+  apply evaluatedArgumentPartFold_preserves_state_pred
+  · exact hFirst
+  · intro acc part _ _ hP
+    exact hSecond acc.2 part.2 hP
+
+/-- The public binary argument observer retains both projected environments.
+Its second result comes from the state after every earlier first-result row. -/
+theorem expectedApplicationArgumentFold_eval_eval_clean_origin
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (state : St) (first second firstExpected secondExpected : Atom)
+    (selected : SelectedFunctionType)
+    (policies : argumentEvaluationPolicies selected 2 =
+      [(true,firstExpected),(true,secondExpected)])
+    (P : St → Prop)
+    (hFirst : P (eval state incoming first firstExpected).2)
+    (hSecond : ∀ next bindings, P next → P (eval next bindings second secondExpected).2)
+    (row : List Atom × Bindings)
+    (hRow : row ∈ (expectedApplicationArgumentFold eval incoming state
+      [first,second] selected).1)
+    (hClean : (row.1.zip [first,second]).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) = none) :
+    ∃ firstResult ∈ (eval state incoming first firstExpected).1,
+      ∃ next secondResult,
+        P next ∧
+        secondResult ∈ (eval next
+          (restrictBnd (expectedApplicationRetentionScope incoming [first,second])
+            ((Bindings.merge incoming firstResult.2).head?.getD firstResult.2))
+          second secondExpected).1 ∧
+        row = ([firstResult.1,secondResult.1],
+          restrictBnd (expectedApplicationRetentionScope incoming [first,second])
+            ((Bindings.merge
+              (restrictBnd (expectedApplicationRetentionScope incoming [first,second])
+                ((Bindings.merge incoming firstResult.2).head?.getD firstResult.2))
+              secondResult.2).head?.getD secondResult.2)) := by
+  let scope := expectedApplicationRetentionScope incoming [first,second]
+  let firstRun := eval state incoming first firstExpected
+  let project := fun before result : Bindings =>
+    restrictBnd scope ((Bindings.merge before result).head?.getD result)
+  let rows := firstRun.1.map fun result => ([result.1],project incoming result.2)
+  let evalSecond := fun next bindings atom => eval next bindings atom secondExpected
+  have hFold : row ∈
+      (rows.foldl (evaluatedArgumentPartFoldStep evalSecond scope [first,second] second)
+        ([],firstRun.2)).1 := by
+    rw [expectedApplicationArgumentFold_eval_eval_rows eval incoming state first second
+      firstExpected secondExpected selected policies] at hRow
+    exact hRow
+  have hLength : row.1.length = 2 :=
+    evaluatedArgumentPartFold_clean_mem_length evalSecond scope [first,second] second
+      rows firstRun.2 1 (by
+        intro part hPart
+        obtain ⟨result,_,rfl⟩ := List.mem_map.mp hPart
+        rfl) row hFold hClean
+  obtain ⟨firstResult,hFirstResult,preceding,suffix,_hSplit,_hFirstClean,
+      secondResult,hSecondResult,hRowEq⟩ :=
+    expectedApplicationArgumentFold_eval_eval_origin eval incoming state first second
+      firstExpected secondExpected selected policies row hLength hRow
+  let before := preceding.foldl (fun next row =>
+    (evaluatedArgumentPartFoldStep evalSecond scope [first,second] second ([],next) row).2)
+    firstRun.2
+  have hBefore : P before := by
+    have all : ∀ (inputs : List (List Atom × Bindings)) next,
+        P next → P (inputs.foldl (fun next row =>
+          (evaluatedArgumentPartFoldStep evalSecond scope [first,second] second ([],next) row).2) next) := by
+      intro inputs
+      induction inputs with
+      | nil => intro next hNext; exact hNext
+      | cons part rest ih =>
+        intro next hNext
+        apply ih
+        dsimp only
+        unfold evaluatedArgumentPartFoldStep
+        split
+        · exact hNext
+        · exact hSecond next part.2 hNext
+    exact all preceding firstRun.2 hFirst
+  exact ⟨firstResult,hFirstResult,before,secondResult,hBefore,hSecondResult,hRowEq⟩
+
+
+/-- In a data constructor, successful output comes from a complete live row.
+A refused root does not discard that row's bindings or restart either child. -/
+theorem evaluateExpectedApplicationFrom_binary_refusal_observation
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (state : St) (op : String)
+    (first second firstExpected secondExpected : Atom)
+    (selected : SelectedFunctionType)
+    (policies : argumentEvaluationPolicies selected 2 =
+      [(true,firstExpected),(true,secondExpected)])
+    (P : St → Prop)
+    (hFirst : P (eval state incoming first firstExpected).2)
+    (hSecond : ∀ next bindings, P next → P (eval next bindings second secondExpected).2)
+    (hRoot : ∀ next values, P next → ∃ rootBnd,
+      reduce next (.expr (.sym op :: values)) = ([(notReducibleA,rootBnd)],next)) :
+    P (evaluateExpectedApplicationFrom eval reduce incoming state op [first,second] selected).2 ∧
+      ∀ output ∈
+        (evaluateExpectedApplicationFrom eval reduce incoming state op [first,second] selected).1,
+        (output.1 == emptyA || output.1.isError) = false →
+        ∃ firstResult ∈ (eval state incoming first firstExpected).1,
+          ∃ next secondResult,
+            P next ∧
+            secondResult ∈ (eval next
+              (restrictBnd (expectedApplicationRetentionScope incoming [first,second])
+                ((Bindings.merge incoming firstResult.2).head?.getD firstResult.2))
+              second secondExpected).1 ∧
+            (([firstResult.1,secondResult.1].zip [first,second]).find?
+              (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none ∧
+            output.1 = .expr [.sym op,firstResult.1,secondResult.1] := by
+  let partials := expectedApplicationArgumentFold eval incoming state [first,second] selected
+  have hPartial : P partials.2 := expectedApplicationArgumentFold_eval_eval_preserves
+    eval incoming state first second firstExpected secondExpected selected policies P hFirst hSecond
+  have hResult := expectedApplicationResultFold_refusal_eq eval reduce incoming op
+    [first,second] selected partials.1 partials.2 P hPartial hRoot
+  rw [evaluateExpectedApplicationFrom_eq_factored]
+  dsimp only [evaluateExpectedApplicationFromFactored]
+  rw [hResult]
+  refine ⟨hPartial,?_⟩
+  intro output hOutput hNonterminal
+  obtain ⟨row,hRow,hOutputEq⟩ := List.mem_map.mp hOutput
+  cases hChanged : (row.1.zip [first,second]).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+  | some changed =>
+    have hValue : output.1 = changed.1 := by
+      simpa only [hChanged] using (congrArg Prod.fst hOutputEq).symm
+    have hTest := List.find?_some hChanged
+    have hTerminal := (Bool.and_eq_true_iff.mp hTest).1
+    rw [hValue] at hNonterminal
+    rw [hNonterminal] at hTerminal
+    contradiction
+  | none =>
+    obtain ⟨firstResult,hFirstResult,next,secondResult,hNext,hSecondResult,hRowEq⟩ :=
+      expectedApplicationArgumentFold_eval_eval_clean_origin eval incoming state first second
+        firstExpected secondExpected selected policies P hFirst hSecond row hRow hChanged
+    refine ⟨firstResult,hFirstResult,next,secondResult,hNext,hSecondResult,?_,?_⟩
+    · simpa only [hRowEq] using hChanged
+    · have hValue : output.1 = .expr (.sym op :: row.1) := by
+        simpa only [hChanged] using (congrArg Prod.fst hOutputEq).symm
+      simpa only [hRowEq] using hValue
+
+end BinaryArgumentReadout
+
+namespace BinaryArgumentOriginControls
+
+private def caller : Bindings := [.val "held" (.sym "saved")]
+
+private def branchingEval (state : St) (bindings : Bindings)
+    (argument _expected : Atom) : List (Atom × Bindings) × St :=
+  if argument == .sym "first" then
+    ([(.sym "same", bindings), (.sym "same", bindings)],
+      { state with counter := state.counter + 1 })
+  else
+    ([(.sym (if state.counter == 1 then "one" else "two"), bindings)],
+      { state with counter := state.counter + 1 })
+
+private def stoppedEval (state : St) (bindings : Bindings)
+    (argument _expected : Atom) : List (Atom × Bindings) × St :=
+  if argument == .sym "first" then
+    ([(emptyA, bindings)], { state with counter := state.counter + 1 })
+  else
+    ([(.sym "unexpected", bindings)], { state with counter := state.counter + 10 })
+
+private def branchingRun :=
+  expectedApplicationArgumentFold branchingEval caller St.init
+    [.sym "first", .sym "second"] (untypedTupleSelectedType 2)
+
+private def stoppedRun :=
+  expectedApplicationArgumentFold stoppedEval caller St.init
+    [.sym "first", .sym "second"] (untypedTupleSelectedType 2)
+
+private theorem tuple_policies :
+    argumentEvaluationPolicies (untypedTupleSelectedType 2) 2 =
+      [(true, .sym "%Undefined%"), (true, .sym "%Undefined%")] :=
+  argumentEvaluationPolicies_untypedTuple 2
+
+theorem equal_first_occurrences_keep_distinct_worlds :
+    branchingRun.1.map Prod.fst =
+      [[.sym "same", .sym "one"], [.sym "same", .sym "two"]] ∧
+      branchingRun.2.counter = 3 := by
+  unfold branchingRun
+  rw [expectedApplicationArgumentFold_eval_eval_rows branchingEval caller St.init
+    (.sym "first") (.sym "second") (.sym "%Undefined%") (.sym "%Undefined%")
+    (untypedTupleSelectedType 2) tuple_policies]
+  constructor <;> rfl
+
+theorem restarting_alternatives_changes_the_result :
+    branchingRun.1.map Prod.fst ≠
+      [[.sym "same", .sym "one"], [.sym "same", .sym "one"]] := by
+  rw [equal_first_occurrences_keep_distinct_worlds.1]
+  simp
+
+theorem caller_is_nonempty : caller ≠ [] := by intro impossible; cases impossible
+
+theorem changed_terminal_does_not_run_the_second_argument :
+    stoppedRun.1.map Prod.fst = [[emptyA]] ∧
+      stoppedRun.2.counter = 1 := by
+  unfold stoppedRun
+  rw [expectedApplicationArgumentFold_eval_eval_rows stoppedEval caller St.init
+    (.sym "first") (.sym "second") (.sym "%Undefined%") (.sym "%Undefined%")
+    (untypedTupleSelectedType 2) tuple_policies]
+  constructor <;> rfl
+
+theorem changed_terminal_is_not_a_completed_pair :
+    ∀ values ∈ stoppedRun.1.map Prod.fst, values.length ≠ 2 := by
+  rw [changed_terminal_does_not_run_the_second_argument.1]
+  simp
+
+end BinaryArgumentOriginControls
+
 /-- Invariant-aware form of `mem_foldl_append_state`.  The invariant is
 required at the initial state and preserved by every branch, so the extracted
 branch-entry state is certified without pretending that alternatives run from
@@ -8340,6 +8858,108 @@ theorem mettaEval_quoted_eval_quoted_mem_implies_live_partFold_mem_after_instant
     ⟨argPairs, stArg, hArg, hPartFold⟩
   exact ⟨seed, hSeed, branchState, argPairs, stArg, hArg, hPartFold⟩
 
+/-- An occurrence returned by a selected application retains its actual
+seed position and the complete state produced by the preceding seeds. -/
+theorem mettaEval_mem_implies_application_with_seed_origin
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (source : Atom) (op : String) (args : List Atom)
+    (plan : SelectedApplicationExecutionPlan env st.world incoming op args)
+    (result : Atom × Bindings)
+    (hInstantiate : instantiate incoming source = Atom.expr (Atom.sym op :: args))
+    (hApplicationNotError : (Atom.expr (Atom.sym op :: args)).isError = false)
+    (hmem : result ∈ (mettaEval env (fuel + 1) st incoming source).1) :
+    ∃ seed branchState,
+      plan.SeedOrigin fuel st seed branchState ∧
+      result ∈
+        (evaluateExpectedApplicationFrom
+          (fun nextSt nextBindings nextAtom nextExpected =>
+            mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+          (fun nextSt application =>
+            interpretFuel env (fuel + 1) nextSt
+              [{ stack := atomToStack
+                  (Atom.expr [Atom.sym "eval", application]) [],
+                 bnd := seed }] [])
+          seed branchState op args plan.selected).1 := by
+  rw [mettaEval_eq_evaluateExpectedApplicationSeeds_of_selected_after_instantiate
+    env fuel st incoming source op args hInstantiate hApplicationNotError plan] at hmem
+  have hmemRaw := mem_of_mem_prioritizeSemanticResults hmem
+  unfold evaluateExpectedApplicationSeeds at hmemRaw
+  rcases mem_foldl_append_state_prefix
+      (fun branchState bindings =>
+        evaluateExpectedApplicationFrom
+          (fun nextSt nextBindings nextAtom nextExpected =>
+            mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+          (fun nextSt application =>
+            interpretFuel env (fuel + 1) nextSt
+              [{ stack := atomToStack
+                  (Atom.expr [Atom.sym "eval", application]) [],
+                 bnd := bindings }] [])
+          bindings branchState op args plan.selected)
+      plan.seeds [] st result hmemRaw with hnil | hbranch
+  · cases hnil
+  · rcases hbranch with ⟨preceding, seed, suffix, hsplit, hresult⟩
+    exact ⟨seed, _, ⟨preceding, suffix, hsplit, rfl⟩, hresult⟩
+
+theorem mettaEval_quoted_eval_quoted_mem_implies_live_partFold_mem_after_instantiate_with_origin
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (source : Atom) (op : String) (p atom templ : Atom)
+    (plan : SelectedApplicationExecutionPlan env st.world incoming op
+      [p, atom, templ])
+    (result : Atom × Bindings) (P : St → Prop)
+    (hInitial : P st)
+    (hStep : ∀ branchState seed,
+      P branchState →
+        P (evaluateExpectedApplicationFrom
+          (fun nextSt nextBindings nextAtom nextExpected =>
+            mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+          (fun nextSt application =>
+            interpretFuel env (fuel + 1) nextSt
+              [{ stack := atomToStack
+                  (Atom.expr [Atom.sym "eval", application]) [], bnd := seed }] [])
+          seed branchState op [p, atom, templ] plan.selected).2)
+    (hInstantiate : instantiate incoming source =
+      Atom.expr [Atom.sym op, p, atom, templ])
+    (hApplicationNotError :
+      (Atom.expr [Atom.sym op, p, atom, templ]).isError = false)
+    (hPolicies :
+      argumentEvaluationPolicies plan.selected 3 =
+        [(false, .sym "Atom"), (true, .sym "%Undefined%"),
+          (false, .sym "Atom")])
+    (hReturn : returnsAtom plan.selected = false)
+    (hResultExpected :
+      selectedResultExpected plan.selected = .sym "%Undefined%")
+    (hResultNotError : result.1.isError = false)
+    (hResultNotEmpty : result.1 ≠ emptyA)
+    (hmem : result ∈ (mettaEval env (fuel + 1) st incoming source).1) :
+    ∃ seed branchState argPairs stArg,
+      plan.SeedOrigin fuel st seed branchState ∧
+      P branchState ∧
+      mettaEval env fuel branchState seed atom = (argPairs, stArg) ∧
+      let sourceArgs := [p, atom, templ]
+      let pOut := instantiate seed p
+      let queryVars := expectedApplicationRetentionScope seed sourceArgs
+      let rows := argPairs.map (fun out : Atom × Bindings =>
+        ([pOut, out.1],
+          restrictBnd queryVars
+            ((Bindings.merge seed out.2).head?.getD out.2)))
+      let parts := rows.map (completeQuotedTailArgument sourceArgs templ)
+      result ∈
+        (parts.foldl
+          (mettaEvalExprPartFoldStep env fuel queryVars op sourceArgs seed false)
+          ([], stArg)).1 := by
+  rcases mettaEval_mem_implies_application_with_seed_origin
+      env fuel st incoming source op [p, atom, templ] plan result
+      hInstantiate hApplicationNotError hmem with
+    ⟨seed, branchState, hOrigin, hWorker⟩
+  rcases
+      evaluateExpectedApplicationFrom_quoted_eval_quoted_mem_implies_partFold
+        env fuel seed branchState op p atom templ plan.selected result
+        hPolicies hReturn hResultExpected hResultNotError hResultNotEmpty hWorker with
+    ⟨argPairs, stArg, hArg, hPartFold⟩
+  exact
+    ⟨seed, branchState, argPairs, stArg, hOrigin,
+      hOrigin.invariant P hInitial hStep, hArg, hPartFold⟩
+
 /-- Invariant-aware live quoted/evaluated/quoted extraction.  The predicate
 is certified at the actual branch-entry state reached after all earlier
 applicability seeds; it is never transported from an independent copy of the
@@ -8390,28 +9010,12 @@ theorem mettaEval_quoted_eval_quoted_mem_implies_live_partFold_mem_after_instant
         (parts.foldl
           (mettaEvalExprPartFoldStep env fuel queryVars op sourceArgs seed false)
           ([], stArg)).1 := by
-  rw [mettaEval_eq_evaluateExpectedApplicationSeeds_of_selected_after_instantiate
-    env fuel st incoming source op [p, atom, templ]
-    hInstantiate hApplicationNotError plan] at hmem
-  have hmemRaw := mem_of_mem_prioritizeSemanticResults hmem
-  rcases
-      mem_evaluateExpectedApplicationSeeds_of_invariant
-        (fun nextSt nextBindings nextAtom nextExpected =>
-          mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
-        (fun seed nextSt application =>
-          interpretFuel env (fuel + 1) nextSt
-            [{ stack := atomToStack
-                (Atom.expr [Atom.sym "eval", application]) [], bnd := seed }] [])
-        plan.seeds st op [p, atom, templ] plan.selected result P
-        hInitial hStep hmemRaw with
-    ⟨seed, hSeed, branchState, hPBranch, hWorker⟩
-  rcases
-      evaluateExpectedApplicationFrom_quoted_eval_quoted_mem_implies_partFold
-        env fuel seed branchState op p atom templ plan.selected result
-        hPolicies hReturn hResultExpected hResultNotError hResultNotEmpty hWorker with
-    ⟨argPairs, stArg, hArg, hPartFold⟩
-  exact
-    ⟨seed, hSeed, branchState, argPairs, stArg, hPBranch, hArg, hPartFold⟩
+  rcases mettaEval_quoted_eval_quoted_mem_implies_live_partFold_mem_after_instantiate_with_origin
+      env fuel st incoming source op p atom templ plan result P hInitial hStep
+      hInstantiate hApplicationNotError hPolicies hReturn hResultExpected
+      hResultNotError hResultNotEmpty hmem with
+    ⟨seed, branchState, argPairs, stArg, hOrigin, hPBranch, hArg, hPartFold⟩
+  exact ⟨seed, hOrigin.mem, branchState, argPairs, stArg, hPBranch, hArg, hPartFold⟩
 
 /-- Exact factored-worker boundary for one quoted/evaluated/quoted row.
 
@@ -11398,5 +12002,1533 @@ theorem interpretFuel_single_of_interpretStack1_results_single_nonfinal
       simp only [hstep] at hresults ⊢
       subst hresults
       simp [interpretFuel, hstep, hnonfinal]
+
+/-- Result observations follow the actual argument/result folds and all saved
+binding theories. The state invariant is carried chronologically across
+alternative rows, rather than restarting each row at the caller state. -/
+theorem expectedResultFoldStep_observes_with_state
+    (evalRecursive : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (queryVars : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (P : Atom → Prop) (I : St → Prop)
+    (hEvalState : ∀ state bindings atom expected, I state →
+      I (evalRecursive state bindings atom expected).2)
+    (hRootState : ∀ state atom, I state → I (reduceApplication state (.expr (.sym op :: atom))).2)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hQuoted : returnsAtom selected = true →
+      ∀ state values result, I state →
+        result ∈ (reduceApplication state (.expr (.sym op :: values))).1 → P result.1)
+    (hRecursive : ∀ origin values reduced, I origin →
+      reduced ∈ (reduceApplication origin (.expr (.sym op :: values))).1 →
+      (reduced.1 == notReducibleA || reduced.1 == .expr (.sym op :: values)) = false →
+      ∀ state bindings result, I state →
+      result ∈ (evalRecursive state bindings reduced.1 (selectedResultExpected selected)).1 → P result.1)
+    (acc : List (Atom × Bindings) × St) (part : List Atom × Bindings)
+    (hState : I acc.2)
+    (hAcc : ∀ result ∈ acc.1, P result.1) :
+    ∀ result ∈ (expectedResultFoldStep evalRecursive reduceApplication queryVars op args
+      selected acc part).1, P result.1 := by
+  unfold expectedResultFoldStep
+  cases hFind : (part.1.zip args).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+  | some stopped =>
+      dsimp only
+      intro result hResult
+      rcases List.mem_append.mp hResult with hOld | hNew
+      · exact hAcc result hOld
+      · have hEq := List.mem_singleton.mp hNew
+        subst result
+        have hTest := List.find?_some hFind
+        exact hStop stopped.1 (Bool.and_eq_true_iff.mp hTest).1
+  | none =>
+      dsimp only
+      let application := Atom.expr (Atom.sym op :: part.1)
+      cases hReduce : reduceApplication acc.2 application with
+      | mk pairs rootState =>
+          have hRootState' : I rootState := by
+            have h := hRootState acc.2 part.1 hState
+            change I (reduceApplication acc.2 application).2 at h
+            simpa [hReduce] using h
+          dsimp only
+          change ∀ result ∈ (acc.1 ++ (pairs.foldl _ ([], rootState)).1), P result.1
+          have hFold : ∀ (todo : List (Atom × Bindings)),
+              (∀ result ∈ todo, result ∈ pairs) →
+              ∀ (inner : List (Atom × Bindings) × St),
+              I inner.2 → (∀ result ∈ inner.1, P result.1) →
+              ∀ result ∈ (todo.foldl
+                (fun inner candidate =>
+                  let retained := restrictBnd queryVars
+                    ((Bindings.merge part.2 candidate.2).head?.getD candidate.2)
+                  if candidate.1 == notReducibleA || candidate.1 == application then
+                    (inner.1 ++ [(application, part.2)], inner.2)
+                  else if returnsAtom selected then
+                    (inner.1 ++ [(candidate.1, retained)], inner.2)
+                  else
+                    let deeper := evalRecursive inner.2 retained candidate.1
+                      (selectedResultExpected selected)
+                    (inner.1 ++ deeper.1.map (fun next =>
+                      (next.1, restrictBnd queryVars
+                        ((Bindings.merge retained next.2).head?.getD next.2))), deeper.2))
+                inner).1, P result.1 := by
+            intro todo
+            induction todo with
+            | nil => intro _ inner _hInnerState hInner; exact hInner
+            | cons candidate rest ih =>
+                intro hSubset inner hInnerState hInner
+                simp only [List.foldl_cons]
+                apply ih (by intro item hi; exact hSubset item (List.mem_cons_of_mem _ hi))
+                · split
+                  · exact hInnerState
+                  · split
+                    · exact hInnerState
+                    · exact hEvalState _ _ _ _ hInnerState
+                split
+                · intro result hResult
+                  rcases List.mem_append.mp hResult with hOld | hNew
+                  · exact hInner result hOld
+                  · have heq := List.mem_singleton.mp hNew
+                    subst result
+                    exact hApplication part.1
+                · rename_i hNotKeep
+                  split
+                  · rename_i hReturn
+                    intro result hResult
+                    rcases List.mem_append.mp hResult with hOld | hNew
+                    · exact hInner result hOld
+                    · have heq := List.mem_singleton.mp hNew
+                      subst result
+                      apply hQuoted hReturn acc.2 part.1 candidate hState
+                      rw [hReduce]
+                      exact hSubset candidate List.mem_cons_self
+                  · intro result hResult
+                    rcases List.mem_append.mp hResult with hOld | hNew
+                    · exact hInner result hOld
+                    · rcases List.mem_map.mp hNew with ⟨next, hNext, rfl⟩
+                      apply hRecursive acc.2 part.1 candidate hState ?_ (Bool.eq_false_iff.mpr hNotKeep) _ _ next hInnerState hNext
+                      rw [hReduce]
+                      exact hSubset candidate List.mem_cons_self
+          intro result hResult
+          rcases List.mem_append.mp hResult with hOld | hNew
+          · exact hAcc result hOld
+          · exact hFold pairs (by intros; assumption) ([], rootState) hRootState'
+              (by simp) result hNew
+
+
+theorem evaluateExpectedApplicationFrom_observes_with_state
+    (evalRecursive : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (P : Atom → Prop) (I : St → Prop)
+    (hEvalState : ∀ state bindings atom expected, I state →
+      I (evalRecursive state bindings atom expected).2)
+    (hRootState : ∀ state atom, I state → I (reduceApplication state (.expr (.sym op :: atom))).2)
+    (hState : I st)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hQuoted : returnsAtom selected = true →
+      ∀ state values result, I state →
+        result ∈ (reduceApplication state (.expr (.sym op :: values))).1 → P result.1)
+    (hRecursive : ∀ origin values reduced, I origin →
+      reduced ∈ (reduceApplication origin (.expr (.sym op :: values))).1 →
+      (reduced.1 == notReducibleA || reduced.1 == .expr (.sym op :: values)) = false →
+      ∀ state bindings result, I state →
+      result ∈ (evalRecursive state bindings reduced.1 (selectedResultExpected selected)).1 → P result.1) :
+    ∀ result ∈ (evaluateExpectedApplicationFrom evalRecursive reduceApplication incoming st
+      op args selected).1, P result.1 := by
+  have hArgState := expectedApplicationArgumentFold_preserves_state_pred
+    evalRecursive incoming st args selected I hEvalState hState
+  rw [evaluateExpectedApplicationFrom_eq_factored]
+  unfold evaluateExpectedApplicationFromFactored expectedApplicationResultFold
+  generalize expectedApplicationArgumentFold evalRecursive incoming st args selected = initial at hArgState ⊢
+  have hFold : ∀ (rows : List (List Atom × Bindings)) (acc : List (Atom × Bindings) × St),
+      I acc.2 → (∀ result ∈ acc.1, P result.1) →
+      ∀ result ∈ (rows.foldl
+        (expectedResultFoldStep evalRecursive reduceApplication
+          (expectedApplicationRetentionScope incoming args) op args selected) acc).1,
+        P result.1 := by
+    intro rows
+    induction rows with
+    | nil => intro acc _hAccState hAcc; exact hAcc
+    | cons part rows ih =>
+        intro acc hAccState hAcc
+        simp only [List.foldl_cons]
+        apply ih
+        · exact expectedResultFoldStep_preserves_state_pred evalRecursive reduceApplication
+            (expectedApplicationRetentionScope incoming args) op args selected I
+            hEvalState hRootState acc part hAccState
+        exact expectedResultFoldStep_observes_with_state evalRecursive reduceApplication
+          (expectedApplicationRetentionScope incoming args) op args selected
+          P I hEvalState hRootState hStop hApplication hQuoted hRecursive acc part hAccState hAcc
+  exact hFold initial.1 ([],initial.2) hArgState (by simp)
+
+theorem evaluateExpectedApplicationFrom_observes
+    (evalRecursive : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (P : Atom → Prop)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hQuoted : returnsAtom selected = true →
+      ∀ state values result,
+        result ∈ (reduceApplication state (.expr (.sym op :: values))).1 → P result.1)
+    (hRecursive : ∀ origin values reduced,
+      reduced ∈ (reduceApplication origin (.expr (.sym op :: values))).1 →
+      ∀ state bindings result,
+      result ∈ (evalRecursive state bindings reduced.1 (selectedResultExpected selected)).1 → P result.1) :
+    ∀ result ∈ (evaluateExpectedApplicationFrom evalRecursive reduceApplication incoming st
+      op args selected).1, P result.1 := by
+  exact evaluateExpectedApplicationFrom_observes_with_state
+    evalRecursive reduceApplication incoming st op args selected P (fun _ => True)
+    (by intros; trivial) (by intros; trivial) trivial hStop hApplication
+    (fun hReturn state values result _hState => hQuoted hReturn state values result)
+    (fun origin values reduced _hOrigin hReduced _hKeep state bindings result _hState =>
+      hRecursive origin values reduced hReduced state bindings result)
+
+theorem executeSelectedApplicationPlan_preserves_state_pred_on_head
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : Bindings → St → Atom → List (Atom × Bindings) × St)
+    (env : MinEnv) (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (expected : Atom) (selected : SelectedFunctionType) (I : St → Prop)
+    (hEval : ∀ state bindings atom expected, I state → I (eval state bindings atom expected).2)
+    (hReduce : ∀ bindings state values, I state → I (reduce bindings state (.expr (.sym op :: values))).2)
+    (hState : I st) :
+    I (executeSelectedApplicationPlan eval reduce env incoming st op args expected selected).2 := by
+  unfold executeSelectedApplicationPlan
+  dsimp only
+  split
+  · exact hState
+  · unfold evaluateExpectedApplicationSeeds
+    apply foldl_snd_preserves_state_pred _ I _ _ _ hState
+    intro acc bindings hAcc
+    exact evaluateExpectedApplicationFrom_preserves_state_pred_on_head eval
+      (reduce bindings) bindings acc.2 op args selected I hEval (hReduce bindings) hAcc
+
+/-- An observation of a selected application is preserved across the actual
+head-cast branch and every chronological applicability seed. -/
+theorem executeSelectedApplicationPlan_observes_with_state
+    (evalRecursive : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduceApplication : Bindings → St → Atom → List (Atom × Bindings) × St)
+    (env : MinEnv) (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (expected : Atom) (selected : SelectedFunctionType) (P : Atom → Prop) (I : St → Prop)
+    (hEvalState : ∀ state bindings atom expected, I state →
+      I (evalRecursive state bindings atom expected).2)
+    (hRootState : ∀ bindings state atom, I state →
+      I (reduceApplication bindings state (.expr (.sym op :: atom))).2)
+    (hState : I st)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hQuoted : returnsAtom selected = true →
+      ∀ bindings state values result, I state →
+        result ∈ (reduceApplication bindings state (.expr (.sym op :: values))).1 → P result.1)
+    (hRecursive : ∀ seed origin values reduced, I origin →
+      reduced ∈ (reduceApplication seed origin (.expr (.sym op :: values))).1 →
+      (reduced.1 == notReducibleA || reduced.1 == .expr (.sym op :: values)) = false →
+      ∀ state bindings result, I state →
+      result ∈ (evalRecursive state bindings reduced.1 (selectedResultExpected selected)).1 → P result.1)
+    (result : Atom × Bindings)
+    (hResult : result ∈ (executeSelectedApplicationPlan evalRecursive reduceApplication
+      env incoming st op args expected selected).1) : P result.1 := by
+  unfold executeSelectedApplicationPlan at hResult
+  dsimp only at hResult
+  split at hResult
+  · rcases List.mem_flatMap.mp hResult with ⟨seed, _hSeed, hResult⟩
+    rcases List.mem_map.mp hResult with ⟨actual, _hActual, rfl⟩
+    exact hStop _ (by rfl)
+  · obtain ⟨seed, _hSeed, branchState, hBranchState, hBranch⟩ :=
+      mem_evaluateExpectedApplicationSeeds_of_invariant evalRecursive reduceApplication
+        _ st op args selected result I hState
+        (fun state bindings hState => evaluateExpectedApplicationFrom_preserves_state_pred_on_head
+          evalRecursive (reduceApplication bindings) bindings state op args selected
+          I hEvalState (hRootState bindings) hState) hResult
+    exact evaluateExpectedApplicationFrom_observes_with_state evalRecursive
+      (reduceApplication seed) seed branchState op args selected P I
+      hEvalState (hRootState seed) hBranchState hStop hApplication
+      (fun hReturn => hQuoted hReturn seed) (hRecursive seed) result hBranch
+
+/-- Exhausted recursive evaluation can only contribute its explicit error;
+the remaining outcomes come from an already stopped argument or unchanged
+application. The actual binding projection is retained. -/
+theorem evaluateExpectedApplicationFrom_zero_undefined_observes
+    (env : MinEnv) (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (P : Atom → Prop)
+    (hReturn : returnsAtom selected = false)
+    (hExpected : selectedResultExpected selected = .sym "%Undefined%")
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hError : ∀ atom code, P (errAtom atom code))
+    (result : Atom × Bindings)
+    (hResult : result ∈ (evaluateExpectedApplicationFrom
+      (fun s b a t => mettaEvalExpected env 0 s b a t)
+      reduceApplication incoming st op args selected).1) : P result.1 := by
+  apply evaluateExpectedApplicationFrom_observes
+    (fun s b a t => mettaEvalExpected env 0 s b a t)
+    reduceApplication incoming st op args selected P hStop hApplication ?_ ?_ result hResult
+  · intro hTrue
+    rw [hReturn] at hTrue
+    contradiction
+  · intro _origin _application value _hReduced state bindings next hNext
+    rw [hExpected, mettaEvalExpected_undefined] at hNext
+    simp only [mettaEval] at hNext
+    rw [List.mem_singleton.mp hNext]
+    exact hError _ _
+
+/-- A failed selected head cast is an error, and each successful applicability
+seed uses the same zero-depth observation law with its actual retained theory. -/
+theorem executeSelectedApplicationPlan_zero_undefined_observes
+    (env : MinEnv) (incoming : Bindings) (st : St) (op : String) (args : List Atom)
+    (expected : Atom) (selected : SelectedFunctionType) (P : Atom → Prop)
+    (hReturn : returnsAtom selected = false)
+    (hExpected : selectedResultExpected selected = .sym "%Undefined%")
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApplication : ∀ values, P (.expr (.sym op :: values)))
+    (hError : ∀ atom code, P (errAtom atom code))
+    (result : Atom × Bindings)
+    (hResult : result ∈ (executeSelectedApplicationPlan
+      (fun s b a t => mettaEvalExpected env 0 s b a t)
+      (fun b s app => interpretFuel env 1 s
+        [{stack := atomToStack (.expr [.sym "eval", app]) [], bnd := b}] [])
+      env incoming st op args expected selected).1) : P result.1 := by
+  unfold executeSelectedApplicationPlan at hResult
+  dsimp only at hResult
+  split at hResult
+  · rcases List.mem_flatMap.mp hResult with ⟨seed, _hSeed, hResult⟩
+    rcases List.mem_map.mp hResult with ⟨actual, _hActual, rfl⟩
+    exact hStop _ (by rfl)
+  · obtain ⟨seed, _hSeed, branchState, hBranch⟩ := mem_evaluateExpectedApplicationSeeds
+      (fun s b a t => mettaEvalExpected env 0 s b a t)
+      (fun b s app => interpretFuel env 1 s
+        [{stack := atomToStack (.expr [.sym "eval", app]) [], bnd := b}] [])
+      _ st op args selected result hResult
+    exact evaluateExpectedApplicationFrom_zero_undefined_observes env _ seed branchState op args
+      selected P hReturn hExpected hStop hApplication hError result hBranch
+
+/-- A stopped atom cannot match either Boolean literal. -/
+theorem matchAtoms_stopped_bool (atom : Atom) (flag : Bool)
+    (hStop : (atom == emptyA || atom.isError) = true) :
+    matchAtoms atom (.gnd (.bool flag)) = [] := by
+  cases atom with
+  | sym symbol => rfl
+  | var name => contradiction
+  | expr args => rfl
+  | gnd value =>
+      cases value <;> simp_all [emptyA,Atom.isError,matchAtoms,matchAtomsWith,
+        Atom.equiv,Ground.equiv,Ground.beq]
+      change (false : Bool) = true at hStop
+      contradiction
+
+/-- At depth one an all-quoted gradual-return application cannot return an
+atom matching a Boolean pattern, even with an arbitrary live caller theory. -/
+theorem mettaEvalExpected_unify_one_no_bool_match
+    (env : MinEnv) (st : St) (incoming : Bindings)
+    (a pattern template otherwise : Atom)
+    (hTypes : getTypes env (typePrep st.world (.sym "unify")) =
+      [.expr [.sym "->", .sym "Atom", .sym "Atom", .sym "Atom", .sym "Atom",
+        .sym "%Undefined%"]])
+    (result : Atom × Bindings) (flag : Bool)
+    (hResult : result ∈ (mettaEvalExpected env 1 st incoming
+      (.expr [.sym "unify", a, pattern, template, otherwise]) (.sym "Bool")).1) :
+    matchAtoms result.1 (.gnd (.bool flag)) = [] := by
+  let arguments := [instantiate incoming (instantiate incoming a),
+    instantiate incoming (instantiate incoming pattern),
+    instantiate incoming (instantiate incoming template),
+    instantiate incoming (instantiate incoming otherwise)]
+  let selected : SelectedFunctionType :=
+    {functionType := .expr [.sym "->", .sym "Atom", .sym "Atom", .sym "Atom", .sym "Atom",
+      .sym "%Undefined%"],
+     argumentTypes := [.sym "Atom", .sym "Atom", .sym "Atom", .sym "Atom"],
+     returnType := .sym "%Undefined%", typeBindings := incoming}
+  have hScan : selectFunctionTypeForExpectedFrom env st.world (.sym "unify") arguments
+      (.sym "Bool") incoming = .selected selected := by
+    exact selectFunctionTypeForExpectedFrom_atom_args_undefined_return_selected_from
+      env st.world "unify" arguments (.sym "Bool") incoming hTypes
+  have hReturn : returnsAtom selected = false := by
+    simp only [selected, returnsAtom, instantiate, Bindings.resolveAtom]
+    rfl
+  have hExpected : selectedResultExpected selected = .sym "%Undefined%" := by
+    simp [selected, selectedResultExpected, instantiate, Bindings.resolveAtom]
+  have hStep : mettaEvalExpected env 1 st incoming
+      (.expr [.sym "unify", a, pattern, template, otherwise]) (.sym "Bool") =
+      prioritizeSemanticResults (executeApplicationPlan
+        (fun s b a t => mettaEvalExpected env 0 s b a t)
+        (fun b s app => interpretFuel env 1 s
+          [{stack := atomToStack (.expr [.sym "eval",app]) [], bnd := b}] [])
+        env incoming st "unify" arguments (.sym "Bool")) := by
+    simp [mettaEvalExpected, instantiate, Bindings.resolveAtom, Atom.metaType,
+      Atom.typeAtomOfMetaType, Atom.isError, arguments]
+    rfl
+  rw [hStep] at hResult
+  have hRaw := mem_of_mem_prioritizeSemanticResults hResult
+  rw [executeApplicationPlan, hScan] at hRaw
+  exact executeSelectedApplicationPlan_zero_undefined_observes env incoming st "unify"
+    arguments (.sym "Bool") selected (fun atom => matchAtoms atom (.gnd (.bool flag)) = [])
+    hReturn hExpected (fun atom hStop => matchAtoms_stopped_bool atom flag hStop)
+    (fun _ => rfl) (fun _ _ => rfl) result hRaw
+
+/-- One actual root step whose successors are final is harvested without
+restarting any successor or changing its retained bindings. -/
+theorem interpretFuel_single_all_final_eq
+    (env : MinEnv) (fuel : Nat) (st next : St) (item : Item) (items : List Item)
+    (hStep : interpretStack1 env fuel st item = (items,next))
+    (hFinal : ∀ it ∈ items, isFinal it = true) :
+    interpretFuel env (fuel+1) st [item] [] =
+      ((items.map finalPair).filter (fun result => result.1 != emptyA),next) := by
+  have hFinals : items.filter isFinal = items := List.filter_eq_self.mpr hFinal
+  have hPending : items.filter (fun it => !isFinal it) = [] := by
+    apply List.filter_eq_nil_iff.mpr
+    intro it hIt
+    simp [hFinal it hIt]
+  rw [interpretFuel_cons_step_eq, hStep]
+  simp only [hFinals, hPending, List.append_nil]
+  rw [interpretFuel_nil]
+  simp
+
+/-- A lazy ternary argument phase keeps every condition occurrence and its
+projected theory, then completes the two quoted arguments without another
+recursive evaluator call. -/
+theorem expectedApplicationArgumentFold_lazy_three_eq_rows
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st : St) (cond thenA elseA : Atom)
+    (selected : SelectedFunctionType)
+    (hPolicies : argumentEvaluationPolicies selected 3 =
+      [(true,.sym "Bool"),(false,.sym "Atom"),(false,.sym "Atom")]) :
+    let source := [cond,thenA,elseA]
+    let condition := eval st incoming cond (.sym "Bool")
+    let rows := condition.1.map (fun result =>
+      ([result.1], restrictBnd (expectedApplicationRetentionScope incoming source)
+        ((Bindings.merge incoming result.2).head?.getD result.2)))
+    expectedApplicationArgumentFold eval incoming st source selected =
+      ((rows.map (completeQuotedTailArgument source thenA)).map
+        (completeQuotedTailArgument source elseA),condition.2) := by
+  dsimp only
+  unfold expectedApplicationArgumentFold
+  simp only [List.length_cons,List.length_nil,Nat.reduceAdd,hPolicies,
+    List.zip_cons_cons,List.zip_nil_left,List.foldl_cons,List.foldl_nil]
+  unfold expectedArgumentFoldStep
+  simp only [List.foldl_cons,List.foldl_nil,List.zip_nil_left,List.find?_nil,
+    Bool.false_eq_true,↓reduceIte,List.nil_append]
+  rw [foldl_completeQuotedTailArgument]
+  simp only [List.nil_append]
+  rw [foldl_completeQuotedTailArgument]
+  simp only [List.nil_append]
+
+/-- A clean completed lazy ternary row comes from one actual condition result.
+No constraint is imposed on the projected binding representation. -/
+theorem lazy_three_clean_row_origin
+    (source : List Atom) (thenA elseA value : Atom) (bindings : Bindings)
+    (hClean : (((completeQuotedTailArgument source elseA
+        (completeQuotedTailArgument source thenA ([value],bindings))).1.zip source).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none) :
+    completeQuotedTailArgument source elseA
+        (completeQuotedTailArgument source thenA ([value],bindings)) =
+      ([value,instantiate bindings thenA,instantiate bindings elseA],bindings) := by
+  have hElse := completeQuotedTailArgument_eq_append_of_completed_clean source elseA
+    (completeQuotedTailArgument source thenA ([value],bindings)) hClean
+  have hThenClean : (((completeQuotedTailArgument source thenA ([value],bindings)).1.zip source).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none := by
+    rw [hElse] at hClean
+    exact changedArgumentStop_prefix_none _ _ _ hClean
+  have hThen := completeQuotedTailArgument_eq_append_of_completed_clean source thenA
+    ([value],bindings) hThenClean
+  rw [hElse,hThen]
+  rfl
+
+/-- A lazy ternary application whose condition cannot fire a root rule keeps
+its unreduced application (or an earlier explicit stop).  This follows the
+actual retained rows and threaded states, including multiple conditions. -/
+theorem evaluateExpectedApplicationFrom_lazy_guard_refusal
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st : St) (op : String) (cond thenA elseA : Atom)
+    (selected : SelectedFunctionType) (P Q : Atom → Prop) (I : St → Prop)
+    (hPolicies : argumentEvaluationPolicies selected 3 =
+      [(true,.sym "Bool"),(false,.sym "Atom"),(false,.sym "Atom")])
+    (hCondState : I (eval st incoming cond (.sym "Bool")).2)
+    (hCond : ∀ result ∈ (eval st incoming cond (.sym "Bool")).1, Q result.1)
+    (hStop : ∀ atom, (atom == emptyA || atom.isError) = true → P atom)
+    (hApp : ∀ values, P (.expr (.sym op :: values)))
+    (hRoot : ∀ state a t e, I state → Q a → ∃ rootBindings next,
+      reduce state (.expr [.sym op,a,t,e]) = ([(notReducibleA,rootBindings)],next) ∧ I next) :
+    I (evaluateExpectedApplicationFrom eval reduce incoming st op [cond,thenA,elseA] selected).2 ∧
+      ∀ result ∈ (evaluateExpectedApplicationFrom eval reduce incoming st op [cond,thenA,elseA] selected).1,
+        P result.1 := by
+  let source := [cond,thenA,elseA]
+  let condition := eval st incoming cond (.sym "Bool")
+  let rows := condition.1.map (fun result =>
+    ([result.1],restrictBnd (expectedApplicationRetentionScope incoming source)
+      ((Bindings.merge incoming result.2).head?.getD result.2)))
+  let parts := (rows.map (completeQuotedTailArgument source thenA)).map
+    (completeQuotedTailArgument source elseA)
+  have hArgs : expectedApplicationArgumentFold eval incoming st source selected = (parts,condition.2) :=
+    expectedApplicationArgumentFold_lazy_three_eq_rows eval incoming st cond thenA elseA selected hPolicies
+  have hRows : ∀ part ∈ parts,
+      ((part.1.zip source).find?
+        (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none →
+      ∃ value thenOut elseOut, part.1=[value,thenOut,elseOut] ∧ Q value := by
+    intro part hPart hClean
+    rcases List.mem_map.mp hPart with ⟨row1,hRow1,rfl⟩
+    rcases List.mem_map.mp hRow1 with ⟨row,hRow,rfl⟩
+    rcases List.mem_map.mp hRow with ⟨result,hResult,rfl⟩
+    have hShape := lazy_three_clean_row_origin source thenA elseA result.1 _ hClean
+    rw [hShape]
+    exact ⟨result.1,_,_,rfl,hCond result hResult⟩
+  rw [evaluateExpectedApplicationFrom_eq_factored,
+    evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+      eval reduce incoming st condition.2 op source selected parts hArgs]
+  unfold expectedApplicationResultFold
+  have hFold : ∀ todo : List (List Atom × Bindings),
+      (∀ part ∈ todo, part ∈ parts) → ∀ acc : List (Atom × Bindings) × St,
+      I acc.2 → (∀ result ∈ acc.1, P result.1) →
+      I (todo.foldl (expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming source) op source selected) acc).2 ∧
+      ∀ result ∈ (todo.foldl (expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming source) op source selected) acc).1, P result.1 := by
+    intro todo
+    induction todo with
+    | nil => intro _ acc hState hAcc; exact ⟨hState,hAcc⟩
+    | cons part rest ih =>
+        intro hSubset acc hState hAcc
+        simp only [List.foldl_cons]
+        have hStep : I (expectedResultFoldStep eval reduce
+              (expectedApplicationRetentionScope incoming source) op source selected acc part).2 ∧
+            ∀ result ∈ (expectedResultFoldStep eval reduce
+              (expectedApplicationRetentionScope incoming source) op source selected acc part).1,
+              P result.1 := by
+          unfold expectedResultFoldStep
+          cases hFind : ((part.1.zip source).find?
+              (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) with
+          | some stopped =>
+              refine ⟨hState,?_⟩
+              intro result hResult
+              rcases List.mem_append.mp hResult with hOld | hNew
+              · exact hAcc result hOld
+              · have hEq := List.mem_singleton.mp hNew
+                subst result
+                have hTest := List.find?_some hFind
+                exact hStop stopped.1 (Bool.and_eq_true_iff.mp hTest).1
+          | none =>
+              obtain ⟨value,thenOut,elseOut,hShape,hValue⟩ :=
+                hRows part (hSubset part List.mem_cons_self) hFind
+              obtain ⟨rootBindings,next,hReduce,hNext⟩ := hRoot acc.2 value thenOut elseOut hState hValue
+              have hSelf : (notReducibleA == notReducibleA) = true := rfl
+              simp only [hShape,hReduce,List.foldl_cons,List.foldl_nil,hSelf,Bool.true_or,↓reduceIte,
+                List.nil_append]
+              refine ⟨hNext,?_⟩
+              intro result hResult
+              rcases List.mem_append.mp hResult with hOld | hNew
+              · exact hAcc result hOld
+              · have hEq := List.mem_singleton.mp hNew
+                subst result
+                exact hApp _
+        exact ih (fun row hRow => hSubset row (List.mem_cons_of_mem part hRow)) _ hStep.1 hStep.2
+  exact hFold parts (by intros; assumption) ([],condition.2) hCondState (by simp)
+
+
+section RetainedRootObservations
+set_option maxRecDepth 8192
+set_option maxHeartbeats 4000000
+
+/-- A reached root continuation is checked in the binding record actually
+constructed by the worker's merge and projection, after all preceding roots. -/
+theorem expectedResultFoldStep_observes_retained
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (I : St → Prop) (P : Atom → Prop)
+    (part : List Atom × Bindings)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApp : ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 →
+      (candidate.1 == notReducibleA || candidate.1 == .expr (.sym op :: part.1)) = true →
+      P (.expr (.sym op :: part.1)))
+    (hRoot : ∀ origin, I origin → I (reduce origin (.expr (.sym op :: part.1))).2)
+    (hQuoted : returnsAtom selected = true → ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 → P candidate.1)
+    (hNext : ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 →
+      (candidate.1 == notReducibleA || candidate.1 == .expr (.sym op :: part.1)) = false →
+      ∀ state, I state →
+        let retained := restrictBnd scope
+          ((Bindings.merge part.2 candidate.2).head?.getD candidate.2)
+        I (eval state retained candidate.1 (selectedResultExpected selected)).2 ∧
+        ∀ result ∈ (eval state retained candidate.1 (selectedResultExpected selected)).1,
+          P result.1)
+    (acc : List (Atom × Bindings) × St)
+    (hState : I acc.2) (hAcc : ∀ result ∈ acc.1, P result.1) :
+    I (expectedResultFoldStep eval reduce scope op args selected acc part).2 ∧
+    ∀ result ∈ (expectedResultFoldStep eval reduce scope op args selected acc part).1,
+      P result.1 := by
+  unfold expectedResultFoldStep
+  cases hFind : (part.1.zip args).find?
+      (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2) with
+  | some stopped =>
+      refine ⟨hState,?_⟩
+      intro result hResult
+      rcases List.mem_append.mp hResult with hOld | hNew
+      · exact hAcc result hOld
+      · have hEq := List.mem_singleton.mp hNew
+        subst result
+        have ht := List.find?_some hFind
+        exact hStop stopped.1 (Bool.and_eq_true_iff.mp ht).1
+  | none =>
+      dsimp only
+      let app := Atom.expr (Atom.sym op :: part.1)
+      cases hReduce : reduce acc.2 app with
+      | mk pairs rootState =>
+          dsimp only
+          have hRootState : I rootState := by
+            have hr := hRoot acc.2 hState
+            change I (reduce acc.2 app).2 at hr
+            simpa only [hReduce] using hr
+          have hFold : ∀ todo : List (Atom × Bindings),
+              (∀ candidate ∈ todo, candidate ∈ pairs) →
+              ∀ inner : List (Atom × Bindings) × St,
+                I inner.2 → (∀ result ∈ inner.1,P result.1) →
+                I (todo.foldl (fun inner candidate =>
+                  let retained := restrictBnd scope
+                    ((Bindings.merge part.2 candidate.2).head?.getD candidate.2)
+                  if candidate.1 == notReducibleA || candidate.1 == app then
+                    (inner.1 ++ [(app,part.2)],inner.2)
+                  else if returnsAtom selected then
+                    (inner.1 ++ [(candidate.1,retained)],inner.2)
+                  else
+                    let deeper := eval inner.2 retained candidate.1 (selectedResultExpected selected)
+                    (inner.1 ++ deeper.1.map (fun next =>
+                      (next.1,restrictBnd scope
+                        ((Bindings.merge retained next.2).head?.getD next.2))),deeper.2)) inner).2 ∧
+                ∀ result ∈ (todo.foldl (fun inner candidate =>
+                  let retained := restrictBnd scope
+                    ((Bindings.merge part.2 candidate.2).head?.getD candidate.2)
+                  if candidate.1 == notReducibleA || candidate.1 == app then
+                    (inner.1 ++ [(app,part.2)],inner.2)
+                  else if returnsAtom selected then
+                    (inner.1 ++ [(candidate.1,retained)],inner.2)
+                  else
+                    let deeper := eval inner.2 retained candidate.1 (selectedResultExpected selected)
+                    (inner.1 ++ deeper.1.map (fun next =>
+                      (next.1,restrictBnd scope
+                        ((Bindings.merge retained next.2).head?.getD next.2))),deeper.2)) inner).1,
+                  P result.1 := by
+            intro todo
+            induction todo with
+            | nil => intro _ inner hi hp; exact ⟨hi,hp⟩
+            | cons candidate rest ih =>
+                intro hSubset inner hi hp
+                simp only [List.foldl_cons]
+                apply ih (fun item hm => hSubset item (List.mem_cons_of_mem candidate hm))
+                · split
+                  · exact hi
+                  · split
+                    · exact hi
+                    · rename_i hKeep _hReturn
+                      have hKeep' : (candidate.1 == notReducibleA || candidate.1 == app) = false :=
+                        Bool.eq_false_iff.mpr hKeep
+                      exact (hNext acc.2 candidate hState
+                        (by rw [hReduce]; exact hSubset candidate List.mem_cons_self)
+                        hKeep' inner.2 hi).1
+                · split
+                  · rename_i hRefusal
+                    intro result hr
+                    rcases List.mem_append.mp hr with ho | hn
+                    · exact hp result ho
+                    · have heq := List.mem_singleton.mp hn
+                      subst result
+                      exact hApp acc.2 candidate hState
+                        (by rw [hReduce]; exact hSubset candidate List.mem_cons_self) hRefusal
+                  · split
+                    · rename_i hReturn
+                      intro result hr
+                      rcases List.mem_append.mp hr with ho | hn
+                      · exact hp result ho
+                      · have heq := List.mem_singleton.mp hn
+                        subst result
+                        exact hQuoted hReturn acc.2 candidate hState
+                          (by rw [hReduce]; exact hSubset candidate List.mem_cons_self)
+                    · rename_i hKeep _hReturn
+                      intro result hr
+                      rcases List.mem_append.mp hr with ho | hn
+                      · exact hp result ho
+                      · obtain ⟨next,hNextMem,rfl⟩ := List.mem_map.mp hn
+                        exact (hNext acc.2 candidate hState
+                          (by rw [hReduce]; exact hSubset candidate List.mem_cons_self)
+                          (Bool.eq_false_iff.mpr hKeep) inner.2 hi).2 next hNextMem
+          obtain ⟨hi,hp⟩ := hFold pairs (by intros; assumption) ([],rootState) hRootState (by simp)
+          refine ⟨hi,?_⟩
+          intro result hr
+          rcases List.mem_append.mp hr with ho | hn
+          · exact hAcc result ho
+          · exact hp result hn
+
+theorem expectedResultFoldStep_observes_reached
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (I : St → Prop) (P : Atom → Prop)
+    (part : List Atom × Bindings)
+    (hStop : ∀ value, (value == emptyA || value.isError) = true → P value)
+    (hApp : ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 →
+      (candidate.1 == notReducibleA || candidate.1 == .expr (.sym op :: part.1)) = true →
+      P (.expr (.sym op :: part.1)))
+    (hRoot : ∀ origin, I origin → I (reduce origin (.expr (.sym op :: part.1))).2)
+    (hQuoted : returnsAtom selected = true → ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 → P candidate.1)
+    (hNext : ∀ origin candidate, I origin →
+      candidate ∈ (reduce origin (.expr (.sym op :: part.1))).1 →
+      (candidate.1 == notReducibleA || candidate.1 == .expr (.sym op :: part.1)) = false →
+      ∀ state bindings, I state →
+        I (eval state bindings candidate.1 (selectedResultExpected selected)).2 ∧
+        ∀ result ∈ (eval state bindings candidate.1 (selectedResultExpected selected)).1,
+          P result.1)
+    (acc : List (Atom × Bindings) × St)
+    (hState : I acc.2) (hAcc : ∀ result ∈ acc.1, P result.1) :
+    I (expectedResultFoldStep eval reduce scope op args selected acc part).2 ∧
+    ∀ result ∈ (expectedResultFoldStep eval reduce scope op args selected acc part).1,
+      P result.1 := by
+  exact expectedResultFoldStep_observes_retained eval reduce scope op args selected I P part
+    hStop hApp hRoot hQuoted
+    (fun origin candidate hOrigin hCandidate hDifferent state hState =>
+      hNext origin candidate hOrigin hCandidate hDifferent state _ hState)
+    acc hState hAcc
+
+/-- A result observation is propagated through the actual argument rows and
+actual root continuations, retaining their chronological states. -/
+theorem evaluateExpectedApplicationFrom_observes_reached_rows
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st stArgs : St) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (rows : List (List Atom × Bindings))
+    (I : St → Prop) (P : Atom → Prop)
+    (hArgs : expectedApplicationArgumentFold eval incoming st args selected = (rows,stArgs))
+    (hState : I stArgs)
+    (hStep : ∀ part ∈ rows, ∀ acc : List (Atom × Bindings) × St,
+      I acc.2 → (∀ result ∈ acc.1,P result.1) →
+      I (expectedResultFoldStep eval reduce (expectedApplicationRetentionScope incoming args)
+        op args selected acc part).2 ∧
+      ∀ result ∈ (expectedResultFoldStep eval reduce (expectedApplicationRetentionScope incoming args)
+        op args selected acc part).1,P result.1) :
+    I (evaluateExpectedApplicationFrom eval reduce incoming st op args selected).2 ∧
+    ∀ result ∈ (evaluateExpectedApplicationFrom eval reduce incoming st op args selected).1,
+      P result.1 := by
+  rw [evaluateExpectedApplicationFrom_eq_factored,
+    evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+      eval reduce incoming st stArgs op args selected rows hArgs]
+  unfold expectedApplicationResultFold
+  have hFold : ∀ todo : List (List Atom × Bindings), (∀ row ∈ todo,row ∈ rows) →
+      ∀ acc : List (Atom × Bindings) × St,
+      I acc.2 → (∀ result ∈ acc.1,P result.1) →
+      I (todo.foldl (expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming args) op args selected) acc).2 ∧
+      ∀ result ∈ (todo.foldl (expectedResultFoldStep eval reduce
+        (expectedApplicationRetentionScope incoming args) op args selected) acc).1,P result.1 := by
+    intro todo
+    induction todo with
+    | nil => intro _ acc hi hp; exact ⟨hi,hp⟩
+    | cons row rest ih =>
+        intro hs acc hi hp
+        simp only [List.foldl_cons]
+        have hx := hStep row (hs row List.mem_cons_self) acc hi hp
+        exact ih (fun item hm => hs item (List.mem_cons_of_mem row hm)) _ hx.1 hx.2
+  exact hFold rows (by intros; assumption) ([],stArgs) hState (by simp)
+
+end RetainedRootObservations
+
+section RetainedConstructorObservations
+set_option maxRecDepth 8192
+set_option maxHeartbeats 4000000
+
+/-- The first symbol of a closed arrow forces the whole incoming theory
+through the runtime loop gate. A cyclic caller is refused before application. -/
+theorem matchType_symbolic_arrow_self_eq
+    (bindings : Bindings) (names : List String) :
+    matchType bindings (.expr (("->" :: names).map Atom.sym))
+      (.expr (("->" :: names).map Atom.sym)) =
+      if bindings.hasLoop then none else some bindings := by
+  cases hloop : bindings.hasLoop with
+  | false =>
+      simpa [hloop] using matchType_symbolic_arrow_self_from bindings hloop names
+  | true =>
+      change matchReducedList bindings (("->" :: names).map Atom.sym)
+        (("->" :: names).map Atom.sym) = none
+      have hFirst : matchReduced bindings (.sym "->") (.sym "->") = none := by
+        change (((Metta.matchAtoms (.sym "->") (.sym "->")).flatMap
+          (Metta.Bindings.merge bindings)).filter (fun b => !b.hasLoop)).head? = none
+        simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.Bindings.merge, hloop]
+      simp only [List.map_cons, matchReducedList, hFirst]
+
+/-- Closed operator-head checking exposes both its success and refusal cases;
+its successful theory is the actual caller. -/
+theorem mettaTypeCastAvoiding_symbolic_arrow_from_eq
+    (protectedScope : List VarName) (env : MinEnv) (world : World)
+    (bindings : Bindings) (op : String) (names : List String)
+    (hTypes : getTypes env (typePrep world (.sym op)) =
+      [.expr (("->" :: names).map Atom.sym)]) :
+    mettaTypeCastAvoiding protectedScope env world bindings (.sym op)
+      (.expr (("->" :: names).map Atom.sym)) =
+      if bindings.hasLoop then .inl [.expr (("->" :: names).map Atom.sym)]
+      else .inr bindings := by
+  unfold mettaTypeCastAvoiding
+  dsimp only
+  rw [hTypes]
+  simp only [freshenArgumentTypes]
+  have hFresh :
+      freshenTypeCandidate
+          (protectedScope ++
+            typeCastInferenceAvoid env (typePrep world (.sym op)) (.sym op)
+              (.expr (("->" :: names).map Atom.sym)) bindings
+              [.expr (("->" :: names).map Atom.sym)]) 0
+          (.expr (("->" :: names).map Atom.sym)) =
+            .expr (("->" :: names).map Atom.sym) := by
+    simp [freshenTypeCandidate, renameAllVars]
+  rw [hFresh]
+  simp only [matchExpectedType, matchType_symbolic_arrow_self_eq]
+  cases bindings.hasLoop <;> rfl
+
+theorem mettaTypeCastAvoiding_symbolic_arrow_success_loop_free
+    (protectedScope : List VarName) (env : MinEnv) (world : World)
+    (bindings output : Bindings) (op : String) (names : List String)
+    (hTypes : getTypes env (typePrep world (.sym op)) =
+      [.expr (("->" :: names).map Atom.sym)])
+    (hSuccess : mettaTypeCastAvoiding protectedScope env world bindings (.sym op)
+      (.expr (("->" :: names).map Atom.sym)) = .inr output) :
+    bindings.hasLoop = false ∧ output = bindings := by
+  rw [mettaTypeCastAvoiding_symbolic_arrow_from_eq protectedScope env world
+    bindings op names hTypes] at hSuccess
+  cases hloop : bindings.hasLoop <;> simp_all
+
+/-- A non-error result from an all-quoted closed symbolic signature certifies
+its caller passed the head loop check. This is derived from execution, not
+an admission condition added to the caller. -/
+theorem mettaEval_nonerror_atom_args_implies_loop_free
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (source : Atom) (op resultType : String) (args : List Atom)
+    (hInstantiate : instantiate incoming source = .expr (.sym op :: args))
+    (hNotError : (Atom.expr (.sym op :: args)).isError = false)
+    (hTypes : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])])
+    (result : Atom × Bindings) (hResultNotError : result.1.isError = false)
+    (hmem : result ∈ (mettaEval env (fuel + 1) st incoming source).1) :
+    incoming.hasLoop = false := by
+  let selected : SelectedFunctionType :=
+    { functionType := .expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])
+      argumentTypes := List.replicate args.length (.sym "Atom")
+      returnType := .sym resultType
+      typeBindings := incoming }
+  have hScan := selectFunctionTypeForExpectedFrom_atom_args_undefined_selected_from
+    env st.world op resultType args incoming hTypes
+  obtain ⟨headBindings,hHead⟩ :=
+    mettaEval_nonerror_mem_implies_headCast_success_of_selected_after_instantiate
+      env fuel st incoming source op args selected hInstantiate hNotError
+      hScan result hResultNotError hmem
+  have hTypes' : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (("->" :: (List.replicate args.length "Atom" ++ [resultType])).map Atom.sym)] := by
+    simpa using hTypes
+  exact (mettaTypeCastAvoiding_symbolic_arrow_success_loop_free
+    (expectedApplicationVisibleScope (.expr (.sym op :: args)) (.sym "%Undefined%"))
+    env st.world incoming headBindings op
+    (List.replicate args.length "Atom" ++ [resultType]) hTypes'
+    (by simpa [selected] using hHead)).1
+
+
+/-- Refusing a cyclic caller at a symbolic operator head does not run any
+argument or effect. The world is unchanged even when no result is published. -/
+theorem mettaEval_atom_args_cyclic_state
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (source : Atom) (op resultType : String) (args : List Atom)
+    (hInstantiate : instantiate incoming source = .expr (.sym op :: args))
+    (hNotError : (Atom.expr (.sym op :: args)).isError = false)
+    (hTypes : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])])
+    (hLoop : incoming.hasLoop = true) :
+    (mettaEval env (fuel+1) st incoming source).2 = st := by
+  let selected : SelectedFunctionType :=
+    { functionType := .expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])
+      argumentTypes := List.replicate args.length (.sym "Atom")
+      returnType := .sym resultType
+      typeBindings := incoming }
+  have hScan := selectFunctionTypeForExpectedFrom_atom_args_undefined_selected_from
+    env st.world op resultType args incoming hTypes
+  have hTypes' : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (("->" :: (List.replicate args.length "Atom" ++ [resultType])).map Atom.sym)] := by
+    simpa using hTypes
+  have hHead := mettaTypeCastAvoiding_symbolic_arrow_from_eq
+    (expectedApplicationVisibleScope (.expr (.sym op :: args)) (.sym "%Undefined%"))
+    env st.world incoming op (List.replicate args.length "Atom" ++ [resultType]) hTypes'
+  rw [hLoop] at hHead
+  have hHead' : mettaTypeCastAvoiding
+      (expectedApplicationVisibleScope (.expr (.sym op :: args)) (.sym "%Undefined%"))
+      env st.world selected.typeBindings (.sym op) selected.functionType =
+        .inl [selected.functionType] := by
+    simpa [selected] using hHead
+  conv_lhs => unfold mettaEval
+  rw [hInstantiate]
+  have hEmpty : (Atom.expr (Atom.sym op :: args) == emptyA) = false := rfl
+  simp only [hEmpty,hNotError,Bool.or_false,Bool.false_eq_true,↓reduceIte,
+    prioritizeSemanticResults_snd]
+  rw [executeApplicationPlan,hScan]
+  change (executeSelectedApplicationPlan _ _ env incoming st op args
+    (.sym "%Undefined%") selected).2 = st
+  unfold executeSelectedApplicationPlan
+  dsimp only
+  rw [hHead']
+
+/-- Head refusal on a closed all-quoted application retains its caller.
+No local type-variable projection can introduce a name into the result. -/
+theorem mettaEval_closed_atom_args_cyclic_binding
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (source : Atom) (op resultType : String) (args : List Atom)
+    (hInstantiate : instantiate incoming source = .expr (.sym op :: args))
+    (hNotError : (Atom.expr (.sym op :: args)).isError = false)
+    (hTypes : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])])
+    (hLoop : incoming.hasLoop = true)
+    (hClosed : args.flatMap Atom.vars=[])
+    (result : Atom × Bindings)
+    (hOut : result ∈ (mettaEval env (fuel+1) st incoming source).1) :
+    result.2=incoming := by
+  let selected : SelectedFunctionType :=
+    { functionType := .expr (.sym "->" ::
+        List.replicate args.length (.sym "Atom") ++ [.sym resultType])
+      argumentTypes := List.replicate args.length (.sym "Atom")
+      returnType := .sym resultType
+      typeBindings := incoming }
+  have hScan := selectFunctionTypeForExpectedFrom_atom_args_undefined_selected_from
+    env st.world op resultType args incoming hTypes
+  have hTypes' : getTypes env (typePrep st.world (.sym op)) =
+      [.expr (("->" :: (List.replicate args.length "Atom" ++ [resultType])).map Atom.sym)] := by
+    simpa using hTypes
+  have hHead := mettaTypeCastAvoiding_symbolic_arrow_from_eq
+    (expectedApplicationVisibleScope (.expr (.sym op :: args)) (.sym "%Undefined%"))
+    env st.world incoming op (List.replicate args.length "Atom" ++ [resultType]) hTypes'
+  rw [hLoop] at hHead
+  have hHead' : mettaTypeCastAvoiding
+      (expectedApplicationVisibleScope (.expr (.sym op :: args)) (.sym "%Undefined%"))
+      env st.world selected.typeBindings (.sym op) selected.functionType =
+        .inl [selected.functionType] := by
+    simpa [selected] using hHead
+  have hStep : mettaEval env (fuel+1) st incoming source =
+      prioritizeSemanticResults (executeApplicationPlan
+        (fun state bindings atom expected => mettaEvalExpected env fuel state bindings atom expected)
+        (fun bindings state atom => interpretFuel env (fuel+1) state
+          [{stack:=atomToStack (.expr [.sym "eval",atom]) [],bnd:=bindings}] [])
+        env incoming st op args (.sym "%Undefined%")) := by
+    conv_lhs => unfold mettaEval
+    rw [hInstantiate]
+    have hEmpty : (Atom.expr (Atom.sym op::args)==emptyA)=false := rfl
+    simp only [hEmpty,hNotError,Bool.or_false,Bool.false_eq_true,↓reduceIte]
+  rw [hStep] at hOut
+  have hRaw := mem_of_mem_prioritizeSemanticResults hOut
+  rw [executeApplicationPlan,hScan] at hRaw
+  change result ∈ (executeSelectedApplicationPlan _ _ env incoming st op args
+    (.sym "%Undefined%") selected).1 at hRaw
+  unfold executeSelectedApplicationPlan at hRaw
+  dsimp only at hRaw
+  rw [hHead'] at hRaw
+  have hClosedMap : (args.map Atom.vars).flatten=[] := by simpa only [List.flatMap] using hClosed
+  have hSeeds : selectedApplicationInitialBindingsFromTheory incoming
+      (.expr (.sym op::args)) (.sym "%Undefined%") incoming=[incoming] := by
+    simp [selectedApplicationInitialBindingsFromTheory,expectedApplicationVisibleScope,
+      Atom.vars,hClosedMap,restrictBnd_nil_vars,Bindings.merge]
+  change result ∈ (selectedApplicationInitialBindingsFromTheory incoming
+    (.expr (.sym op::args)) (.sym "%Undefined%") incoming).flatMap _ at hRaw
+  rw [hSeeds] at hRaw
+  simp only [List.flatMap_cons,List.flatMap_nil,List.append_nil] at hRaw
+  obtain ⟨actual,_hactual,hPair⟩ := List.mem_map.mp hRaw
+  rw [←hPair]
+
+
+/-- Invert a live all-quoted application without changing either retained
+binding projection. The emitted value came from the actual result evaluator. -/
+theorem mettaEval_expr_pair_mem_implies_root_expected_mem_of_instantiated_all_quoted
+    (env : MinEnv) (fuel : Nat) (st stRoot : St)
+    (bnd : Bindings) (source : Atom) (op : String) (args : List Atom)
+    (root final : Atom) (rootBnd outBnd : Bindings)
+    (plan : SelectedApplicationExecutionPlan env st.world bnd op args)
+    (hInst : instantiate bnd source = Atom.expr (Atom.sym op :: args))
+    (hNotError : (Atom.expr (Atom.sym op :: args)).isError = false)
+    (hSeed : plan.seeds = [bnd])
+    (hMask : argMask plan.selected args.length = List.replicate args.length false)
+    (hReturn : returnsAtom plan.selected = false)
+    (hNoError :
+      (((args.map (instantiate bnd)).zip args).find?
+        (fun pair =>
+          (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none)
+    (hRoot : interpretFuel env (fuel + 1) st
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval",
+              Atom.expr (Atom.sym op :: args.map (instantiate bnd))]) [],
+           bnd := bnd }] [] =
+      ([(root, rootBnd)], stRoot))
+    (hRootNotNotReducible : (root == notReducibleA) = false)
+    (hRootNotSelf :
+      (root == Atom.expr (Atom.sym op :: args.map (instantiate bnd))) = false)
+    (hmem : (final,outBnd) ∈ (mettaEval env (fuel + 1) st bnd source).1) :
+    ∃ finalBnd, (final,finalBnd) ∈
+      (mettaEvalExpected env fuel stRoot
+        (restrictBnd (expectedApplicationRetentionScope bnd args)
+          ((Bindings.merge bnd rootBnd).head?.getD rootBnd))
+        root (selectedResultExpected plan.selected)).1 := by
+  rw [mettaEval_eq_evaluateExpectedApplication_of_selected_after_instantiate
+    env fuel st bnd source op args hInst hNotError plan hSeed] at hmem
+  rw [evaluateExpectedApplicationFrom_eq_factored] at hmem
+  have hArgs := expectedApplicationArgumentFold_all_quoted
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    bnd st args plan.selected hMask hNoError
+  rw [evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    (fun nextSt application =>
+      interpretFuel env (fuel + 1) nextSt
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval", application]) [], bnd := bnd }] [])
+    bnd st st op args plan.selected
+    [(args.map (instantiate bnd), bnd)] hArgs] at hmem
+  simp only [expectedApplicationResultFold, List.foldl_cons, List.foldl_nil] at hmem
+  unfold expectedResultFoldStep at hmem
+  rw [hNoError] at hmem
+  simp only [List.nil_append] at hmem
+  rw [hRoot] at hmem
+  simp only [List.foldl_cons, List.foldl_nil, hRootNotNotReducible,
+    hRootNotSelf, Bool.false_eq_true, ↓reduceIte, hReturn, List.nil_append] at hmem
+  have hraw := mem_of_mem_prioritizeSemanticResults hmem
+  rcases List.mem_map.mp hraw with ⟨⟨value,bindings⟩,hValue,hEq⟩
+  have hv : value = final := congrArg Prod.fst hEq
+  subst value
+  exact ⟨bindings,hValue⟩
+
+/-- The final state of a live all-quoted application is the state of its
+actual root continuation, including both retained binding projections. -/
+theorem mettaEval_expr_root_world_of_instantiated_all_quoted
+    (env : MinEnv) (fuel : Nat) (st stRoot : St)
+    (bnd : Bindings) (source : Atom) (op : String) (args : List Atom)
+    (root : Atom) (rootBnd : Bindings)
+    (plan : SelectedApplicationExecutionPlan env st.world bnd op args)
+    (hInst : instantiate bnd source = Atom.expr (Atom.sym op :: args))
+    (hNotError : (Atom.expr (Atom.sym op :: args)).isError = false)
+    (hSeed : plan.seeds = [bnd])
+    (hMask : argMask plan.selected args.length = List.replicate args.length false)
+    (hReturn : returnsAtom plan.selected = false)
+    (hNoError :
+      (((args.map (instantiate bnd)).zip args).find?
+        (fun pair =>
+          (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none)
+    (hRoot : interpretFuel env (fuel + 1) st
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval",
+              Atom.expr (Atom.sym op :: args.map (instantiate bnd))]) [],
+           bnd := bnd }] [] =
+      ([(root, rootBnd)], stRoot))
+    (hRootNotNotReducible : (root == notReducibleA) = false)
+    (hRootNotSelf :
+      (root == Atom.expr (Atom.sym op :: args.map (instantiate bnd))) = false)
+ :
+    (mettaEval env (fuel+1) st bnd source).2 =
+      (mettaEvalExpected env fuel stRoot
+        (restrictBnd (expectedApplicationRetentionScope bnd args)
+          ((Bindings.merge bnd rootBnd).head?.getD rootBnd))
+        root (selectedResultExpected plan.selected)).2 := by
+  rw [mettaEval_eq_evaluateExpectedApplication_of_selected_after_instantiate
+    env fuel st bnd source op args hInst hNotError plan hSeed]
+  rw [evaluateExpectedApplicationFrom_eq_factored]
+  have hArgs := expectedApplicationArgumentFold_all_quoted
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    bnd st args plan.selected hMask hNoError
+  rw [evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    (fun nextSt application =>
+      interpretFuel env (fuel + 1) nextSt
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval", application]) [], bnd := bnd }] [])
+    bnd st st op args plan.selected
+    [(args.map (instantiate bnd), bnd)] hArgs]
+  simp only [expectedApplicationResultFold, List.foldl_cons, List.foldl_nil]
+  unfold expectedResultFoldStep
+  rw [hNoError]
+  simp only [List.nil_append]
+  rw [hRoot]
+  simp only [List.foldl_cons, List.foldl_nil, hRootNotNotReducible,
+    hRootNotSelf, Bool.false_eq_true, ↓reduceIte, hReturn, List.nil_append]
+  simp only [Bool.or_false,Bool.false_eq_true,↓reduceIte,prioritizeSemanticResults_snd]
+
+/-- An all-quoted application with a refused root returns its instantiated
+source and retains the actual caller. -/
+theorem mettaEval_expr_eq_of_instantiated_all_quoted_root_refusal
+    (env : MinEnv) (fuel : Nat) (st stRoot : St)
+    (bnd : Bindings) (source : Atom) (op : String) (args : List Atom)
+    (rootBnd : Bindings)
+    (plan : SelectedApplicationExecutionPlan env st.world bnd op args)
+    (hInst : instantiate bnd source = Atom.expr (Atom.sym op :: args))
+    (hNotError : (Atom.expr (Atom.sym op :: args)).isError = false)
+    (hSeed : plan.seeds = [bnd])
+    (hMask : argMask plan.selected args.length = List.replicate args.length false)
+    (hNoError :
+      (((args.map (instantiate bnd)).zip args).find?
+        (fun pair =>
+          (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none)
+    (hRoot : interpretFuel env (fuel + 1) st
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval",
+              Atom.expr (Atom.sym op :: args.map (instantiate bnd))]) [],
+           bnd := bnd }] [] =
+      ([(notReducibleA, rootBnd)], stRoot))
+ :
+    mettaEval env (fuel+1) st bnd source =
+      ([(Atom.expr (Atom.sym op :: args.map (instantiate bnd)),bnd)],stRoot) := by
+  rw [mettaEval_eq_evaluateExpectedApplication_of_selected_after_instantiate
+    env fuel st bnd source op args hInst hNotError plan hSeed]
+  rw [evaluateExpectedApplicationFrom_eq_factored]
+  have hArgs := expectedApplicationArgumentFold_all_quoted
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    bnd st args plan.selected hMask hNoError
+  rw [evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+    (fun nextSt nextBindings nextAtom nextExpected =>
+      mettaEvalExpected env fuel nextSt nextBindings nextAtom nextExpected)
+    (fun nextSt application =>
+      interpretFuel env (fuel + 1) nextSt
+        [{ stack := atomToStack
+            (Atom.expr [Atom.sym "eval", application]) [], bnd := bnd }] [])
+    bnd st st op args plan.selected
+    [(args.map (instantiate bnd), bnd)] hArgs]
+  simp only [expectedApplicationResultFold, List.foldl_cons, List.foldl_nil]
+  unfold expectedResultFoldStep
+  rw [hNoError]
+  simp only [List.nil_append]
+  rw [hRoot]
+  have hNR : (notReducibleA == notReducibleA) = true := rfl
+  simp only [List.foldl_cons,List.foldl_nil,hNR,Bool.true_or,
+    ↓reduceIte,List.nil_append,prioritizeSemanticResults_singleton]
+
+/-- A changed terminal argument stops its live application before any root
+reduction and retains exactly the argument phase's public projection. -/
+theorem evaluateExpectedApplicationFrom_stopped_unary
+    (evalRecursive : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduceApplication : St → Atom → List (Atom × Bindings) × St)
+    (incoming : Bindings) (st stArg : St) (op : String)
+    (arg out expected : Atom) (resultBindings : Bindings)
+    (selected : SelectedFunctionType)
+    (hPolicy : argumentEvaluationPolicies selected 1 = [(true,expected)])
+    (hEval : evalRecursive st incoming arg expected = ([(out,resultBindings)],stArg))
+    (hStop : ((out == emptyA || out.isError) && out != arg) = true) :
+    evaluateExpectedApplicationFrom evalRecursive reduceApplication incoming st op [arg] selected =
+      ([(out,restrictBnd (expectedApplicationRetentionScope incoming [arg])
+        ((Bindings.merge incoming resultBindings).head?.getD resultBindings))],stArg) := by
+  let partBindings := restrictBnd (expectedApplicationRetentionScope incoming [arg])
+    ((Bindings.merge incoming resultBindings).head?.getD resultBindings)
+  have hArgs := expectedApplicationArgumentFold_unary_eq evalRecursive incoming st stArg
+    arg out expected resultBindings partBindings selected hPolicy hEval rfl
+  rw [evaluateExpectedApplicationFrom_eq_factored,
+    evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+      evalRecursive reduceApplication incoming st stArg op [arg] selected
+      [([out],partBindings)] hArgs]
+  simp [expectedApplicationResultFold,expectedResultFoldStep,hStop,partBindings]
+
+private theorem instantiate_symbol (bindings : Bindings) (name : String) :
+    instantiate bindings (.sym name) = .sym name :=
+  instantiate_eq_self_of_vars_nil bindings (by simp [Atom.vars])
+
+/-- A closed unary data constructor evaluates its payload, keeps the actual
+caller projection, and returns the irreducible constructor. -/
+theorem mettaEval_unary_closed_data_from
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (op : String) (arg : Atom) (hOp : op ≠ "Error")
+    (hArgClosed : arg.vars = [])
+    (hTypes : getTypes env (typePrep st.world (.sym op)) = [.sym "%Undefined%"])
+    (hArgClean : ((arg == emptyA || arg.isError) && arg != arg) = false)
+    (hArg : mettaEval env (fuel+1) st incoming arg = ([(arg,incoming)],st))
+    (hRoot : interpretFuel env (fuel+1+1) st
+      [{stack := atomToStack (.expr [.sym "eval",.expr [.sym op,arg]]) [],bnd := incoming}] [] =
+      ([(notReducibleA,incoming)],st)) :
+    mettaEval env (fuel+2) st incoming (.expr [.sym op,arg]) =
+      ([(.expr [.sym op,arg], restrictBnd incoming.vars
+        ((Bindings.merge incoming incoming).head?.getD incoming))],st) := by
+  let retained := restrictBnd incoming.vars
+    ((Metta.Bindings.merge incoming incoming).head?.getD incoming)
+  have hScope : expectedApplicationRetentionScope incoming [arg] = incoming.vars :=
+    expectedApplicationRetentionScope_singleton_closed incoming arg hArgClosed
+  have hScan :
+      selectFunctionType env st.world (.sym op) [arg] =
+        .exhausted [] true := by
+    unfold selectFunctionType
+    rw [hTypes]
+    rfl
+  have hPlan : ApplicationPlanCorresponds incoming (.untypedTuple hScan) :=
+    ApplicationPlanCorresponds.ofUntypedTuple
+      (selectFunctionTypeForExpectedFrom_undefined_exhausted_from
+        env st.world op [arg] incoming hTypes)
+  have hArguments :
+      expectedApplicationArgumentFold
+          (fun nextSt nextBindings nextAtom nextExpected =>
+            mettaEvalExpected env (fuel + 1)
+              nextSt nextBindings nextAtom nextExpected)
+          incoming st [arg] (untypedTupleSelectedTypeFrom incoming 1) =
+        ([([arg], retained)], st) := by
+    have hPolicy :
+        argumentEvaluationPolicies (untypedTupleSelectedTypeFrom incoming 1) 1 =
+          [(true, .sym "%Undefined%")] := by
+      change
+        [((instantiate incoming (.sym "%Undefined%") != .sym "Atom") &&
+            (instantiate incoming (.sym "%Undefined%") != .sym "Variable") &&
+            (instantiate incoming (.sym "%Undefined%") != .sym "Expression"),
+          instantiate incoming (.sym "%Undefined%"))] =
+          [(true, .sym "%Undefined%")]
+      rw [instantiate_symbol]
+      rfl
+    apply expectedApplicationArgumentFold_unary_eq
+      (evalExpected := fun nextSt nextBindings nextAtom nextExpected =>
+        mettaEvalExpected env (fuel + 1)
+          nextSt nextBindings nextAtom nextExpected)
+      (initialBindings := incoming) (st := st) (stOut := st)
+      (arg := arg) (out := arg) (expected := .sym "%Undefined%")
+      (resultBindings := incoming) (partBindings := retained)
+      (selected := untypedTupleSelectedTypeFrom incoming 1) hPolicy
+    · rw [mettaEvalExpected_undefined]
+      exact hArg
+    · rw [hScope]
+  simpa [Nat.add_assoc, retained] using
+    (mettaEval_unary_expr_eq_of_untypedTuple_argumentFold_and_notReducible_from
+      env (fuel + 1) st st st incoming op hOp
+      arg arg arg retained incoming
+      (by
+        exact instantiate_eq_self_of_vars_nil incoming
+          (by simp [Atom.vars,hArgClosed]))
+      hScan hPlan hArguments (by simp [hArgClean])
+      (by exact hRoot))
+
+
+/-- An exhausted unary argument is returned as an explicit error with its
+retained projection. It is never confused with a completed data value. -/
+theorem mettaEval_unary_closed_data_fuel_one_from
+    (env : MinEnv) (st : St) (incoming : Bindings) (op : String) (arg : Atom)
+    (hOp : op ≠ "Error") (hArgClosed : arg.vars = [])
+    (hTypes : getTypes env (typePrep st.world (.sym op)) = [.sym "%Undefined%"])
+    (hStop : ((errAtom arg "StackOverflow" == emptyA ||
+        (errAtom arg "StackOverflow").isError) && errAtom arg "StackOverflow" != arg) = true) :
+    mettaEval env 1 st incoming (.expr [.sym op,arg]) =
+      ([(errAtom arg "StackOverflow",restrictBnd incoming.vars
+        ((Bindings.merge incoming incoming).head?.getD incoming))],st) := by
+  have hInst : instantiate incoming (.expr [.sym op,arg]) = .expr [.sym op,arg] :=
+    instantiate_eq_self_of_vars_nil incoming (by simp [Atom.vars,hArgClosed])
+  have hScan : selectFunctionType env st.world (.sym op) [arg] = .exhausted [] true := by
+    unfold selectFunctionType
+    rw [hTypes]
+    rfl
+  have hPlan : ApplicationPlanCorresponds incoming (.untypedTuple hScan) :=
+    ApplicationPlanCorresponds.ofUntypedTuple
+      (selectFunctionTypeForExpectedFrom_undefined_exhausted_from
+        env st.world op [arg] incoming hTypes)
+  rw [mettaEval_eq_evaluateSelectedApplication_of_untypedTuple_after_instantiate
+    env 0 st incoming (.expr [.sym op,arg]) op [arg]
+    hInst (by simp [Atom.isError,hOp]) hScan hPlan]
+  have hPolicy : argumentEvaluationPolicies (untypedTupleSelectedTypeFrom incoming 1) 1 =
+      [(true,.sym "%Undefined%")] := by
+    change [((instantiate incoming (.sym "%Undefined%") != .sym "Atom") &&
+      (instantiate incoming (.sym "%Undefined%") != .sym "Variable") &&
+      (instantiate incoming (.sym "%Undefined%") != .sym "Expression"),
+      instantiate incoming (.sym "%Undefined%"))] = [(true,.sym "%Undefined%")]
+    rw [instantiate_symbol]
+    rfl
+  have hEval : mettaEvalExpected env 0 st incoming arg (.sym "%Undefined%") =
+      ([(errAtom arg "StackOverflow",incoming)],st) := by
+    rw [mettaEvalExpected_undefined,mettaEval,
+      instantiate_eq_self_of_vars_nil incoming hArgClosed]
+    rfl
+  simp only [List.length_cons,List.length_nil] at *
+  rw [evaluateExpectedApplicationFrom_stopped_unary
+    (fun state bindings atom expected => mettaEvalExpected env 0 state bindings atom expected)
+    (fun state application => interpretFuel env 1 state
+      [{stack := atomToStack (.expr [.sym "eval",application]) [],bnd := incoming}] [])
+    incoming st st op arg (errAtom arg "StackOverflow")
+    (.sym "%Undefined%") incoming (untypedTupleSelectedTypeFrom incoming 1)
+    hPolicy hEval hStop]
+  rw [expectedApplicationRetentionScope_singleton_closed incoming arg hArgClosed]
+  simp
+
+
+
+/-- At every budget, an inert closed unary payload preserves the world and
+can only produce its constructor or an explicit error. The recursive payload
+and root premises concern the lower-level operations, not the claimed result. -/
+theorem mettaEval_unary_closed_data_observation
+    (env : MinEnv) (fuel : Nat) (st : St) (incoming : Bindings)
+    (op : String) (arg : Atom) (hOp : op ≠ "Error") (hArgClosed : arg.vars = [])
+    (hTypes : getTypes env (typePrep st.world (.sym op)) = [.sym "%Undefined%"])
+    (hClean : ((arg == emptyA || arg.isError) && arg != arg) = false)
+    (hStop : ((errAtom arg "StackOverflow" == emptyA ||
+        (errAtom arg "StackOverflow").isError) && errAtom arg "StackOverflow" != arg) = true)
+    (hArg : ∀ n, mettaEval env (n+1) st incoming arg = ([(arg,incoming)],st))
+    (hRoot : ∀ n, interpretFuel env (n+1) st
+      [{stack := atomToStack (.expr [.sym "eval",.expr [.sym op,arg]]) [],bnd := incoming}] [] =
+      ([(notReducibleA,incoming)],st)) :
+    (mettaEval env fuel st incoming (.expr [.sym op,arg])).2 = st ∧
+      ∀ pair ∈ (mettaEval env fuel st incoming (.expr [.sym op,arg])).1,
+        pair.1.isError = false → pair.1 = .expr [.sym op,arg] := by
+  cases fuel with
+  | zero =>
+    rw [mettaEval]
+    constructor
+    · rfl
+    · intro pair hp hn
+      have heq := List.mem_singleton.mp hp
+      subst pair
+      contradiction
+  | succ fuel =>
+    cases fuel with
+    | zero =>
+      rw [mettaEval_unary_closed_data_fuel_one_from env st incoming op arg
+        hOp hArgClosed hTypes hStop]
+      constructor
+      · rfl
+      · intro pair hp hn
+        have heq := List.mem_singleton.mp hp
+        subst pair
+        contradiction
+    | succ fuel =>
+      rw [show fuel+1+1=fuel+2 by omega,
+        mettaEval_unary_closed_data_from env fuel st incoming op arg hOp hArgClosed
+          hTypes hClean (hArg fuel) (hRoot (fuel+1))]
+      constructor
+      · rfl
+      · intro pair hp _hn
+        exact congrArg Prod.fst (List.mem_singleton.mp hp)
+
+/-- A data constructor uses the live untyped-tuple policy, retaining its actual
+caller through both children and through root refusal. -/
+theorem mettaEval_binary_closed_data_observation_from
+    (env : MinEnv) (fuel : Nat) (state : St) (incoming : Bindings)
+    (op : String) (first second : Atom)
+    (hOp : op ≠ "Error") (hFirstClosed : first.vars = []) (hSecondClosed : second.vars = [])
+    (hTypes : getTypes env (typePrep state.world (.sym op)) = [.sym "%Undefined%"])
+    (P : St → Prop)
+    (hFirst : P (mettaEval env fuel state incoming first).2)
+    (hSecond : ∀ next bindings, P next → P (mettaEval env fuel next bindings second).2)
+    (hRoot : ∀ next values, P next →
+      interpretFuel env (fuel+1) next
+        [{stack := atomToStack (.expr [.sym "eval",.expr (.sym op :: values)]) [],bnd := incoming}] [] =
+      ([(notReducibleA,incoming)],next)) :
+    P (mettaEval env (fuel+1) state incoming (.expr [.sym op,first,second])).2 ∧
+      ∀ output ∈ (mettaEval env (fuel+1) state incoming (.expr [.sym op,first,second])).1,
+        (output.1 == emptyA || output.1.isError) = false →
+        ∃ firstResult ∈ (mettaEval env fuel state incoming first).1,
+          ∃ next secondResult,
+            P next ∧
+            secondResult ∈ (mettaEval env fuel next
+              (restrictBnd (expectedApplicationRetentionScope incoming [first,second])
+                ((Bindings.merge incoming firstResult.2).head?.getD firstResult.2)) second).1 ∧
+            (([firstResult.1,secondResult.1].zip [first,second]).find?
+              (fun pair => (pair.1 == emptyA || pair.1.isError) && pair.1 != pair.2)) = none ∧
+            output.1 = .expr [.sym op,firstResult.1,secondResult.1] := by
+  have hInst : instantiate incoming (.expr [.sym op,first,second]) = .expr [.sym op,first,second] :=
+    instantiate_of_closed incoming _ (by simp [Atom.vars,hFirstClosed,hSecondClosed])
+  have hScan : selectFunctionType env state.world (.sym op) [first,second] = .exhausted [] true := by
+    unfold selectFunctionType
+    rw [hTypes]
+    rfl
+  have hPlan : ApplicationPlanCorresponds incoming (.untypedTuple hScan) :=
+    ApplicationPlanCorresponds.ofUntypedTuple
+      (selectFunctionTypeForExpectedFrom_undefined_exhausted_from
+        env state.world op [first,second] incoming hTypes)
+  have hPolicy : argumentEvaluationPolicies (untypedTupleSelectedTypeFrom incoming 2) 2 =
+      [(true,.sym "%Undefined%"),(true,.sym "%Undefined%")] := by
+    have hSym : instantiate incoming (.sym "%Undefined%") = .sym "%Undefined%" :=
+      instantiate_of_closed incoming _ (by simp [Atom.vars])
+    change List.replicate 2
+      (((instantiate incoming (.sym "%Undefined%") != .sym "Atom") &&
+        (instantiate incoming (.sym "%Undefined%") != .sym "Variable") &&
+        (instantiate incoming (.sym "%Undefined%") != .sym "Expression")),
+        instantiate incoming (.sym "%Undefined%")) = _
+    rw [hSym]
+    rfl
+  have worker := evaluateExpectedApplicationFrom_binary_refusal_observation
+    (fun next bindings atom expected => mettaEvalExpected env fuel next bindings atom expected)
+    (fun next application => interpretFuel env (fuel+1) next
+      [{stack := atomToStack (.expr [.sym "eval",application]) [],bnd := incoming}] [])
+    incoming state op first second (.sym "%Undefined%") (.sym "%Undefined%")
+    (untypedTupleSelectedTypeFrom incoming 2) hPolicy P
+    (by simpa only [mettaEvalExpected_undefined] using hFirst)
+    (by intro next bindings hP; simpa only [mettaEvalExpected_undefined] using hSecond next bindings hP)
+    (by intro next values hP; exact ⟨incoming,hRoot next values hP⟩)
+  rw [mettaEval_eq_evaluateSelectedApplication_of_untypedTuple_after_instantiate
+    env fuel state incoming (.expr [.sym op,first,second]) op [first,second]
+    hInst (by simp [Atom.isError,hOp]) hScan hPlan]
+  simp only [List.length_cons,List.length_nil]
+  constructor
+  · simpa only [prioritizeSemanticResults_snd] using worker.1
+  · intro output hOutput hNonterminal
+    simpa only [mettaEvalExpected_undefined] using
+      worker.2 output (mem_of_mem_prioritizeSemanticResults hOutput) hNonterminal
+
+end RetainedConstructorObservations
+
+section RetainedResultOrigins
+
+set_option maxRecDepth 8192
+set_option maxHeartbeats 4000000
+
+/-- A result worker appends its publications without rerunning earlier rows. -/
+theorem expectedResultFoldStep_append
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (prior : List (Atom × Bindings))
+    (state : St) (part : List Atom × Bindings) :
+    expectedResultFoldStep eval reduce scope op args selected (prior,state) part =
+      let next := expectedResultFoldStep eval reduce scope op args selected ([],state) part
+      (prior ++ next.1,next.2) := by
+  unfold expectedResultFoldStep
+  split <;> rfl
+
+/-- A published result retains its actual row occurrence and the state
+produced by all preceding rows. -/
+theorem expectedApplicationResultFold_mem_origin
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (rows : List (List Atom × Bindings))
+    (state : St) (result : Atom × Bindings)
+    (present : result ∈ (rows.foldl
+      (expectedResultFoldStep eval reduce scope op args selected) ([],state)).1) :
+    ∃ preceding part suffix,
+      rows = preceding ++ part :: suffix ∧
+      result ∈ (expectedResultFoldStep eval reduce scope op args selected
+        ([],preceding.foldl (fun next row =>
+          (expectedResultFoldStep eval reduce scope op args selected ([],next) row).2) state) part).1 := by
+  let run := fun next row => expectedResultFoldStep eval reduce scope op args selected ([],next) row
+  have worker : expectedResultFoldStep eval reduce scope op args selected =
+      (fun acc row => let next := run acc.2 row; (acc.1++next.1,next.2)) := by
+    funext acc row
+    exact expectedResultFoldStep_append eval reduce scope op args selected acc.1 acc.2 row
+  rw [worker] at present
+  rcases mem_foldl_append_state_prefix run rows [] state result present with impossible | origin
+  · cases impossible
+  · exact origin
+
+/-- A clean row with one advancing root runs its actual retained continuation;
+the final projection is kept exactly rather than replaced by an empty seed. -/
+theorem expectedResultFoldStep_eq_of_singleton_continuation
+    (eval : St → Bindings → Atom → Atom → List (Atom × Bindings) × St)
+    (reduce : St → Atom → List (Atom × Bindings) × St)
+    (scope : List String) (op : String) (args : List Atom)
+    (selected : SelectedFunctionType) (part : List Atom × Bindings)
+    (prior : List (Atom × Bindings)) (state next : St) (root : Atom) (rootBindings : Bindings)
+    (clean : (part.1.zip args).find?
+      (fun pair => (pair.1==emptyA || pair.1.isError) && pair.1!=pair.2)=none)
+    (rootRun : reduce state (.expr (.sym op::part.1))=([(root,rootBindings)],next))
+    (notRefused : (root==notReducibleA)=false)
+    (changed : (root==.expr (.sym op::part.1))=false)
+    (notQuoted : returnsAtom selected=false) :
+    expectedResultFoldStep eval reduce scope op args selected (prior,state) part =
+      let retained := restrictBnd scope
+        ((Bindings.merge part.2 rootBindings).head?.getD rootBindings)
+      let deeper := eval next retained root (selectedResultExpected selected)
+      (prior ++ deeper.1.map (fun result =>
+        (result.1,restrictBnd scope ((Bindings.merge retained result.2).head?.getD result.2))),deeper.2) := by
+  unfold expectedResultFoldStep
+  rw [clean]
+  dsimp only
+  rw [rootRun]
+  simp only [List.foldl_cons,List.foldl_nil,notRefused,changed,Bool.false_or,
+    Bool.false_eq_true,↓reduceIte,notQuoted,List.nil_append]
+
+/-- A live all-quoted application is exactly its retained root continuation,
+followed by the actual result projection and semantic-result prioritization.
+Both bindings and repeated result occurrences remain in the equation. -/
+theorem mettaEval_expr_eq_of_instantiated_all_quoted_root_continuation
+    (env : MinEnv) (fuel : Nat) (state next : St)
+    (incoming : Bindings) (source : Atom) (op : String) (args : List Atom)
+    (root : Atom) (rootBindings : Bindings)
+    (plan : SelectedApplicationExecutionPlan env state.world incoming op args)
+    (stable : instantiate incoming source=.expr (.sym op::args))
+    (notError : (Atom.expr (.sym op::args)).isError=false)
+    (seed : plan.seeds=[incoming])
+    (mask : argMask plan.selected args.length=List.replicate args.length false)
+    (notQuoted : returnsAtom plan.selected=false)
+    (clean : ((args.map (instantiate incoming)).zip args).find?
+      (fun pair => (pair.1==emptyA || pair.1.isError) && pair.1!=pair.2)=none)
+    (rootRun : interpretFuel env (fuel+1) state
+      [{stack:=atomToStack (.expr [.sym "eval",.expr (.sym op::args.map (instantiate incoming))]) [],
+        bnd:=incoming}] []=([(root,rootBindings)],next))
+    (notRefused : (root==notReducibleA)=false)
+    (changed : (root==Atom.expr (.sym op::args.map (instantiate incoming)))=false) :
+    let scope := expectedApplicationRetentionScope incoming args
+    let retained := restrictBnd scope
+      ((Bindings.merge incoming rootBindings).head?.getD rootBindings)
+    let deeper := mettaEvalExpected env fuel next retained root (selectedResultExpected plan.selected)
+    mettaEval env (fuel+1) state incoming source=
+      prioritizeSemanticResults
+        (deeper.1.map (fun result =>
+          (result.1,restrictBnd scope ((Bindings.merge retained result.2).head?.getD result.2))),deeper.2) := by
+  rw [mettaEval_eq_evaluateExpectedApplication_of_selected_after_instantiate
+    env fuel state incoming source op args stable notError plan seed]
+  rw [evaluateExpectedApplicationFrom_eq_factored]
+  have rows := expectedApplicationArgumentFold_all_quoted
+    (fun next bindings atom expected => mettaEvalExpected env fuel next bindings atom expected)
+    incoming state args plan.selected mask clean
+  rw [evaluateExpectedApplicationFromFactored_eq_resultFold_of_argumentFold
+    (fun next bindings atom expected => mettaEvalExpected env fuel next bindings atom expected)
+    (fun next application => interpretFuel env (fuel+1) next
+      [{stack:=atomToStack (.expr [.sym "eval",application]) [],bnd:=incoming}] [])
+    incoming state state op args plan.selected [(args.map (instantiate incoming),incoming)] rows]
+  simp only [expectedApplicationResultFold,List.foldl_cons,List.foldl_nil]
+  rw [expectedResultFoldStep_eq_of_singleton_continuation
+    (fun next bindings atom expected => mettaEvalExpected env fuel next bindings atom expected)
+    (fun next application => interpretFuel env (fuel+1) next
+      [{stack:=atomToStack (.expr [.sym "eval",application]) [],bnd:=incoming}] [])
+    (expectedApplicationRetentionScope incoming args) op args plan.selected
+    (args.map (instantiate incoming),incoming) [] state next root rootBindings
+    clean rootRun notRefused changed notQuoted]
+  rfl
+
+/-- At the first evaluator budget, an advancing all-quoted root cannot run
+its ordinary continuation. All actual emitted values are budget errors and
+the root's state is retained exactly. -/
+theorem mettaEval_expr_first_budget_root_continuation_stopped
+    (env : MinEnv) (state next : St) (incoming : Bindings)
+    (source : Atom) (op : String) (args : List Atom)
+    (root : Atom) (rootBindings : Bindings)
+    (plan : SelectedApplicationExecutionPlan env state.world incoming op args)
+    (stable : instantiate incoming source=.expr (.sym op::args))
+    (notError : (Atom.expr (.sym op::args)).isError=false)
+    (seed : plan.seeds=[incoming])
+    (mask : argMask plan.selected args.length=List.replicate args.length false)
+    (notQuoted : returnsAtom plan.selected=false)
+    (expected : selectedResultExpected plan.selected=.sym "%Undefined%")
+    (clean : ((args.map (instantiate incoming)).zip args).find?
+      (fun pair => (pair.1==emptyA || pair.1.isError) && pair.1!=pair.2)=none)
+    (rootRun : interpretFuel env 1 state
+      [{stack:=atomToStack (.expr [.sym "eval",.expr (.sym op::args.map (instantiate incoming))]) [],
+        bnd:=incoming}] []=([(root,rootBindings)],next))
+    (notRefused : (root==notReducibleA)=false)
+    (changed : (root==Atom.expr (.sym op::args.map (instantiate incoming)))=false) :
+    (mettaEval env 1 state incoming source).2=next ∧
+      ∀ result∈(mettaEval env 1 state incoming source).1,result.1.isError=true := by
+  have run := mettaEval_expr_eq_of_instantiated_all_quoted_root_continuation
+    env 0 state next incoming source op args root rootBindings plan
+    stable notError seed mask notQuoted clean rootRun notRefused changed
+  have zero (bindings : Bindings) (atom : Atom) : mettaEval env 0 next bindings atom=
+      ([(.expr [.sym "Error",instantiate bindings atom,.sym "StackOverflow"],bindings)],next) := by
+    simp only [mettaEval]
+  simp only [expected,mettaEvalExpected_undefined,zero] at run
+  rw [run]
+  refine ⟨by simp only [prioritizeSemanticResults_snd],?_⟩
+  intro result member
+  have raw := mem_of_mem_prioritizeSemanticResults member
+  obtain ⟨inner,innerMember,equal⟩ := List.mem_map.mp raw
+  have innerEq := List.mem_singleton.mp innerMember
+  rw [innerEq] at equal
+  rw [←equal]
+  rfl
+
+
+end RetainedResultOrigins
 
 end Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.RuntimeCorrectness

@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # PLN Revision Rule
@@ -41,8 +41,8 @@ open BinaryEvidence
 
 /-! ## Revision as hplus -/
 
-/-- The PLN Revision Rule: combine independent evidence sources.
-    This is an alias for `hplus` (parallel aggregation). -/
+/-- The PLN Revision Rule: add the evidence of disjoint observations
+    (parallel aggregation, `+`). -/
 noncomputable abbrev revision (e₁ e₂ : BinaryEvidence) : BinaryEvidence := e₁ + e₂
 
 /-! ## Basic Properties (inherited from hplus) -/
@@ -64,8 +64,8 @@ theorem zero_revision (e : BinaryEvidence) : revision 0 e = e := zero_hplus e
 
 /-! ## Finite Multi-Source Revision -/
 
-/-- Finite-source PLN Revision: revise a finite list of independent evidence
-packets by summing their underlying binary evidence counts. -/
+/-- Finite-source PLN Revision: revise a finite list of evidence packets from
+pairwise disjoint observations by summing their binary evidence counts. -/
 noncomputable def revisionMany (xs : List BinaryEvidence) : BinaryEvidence :=
   xs.sum
 
@@ -84,7 +84,7 @@ Revision rule. -/
     revisionMany [e₁, e₂] = revision e₁ e₂ := by
   simp [revisionMany, revision, hplus_def]
 
-/-- Appending independent batches corresponds to binary Revision of their
+/-- Appending batches corresponds to binary Revision of their
 already-aggregated evidence. -/
 theorem revisionMany_append (xs ys : List BinaryEvidence) :
     revisionMany (xs ++ ys) = revision (revisionMany xs) (revisionMany ys) := by

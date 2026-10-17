@@ -116,6 +116,72 @@ def encode (element : Tower.Tm n) : List (Tower.Tm n) → Tower.Tm n
   | cons head tail ih => simp only [encode, List.map_cons, Intrinsic.consApp,
       subst, ih]
 
+/-- Read only the original literal List constructors, checking their same
+selected element at every occurrence. This performs no conversion search. -/
+def decode (element : Tower.Tm n) : Tower.Tm n → Option (List (Tower.Tm n))
+  | .app (.const constructor) selected =>
+      if constructor = Intrinsic.nilName ∧ selected = element then some [] else none
+  | .app (.app (.app (.const constructor) selected) head) tail =>
+      if constructor = Intrinsic.consName ∧ selected = element then
+        (decode element tail).map (head :: ·)
+      else none
+  | _ => none
+
+@[simp] theorem decode_encode (element : Tower.Tm n) (values : List (Tower.Tm n)) :
+    decode element (encode element values) = some values := by
+  induction values with
+  | nil => simp only [encode, Intrinsic.nilApp, decode, and_self, ↓reduceIte]
+  | cons head tail ih =>
+      simp only [encode, Intrinsic.consApp, decode, and_self, ↓reduceIte, ih, Option.map_some]
+
+theorem decode_sound (element term : Tower.Tm n) (values : List (Tower.Tm n))
+    (read : decode element term = some values) : term = encode element values := by
+  fun_induction decode element term
+  all_goals simp_all [Option.map_eq_some_iff, encode, Intrinsic.nilApp]
+  case case3 scope element constructor selected head tail accepted ih =>
+    obtain ⟨rest, found, rfl⟩ := read
+    rw [ih rest found]
+    simp only [encode, Intrinsic.consApp]
+
+/-- Exact image admission includes literal result payloads and every element
+annotation; matching only the outer List head would not establish this. -/
+theorem decode_exact (element term : Tower.Tm n) (values : List (Tower.Tm n)) :
+    decode element term = some values ↔ term = encode element values :=
+  ⟨decode_sound element term values, fun same => same ▸ decode_encode element values⟩
+
+theorem encode_injective (element : Tower.Tm n) : Function.Injective (encode element) := by
+  intro left right same
+  have parsed := congrArg (decode element) same
+  simpa only [decode_encode, Option.some.injEq] using parsed
+
+@[simp] theorem encode_rename (element : Tower.Tm n) (values : List (Tower.Tm n))
+    (action : Ren n m) :
+    rename action (encode element values) =
+      encode (rename action element) (values.map (rename action)) := by
+  induction values with
+  | nil => rfl
+  | cons head tail ih =>
+      simp only [encode, List.map_cons, Intrinsic.consApp, rename, ih]
+
+theorem decoded_rename {element term : Tower.Tm n} {values : List (Tower.Tm n)}
+    (read : decode element term = some values) (action : Ren n m) :
+    decode (rename action element) (rename action term) = some (values.map (rename action)) := by
+  rw [decode_sound element term values read, encode_rename, decode_encode]
+
+theorem decoded_substitute {element term : Tower.Tm n} {values : List (Tower.Tm n)}
+    (read : decode element term = some values) (action : Sub Tower.Head n m) :
+    decode (subst action element) (subst action term) = some (values.map (subst action)) := by
+  rw [decode_sound element term values read, encode_subst, decode_encode]
+
+/-- A wrong selected carrier refuses even an otherwise original List spine. -/
+theorem decode_wrong_element (element selected : Tower.Tm n)
+    (different : selected ≠ element) (values : List (Tower.Tm n)) :
+    decode element (encode selected values) = none := by
+  cases values with
+  | nil => simp only [encode, Intrinsic.nilApp, decode, different, and_false, ↓reduceIte]
+  | cons head tail =>
+      simp only [encode, Intrinsic.consApp, decode, different, and_false, ↓reduceIte]
+
 /-- The actual eliminator motive and recursive case after application of
 the four map arguments. -/
 def motive (target : Tower.Tm n) : Tower.Tm n :=

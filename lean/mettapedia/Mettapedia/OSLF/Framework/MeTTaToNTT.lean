@@ -1,7 +1,7 @@
 import Mettapedia.OSLF.Framework.MeTTaFullInstance
 import Mettapedia.OSLF.MeTTaIL.Engine
 import Mettapedia.OSLF.Framework.EvidenceSemantics
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 import Mettapedia.CategoryTheory.PLNInstance
 

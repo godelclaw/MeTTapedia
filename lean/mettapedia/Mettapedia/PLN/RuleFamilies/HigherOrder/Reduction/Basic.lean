@@ -1,7 +1,7 @@
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.SatisfyingSet
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierSemantics
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.WeaknessConnection
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.Algebra.QuantaleWeakness
 
 /-!
@@ -47,7 +47,7 @@ via first-order quantale weakness operations.
 - Goertzel et al., "Probabilistic Logic Networks" (2009), Chapter 10
 - `PLNFirstOrder/` directory: Complete first-order quantifier formalization (707 lines, 0 sorries)
 - `QuantaleWeakness.lean`: Core weakness theory (820+ lines, proven)
-- `EvidenceQuantale.lean`: BinaryEvidence quantale with Frame structure
+- `BinaryEvidence.lean`: BinaryEvidence quantale with Frame structure
 
 -/
 

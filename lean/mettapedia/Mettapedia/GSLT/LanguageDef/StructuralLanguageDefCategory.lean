@@ -12,6 +12,11 @@ structural morphisms by equality of their action on every declaration of the
 source `LanguageDef`.  Composition respects that equality because structural
 morphisms carry declared symbols to declared symbols.
 
+The object wrapper `ExtensionalLanguageDef` keeps this quotient category
+distinct from the raw structural category on `ValidatedLanguageDef`.
+Importing both therefore cannot change the meaning of raw structural arrows.
+The quotient functor connects the two categories explicitly.
+
 This is a category of validated declaration data.  A colimit proved here is
 therefore a colimit for declaration-preserving maps; it does not by itself say
 that an operational or model-theoretic semantics preserves that colimit.  Such
@@ -25,7 +30,7 @@ open CategoryTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef
 
-/-- Two structural maps are operationally indistinguishable when they map
+/-- Two structural maps are declaration-observationally equivalent when they map
 every declaration of the source to the same target declaration. -/
 structure Equivalent {source target : ValidatedLanguageDef}
     (first second : StructuralMorphism source target) : Prop where
@@ -198,11 +203,19 @@ private theorem raw_assoc {first second third fourth : ValidatedLanguageDef}
 
 end Arrow
 
+/-- The same validated declaration data, viewed in the category whose arrows
+forget the action of a symbol map outside the source declarations. -/
+structure ExtensionalLanguageDef where
+  definition : ValidatedLanguageDef
+
+def object (language : ValidatedLanguageDef) : ExtensionalLanguageDef :=
+  ⟨language⟩
+
 /-- Validated language definitions and extensional structural arrows form the
 category in which disjoint sums have their intended universal property. -/
-instance : Category ValidatedLanguageDef where
-  Hom := Arrow
-  id := Arrow.id
+instance : Category ExtensionalLanguageDef where
+  Hom source target := Arrow source.definition target.definition
+  id language := Arrow.id language.definition
   comp := Arrow.comp
   id_comp morphism := by
     induction morphism using Quotient.inductionOn with
@@ -235,6 +248,24 @@ instance : Category ValidatedLanguageDef where
           exact congrArg Arrow.ofMorphism
             (Arrow.raw_assoc oneRepresentative twoRepresentative
               threeRepresentative)
+
+/-- Quotient raw structural arrows by their action on declared data.  This
+does not identify the raw and extensional categories. -/
+def quotientFunctor : ValidatedLanguageDef ⥤ ExtensionalLanguageDef where
+  obj := object
+  map := Arrow.ofMorphism
+
+/-- Importing the quotient category leaves the raw category unchanged. -/
+example {source target : ValidatedLanguageDef} (arrow : source ⟶ target) :
+    StructuralMorphism source target := arrow
+
+example {source target : ValidatedLanguageDef}
+    (arrow : object source ⟶ object target) : Arrow source target := arrow
+
+theorem quotientFunctor_map_eq_iff {source target : ValidatedLanguageDef}
+    (first second : StructuralMorphism source target) :
+    quotientFunctor.map first = quotientFunctor.map second ↔ Equivalent first second :=
+  Quotient.eq
 
 namespace Coproduct
 
@@ -543,7 +574,7 @@ def leftArrow
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right) :
-    left ⟶ compatible.combinedLanguage :=
+    object left ⟶ object compatible.combinedLanguage :=
   Arrow.ofMorphism compatible.leftInclusion
 
 /-- Categorical injection of the right LanguageDef. -/
@@ -551,7 +582,7 @@ def rightArrow
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right) :
-    right ⟶ compatible.combinedLanguage :=
+    object right ⟶ object compatible.combinedLanguage :=
   Arrow.ofMorphism compatible.rightInclusion
 
 /-- Categorical copairing of two declaration-observable structural maps. -/
@@ -559,8 +590,8 @@ noncomputable def copair
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right target : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right)
-    (leftMap : left ⟶ target) (rightMap : right ⟶ target) :
-    compatible.combinedLanguage ⟶ target :=
+    (leftMap : object left ⟶ object target) (rightMap : object right ⟶ object target) :
+    object compatible.combinedLanguage ⟶ object target :=
   Quotient.map₂ (copairMorphism compatible)
     (fun {_ _} leftEquivalent {_ _} rightEquivalent =>
       copairMorphism_equivalent compatible leftEquivalent rightEquivalent)
@@ -570,7 +601,7 @@ theorem leftArrow_comp_copair
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right target : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right)
-    (leftMap : left ⟶ target) (rightMap : right ⟶ target) :
+    (leftMap : object left ⟶ object target) (rightMap : object right ⟶ object target) :
     leftArrow compatible ≫ copair compatible leftMap rightMap = leftMap := by
   induction leftMap using Quotient.inductionOn with
   | _ leftRepresentative =>
@@ -584,7 +615,7 @@ theorem rightArrow_comp_copair
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right target : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right)
-    (leftMap : left ⟶ target) (rightMap : right ⟶ target) :
+    (leftMap : object left ⟶ object target) (rightMap : object right ⟶ object target) :
     rightArrow compatible ≫ copair compatible leftMap rightMap = rightMap := by
   induction leftMap using Quotient.inductionOn with
   | _ leftRepresentative =>
@@ -598,7 +629,7 @@ theorem hom_ext
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right target : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right)
-    {first second : compatible.combinedLanguage ⟶ target}
+    {first second : object compatible.combinedLanguage ⟶ object target}
     (leftEquality : leftArrow compatible ≫ first =
       leftArrow compatible ≫ second)
     (rightEquality : rightArrow compatible ≫ first =
@@ -617,7 +648,7 @@ def cofan
     {name : String} {leftSymbols rightSymbols : LanguageDefSymbolMap}
     {left right : ValidatedLanguageDef}
     (compatible : Compatibility name leftSymbols rightSymbols left right) :
-    Limits.BinaryCofan left right :=
+    Limits.BinaryCofan (object left) (object right) :=
   Limits.BinaryCofan.mk (leftArrow compatible) (rightArrow compatible)
 
 /-- A compatible structural sum is a genuine categorical coproduct in the

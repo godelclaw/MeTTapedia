@@ -1,4 +1,6 @@
 import Mettapedia.GSLT.Distinction.DependentComposition
+import Mettapedia.Machines.ExecutionHints
+import Mathlib.CategoryTheory.Functor.Basic
 
 /-!
 # Composing cost simulations
@@ -8,6 +10,10 @@ deterministic machines by a relation that need not be a function, with an
 explicit per-transition cost bound.  A multi-stage compiler is a chain of such
 relations.  This module proves that they compose, what the composite
 preserves, and which premises reflect completion through it.
+
+`Machine.run_one_related_comp` composes local finite implementations without
+a uniform cost bound, through their actual middle state and existing
+`OutcomeRel`. The costed stages below retain their stronger resource contract.
 
 * **The composite** (`CostSimulation.comp`).  Simulations with relations `R`
   and `S` and costs `cost` and `cost'` compose to a simulation along the
@@ -68,6 +74,13 @@ preserves, and which premises reflect completion through it.
   partial or diverging; positive target work and matched stuck endpoints
   establish completion reflection. Calls with further external interaction
   first use `Machine.handle_close` and discharge the resulting service law.
+* **The category of observed machines** (`ObservedMachine`). Objects retain
+  the actual state carrier and stepper at a fixed event/verdict/request
+  interface; morphisms are the existing stages. The category uses their proved
+  identity and composition laws. `ObservedMachine.relabelFunctor` carries a
+  common observation-label map through both machines and stages. This
+  contract reflects completion; distinguishing stuckness from silent
+  divergence additionally needs the stated endpoint obligations.
 * **Span transport** (`segmentComposite`, `comp_segment_sourceForthOcc`,
   `comp_segment_sourceBackOcc`, `comp_future_related`).  The event-relation
   composite of the two segment relations relates segments through a middle
@@ -251,6 +264,38 @@ theorem OutcomeRel.comp {outcome : Outcome Source Verdict Request}
       | exhausted relatedResidual' => exact .exhausted ⟨_, relatedResidual, relatedResidual'⟩
 
 end Outcomes
+
+namespace Machine
+
+open Mettapedia.GSLT.Distinction.SpanTransport (compose)
+
+/-- Finite local operation implementations compose through the actual middle
+state. Their event lists and saved outcomes compose without a uniform bound
+on internal work. -/
+theorem run_one_related_comp
+    {Source Middle Target Event Verdict Request : Type}
+    (source : Machine Source Event Verdict Request)
+    (middle : Machine Middle Event Verdict Request)
+    (target : Machine Target Event Verdict Request)
+    (firstRelated : Source → Middle → Prop) (secondRelated : Middle → Target → Prop)
+    (first : ∀ {state state'}, firstRelated state state' →
+      ∃ count, (middle.run count state').1 = (source.run 1 state).1 ∧
+        OutcomeRel firstRelated (source.run 1 state).2 (middle.run count state').2)
+    (second : ∀ {state state'}, secondRelated state state' →
+      ∃ count, (target.run count state').1 = (middle.run 1 state).1 ∧
+        OutcomeRel secondRelated (middle.run 1 state).2 (target.run count state').2)
+    {state : Source} {state' : Target}
+    (retained : compose firstRelated secondRelated state state') :
+    ∃ count, (target.run count state').1 = (source.run 1 state).1 ∧
+      OutcomeRel (compose firstRelated secondRelated)
+        (source.run 1 state).2 (target.run count state').2 := by
+  obtain ⟨between, retainedFirst, retainedSecond⟩ := retained
+  obtain ⟨middleCount, firstEvents, firstOutcome⟩ := first retainedFirst
+  obtain ⟨count, secondEvents, secondOutcome⟩ :=
+    middle.run_related_of_one target secondRelated second middleCount retainedSecond
+  exact ⟨count, secondEvents.trans firstEvents, firstOutcome.comp secondOutcome⟩
+
+end Machine
 
 /-! ## The composite simulation -/
 
@@ -855,6 +900,29 @@ def ofHandler {State Service Value Failure : Type}
     (machine.close_handle_costSimulation callback load service environment bound answers)
     (Progress.close_handle machine callback service load environment bound answers)
 
+/-- A checked partial state representation is a real stage at one logical
+transition per source transition. The cost counts machine advances, not the
+physical work of encoding and decoding. Malformed target data lies outside
+the related-state image and is rejected by the adapter. -/
+def ofRepresentation {Data : Type} (machine : Machine Source Event Verdict Request)
+    (encode : Source → Data) (decode : Data → Option Source)
+    (roundtrip : ∀ state, decode (encode state) = some state) :
+    Stage machine (machine.represent encode decode) where
+  related state data := data = encode state
+  cost := 1
+  forward := machine.represent_costSimulation encode decode roundtrip
+  reflects := by
+    rintro state _ rfl fuel _
+    exact ⟨fuel, (machine.observe_represent encode decode roundtrip fuel state).symm⟩
+
+theorem ofRepresentation_stuck {Data : Type}
+    (machine : Machine Source Event Verdict Request) (encode : Source → Data)
+    (decode : Data → Option Source)
+    (roundtrip : ∀ state, decode (encode state) = some state) :
+    MatchesStuck machine (machine.represent encode decode)
+      (ofRepresentation machine encode decode roundtrip).related 1 :=
+  machine.represent_matchesStuck encode decode roundtrip
+
 /-- **Stages compose**, along the composite relation at the product cost. -/
 def comp (first : Stage source middle) (second : Stage middle target) : Stage source target where
   related := compose first.related second.related
@@ -944,6 +1012,95 @@ theorem never_completes {state : Source} {state' : Target} (relatedStates : stag
   stage.reflects.never_completes relatedStates never fuel'
 
 end Stage
+
+/-! ## The category of machines at a fixed observation interface -/
+
+/-- A machine together with its actual state carrier. Event, verdict and
+request types name the common observation interface of this category. -/
+structure ObservedMachine (Event Verdict Request : Type) where
+  State : Type
+  machine : Machine State Event Verdict Request
+
+namespace ObservedMachine
+
+variable {Event Verdict Request : Type}
+
+/-- Bundle an existing machine without changing its transitions or state. -/
+def of {State : Type} (machine : Machine State Event Verdict Request) :
+    ObservedMachine Event Verdict Request :=
+  ⟨State, machine⟩
+
+/-- Morphisms are the existing cost-bounded realization stages. Composition
+keeps their relational state correspondence, multiplicative bound and
+completion reflection. It does not identify their intermediate executions. -/
+instance : CategoryTheory.Category (ObservedMachine Event Verdict Request) where
+  Hom source target := Stage source.machine target.machine
+  id source := Stage.refl source.machine
+  comp first second := first.comp second
+  id_comp stage := Stage.refl_comp stage
+  comp_id stage := Stage.comp_refl stage
+  assoc first second third := Stage.comp_assoc first second third
+
+/-- A common map of observation labels acts functorially on machines and
+realization stages while keeping every underlying state carrier. -/
+def relabelFunctor {Event' Verdict' Request' : Type}
+    (events : Event → Event') (verdicts : Verdict → Verdict')
+    (requests : Request → Request') :
+    CategoryTheory.Functor (ObservedMachine Event Verdict Request)
+      (ObservedMachine Event' Verdict' Request') where
+  obj source := ⟨source.State, source.machine.relabel events verdicts requests⟩
+  map stage := stage.relabel events verdicts requests
+  map_id _ := Stage.relabel_refl events verdicts requests
+  map_comp first second := Stage.relabel_comp first second events verdicts requests
+
+end ObservedMachine
+
+/-! ## Reproducible checkpoints over retained execution -/
+
+namespace Machine
+
+open Mettapedia.Machines.ExecutionHints
+
+variable {State Event Verdict Request View : Type}
+    (machine : Machine State Event Verdict Request)
+
+/-- The specified strategy is one call of the existing retained runner.
+Terminal outcomes remain terminal and suspended requests remain unanswered.
+The equality counts runner budgets; it does not count native instructions. -/
+theorem continueRun_iterate (budget : Nat)
+    (result : List Event × Outcome State Verdict Request) :
+    (machine.continueRun 1)^[budget] result = machine.continueRun budget result := by
+  induction budget generalizing result with
+  | zero => simp
+  | succ budget ih =>
+      rw [Function.iterate_succ_apply, ih, ← machine.continueRun_add]
+      rw [Nat.add_comm 1 budget]
+
+/-- Checkpoint replay computes the original machine's entire internal
+residual. Only the named view is supplied by the certificate. -/
+theorem checkpoint_endpoint [DecidableEq View]
+    (view : (List Event × Outcome State Verdict Request) → View)
+    (source target : List Event × Outcome State Verdict Request)
+    (points : List (Checkpoint View))
+    (accepted : (replay (machine.continueRun 1) view source points).2 = some target) :
+    target = machine.continueRun (fuel points) source ∧
+      (replay (machine.continueRun 1) view source points).1 = fuel points := by
+  obtain ⟨endpoint, calls⟩ := replay_result (machine.continueRun 1) view points source target accepted
+  exact ⟨endpoint.trans (machine.continueRun_iterate _ source), calls⟩
+
+/-- For the fixed machine and observation, finite checkpoint evidence exists
+exactly for the observed budgeted run. This includes exhausted and suspended
+outcomes; neither is promoted to an accepted proof. -/
+theorem exists_checkpoints_iff [DecidableEq View]
+    (view : (List Event × Outcome State Verdict Request) → View)
+    (source : State) (wanted : View) (budget : Nat) :
+    (∃ points, fuel points = budget ∧
+      check (machine.continueRun 1) view (machine.run 0 source, wanted) points = true) ↔
+      view (machine.run budget source) = wanted := by
+  rw [exists_check_iff, machine.continueRun_iterate,
+    ← machine.run_add, Nat.zero_add]
+
+end Machine
 
 /-! ## Span transport of the composite -/
 

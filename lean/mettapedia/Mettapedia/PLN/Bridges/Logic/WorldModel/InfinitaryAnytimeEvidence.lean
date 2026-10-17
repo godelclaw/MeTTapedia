@@ -26,7 +26,9 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.InfinitaryAnytimeEvidence
 open Mettapedia.Logic.AnytimeEvidence
 open Mettapedia.TypeTheory.InfinitaryProofAndObservationBoundary
 open Mettapedia.TypeTheory.InfinitaryProofAndObservationBoundary.WorldModel
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 universe u
 
@@ -36,9 +38,9 @@ universe u
 one satisfying disjunct occurs before the current depth. -/
 def iOrCertificate {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L) :
-    MonotoneCertificate (SatisfiesInf model (.iOr formulas)) where
+    MonotoneCertificate (SatisfiesInf folSatisfies model (.iOr formulas)) where
   acceptsAt depth := ∃ index, index < depth ∧
-    SatisfiesInf model (formulas index)
+    SatisfiesInf folSatisfies model (formulas index)
   monotone := by
     intro earlier later bounded
     rintro ⟨index, within, satisfied⟩
@@ -64,7 +66,7 @@ theorem iOrCertificate_eventuallyComplete
 tower whose limit is exactly the infinitary conjunction. -/
 def iAndObligationTower {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L) :
-    CoherentObligationTower (SatisfiesInf model (.iAnd formulas)) where
+    CoherentObligationTower (SatisfiesInf folSatisfies model (.iAnd formulas)) where
   holdsAt depth := SatisfiesPrefix model formulas depth
   restrict := by
     intro earlier later bounded laterSatisfied index within
@@ -76,7 +78,7 @@ prefix through the generic tower interface. -/
 theorem iAnd_satisfies_every_finite_obligation
     {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L)
-    (satisfied : SatisfiesInf model (.iAnd formulas)) (depth : Nat) :
+    (satisfied : SatisfiesInf folSatisfies model (.iAnd formulas)) (depth : Nat) :
     (iAndObligationTower model formulas).holdsAt depth :=
   (iAndObligationTower model formulas).holdsAt_of_claim satisfied depth
 

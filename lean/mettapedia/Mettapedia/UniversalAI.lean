@@ -23,6 +23,7 @@ import Mettapedia.UniversalAI.UniversalPredictionConditionalApproximation
 import Mettapedia.UniversalAI.ControlledFiniteHiddenMarkovUniversalPredictionBridge
 import Mettapedia.UniversalAI.SolomonoffExchangeable
 import Mettapedia.UniversalAI.UniversalHyperprior
+import Mettapedia.UniversalAI.UniversalHyperprior.DyadicApproximation
 import Mettapedia.UniversalAI.BadUniversalPriors
 import Mettapedia.UniversalAI.BayesianAgents
 import Mettapedia.UniversalAI.BayesianAgents.CoreCompat

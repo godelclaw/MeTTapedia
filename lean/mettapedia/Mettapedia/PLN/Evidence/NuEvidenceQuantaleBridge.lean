@@ -1,5 +1,5 @@
 import Mathlib.Tactic
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 
 namespace Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge
@@ -13,7 +13,7 @@ open scoped ENNReal
 
 This file states and proves small "bridge" lemmas connecting:
 - the *numerical* truth-value formulas (as mirrored from `lib_pln.metta`), and
-- the BinaryEvidence semantics (`EvidenceQuantale.lean`) that interprets truth values as evidence counts.
+- the BinaryEvidence semantics (`BinaryEvidence.lean`) that interprets truth values as evidence counts.
 
 The intended use is to make explicit (and checkable) the hypotheses under which the MeTTa-style
 truth-value calculations coincide with BinaryEvidence addition (`hplus`) and its `toSTV` view.

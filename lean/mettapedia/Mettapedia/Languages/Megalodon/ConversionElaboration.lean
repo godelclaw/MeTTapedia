@@ -3,9 +3,9 @@ import Mettapedia.Languages.MM0.Translation.CalculusSimulation
 import Mettapedia.GSLT.LanguageDef.TierLattice
 
 /-!
-# Megalodon's conversion, elaborated into an explicit calculus
+# The Mathdata conversion profile, elaborated into an explicit calculus
 
-Megalodon's Mathdata kernel decides conversion by computing: it unfolds definitions
+The Lean Mathdata kernel model decides conversion by computing: it unfolds definitions
 (`deltaNormalize`), then repeats bottom-up beta-eta passes (`Tm.normalizeOne`) until a pass
 finds no redex, and compares normal forms. An explicit calculus checks conversion without
 computing: an article lists every reduction step, with the substitution, shift and
@@ -28,7 +28,7 @@ This module instruments the normalizer so that it writes its own article.
   `elaborateRun_complete`), a run's steps into a reduction path article
   (`pathArticle_checked`), and two normalizations with the same normal form into a
   conversion article (`conversionArticle_checked`).
-* **Exact elaboration.** Megalodon's conversion test elaborates into the calculus's
+* **Exact elaboration.** The modeled conversion test elaborates into the calculus's
   conversion judgment, and accepts exactly when the elaborated article is accepted
   (`conversionElaboration`). Soundness of the calculus therefore gives soundness of the
   native test, with no trust in the normalizer (`nativeChecker_sound`).
@@ -36,8 +36,9 @@ This module instruments the normalizer so that it writes its own article.
   that changes its term is one step of the coarsening of that system, and its load is the
   number of contractions it writes (`elaboratePass_coarse`). A run reaches its normal form
   in as many steps as it writes (`elaborateRun_reaches`).
-* **On to MM0.** The calculus is first-order (`calculus_firstOrder`), so MM0 and the
-  calculus p-simulate each other (`mm0Equivalent`), and every conversion the native test
+* **On to MM0.** The calculus is first-order (`calculus_firstOrder`). Its
+  `mm0Equivalent` supplies size simulations with declared polynomial accounts,
+  not executed translation-time bounds. Every conversion the modeled test
   accepts has an MM0 witness (`native_mm0`).
 
 Beta steps use the checked substitution compiler of `EnvironmentKernel`, type-level beta
@@ -46,7 +47,9 @@ its checked type substitution compiler, eta the checked shift witness of
 `DefinitionConversionKernel`.
 
 The budget is a count of passes and unfoldings, as in the Lean model of the kernel;
-Proofgold's kernel counts beta steps instead.
+The upstream Proofgold/Megalodon beta counter and lazy conversion algorithm
+are not executions of this pass-based model. The profile theorem is not a
+verification of those source algorithms.
 -/
 
 set_option autoImplicit false
@@ -1467,7 +1470,7 @@ def explicitChecker : Checker (ConversionClaim Tm) RawProof where
     checkRaw validated
       (converts (encoded environment.terms) (ETm claim.source) (ETm claim.target)) article
 
-/-- **Megalodon's native conversion elaborates exactly into its explicit calculus.** The
+/-- **The modeled native conversion elaborates exactly into its explicit calculus.** The
 elaborator is the normalizer, instrumented to write each step it takes. -/
 def conversionElaboration : Elaboration (nativeChecker environment) (explicitChecker environment) where
   elaborate claim fuel :=
@@ -1483,7 +1486,7 @@ def conversionElaboration : Elaboration (nativeChecker environment) (explicitChe
       by_contra rejected
       simp [rejected] at produced
 
-/-- **Trust reduction for Megalodon's conversion.** Whatever the explicit calculus is sound
+/-- **Trust reduction for the modeled conversion.** Whatever the explicit calculus is sound
 for, the native test is sound for, with no trust in the normalizer. -/
 theorem nativeChecker_sound {Meaning : ConversionClaim Tm → Prop}
     (explicitSound : (explicitChecker environment).Sound Meaning) :

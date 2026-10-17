@@ -48,7 +48,7 @@ open Mettapedia.OSLF.MeTTaIL.Substitution (liftBVars_zero)
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList)
 open Mettapedia.Logic.HostingStyles.AmbientSpace (tokens_apply_eq_zero_iff tokens_eq_zero_of_mem)

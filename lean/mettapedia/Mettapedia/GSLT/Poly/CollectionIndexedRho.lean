@@ -110,14 +110,14 @@ def outputSwappedClosed : ClosedObject rhoCalc "Proc" :=
   ⟨outputSwapped, outputSwapped_typed, outputSwapped_object⟩
 
 /-- A pattern that is itself a hash bag. -/
-def IsHashBag : Pattern → Prop
-  | .collection .hashBag _ none => True
-  | _ => False
+def IsHashBag (pattern : Pattern) : Prop :=
+  ∃ elements, pattern = .collection .hashBag elements none
 
 theorem rhoBagStep_bags {left right : Pattern} (step : RhoBagStep left right) :
     IsHashBag left ∧ IsHashBag right := by
   cases step with
-  | perm _ => simp [IsHashBag]
+  | @perm elements swapped _permutation =>
+      exact ⟨⟨elements, rfl⟩, ⟨swapped, rfl⟩⟩
 
 /-- An outermost bag step never rewrites an application. Two applications are
 related only when they are the same pattern. -/
@@ -151,7 +151,8 @@ theorem output_swap_not_root :
       simp [outputOrdered, outputSwapped, orderedPar, swappedPar, procDrop, procOutput,
         procZero, Pattern.apply.injEq, Pattern.collection.injEq] at equal
   | inr both =>
-      simp [IsHashBag, outputOrdered] at both
+      obtain ⟨_, equal⟩ := both.1
+      simp [outputOrdered] at equal
 
 /-- Reversing the payload bag is a contextual pattern step. -/
 theorem output_swap_contextual : PatternCong outputOrdered outputSwapped :=

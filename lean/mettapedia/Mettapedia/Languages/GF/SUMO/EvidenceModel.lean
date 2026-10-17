@@ -218,7 +218,7 @@ Uses normal approximation to Beta CDF:
 where z = 1.645 (one-sided 95%), n = alpha + beta.
 
 This is a Float-level computation for pipeline scoring.
-The formal algebraic treatment is in EvidenceQuantale.lean (ℝ≥0∞ level). -/
+The formal algebraic treatment is in BinaryEvidence.lean (ℝ≥0∞ level). -/
 
 def wilsonLower95 (alpha beta : Float) : Float :=
   let z : Float := 1.645  -- 95% one-sided

@@ -44,7 +44,7 @@ theorem language_original_grammar :
 def snapshot : GeneralExecutionAdmission.Snapshot where
   language := language
   freeTypes := []
-  provider := ⟨[], []⟩
+  provider := { signatures := [], rows := [] }
 
 def permissions : GeneralExecutionAdmission.Permissions where
   sites := .all

@@ -71,13 +71,11 @@ import Mettapedia.TypeTheory.DisplayedPresheafCwf
 import Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Regular.PresheafSemantics
 import Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Regular.PresheafNormalization
 import Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Regular.TypeConversionSemantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.FormationSensitivePreservationExamples
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLImpredicativeRepresentation
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.HOL.HOLDefinitionAdmission
 import Mettapedia.Languages.Megalodon.SourceTypeParameters
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitivePresheafSemantics
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeFormedPresheafControls
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplay
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplayTransport
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Checking.NativeJudgmentReplayCoherence
@@ -277,7 +275,7 @@ Consequently the actual checked matcher computes both source and image terms
 with semantic support, and that computed pair satisfies the existing
 denotational substitution law. At Evidence sort, the same computed result
 now yields an equivalence, for every answer and target environment, between
-Prime's semantic dependent answer family at the target and the source family
+The selected candidate's semantic dependent answer family at the target and the source family
 pulled back along the computed substitution. These Type-valued fibres are
 subsingleton correctness receipts. Supported substitutions form a Mathlib
 wide subcategory of the existing context category; model environments form
@@ -1935,10 +1933,6 @@ These checks tie tracker statements to concrete constants in the codebase.
 #check Mettapedia.TypeTheory.CwfYoneda.recoverTerm_substituteSection
 #check Mettapedia.TypeTheory.CwfYoneda.substituteSection_id
 #check Mettapedia.TypeTheory.CwfYoneda.substituteSection_comp
-#check Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.strictMorphism
-#check Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.decision_iff_interpreted_eq
-#check Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.Controls.nested_function_reduces
-#check Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.Controls.nested_function_does_not_capture_argument
 #check Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.judgment_iff_certificate
 #check Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.accepted_representation
 #check Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.Controls.conversion_beneath_binder_checked
@@ -2231,10 +2225,6 @@ These checks tie tracker statements to concrete constants in the codebase.
 #print axioms Mettapedia.TypeTheory.CwfYoneda.terminalIso
 #print axioms Mettapedia.TypeTheory.CwfYoneda.recoverTerm_substituteSection
 #print axioms Mettapedia.TypeTheory.CwfYoneda.substituteSection_comp
-#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.strictMorphism
-#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.decision_iff_interpreted_eq
-#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.Controls.nested_function_reduces
-#print axioms Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveSimpleCwf.Controls.nested_function_does_not_capture_argument
 #print axioms Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.judgment_iff_certificate
 #print axioms Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.accepted_representation
 #print axioms Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeJudgmentReplay.Controls.conversion_beneath_binder_checked

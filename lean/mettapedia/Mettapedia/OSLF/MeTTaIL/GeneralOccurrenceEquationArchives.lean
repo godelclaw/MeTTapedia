@@ -29,7 +29,7 @@ def EquationTracked (request : Request) (state : State request) (source : Patter
 def EquationCursorRead (request : Request) (state : State request) (frame : EquationFrame request) : Prop :=
   frame.cursor ≤ frame.state.answers.length ∧
     ∀ answer ∈ frame.state.answers.take frame.cursor,
-      (frame.source, equationReceipt answer.val) ∈ edgeKeys request state
+      (frame.source, equationReplayRecord answer.val) ∈ edgeKeys request state
 
 theorem edgeKeys_tick_mono (request : Request) (state : State request) :
     ∀ key ∈ edgeKeys request state, key ∈ edgeKeys request (tick request state) := by
@@ -80,7 +80,7 @@ theorem EquationCursorRead.deliver {request : Request} {first second : State req
     (inclusion : ∀ key ∈ edgeKeys request first, key ∈ edgeKeys request second)
     (answer : GeneralEquationJobExecution.Answer (equationRequest request frame.source frame.job))
     (found : frame.state.answers[frame.cursor]? = some answer)
-    (published : (frame.source, equationReceipt answer.val) ∈ edgeKeys request second) :
+    (published : (frame.source, equationReplayRecord answer.val) ∈ edgeKeys request second) :
     EquationCursorRead request second {frame with cursor := frame.cursor + 1} := by
   constructor
   · have within := (List.getElem?_eq_some_iff.mp found).1

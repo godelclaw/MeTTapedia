@@ -641,6 +641,30 @@ theorem agt_not_transitive :
   rw [agt_static_iff_eq numberStatic stringStatic]
   simp [number, string]
 
+/-- Gradual compatibility cannot be preserved and reflected by a transitive
+relation on any encoded carrier. The obstruction already occurs at the three
+literal types `Number`, `%Undefined%`, and `String`. -/
+theorem no_faithful_transitive_representation {Target : Type}
+    (relation : Target → Target → Prop)
+    (transitive : ∀ {first middle last}, relation first middle → relation middle last → relation first last)
+    (encode : Atom → Target) :
+    ¬(∀ left right, Consistent Concretization {left, right} ↔
+      relation (encode left) (encode right)) := by
+  intro faithful
+  obtain ⟨first, second, distinct⟩ := agt_not_transitive
+  exact distinct ((faithful number string).mpr
+    (transitive ((faithful number Atom.undefinedType).mp first)
+      ((faithful Atom.undefinedType string).mp second)))
+
+/-- On the independently identified static fragment, an injective encoding
+preserves and reflects consistency as equality. -/
+theorem static_consistency_iff_encoded_equality {Target : Type}
+    (encode : Atom → Target) (injective : Function.Injective encode)
+    {left right : Atom} (leftStatic : StaticAtom left) (rightStatic : StaticAtom right) :
+    Consistent Concretization {left, right} ↔ encode left = encode right := by
+  rw [agt_static_iff_eq leftStatic rightStatic]
+  exact ⟨congrArg encode, fun equal => injective equal⟩
+
 private def listOf (element : Atom) : Atom := .expression [.symbol "List", element]
 
 /-- A nested `Atom` is an ordinary symbol for AGT, so `(List Atom)` and

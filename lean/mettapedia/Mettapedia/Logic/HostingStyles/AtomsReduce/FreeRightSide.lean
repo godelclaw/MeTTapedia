@@ -29,7 +29,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-- Two members of a list with at most one member are one. -/
 theorem eq_of_mem_of_length_le_one {α : Type} {list : List α} (short : list.length ≤ 1)

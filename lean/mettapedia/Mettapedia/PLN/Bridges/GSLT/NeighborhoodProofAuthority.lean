@@ -34,29 +34,29 @@ open Mettapedia.GSLT.LanguageDef.CompletenessSpectrum
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 namespace NeighborhoodCompleteness
 
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompleteness
 
-abbrev ModalQuery :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.ModalQuery
 
 /-- The implication judgment used at the proof/semantics boundary. -/
 structure ImplicationClaim where
-  antecedent : ModalQuery
-  consequent : ModalQuery
+  antecedent : (LO.Modal.Formula ℕ)
+  consequent : (LO.Modal.Formula ℕ)
 
 /-- Syntactic derivability of an implication in a chosen neighborhood
 calculus. -/
-def Provable {System : Type*} [Entailment System ModalQuery]
+def Provable {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (claim : ImplicationClaim) : Prop :=
   system ⊢ (claim.antecedent ➝ claim.consequent)
 
 /-- Independently defined neighborhood-WM meaning of an implication claim. -/
 def Meaning (frameClass : Neighborhood.FrameClass)
     (claim : ImplicationClaim) : Prop :=
-  singletonStrengthLEOn frameClass claim.antecedent claim.consequent
+  singletonStrengthLEOn PointedNeighborhood.satisfies (inClass frameClass)
+    claim.antecedent claim.consequent
 
 /-- Neighborhood consequence is contravariant in the class of models: a claim
 valid on a larger class remains valid after restricting to a subclass.  This
@@ -83,7 +83,7 @@ def restrictFrameClass
 /-- Soundness and completeness of the neighborhood calculus identify its
 syntactic implication judgment with neighborhood-WM consequence. -/
 theorem provable_iff_meaning
-    {System : Type*} [Entailment System ModalQuery]
+    {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (frameClass : Neighborhood.FrameClass)
     [Sound system frameClass] [Complete system frameClass]
     (claim : ImplicationClaim) :
@@ -94,7 +94,7 @@ theorem provable_iff_meaning
 /-- Promote exact syntactic neighborhood adequacy to exact adequacy for the
 independently defined neighborhood-WM meaning. -/
 def exactSemanticAdequacy
-    {System : Type*} [Entailment System ModalQuery]
+    {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (frameClass : Neighborhood.FrameClass)
     [Sound system frameClass] [Complete system frameClass]
     {definition : ValidatedCalculusLanguageDef}
@@ -113,7 +113,7 @@ def exactSemanticAdequacy
 
 /-- Package the promoted adequacy as a semantically complete CertificateGSLT. -/
 def semanticCertificateGSLT
-    {System : Type*} [Entailment System ModalQuery]
+    {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (frameClass : Neighborhood.FrameClass)
     [Sound system frameClass] [Complete system frameClass]
     {definition : ValidatedCalculusLanguageDef}
@@ -127,7 +127,7 @@ def semanticCertificateGSLT
 category.  This is the appropriate stage object for later filtered growth; no
 colimit existence or preservation theorem is asserted here. -/
 def exactSemanticObject
-    {System : Type*} [Entailment System ModalQuery]
+    {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (frameClass : Neighborhood.FrameClass)
     [Sound system frameClass] [Complete system frameClass]
     {definition : ValidatedCalculusLanguageDef}
@@ -143,7 +143,7 @@ restatement of derivability: their existence is exactly neighborhood-WM
 consequence for the declared frame class. -/
 theorem exists_accepted_article_iff_meaning
     {AuthorityId : Type*} (authorityId : AuthorityId)
-    {System : Type*} [Entailment System ModalQuery]
+    {System : Type*} [Entailment System (LO.Modal.Formula ℕ)]
     (system : System) (frameClass : Neighborhood.FrameClass)
     [Sound system frameClass] [Complete system frameClass]
     {definition : ValidatedCalculusLanguageDef}
@@ -190,17 +190,11 @@ namespace KripkeBoundary
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodCanonical
 
-abbrev ModalQuery :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.ModalQuery
-abbrev PointedKripke :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.PointedKripke
-abbrev PointedNeighborhood :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.PointedNeighborhood
 
 /-- A pointed neighborhood model is Kripke-representable when it agrees on all
 modal formulas with some pointed Kripke model. -/
 def KripkeRepresentable (point : PointedNeighborhood) : Prop :=
-  ∃ kripkePoint : PointedKripke, ∀ formula : ModalQuery,
+  ∃ kripkePoint : PointedKripke, ∀ formula : (LO.Modal.Formula ℕ),
     point.satisfies formula ↔ kripkePoint.satisfies formula
 
 /-- Every canonically translated Kripke point is represented by its source
@@ -227,14 +221,14 @@ def unsupportedPoint : PointedNeighborhood where
 
 /-- The unsupported neighborhood point refutes `box top`. -/
 theorem unsupportedPoint_not_box_top :
-    ¬ unsupportedPoint.satisfies (□(⊤ : ModalQuery)) := by
+    ¬ unsupportedPoint.satisfies (□(⊤ : (LO.Modal.Formula ℕ))) := by
   change () ∉ (∅ : Set Unit)
   exact fun member => (Set.mem_empty_iff_false ()).mp member
 
 /-- Every Kripke point satisfies `box top`, independently of its accessibility
 relation. -/
 theorem kripkePoint_box_top (point : PointedKripke) :
-    point.satisfies (□(⊤ : ModalQuery)) := by
+    point.satisfies (□(⊤ : (LO.Modal.Formula ℕ))) := by
   apply Formula.Kripke.Satisfies.box_def.mpr
   intro world _
   exact Formula.Kripke.Satisfies.top_def
@@ -245,24 +239,24 @@ theorem unsupportedPoint_not_kripkeRepresentable :
     ¬ KripkeRepresentable unsupportedPoint := by
   rintro ⟨point, agrees⟩
   exact unsupportedPoint_not_box_top
-    ((agrees (□(⊤ : ModalQuery))).mpr (kripkePoint_box_top point))
+    ((agrees (□(⊤ : (LO.Modal.Formula ℕ)))).mpr (kripkePoint_box_top point))
 
 /-- The strict semantic boundary is visible directly in PLN evidence: the
 unsupported singleton assigns zero strength to `box top`. -/
 theorem unsupportedPoint_box_top_strength_zero :
     BinaryWorldModel.queryStrength
-      (State := Multiset PointedNeighborhood) (Query := ModalQuery)
-      ({unsupportedPoint} : Multiset PointedNeighborhood) (□(⊤ : ModalQuery)) = 0 :=
-  queryStrength_singleton_of_not_satisfies unsupportedPoint
-    (□(⊤ : ModalQuery)) unsupportedPoint_not_box_top
+      (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
+      ({unsupportedPoint} : Multiset PointedNeighborhood) (□(⊤ : (LO.Modal.Formula ℕ))) = 0 :=
+  queryStrength_singleton_of_not_satisfies PointedNeighborhood.satisfies unsupportedPoint
+    (□(⊤ : (LO.Modal.Formula ℕ))) unsupportedPoint_not_box_top
 
 /-- Every Kripke singleton assigns unit strength to `box top`. -/
 theorem kripkePoint_box_top_strength_one (point : PointedKripke) :
     BinaryWorldModel.queryStrength
-      (State := Multiset PointedKripke) (Query := ModalQuery)
-      ({point} : Multiset PointedKripke) (□(⊤ : ModalQuery)) = 1 :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.queryStrength_singleton_of_satisfies
-    point (□(⊤ : ModalQuery)) (kripkePoint_box_top point)
+      (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
+      ({point} : Multiset PointedKripke) (□(⊤ : (LO.Modal.Formula ℕ))) = 1 :=
+  queryStrength_singleton_of_satisfies PointedKripke.satisfies
+    point (□(⊤ : (LO.Modal.Formula ℕ))) (kripkePoint_box_top point)
 
 /-! ## Strict semantic variance between frame classes -/
 
@@ -289,12 +283,12 @@ theorem boxTopClaim_not_meaning_E :
     ¬ Meaning Neighborhood.FrameClass.E boxTopClaim := by
   intro meaningful
   have pointwise :
-      pointwiseImpliesOn Neighborhood.FrameClass.E
-        (⊤ : ModalQuery) (□(⊤ : ModalQuery)) :=
-    (pointwiseImpliesOn_iff_singletonStrengthLEOn
-      Neighborhood.FrameClass.E (⊤ : ModalQuery) (□(⊤ : ModalQuery))).mpr meaningful
+      pointwiseImpliesOn PointedNeighborhood.satisfies (inClass Neighborhood.FrameClass.E)
+        (⊤ : (LO.Modal.Formula ℕ)) (□(⊤ : (LO.Modal.Formula ℕ))) :=
+    (pointwiseImpliesOn_iff_singletonStrengthLEOn PointedNeighborhood.satisfies
+      (inClass Neighborhood.FrameClass.E) (⊤ : (LO.Modal.Formula ℕ)) (□(⊤ : (LO.Modal.Formula ℕ)))).mpr meaningful
   exact unsupportedPoint_not_box_top
-    (pointwise unsupportedPoint (by simp) Formula.Neighborhood.Satisfies.def_top)
+    (pointwise unsupportedPoint (by simp [inClass]) Formula.Neighborhood.Satisfies.def_top)
 
 /-- Restriction from all neighborhood frames to `EMN` frames is
 theorem-preserving. -/

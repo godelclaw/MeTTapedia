@@ -9,6 +9,13 @@ poll costs are the existing structural cursor. This language changes only
 the completed batch's finalization profile. Its public observation uses the
 row-major receipt interpretation and its atomic comparison uses the matching
 row-major language; no sink-major conclusion is reused for that step.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  This profile applies each row's sinks before the next
+row's.  The kernel (`Mainline`) writes the instances of every `+` sink over all rows
+first and then finalizes the other sinks: on `(edge a b) (edge b c)`, the directive
+`(exec 0 (, (edge $x $y)) (O (+ $x) (- $y)))` leaves `a` in the kernel and both
+`a` and `b` in this profile.
 -/
 
 set_option autoImplicit false

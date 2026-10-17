@@ -12,6 +12,11 @@ publication. Concurrent edits therefore require an explicit restart or a
 separate validated snapshot policy. No partial row list becomes public and
 no scheduler budget is mistaken for a completion certificate. Poll charges
 belong to this formal cursor; they are not C instruction or wall-time costs.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

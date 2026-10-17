@@ -140,7 +140,238 @@ theorem result_judgment {u : Head} (formed : Judgment R Γ (.sigma A B) (.head u
 
 end Effects
 
-/-! ## A genuinely indexed native identity family -/
+/-! ## Certificate-indexed native identity families
+
+A named data type and an actually typed two-argument checker determine the
+native family `Sigma receipt : Data, Id Data (checker claim receipt) claim`.
+The packing function is constructed in the original scoped syntax, with
+actual Pi/Sigma/Id formation and lambda/application typing. Its two beta
+steps retain the supplied receipt and equality proof. These constructions
+provide no semantic authority for the checker or its computation rules.
+-/
+
+namespace ReceiptPacking
+
+variable {Head : Type} {R : Rules Head} {n : Nat}
+
+def dataType (name : DeclName) : Tm Head n := .const name
+
+def checkerType (name : DeclName) : Tm Head n :=
+  .pi (dataType name) (.pi (dataType name) (dataType name))
+
+def equalityType (name : DeclName) (checker claim receipt : Tm Head n) : Tm Head n :=
+  .id (dataType name) (.app (.app checker claim) receipt) claim
+
+def receiptBody (name : DeclName) (checker claim : Tm Head n) : Tm Head (n + 1) :=
+  equalityType name (rename wk checker) (rename wk claim) (.var 0)
+
+def family (name : DeclName) (checker claim : Tm Head n) : Tm Head n :=
+  .sigma (dataType name) (receiptBody name checker claim)
+
+def packType (name : DeclName) (checker claim : Tm Head n) : Tm Head n :=
+  .pi (dataType name) (.pi (receiptBody name checker claim)
+    (rename wk (rename wk (family name checker claim))))
+
+def pack : Tm Head n := .lam (.lam (.pair (.var 1) (.var 0)))
+
+private theorem data_formed (name : DeclName) {u : Head}
+    (formed : Typing R .nil (dataType name) (.head u)) (context : Ctx Head n) :
+    Typing R context (dataType name) (.head u) := by
+  simpa only [dataType, rename] using
+    formed.renameTyping (Δ := context) (ρ := Fin.elim0) (fun i => Fin.elim0 i)
+
+theorem equality_formed (name : DeclName) {context : Ctx Head n} {u : Head}
+    {checker claim receipt : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u)) (universeWitness : R.isUniverse u)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name))
+    (receiptTyped : Typing R context receipt (dataType name)) :
+    Typing R context (equalityType name checker claim receipt) (.head u) := by
+  have first : Typing R context (.app checker claim) (.pi (dataType name) (dataType name)) := by
+    simpa only [checkerType, inst0, subst, dataType] using Typing.appElim checkerTyped claimTyped
+  have second : Typing R context (.app (.app checker claim) receipt) (dataType name) := by
+    simpa only [inst0, subst, dataType] using Typing.appElim first receiptTyped
+  exact .idForm (data_formed name formed context) universeWitness second claimTyped
+
+theorem family_formed (name : DeclName) {context : Ctx Head n} {u v : Head}
+    {checker claim : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (universeWitness : R.isUniverse u) (joined : R.join u u v)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name)) :
+    Typing R context (family name checker claim) (.head v) := by
+  apply Typing.sigmaForm (data_formed name formed context) universeWitness
+  · apply equality_formed name formed universeWitness
+    · simpa only [checkerType, dataType, rename] using checkerTyped.weaken (extension := dataType name)
+    · simpa only [dataType, rename] using claimTyped.weaken (extension := dataType name)
+    · exact .var 0
+  · exact universeWitness
+  · exact joined
+
+theorem body_inst0 (name : DeclName) (checker claim receipt : Tm Head n) :
+    inst0 receipt (receiptBody name checker claim) = equalityType name checker claim receipt := by
+  simp only [receiptBody, equalityType, dataType, inst0, subst]
+  change Tm.id (.const name)
+    (.app (.app (inst0 receipt (rename wk checker)) (inst0 receipt (rename wk claim))) receipt)
+    (inst0 receipt (rename wk claim)) = _
+  simp only [inst0_rename_wk]
+
+theorem family_rename {m : Nat} (rho : Ren n m) (name : DeclName) (checker claim : Tm Head n) :
+    rename rho (family name checker claim) = family name (rename rho checker) (rename rho claim) := by
+  simp only [family, receiptBody, equalityType, dataType, rename]
+  have shift (term : Tm Head n) :
+      rename (liftRen rho) (rename wk term) = rename wk (rename rho term) := by
+    rw [rename_comp, rename_comp]
+    rfl
+  rw [shift checker, shift claim]
+  rfl
+
+theorem receiptBody_formed (name : DeclName) {context : Ctx Head n} {u : Head}
+    {checker claim : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (universeWitness : R.isUniverse u)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name)) :
+    Typing R (.snoc context (dataType name)) (receiptBody name checker claim) (.head u) := by
+  apply equality_formed name formed universeWitness
+  · simpa only [checkerType, dataType, rename] using checkerTyped.weaken (extension := dataType name)
+  · simpa only [dataType, rename] using claimTyped.weaken (extension := dataType name)
+  · exact .var 0
+
+theorem packType_formed (name : DeclName) {context : Ctx Head n} {u v w z : Head}
+    {checker claim : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (uUniverse : R.isUniverse u) (vUniverse : R.isUniverse v) (wUniverse : R.isUniverse w)
+    (familyJoin : R.join u u v) (innerJoin : R.join u v w) (outerJoin : R.join u w z)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name)) :
+    Typing R context (packType name checker claim) (.head z) := by
+  have receiptFormed := receiptBody_formed name formed uUniverse checkerTyped claimTyped
+  have familyFormed := family_formed name formed uUniverse familyJoin checkerTyped claimTyped
+  have lifted := (familyFormed.weaken (extension := dataType name)).weaken
+    (extension := receiptBody name checker claim)
+  apply Typing.piForm (data_formed name formed context) uUniverse
+  · exact .piForm receiptFormed uUniverse (by simpa only [rename] using lifted) vUniverse innerJoin
+  · exact wUniverse
+  · exact outerJoin
+
+theorem pack_typed (name : DeclName) {context : Ctx Head n} {u v w z : Head}
+    {checker claim : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (uUniverse : R.isUniverse u) (vUniverse : R.isUniverse v)
+    (wUniverse : R.isUniverse w) (zUniverse : R.isUniverse z)
+    (familyJoin : R.join u u v) (innerJoin : R.join u v w) (outerJoin : R.join u w z)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name)) :
+    Typing R context pack (packType name checker claim) := by
+  have receiptFormed := receiptBody_formed name formed uUniverse checkerTyped claimTyped
+  have familyFormed := family_formed name formed uUniverse familyJoin checkerTyped claimTyped
+  have lifted := (familyFormed.weaken (extension := dataType name)).weaken
+    (extension := receiptBody name checker claim)
+  have liftedFormed : Typing R
+      (.snoc (.snoc context (dataType name)) (receiptBody name checker claim))
+      (rename wk (rename wk (family name checker claim))) (.head v) := by
+    simpa only [rename] using lifted
+  have innerFormed : Typing R (.snoc context (dataType name))
+      (.pi (receiptBody name checker claim) (rename wk (rename wk (family name checker claim))))
+      (.head w) :=
+    .piForm receiptFormed uUniverse liftedFormed vUniverse innerJoin
+  apply Typing.lamIntro
+    (packType_formed name formed uUniverse vUniverse wUniverse familyJoin innerJoin outerJoin
+      checkerTyped claimTyped) zUniverse
+  apply Typing.lamIntro innerFormed wUniverse
+  rw [family_rename, family_rename]
+  rw [family_rename, family_rename] at liftedFormed
+  apply Typing.pairIntro liftedFormed vUniverse (Typing.var 1)
+  rw [body_inst0]
+  simpa [Ctx.lookup, receiptBody, equalityType, dataType, rename, wk] using
+    (Typing.var (R := R)
+      (Γ := .snoc (.snoc context (dataType name)) (receiptBody name checker claim)) 0)
+
+theorem supplied_pair_typed (name : DeclName) {context : Ctx Head n} {u v : Head}
+    {checker claim receipt equality : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (uUniverse : R.isUniverse u) (vUniverse : R.isUniverse v) (familyJoin : R.join u u v)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name))
+    (receiptTyped : Typing R context receipt (dataType name))
+    (equalityTyped : Typing R context equality (equalityType name checker claim receipt)) :
+    Typing R context (.pair receipt equality) (family name checker claim) := by
+  apply Typing.pairIntro (family_formed name formed uUniverse familyJoin checkerTyped claimTyped)
+    vUniverse receiptTyped
+  rw [body_inst0]
+  exact equalityTyped
+
+theorem pack_two_steps (receipt equality : Tm Head n) :
+    ∃ middle, Step R.headEq (.app (.app pack receipt) equality) middle R.computation ∧
+      Step R.headEq middle (.pair receipt equality) R.computation := by
+  refine ⟨.app (.lam (.pair (rename wk receipt) (.var 0))) equality, ?_, ?_⟩
+  · apply Step.congAppFun
+    have beta := Step.betaPi (root := R.computation) (headEq := R.headEq)
+      (.lam (.pair (.var (Fin.succ 0)) (.var 0))) receipt
+    have opened : inst0 receipt (.lam (.pair (.var (Fin.succ 0)) (.var 0))) =
+        .lam (.pair (rename wk receipt) (.var 0)) := rfl
+    rw [opened] at beta
+    simpa only [pack, Fin.succ_zero_eq_one] using beta
+  · have beta := Step.betaPi (root := R.computation) (headEq := R.headEq)
+      (.pair (rename wk receipt) (.var 0)) equality
+    change StepCore R.computation R.headEq _ (.pair (inst0 equality (rename wk receipt)) equality) at beta
+    rw [inst0_rename_wk] at beta
+    exact beta
+
+theorem family_substitute {m : Nat} (sigma : Sub Head n m) (name : DeclName)
+    (checker claim : Tm Head n) :
+    subst sigma (family name checker claim) = family name (subst sigma checker) (subst sigma claim) := by
+  simp only [family, receiptBody, equalityType, dataType, subst]
+  have shift (term : Tm Head n) :
+      subst (liftSub sigma) (rename wk term) = rename wk (subst sigma term) := by
+    rw [subst_rename, rename_subst]
+    rfl
+  rw [shift checker, shift claim]
+  rfl
+
+theorem pack_codomain_open (name : DeclName) (checker claim receipt : Tm Head n) :
+    inst0 receipt (.pi (receiptBody name checker claim)
+      (rename wk (rename wk (family name checker claim)))) =
+        .pi (equalityType name checker claim receipt) (rename wk (family name checker claim)) := by
+  change Tm.pi (inst0 receipt (receiptBody name checker claim))
+    (subst (liftSub (subst0 receipt)) (rename wk (rename wk (family name checker claim)))) = _
+  rw [body_inst0]
+  congr 1
+  rw [subst_rename, subst_rename]
+  change subst (renSub wk) (family name checker claim) = _
+  exact subst_renSub wk _
+
+theorem pack_application_typed (name : DeclName) {context : Ctx Head n} {u v w z : Head}
+    {checker claim receipt equality : Tm Head n}
+    (formed : Typing R .nil (dataType name) (.head u))
+    (uUniverse : R.isUniverse u) (vUniverse : R.isUniverse v)
+    (wUniverse : R.isUniverse w) (zUniverse : R.isUniverse z)
+    (familyJoin : R.join u u v) (innerJoin : R.join u v w) (outerJoin : R.join u w z)
+    (checkerTyped : Typing R context checker (checkerType name))
+    (claimTyped : Typing R context claim (dataType name))
+    (receiptTyped : Typing R context receipt (dataType name))
+    (equalityTyped : Typing R context equality (equalityType name checker claim receipt)) :
+    Typing R context (.app (.app pack receipt) equality) (family name checker claim) := by
+  have function := pack_typed name formed uUniverse vUniverse wUniverse zUniverse
+    familyJoin innerJoin outerJoin checkerTyped claimTyped
+  have first := Typing.appElim function receiptTyped
+  change Typing R context (.app pack receipt)
+    (inst0 receipt (.pi (receiptBody name checker claim)
+      (rename wk (rename wk (family name checker claim))))) at first
+  rw [pack_codomain_open] at first
+  simpa only [inst0_rename_wk] using Typing.appElim first equalityTyped
+
+#print axioms pack_application_typed
+#print axioms family_substitute
+#print axioms pack_typed
+#print axioms supplied_pair_typed
+#print axioms pack_two_steps
+
+#print axioms family_formed
+#print axioms family_rename
+
+end ReceiptPacking
 
 
 #print axioms rename_sigmaPair

@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedMatchedIndexService
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # Selected occurrence, bounded element and raw-receipt controls
 

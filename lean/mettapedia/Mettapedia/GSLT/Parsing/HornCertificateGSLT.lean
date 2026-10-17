@@ -54,7 +54,7 @@ def theory (program : Program) : GSLT where
     subst target'
     exact step
 
-def appendMultiStep {program : Program} {first middle last : State} :
+theorem appendMultiStep {program : Program} {first middle last : State} :
     (theory program).MultiStep first middle →
       (theory program).MultiStep middle last →
         (theory program).MultiStep first last
@@ -64,7 +64,7 @@ def appendMultiStep {program : Program} {first middle last : State} :
 mutual
 
   /-- A Horn derivation executes to discharge its first obligation. -/
-  def derivesMultiStep {program : Program} {fuel : Nat} {goal : GroundAtom}
+  theorem derivesMultiStep {program : Program} {fuel : Nat} {goal : GroundAtom}
       (derivation : DerivesWithin program fuel goal) (rest : State) :
       (theory program).MultiStep ((fuel, goal) :: rest) rest :=
     match derivation with
@@ -75,7 +75,7 @@ mutual
 
   /-- Ordered sibling derivations execute left-to-right without losing their
   occurrence structure. -/
-  def derivationsMultiStep {program : Program} {fuel : Nat}
+  theorem derivationsMultiStep {program : Program} {fuel : Nat}
       {goals : List GroundAtom}
       (derivations : DerivationsWithin program fuel goals) (rest : State) :
       (theory program).MultiStep (goalsAt fuel goals ++ rest) rest :=
@@ -96,7 +96,7 @@ def StateDerivable (program : Program) (state : State) : Prop :=
   ∀ obligation ∈ state,
     DerivesWithin program obligation.1 obligation.2
 
-def derivationsOfPointwise {program : Program} {fuel : Nat}
+theorem derivationsOfPointwise {program : Program} {fuel : Nat}
     (goals : List GroundAtom)
     (derives : ∀ goal ∈ goals, DerivesWithin program fuel goal) :
     DerivationsWithin program fuel goals :=

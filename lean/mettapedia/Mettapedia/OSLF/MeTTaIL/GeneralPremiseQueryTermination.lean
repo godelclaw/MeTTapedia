@@ -20,8 +20,10 @@ abbrev Rank := Nat × (Nat × Nat)
 
 def Task.rank (environment : Environment) (request : Request) :
     Task environment request → Rank
-  | .start => (4, 0, 0)
+  | .start => (5, 0, 0)
   | .rows frame => (3, environment.provider.rows.length - frame.cursor, 0)
+  | .dynamicInputs frame => (4, frame.schemas.length, 0)
+  | .dynamicRows frame => (3, frame.rows.length - frame.cursor, 0)
   | .arguments frame => (2, 2 * frame.schemas.length + 1, 0)
   | .matcher frame => (2, 2 * frame.schemas.length + 2,
       2 * GeneralScopedMatchMachine.agendaCost frame.query frame.state.agenda +
@@ -110,6 +112,57 @@ theorem expandMatcher_decreases (environment : Environment) (request : Request)
       dsimp only
       omega
 
+theorem expandDynamicInputs_decreases (environment : Environment) (request : Request)
+    (frame : DynamicInputsFrame environment request) (branch : Task environment request)
+    (member : branch ∈ (expandDynamicInputs environment request frame).tasks) :
+    RankSmaller (branch.rank environment request) ((Task.dynamicInputs frame).rank environment request) := by
+  unfold expandDynamicInputs at member
+  split at member
+  · split at member
+    · simp at member
+    · simp only [List.mem_singleton] at member
+      subst branch
+      exact phase_smaller 3 4 _ _ (by omega)
+  · rename_i schema schemas modes schemasFound modesFound
+    split at member
+    · simp at member
+    · simp only [List.mem_singleton] at member
+      subst branch
+      apply count_smaller
+      dsimp only
+      simp only [schemasFound, List.length_cons]
+      omega
+  · rename_i schema schemas modes schemasFound modesFound
+    simp only [List.mem_singleton] at member
+    subst branch
+    apply count_smaller
+    dsimp only
+    simp only [schemasFound, List.length_cons]
+    omega
+  · simp at member
+
+theorem expandDynamicRows_decreases (environment : Environment) (request : Request)
+    (frame : DynamicRowsFrame environment request) (branch : Task environment request)
+    (member : branch ∈ (expandDynamicRows environment request frame).tasks) :
+    RankSmaller (branch.rank environment request) ((Task.dynamicRows frame).rank environment request) := by
+  unfold expandDynamicRows at member
+  split at member
+  · simp at member
+  · rename_i values found
+    have within := (List.getElem?_eq_some_iff.mp found).1
+    split at member
+    · simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with same | same <;> subst branch
+      · exact phase_smaller 2 3 _ _ (by omega)
+      · apply count_smaller
+        dsimp only
+        omega
+    · simp only [List.mem_singleton] at member
+      subst branch
+      apply count_smaller
+      dsimp only
+      omega
+
 theorem expand_decreases (environment : Environment) (request : Request)
     (task branch : Task environment request)
     (member : branch ∈ (expand environment request task).tasks) :
@@ -119,9 +172,14 @@ theorem expand_decreases (environment : Environment) (request : Request)
       simp only [expand] at member
       split at member
       · simp at member
-      · simp only [List.mem_singleton] at member
-        subst branch
-        exact phase_smaller 3 4 _ _ (by omega)
+      · split at member
+        · simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+          rcases member with same | same <;> subst branch
+          · exact phase_smaller 3 5 _ _ (by omega)
+          · exact phase_smaller 4 5 _ _ (by omega)
+        · simp only [List.mem_singleton] at member
+          subst branch
+          exact phase_smaller 3 5 _ _ (by omega)
   | rows frame =>
       simp only [expand] at member
       split at member
@@ -140,6 +198,8 @@ theorem expand_decreases (environment : Environment) (request : Request)
           apply count_smaller
           dsimp only
           omega
+  | dynamicInputs frame => exact expandDynamicInputs_decreases _ _ _ _ member
+  | dynamicRows frame => exact expandDynamicRows_decreases _ _ _ _ member
   | arguments frame => exact expandArguments_decreases _ _ _ _ member
   | matcher frame => exact expandMatcher_decreases _ _ _ _ member
 

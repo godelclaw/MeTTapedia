@@ -651,7 +651,7 @@ only cross-child premise is equality of the normal patterns computed by those
 children; static-decomposition unambiguity then identifies each selected
 environment atom with its positional child value.  A sealed left atom supplies
 the closedness needed by the depth-uniform restoration terminal. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_normalEq
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_normalEq
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -742,7 +742,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_normalEq
 
 The exact selected child normals again determine the two environment values;
 this orientation recovers closedness from the right atom instead. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_rightNormalEq
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_rightNormalEq
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -836,7 +836,7 @@ the supported substitution observes the same weakening offset on both sides.
 The complete semantic keys may still differ in provenance or source type;
 only the support and normalized value components executed by restoration are
 identified. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportNormalEq
+theorem selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportNormalEq
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -940,7 +940,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_of_sameSupportN
 /-- Lift an already established semantic atom apex through the exact stopped
 plan contexts.  This separates the structural context transport from the
 particular reason the selected leaves restore together. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_through_contexts_of_atomApex
+theorem selectedEnvironmentAtoms_commonRestorationApex_through_contexts_of_atomApex
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -1034,7 +1034,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_through_context
 /-- Complete-root companion of
 `selectedEnvironmentAtoms_commonRestorationApex_through_contexts_of_atomApex`.
 The stopped equalities are used only for the final endpoint casts. -/
-noncomputable def selectedRoots_commonRestorationApex_of_atomApex
+theorem selectedRoots_commonRestorationApex_of_atomApex
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -1114,7 +1114,7 @@ independently reified plan contexts.
 The caller supplies only structural context alignment.  The selected child
 normal equality and the sealed-side disjunction construct the semantic leaf;
 the stopped witnesses and embeddings retain the two actual occurrences. -/
-noncomputable def selectedEnvironmentAtoms_commonRestorationApex_through_contexts_of_normalEq
+theorem selectedEnvironmentAtoms_commonRestorationApex_through_contexts_of_normalEq
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload
@@ -1234,7 +1234,7 @@ noncomputable def selectedEnvironmentAtoms_commonRestorationApex_through_context
 
 The stored stopped equalities perform the final endpoint casts after every
 semantic and structural step has already been justified. -/
-noncomputable def selectedRoots_commonRestorationApex_of_normalEq
+theorem selectedRoots_commonRestorationApex_of_normalEq
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     {leftPayload leftRootAbstract rightPayload rightRootAbstract : Pattern}
     (left : CostStaticPlanStopped rhoCIGSLT color targetFree leftPayload

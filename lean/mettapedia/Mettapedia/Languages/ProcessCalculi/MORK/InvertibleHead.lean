@@ -2133,7 +2133,9 @@ def instantiateFoldStep (eq : HeadEquation) (queryArg innerInput inputArg : Atom
       subResults := [innerInput]
       assembled := inputArg }
 
-/-- Encode an instantiated base step as an actual exec fact. -/
+/-- Encode an instantiated base step as a support-model exec fact.  Its location
+carries the priority as a grounded integer, which MM2 text cannot spell: the kernel
+has symbols only, so a realization writes the priority as a decimal symbol. -/
 def instantiateBaseExecFact (execAtom : Atom) (step : BaseStep) : ExecFact :=
   { atom := execAtom
     loc := .expression [.grounded (.int step.priority), .symbol "inv-base"]
@@ -2141,7 +2143,8 @@ def instantiateBaseExecFact (execAtom : Atom) (step : BaseStep) : ExecFact :=
       (mkPattern [step.qid])
       (mkTemplate [.remove step.qid, .add step.result]) }
 
-/-- Encode an instantiated unfold step as an actual exec fact. -/
+/-- Encode an instantiated unfold step as a support-model exec fact (grounded priority,
+as for the base step). -/
 def instantiateUnfoldExecFact (execAtom : Atom) (step : UnfoldStep) : ExecFact :=
   { atom := execAtom
     loc := .expression [.grounded (.int step.priority), .symbol "inv-unfold"]
@@ -2149,7 +2152,8 @@ def instantiateUnfoldExecFact (execAtom : Atom) (step : UnfoldStep) : ExecFact :
       (mkPattern [step.qid])
       (mkTemplate ([.remove step.qid] ++ step.subQids.map .add ++ [.add step.waitAtom])) }
 
-/-- Encode an instantiated fold step as an actual exec fact. -/
+/-- Encode an instantiated fold step as a support-model exec fact (grounded priority,
+as for the base step). -/
 def instantiateFoldExecFact (execAtom : Atom) (step : FoldStep) : ExecFact :=
   { atom := execAtom
     loc := .expression [.grounded (.int step.priority), .symbol "inv-fold"]

@@ -60,7 +60,7 @@ def inContext {profile : ReflectionProfile} {base : BasePremiseEvaluator}
 
 /-- Forget occurrence identity while retaining the explicit reflection
 profile in the proposition-valued semantics. -/
-def erase {profile : ReflectionProfile} {base : BasePremiseEvaluator}
+theorem erase {profile : ReflectionProfile} {base : BasePremiseEvaluator}
     {language : LanguageDef} {left right : Pattern} :
     ReflectiveAuthoredGeneratorWitness profile base language left right →
       ReflectiveEquationContextStep profile base language left right

@@ -11,18 +11,16 @@ namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicyRegressi
 
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke (PointedKripke)
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlap
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlapRegression
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.ModalQuery
-abbrev WeightedState := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState
-abbrev PointedKripke := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.PointedKripke
 abbrev PolicyRuleSet := Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy.PolicyRuleSet
 
-def fixtureSeed : Set ModalQuery := ∅
+def fixtureSeed : Set (LO.Modal.Formula ℕ) := ∅
 def fixtureRules : PolicyRuleSet := (∅ :
-  Set (Mettapedia.PLN.WorldModel.PLNWorldModel.WMConsequenceRuleOn WeightedState ModalQuery))
+  Set (Mettapedia.PLN.WorldModel.PLNWorldModel.WMConsequenceRuleOn WeightedState (LO.Modal.Formula ℕ)))
 
 theorem disjoint_compatible
     (pkA pkB : PointedKripke) :
@@ -68,7 +66,7 @@ theorem fixture_policy_closure_disjoint_eq_baseClosure
     (pkA pkB : PointedKripke) :
     policyLeastRuleClosure fixtureRules trustedAll
         (leftState pkA) (rightDisjointState pkB) fixtureSeed =
-      leastRuleClosure (State := WeightedState) (Query := ModalQuery)
+      leastRuleClosure (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         fixtureRules ((leftState pkA) + (rightDisjointState pkB)) fixtureSeed := by
   exact
     policyLeastRuleClosure_eq_add_of_compatible_trustedAll
@@ -79,7 +77,7 @@ theorem fixture_policy_closure_overlap_eq_leftClosure
     (pkA pkB : PointedKripke) :
     policyLeastRuleClosure fixtureRules trustedAll
         (leftState pkA) (rightOverlapState pkB) fixtureSeed =
-      leastRuleClosure (State := WeightedState) (Query := ModalQuery)
+      leastRuleClosure (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         fixtureRules (leftState pkA) fixtureSeed := by
   exact
     policyLeastRuleClosure_eq_left_of_not_compatible_trustedAll

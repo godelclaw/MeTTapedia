@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.GSLTIL
+import Mettapedia.OSLF.MeTTaIL.ContextSubstitution
 
 /-!
 # A MeTTa-facing syntax for finite GSLT-ML programs
@@ -411,5 +412,196 @@ theorem unregistered_route_inert (program : Program) (name : String)
       exact unregistered _ routeMember rfl
   | applyRoute routeMember _ _ =>
       exact unregistered _ routeMember rfl
+
+/-! ## Context reindexing of the authored presentation
+
+The existing pattern action lifts an assignment below binders. This action
+reindexes concrete authored rows; it is not an unification algorithm and does
+not assert that arbitrary substitution reflects the row lookup relation.
+-/
+
+namespace Reindex
+
+open Mettapedia.OSLF.MeTTaIL.ContextSubstitution
+
+def spaceRule (assignment : Assignment) (rule : SpaceRule) : SpaceRule where
+  occurrence := substitute assignment rule.occurrence
+  space := substitute assignment rule.space
+  source := substitute assignment rule.source
+  target := substitute assignment rule.target
+
+def route (assignment : Assignment) (declaration : RouteDecl) : RouteDecl where
+  occurrence := substitute assignment declaration.occurrence
+  name := declaration.name
+  sourceSpace := substitute assignment declaration.sourceSpace
+  targetSpace := substitute assignment declaration.targetSpace
+
+def routeRule (assignment : Assignment) (rule : RouteRule) : RouteRule where
+  occurrence := substitute assignment rule.occurrence
+  name := rule.name
+  source := substitute assignment rule.source
+  target := substitute assignment rule.target
+
+/-- All row and declaration occurrences are reindexed in place. Physical
+inventory positions and their multiplicities are retained. -/
+def program (assignment : Assignment) (authored : Program) : Program where
+  spaceRules := authored.spaceRules.map (spaceRule assignment)
+  routes := authored.routes.map (route assignment)
+  routeRules := authored.routeRules.map (routeRule assignment)
+
+@[simp] theorem substitute_inSpace (assignment : Assignment)
+    (space state : Pattern) :
+    substitute assignment (inSpace space state) =
+      inSpace (substitute assignment space) (substitute assignment state) := rfl
+
+@[simp] theorem substitute_routeCall (assignment : Assignment)
+    (name : String) (state : Pattern) :
+    substitute assignment (routeCall name state) =
+      routeCall name (substitute assignment state) := rfl
+
+@[simp] theorem spaceRule_id (rule : SpaceRule) :
+    spaceRule Pattern.bvar rule = rule := by
+  cases rule
+  simp [spaceRule]
+
+@[simp] theorem route_id (declaration : RouteDecl) :
+    route Pattern.bvar declaration = declaration := by
+  cases declaration
+  simp [route]
+
+@[simp] theorem routeRule_id (rule : RouteRule) :
+    routeRule Pattern.bvar rule = rule := by
+  cases rule
+  simp [routeRule]
+
+@[simp] theorem program_id (authored : Program) :
+    program Pattern.bvar authored = authored := by
+  cases authored
+  simp [program, show spaceRule Pattern.bvar = id from funext spaceRule_id,
+    show route Pattern.bvar = id from funext route_id,
+    show routeRule Pattern.bvar = id from funext routeRule_id]
+
+@[simp] theorem spaceRule_comp (first second : Assignment) (rule : SpaceRule) :
+    spaceRule second (spaceRule first rule) =
+      spaceRule (fun index => substitute second (first index)) rule := by
+  cases rule
+  simp [spaceRule, substitute_comp]
+
+@[simp] theorem route_comp (first second : Assignment) (declaration : RouteDecl) :
+    route second (route first declaration) =
+      route (fun index => substitute second (first index)) declaration := by
+  cases declaration
+  simp [route, substitute_comp]
+
+@[simp] theorem routeRule_comp (first second : Assignment) (rule : RouteRule) :
+    routeRule second (routeRule first rule) =
+      routeRule (fun index => substitute second (first index)) rule := by
+  cases rule
+  simp [routeRule, substitute_comp]
+
+theorem program_comp (first second : Assignment) (authored : Program) :
+    program second (program first authored) =
+      program (fun index => substitute second (first index)) authored := by
+  cases authored
+  simp [program, List.map_map, Function.comp_def]
+
+/-- Capture-avoiding reindexing preserves each independently specified
+generating command, including the space and route-name side conditions. -/
+theorem step (assignment : Assignment) {authored : Program}
+    {source target : Pattern} (edge : Step authored source target) :
+    Step (program assignment authored)
+      (substitute assignment source) (substitute assignment target) := by
+  cases edge with
+  | @inSpace rule member =>
+      simpa [spaceRule] using Step.inSpace
+        (program := program assignment authored)
+        (rule := spaceRule assignment rule)
+        (List.mem_map_of_mem member)
+  | @underRoute declaration rule routeMember ruleMember sameSpace =>
+      simpa [spaceRule, route] using Step.underRoute
+        (program := program assignment authored)
+        (route := route assignment declaration)
+        (rule := spaceRule assignment rule)
+        (List.mem_map_of_mem routeMember) (List.mem_map_of_mem ruleMember)
+        (congrArg (substitute assignment) sameSpace)
+  | @applyRoute declaration rule routeMember ruleMember sameName =>
+      simpa [routeRule, route] using Step.applyRoute
+        (program := program assignment authored)
+        (route := route assignment declaration)
+        (rule := routeRule assignment rule)
+        (List.mem_map_of_mem routeMember) (List.mem_map_of_mem ruleMember)
+        sameName
+
+theorem runs (assignment : Assignment) {authored : Program}
+    {source target : Pattern} (path : Runs authored source target) :
+    Runs (program assignment authored)
+      (substitute assignment source) (substitute assignment target) := by
+  induction path with
+  | refl state => exact .refl _
+  | tail edge _ inductionHypothesis =>
+      exact .tail (step assignment edge) inductionHypothesis
+
+/-- The declared finite context formation checks every pattern field,
+including occurrence identities. Route names are textual declaration keys. -/
+def WellScoped (scope : Nat) (authored : Program) : Prop :=
+  (∀ rule ∈ authored.spaceRules,
+    rule.occurrence.isWellScopedAt scope = true ∧
+      rule.space.isWellScopedAt scope = true ∧
+      rule.source.isWellScopedAt scope = true ∧
+      rule.target.isWellScopedAt scope = true) ∧
+  (∀ declaration ∈ authored.routes,
+    declaration.occurrence.isWellScopedAt scope = true ∧
+      declaration.sourceSpace.isWellScopedAt scope = true ∧
+      declaration.targetSpace.isWellScopedAt scope = true) ∧
+  (∀ rule ∈ authored.routeRules,
+    rule.occurrence.isWellScopedAt scope = true ∧
+      rule.source.isWellScopedAt scope = true ∧
+      rule.target.isWellScopedAt scope = true)
+
+/-- The executable admission check for the concrete context formation above.
+This does not check sorting or canonical binder display metadata. -/
+def checkScope (scope : Nat) (authored : Program) : Bool :=
+  authored.spaceRules.all (fun rule =>
+    rule.occurrence.isWellScopedAt scope && rule.space.isWellScopedAt scope &&
+      rule.source.isWellScopedAt scope && rule.target.isWellScopedAt scope) &&
+  authored.routes.all (fun declaration =>
+    declaration.occurrence.isWellScopedAt scope &&
+      declaration.sourceSpace.isWellScopedAt scope &&
+      declaration.targetSpace.isWellScopedAt scope) &&
+  authored.routeRules.all (fun rule =>
+    rule.occurrence.isWellScopedAt scope && rule.source.isWellScopedAt scope &&
+      rule.target.isWellScopedAt scope)
+
+theorem checkScope_iff (scope : Nat) (authored : Program) :
+    checkScope scope authored = true ↔ WellScoped scope authored := by
+  simp only [checkScope, WellScoped, Bool.and_eq_true, List.all_eq_true]
+  aesop
+
+/-- Scope formation survives a simultaneous assignment with scoped images.
+Binder lifts are supplied by the shared substitution owner. -/
+theorem wellScoped {source target : Nat} {assignment : Assignment}
+    (images : WellScopedAssignment source target assignment)
+    {authored : Program} (formed : WellScoped source authored) :
+    WellScoped target (program assignment authored) := by
+  rcases formed with ⟨spaces, declarations, routes⟩
+  refine ⟨?_, ?_, ?_⟩
+  · intro rule member
+    obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp member
+    rcases spaces original originalMember with ⟨occurrence, space, input, output⟩
+    exact ⟨substitute_wellScoped images occurrence,
+      substitute_wellScoped images space, substitute_wellScoped images input,
+      substitute_wellScoped images output⟩
+  · intro declaration member
+    obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp member
+    rcases declarations original originalMember with ⟨occurrence, input, output⟩
+    exact ⟨substitute_wellScoped images occurrence,
+      substitute_wellScoped images input, substitute_wellScoped images output⟩
+  · intro rule member
+    obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp member
+    rcases routes original originalMember with ⟨occurrence, input, output⟩
+    exact ⟨substitute_wellScoped images occurrence,
+      substitute_wellScoped images input, substitute_wellScoped images output⟩
+
+end Reindex
 
 end Mettapedia.GSLT.LanguageDef.GSLTIL.Syntax

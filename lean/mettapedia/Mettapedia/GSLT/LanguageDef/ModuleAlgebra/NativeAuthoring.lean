@@ -6,6 +6,7 @@ import Mettapedia.GSLT.Parsing.GrammarPresentationTransport
 import Mettapedia.Data.List.FiniteLookup
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.OriginView
 import Mettapedia.GSLT.LanguageDef.CettaWireEquality
+import Mettapedia.GSLT.LanguageDef.InferenceCettaWireFormat
 
 /-!
 # Native authoring of composable, complete language fragments
@@ -372,5 +373,271 @@ theorem mapLanguage_assemble (tokens : String ≃ String) (langName : String)
       assemble langName (fragments.map (mapLanguage tokens)) := by
   rw [assemble, mapLanguage_resolveNullary, mapLanguage_assembleRaw]
   rfl
+
+
+/-! ## Complete portable core rows
+
+The physical carrier is shared with inference packages. These codecs add only
+the missing presentation rows: syntax operators, constructor policies,
+collection algebras, equations and the five-field language. Binding patterns,
+premises and occurrence substitutions retain their existing codecs.
+-/
+
+namespace Wire
+
+open Mettapedia.GSLT.LanguageDef.CettaWire (Term encodeList decodeList decodeList_encodeList)
+open Mettapedia.GSLT.LanguageDef.InferenceCettaWire (encodePattern decodePattern)
+open Mettapedia.GSLT.LanguageDef.InferenceCettaWire.AuthoredRule
+
+private def string? : Term → Option String
+  | .string value => some value
+  | _ => none
+
+private def boolean : Bool → Term
+  | true => .symbol "True"
+  | false => .symbol "False"
+
+private def boolean? : Term → Option Bool
+  | .symbol "True" => some true
+  | .symbol "False" => some false
+  | _ => none
+
+@[simp] private theorem boolean_roundtrip (value : Bool) :
+    boolean? (boolean value) = some value := by cases value <;> rfl
+
+def carrier : CarrierKind → Term
+  | .ast => .symbol "CarrierAst"
+  | .tokenLabel => .symbol "CarrierTokenLabel"
+  | .tokenRaw => .symbol "CarrierTokenRaw"
+  | .tokenProof => .symbol "CarrierTokenProof"
+  | .tokenPath => .symbol "CarrierTokenPath"
+  | .builtinInt => .symbol "CarrierBuiltinInt"
+  | .builtinString => .symbol "CarrierBuiltinString"
+  | .builtinBool => .symbol "CarrierBuiltinBool"
+
+def carrier? : Term → Option CarrierKind
+  | .symbol "CarrierAst" => some .ast
+  | .symbol "CarrierTokenLabel" => some .tokenLabel
+  | .symbol "CarrierTokenRaw" => some .tokenRaw
+  | .symbol "CarrierTokenProof" => some .tokenProof
+  | .symbol "CarrierTokenPath" => some .tokenPath
+  | .symbol "CarrierBuiltinInt" => some .builtinInt
+  | .symbol "CarrierBuiltinString" => some .builtinString
+  | .symbol "CarrierBuiltinBool" => some .builtinBool
+  | _ => none
+
+@[simp] theorem carrier_roundtrip (value : CarrierKind) :
+    carrier? (carrier value) = some value := by cases value <;> rfl
+
+def typeDecl (value : TypeDecl) : Term :=
+  .application "TypeDecl" [.string value.name, carrier value.carrier]
+
+def typeDecl? : Term → Option TypeDecl
+  | .application "TypeDecl" [.string name, kind] => do
+      pure ⟨name, ← carrier? kind⟩
+  | _ => none
+
+@[simp] theorem typeDecl_roundtrip (value : TypeDecl) :
+    typeDecl? (typeDecl value) = some value := by cases value; simp [typeDecl, typeDecl?]
+
+mutual
+  def syntaxItem : SyntaxItem → Term
+    | .terminal text => .application "Terminal" [.string text]
+    | .nonTerminal name => .application "NonTerminal" [.string name]
+    | .separator text => .application "Separator" [.string text]
+    | .delimiter left right => .application "Delimiter" [.string left, .string right]
+    | .op operation => .application "SyntaxOp" [syntaxOp operation]
+
+  def syntaxOp : SyntaxPatternOp → Term
+    | .var name => .application "SyntaxVar" [.string name]
+    | .sep name separator body =>
+        .application "SyntaxSep" [.string name, .string separator, optionalSyntaxOp body]
+    | .zip left right => .application "SyntaxZip" [.string left, .string right]
+    | .map body names items =>
+        .application "SyntaxMap" [syntaxOp body, encodeList .string names, syntaxItems items]
+    | .opt items => .application "SyntaxOpt" [syntaxItems items]
+
+  def optionalSyntaxOp : Option SyntaxPatternOp → Term
+    | none => .symbol "None"
+    | some operation => .application "Some" [syntaxOp operation]
+
+  def syntaxItems : List SyntaxItem → Term
+    | [] => .symbol "LNil"
+    | item :: items => .application "LCons" [syntaxItem item, syntaxItems items]
+end
+
+mutual
+  def syntaxItem? : Term → Option SyntaxItem
+    | .application "Terminal" [.string text] => some (.terminal text)
+    | .application "NonTerminal" [.string name] => some (.nonTerminal name)
+    | .application "Separator" [.string text] => some (.separator text)
+    | .application "Delimiter" [.string left, .string right] => some (.delimiter left right)
+    | .application "SyntaxOp" [operation] => .op <$> syntaxOp? operation
+    | _ => none
+  termination_by value => sizeOf value
+
+  def syntaxOp? : Term → Option SyntaxPatternOp
+    | .application "SyntaxVar" [.string name] => some (.var name)
+    | .application "SyntaxSep" [.string name, .string separator, body] => do
+        pure (.sep name separator (← optionalSyntaxOp? body))
+    | .application "SyntaxZip" [.string left, .string right] => some (.zip left right)
+    | .application "SyntaxMap" [body, names, items] => do
+        pure (.map (← syntaxOp? body) (← decodeList string? names) (← syntaxItems? items))
+    | .application "SyntaxOpt" [items] => .opt <$> syntaxItems? items
+    | _ => none
+  termination_by value => sizeOf value
+
+  def optionalSyntaxOp? : Term → Option (Option SyntaxPatternOp)
+    | .symbol "None" => some none
+    | .application "Some" [operation] => some <$> syntaxOp? operation
+    | _ => none
+  termination_by value => sizeOf value
+
+  def syntaxItems? : Term → Option (List SyntaxItem)
+    | .symbol "LNil" => some []
+    | .application "LCons" [item, items] => do
+        pure ((← syntaxItem? item) :: (← syntaxItems? items))
+    | _ => none
+  termination_by value => sizeOf value
+end
+
+private theorem strings_roundtrip (names : List String) :
+    decodeList string? (encodeList Term.string names) = some names :=
+  decodeList_encodeList string? Term.string (fun _ => rfl) names
+
+mutual
+  @[simp] theorem syntaxItem_roundtrip (value : SyntaxItem) :
+      syntaxItem? (syntaxItem value) = some value := by
+    cases value with
+    | terminal text => simp only [syntaxItem, syntaxItem?]
+    | nonTerminal name => simp only [syntaxItem, syntaxItem?]
+    | separator text => simp only [syntaxItem, syntaxItem?]
+    | delimiter left right => simp only [syntaxItem, syntaxItem?]
+    | op operation => simp [syntaxItem, syntaxItem?, syntaxOp_roundtrip operation]
+  termination_by sizeOf value
+
+  @[simp] theorem syntaxOp_roundtrip (value : SyntaxPatternOp) :
+      syntaxOp? (syntaxOp value) = some value := by
+    cases value with
+    | var name => simp only [syntaxOp, syntaxOp?]
+    | sep name separator body =>
+        simp [syntaxOp, syntaxOp?, optionalSyntaxOp_roundtrip body]
+    | zip left right => simp only [syntaxOp, syntaxOp?]
+    | map body names items =>
+        simp [syntaxOp, syntaxOp?, syntaxOp_roundtrip body,
+          strings_roundtrip, syntaxItems_roundtrip items]
+    | opt items => simp [syntaxOp, syntaxOp?, syntaxItems_roundtrip items]
+  termination_by sizeOf value
+
+  @[simp] theorem optionalSyntaxOp_roundtrip (value : Option SyntaxPatternOp) :
+      optionalSyntaxOp? (optionalSyntaxOp value) = some value := by
+    cases value with
+    | none => simp only [optionalSyntaxOp, optionalSyntaxOp?]
+    | some operation =>
+        simp [optionalSyntaxOp, optionalSyntaxOp?, syntaxOp_roundtrip operation]
+  termination_by sizeOf value
+
+  @[simp] theorem syntaxItems_roundtrip (value : List SyntaxItem) :
+      syntaxItems? (syntaxItems value) = some value := by
+    cases value with
+    | nil => simp only [syntaxItems, syntaxItems?]
+    | cons item items =>
+        simp [syntaxItems, syntaxItems?, syntaxItem_roundtrip item, syntaxItems_roundtrip items]
+  termination_by sizeOf value
+end
+
+def policy : Option TermEvalPolicy → Term
+  | none => .symbol "EvalNone"
+  | some .rewrite => .symbol "EvalRewrite"
+  | some .fold => .symbol "EvalFold"
+  | some .oracle => .symbol "EvalOracle"
+
+def policy? : Term → Option (Option TermEvalPolicy)
+  | .symbol "EvalNone" => some none
+  | .symbol "EvalRewrite" => some (some .rewrite)
+  | .symbol "EvalFold" => some (some .fold)
+  | .symbol "EvalOracle" => some (some .oracle)
+  | _ => none
+
+@[simp] theorem policy_roundtrip (value : Option TermEvalPolicy) :
+    policy? (policy value) = some value := by
+  cases value with
+  | none => rfl
+  | some value => cases value <;> rfl
+
+def algebra : Option CollectionAlgebra → Term
+  | none => .symbol "AlgebraNone"
+  | some value => .application "CollectionAlgebra"
+      [boolean value.flatten, InferenceCettaWire.encodeBinder value.unit]
+
+def algebra? : Term → Option (Option CollectionAlgebra)
+  | .symbol "AlgebraNone" => some none
+  | .application "CollectionAlgebra" [flatten, unit] => do
+      pure (some ⟨← boolean? flatten, ← InferenceCettaWire.decodeBinder unit⟩)
+  | _ => none
+
+@[simp] theorem algebra_roundtrip (value : Option CollectionAlgebra) :
+    algebra? (algebra value) = some value := by
+  cases value with
+  | none => rfl
+  | some value => cases value; simp [algebra, algebra?]
+
+def grammarRule (value : GrammarRule) : Term :=
+  .application "GrammarRuleV2" [.string value.label, .string value.category,
+    encodeList parameterTerm value.params, syntaxItems value.syntaxPattern,
+    policy value.evalPolicy?, algebra value.algebra?]
+
+def grammarRule? : Term → Option GrammarRule
+  | .application "GrammarRuleV2" [.string label, .string category, params, syntaxRows, evaluation, laws] => do
+      pure ⟨label, category, ← decodeList decodeParameter? params, ← syntaxItems? syntaxRows,
+        ← policy? evaluation, ← algebra? laws⟩
+  | _ => none
+
+@[simp] theorem grammarRule_roundtrip (value : GrammarRule) :
+    grammarRule? (grammarRule value) = some value := by
+  cases value
+  simp [grammarRule, grammarRule?, decodeList_encodeList]
+
+def equation (value : Equation) : Term :=
+  .application "ScopedEquationV1" [.string value.name,
+    encodeList typeBindingTerm value.typeContext, encodeList premiseTerm value.premises,
+    encodePattern value.left, encodePattern value.right, optionalBindingTerm value.bindings]
+
+def equation? : Term → Option Equation
+  | .application "ScopedEquationV1" [.string name, context, premises, left, right, bindings] => do
+      pure ⟨name, ← decodeList decodeTypeBinding? context, ← decodeList decodePremise? premises,
+        ← decodePattern left, ← decodePattern right, ← decodeOptionalBinding? bindings⟩
+  | _ => none
+
+@[simp] theorem equation_roundtrip (value : Equation) :
+    equation? (equation value) = some value := by
+  cases value
+  simp [equation, equation?, decodeList_encodeList]
+
+/-- Complete finite presentation data, before any execution-profile admission. -/
+def language (value : LanguageDef) : Term :=
+  .application "LanguageDefV2" [.string value.name,
+    encodeList typeDecl value.types, encodeList grammarRule value.terms,
+    encodeList equation value.equations, encodeList rewriteTerm value.rewrites]
+
+def language? : Term → Option LanguageDef
+  | .application "LanguageDefV2" [.string name, types, terms, equations, rewrites] => do
+      pure ⟨name, ← decodeList typeDecl? types, ← decodeList grammarRule? terms,
+        ← decodeList equation? equations, ← decodeList decodeRewrite? rewrites⟩
+  | _ => none
+
+@[simp] theorem language_roundtrip (value : LanguageDef) :
+    language? (language value) = some value := by
+  cases value
+  simp [language, language?, decodeList_encodeList]
+
+/-- Bound indices, display names and rule-local occurrence substitutions are not
+quotiented away at this boundary. -/
+theorem language_injective : Function.Injective language := by
+  intro first second same
+  have := congrArg language? same
+  simpa only [language_roundtrip, Option.some.injEq] using this
+
+end Wire
 
 end Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NativeAuthoring

@@ -1,4 +1,5 @@
 import Mathlib.Data.List.Basic
+import Mathlib.Data.Finset.Union
 
 /-!
 # Call-time choice: the core calculus and its natural semantics
@@ -143,6 +144,19 @@ theorem referencesSatisfy_mapCells {Cell' : Type} (rename : Cell → Cell')
       value.referencesSatisfy (fun c => p (rename c)) := by
   induction value <;> simp_all [mapCells, referencesSatisfy]
 
+/-- Finite strong-reference support for tracing. This set forgets repeated
+address occurrences; the value itself retains their positions and roles. -/
+def referenceSet [DecidableEq Cell] : Val Cell → Finset Cell
+  | .sym _ => ∅
+  | .app f x => f.referenceSet ∪ x.referenceSet
+  | .need cell | .thunk cell | .code cell => {cell}
+
+/-- The independent support enumeration agrees with the structural predicate,
+including opaque code carriers without activating their bodies. -/
+theorem referencesSatisfy_iff_referenceSet [DecidableEq Cell] (p : Cell → Prop) (value : Val Cell) :
+    value.referencesSatisfy p ↔ ∀ cell ∈ value.referenceSet, p cell := by
+  induction value <;> simp_all [referencesSatisfy, referenceSet, or_imp, forall_and]
+
 end Val
 
 /-- Every cell referenced from an environment satisfies the given predicate. -/
@@ -170,6 +184,30 @@ theorem EnvReferencesSatisfy.append {Cell : Type} {p : Cell → Prop}
   rcases List.mem_append.mp member with member | member
   · exact first value member
   · exact second value member
+
+/-- The union of the strong-reference supports in a captured environment. -/
+def envReferenceSet {Cell : Type} [DecidableEq Cell] : List (Val Cell) → Finset Cell
+  | [] => ∅
+  | value :: rest => value.referenceSet ∪ envReferenceSet rest
+
+theorem mem_envReferenceSet_iff {Cell : Type} [DecidableEq Cell]
+    (env : List (Val Cell)) (cell : Cell) :
+    cell ∈ envReferenceSet env ↔ ∃ value ∈ env, cell ∈ value.referenceSet := by
+  induction env with
+  | nil => simp [envReferenceSet]
+  | cons value rest ih => simp [envReferenceSet, ih]
+
+theorem EnvReferencesSatisfy_iff_referenceSet {Cell : Type} [DecidableEq Cell]
+    (p : Cell → Prop) (env : List (Val Cell)) :
+    EnvReferencesSatisfy p env ↔ ∀ cell ∈ envReferenceSet env, p cell := by
+  constructor
+  · intro valid cell member
+    obtain ⟨value, captured, reference⟩ := (mem_envReferenceSet_iff env cell).mp member
+    exact (value.referencesSatisfy_iff_referenceSet p).mp (valid value captured) cell reference
+  · intro valid value captured
+    apply (value.referencesSatisfy_iff_referenceSet p).mpr
+    intro cell reference
+    exact valid cell ((mem_envReferenceSet_iff env cell).mpr ⟨value, captured, reference⟩)
 
 /-- Evaluate a value expression in an environment. An index outside the
 environment reads the symbol `0`. -/

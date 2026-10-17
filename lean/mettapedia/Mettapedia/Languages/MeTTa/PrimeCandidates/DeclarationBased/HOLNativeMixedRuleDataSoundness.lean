@@ -22,7 +22,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
-open DeclarationAwarePatternCodec DeclarationAwareSubstitutionLanguage
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec DeclarationAwareSubstitutionLanguage
 open Presentation NativeIndexedFamilies
 
 theorem binding_rule_heads :

@@ -34,7 +34,7 @@ open Mettapedia.GSLT.Dedukti (TermContext)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings
 

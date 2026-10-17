@@ -707,7 +707,7 @@ with the dispatcher leaves obligations A and B as the whole remaining content
 of the rho cost layer seal. -/
 
 /-- **The rho cost layer object laws from obligations A and B alone.** -/
-noncomputable def rhoHereditaryCompactOpenNormalizerLaws_ofRestorationAndExposure
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofRestorationAndExposure
     (restoration : ∀ color, RhoStaticViewsRestorationAlignedInDomain color)
     (exposure : ∀ color, RhoCollapsingLeaf.HasExposure color) :
     Cost.CompactOpenNormalizer.Laws rhoCIGSLT
@@ -752,7 +752,7 @@ noncomputable def rhoHereditaryCostLayer_ofSplitObligations
     rhoHereditaryStaticNormalizer_preservesReflectiveSupport_path
 
 /-- The cost layer object laws over the split obligations. -/
-noncomputable def rhoHereditaryCompactOpenNormalizerLaws_ofSplitObligations
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofSplitObligations
     (alignedRestoration :
       ∀ color, RhoAlignedViewsRestorationAlignedInDomain color)
     (collapsingRestoration :

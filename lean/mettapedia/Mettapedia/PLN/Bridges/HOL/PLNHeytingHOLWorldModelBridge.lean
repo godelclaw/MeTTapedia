@@ -24,6 +24,7 @@ namespace Mettapedia.PLN.Bridges.HOL.HeytingWorldModel
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.HeytingSem
 open Mettapedia.Logic.HOL.WithParams
+open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 
@@ -76,67 +77,17 @@ theorem satisfies_of_provable {T : ClosedTheorySet Const}
   rw [← hclosed θ]
   exact hcomb
 
-/-- Pointwise implication over all theory-modelling evidence states. -/
-def pointwiseImpliesOnTheory (T : ClosedTheorySet Const)
-    (φ ψ : ClosedFormula Const) : Prop :=
-  ∀ S : PointedHeytingHOL Base Const, stateModelsTheory T S →
-    heytingSatisfies S φ → heytingSatisfies S ψ
-
-/-- Singleton WM-strength consequence over all theory-modelling evidence
-states, via the generic crisp specialization. -/
-def singletonStrengthLEOnTheory (T : ClosedTheorySet Const)
-    (φ ψ : ClosedFormula Const) : Prop :=
-  ∀ S : PointedHeytingHOL Base Const, stateModelsTheory T S →
-    crispQueryStrength (heytingSatisfies (Base := Base) (Const := Const))
-        ({S} : Multiset (PointedHeytingHOL Base Const)) φ ≤
-      crispQueryStrength (heytingSatisfies (Base := Base) (Const := Const))
-        ({S} : Multiset (PointedHeytingHOL Base Const)) ψ
-
-/-- Fixed-state singleton WM consequence is satisfaction implication at that
-state. -/
-theorem singletonStrengthLE_singleton_iff_imp
-    (S : PointedHeytingHOL Base Const) (φ ψ : ClosedFormula Const) :
-    (crispQueryStrength (heytingSatisfies (Base := Base) (Const := Const))
-        ({S} : Multiset (PointedHeytingHOL Base Const)) φ ≤
-      crispQueryStrength (heytingSatisfies (Base := Base) (Const := Const))
-        ({S} : Multiset (PointedHeytingHOL Base Const)) ψ) ↔
-      (heytingSatisfies S φ → heytingSatisfies S ψ) := by
-  classical
-  constructor
-  · intro hle hφ
-    by_contra hψ
-    rw [queryStrength_singleton_of_satisfies _ S φ hφ,
-      queryStrength_singleton_of_not_satisfies _ S ψ hψ] at hle
-    exact (not_le_of_gt (by simp : (0 : ℝ≥0∞) < 1)) hle
-  · intro himp
-    by_cases hφ : heytingSatisfies S φ
-    · rw [queryStrength_singleton_of_satisfies _ S φ hφ,
-        queryStrength_singleton_of_satisfies _ S ψ (himp hφ)]
-    · rw [queryStrength_singleton_of_not_satisfies _ S φ hφ]
-      exact zero_le
-
-/-- Pointwise implication and singleton strength consequence coincide. -/
-theorem pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-    (T : ClosedTheorySet Const) (φ ψ : ClosedFormula Const) :
-    pointwiseImpliesOnTheory (Base := Base) T φ ψ ↔
-      singletonStrengthLEOnTheory (Base := Base) T φ ψ := by
-  constructor
-  · intro h S hS
-    exact (singletonStrengthLE_singleton_iff_imp S φ ψ).mpr (h S hS)
-  · intro h S hS
-    exact (singletonStrengthLE_singleton_iff_imp S φ ψ).mp (h S hS)
-
 /-- **The readout, implication fragment**: over a parameter-free theory,
 EM-free derivability of an implication coincides with pointwise implication
 over all Heyting evidence states modelling the theory.  Completeness is
 carried by the Lindenbaum model pointed at the antecedent. -/
-theorem provable_imp_iff_pointwiseImpliesOnTheory
+theorem provable_imp_iff_pointwiseImpliesOn
     {T : ClosedTheorySet (WithParams Const)}
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat),
       NoConstOccurrence (param σ k : WithParams Const σ) ψ)
     (φ ψ : ClosedFormula (WithParams Const)) :
     ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) ↔
-      pointwiseImpliesOnTheory (Base := Base) T φ ψ := by
+      pointwiseImpliesOn (heytingSatisfies (Base := Base) (Const := WithParams Const)) (stateModelsTheory T) φ ψ := by
   constructor
   · intro h S hS hφ
     have himp := satisfies_of_provable h S hS
@@ -157,15 +108,15 @@ theorem provable_imp_iff_pointwiseImpliesOnTheory
 parameter-free theory coincides with singleton WM-strength consequence over
 all Heyting evidence states modelling the theory — the higher-order,
 intuitionistic mirror of the first-order WM bridge interface. -/
-theorem provable_imp_iff_singletonStrengthLEOnTheory
+theorem provable_imp_iff_singletonStrengthLEOn
     {T : ClosedTheorySet (WithParams Const)}
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat),
       NoConstOccurrence (param σ k : WithParams Const σ) ψ)
     (φ ψ : ClosedFormula (WithParams Const)) :
     ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) ↔
-      singletonStrengthLEOnTheory (Base := Base) T φ ψ :=
-  (provable_imp_iff_pointwiseImpliesOnTheory (Base := Base) hT0 φ ψ).trans
-    (pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory (Base := Base) T φ ψ)
+      singletonStrengthLEOn (heytingSatisfies (Base := Base) (Const := WithParams Const)) (stateModelsTheory T) φ ψ :=
+  (provable_imp_iff_pointwiseImpliesOn (Base := Base) hT0 φ ψ).trans
+    (pointwiseImpliesOn_iff_singletonStrengthLEOn _ _ φ ψ)
 
 /-- **The crisp separating readout family**: the theory-modelling pointed
 Heyting evidence states, reading formulas to crisp singleton strengths,
@@ -181,18 +132,18 @@ noncomputable def heytingCrispSeparatingReadouts
       (ClosedFormula (WithParams Const)) ℝ≥0∞
       (fun φ ψ => ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ))
       (· ≤ ·) where
-  mu S φ := crispQueryStrength
-    (heytingSatisfies (Base := Base) (Const := WithParams Const))
+  mu S φ := @BinaryWorldModel.queryStrength _ _ _
+    (crispWorldModel (heytingSatisfies (Base := Base) (Const := WithParams Const)))
     ({S.1} : Multiset (PointedHeytingHOL Base (WithParams Const))) φ
   monotone S {φ ψ} h := by
-    refine (singletonStrengthLE_singleton_iff_imp S.1 φ ψ).mpr (fun hφ => ?_)
+    refine (singletonStrengthLE_singleton_iff_imp _ S.1 φ ψ).mpr (fun hφ => ?_)
     have himp := satisfies_of_provable h S.1 S.2
     unfold heytingSatisfies at himp hφ ⊢
     rw [S.1.model.val_imp] at himp
     exact S.1.model.le_trans (S.1.model.le_inf (S.1.model.le_refl _) hφ)
       (S.1.model.himp_adjoint_mp himp)
   separates {φ ψ} h :=
-    (provable_imp_iff_singletonStrengthLEOnTheory (Base := Base) hT0 φ ψ).mpr
+    (provable_imp_iff_singletonStrengthLEOn (Base := Base) hT0 φ ψ).mpr
       (fun S hS => h ⟨S, hS⟩)
 
 end Mettapedia.PLN.Bridges.HOL.HeytingWorldModel

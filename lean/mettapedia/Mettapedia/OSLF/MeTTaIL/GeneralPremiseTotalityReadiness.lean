@@ -21,7 +21,15 @@ namespace Query
 def checkTaskReady (environment : Environment) (request : Request) :
     Task environment request → Bool
   | .start => (signature? environment.provider request.relation request.arguments.length).isSome
-  | .rows _ => true
+  | .rows _ | .dynamicRows _ => true
+  | .dynamicInputs frame =>
+      match frame.schemas, frame.modes with
+      | [], [] => (environment.dynamic.rows? request.relation frame.resolvedRev.reverse).isSome
+      | schema :: _, .input :: _ =>
+          (instantiateAt? request.context.rule request.context.spec request.context.bound.length
+            (request.context.site frame.index) [] 0 request.initial schema).isSome
+      | _ :: _, .output :: _ => true
+      | _, _ => false
   | .arguments frame =>
       match frame.schemas, frame.values, frame.modes with
       | [], [], [] => true
@@ -38,17 +46,37 @@ theorem checkTaskReady_sound (environment : Environment) (request : Request)
   cases task with
   | start =>
       simp only [checkTaskReady] at checked
-      rw [expand.eq_1]
+      simp only [expand]
       split
       · simp_all
-      · rfl
+      · split <;> rfl
   | rows frame =>
-      rw [expand.eq_2]
+      simp only [expand]
+      split
+      · rfl
+      · split <;> rfl
+  | dynamicInputs frame =>
+      simp only [expand]
+      unfold expandDynamicInputs
+      split
+      · dsimp only
+        split
+        · simp_all [checkTaskReady]
+        · rfl
+      · split
+        · simp_all [checkTaskReady]
+        · rfl
+      · rfl
+      · cases schemas : frame.schemas <;> cases modes : frame.modes <;>
+          simp_all [checkTaskReady]
+  | dynamicRows frame =>
+      simp only [expand]
+      unfold expandDynamicRows
       split
       · rfl
       · split <;> rfl
   | arguments frame =>
-      rw [expand.eq_3]
+      simp only [expand]
       unfold expandArguments
       split
       · split <;> rfl
@@ -67,7 +95,7 @@ theorem checkTaskReady_sound (environment : Environment) (request : Request)
       · cases schemas : frame.schemas <;> cases values : frame.values <;>
           cases modes : frame.modes <;> simp_all [checkTaskReady]
   | matcher frame =>
-      rw [expand.eq_4]
+      simp only [expand]
       unfold expandMatcher
       split
       · rfl

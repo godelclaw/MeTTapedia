@@ -5242,15 +5242,13 @@ mutual
                 canonicalParts.1 = sourceTerm.substitute first sourceSafe := by
           apply AvailableOpenPattern.ext
           simp [bodyTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute, ReflectiveContextSupport.substituteAt]
+                ReflectiveContextSupport.substituteAt]
         have rightEndpoint :
             (bodyTerm.substitute second bodySafe').lambda binder
                 canonicalParts.1 = sourceTerm.substitute second sourceSafe := by
           apply AvailableOpenPattern.ext
           simp [bodyTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute, ReflectiveContextSupport.substituteAt]
+                ReflectiveContextSupport.substituteAt]
         rw [← leftEndpoint, ← rightEndpoint]
         exact assembled
     | @multiLambda bound arity binders body domain codomain bodyTyped available
@@ -5285,16 +5283,14 @@ mutual
                 canonicalParts.1 = sourceTerm.substitute first sourceSafe := by
           apply AvailableOpenPattern.ext
           simp [bodyTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute, ReflectiveContextSupport.substituteAt,
+                ReflectiveContextSupport.substituteAt,
             Nat.add_comm]
         have rightEndpoint :
             (bodyTerm.substitute second bodySafe').multiLambda arity binders
                 canonicalParts.1 = sourceTerm.substitute second sourceSafe := by
           apply AvailableOpenPattern.ext
           simp [bodyTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute, ReflectiveContextSupport.substituteAt,
+                ReflectiveContextSupport.substituteAt,
             Nat.add_comm]
         rw [← leftEndpoint, ← rightEndpoint]
         exact assembled
@@ -5344,7 +5340,6 @@ mutual
                     collectionType = sourceTerm.substitute first sourceSafe := by
               apply AvailableOpenPattern.ext
               simp [elementsTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
                 AvailableOpenElements.substitute,
                 ReflectiveContextSupport.substituteAt]
             have rightEndpoint :
@@ -5352,7 +5347,6 @@ mutual
                     collectionType = sourceTerm.substitute second sourceSafe := by
               apply AvailableOpenPattern.ext
               simp [elementsTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
                 AvailableOpenElements.substitute,
                 ReflectiveContextSupport.substituteAt]
             rw [← leftEndpoint, ← rightEndpoint]
@@ -5403,7 +5397,6 @@ mutual
                       parameterShape = sourceTerm.substitute first sourceSafe := by
               apply AvailableOpenPattern.ext
               simp [elementsTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
                 AvailableOpenElements.substitute,
                 ReflectiveContextSupport.substituteAt]
             have rightEndpoint :
@@ -5412,7 +5405,6 @@ mutual
                       parameterShape = sourceTerm.substitute second sourceSafe := by
               apply AvailableOpenPattern.ext
               simp [elementsTerm, sourceTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
                 AvailableOpenElements.substitute,
                 ReflectiveContextSupport.substituteAt]
             rw [← leftEndpoint, ← rightEndpoint]
@@ -5556,16 +5548,14 @@ mutual
                             sourceArgument.substitute first sourceSafe := by
                         apply AvailableOpenArgument.ext
                         simp [pack, sourceArgument, bodyTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute,
+                AvailableOpenArgument.substitute,
                           ReflectiveContextSupport.substituteAt]
                       have rightEndpoint :
                           pack (bodyTerm.substitute second bodySafe') =
                             sourceArgument.substitute second sourceSafe := by
                         apply AvailableOpenArgument.ext
                         simp [pack, sourceArgument, bodyTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute,
+                AvailableOpenArgument.substitute,
                           ReflectiveContextSupport.substituteAt]
                       rw [leftEndpoint, rightEndpoint] at packed
                       exact packed
@@ -5640,16 +5630,14 @@ mutual
                             sourceArgument.substitute first sourceSafe := by
                         apply AvailableOpenArgument.ext
                         simp [pack, sourceArgument, bodyTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute,
+                AvailableOpenArgument.substitute,
                           ReflectiveContextSupport.substituteAt, Nat.add_comm]
                       have rightEndpoint :
                           pack (bodyTerm.substitute second bodySafe') =
                             sourceArgument.substitute second sourceSafe := by
                         apply AvailableOpenArgument.ext
                         simp [pack, sourceArgument, bodyTerm, AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates,
-                AvailableOpenArgument.substitute, AvailableOpenArguments.substitute,
-                AvailableOpenElements.substitute,
+                AvailableOpenArgument.substitute,
                           ReflectiveContextSupport.substituteAt, Nat.add_comm]
                       rw [leftEndpoint, rightEndpoint] at packed
                       exact packed
@@ -5769,14 +5757,14 @@ mutual
               sourceSpine.substitute first sourceSafe := by
           apply AvailableOpenArguments.ext
           simp [leftHead, sourceArgument, argumentTerm, tailTerm, sourceSpine,
-            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
+            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates]
         have rightEndpoint :
             AvailableOpenArguments.cons rightHead
                 (tailTerm.substitute second argumentsSafe) =
               sourceSpine.substitute second sourceSafe := by
           apply AvailableOpenArguments.ext
           simp [rightHead, sourceArgument, argumentTerm, tailTerm, sourceSpine,
-            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
+            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates]
         rw [← leftEndpoint, ← rightEndpoint]
         exact combined
   termination_by 4 * substitutionPatternListMeasure sourceArguments + 3
@@ -5880,7 +5868,7 @@ mutual
               sourceSpine.substitute first sourceSafe := by
           apply AvailableOpenElements.ext
           simp [elementTerm, tailTerm, sourceSpine,
-            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
+            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
         have rightEndpoint :
             AvailableOpenElements.cons
                 (elementTerm.substitute second elementSafe)
@@ -5888,7 +5876,7 @@ mutual
               sourceSpine.substitute second sourceSafe := by
           apply AvailableOpenElements.ext
           simp [elementTerm, tailTerm, sourceSpine,
-            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenArgument.substitute, AvailableOpenArguments.substitute, AvailableOpenArguments.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
+            AvailableOpenPattern.substitute, AvailableOpenPattern.ofCertificates, AvailableOpenElements.substitute, AvailableOpenElements.ofCertificates]
         rw [← leftEndpoint, ← rightEndpoint]
         exact combined
   termination_by 4 * substitutionPatternListMeasure sourceElements + 3

@@ -53,6 +53,8 @@ inductive BindingsFlow where
   | passthrough
   /-- Output bindings are merged from match/unification result + input. -/
   | mergeFromMatch
+  /-- Output bindings are the endpoint of the selected nested execution. -/
+  | fromNested
   /-- Output bindings gain a new variable assignment. -/
   | assignVariable
   /-- Output bindings come from each collected result (restored by superpose-bind). -/
@@ -162,7 +164,8 @@ def unifyContract : OpRuntimeContract where
   arity := 4
   argRoles := ["target-atom", "pattern", "success-body", "failure-body"]
   specConstructors :=
-    [ "Spec.Eval.Minimal.CoreStepRel.unify"
+    [ "Spec.Eval.Minimal.CoreStepRel.unifySuccess"
+    , "Spec.Eval.Minimal.CoreStepRel.unifyNoMatch"
     ]
   semanticAuthority :=
     [ "Matching.matchAtoms"
@@ -177,7 +180,7 @@ def unifyContract : OpRuntimeContract where
     , "match fails: failure-body with original input bindings"
     ]
   errorCases :=
-    [ "variable loop in merged bindings: filtered out (may yield no results)"
+    [ "variable loop in merged bindings: candidate refused; if none survive, use failure-body"
     ]
   mutatesSpace := false
   fixtures :=
@@ -195,12 +198,12 @@ def unifyContract : OpRuntimeContract where
         expectedResults := ["failure"]
         expectedBindings := some []
       }
-    , { label := "unify: variable loop filtered"
+    , { label := "unify: cyclic candidate refused, returns else branch"
         positive := false
-        instructionAtom := "(unify $x $y success failure)"
+        instructionAtom := "(unify $x (f $x) success failure)"
         inputBindings := []
-        expectedResults := []
-        expectedBindings := none
+        expectedResults := ["failure"]
+        expectedBindings := some []
       }
     ]
 
@@ -212,13 +215,14 @@ def chainContract : OpRuntimeContract where
     [ "Spec.Eval.Minimal.CoreStepRel.chain"
     ]
   semanticAuthority :=
-    [ "Spec.Eval.Minimal.MinimalRunRel"
+    [ "Spec.Eval.Minimal.CoreRunRel"
+    , "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel"
     , "Spec.Eval.Minimal.substituteName"
     ]
   determinism := .nondeterministic
-  bindingsFlow := .passthrough
+  bindingsFlow := .fromNested
   resultCases :=
-    [ "each source result: substitute the local variable and run the minimal template"
+    [ "each source result: materialize under its output bindings, substitute the local variable and run the minimal template"
     , "source binding refinements are retained; the local binder is not exported"
     , "Empty and NotReducible source sentinels are also substituted into the template"
     , "only final Empty output is omitted at the observation boundary"
@@ -242,30 +246,33 @@ def chainContract : OpRuntimeContract where
       }
     ]
 
-/-- `switch` / `switch-minimal` — the primitive pattern-matching control op.
-    Both interface names are accepted by parseSwitchMinimalCallArgs.
-    Scrutinee is already evaluated; branches are `((pattern template) ...)`.
-    First matching branch wins; on no match, yields no user-visible results. -/
+/-- Authored ordered branching. `switch` calls the standard library's
+`switch-minimal`, whose Atom result demand keeps the selected output raw.
+The outer `switch` uses its own ordinary return demand. Neither name is an
+embedded primitive; equation lookup and the library's function, chain and
+unify instructions determine execution. -/
 def switchContract : OpRuntimeContract where
   head := "switch"
   arity := 2
-  argRoles := ["scrutinee (already evaluated)", "branches ((pattern template) ...)"]
+  argRoles := ["scrutinee under the declared input demand", "branches ((pattern template) ...)"]
   specConstructors :=
-    [ "MC_SwitchMinimal_Start"
-    , "MC_SwitchMinimal_Match"
-    , "MC_SwitchMinimal_NoMatch"
+    [ "Spec.Eval.CallRel.equation"
+    , "Spec.Eval.Minimal.CoreStepRel.functionReturn"
+    , "Spec.Eval.Minimal.CoreStepRel.unifySuccess"
+    , "Spec.Eval.Minimal.CoreStepRel.unifyNoMatch"
     ]
   semanticAuthority :=
-    [ "selectSwitchTemplate" -- iterate branches, first match wins
-    , "Matching.matchAtoms"  -- pattern ↔ scrutinee unification
-    , "Matching.mergeBindings"
-    , "Bindings.hasLoop"     -- filter variable loops
-    , "Bindings.apply"       -- substitute into template
+    [ "authored stdlib switch, switch-minimal and switch-internal equations"
+    , "Spec.Eval.Minimal.CoreInvocationRel"
+    , "Spec.Eval.Steps.UnifyCandidateRel"
+    , "Spec.Eval.CallReturnRel"
     ]
   determinism := .nondeterministic
   bindingsFlow := .mergeFromMatch
   resultCases :=
-    [ "first matching branch: template with pattern variables substituted (may yield multiple results if match is nondeterministic)"
+    [ "first surviving branch: materialize its template with the reached bindings"
+    , "switch-minimal: its Atom result demand holds the selected output"
+    , "switch: its ordinary return demand may interpret the selected output again"
     , "no matching branch: internal Empty sentinel, reported as no user-visible results"
     ]
   errorCases := []
@@ -292,7 +299,7 @@ def switchContract : OpRuntimeContract where
         expectedResults := []
         expectedBindings := none
       }
-    , { label := "switch-minimal: identical to switch"
+    , { label := "switch-minimal: selected Atom result"
         positive := true
         instructionAtom := "(switch-minimal a ((a ok)))"
         inputBindings := []
@@ -504,12 +511,18 @@ def evalContract : OpRuntimeContract where
   semanticAuthority :=
     [ "Spec.Eval.Minimal.RawInvocationRel"
     , "Spec.Eval.Minimal.MinimalRunRel"
+    , "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel"
+    , "Spec.Eval.NativeEmissionRel"
+    , "Spec.Eval.GroundedDispatch.bindingMode"
     , "Spec.Eval.GroundedDispatch.valueProvenance"
     ]
   determinism := .nondeterministic
   bindingsFlow := .mergeFromMatch
   resultCases :=
-    [ "atom reduces: one or more result atoms with updated bindings"
+    [ "materialize the requested atom under the incoming bindings before invocation"
+    , "atom reduces: one or more result atoms with updated bindings"
+    , "producer binding mode determines whether native emissions remain raw or are materialized after merge"
+    , "equation emissions are materialized under their selected output bindings"
     , "ordinary native emission: emitted function completes before the raw result is returned"
     , "producer-completed native value: raw invocation retains the value without function execution"
     , "atom is irreducible: NotReducible"
@@ -617,14 +630,17 @@ def functionContract : OpRuntimeContract where
     , "Spec.Eval.Minimal.CoreStepRel.functionNoReturn"
     ]
   semanticAuthority :=
-    [ "Spec.Eval.Minimal.FunctionBodyRel"
-    , "Spec.Eval.Minimal.MinimalResultRel"
+    [ "Spec.Eval.Minimal.CoreFunctionBodyRel"
+    , "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel"
+    , "Spec.Eval.Minimal.functionTerminalResult"
     ]
   determinism := .nondeterministic
-  bindingsFlow := .passthrough
+  bindingsFlow := .fromNested
   resultCases :=
-    [ "body evaluates to (return <atom>): unwrap and return <atom>"
-    , "body does not produce (return ...): return (Error (function <body>) NoReturn)"
+    [ "materialize every finished body result under its output bindings before classifying it"
+    , "an exposed embedded instruction resumes under the saved function frame"
+    , "a materialized (return <atom>) unwraps and returns <atom>"
+    , "body does not produce (return ...): blame the saved caller, or the terminal at the outermost boundary"
     , "body returns Empty: no user-visible answer"
     ]
   errorCases :=
@@ -643,7 +659,7 @@ def functionContract : OpRuntimeContract where
         positive := false
         instructionAtom := "(function (stuck))"
         inputBindings := []
-        expectedResults := ["(Error (function (stuck)) NoReturn)"]
+        expectedResults := ["(Error (stuck) NoReturn)"]
         expectedBindings := some []
       }
     ]
@@ -798,6 +814,7 @@ private def determinismToString : Determinism → String
 private def bindingsFlowToString : BindingsFlow → String
   | .passthrough => "passthrough"
   | .mergeFromMatch => "mergeFromMatch"
+  | .fromNested => "fromNested"
   | .assignVariable => "assignVariable"
   | .restoreFromCollapse => "restoreFromCollapse"
   | .encodeBindings => "encodeBindings"

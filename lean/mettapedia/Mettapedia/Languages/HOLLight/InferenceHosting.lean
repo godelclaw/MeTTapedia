@@ -69,22 +69,22 @@ theorem literal_name_size
     (value : HOL.Embedding.InferenceRules.Data) :
     nameSize (functionName (.literal value)) ≤
       19 + 6 * Mettapedia.OSLF.MeTTaIL.PatternTokens.weight value.val := by
-  have prefix : Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize
+  have prefixSize : Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize
       ["inference", "literal"] = 18 := by decide
   have empty : "".utf8ByteSize = 0 := by decide
   have bound := Mettapedia.OSLF.MeTTaIL.PatternTokens.encode_size value.val
   simp only [nameSize, functionName, Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize_append,
-    prefix, empty]
+    prefixSize, empty]
   omega
 
 theorem constructor_name_size (name : String) (arity : Nat) :
     nameSize (functionName (.constructor name arity)) =
       23 + 2 * (Nat.digits 2 arity).length + name.utf8ByteSize := by
-  have prefix : Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize
+  have prefixSize : Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize
       ["inference", "constructor"] = 22 := by decide
   simp only [nameSize, functionName, natComponents,
     Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize_append,
-    Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize_bits, prefix]
+    Mettapedia.OSLF.MeTTaIL.PatternTokens.tokenSize_bits, prefixSize]
   omega
 
 def holdsName : Name := ⟨["inference", "relation"], "holds"⟩

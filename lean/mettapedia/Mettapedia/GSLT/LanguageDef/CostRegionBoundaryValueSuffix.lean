@@ -298,7 +298,7 @@ namespace CostRegionBoundaryTrees.NormalizedAvailabilitySuffixAcross
 
 /-- Transport the heterogeneous node-facing relation to the homogeneous
 table index consumed by semantic-atom reification. -/
-def toNormalizedAvailabilitySuffix
+theorem toNormalizedAvailabilitySuffix
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {normalizeStatic : CostStaticRegionNormalizer source}

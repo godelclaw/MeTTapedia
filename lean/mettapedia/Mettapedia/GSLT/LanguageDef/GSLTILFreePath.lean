@@ -46,7 +46,7 @@ namespace ProgramEvent
 
 /-- Forget occurrence identity only at the proposition-valued reachability
 boundary. -/
-def erase {program : Program} {source target : Pattern} :
+theorem erase {program : Program} {source target : Pattern} :
     ProgramEvent program source target → Step program source target
   | .inSpace _ member => .inSpace member
   | .underRoute _ _ routeMember ruleMember sameSpace =>
@@ -88,7 +88,7 @@ abbrev ProgramPath (program : Program) := Route (ProgramEvent program)
 namespace ProgramPath
 
 /-- Proof-relevant paths erase to the established propositional closure. -/
-def toRuns {program : Program} {source target : Pattern} :
+theorem toRuns {program : Program} {source target : Pattern} :
     ProgramPath program source target → Runs program source target
   | .refl state => .refl state
   | .cons event rest => .tail event.erase (toRuns rest)
@@ -140,6 +140,9 @@ end ProgramPath
 
 /-! ## Universal interpretation -/
 
+-- Objects and edges have independent carrier universes; bundling both carriers
+-- necessarily places the interpretation itself in their maximum.
+set_option linter.checkUnivs false in
 /-- A choice of semantic objects and semantic edges for every authored
 generator. -/
 structure EventInterpretation (program : Program) where
@@ -363,6 +366,558 @@ theorem exists_distinct_events_with_equal_erasure :
     firstEvent, secondEvent, events_distinct, erased_events_equal⟩
 
 end DuplicateOccurrenceCanary
+
+/-! ## Executable native instruction and path checking
+
+The instruction records positions in the authored inventories. Membership in
+an extensional rule set would lose repeated rows at the same endpoints. The
+logical judgment below is independent of the executable readout and retains
+both selected positions for commands that consume a route and a rule.
+-/
+
+inductive Instruction where
+  | fibre (rule : Nat)
+  | beneath (route rule : Nat)
+  | transport (route rule : Nat)
+  deriving DecidableEq, Repr
+
+/-- One logical instruction judgment, with the original row positions. -/
+inductive Instruction.Judges (program : Program) :
+    Instruction → Pattern → Pattern → Prop where
+  | fibre {position : Nat} {rule : SpaceRule} :
+      program.spaceRules[position]? = some rule →
+      Judges program (.fibre position)
+        (inSpace rule.space rule.source) (inSpace rule.space rule.target)
+  | beneath {routePosition rulePosition : Nat}
+      {route : RouteDecl} {rule : SpaceRule} :
+      program.routes[routePosition]? = some route →
+      program.spaceRules[rulePosition]? = some rule →
+      rule.space = route.sourceSpace →
+      Judges program (.beneath routePosition rulePosition)
+        (routeCall route.name rule.source) (routeCall route.name rule.target)
+  | transport {routePosition rulePosition : Nat}
+      {route : RouteDecl} {rule : RouteRule} :
+      program.routes[routePosition]? = some route →
+      program.routeRules[rulePosition]? = some rule →
+      rule.name = route.name →
+      Judges program (.transport routePosition rulePosition)
+        (routeCall route.name rule.source)
+        (inSpace route.targetSpace rule.target)
+
+namespace Instruction
+
+/-- Execute the selected native operation. Every condition is checked against
+the actual authored inventories, including the command's complete source. -/
+def execute (program : Program) (instruction : Instruction)
+    (source : Pattern) : Option Pattern :=
+  match instruction with
+  | .fibre position =>
+      program.spaceRules[position]?.bind fun rule =>
+      if source = inSpace rule.space rule.source then
+        some (inSpace rule.space rule.target)
+      else none
+  | .beneath routePosition rulePosition =>
+      program.routes[routePosition]?.bind fun route =>
+      program.spaceRules[rulePosition]?.bind fun rule =>
+      if rule.space = route.sourceSpace ∧
+          source = routeCall route.name rule.source then
+        some (routeCall route.name rule.target)
+      else none
+  | .transport routePosition rulePosition =>
+      program.routes[routePosition]?.bind fun route =>
+      program.routeRules[rulePosition]?.bind fun rule =>
+      if rule.name = route.name ∧
+          source = routeCall route.name rule.source then
+        some (inSpace route.targetSpace rule.target)
+      else none
+
+theorem execute_iff_judges (program : Program) (instruction : Instruction)
+    (source target : Pattern) :
+    execute program instruction source = some target ↔
+      Judges program instruction source target := by
+  constructor
+  · intro accepted
+    cases instruction with
+    | fibre position =>
+        simp only [execute, Option.bind_eq_some_iff] at accepted
+        obtain ⟨rule, row, next⟩ := accepted
+        split at next
+        · next same =>
+            simp only [Option.some.injEq] at next
+            subst source
+            subst target
+            exact .fibre row
+        · contradiction
+    | beneath routePosition rulePosition =>
+        simp only [execute, Option.bind_eq_some_iff] at accepted
+        obtain ⟨route, routeRow, rule, ruleRow, next⟩ := accepted
+        split at next
+        · next conditions =>
+            simp only [Option.some.injEq] at next
+            obtain ⟨sameSpace, sameSource⟩ := conditions
+            subst source
+            subst target
+            exact .beneath routeRow ruleRow sameSpace
+        · contradiction
+    | transport routePosition rulePosition =>
+        simp only [execute, Option.bind_eq_some_iff] at accepted
+        obtain ⟨route, routeRow, rule, ruleRow, next⟩ := accepted
+        split at next
+        · next conditions =>
+            simp only [Option.some.injEq] at next
+            obtain ⟨sameName, sameSource⟩ := conditions
+            subst source
+            subst target
+            exact .transport routeRow ruleRow sameName
+        · contradiction
+  · intro judged
+    cases judged with
+    | fibre row => simp [execute, row]
+    | beneath routeRow ruleRow sameSpace =>
+        simp [execute, routeRow, ruleRow, sameSpace]
+    | transport routeRow ruleRow sameName =>
+        simp [execute, routeRow, ruleRow, sameName]
+
+/-- Acceptance reconstructs an independently defined authored event. -/
+theorem stepOfJudges {program : Program} {instruction : Instruction}
+    {source target : Pattern}
+    (judged : Judges program instruction source target) :
+    Step program source target := by
+  cases judged with
+  | fibre row => exact .inSpace (List.mem_of_getElem? row)
+  | beneath routeRow ruleRow sameSpace =>
+      exact .underRoute (List.mem_of_getElem? routeRow)
+        (List.mem_of_getElem? ruleRow) sameSpace
+  | transport routeRow ruleRow sameName =>
+      exact .applyRoute (List.mem_of_getElem? routeRow)
+        (List.mem_of_getElem? ruleRow) sameName
+
+theorem exists_judges_iff_step (program : Program)
+    (source target : Pattern) :
+    (∃ instruction, Judges program instruction source target) ↔
+      Step program source target := by
+  constructor
+  · rintro ⟨instruction, judged⟩
+    exact stepOfJudges judged
+  · intro step
+    cases step with
+    | @inSpace rule member =>
+        obtain ⟨position, row⟩ := List.mem_iff_getElem?.mp member
+        exact ⟨.fibre position, .fibre row⟩
+    | @underRoute route rule routeMember ruleMember sameSpace =>
+        obtain ⟨routePosition, routeRow⟩ := List.mem_iff_getElem?.mp routeMember
+        obtain ⟨rulePosition, ruleRow⟩ := List.mem_iff_getElem?.mp ruleMember
+        exact ⟨.beneath routePosition rulePosition,
+          .beneath routeRow ruleRow sameSpace⟩
+    | @applyRoute route rule routeMember ruleMember sameName =>
+        obtain ⟨routePosition, routeRow⟩ := List.mem_iff_getElem?.mp routeMember
+        obtain ⟨rulePosition, ruleRow⟩ := List.mem_iff_getElem?.mp ruleMember
+        exact ⟨.transport routePosition rulePosition,
+          .transport routeRow ruleRow sameName⟩
+
+/-- The native instruction keeps the same physical positions under the
+capture-avoiding action on authored rows and command payloads. -/
+theorem Judges.reindex
+    (assignment : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    {program : Program} {instruction : Instruction} {source target : Pattern}
+    (judged : Judges program instruction source target) :
+    Judges (Reindex.program assignment program) instruction
+      (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute assignment source)
+      (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute assignment target) := by
+  cases judged with
+  | @fibre position rule row =>
+      simpa [Reindex.spaceRule] using
+        Judges.fibre (program := Reindex.program assignment program)
+          (rule := Reindex.spaceRule assignment rule)
+          (by simp [Reindex.program, List.getElem?_map, row])
+  | @beneath routePosition rulePosition route rule routeRow ruleRow sameSpace =>
+      simpa [Reindex.spaceRule, Reindex.route] using
+        Judges.beneath (program := Reindex.program assignment program)
+          (route := Reindex.route assignment route)
+          (rule := Reindex.spaceRule assignment rule)
+          (by simp [Reindex.program, List.getElem?_map, routeRow])
+          (by simp [Reindex.program, List.getElem?_map, ruleRow])
+          (congrArg
+            (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute assignment)
+            sameSpace)
+  | @transport routePosition rulePosition route rule routeRow ruleRow sameName =>
+      simpa [Reindex.routeRule, Reindex.route] using
+        Judges.transport (program := Reindex.program assignment program)
+          (route := Reindex.route assignment route)
+          (rule := Reindex.routeRule assignment rule)
+          (by simp [Reindex.program, List.getElem?_map, routeRow])
+          (by simp [Reindex.program, List.getElem?_map, ruleRow]) sameName
+
+/-- A split context action reflects native proof checking on its image. A
+general substitution need not have such a reverse action. -/
+theorem Judges.reindex_iff
+    (forward backward : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    (retraction : ∀ index,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute backward
+        (forward index) = Pattern.bvar index)
+    (program : Program) (instruction : Instruction) (source target : Pattern) :
+    Judges (Reindex.program forward program) instruction
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward source)
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward target) ↔
+      Judges program instruction source target := by
+  constructor
+  · intro judged
+    have restored := judged.reindex backward
+    simpa [Reindex.program_comp,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute_comp,
+      funext retraction] using restored
+  · exact Judges.reindex forward
+
+/-- A split context action commutes with actual selected-operation execution,
+including refusal. This quantifies over every output, not only preselected
+image endpoints. -/
+theorem execute_reindex
+    (forward backward : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    (retraction : ∀ index,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute backward
+        (forward index) = Pattern.bvar index)
+    (program : Program) (instruction : Instruction) (source : Pattern) :
+    execute (Reindex.program forward program) instruction
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward source) =
+      (execute program instruction source).map
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward) := by
+  have injective : Function.Injective
+      (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward) := by
+    apply Function.LeftInverse.injective
+      (g := Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute backward)
+    intro pattern
+    simp [Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute_comp,
+      funext retraction]
+  cases instruction with
+  | fibre position =>
+      cases row : program.spaceRules[position]? with
+      | none => simp [execute, Reindex.program, row]
+      | some rule =>
+          simp [execute, Reindex.program, row, Reindex.spaceRule,
+            ← Reindex.substitute_inSpace, injective.eq_iff]
+  | beneath routePosition rulePosition =>
+      cases routeRow : program.routes[routePosition]? with
+      | none => simp [execute, Reindex.program, routeRow]
+      | some route =>
+          cases ruleRow : program.spaceRules[rulePosition]? with
+          | none => simp [execute, Reindex.program, routeRow, ruleRow]
+          | some rule =>
+              simp [execute, Reindex.program, routeRow, ruleRow,
+                Reindex.spaceRule, Reindex.route,
+                ← Reindex.substitute_routeCall, injective.eq_iff]
+  | transport routePosition rulePosition =>
+      cases routeRow : program.routes[routePosition]? with
+      | none => simp [execute, Reindex.program, routeRow]
+      | some route =>
+          cases ruleRow : program.routeRules[rulePosition]? with
+          | none => simp [execute, Reindex.program, routeRow, ruleRow]
+          | some rule =>
+              simp [execute, Reindex.program, routeRow, ruleRow,
+                Reindex.routeRule, Reindex.route,
+                ← Reindex.substitute_routeCall, ← Reindex.substitute_inSpace,
+                injective.eq_iff]
+
+/-- The actual literal endpoints selected by an instruction, before request
+comparison. This is finite-row selection, not schema matching. -/
+def template (program : Program) : Instruction → Option (Pattern × Pattern)
+  | .fibre index => program.spaceRules[index]?.map fun row =>
+      (inSpace row.space row.source, inSpace row.space row.target)
+  | .beneath routeIndex rowIndex =>
+      program.routes[routeIndex]?.bind fun route =>
+      program.spaceRules[rowIndex]?.bind fun row =>
+      if row.space = route.sourceSpace then
+        some (routeCall route.name row.source, routeCall route.name row.target)
+      else none
+  | .transport routeIndex rowIndex =>
+      program.routes[routeIndex]?.bind fun route =>
+      program.routeRules[rowIndex]?.bind fun row =>
+      if row.name = route.name then
+        some (routeCall route.name row.source, inSpace route.targetSpace row.target)
+      else none
+
+theorem template_iff_judges (program : Program) (instruction : Instruction)
+    (source target : Pattern) :
+    template program instruction = some (source, target) ↔
+      Judges program instruction source target := by
+  constructor
+  · intro selected
+    cases instruction with
+    | fibre index =>
+        obtain ⟨row, known, same⟩ := Option.map_eq_some_iff.mp selected
+        obtain ⟨rfl, rfl⟩ := Prod.mk.inj same
+        exact .fibre known
+    | beneath routeIndex rowIndex =>
+        simp only [template, Option.bind_eq_some_iff] at selected
+        obtain ⟨route, routeKnown, row, rowKnown, selected⟩ := selected
+        split at selected
+        · next sameSpace =>
+            have same := Option.some.inj selected
+            obtain ⟨rfl, rfl⟩ := Prod.mk.inj same
+            exact .beneath routeKnown rowKnown sameSpace
+        · cases selected
+    | transport routeIndex rowIndex =>
+        simp only [template, Option.bind_eq_some_iff] at selected
+        obtain ⟨route, routeKnown, row, rowKnown, selected⟩ := selected
+        split at selected
+        · next sameName =>
+            have same := Option.some.inj selected
+            obtain ⟨rfl, rfl⟩ := Prod.mk.inj same
+            exact .transport routeKnown rowKnown sameName
+        · cases selected
+  · intro judged
+    cases judged with
+    | fibre known => simp [template, known]
+    | beneath routeKnown rowKnown sameSpace => simp [template, routeKnown, rowKnown, sameSpace]
+    | transport routeKnown rowKnown sameName => simp [template, routeKnown, rowKnown, sameName]
+
+theorem template_source_scoped {program : Program} {instruction : Instruction}
+    {source target : Pattern} {scope : Nat}
+    (formed : Reindex.WellScoped scope program)
+    (selected : template program instruction = some (source, target)) :
+    source.isWellScopedAt scope = true := by
+  have judged := (template_iff_judges program instruction source target).mp selected
+  rcases formed with ⟨spaceRows, declarations, routeRows⟩
+  cases judged with
+  | fibre known =>
+      obtain ⟨_, space, source, _⟩ := spaceRows _ (List.mem_of_getElem? known)
+      simp [inSpace, Pattern.isWellScopedAt, Pattern.isWellScopedListAt, space, source]
+  | beneath routeKnown rowKnown _ =>
+      obtain ⟨_, _, source, _⟩ := spaceRows _ (List.mem_of_getElem? rowKnown)
+      simp [routeCall, Pattern.isWellScopedAt, Pattern.isWellScopedListAt, source]
+  | transport routeKnown rowKnown _ =>
+      obtain ⟨_, source, _⟩ := routeRows _ (List.mem_of_getElem? rowKnown)
+      simp [routeCall, Pattern.isWellScopedAt, Pattern.isWellScopedListAt, source]
+
+end Instruction
+
+/-- Logical finite derivations retain the exact native instruction sequence. -/
+inductive ScriptJudges (program : Program) :
+    List Instruction → Pattern → Pattern → Prop where
+  | nil (state : Pattern) : ScriptJudges program [] state state
+  | cons {instruction : Instruction} {rest : List Instruction}
+      {source middle target : Pattern} :
+      instruction.Judges program source middle →
+      ScriptJudges program rest middle target →
+      ScriptJudges program (instruction :: rest) source target
+
+/-- Execute the original instructions in sequence; refusal propagates. -/
+def executeScript (program : Program) : List Instruction → Pattern → Option Pattern
+  | [], source => some source
+  | instruction :: rest, source =>
+      (instruction.execute program source).bind (executeScript program rest)
+
+theorem executeScript_iff_judges (program : Program)
+    (script : List Instruction) (source target : Pattern) :
+    executeScript program script source = some target ↔
+      ScriptJudges program script source target := by
+  induction script generalizing source with
+  | nil =>
+      constructor
+      · intro same
+        simp only [executeScript, Option.some.injEq] at same
+        subst target
+        exact .nil source
+      · intro judged
+        cases judged
+        rfl
+  | cons instruction rest inductionHypothesis =>
+      constructor
+      · intro accepted
+        obtain ⟨middle, head, tail⟩ := Option.bind_eq_some_iff.mp accepted
+        exact .cons
+          ((Instruction.execute_iff_judges program instruction source middle).mp head)
+          ((inductionHypothesis middle).mp tail)
+      · intro judged
+        cases judged with
+        | cons head tail =>
+            exact Option.bind_eq_some_iff.mpr
+              ⟨_, (Instruction.execute_iff_judges program instruction _ _).mpr head,
+                (inductionHypothesis _).mpr tail⟩
+
+theorem script_exists_iff_runs (program : Program) (source target : Pattern) :
+    (∃ script, ScriptJudges program script source target) ↔
+      Runs program source target := by
+  constructor
+  · rintro ⟨script, judged⟩
+    induction judged with
+    | nil => exact .refl _
+    | cons head _ inductionHypothesis =>
+        exact .tail (Instruction.stepOfJudges head) inductionHypothesis
+  · intro run
+    induction run with
+    | refl state => exact ⟨[], .nil state⟩
+    | tail step _ inductionHypothesis =>
+        obtain ⟨instruction, judged⟩ :=
+          (Instruction.exists_judges_iff_step program _ _).mpr step
+        obtain ⟨rest, tail⟩ := inductionHypothesis
+        exact ⟨instruction :: rest, .cons judged tail⟩
+
+theorem executeScript_append (program : Program)
+    (first second : List Instruction) (source : Pattern) :
+    executeScript program (first ++ second) source =
+      (executeScript program first source).bind (executeScript program second) := by
+  induction first generalizing source with
+  | nil => rfl
+  | cons instruction rest inductionHypothesis =>
+      simp only [List.cons_append, executeScript, inductionHypothesis,
+        Option.bind_assoc]
+
+/-- Reindexing a native derivation never reruns a search or changes its
+instruction journal. -/
+theorem ScriptJudges.reindex
+    (assignment : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    {program : Program} {script : List Instruction} {source target : Pattern}
+    (judged : ScriptJudges program script source target) :
+    ScriptJudges (Reindex.program assignment program) script
+      (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute assignment source)
+      (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute assignment target) := by
+  induction judged with
+  | nil => exact .nil _
+  | cons head _ inductionHypothesis =>
+      exact .cons (head.reindex assignment) inductionHypothesis
+
+theorem ScriptJudges.reindex_iff
+    (forward backward : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    (retraction : ∀ index,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute backward
+        (forward index) = Pattern.bvar index)
+    (program : Program) (script : List Instruction) (source target : Pattern) :
+    ScriptJudges (Reindex.program forward program) script
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward source)
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward target) ↔
+      ScriptJudges program script source target := by
+  constructor
+  · intro judged
+    have restored := judged.reindex backward
+    simpa [Reindex.program_comp,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute_comp,
+      funext retraction] using restored
+  · exact ScriptJudges.reindex forward
+
+/-! ## Constructing all immediate native answers -/
+
+/-- Every physical row position is scheduled once for each applicable
+instruction form. Candidate order is a finite machine policy. -/
+def instructionInventory (program : Program) : List Instruction :=
+  (List.range program.spaceRules.length).map Instruction.fibre ++
+    (List.range program.routes.length).flatMap (fun route =>
+      (List.range program.spaceRules.length).map (Instruction.beneath route)) ++
+    (List.range program.routes.length).flatMap (fun route =>
+      (List.range program.routeRules.length).map (Instruction.transport route))
+
+@[simp] theorem instructionInventory_reindex
+    (assignment : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    (program : Program) :
+    instructionInventory (Reindex.program assignment program) =
+      instructionInventory program := by
+  simp [instructionInventory, Reindex.program]
+
+/-- Exact candidate count for the finite successor machine. This counts
+scheduled instruction requests, not host time or pattern comparison work. -/
+theorem instructionInventory_length (program : Program) :
+    (instructionInventory program).length =
+      program.spaceRules.length +
+        program.routes.length * program.spaceRules.length +
+        program.routes.length * program.routeRules.length := by
+  simp [instructionInventory, List.length_flatMap, Nat.add_assoc]
+
+theorem instructionInventory_complete {program : Program}
+    {instruction : Instruction} {source target : Pattern}
+    (judged : Instruction.Judges program instruction source target) :
+    instruction ∈ instructionInventory program := by
+  cases judged with
+  | fibre row =>
+      have position := (List.getElem?_eq_some_iff.mp row).1
+      simp only [instructionInventory, List.mem_append, List.mem_map,
+        List.mem_flatMap, List.mem_range]
+      exact Or.inl (Or.inl ⟨_, position, rfl⟩)
+  | beneath routeRow ruleRow _ =>
+      have routePosition := (List.getElem?_eq_some_iff.mp routeRow).1
+      have rulePosition := (List.getElem?_eq_some_iff.mp ruleRow).1
+      simp only [instructionInventory, List.mem_append, List.mem_map,
+        List.mem_flatMap, List.mem_range]
+      exact Or.inl (Or.inr ⟨_, routePosition, _, rulePosition, rfl⟩)
+  | transport routeRow ruleRow _ =>
+      have routePosition := (List.getElem?_eq_some_iff.mp routeRow).1
+      have rulePosition := (List.getElem?_eq_some_iff.mp ruleRow).1
+      simp only [instructionInventory, List.mem_append, List.mem_map,
+        List.mem_flatMap, List.mem_range]
+      exact Or.inr ⟨_, routePosition, _, rulePosition, rfl⟩
+
+/-- Construct native answers from the authored operations, retaining the
+selected instruction and every duplicate endpoint occurrence. -/
+def successors (program : Program) (source : Pattern) : List (Instruction × Pattern) :=
+  (instructionInventory program).filterMap fun instruction =>
+    (instruction.execute program source).map fun target => (instruction, target)
+
+theorem mem_successors_iff (program : Program) (source target : Pattern)
+    (instruction : Instruction) :
+    (instruction, target) ∈ successors program source ↔
+      Instruction.Judges program instruction source target := by
+  constructor
+  · intro member
+    obtain ⟨selected, _, accepted⟩ := List.mem_filterMap.mp member
+    obtain ⟨output, completed, pair⟩ := Option.map_eq_some_iff.mp accepted
+    rcases Prod.mk.inj pair with ⟨rfl, rfl⟩
+    exact (Instruction.execute_iff_judges program _ _ _).mp completed
+  · intro judged
+    apply List.mem_filterMap.mpr
+    exact ⟨instruction, instructionInventory_complete judged,
+      by simp [(Instruction.execute_iff_judges program _ _ _).mpr judged]⟩
+
+/-- The computed native operation has exactly the independently declared
+source outcomes. The target is not restricted before reflection. -/
+theorem successors_exact (program : Program) (source target : Pattern) :
+    (∃ instruction, (instruction, target) ∈ successors program source) ↔
+      Step program source target := by
+  simp only [mem_successors_iff]
+  exact Instruction.exists_judges_iff_step program source target
+
+/-- Full native answer lists commute with split reindexing. Each instruction
+position and multiplicity is retained; no arbitrary target behavior survives
+outside the image. The order is this command machine's inventory policy. -/
+theorem successors_reindex
+    (forward backward : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment)
+    (retraction : ∀ index,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute backward
+        (forward index) = Pattern.bvar index)
+    (program : Program) (source : Pattern) :
+    successors (Reindex.program forward program)
+        (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward source) =
+      (successors program source).map (fun answer =>
+        (answer.1, Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute forward answer.2)) := by
+  simp only [successors, instructionInventory_reindex,
+    Instruction.execute_reindex forward backward retraction]
+  induction instructionInventory program with
+  | nil => rfl
+  | cons instruction rest inductionHypothesis =>
+      simp only [Option.map_map] at inductionHypothesis
+      simp only [List.filterMap_cons]
+      cases Instruction.execute program instruction source <;>
+        simp [inductionHypothesis]
+
+/-- A selected instruction can only emit a command assembled from scoped
+authored fields. This formation theorem is independent of the executable
+successor enumeration. -/
+theorem Instruction.Judges.target_wellScoped {program : Program}
+    {instruction : Instruction} {source target : Pattern} {scope : Nat}
+    (formed : Reindex.WellScoped scope program)
+    (judged : Instruction.Judges program instruction source target) :
+    target.isWellScopedAt scope = true := by
+  cases judged with
+  | fibre row =>
+      have fields := formed.1 _ (List.mem_of_getElem? row)
+      simpa [inSpace, Pattern.isWellScopedAt, Pattern.isWellScopedListAt]
+        using And.intro fields.2.1 fields.2.2.2
+  | beneath _ ruleRow _ =>
+      have fields := formed.1 _ (List.mem_of_getElem? ruleRow)
+      simpa [routeCall, Pattern.isWellScopedAt, Pattern.isWellScopedListAt]
+        using fields.2.2.2
+  | transport routeRow ruleRow _ =>
+      have routeFields := formed.2.1 _ (List.mem_of_getElem? routeRow)
+      have ruleFields := formed.2.2 _ (List.mem_of_getElem? ruleRow)
+      simpa [inSpace, Pattern.isWellScopedAt, Pattern.isWellScopedListAt]
+        using And.intro routeFields.2.2 ruleFields.2.2
 
 #print axioms ProgramEvent.nonempty_iff_step
 #print axioms ProgramPath.nonempty_iff_runs

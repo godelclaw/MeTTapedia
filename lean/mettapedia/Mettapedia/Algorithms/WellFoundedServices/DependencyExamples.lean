@@ -293,6 +293,119 @@ theorem zero_ticks_do_not_begin_work :
       (run sharedGraph 0 1 sharedInitial).status = .invalid ∧
       (run sharedGraph 0 1 sharedInitial).ticks = 0 := by decide
 
+/-! ### One paired interpretation, distinct source units -/
+
+def mixedGraph : Graph :=
+  ⟨[[⟨1, some 1⟩, ⟨2, some 1⟩, ⟨3, none⟩], [⟨4, none⟩, ⟨5, none⟩]]⟩
+
+def mixedCertificate : mixedGraph.catalogue.Acyclic :=
+  mixedGraph.catalogue.acyclic?.get (by decide)
+
+private theorem mixed_leaf_valuation : mixedGraph.sourceValuation mixedCertificate 1 = ⟨2, 1⟩ := by
+  rw [Graph.sourceValuation_eq mixedGraph mixedCertificate 1 (by decide)]
+  rfl
+
+/-- Memoizing the shared successor does not remove either referring equation
+occurrence. The terminal alternative adds work but no extra dependency layer. -/
+theorem mixed_work_depth_valuation : mixedGraph.sourceValuation mixedCertificate 0 = ⟨7, 2⟩ := by
+  rw [Graph.sourceValuation_eq mixedGraph mixedCertificate 0 (by decide)]
+  change mixedGraph.sourceCombine 0
+    [mixedGraph.sourceValuation mixedCertificate 1,
+     mixedGraph.sourceValuation mixedCertificate 1] = ⟨7, 2⟩
+  simp only [mixed_leaf_valuation]
+  rfl
+
+/-- The independent judgment derives the pair without reading the computed
+fold or a traversal cache. -/
+theorem mixed_work_depth_derivation :
+    mixedGraph.catalogue.FoldDerivation mixedGraph.sourceCombine 0 ⟨7, 2⟩ := by
+  have leaf : mixedGraph.catalogue.FoldDerivation mixedGraph.sourceCombine 1 ⟨2, 1⟩ :=
+    Catalogue.FoldDerivation.node (values := []) (by decide) .nil
+  exact Catalogue.FoldDerivation.node (c := mixedGraph.catalogue)
+    (combine := mixedGraph.sourceCombine)
+    (values := [(⟨2, 1⟩ : Mettapedia.Algebra.WorkSpan), ⟨2, 1⟩]) (by decide)
+    (.cons leaf (.cons leaf .nil))
+
+/-- Dependency depth cannot replace the activation budget. Equal successor
+addresses are not permission to collapse their source occurrences. -/
+theorem dependency_depth_is_not_activation_work :
+    mixedGraph.dependencyDepth mixedCertificate 0 = 2 ∧
+    mixedGraph.catalogue.unfoldingWork mixedCertificate
+      (fun node => (mixedGraph.rows node).length) 0 = 7 ∧
+    mixedGraph.dependencyDepth mixedCertificate 0 ≠
+      mixedGraph.catalogue.unfoldingWork mixedCertificate
+        (fun node => (mixedGraph.rows node).length) 0 := by
+  have depth : mixedGraph.dependencyDepth mixedCertificate 0 = 2 := by
+    rw [← Graph.sourceValuation_depth, mixed_work_depth_valuation]
+  have work : mixedGraph.catalogue.unfoldingWork mixedCertificate
+      (fun node => (mixedGraph.rows node).length) 0 = 7 := by
+    rw [← Graph.sourceValuation_work, mixed_work_depth_valuation]
+  refine ⟨depth, work, ?_⟩
+  rw [depth, work]
+  decide
+
+/-- The retained paired traversal realizes the independent source valuation;
+reusing a cached child retains both referring source occurrences. -/
+theorem mixed_paired_runner_source_account :
+    boundPair? (run mixedGraph 100 8 ((init mixedGraph 0).get (by decide)) .pair) =
+      some (mixedGraph.sourceValuation mixedCertificate 0) ∧
+    mixedGraph.sourceValuation mixedCertificate 0 = ⟨7, 2⟩ := by
+  let initial := (init mixedGraph 0).get (by decide)
+  have reported : boundPair? (run mixedGraph 100 8 initial .pair) = some ⟨7, 2⟩ := by decide
+  have sound := initialized_run_sourceValuation mixedGraph 100 0 8 initial (by rfl)
+    ⟨7, 2⟩ mixedCertificate reported
+  refine ⟨?_, mixed_work_depth_valuation⟩
+  rw [← sound.1]
+  exact reported
+
+/-- Depth-only traversal has its own refinement, independently of the paired
+work ceiling. Its result remains two when seven admissions are required. -/
+theorem mixed_depth_runner_source_depth :
+    bound? (run mixedGraph 100 8 ((init mixedGraph 0).get (by decide)) .depth) =
+      some (mixedGraph.dependencyDepth mixedCertificate 0) := by
+  let initial := (init mixedGraph 0).get (by decide)
+  have reported : bound? (run mixedGraph 100 8 initial .depth) = some 2 := by decide
+  have sound := initialized_run_depth mixedGraph 100 0 8 initial (by rfl) 2
+    mixedCertificate reported
+  rw [← sound.1]
+  exact reported
+
+/-- Numerical execution retains two calls to the same successor. The first
+expansion pays three admissions before those calls run; completion pays seven
+without constructing an admission diary or inspecting returned answers. -/
+theorem mixed_numerical_frontier_source_account :
+    ((SourceFrontier.start 0).expand mixedGraph).paid = 3 ∧
+    ((SourceFrontier.start 0).expand mixedGraph).pending = [1, 1] ∧
+    ((SourceFrontier.start 0).resume mixedGraph 3).pending = [] ∧
+    ((SourceFrontier.start 0).resume mixedGraph 3).paid = 7 ∧
+    ((SourceFrontier.start 0).resume mixedGraph 3).paid =
+      mixedGraph.catalogue.unfoldingWork mixedCertificate
+        (fun node => (mixedGraph.rows node).length) 0 := by
+  have closed : ((SourceFrontier.start 0).resume mixedGraph 3).pending = [] := by decide
+  refine ⟨by decide, by decide, closed, by decide, ?_⟩
+  exact SourceFrontier.completed_paid mixedGraph mixedCertificate
+    (mixedGraph.catalogue.unfoldingWork mixedCertificate
+      (fun node => (mixedGraph.rows node).length) 0) 3 (SourceFrontier.start 0)
+    (SourceFrontier.start_accounts mixedGraph mixedCertificate 0) closed
+
+/-- Resumption carries the complete numerical frontier, including both
+pending occurrences of the shared successor, rather than restarting it. -/
+theorem mixed_frontier_resume_complete_state :
+    (SourceFrontier.start 0).resume mixedGraph (1 + 2) =
+      ((SourceFrontier.start 0).resume mixedGraph 1).resume mixedGraph 2 :=
+  SourceFrontier.resume_add mixedGraph 1 2 (SourceFrontier.start 0)
+
+/-- A finite list of pre-transition snapshots is a diagnostic prefix. Its
+last sampled state need not be the completed endpoint; it cannot silently
+stand in for the endpoint retained by an execution-history owner. -/
+theorem mixed_snapshot_prefix_omits_completed_endpoint :
+    ((SourceFrontier.start 0).recorded mixedGraph 3).getLast? =
+      some ((SourceFrontier.start 0).resume mixedGraph 2) ∧
+    ((SourceFrontier.start 0).resume mixedGraph 2).paid = 5 ∧
+    ((SourceFrontier.start 0).resume mixedGraph 3).paid = 7 ∧
+    (SourceFrontier.start 0).resume mixedGraph 2 ≠
+      (SourceFrontier.start 0).resume mixedGraph 3 := by decide
+
 end OccurrenceTraversal
 
 end Mettapedia.Algorithms.WellFoundedServices.DependencyExamples

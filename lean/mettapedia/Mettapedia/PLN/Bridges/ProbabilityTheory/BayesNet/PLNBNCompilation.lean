@@ -1,5 +1,5 @@
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination
 import Mettapedia.ProbabilityTheory.BayesianNetworks.VEBridge
 import Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparation

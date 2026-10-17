@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaData
-import Mettapedia.Languages.MeTTa.HE.Spec.Eval
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal
 
 /-!
 # The data boundary of the generated MeTTa program
@@ -32,12 +32,10 @@ theorem data_evaluation_iff (space : Space) (dispatch : GroundedDispatch)
     EvalRel space dispatch live (encode term) Atom.atomType bindings result typing ↔
       result = (encode term, bindings) := by
   constructor
-  · rintro ⟨evaluated, _⟩
-    cases evaluated <;> simp_all
+  · intro evaluated
+    exact (BindingFrame.historicalResult_inj (left := result)
+      (right := (encode term, bindings))).mp (Minimal.full_atom_expected_exact.mp evaluated)
   · rintro rfl
-    refine ⟨EvalAtomRawRel.typePass _ _ _ _ ?_ (encoded_data_meta_type term) (Or.inl rfl), ?_⟩
-    · exact fun emptyOrError => emptyOrError.elim
-        (encoded_data_is_not_empty term) (encoded_data_is_not_error term)
-    · exact fun error => (encoded_data_is_not_error term error).elim
+    exact Minimal.full_atom_expected_exact.mpr rfl
 
 end Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaData

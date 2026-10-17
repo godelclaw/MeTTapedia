@@ -164,16 +164,16 @@ theorem requestKey_injective : Function.Injective requestKey := by
   have decoded := congrArg RequestKey.decode same
   simpa only [requestKey_decode] using decoded
 
-def conversionKey : Conversion → Bool × EquationReceipt
-  | .forward receipt => (true, equationReceipt receipt)
-  | .reverse receipt => (false, equationReceipt receipt)
+def conversionKey : Conversion → Bool × EquationReplayRecord
+  | .forward receipt => (true, equationReplayRecord receipt)
+  | .reverse receipt => (false, equationReplayRecord receipt)
 
 structure Manifest where
   request : RequestKey
   representatives : List Pattern
-  occurrences : List (Pattern × RuleReceipt)
-  conversions : List (List (Bool × EquationReceipt))
-  edges : List (Pattern × EquationReceipt)
+  occurrences : List (Pattern × RuleReplayRecord)
+  conversions : List (List (Bool × EquationReplayRecord))
+  edges : List (Pattern × EquationReplayRecord)
   ruleArchives : List (Pattern × (Nat × SiteData))
   equationArchives : List (Pattern × (Nat × SiteData))
   deriving DecidableEq
@@ -209,13 +209,13 @@ theorem occurrence_coverage {request : Request} {state : State request} {manifes
       (Equation request.plan request.bound request.expected) request.root source)
     (receipt : GeneralRuleJobs.Receipt)
     (valid : receipt.Valid request.plan request.bound request.expected source) :
-    (source, ruleReceipt receipt) ∈ manifest.occurrences := by
+    (source, ruleReplayRecord receipt) ∈ manifest.occurrences := by
   obtain ⟨same, certified⟩ := (check_iff _ _ _).mp checked
   obtain ⟨answer, member, representative, firing⟩ :=
     certified_physical_occurrence admitted certified source related receipt valid
   rw [same]
   exact List.mem_map.mpr ⟨answer, member, by
-    simp only [occurrence, representative, firing]⟩
+    simp only [replayOccurrence, representative, firing]⟩
 
 /-- Endpoint coverage is stated separately and allows only the independently
 specified equation equivalence after each retained physical firing. -/
@@ -229,12 +229,12 @@ theorem endpoint_coverage {request : Request} {state : State request} {manifest 
   change (∃ key ∈ answerKeys request state, Relation.EqvGen
     (Equation request.plan request.bound request.expected) key.2.target target) ↔ _
   rw [← certified_successor_classes admitted certified target]
-  simp only [answerKeys, occurrence, List.mem_map]
+  simp only [answerKeys, replayOccurrence, List.mem_map]
   constructor
   · rintro ⟨key, ⟨answer, member, equal⟩, related⟩
     subst key
     exact ⟨answer, member, related⟩
   · rintro ⟨answer, member, related⟩
-    exact ⟨occurrence answer.val, ⟨answer, member, rfl⟩, related⟩
+    exact ⟨replayOccurrence answer.val, ⟨answer, member, rfl⟩, related⟩
 
 end Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceFrontier.CoverageClaims

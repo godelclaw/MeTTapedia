@@ -65,7 +65,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
     instantiateRule?_eq_some_iff_application)
 open Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves (CompactProof check checkChildren)
 open Mettapedia.GSLT.LanguageDef.Authored
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-! ## The shared checker, one node at a time -/

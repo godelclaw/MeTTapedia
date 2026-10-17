@@ -15,6 +15,22 @@ namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 open Mettapedia.Languages.MeTTa.OSLFCore
 open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
 
+mutual
+private theorem atomDepth_le_scan : (atom : Atom) → atomDepth atom ≤ Bindings.atomScanFuel atom
+  | .symbol _ => by simp [atomDepth,Bindings.atomScanFuel]
+  | .var _ => by simp [atomDepth,Bindings.atomScanFuel]
+  | .grounded _ => by simp [atomDepth,Bindings.atomScanFuel]
+  | .expression atoms => Nat.add_le_add_right (listDepth_le_scan atoms) 1
+private theorem listDepth_le_scan : (atoms : List Atom) → listDepth atoms ≤ Bindings.atomScanFuel.atomListScanFuel atoms
+  | [] => Nat.le_refl 0
+  | atom :: atoms => max_le_max (atomDepth_le_scan atom) (listDepth_le_scan atoms)
+end
+private theorem structural_application_depth (bindings : Bindings) (atom : Atom) :
+    atomDepth atom + 2 ≤ bindings.resolutionFuel atom := by
+  have bound := atomDepth_le_scan atom
+  simp only [Bindings.resolutionFuel]
+  omega
+
 /-- Conformance-facing observation predicate for the repaired visible-avoid
 equation interface: an HE equation step is paired with the concrete LeaTTa
 `queryOp` item that observes the same successor up to α-equivalence. -/
@@ -259,6 +275,8 @@ theorem equation_match_queryOp_visible_successor_package_of_transport
     (h_not_grounded : HeadNotExecutable d (.expression es))
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query : (rhs, qb) ∈ queryEquations space (.expression es) fuel)
+    (h_scoped : (rhs, qb) ∈ queryEquationsAvoiding
+      (equationScope [] (.expression es) Atom.undefinedType Bindings.empty) space (.expression es) fuel)
     (h_no_loop : qb.hasLoop = false)
     (htransport : EquationMatchVisibleItemTransport
       space (.expression es) rhs qb fuel gt prev counter) :
@@ -270,19 +288,17 @@ theorem equation_match_queryOp_visible_successor_package_of_transport
           { counter := counter, world := Metta.Minimal.World.empty }
           prev (toLeaTTaAtom (.expression es)) Metta.Bindings.empty).1 ∧
       Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  refine ⟨HESmallStep.equation_match h_not_special h_not_grounded h_query h_no_loop, ?_⟩
+  refine ⟨HESmallStep.equation_match h_not_special h_not_grounded h_scoped h_no_loop, ?_⟩
   exact
     equation_match_queryOp_visible_successor_of_transport
       (space := space) (d := d) (fuel := fuel) (es := es) (rhs := rhs)
       (qb := qb) (gt := gt) (k := k) prev counter
       h_not_special h_not_grounded hk h_query h_no_loop htransport
 
-/-- No-var package at the same semantic frontier: once the visible transport is
-available and the HE witness carries no variable-valued assignments, the
-loop-freedom premise for `HESmallStep.equation_match` is derivable rather than
-assumed. This is the honest package theorem the repaired restricted bridge
-should target. -/
-theorem equation_match_queryOp_visible_successor_package_of_transport_noVar
+/-- The actual scoped-query witness derives loop freedom at the visible
+transport boundary. No restriction to non-variable assignment payloads is
+needed. -/
+theorem equation_match_queryOp_visible_successor_package_of_scoped_transport
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
     {es : List Atom} {rhs : Atom} {qb : Bindings}
     {gt : Metta.GroundingTable} {k : String}
@@ -291,7 +307,8 @@ theorem equation_match_queryOp_visible_successor_package_of_transport_noVar
     (h_not_grounded : HeadNotExecutable d (.expression es))
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query : (rhs, qb) ∈ queryEquations space (.expression es) fuel)
-    (hno : NoVarAssignmentValues qb)
+    (h_scoped : (rhs, qb) ∈ queryEquationsAvoiding
+      (equationScope [] (.expression es) Atom.undefinedType Bindings.empty) space (.expression es) fuel)
     (htransport : EquationMatchVisibleItemTransport
       space (.expression es) rhs qb fuel gt prev counter) :
     HESmallStep space d fuel (.expression es) (qb.applyFull rhs fuel) ∧
@@ -306,8 +323,8 @@ theorem equation_match_queryOp_visible_successor_package_of_transport_noVar
     equation_match_queryOp_visible_successor_package_of_transport
       (space := space) (d := d) (fuel := fuel) (es := es) (rhs := rhs)
       (qb := qb) (gt := gt) (k := k) prev counter
-      h_not_special h_not_grounded hk h_query
-      (NoVarAssignmentValues.hasLoop_false hno) htransport
+      h_not_special h_not_grounded hk h_query h_scoped
+      (queryEquationsAvoiding_hasLoop_false h_scoped) htransport
 
 /-!
 The previous theorem closes the final MOPS membership step once an exact raw
@@ -328,6 +345,16 @@ private theorem queryEquations_freshRhsBoundary :
     queryEquations freshRhsBoundarySpace (.expression [.symbol "q"]) 10 =
       [(.var "z#0", Bindings.empty)] := by
   rfl
+
+private theorem queryEquationsAvoiding_freshRhsBoundary :
+    queryEquationsAvoiding [] freshRhsBoundarySpace (.expression [.symbol "q"]) 10 =
+      [(.var "z#0", Bindings.empty)] := by
+  rfl
+
+private theorem freshRhsBoundary_cover :
+    CoversEvaluation [] [] (.expression [.symbol "q"]) Atom.undefinedType Bindings.empty := by
+  intro name h
+  simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h
 
 private theorem queryEquationsAgainstVisible_freshRhsBoundary :
     queryEquationsAgainstVisible freshRhsBoundarySpace (.expression [.symbol "q"]) 10 =
@@ -834,7 +861,8 @@ def LeaTTaEquationMettaCallStep
     LeaTTaVisibleEquationStepObservation space d fuel src visibleDst gt prev counter ∧
     isErrorAtom src = false ∧
     HeadNotExecutable d src ∧
-    (rhs, queryBindings) ∈ queryEquations space src fuel ∧
+    (∃ avoid, CoversEvaluation avoid [] src type_ inputBindings ∧
+      (rhs, queryBindings) ∈ queryEquationsAvoiding avoid space src fuel) ∧
     merged ∈ mergeBindings queryBindings inputBindings fuel ∧
     merged.hasLoop = false ∧
     EvalAtom space d (merged.applyFull rhs fuel) type_ merged result
@@ -851,7 +879,9 @@ theorem observedMettaCall_of_equation_match
     (hobs : LeaTTaVisibleEquationStepObservation space d fuel src dst gt prev counter)
     (h_not_error : isErrorAtom src = false)
     (h_not_grounded : HeadNotExecutable d src)
-    (h_query : (rhs, queryBindings) ∈ queryEquations space src fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] src type_ inputBindings)
+    (h_query : (rhs, queryBindings) ∈ queryEquationsAvoiding avoid space src fuel)
     (h_merge : merged ∈ mergeBindings queryBindings inputBindings fuel)
     (h_no_loop : merged.hasLoop = false)
     (h_recurse :
@@ -862,7 +892,7 @@ theorem observedMettaCall_of_equation_match
   refine ⟨hobs, ?_⟩
   apply MettaCall.equation_match (fuel := fuel)
     (rhs := rhs) (queryBindings := queryBindings) (merged := merged)
-    (h_not_error := h_not_error)
+    (h_not_error := h_not_error) (h_cover := h_cover)
   · cases src with
     | symbol s =>
         trivial
@@ -890,11 +920,11 @@ theorem leattaEquationMettaCallStep_sound
     LeaTTaEquationMettaCallStep space d fuel src type_ inputBindings result →
       MettaCall space d src type_ inputBindings result := by
   rintro ⟨rhs, queryBindings, merged, _visibleDst, _gt, _prev, _counter,
-    _hobs, h_not_error, h_not_grounded, h_query, h_merge, h_no_loop,
+    _hobs, h_not_error, h_not_grounded, ⟨avoid, h_cover, h_query⟩, h_merge, h_no_loop,
     h_recurse⟩
   apply MettaCall.equation_match (fuel := fuel)
     (rhs := rhs) (queryBindings := queryBindings) (merged := merged)
-    (h_not_error := h_not_error)
+    (h_not_error := h_not_error) (h_cover := h_cover)
   · cases src with
     | symbol s =>
         trivial
@@ -925,7 +955,7 @@ def LeaTTaNoMatchMettaCallStep
     LeaTTaNoMatchQueryOpHit space src inputBindings gt prev counter ∧
     isErrorAtom src = false ∧
     HeadNotExecutable d src ∧
-    queryEquations space src fuel = []
+    queryEquationsAvoiding (equationScope [] src _type inputBindings) space src fuel = []
 
 theorem leattaNoMatchMettaCallStep_sound
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
@@ -940,24 +970,28 @@ theorem leattaNoMatchMettaCallStep_sound
       exact MettaCall.no_match
         (space := space) (dispatch := d)
         (atom := .symbol s) (type_ := type_) (b := inputBindings)
-        (fuel := fuel) h_not_error trivial h_no_eqs
+        (fuel := fuel) h_not_error trivial
+        (equationScope_coversEvaluation [] _ type_ inputBindings) h_no_eqs
   | var v =>
       exact MettaCall.no_match
         (space := space) (dispatch := d)
         (atom := .var v) (type_ := type_) (b := inputBindings)
-        (fuel := fuel) h_not_error trivial h_no_eqs
+        (fuel := fuel) h_not_error trivial
+        (equationScope_coversEvaluation [] _ type_ inputBindings) h_no_eqs
   | grounded g =>
       exact MettaCall.no_match
         (space := space) (dispatch := d)
         (atom := .grounded g) (type_ := type_) (b := inputBindings)
-        (fuel := fuel) h_not_error trivial h_no_eqs
+        (fuel := fuel) h_not_error trivial
+        (equationScope_coversEvaluation [] _ type_ inputBindings) h_no_eqs
   | expression es =>
       cases es with
       | nil =>
           exact MettaCall.no_match
             (space := space) (dispatch := d)
             (atom := .expression []) (type_ := type_) (b := inputBindings)
-            (fuel := fuel) h_not_error trivial h_no_eqs
+            (fuel := fuel) h_not_error trivial
+            (equationScope_coversEvaluation [] _ type_ inputBindings) h_no_eqs
       | cons op rest =>
           have h_not_grounded_spec :
               d.isExecutable op = false ∧
@@ -968,7 +1002,7 @@ theorem leattaNoMatchMettaCallStep_sound
             (space := space) (dispatch := d)
             (atom := .expression (op :: rest)) (type_ := type_)
             (b := inputBindings) (fuel := fuel)
-            h_not_error h_not_grounded_spec h_no_eqs
+            h_not_error h_not_grounded_spec (equationScope_coversEvaluation [] _ type_ inputBindings) h_no_eqs
 
 /-- The currently proved non-ground LeaTTa call fragment: equation hits and
 no-match observations. This is still not a complete LeaTTa call relation; it
@@ -1173,8 +1207,7 @@ theorem leattaUnifyMettaCallStep_success_of_transported_match_merge
     (hloopLea : Metta.Bindings.hasLoop (toLeaTTaMatchBindings merged) = false)
     (hno : NoVarAssignmentValues merged)
     (hkeys : AssignmentsNodup merged)
-    (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings merged))
-    (hdepth : atomDepth thenBranch + 2 ≤ 100) :
+    (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings merged)) :
     LeaTTaUnifyMettaCallStep space d fuel
       (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
       type_ inputBindings
@@ -1185,7 +1218,8 @@ theorem leattaUnifyMettaCallStep_success_of_transported_match_merge
           (toLeaTTaAtom thenBranch) := by
     simpa [Bindings.applyDefault] using
       toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
-        hno hkeys hfresh 100 thenBranch hdepth
+        hno hkeys hfresh (merged.resolutionFuel thenBranch) thenBranch
+          (structural_application_depth merged thenBranch)
   have hhit :
       LeaTTaUnifyOpHit target pattern thenBranch elseBranch inputBindings
         (merged.applyDefault thenBranch, merged) prev := by
@@ -1232,8 +1266,7 @@ theorem leattaUnifyMettaCallStepExt_success_of_transported_match_merge
     (hbindingsEq : LeaBindingsLookupEq emittedMerged (toLeaTTaMatchBindings merged))
     (hno : NoVarAssignmentValues merged)
     (hkeys : AssignmentsNodup merged)
-    (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings merged))
-    (hdepth : atomDepth thenBranch + 2 ≤ 100) :
+    (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings merged)) :
     LeaTTaUnifyMettaCallStepExt space d fuel
       (.expression [.symbol "unify", target, pattern, thenBranch, elseBranch])
       type_ inputBindings
@@ -1244,7 +1277,8 @@ theorem leattaUnifyMettaCallStepExt_success_of_transported_match_merge
           (toLeaTTaAtom thenBranch) := by
     simpa [Bindings.applyDefault] using
       toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
-        hno hkeys hfresh 100 thenBranch hdepth
+        hno hkeys hfresh (merged.resolutionFuel thenBranch) thenBranch
+          (structural_application_depth merged thenBranch)
   have hinstRuntime :
       Metta.instantiate emittedMerged (toLeaTTaAtom thenBranch) =
         Metta.instantiate (toLeaTTaMatchBindings merged)
@@ -1320,8 +1354,7 @@ groundness premise, rather than supplied as side conditions. -/
 theorem leattaUnifyMettaCallStep_success_ground_var_empty_seed
     {space : Space} {d : GroundedDispatch} {n : Nat}
     {target thenBranch elseBranch type_ : Atom} {v : String}
-    (hground : GroundAtom target)
-    (hdepth : atomDepth thenBranch + 2 ≤ 100) :
+    (hground : GroundAtom target) :
     LeaTTaUnifyMettaCallStep space d (n + 1)
       (.expression [.symbol "unify", target, .var v, thenBranch, elseBranch])
       type_ Bindings.empty
@@ -1412,7 +1445,6 @@ theorem leattaUnifyMettaCallStep_success_ground_var_empty_seed
       (type_ := type_) (inputBindings := Bindings.empty)
       (matchBindings := merged) (merged := merged) (prev := [])
       hmatchHE hmergeHE hloopHE hmatchLea hmergeLea hloopLea hno hkeys hfresh
-      hdepth
 
 /-- Concrete non-empty seed used to expose the binding-order boundary between
 HE raw `unify` results and LeaTTa's runtime merge list. -/
@@ -1621,7 +1653,7 @@ theorem seededUnifyOrder_leattaUnifyMettaCallStepExt_counter0 :
       (runtimeMatchBindings := toLeaTTaMatchBindings seededUnifyOrderMatch)
       (emittedMerged := seededUnifyOrderLeaMerged)
       hmatchHE hmergeHE hloopHE hmatchLea hmergeLea hloopLea hbindingsEq
-      hno hkeys hfresh (by simp [atomDepth])
+      hno hkeys hfresh
   have applied : seededUnifyOrderHEMerged.applyDefault (.var "x") = .symbol "a" := by
     decide +kernel
   simpa only [applied] using hstep
@@ -1688,14 +1720,15 @@ theorem emptySpace_unifyVarSymbol_leattaUnifyMettaCallStep_counter0 :
         .var "x", .symbol "else"])
       Atom.undefinedType Bindings.empty
       (.symbol "a", Bindings.empty.assign "x" (.symbol "a")) := by
-  simpa [Bindings.applyDefault, Bindings.apply, Bindings.resolve,
+  simpa [Bindings.applyDefault, Bindings.resolutionFuel, Bindings.resolutionValueDepth,
+    Bindings.atomScanFuel, Bindings.boundVars, Bindings.apply, Bindings.resolve,
     Bindings.resolveAtomAux, Bindings.hasAssignedVar, Bindings.hasAssignedVarAux,
     Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup] using
     leattaUnifyMettaCallStep_success_ground_var_empty_seed
       (space := Space.empty) (d := GroundedDispatch.none) (n := 9)
       (target := .symbol "a") (v := "x") (thenBranch := .var "x")
       (elseBranch := .symbol "else") (type_ := Atom.undefinedType)
-      (GroundAtom.symbol "a") (by simp [atomDepth])
+      (GroundAtom.symbol "a")
 
 /-- The currently proved call fragment: equation hits, no-match observations,
 and primitive `unify` raw result/fallback observations. -/
@@ -1783,21 +1816,24 @@ theorem leattaEquationMettaCallStep_of_visible_observation_empty_input_result
       LeaTTaVisibleEquationStepObservation space d fuel src visibleDst gt prev counter)
     (h_not_error : isErrorAtom src = false)
     (h_not_grounded : HeadNotExecutable d src)
-    (h_query_public : (rhs, qb) ∈ queryEquations space src fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] src type_ Bindings.empty)
+    (h_query_public : (rhs, qb) ∈
+      queryEquationsAvoiding avoid space src fuel)
     (h_no_loop : qb.hasLoop = false)
     (h_recurse : EvalAtom space d (qb.applyFull rhs fuel) type_ qb result) :
     LeaTTaEquationMettaCallStep
       space d fuel src type_ Bindings.empty result := by
   cases fuel with
   | zero =>
-      simp [queryEquations] at h_query_public
+      simp [queryEquationsAvoiding] at h_query_public
   | succ n =>
       have h_merge : qb ∈ mergeBindings qb Bindings.empty (n + 1) := by
         rw [mergeBindings_empty_right qb n]
         simp
       exact
         ⟨rhs, qb, qb, visibleDst, gt, prev, counter, hobs, h_not_error,
-          h_not_grounded, h_query_public, h_merge, h_no_loop, h_recurse⟩
+          h_not_grounded, ⟨avoid, h_cover, h_query_public⟩, h_merge, h_no_loop, h_recurse⟩
 
 /-- Step-shaped bridge from an already equality-aware visible LeaTTa
 observation to the engine-call fragment. This is the non-shortcut constructor:
@@ -1811,7 +1847,10 @@ theorem leattaEquationMettaCallStep_of_visible_observation_empty_input
     (hobs : LeaTTaVisibleEquationStepObservation space d fuel src dst gt prev counter)
     (h_not_error : isErrorAtom src = false)
     (h_not_grounded : HeadNotExecutable d src)
-    (h_query_public : (rhs, qb) ∈ queryEquations space src fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] src type_ Bindings.empty)
+    (h_query_public : (rhs, qb) ∈
+      queryEquationsAvoiding avoid space src fuel)
     (h_no_loop : qb.hasLoop = false)
     (h_recurse :
       EvalAtom space d (qb.applyFull rhs fuel) type_ qb (dst, outputBindings)) :
@@ -1819,7 +1858,7 @@ theorem leattaEquationMettaCallStep_of_visible_observation_empty_input
       space d fuel src type_ Bindings.empty (dst, outputBindings) := by
   exact
     leattaEquationMettaCallStep_of_visible_observation_empty_input_result
-      hobs h_not_error h_not_grounded h_query_public h_no_loop h_recurse
+      hobs h_not_error h_not_grounded h_cover h_query_public h_no_loop h_recurse
 
 /-- Merge-parametric bridge from an equality-aware visible LeaTTa observation to
 the engine-call fragment. This is the binding-threaded version of
@@ -1835,7 +1874,10 @@ theorem leattaEquationMettaCallStep_of_visible_observation_with_merge
     (hobs : LeaTTaVisibleEquationStepObservation space d fuel src dst gt prev counter)
     (h_not_error : isErrorAtom src = false)
     (h_not_grounded : HeadNotExecutable d src)
-    (h_query_public : (rhs, queryBindings) ∈ queryEquations space src fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] src type_ inputBindings)
+    (h_query_public : (rhs, queryBindings) ∈
+      queryEquationsAvoiding avoid space src fuel)
     (h_merge : merged ∈ mergeBindings queryBindings inputBindings fuel)
     (h_no_loop : merged.hasLoop = false)
     (h_recurse :
@@ -1845,7 +1887,7 @@ theorem leattaEquationMettaCallStep_of_visible_observation_with_merge
       space d fuel src type_ inputBindings (dst, outputBindings) := by
   exact
     ⟨rhs, queryBindings, merged, dst, gt, prev, counter,
-      hobs, h_not_error, h_not_grounded, h_query_public, h_merge,
+      hobs, h_not_error, h_not_grounded, ⟨avoid, h_cover, h_query_public⟩, h_merge,
       h_no_loop, h_recurse⟩
 
 /-- Parametric equality-aware equation-call bridge for the repaired visible
@@ -1864,8 +1906,10 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_empty_input
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ Bindings.empty)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space (.expression es) rhs qb fuel gt prev counter)
     (h_recurse :
@@ -1896,8 +1940,8 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_empty_input
       (gt := gt)
       (prev := prev)
       (counter := counter)
-      hobs h_not_error h_not_grounded h_query_public
-      (queryEquations_hasLoop_false h_query_public)
+      hobs h_not_error h_not_grounded h_cover h_query_public
+      (queryEquationsAvoiding_hasLoop_false h_query_public)
       h_recurse
 
 /-- Binding-threaded equality-aware equation-call bridge for the repaired
@@ -1915,8 +1959,10 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_with_merge
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space (.expression es) rhs qb fuel gt prev counter)
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
@@ -1951,7 +1997,7 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_with_merge
       (gt := gt)
       (prev := prev)
       (counter := counter)
-      hobs h_not_error h_not_grounded h_query_public h_merge h_no_loop
+      hobs h_not_error h_not_grounded h_cover h_query_public h_merge h_no_loop
       h_recurse
 
 /-- Continuation-aware bridge from an equality-aware visible LeaTTa observation
@@ -1969,8 +2015,10 @@ theorem leattaEquationMettaCallStep_of_visible_observation_with_merge_final
         space d fuel src visibleDst gt prev counter)
     (h_not_error : isErrorAtom src = false)
     (h_not_grounded : HeadNotExecutable d src)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] src type_ inputBindings)
     (h_query_public :
-      (rhs, queryBindings) ∈ queryEquations space src fuel)
+      (rhs, queryBindings) ∈ queryEquationsAvoiding avoid space src fuel)
     (h_merge : merged ∈ mergeBindings queryBindings inputBindings fuel)
     (h_no_loop : merged.hasLoop = false)
     (h_recurse :
@@ -1979,7 +2027,7 @@ theorem leattaEquationMettaCallStep_of_visible_observation_with_merge_final
       space d fuel src type_ inputBindings finalResult := by
   exact
     ⟨rhs, queryBindings, merged, visibleDst, gt, prev, counter,
-      hobs, h_not_error, h_not_grounded, h_query_public, h_merge,
+      hobs, h_not_error, h_not_grounded, ⟨avoid, h_cover, h_query_public⟩, h_merge,
       h_no_loop, h_recurse⟩
 
 /-- Continuation-aware equality bridge for the repaired visible query interface.
@@ -1998,8 +2046,10 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_with_merge_final
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space (.expression es) rhs qb fuel gt prev counter)
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
@@ -2032,7 +2082,7 @@ theorem leattaEquationMettaCallStep_of_transport_againstVisible_with_merge_final
       (prev := prev)
       (counter := counter)
       (finalResult := finalResult)
-      hobs h_not_error h_not_grounded h_query_public h_merge h_no_loop
+      hobs h_not_error h_not_grounded h_cover h_query_public h_merge h_no_loop
       h_recurse
 
 /-- Continuation-aware bridge from a concrete LeaTTa `queryOp` hit on the
@@ -2050,8 +2100,10 @@ theorem leattaEquationMettaCallStep_of_queryOp_hit_againstVisible_with_merge_fin
     (h_not_grounded : HeadNotExecutable d (.expression es))
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (hhit :
       LeaTTaEquationQueryOpHit
         space fuel (.expression es) (qb.applyFull rhs fuel) gt prev counter)
@@ -2085,7 +2137,7 @@ theorem leattaEquationMettaCallStep_of_queryOp_hit_againstVisible_with_merge_fin
       (prev := prev)
       (counter := counter)
       (finalResult := finalResult)
-      hobs h_not_error h_not_grounded h_query_public h_merge h_no_loop
+      hobs h_not_error h_not_grounded h_cover h_query_public h_merge h_no_loop
       h_recurse
 
 /-- Continuation-aware bridge from the local freshened-item transport obligation
@@ -2102,8 +2154,10 @@ theorem leattaEquationMettaCallStep_of_freshened_item_transport_againstVisible_w
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (hitemTransport : FreshenedQueryOpItemTransportAgainstVisible
       space (.expression es) rhs qb fuel gt prev counter)
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
@@ -2128,7 +2182,7 @@ theorem leattaEquationMettaCallStep_of_freshened_item_transport_againstVisible_w
       (counter := counter)
       (finalResult := finalResult)
       h_not_special h_not_error h_not_grounded h_query_visible
-      h_query_public
+      h_cover h_query_public
       (leattaEquationQueryOpHit_of_freshened_item_transport_againstVisible
         (space := space) (src := .expression es) (rhs := rhs)
         (qb := qb) (fuel := fuel) (gt := gt) (prev := prev)
@@ -2150,8 +2204,10 @@ theorem leattaEquationMettaCallStep_of_freshened_variable_item_transport_against
     (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) fuel)
+      queryEquationsAvoiding avoid space (.expression es) fuel)
     (hvarTransport : FreshenedVariableQueryOpItemTransportAgainstVisible
       space (.expression es) rhs qb fuel gt prev counter)
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
@@ -2176,7 +2232,7 @@ theorem leattaEquationMettaCallStep_of_freshened_variable_item_transport_against
       (counter := counter)
       (finalResult := finalResult)
       h_not_special h_not_error h_not_grounded h_query_visible
-      h_query_public
+      h_cover h_query_public
       (leattaEquationQueryOpHit_of_freshened_variable_item_transport_againstVisible
         (space := space) (src := .expression es) (rhs := rhs)
         (qb := qb) (fuel := fuel) (gt := gt) (prev := prev)
@@ -2198,8 +2254,10 @@ theorem leattaEquationMettaCallStep_of_instantiated_item_againstVisible_empty_in
     (h_not_grounded : HeadNotExecutable d (.expression es))
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) (n + 1))
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ Bindings.empty)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) (n + 1))
+      queryEquationsAvoiding avoid space (.expression es) (n + 1))
     (heq : qb.equalities = [])
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings qb))
     (hdepth : atomDepth rhs + 2 ≤ n + 1)
@@ -2232,7 +2290,8 @@ theorem leattaEquationMettaCallStep_of_instantiated_item_againstVisible_empty_in
     simp
   exact
     ⟨rhs, qb, qb, qb.applyFull rhs (n + 1), gt, prev, counter, hobs, h_not_error, h_not_grounded,
-      h_query_public, h_merge, queryEquationsAgainstVisible_hasLoop_false h_query_visible,
+      ⟨avoid, h_cover, h_query_public⟩, h_merge,
+      queryEquationsAgainstVisible_hasLoop_false h_query_visible,
       h_recurse⟩
 
 /-- Empty-input observed-call wrapper for the repaired visible-avoid equation
@@ -2250,8 +2309,10 @@ theorem observedMettaCall_of_instantiated_item_againstVisible_empty_input
     (h_not_grounded : HeadNotExecutable d (.expression es))
     (h_query_visible : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) (n + 1))
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression es) type_ Bindings.empty)
     (h_query_public : (rhs, qb) ∈
-      queryEquations space (.expression es) (n + 1))
+      queryEquationsAvoiding avoid space (.expression es) (n + 1))
     (heq : qb.equalities = [])
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings qb))
     (hdepth : atomDepth rhs + 2 ≤ n + 1)
@@ -2294,7 +2355,7 @@ theorem observedMettaCall_of_instantiated_item_againstVisible_empty_input
       (merged := qb)
       (outputBindings := outputBindings)
       (gt := gt) (prev := prev) (counter := counter)
-      hobs h_not_error h_not_grounded h_query_public h_merge
+      hobs h_not_error h_not_grounded h_cover h_query_public h_merge
       (queryEquationsAgainstVisible_hasLoop_false h_query_visible)
       h_recurse
 
@@ -2308,11 +2369,15 @@ theorem freshRhsBoundary_mettaCall_fresh_rhs :
     (rhs := .var "z#0")
     (queryBindings := Bindings.empty)
     (merged := Bindings.empty)
+    (avoid := [])
   case h_not_error => rfl
   case h_not_grounded =>
     simp [GroundedDispatch.none]
+  case h_cover =>
+    intro name h
+    simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h
   case h_query =>
-    simp [queryEquations_freshRhsBoundary]
+    decide
   case h_merge =>
     decide
   case h_no_loop =>
@@ -2349,7 +2414,7 @@ theorem freshRhsBoundary_observed_mettaCall_counter5
       (freshRhsBoundary_againstVisible_observation_counter5 gt)
       rfl
       (by simp [HeadNotExecutable, GroundedDispatch.none])
-      (by simp [queryEquations_freshRhsBoundary])
+      freshRhsBoundary_cover (by simp [queryEquationsAvoiding_freshRhsBoundary])
       (by decide)
       rfl
       (by
@@ -2386,7 +2451,7 @@ theorem freshRhsBoundary_leattaEquationMettaCallStep_counter5
       (by simp [HeadNotExecutable, GroundedDispatch.none])
       (by simp [toLeaTTaAtom, Metta.Minimal.headKey])
       (by simp [queryEquationsAgainstVisible_freshRhsBoundary])
-      (by simp [queryEquations_freshRhsBoundary])
+      freshRhsBoundary_cover (by simp [queryEquationsAvoiding_freshRhsBoundary])
       (freshRhsBoundary_FreshenedQueryOpItemTransportAgainstVisible_counter5 gt)
       (by decide)
       rfl
@@ -2487,18 +2552,14 @@ theorem groundObservedCall_observed_mettaCall_counter5
       (gt := gt)
       (prev := [])
       (counter := 5)
+      (avoid := [])
       (groundObservedCall_queryOp_visible_successor_counter5 gt)
       rfl
       (by simp [HeadNotExecutable, GroundedDispatch.none])
       (by
-        have hqueryAgainst : (.symbol "bar", Bindings.empty) ∈
-            queryEquationsAgainstVisible groundObservedCallSpace
-              (.expression [.symbol "foo"]) 10 := by
-          simp [queryEquationsAgainstVisible_groundObservedCall]
-        exact
-          queryEquationsAgainstVisible_single_ground_rule_mem_queryEquations
-            groundObservedCall_lhs_ground (GroundAtom.symbol "bar")
-            hqueryAgainst)
+        intro name h
+        simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h)
+      (by decide)
       (by decide)
       rfl
       (by
@@ -2758,25 +2819,19 @@ theorem queryEquationsAgainstVisible_unaryIdentity_counter0_mem_atFuel
     simp [collectVars, collectVars.collectVarsList]
   have hfresh :=
     freshenEquationAgainst_unaryIdentity_counter0_atFuel head var extraFuel
-  have hloop : (unaryIdentityBindings var value).hasLoop = false :=
-    NoVarAssignmentValues.hasLoop_false
-      (noVarAssignmentValues_unaryIdentity var value)
   have hloopRaw :
       ({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)]
         , equalities := [] } : Bindings).hasLoop = false := by
-    simpa [unaryIdentityBindings, unaryIdentityFresh0, Bindings.assign,
-      Bindings.isBound, Bindings.lookup, Bindings.empty] using hloop
+    apply Bindings.hasLoop_false_of_assignment_vars_nil
+    intro entry member
+    have same := List.mem_singleton.mp member
+    subst entry
+    rfl
   simp [queryEquationsAgainstVisible, unaryIdentitySpace, Space.ofList,
     havoid, hfresh, matchAtoms, matchAtomsList, mergeBindings, getMetaType,
     Atom.expressionType, Atom.symbolType, Atom.variableType,
     unaryIdentityBindings, unaryIdentityFresh0, Bindings.assign,
-    Bindings.isBound, Bindings.lookup, Bindings.empty, Bindings.hasLoop]
-  have hloopFrom :
-      Bindings.hasLoop.hasLoopFrom
-        ({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)]
-          , equalities := [] } : Bindings)
-        (var ++ "#" ++ Nat.repr 0) [var ++ "#" ++ Nat.repr 0] 100 = false := by
-    simpa [Bindings.hasLoop] using hloopRaw
+    Bindings.isBound, Bindings.lookup, Bindings.empty, hloopRaw]
   have member :
       Bindings.empty.assign (var ++ "#" ++ Nat.repr 0) (.symbol value) ∈
         addVarBinding Bindings.empty (var ++ "#" ++ Nat.repr 0)
@@ -2784,12 +2839,7 @@ theorem queryEquationsAgainstVisible_unaryIdentity_counter0_mem_atFuel
     rw [addVarBinding_fresh
       (by simp [Bindings.empty, Bindings.lookup]) rfl extraFuel]
     simp
-  refine ⟨({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)], equalities := [] } : Bindings), ⟨⟨hloopFrom, member⟩, ?_⟩, ?_⟩
-  · intro name atom hmem
-    have pairEq := List.mem_singleton.mp hmem
-    cases pairEq
-    exact hloopFrom
-  · simp [hloopFrom]
+  exact ⟨by simpa only [Bindings.empty] using Bindings.hasLoop_empty, member⟩
 
 /-- Fuel-10 specialization of
 `queryEquationsAgainstVisible_unaryIdentity_counter0_mem_atFuel`, preserved for
@@ -2811,25 +2861,19 @@ theorem queryEquations_unaryIdentity_counter0_mem_atFuel
       queryEquations (unaryIdentitySpace head var)
         (.expression [.symbol head, .symbol value]) (extraFuel + 5) := by
   have hfresh := freshenEquation_unaryIdentity_counter0_atFuel head var extraFuel
-  have hloop : (unaryIdentityBindings var value).hasLoop = false :=
-    NoVarAssignmentValues.hasLoop_false
-      (noVarAssignmentValues_unaryIdentity var value)
   have hloopRaw :
       ({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)]
         , equalities := [] } : Bindings).hasLoop = false := by
-    simpa [unaryIdentityBindings, unaryIdentityFresh0, Bindings.assign,
-      Bindings.isBound, Bindings.lookup, Bindings.empty] using hloop
+    apply Bindings.hasLoop_false_of_assignment_vars_nil
+    intro entry member
+    have same := List.mem_singleton.mp member
+    subst entry
+    rfl
   simp [queryEquations, unaryIdentitySpace, Space.ofList, hfresh,
     matchAtoms, matchAtomsList, mergeBindings, getMetaType,
     Atom.expressionType, Atom.symbolType, Atom.variableType,
     unaryIdentityBindings, unaryIdentityFresh0, Bindings.assign,
-    Bindings.isBound, Bindings.lookup, Bindings.empty, Bindings.hasLoop]
-  have hloopFrom :
-      Bindings.hasLoop.hasLoopFrom
-        ({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)]
-          , equalities := [] } : Bindings)
-        (var ++ "#" ++ Nat.repr 0) [var ++ "#" ++ Nat.repr 0] 100 = false := by
-    simpa [Bindings.hasLoop] using hloopRaw
+    Bindings.isBound, Bindings.lookup, Bindings.empty, hloopRaw]
   have member :
       Bindings.empty.assign (var ++ "#" ++ Nat.repr 0) (.symbol value) ∈
         addVarBinding Bindings.empty (var ++ "#" ++ Nat.repr 0)
@@ -2837,12 +2881,57 @@ theorem queryEquations_unaryIdentity_counter0_mem_atFuel
     rw [addVarBinding_fresh
       (by simp [Bindings.empty, Bindings.lookup]) rfl extraFuel]
     simp
-  refine ⟨({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)], equalities := [] } : Bindings), ⟨⟨hloopFrom, member⟩, ?_⟩, ?_⟩
-  · intro name atom hmem
-    have pairEq := List.mem_singleton.mp hmem
-    cases pairEq
-    exact hloopFrom
-  · simp [hloopFrom]
+  exact ⟨by simpa only [Bindings.empty] using Bindings.hasLoop_empty, member⟩
+
+/-- Scoped query membership for the singleton unary-identity equation.  This is the premise consumed by the official `MettaCall` rule. -/
+theorem queryEquationsAvoiding_unaryIdentity_counter0_mem_atFuel
+    (head var value : String) (extraFuel : Nat) :
+    (.var (unaryIdentityFresh0 var), unaryIdentityBindings var value) ∈
+      queryEquationsAvoiding [] (unaryIdentitySpace head var)
+        (.expression [.symbol head, .symbol value]) (extraFuel + 5) := by
+  have hfresh : freshenEquationAvoiding [] 0
+        (.expression [.symbol head, .var var]) (.var var) =
+      (.expression [.symbol head, .var (unaryIdentityFresh0 var)],
+        .var (unaryIdentityFresh0 var)) := by
+    have herase : ([var, var] : List String).eraseDups = [var] := by
+      rw [List.eraseDups_cons]
+      simp
+    simp [freshenEquationAvoiding, atomVariables, atomListVariables, herase, renameAtom,
+      renameAtomList, instanceName, freeSuffix, suffixName, unaryIdentityFresh0]
+  have hloopRaw :
+      ({ assignments := [(var ++ "#" ++ Nat.repr 0, Atom.symbol value)]
+        , equalities := [] } : Bindings).hasLoop = false := by
+    apply Bindings.hasLoop_false_of_assignment_vars_nil
+    intro entry member
+    have same := List.mem_singleton.mp member
+    subst entry
+    rfl
+  simp [queryEquationsAvoiding, unaryIdentitySpace, Space.ofList, hfresh,
+    matchAtoms, matchAtomsList, mergeBindings, getMetaType,
+    Atom.expressionType, Atom.symbolType, Atom.variableType,
+    unaryIdentityBindings, unaryIdentityFresh0, Bindings.assign,
+    Bindings.isBound, Bindings.lookup, Bindings.empty, hloopRaw]
+  have member :
+      Bindings.empty.assign (var ++ "#" ++ Nat.repr 0) (.symbol value) ∈
+        addVarBinding Bindings.empty (var ++ "#" ++ Nat.repr 0)
+          (.symbol value) (extraFuel + 1) := by
+    rw [addVarBinding_fresh
+      (by simp [Bindings.empty, Bindings.lookup]) rfl extraFuel]
+    simp
+  exact ⟨by simpa only [Bindings.empty] using Bindings.hasLoop_empty, member⟩
+
+theorem queryEquationsAvoiding_unaryIdentity_counter0_mem
+    (head var value : String) :
+    (.var (unaryIdentityFresh0 var), unaryIdentityBindings var value) ∈
+      queryEquationsAvoiding [] (unaryIdentitySpace head var)
+        (.expression [.symbol head, .symbol value]) 10 := by
+  simpa using queryEquationsAvoiding_unaryIdentity_counter0_mem_atFuel head var value 5
+
+/-- A ground call with empty bindings is covered by the empty avoidance list. -/
+theorem unaryIdentity_cover (head value : String) :
+    CoversEvaluation [] [] (.expression [.symbol head, .symbol value]) Atom.undefinedType Bindings.empty := by
+  intro name h
+  simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h
 
 /-- Fuel-10 specialization of `queryEquations_unaryIdentity_counter0_mem_atFuel`,
 preserved for the official `MettaCall` wrapper at counter 0. -/
@@ -2867,9 +2956,11 @@ theorem unaryIdentity_observed_mettaCall_of_queries_counter0
       (.var (unaryIdentityFresh0 var), unaryIdentityBindings var value) ∈
         queryEquationsAgainstVisible (unaryIdentitySpace head var)
           (.expression [.symbol head, .symbol value]) 10)
+    {avoid : List String}
+    (h_cover : CoversEvaluation avoid [] (.expression [.symbol head, .symbol value]) Atom.undefinedType Bindings.empty)
     (h_query_public :
       (.var (unaryIdentityFresh0 var), unaryIdentityBindings var value) ∈
-        queryEquations (unaryIdentitySpace head var)
+        queryEquationsAvoiding avoid (unaryIdentitySpace head var)
           (.expression [.symbol head, .symbol value]) 10)
     (h_recurse :
       EvalAtom (unaryIdentitySpace head var) GroundedDispatch.none
@@ -2916,6 +3007,7 @@ theorem unaryIdentity_observed_mettaCall_of_queries_counter0
           apply h_not_special
           simp [SpecialFormHead, hswitch])
       h_query_visible
+      h_cover
       h_query_public
       heq
       (by
@@ -2949,7 +3041,8 @@ theorem unaryIdentity_observed_mettaCall_counter0
     unaryIdentity_observed_mettaCall_of_queries_counter0
       head var value gt h_not_special h_not_error
       (queryEquationsAgainstVisible_unaryIdentity_counter0_mem head var value)
-      (queryEquations_unaryIdentity_counter0_mem head var value)
+      (unaryIdentity_cover head value)
+      (queryEquationsAvoiding_unaryIdentity_counter0_mem head var value)
       h_recurse
 
 /-- Engine-step-shaped unary-identity package: the same non-ground assignment
@@ -3005,7 +3098,8 @@ theorem unaryIdentity_leattaEquationMettaCallStep_counter0
           apply h_not_special
           simp [SpecialFormHead, hswitch])
       (queryEquationsAgainstVisible_unaryIdentity_counter0_mem head var value)
-      (queryEquations_unaryIdentity_counter0_mem head var value)
+      (unaryIdentity_cover head value)
+      (queryEquationsAvoiding_unaryIdentity_counter0_mem head var value)
       heq
       (by
         rw [toLeaTTaMatchBindings_unaryIdentity]
@@ -3317,7 +3411,11 @@ theorem nonGroundAssignment_leattaEquationMettaCallStep_counter0
       (by simp [HeadNotExecutable, GroundedDispatch.none])
       (by simp [toLeaTTaAtom, Metta.Minimal.headKey])
       (by simp [queryEquationsAgainstVisible_nonGroundAssignment])
-      (by simp [queryEquations_nonGroundAssignment])
+      (avoid := [])
+      (by
+        intro name h
+        simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h)
+      (by decide)
       (nonGroundAssignment_FreshenedQueryOpItemTransportAgainstVisible_counter0 gt)
       (by
         rw [show 10 = 9 + 1 by decide]
@@ -3344,7 +3442,7 @@ theorem equation_match_freshRhsBoundary_step :
     apply HESmallStep.equation_match
     · simp [SpecialFormHead]
     · simp [HeadNotExecutable, GroundedDispatch.none]
-    · simp [queryEquations_freshRhsBoundary]
+    · decide
     · rfl
   simpa [freshRhsBoundary_empty_applyFull_z0] using hstep
 
@@ -3373,8 +3471,7 @@ theorem equation_match_freshRhsBoundary_queryOp_visible_successor_counter5
   have hquery : (.var "z#0", Bindings.empty) ∈
       queryEquations freshRhsBoundarySpace (.expression [.symbol "q"]) 10 := by
     simp [queryEquations_freshRhsBoundary]
-  have hNoLoop : Bindings.empty.hasLoop = false := by
-    simp [Bindings.hasLoop, Bindings.empty]
+  have hNoLoop : Bindings.empty.hasLoop = false := Bindings.hasLoop_empty
   simpa [freshRhsBoundary_empty_applyFull_z0, freshRhsBoundaryQueryAtom,
       toLeaTTaAtom] using
     (equation_match_queryOp_visible_successor_package_of_transport
@@ -3392,6 +3489,7 @@ theorem equation_match_freshRhsBoundary_queryOp_visible_successor_counter5
       hNotGrounded
       hk
       hquery
+      (by decide)
       hNoLoop
       (freshRhsBoundary_EquationMatchVisibleItemTransport_counter5 gt)).2
 
@@ -3492,17 +3590,19 @@ private theorem chainResolveBoundary_he_successor_full :
 
 theorem equation_match_chainResolveBoundary_step :
     HESmallStep chainResolveBoundarySpace GroundedDispatch.none 10
-      (.expression [.symbol "f", .var "y#1", .symbol "a"]) (.symbol "a") := by
+      (.expression [.symbol "f", .var "y#1", .symbol "a"]) (.var "y#1") := by
   have hstep :
       HESmallStep chainResolveBoundarySpace GroundedDispatch.none 10
         (.expression [.symbol "f", .var "y#1", .symbol "a"])
-        (chainResolveBoundaryQueryBindings.applyFull (.var "x#0") 10) := by
+        (chainResolveBoundaryVisibleQueryBindings.applyFull (.var "x#0") 10) := by
     apply HESmallStep.equation_match
     · simp [SpecialFormHead]
     · simp [HeadNotExecutable, GroundedDispatch.none]
-    · simp [queryEquations_chainResolveBoundary]
-    · exact chainResolveBoundary_queryBindings_no_loop
-  simpa [chainResolveBoundary_he_successor_full] using hstep
+    · decide
+    · decide
+  have preserved : chainResolveBoundaryVisibleQueryBindings.applyFull (.var "x#0") 10 =
+      .var "y#1" := by decide
+  simpa only [preserved] using hstep
 
 private def chainResolveBoundaryQueryAtom : Metta.Atom :=
   toLeaTTaAtom (.expression [.symbol "f", .var "y#1", .symbol "a"])
@@ -4005,46 +4105,47 @@ theorem equation_match_chainResolveBoundary_againstVisible_queryOp_visible_succe
       (chainResolveBoundary_FreshenedVariableQueryOpItemTransportAgainstVisible_counter0 gt)
   simpa [chainResolveBoundaryVisible_applyFull_x0] using hobs
 
+private theorem chainResolveBoundary_scoped_query :
+    (.var "x#0", chainResolveBoundaryVisibleQueryBindings) ∈
+      queryEquationsAvoiding ["y#1"] chainResolveBoundarySpace
+        (.expression [.symbol "f", .var "y#1", .symbol "a"]) 10 := by
+  decide
+
+private theorem chainResolveBoundary_cover :
+    CoversEvaluation ["y#1"] [] (.expression [.symbol "f", .var "y#1", .symbol "a"]) Atom.undefinedType Bindings.empty := by
+  intro name h
+  simp [equationScope, Atom.undefinedType, atomVariables, atomListVariables, Bindings.names, Bindings.empty] at h
+  simp [h]
+
+private theorem chainResolveBoundaryVisible_no_loop :
+    chainResolveBoundaryVisibleQueryBindings.hasLoop = false := by
+  rfl
+
 /-- The equality-bearing chain boundary also reaches the official HE
-`MettaCall` relation through the repaired visible-observation bridge. This is
-the positive conformance counterpart to the instantiated-item shortcut failure
-below: the executable observation is equality-aware, while the declarative call
-still consumes the public HE query path. -/
+`MettaCall` relation through the repaired visible-observation bridge. The
+official rule renames the rule parameter `y` apart from the query's `y#1`, so the
+call returns the caller's variable `y#1` with the visible binding record. The
+equation-indexed spelling, which reused `y#1` and returned `a`, captured the
+caller's variable and is not an official instance. -/
 theorem chainResolveBoundary_visible_observation_models_mettaCall_counter0
     (gt : Metta.GroundingTable) :
     MettaCall chainResolveBoundarySpace GroundedDispatch.none
       (.expression [.symbol "f", .var "y#1", .symbol "a"])
       Atom.undefinedType Bindings.empty
-      (.symbol "a", chainResolveBoundaryQueryBindings) := by
+      (.var "y#1", chainResolveBoundaryVisibleQueryBindings) := by
   have hobs :
       LeaTTaVisibleEquationStepObservation
         chainResolveBoundarySpace GroundedDispatch.none 10
         (.expression [.symbol "f", .var "y#1", .symbol "a"])
         (.var "y#1") gt [] 0 :=
     equation_match_chainResolveBoundary_againstVisible_queryOp_visible_successor_counter0 gt
-  have hNotError :
-      isErrorAtom (.expression [.symbol "f", .var "y#1", .symbol "a"]) = false := by
-    rfl
-  have hNotGrounded :
-      HeadNotExecutable GroundedDispatch.none
-        (.expression [.symbol "f", .var "y#1", .symbol "a"]) := by
-    simp [HeadNotExecutable, GroundedDispatch.none]
-  have hquery : (.var "x#0", chainResolveBoundaryQueryBindings) ∈
-      queryEquations chainResolveBoundarySpace
-        (.expression [.symbol "f", .var "y#1", .symbol "a"]) 10 := by
-    simp [queryEquations_chainResolveBoundary]
   have hrecurse :
       EvalAtom chainResolveBoundarySpace GroundedDispatch.none
-        (chainResolveBoundaryQueryBindings.applyFull (.var "x#0") 10)
-        Atom.undefinedType chainResolveBoundaryQueryBindings
-        (.symbol "a", chainResolveBoundaryQueryBindings) := by
-    rw [chainResolveBoundary_he_successor_full]
-    apply EvalAtom.type_cast (fuel := 10)
-    · rfl
-    · decide
-    · left
-      rfl
-    · decide
+        (chainResolveBoundaryVisibleQueryBindings.applyFull (.var "x#0") 10)
+        Atom.undefinedType chainResolveBoundaryVisibleQueryBindings
+        (.var "y#1", chainResolveBoundaryVisibleQueryBindings) := by
+    rw [chainResolveBoundaryVisible_applyFull_x0]
+    exact EvalAtom.type_pass _ _ _ rfl (Or.inr (Or.inr rfl))
   exact
     leattaEquationMettaCallStep_sound
       (leattaEquationMettaCallStep_of_visible_observation_empty_input_result
@@ -4055,12 +4156,13 @@ theorem chainResolveBoundary_visible_observation_models_mettaCall_counter0
         (visibleDst := .var "y#1")
         (type_ := Atom.undefinedType)
         (rhs := .var "x#0")
-        (qb := chainResolveBoundaryQueryBindings)
+        (qb := chainResolveBoundaryVisibleQueryBindings)
         (gt := gt)
         (prev := [])
         (counter := 0)
-        hobs hNotError hNotGrounded hquery
-        chainResolveBoundary_queryBindings_no_loop hrecurse)
+        hobs rfl (by simp [HeadNotExecutable, GroundedDispatch.none])
+        chainResolveBoundary_cover chainResolveBoundary_scoped_query
+        chainResolveBoundaryVisible_no_loop hrecurse)
 
 /-- Step-shaped public package for the equality-bearing chain boundary.  The
 statement expands the private fixture definitions so downstream conformance
@@ -4075,8 +4177,8 @@ theorem chainResolveBoundary_leattaEquationMettaCallStep_counter0 :
       GroundedDispatch.none 10
       (.expression [.symbol "f", .var "y#1", .symbol "a"])
       Atom.undefinedType Bindings.empty
-      (.symbol "a",
-        ({ assignments := [("y#1", .symbol "a")]
+      (.var "y#1",
+        ({ assignments := [("y#2", .symbol "a")]
          , equalities := [("y#1", "x#0")] } : Bindings)) := by
   have hobs :
       LeaTTaVisibleEquationStepObservation
@@ -4085,35 +4187,19 @@ theorem chainResolveBoundary_leattaEquationMettaCallStep_counter0 :
         (.var "y#1") (default : Metta.GroundingTable) [] 0 :=
     equation_match_chainResolveBoundary_againstVisible_queryOp_visible_successor_counter0
       (default : Metta.GroundingTable)
-  have hNotError :
-      isErrorAtom (.expression [.symbol "f", .var "y#1", .symbol "a"]) = false := by
-    rfl
-  have hNotGrounded :
-      HeadNotExecutable GroundedDispatch.none
-        (.expression [.symbol "f", .var "y#1", .symbol "a"]) := by
-    simp [HeadNotExecutable, GroundedDispatch.none]
-  have hquery : (.var "x#0", chainResolveBoundaryQueryBindings) ∈
-      queryEquations chainResolveBoundarySpace
-        (.expression [.symbol "f", .var "y#1", .symbol "a"]) 10 := by
-    simp [queryEquations_chainResolveBoundary]
   have hrecurse :
       EvalAtom chainResolveBoundarySpace GroundedDispatch.none
-        (chainResolveBoundaryQueryBindings.applyFull (.var "x#0") 10)
-        Atom.undefinedType chainResolveBoundaryQueryBindings
-        (.symbol "a", chainResolveBoundaryQueryBindings) := by
-    rw [chainResolveBoundary_he_successor_full]
-    apply EvalAtom.type_cast (fuel := 10)
-    · rfl
-    · decide
-    · left
-      rfl
-    · decide
+        (chainResolveBoundaryVisibleQueryBindings.applyFull (.var "x#0") 10)
+        Atom.undefinedType chainResolveBoundaryVisibleQueryBindings
+        (.var "y#1", chainResolveBoundaryVisibleQueryBindings) := by
+    rw [chainResolveBoundaryVisible_applyFull_x0]
+    exact EvalAtom.type_pass _ _ _ rfl (Or.inr (Or.inr rfl))
   have hstep :
       LeaTTaEquationMettaCallStep
         chainResolveBoundarySpace GroundedDispatch.none 10
         (.expression [.symbol "f", .var "y#1", .symbol "a"])
         Atom.undefinedType Bindings.empty
-        (.symbol "a", chainResolveBoundaryQueryBindings) :=
+        (.var "y#1", chainResolveBoundaryVisibleQueryBindings) :=
     leattaEquationMettaCallStep_of_visible_observation_empty_input_result
       (space := chainResolveBoundarySpace)
       (d := GroundedDispatch.none)
@@ -4122,13 +4208,14 @@ theorem chainResolveBoundary_leattaEquationMettaCallStep_counter0 :
       (visibleDst := .var "y#1")
       (type_ := Atom.undefinedType)
       (rhs := .var "x#0")
-      (qb := chainResolveBoundaryQueryBindings)
+      (qb := chainResolveBoundaryVisibleQueryBindings)
       (gt := (default : Metta.GroundingTable))
       (prev := [])
       (counter := 0)
-      hobs hNotError hNotGrounded hquery
-      chainResolveBoundary_queryBindings_no_loop hrecurse
-  simpa [chainResolveBoundarySpace, chainResolveBoundaryQueryBindings] using hstep
+      hobs rfl (by simp [HeadNotExecutable, GroundedDispatch.none])
+      chainResolveBoundary_cover chainResolveBoundary_scoped_query
+      chainResolveBoundaryVisible_no_loop hrecurse
+  simpa [chainResolveBoundarySpace, chainResolveBoundaryVisibleQueryBindings] using hstep
 
 private theorem chainResolveBoundary_expected_instantiated_item_not_queryOp_counter0
     (gt : Metta.GroundingTable) :

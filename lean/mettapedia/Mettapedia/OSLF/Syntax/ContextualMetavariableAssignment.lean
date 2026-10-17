@@ -465,3 +465,102 @@ theorem EqClosure.ax_closed {S : Signature} {M : List (MetaArity S)}
   simpa only [ContextualAssignment.instantiate_ofClosed] using generated
 
 end Mettapedia.OSLF.Binding
+
+namespace Mettapedia.OSLF.Binding.ContextualAssignment
+
+variable {S : Signature} {M : List (MetaArity S)}
+
+theorem instantiate_context_cast
+    {S : Signature} {M : List (MetaArity S)} {ambient source source' target target' : Ctx S}
+    (sourceEqual : source = source') (targetEqual : target = target')
+    (bodies : ContextualAssignment S M ambient) (ambientSub : Sub S ambient target)
+    (valuation : Sub S source target) {sort : S.Srt}
+    (term : Term (withMetas S M) source sort) :
+    ContextualAssignment.instantiate bodies
+      (fun sort position => castTermCtx targetEqual (ambientSub sort position))
+      (fun sort position => castTermCtx targetEqual
+        (valuation sort (sourceEqual.symm ▸ position)))
+      (castTermCtx (T := withMetas S M) sourceEqual term) =
+    castTermCtx targetEqual (ContextualAssignment.instantiate bodies ambientSub valuation term) := by
+  cases sourceEqual
+  cases targetEqual
+  rfl
+
+theorem weakenSub_append {S : Signature} {source target : Ctx S}
+    (sigma : Sub S source target) : ∀ (binders locals : Ctx S),
+    ContextualAssignment.weakenSub (binders ++ locals) sigma =
+      fun sort position => castTermCtx (List.append_assoc binders locals target).symm
+        (ContextualAssignment.weakenSub binders
+          (ContextualAssignment.weakenSub locals sigma) sort position)
+  | [], locals => by
+      simp only [List.nil_append, ContextualAssignment.weakenSub_nil, castTermCtx]
+  | binder :: binders, locals => by
+      change ContextualAssignment.weakenSub (binder :: (binders ++ locals)) sigma = _
+      rw [ContextualAssignment.weakenSub_cons,
+        ContextualAssignment.weakenSub_cons, weakenSub_append sigma binders locals]
+      funext sort position
+      exact (castTermCtx_weaken (List.append_assoc binders locals target).symm _).symm
+
+theorem instantiate_append
+    {S : Signature} {M : List (MetaArity S)} {ambient source target : Ctx S}
+    (bodies : ContextualAssignment S M ambient) (ambientSub : Sub S ambient target)
+    (valuation : Sub S source target) (binders locals : Ctx S) {sort : S.Srt}
+    (term : Term (withMetas S M) (binders ++ (locals ++ source)) sort) :
+    ContextualAssignment.instantiate bodies
+      (ContextualAssignment.weakenSub (binders ++ locals) ambientSub)
+      (liftSub valuation (binders ++ locals))
+      (castTermCtx (T := withMetas S M) (List.append_assoc binders locals source).symm term) =
+    castTermCtx (List.append_assoc binders locals target).symm
+      (ContextualAssignment.instantiate bodies
+        (ContextualAssignment.weakenSub binders (ContextualAssignment.weakenSub locals ambientSub))
+        (liftSub (liftSub valuation locals) binders) term) := by
+  have lifted : liftSub valuation (binders ++ locals) = fun result position =>
+      castTermCtx (List.append_assoc binders locals target).symm
+        (liftSub (liftSub valuation locals) binders result
+          (List.append_assoc binders locals source ▸ position)) := by
+    funext result position
+    have equality := liftSub_append valuation binders locals result
+      (List.append_assoc binders locals source ▸ position)
+    have cancel : ∀ {first second : Ctx S} (same : first = second) (v : Var first result),
+        same.symm ▸ (same ▸ v) = v := by
+      intro first second same v
+      cases same
+      rfl
+    simpa only [cancel] using equality
+  rw [weakenSub_append, lifted]
+  exact instantiate_context_cast _ _ _ _ _ term
+
+/-- Plugging an output schema commutes with the existing contextual
+instantiator, including all ambient values and the eliminated binder. -/
+theorem instantiate_inst {ambient source target : Ctx S} {domain result : S.Srt}
+    (bodies : ContextualAssignment S M ambient) (environment : Sub S ambient target)
+    (valuation : Sub S source target)
+    (body : Term (withMetas S M) (domain :: source) result)
+    (replacement : Term (withMetas S M) source domain) :
+    instantiate bodies environment valuation (inst body replacement) =
+      inst (instantiate bodies (weakenSub [domain] environment) (liftSub valuation [domain]) body)
+        (instantiate bodies environment valuation replacement) := by
+  simp only [inst, instantiate_bind, bind_instantiate]
+  congr 1
+  · funext sort position
+    change environment sort position = bind
+      (extend (instantiate bodies environment valuation replacement))
+      (weaken (environment sort position))
+    simp only [weaken, bind_rename]
+    have identity : (fun s (v : Var target s) =>
+        extend (instantiate bodies environment valuation replacement) s (.succ v)) =
+        (fun _ v => Term.var v) := rfl
+    rw [identity, bind_id]
+  · funext sort position
+    cases position with
+    | zero => rfl
+    | succ old =>
+        change valuation sort old = bind
+          (extend (instantiate bodies environment valuation replacement)) (weaken (valuation sort old))
+        simp only [weaken, bind_rename]
+        have identity : (fun s (v : Var target s) =>
+            extend (instantiate bodies environment valuation replacement) s (.succ v)) =
+            (fun _ v => Term.var v) := rfl
+        rw [identity, bind_id]
+
+end Mettapedia.OSLF.Binding.ContextualAssignment

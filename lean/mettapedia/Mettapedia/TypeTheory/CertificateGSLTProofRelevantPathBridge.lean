@@ -245,7 +245,7 @@ theorem derivationListAppend_split
 
 /-- Erase a Type-valued occurrence path to the original proposition-valued
 multi-step proof-search reachability witness. -/
-def erasePath {definition : ValidatedCalculusLanguageDef}
+theorem erasePath {definition : ValidatedCalculusLanguageDef}
     {source target : GoalState} :
     ProofSearchPath definition source target →
       (proofSearchGSLT definition).MultiStep source target

@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceReplies
+import Mettapedia.Languages.MeTTa.HE.BindingComposition
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Normal
 
@@ -195,5 +196,16 @@ theorem preparation_originals_retained (state : TypedApplyState) (policy : Polic
       original state ∧
     (NativeArgumentControl.selectedSnapshot state (prepareSource state policy fuel) []).domain =
       originalDomain state := ⟨rfl, rfl⟩
+
+/-- The existing readiness guard earns sufficient evaluation of the same
+normal table even when its original depth is below the convenient syntax bound. -/
+theorem applyFull_presented_of_covered {table : TypeSubst} (normal : table.Normal)
+    (atom : Atom) (depth : Nat)
+    (covered : (presentedBindings table).applyFullCovered atom depth = true) :
+    (presentedBindings table).applyFull atom depth = table.apply atom := by
+  rw [← Bindings.applyFullCovered_stable (presentedBindings table) atom depth
+    (LeaTTaBridge.atomDepth atom + 2) covered]
+  exact applyFull_presented normal _ atom (by omega)
+
 
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessPreparedArguments

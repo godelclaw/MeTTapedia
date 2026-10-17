@@ -154,7 +154,7 @@ theorem cicStage3Specs_allNone :
     ∀ s ∈ cicStage3Specs, s.value? = none := by
   decide
 
-def cicStage3SignatureWellFormed : SignatureWellFormed cicStage3Specs where
+theorem cicStage3SignatureWellFormed : SignatureWellFormed cicStage3Specs where
   noShadowing := by
     decide
   obligations := declSpecObligations_of_all_none cicStage3Specs cicStage3Specs_allNone
@@ -1016,7 +1016,7 @@ theorem CicStage3MaxTypeTypeFrontier.conditional_frontier_and_nat_limitation
         HasTypeDecl natRecDeclEnv natRecSuccOpenCtx natRecSuccOpenTarget A :=
   ⟨frontier.conditional_frontier, frontier.exact_conditional_nat_frontier⟩
 
-def cicStage3MaxTypeTypeFrontierCertificate :
+theorem cicStage3MaxTypeTypeFrontierCertificate :
     CicStage3MaxTypeTypeFrontier :=
   { head := cicStage3ClosedMax_type0_type0_head
     index_checked := cicStage3Type0Type0IndexRecChecked
@@ -1165,7 +1165,7 @@ theorem CicStage3IdentityWitnessTargetFamily.subjectReduction_and_profile_of_sor
         (quoteClosedTm cicStage3IdentityWitness) :=
   ⟨family.target hs, family.target_profile hs⟩
 
-def cicStage3IdentityWitnessTargetFamilyCertificate :
+theorem cicStage3IdentityWitnessTargetFamilyCertificate :
     CicStage3IdentityWitnessTargetFamily :=
   { target := by
       intro s hs
@@ -1492,7 +1492,7 @@ structure CicStage1CoveredMicroFrontier where
       (quoteClosedTm cicStage3IdentityWitness)
       (quoteClosedTm cicStage3IdentityWitness)
 
-def cicStage1CoveredMicroCertificate : CicStage1CoveredMicroFrontier :=
+theorem cicStage1CoveredMicroCertificate : CicStage1CoveredMicroFrontier :=
   { identity_target_family := cicStage3IdentityWitnessTargetFamilyCertificate
     succ_prop := .succ_prop
     succ_prop_target_profile := cicStage1ClosedSucc_prop_target_profile.2
@@ -1608,7 +1608,7 @@ theorem cicStage3PropToType0WitnessSpecs_obligations :
       intro hEq
       cases hEq
 
-def cicStage3PropToType0WitnessDeclEnv_wellFormed :
+theorem cicStage3PropToType0WitnessDeclEnv_wellFormed :
     DeclEnvWellFormed cicStage3PropToType0WitnessDeclEnv :=
   envOfSpecs_wellFormed_of_specObligations
     cicStage3PropToType0WitnessSpecs
@@ -1759,7 +1759,7 @@ theorem cicStage3Type0ToType1WitnessSpecs_obligations :
       intro hEq
       cases hEq
 
-def cicStage3Type0ToType1WitnessDeclEnv_wellFormed :
+theorem cicStage3Type0ToType1WitnessDeclEnv_wellFormed :
     DeclEnvWellFormed cicStage3Type0ToType1WitnessDeclEnv :=
   envOfSpecs_wellFormed_of_specObligations
     cicStage3Type0ToType1WitnessSpecs
@@ -1910,7 +1910,7 @@ theorem cicStage3Type1ToType2WitnessSpecs_obligations :
       intro hEq
       cases hEq
 
-def cicStage3Type1ToType2WitnessDeclEnv_wellFormed :
+theorem cicStage3Type1ToType2WitnessDeclEnv_wellFormed :
     DeclEnvWellFormed cicStage3Type1ToType2WitnessDeclEnv :=
   envOfSpecs_wellFormed_of_specObligations
     cicStage3Type1ToType2WitnessSpecs
@@ -2205,7 +2205,7 @@ structure CicStage1InheritedObligationInventory where
           (quoteClosedTm cicStage3IdentityWitness)
           (quoteClosedTm cicStage3IdentityWitness)
 
-def cicStage1InheritedObligationCertificate :
+theorem cicStage1InheritedObligationCertificate :
     CicStage1InheritedObligationInventory :=
   { rew_m_i_z := by
       intro i hi
@@ -2660,7 +2660,7 @@ theorem CicStage3LiftTargetFamily.term_lift_subjectReduction_and_profile
         (quoteClosedTm (cicUniv s)) :=
   ⟨family.term_lift_target hs, family.term_lift_target_profile hs⟩
 
-def cicStage3LiftTargetFamilyCertificate :
+theorem cicStage3LiftTargetFamilyCertificate :
     CicStage3LiftTargetFamily :=
   { lift_id_target := by
       intro s hs
@@ -2769,7 +2769,7 @@ structure CicStage3AdditiveObligationInventory where
 guest extension. This packages the live bridge story using the same obligation
 names the guest artifact cites, so subsequent M2 work can replace individual
 debt items by theorem-by-theorem closure rather than prose. -/
-def cicStage3AdditiveObligationCertificate :
+theorem cicStage3AdditiveObligationCertificate :
     CicStage3AdditiveObligationInventory :=
   { rew_max_s1_prop := by
       intro s hs
@@ -2925,7 +2925,7 @@ theorem rew_max_type_type_resolved_frontier_and_nat_limitation
 
 end CicStage3RequiredObligationFootprint
 
-def cicStage3RequiredObligationFootprintCertificate :
+theorem cicStage3RequiredObligationFootprintCertificate :
     CicStage3RequiredObligationFootprint :=
   { lift_target_family := cicStage3LiftTargetFamilyCertificate
     stage3_additive_obligations := cicStage3AdditiveObligationCertificate
@@ -3086,7 +3086,7 @@ theorem CicStage3LiftReplayFrontier.term_lift_type1_type2_subjectReduction_and_p
         (quoteClosedTm (cicUniv cicType1)) :=
   ⟨frontier.term_lift_type1_type2_target, frontier.term_lift_type1_type2_target_profile⟩
 
-def cicStage3LiftReplayFrontierCertificate :
+theorem cicStage3LiftReplayFrontierCertificate :
     CicStage3LiftReplayFrontier :=
   { target_family := cicStage3LiftTargetFamilyCertificate
     lift_id_prop_prop_target :=
@@ -3265,7 +3265,7 @@ def cicStage3MaxArtifactFrontierCertificate :
     max_type0_type1_closed_landing :=
       cicStage3CoveredMicroCertificate.max_type0_type1_closed_landing }
 
-def cicStage3MaxReplayFrontierCertificate :
+theorem cicStage3MaxReplayFrontierCertificate :
     CicStage3MaxReplayFrontier :=
   { max_prop_type0 := cicStage3CoveredMicroCertificate.max_prop_type0
     max_type0_prop := cicStage3CoveredMicroCertificate.max_type0_prop
@@ -3614,17 +3614,17 @@ theorem CicStage3DeclaredReplayKernelProfileBridge.declared_artifact_quotes
         quoteClosedTm cicStage3IdentityWitness :=
   bridge.declared_frontier.artifact_quotes
 
-def cicStage3PropToType0WitnessSignatureWellFormed :
+theorem cicStage3PropToType0WitnessSignatureWellFormed :
     SignatureWellFormed cicStage3PropToType0WitnessSpecs where
   noShadowing := cicStage3PropToType0WitnessSpecs_noShadowing
   obligations := cicStage3PropToType0WitnessSpecs_obligations
 
-def cicStage3Type0ToType1WitnessSignatureWellFormed :
+theorem cicStage3Type0ToType1WitnessSignatureWellFormed :
     SignatureWellFormed cicStage3Type0ToType1WitnessSpecs where
   noShadowing := cicStage3Type0ToType1WitnessSpecs_noShadowing
   obligations := cicStage3Type0ToType1WitnessSpecs_obligations
 
-def cicStage3Type1ToType2WitnessSignatureWellFormed :
+theorem cicStage3Type1ToType2WitnessSignatureWellFormed :
     SignatureWellFormed cicStage3Type1ToType2WitnessSpecs where
   noShadowing := cicStage3Type1ToType2WitnessSpecs_noShadowing
   obligations := cicStage3Type1ToType2WitnessSpecs_obligations
@@ -4541,7 +4541,7 @@ structure DIndGSRAdmissionMirror (specs : List DeclSpec) where
 
 namespace DIndGSRAdmissionMirror
 
-def ofSignatureWellFormed {specs : List DeclSpec}
+theorem ofSignatureWellFormed {specs : List DeclSpec}
     (hSig : SignatureWellFormed specs) :
     DIndGSRAdmissionMirror specs :=
   { signature_well_formed := hSig
@@ -4620,7 +4620,7 @@ structure DIndGAdmitted
 
 namespace DIndGAdmitted
 
-def toSRAdmissionMirror {specs : List DeclSpec}
+theorem toSRAdmissionMirror {specs : List DeclSpec}
     {contracts : List FamilyRecursorDeclContract}
     (admission : DIndGAdmitted specs contracts) :
     DIndGSRAdmissionMirror specs :=
@@ -4790,7 +4790,7 @@ structure DIndGArtifactMetatheoryReadout
 
 namespace DIndGArtifactCorrespondence
 
-def ofGateAndReadout {ArtifactSig : Type}
+theorem ofGateAndReadout {ArtifactSig : Type}
     {gate : DIndGArtifactGate ArtifactSig}
     {sig : ArtifactSig}
     {specs : List DeclSpec}
@@ -4809,7 +4809,7 @@ def ofGateAndReadout {ArtifactSig : Type}
       readout.generated_iota_preservation_translation
     declaration_church_rosser := readout.declaration_church_rosser }
 
-def toAdmitted {ArtifactSig : Type}
+theorem toAdmitted {ArtifactSig : Type}
     {gate : DIndGArtifactGate ArtifactSig}
     {sig : ArtifactSig}
     {specs : List DeclSpec}
@@ -4894,7 +4894,7 @@ def ofClosedGeneratedIotaStep {ArtifactSig ArtifactTerm : Type}
     target_infer_typed := targetTyped
     target_infer_agrees := targetInferAgrees }
 
-def toSRArtifactWitness {ArtifactSig ArtifactTerm : Type}
+theorem toSRArtifactWitness {ArtifactSig ArtifactTerm : Type}
     {gate : DIndGArtifactGate ArtifactSig}
     {sig : ArtifactSig}
     {specs : List DeclSpec}
@@ -5843,7 +5843,7 @@ structure TargetInferCoherence
 
 /-- Global algorithmic-`infer` completeness is a sufficient way to obtain the
 local target-readout coherence needed by the generated-iota SR theorem. -/
-def TargetInferCoherence.ofInferCompleteness
+theorem TargetInferCoherence.ofInferCompleteness
     {evaluator : DIndGArtifactEvaluator}
     {sig : DIndGArtifactSig}
     {rawTerm : DIndGArtifactTerm}
@@ -5868,7 +5868,7 @@ namespace DIndGArtifactSROKCert
 the local target-`infer` coherence obligation for the conv-free SR core.  The
 main preservation theorem does not inspect `conv`; this adapter is only for
 callers that already have an evidence-producing `sr-ok` certificate. -/
-def targetInferCoherenceOfConvSoundness
+theorem targetInferCoherenceOfConvSoundness
     {evaluator : DIndGArtifactEvaluator}
     {sig : DIndGArtifactSig}
     {rawTerm : DIndGArtifactTerm}
@@ -6173,7 +6173,7 @@ structure LocalSoundness
   inferred_types_convertible :
     ConvDecl (envOfSpecs sig.translatedSpecs) sourceInfer targetInfer
 
-def localSoundnessOfEvaluatorSoundness
+theorem localSoundnessOfEvaluatorSoundness
     {evaluator : DIndGArtifactEvaluator}
     {sig : DIndGArtifactSig}
     {rawTerm rawNf rawSourceInfer rawTargetInfer : DIndGArtifactTerm}
@@ -6890,7 +6890,7 @@ def to_kernel_readout
     generated_iota_step := execution.generated_iota_step
     nf_justification := execution.nf_justification }
 
-def to_local_soundness
+theorem to_local_soundness
     {evaluator : DIndGArtifactEvaluator}
     {sig : DIndGArtifactSig}
     {rawTerm : DIndGArtifactTerm}
@@ -7010,7 +7010,7 @@ def to_kernel_readout
     generated_iota_step := execution.generated_iota_step
     nf_justification := execution.nf_justification }
 
-def to_local_soundness
+theorem to_local_soundness
     {evaluator : DIndGArtifactEvaluator}
     {sig : DIndGArtifactSig}
     {rawTerm : DIndGArtifactTerm}
@@ -7875,7 +7875,7 @@ end DIndGRawAdmissionGateSoundness
 
 namespace DIndGRawArtifactCorrespondence
 
-def ofGateSoundness {sig : DIndGArtifactSig}
+theorem ofGateSoundness {sig : DIndGArtifactSig}
     {specs : List DeclSpec}
     {contracts : List FamilyRecursorDeclContract}
     (gateSucceeds : dindgRawArtifactGate.sigAdmittedWithElims sig)
@@ -7889,7 +7889,7 @@ def ofGateSoundness {sig : DIndGArtifactSig}
         gateSucceeds
         (sound.metatheory_of_gate gateSucceeds translation) }
 
-def ofGate {sig : DIndGArtifactSig}
+theorem ofGate {sig : DIndGArtifactSig}
     {specs : List DeclSpec}
     {contracts : List FamilyRecursorDeclContract}
     (gateSucceeds : dindgRawArtifactGate.sigAdmittedWithElims sig)
@@ -7898,7 +7898,7 @@ def ofGate {sig : DIndGArtifactSig}
   ofGateSoundness gateSucceeds translation
     (DIndGRawAdmissionGateSoundness.canonical sig specs contracts)
 
-def toGeneric {sig : DIndGArtifactSig}
+theorem toGeneric {sig : DIndGArtifactSig}
     {specs : List DeclSpec}
     {contracts : List FamilyRecursorDeclContract}
     (corr : DIndGRawArtifactCorrespondence sig specs contracts) :
@@ -7906,7 +7906,7 @@ def toGeneric {sig : DIndGArtifactSig}
       dindgRawArtifactGate sig specs contracts :=
   corr.generic
 
-def toMetatheoryReadout {sig : DIndGArtifactSig}
+theorem toMetatheoryReadout {sig : DIndGArtifactSig}
     {specs : List DeclSpec}
     {contracts : List FamilyRecursorDeclContract}
     (corr : DIndGRawArtifactCorrespondence sig specs contracts) :
@@ -11075,7 +11075,7 @@ def cicStage3RawArtifactSigWithPropToType0Witness : DIndGArtifactSig :=
     translatedSpecs := cicStage3PropToType0WitnessSpecs
     translatedContracts := [natRecContract] }
 
-def cicStage3RawArtifactSignatureTranslationWithPropToType0Witness :
+theorem cicStage3RawArtifactSignatureTranslationWithPropToType0Witness :
     DIndGArtifactSignatureTranslation
       cicStage3RawArtifactSigWithPropToType0Witness
       cicStage3PropToType0WitnessSpecs
@@ -11084,7 +11084,7 @@ def cicStage3RawArtifactSignatureTranslationWithPropToType0Witness :
   contracts_eq := rfl
   contract_sources := cicStage3RawArtifactContractSourcesWithPropToType0Witness
 
-def cicStage3RawArtifactGateSucceedsWithPropToType0Witness :
+theorem cicStage3RawArtifactGateSucceedsWithPropToType0Witness :
     dindgRawArtifactGate.sigAdmittedWithElims
       cicStage3RawArtifactSigWithPropToType0Witness :=
   ⟨cicStage3PropToType0WitnessSignatureWellFormed,
@@ -11100,7 +11100,7 @@ def cicStage3RawArtifactGateSucceedsWithPropToType0Witness :
       subst contract
       exact cicStage3Type0Type0ResolvedFrontier⟩
 
-def cicStage3RawArtifactSignatureTranslation :
+theorem cicStage3RawArtifactSignatureTranslation :
     DIndGArtifactSignatureTranslation
       cicStage3RawArtifactSig
       cicStage3Specs
@@ -11109,7 +11109,7 @@ def cicStage3RawArtifactSignatureTranslation :
   contracts_eq := rfl
   contract_sources := cicStage3RawArtifactContractSources
 
-def cicStage3RawArtifactGateSucceeds :
+theorem cicStage3RawArtifactGateSucceeds :
     dindgRawArtifactGate.sigAdmittedWithElims
       cicStage3RawArtifactSig :=
   ⟨cicStage3SignatureWellFormed,
@@ -11138,7 +11138,7 @@ def cicStage3RawAdmissionGateSoundness :
 
 /-- The current Stage-3 raw correspondence obtained through the same admission
 gate-soundness seam required by the generic artifact theorem. -/
-def cicStage3RawArtifactCorrespondenceViaGateSoundness :
+theorem cicStage3RawArtifactCorrespondenceViaGateSoundness :
     DIndGRawArtifactCorrespondence
       cicStage3RawArtifactSig
       cicStage3Specs
@@ -11149,7 +11149,7 @@ def cicStage3RawArtifactCorrespondenceViaGateSoundness :
 
 /-- Current Stage-3 raw artifact correspondence, derived from the raw gate and
 signature translation rather than hand-packing the mirror fields. -/
-def cicStage3RawArtifactCorrespondence :
+theorem cicStage3RawArtifactCorrespondence :
     DIndGRawArtifactCorrespondence
       cicStage3RawArtifactSig
       cicStage3Specs
@@ -11158,7 +11158,7 @@ def cicStage3RawArtifactCorrespondence :
 
 /-- Current Stage-3 artifact correspondence, exposed in the generic form used by
 the universal artifact theorem. -/
-def cicStage3ArtifactCorrespondence :
+theorem cicStage3ArtifactCorrespondence :
     DIndGArtifactCorrespondence
       dindgRawArtifactGate
       cicStage3RawArtifactSig
@@ -11167,26 +11167,26 @@ def cicStage3ArtifactCorrespondence :
   cicStage3RawArtifactCorrespondence.toGeneric
 
 /-- Stage-3 CIC guest instantiation of the DIndG artifact admission mirror. -/
-def cicStage3SRAdmissionMirror :
+theorem cicStage3SRAdmissionMirror :
     DIndGSRAdmissionMirror cicStage3Specs :=
   DIndGSRAdmissionMirror.ofSignatureWellFormed
     cicStage3SignatureWellFormed
 
 /-- Stage-3 CIC guest instantiation of the full DIndG admission gate for
 the currently active generated-recursion contract. -/
-def cicStage3DIndGAdmitted :
+theorem cicStage3DIndGAdmitted :
     DIndGAdmitted cicStage3Specs [natRecContract] :=
   cicStage3ArtifactCorrespondence.toAdmitted
 
 /-- The same Stage-3 admission mirror, produced from the raw admission gate
 soundness seam rather than a hand-packed generic correspondence. -/
-def cicStage3DIndGAdmittedViaRawGateSoundness :
+theorem cicStage3DIndGAdmittedViaRawGateSoundness :
     DIndGAdmitted cicStage3Specs [natRecContract] :=
   cicStage3RawArtifactCorrespondenceViaGateSoundness.toGeneric.toAdmitted
 
 /-- Clear Stage-3 readout for build-order item 2: the admission mirror is
 produced by the raw gate and signature translation, not assumed separately. -/
-def cicStage3DIndGAdmittedFromRawGate :
+theorem cicStage3DIndGAdmittedFromRawGate :
     DIndGAdmitted cicStage3Specs [natRecContract] :=
   cicStage3RawArtifactCorrespondence.toGeneric.toAdmitted
 

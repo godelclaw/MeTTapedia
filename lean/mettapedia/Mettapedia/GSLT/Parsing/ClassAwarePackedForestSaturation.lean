@@ -234,7 +234,7 @@ theorem certificateKey_mem_recognizedNodeKeys
 
 /-- The finite child-key enumerator contains the exact row of every semantic
 item derivation whose recursive certificates already unfold in the forest. -/
-def items_row_mem_enumerateRecognizedItems
+theorem items_row_mem_enumerateRecognizedItems
     {forest : Forest} {profile : ParserProfileLayer}
     {plan : CompiledParserPackPlan} {input : List Nat}
     {items : List PackItem} {start stop : Nat} {children : List CST} :

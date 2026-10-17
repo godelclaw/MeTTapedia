@@ -61,7 +61,7 @@ theorem checker_authority :
 
 /-- With Foundation soundness, exact provability projects soundly into an
 independently defined semantic model or model class. -/
-def semanticProjection
+theorem semanticProjection
     {Model : Type uModel} [LO.Semantics Model Formula] (model : Model)
     [LO.Sound system model] :
     (checker system).AuthorityProjection
@@ -74,7 +74,7 @@ def semanticProjection
 
 /-- Foundation completeness upgrades the semantic projection to exact
 certificate authority for the selected model or model class. -/
-def semanticAuthority
+theorem semanticAuthority
     {Model : Type uModel} [LO.Semantics Model Formula] (model : Model)
     [LO.Sound system model] [LO.Complete system model] :
     (checker system).Authority
@@ -113,7 +113,7 @@ def checker : Checker Formula Certificate :=
   IntrinsicCertificate.checker LO.Modal.K
 
 /-- Exact SemanticService certificate authority for validity on all Kripke frames. -/
-def kripkeAuthority :
+theorem kripkeAuthority :
     checker.Authority
       (fun formula =>
         LO.Semantics.Models LO.Modal.Kripke.FrameClass.K formula) :=
@@ -122,7 +122,7 @@ def kripkeAuthority :
 
 /-- The same calculus is exact for validity on finite Kripke frames by
 Foundation's filtration theorem. -/
-def finiteKripkeAuthority :
+theorem finiteKripkeAuthority :
     checker.Authority
       (fun formula =>
         LO.Semantics.Models LO.Modal.Kripke.FrameClass.finite_K formula) :=

@@ -45,8 +45,7 @@ theorem typeCast_self_of_undefined {space : Space} {a : Atom}
     (t : Atom) (b : Bindings) (fuel : Nat) :
     typeCast a t space b fuel = [(a, b)] := by
   unfold typeCast
-  rw [h]
-  simp [typeCast.typeCastLoop, matchTypes]
+  simp [rawTypeLookup, h, typeCast.typeCastLoop, matchTypes]
 
 /-- An expression headed by anything other than the bare `"Error"` symbol
 is not Error-shaped. -/
@@ -85,7 +84,7 @@ inductive SelfEvalQuiescent (space : Space) (d : GroundedDispatch)
   | expr {op e2 : Atom} {rest : List Atom}
       (h_not_err : isEmptyOrError (Atom.expression (op :: e2 :: rest)) = false)
       (h_not_exec : HeadNotExecutable d (.expression (op :: e2 :: rest)))
-      (h_no_eqs : ∀ f, queryEquations space (.expression (op :: e2 :: rest)) f = [])
+      (h_no_eqs : NoEquationMatch space (.expression (op :: e2 :: rest)))
       (h_head_untyped : getAtomTypes space op = [Atom.undefinedType])
       (h_last_flat : ∀ es', (op :: e2 :: rest).getLast? = some (Atom.expression es') → False)
       (h_no_error_sym : ∀ e ∈ op :: e2 :: rest, e ≠ Atom.symbol "Error")
@@ -101,21 +100,31 @@ theorem SelfEvalQuiescent.not_empty_or_error {space : Space}
   | grounded _ => rfl
   | expr h_not_err _ _ _ _ _ _ => exact h_not_err
 
+/-- Quiescent spectators introduce no names into a retained scope. -/
+theorem SelfEvalQuiescent.variables_eq_nil {space : Space}
+    {d : GroundedDispatch} {fuel : Nat} {a : Atom}
+    (h : SelfEvalQuiescent space d fuel a) : atomVariables a = [] := by
+  induction h with
+  | symbol => rfl
+  | grounded => rfl
+  | expr _ _ _ _ _ _ _ ih =>
+      exact atomListVariables_eq_nil_of_forall _ ih
+
 /-- Tail-tuple self-evaluation: a list of self-evaluating, non-Empty/Error
 elements, with at least two entries and a non-expression last element,
 tuple-evaluates to itself. The pair case uses a wrapped singleton tail,
 so reconstruction preserves a nested last element as well. -/
-theorem tuple_self {space : Space} {d : GroundedDispatch} :
+theorem tuple_self {space : Space} {d : GroundedDispatch} {live : List Atom} :
     ∀ (x y : Atom) (zs : List Atom) (b : Bindings),
-      (∀ e ∈ x :: y :: zs, ∀ b' : Bindings,
-        EvalAtom space d e Atom.undefinedType b' (e, b')) →
+      (∀ e ∈ x :: y :: zs, ∀ (b' : Bindings) {scope : List Atom},
+        EvalAtom space d (live := scope) e Atom.undefinedType b' (e, b')) →
       (∀ e ∈ x :: y :: zs, isEmptyOrError e = false) →
       (∀ es', (x :: y :: zs).getLast? = some (Atom.expression es') → False) →
       (∀ e ∈ x :: y :: zs, e ≠ Atom.symbol "Error") →
-      InterpretTuple space d (.expression (x :: y :: zs)) b
+      InterpretTuple space d (live := live) (.expression (x :: y :: zs)) b
         (.expression (x :: y :: zs), b)
   | x, y, [], b, h_eval, h_ok, _h_last, h_nes => by
-      have h_y : InterpretTuple space d (.expression [y]) b
+      have h_y : InterpretTuple space d (live := x :: live) (.expression [y]) b
           (.expression [y], b) :=
         InterpretTuple.singleton y b (y, b)
           (h_eval y (by simp) b) (h_ok y (by simp))
@@ -123,10 +132,10 @@ theorem tuple_self {space : Space} {d : GroundedDispatch} :
         (by simp) (h_eval x (by simp) b) (h_ok x (by simp)) h_y
         (isEmptyOrError_expr_false [] (h_nes y (by simp)))
   | x, y, z :: zs, b, h_eval, h_ok, h_last, h_nes => by
-      have h_tl : InterpretTuple space d (.expression (y :: z :: zs)) b
+      have h_tl : InterpretTuple space d (live := x :: live) (.expression (y :: z :: zs)) b
           (.expression (y :: z :: zs), b) :=
         tuple_self y z zs b
-          (fun e he b' => h_eval e (List.mem_cons_of_mem x he) b')
+          (fun e he b' {scope} => h_eval e (List.mem_cons_of_mem x he) b')
           (fun e he => h_ok e (List.mem_cons_of_mem x he))
           (fun es' h' => h_last es' (by simpa using h'))
           (fun e he => h_nes e (List.mem_cons_of_mem x he))
@@ -145,7 +154,7 @@ atoms officially evaluate to themselves with unchanged bindings, under
 theorem selfEval_of_quiescent {space : Space} {d : GroundedDispatch}
     {fuel : Nat} :
     (a : Atom) → SelfEvalQuiescent space d fuel a → (b : Bindings) →
-      EvalAtom space d a Atom.undefinedType b (a, b)
+      EvalAtom space d (live := live) a Atom.undefinedType b (a, b)
   | a, h, b => by
     cases h with
     | @symbol s h_not_err h_untyped =>
@@ -161,13 +170,13 @@ theorem selfEval_of_quiescent {space : Space} {d : GroundedDispatch}
         · rw [typeCast_self_of_undefined h_untyped]
           exact List.mem_singleton.mpr rfl
     | @expr op e2 rest h_not_err h_not_exec h_no_eqs h_head_untyped h_last h_nes h_elems =>
-        have h_elem_eval : ∀ e ∈ op :: e2 :: rest, ∀ b' : Bindings,
-            EvalAtom space d e Atom.undefinedType b' (e, b') := by
-          intro e he b'
+        have h_elem_eval : ∀ e ∈ op :: e2 :: rest, ∀ (b' : Bindings) {scope : List Atom},
+            EvalAtom space d (live := scope) e Atom.undefinedType b' (e, b') := by
+          intro e he b' scope
           exact selfEval_of_quiescent e (h_elems e he) b'
         have h_elem_ok : ∀ e ∈ op :: e2 :: rest, isEmptyOrError e = false :=
           fun e he => (h_elems e he).not_empty_or_error
-        have h_tuple : InterpretTuple space d (.expression (op :: e2 :: rest)) b
+        have h_tuple : InterpretTuple space d (live := Atom.undefinedType :: live) (.expression (op :: e2 :: rest)) b
             (.expression (op :: e2 :: rest), b) :=
           tuple_self op e2 rest b h_elem_eval h_elem_ok h_last h_nes
         have h_not_err_atom : isErrorAtom (Atom.expression (op :: e2 :: rest)) = false := by
@@ -188,7 +197,8 @@ theorem selfEval_of_quiescent {space : Space} {d : GroundedDispatch}
               revert h_not_exec
               unfold HeadNotExecutable
               exact fun h => h)
-            (h_no_eqs fuel)
+            (equationScope_coversEvaluation live _ Atom.undefinedType b)
+            (h_no_eqs _ fuel)
         · exact h_not_err_atom
   termination_by a _ _ => sizeOf a
   decreasing_by
@@ -205,42 +215,42 @@ theorem tuple_unique_of {space : Space} {d : GroundedDispatch}
     {fuel : Nat} :
     ∀ (x y : Atom) (zs : List Atom) {b : Bindings} {r : ResultPair},
       (∀ e ∈ x :: y :: zs, SelfEvalQuiescent space d fuel e) →
-      (∀ e ∈ x :: y :: zs, ∀ {b' : Bindings} {r' : ResultPair},
-        EvalAtom space d e Atom.undefinedType b' r' → r' = (e, b')) →
+      (∀ e ∈ x :: y :: zs, ∀ {b' : Bindings} {r' : ResultPair} {scope : List Atom},
+        EvalAtom space d (live := scope) e Atom.undefinedType b' r' → r' = (e, b')) →
       (∀ es', (x :: y :: zs).getLast? = some (Atom.expression es') → False) →
       (∀ e ∈ x :: y :: zs, e ≠ Atom.symbol "Error") →
-      InterpretTuple space d (.expression (x :: y :: zs)) b r →
+      InterpretTuple space d (live := live) (.expression (x :: y :: zs)) b r →
       r = (.expression (x :: y :: zs), b)
   | x, y, zs, b, r, h_elems, h_uniq, h_last, h_nes, h => by
     cases h with
-    | @head_error _ _ _ _ h_ne h_ev h_isErr =>
+    | @head_error _ _ _ _ _ h_ne h_ev h_isErr =>
         have hr := h_uniq x (by simp) h_ev
         have h_ok := (h_elems x (by simp)).not_empty_or_error
         rw [hr] at h_isErr
         simp [h_isErr] at h_ok
-    | @tail_error _ _ _ hr _ h_ne h_ev h_hok h_tail h_terr =>
+    | @tail_error _ _ _ _ hr _ h_ne h_ev h_hok h_tail h_terr =>
         have hx := h_uniq x (by simp) h_ev
         subst hx
         cases zs with
         | nil =>
             cases h_tail with
-            | @singleton _ _ _ h_ev_y _ =>
+            | @singleton _ _ _ _ h_ev_y _ =>
                 have hy := h_uniq y (by simp) h_ev_y
                 rw [hy] at h_terr
                 have h_ok := isEmptyOrError_expr_false [] (h_nes y (by simp))
                 simp [h_terr] at h_ok
-            | @singleton_error _ _ _ h_ev_y h_error =>
+            | @singleton_error _ _ _ _ h_ev_y h_error =>
                 have hy := h_uniq y (by simp) h_ev_y
                 rw [hy] at h_error
                 have h_ok := (h_elems y (by simp)).not_empty_or_error
                 simp [h_error] at h_ok
-            | @head_error _ _ _ _ h_ne' _ _ => exact absurd rfl h_ne'
-            | @tail_error _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
-            | @success _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
+            | @head_error _ _ _ _ _ h_ne' _ _ => exact absurd rfl h_ne'
+            | @tail_error _ _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
+            | @success _ _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
         | cons z zs' =>
             have h_tl := tuple_unique_of y z zs'
               (fun e he => h_elems e (List.mem_cons_of_mem x he))
-              (fun e he => h_uniq e (List.mem_cons_of_mem x he))
+              (fun e he {b' r' scope} => h_uniq e (List.mem_cons_of_mem x he))
               (fun es' h' => h_last es' (by simpa using h'))
               (fun e he => h_nes e (List.mem_cons_of_mem x he))
               h_tail
@@ -248,28 +258,28 @@ theorem tuple_unique_of {space : Space} {d : GroundedDispatch}
             have h_ok := isEmptyOrError_expr_false (z :: zs')
               (h_nes y (by simp))
             simp [h_terr] at h_ok
-    | @success _ _ _ hr tr h_ne h_ev h_hok h_tl h_tok =>
+    | @success _ _ _ _ hr tr h_ne h_ev h_hok h_tl h_tok =>
         have hx := h_uniq x (by simp) h_ev
         subst hx
         cases zs with
         | nil =>
             cases h_tl with
-            | @singleton _ _ _ h_ev_y _ =>
+            | @singleton _ _ _ _ h_ev_y _ =>
                 have hy := h_uniq y (by simp) h_ev_y
                 subst hy
                 rfl
-            | @singleton_error _ _ _ h_ev_y h_error =>
+            | @singleton_error _ _ _ _ h_ev_y h_error =>
                 have hy := h_uniq y (by simp) h_ev_y
                 rw [hy] at h_error
                 have h_ok := (h_elems y (by simp)).not_empty_or_error
                 simp [h_error] at h_ok
-            | @head_error _ _ _ _ h_ne' _ _ => exact absurd rfl h_ne'
-            | @tail_error _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
-            | @success _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
+            | @head_error _ _ _ _ _ h_ne' _ _ => exact absurd rfl h_ne'
+            | @tail_error _ _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
+            | @success _ _ _ _ _ _ h_ne' _ _ _ _ => exact absurd rfl h_ne'
         | cons z zs' =>
             have h_tl' := tuple_unique_of y z zs'
               (fun e he => h_elems e (List.mem_cons_of_mem x he))
-              (fun e he => h_uniq e (List.mem_cons_of_mem x he))
+              (fun e he {b' r' scope} => h_uniq e (List.mem_cons_of_mem x he))
               (fun es' h' => h_last es' (by simpa using h'))
               (fun e he => h_nes e (List.mem_cons_of_mem x he))
               h_tl
@@ -283,8 +293,8 @@ only constructors that survive, and both return `(atom, b)`. -/
 theorem mettaCall_untyped_inert {space : Space} {d : GroundedDispatch}
     {es : List Atom} {t : Atom} {b : Bindings} {r : ResultPair}
     (h_not_exec : HeadNotExecutable d (.expression es))
-    (h_no_eqs : ∀ f, queryEquations space (.expression es) f = [])
-    (h : MettaCall space d (.expression es) t b r) :
+    (h_no_eqs : NoEquationMatch space (.expression es))
+    (h : MettaCall space d (live := live) (.expression es) t b r) :
     r = (.expression es, b) := by
   unfold HeadNotExecutable at h_not_exec
   cases h with
@@ -294,14 +304,14 @@ theorem mettaCall_untyped_inert {space : Space} {d : GroundedDispatch}
   | unify_bad_arity => simp_all
   | switch_minimal_result => simp_all
   | switch_minimal_bad_shape => simp_all
-  | no_match _ _ _ _ _ _ _ => rfl
+  | no_match _ _ _ _ _ _ _ _ => rfl
   | grounded_ok => simp_all
   | grounded_runtime_error => simp_all
   | grounded_no_reduce => simp_all
   | grounded_incorrect_arg => simp_all
   | grounded_empty_results => simp_all
-  | equation_match => simp_all
-  | empty_results => simp_all
+  | equation_match => simp_all [NoEquationMatch]
+  | empty_results => simp_all [NoEquationMatch]
 
 /-- **Theorem S0 (Q-uniqueness)**: on Q's domain, self-evaluation is the
 ONLY official evaluation — every `EvalAtom` derivation at `%Undefined%`
@@ -311,12 +321,12 @@ theorem selfEval_unique {space : Space} {d : GroundedDispatch}
     {fuel : Nat} :
     (a : Atom) → SelfEvalQuiescent space d fuel a →
     ∀ {b : Bindings} {r : ResultPair},
-      EvalAtom space d a Atom.undefinedType b r → r = (a, b)
+      EvalAtom space d (live := live) a Atom.undefinedType b r → r = (a, b)
   | a, h_dom, b, r, h => by
     cases h with
     | empty_or_error _ _ _ _ => rfl
     | type_pass _ _ _ _ _ => rfl
-    | @type_cast _ _ _ _ fuel' h_ne h_np h_branch h_result =>
+    | @type_cast _ _ _ _ _ fuel' h_ne h_np h_branch h_result =>
         cases h_dom with
         | symbol h_not_err h_untyped =>
             rw [typeCast_self_of_undefined h_untyped] at h_result
@@ -341,10 +351,10 @@ theorem selfEval_unique {space : Space} {d : GroundedDispatch}
                 simp_all [isFunctionType, Atom.undefinedType]
             | op_type_error =>
                 simp_all [isFunctionType, Atom.undefinedType]
-            | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
+            | @tuple_path _ _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
                 have h_tr : tupleResult = (.expression (op :: e2 :: rest), b) :=
                   tuple_unique_of op e2 rest h_elems
-                    (fun e he => selfEval_unique e (h_elems e he))
+                    (fun e he {b' r' scope} => selfEval_unique e (h_elems e he))
                     h_last h_nes h_tuple
                 rw [h_tr] at h_mc
                 exact mettaCall_untyped_inert h_not_exec h_no_eqs h_mc
@@ -360,10 +370,10 @@ theorem selfEval_unique {space : Space} {d : GroundedDispatch}
                 simp_all [isFunctionType, Atom.undefinedType]
             | op_type_error =>
                 simp_all [isFunctionType, Atom.undefinedType]
-            | @tuple_path _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
+            | @tuple_path _ _ _ _ tupleResult _ h_has h_tuple h_mc _ =>
                 have h_tr : tupleResult = (.expression (op :: e2 :: rest), b) :=
                   tuple_unique_of op e2 rest h_elems
-                    (fun e he => selfEval_unique e (h_elems e he))
+                    (fun e he {b' r' scope} => selfEval_unique e (h_elems e he))
                     h_last h_nes h_tuple
                 rw [h_tr] at h_mc
                 exact mettaCall_untyped_inert h_not_exec h_no_eqs h_mc
@@ -384,8 +394,8 @@ theorem tuple_self_of_quiescent_elements {space : Space} {d : GroundedDispatch}
     {fuel : Nat} (values : List Atom) (b : Bindings)
     (h_elems : ∀ e ∈ values, SelfEvalQuiescent space d fuel e)
     (h_no_error : Atom.symbol "Error" ∉ values) :
-    InterpretTuple space d (.expression values) b (.expression values, b) := by
-  induction values with
+    InterpretTuple space d (live := live) (.expression values) b (.expression values, b) := by
+  induction values generalizing live with
   | nil => exact .nil b
   | cons head tail ih =>
       have h_head := h_elems head (by simp)
@@ -414,9 +424,9 @@ theorem tuple_unique_of_quiescent_elements {space : Space} {d : GroundedDispatch
     (h_elems : ∀ e ∈ values, SelfEvalQuiescent space d fuel e)
     (h_no_error : Atom.symbol "Error" ∉ values)
     {b : Bindings} {r : ResultPair}
-    (h : InterpretTuple space d (.expression values) b r) :
+    (h : InterpretTuple space d (live := live) (.expression values) b r) :
     r = (.expression values, b) := by
-  induction values generalizing b r with
+  induction values generalizing b r live with
   | nil => cases h; rfl
   | cons head tail ih =>
       have h_head := h_elems head (by simp)
@@ -466,9 +476,9 @@ theorem tuple_rightmost_error_of_quiescent_elements
     (h_elems : ∀ e ∈ front ++ Atom.symbol "Error" :: tail,
       SelfEvalQuiescent space d fuel e)
     (h_last : Atom.symbol "Error" ∉ tail) :
-    InterpretTuple space d (.expression (front ++ Atom.symbol "Error" :: tail)) b
+    InterpretTuple space d (live := live) (.expression (front ++ Atom.symbol "Error" :: tail)) b
       (.expression (Atom.symbol "Error" :: tail), b) := by
-  induction front with
+  induction front generalizing live with
   | nil =>
       have h_error := h_elems (Atom.symbol "Error") (by simp)
       cases tail with
@@ -501,9 +511,9 @@ theorem tuple_rightmost_error_unique_of_quiescent_elements
       SelfEvalQuiescent space d fuel e)
     (h_last : Atom.symbol "Error" ∉ tail)
     {b : Bindings} {r : ResultPair}
-    (h : InterpretTuple space d (.expression (front ++ Atom.symbol "Error" :: tail)) b r) :
+    (h : InterpretTuple space d (live := live) (.expression (front ++ Atom.symbol "Error" :: tail)) b r) :
     r = (.expression (Atom.symbol "Error" :: tail), b) := by
-  induction front generalizing b r with
+  induction front generalizing b r live with
   | nil =>
       have h_error := h_elems (Atom.symbol "Error") (by simp)
       have h_tail : ∀ e ∈ tail, SelfEvalQuiescent space d fuel e :=
@@ -545,16 +555,16 @@ theorem tuple_rightmost_error_unique_of_quiescent_elements
       have h_rest : ∀ e ∈ rest ++ Atom.symbol "Error" :: tail,
           SelfEvalQuiescent space d fuel e :=
         fun e he => h_elems e (List.mem_cons_of_mem head he)
-      change InterpretTuple space d
+      change InterpretTuple space d (live := live)
         (.expression (head :: (rest ++ Atom.symbol "Error" :: tail))) b r at h
       generalize h_remaining : rest ++ Atom.symbol "Error" :: tail = remaining at h
       have h_remaining_ne : remaining ≠ [] := by
         rw [← h_remaining]
         simp
-      have h_remaining_unique : ∀ {b' : Bindings} {r' : ResultPair},
-          InterpretTuple space d (.expression remaining) b' r' →
+      have h_remaining_unique : ∀ {b' : Bindings} {r' : ResultPair} {scope : List Atom},
+          InterpretTuple space d (live := scope) (.expression remaining) b' r' →
             r' = (.expression (Atom.symbol "Error" :: tail), b') := by
-        intro b' r' h'
+        intro b' r' scope h'
         rw [← h_remaining] at h'
         exact ih h_rest h'
       clear h_remaining
@@ -583,7 +593,7 @@ theorem tuple_completion_iff_of_quiescent_elements
     (values : List Atom)
     (h_elems : ∀ e ∈ values, SelfEvalQuiescent space d fuel e)
     (b : Bindings) (r : ResultPair) :
-    InterpretTuple space d (.expression values) b r ↔
+    InterpretTuple space d (live := live) (.expression values) b r ↔
       (Atom.symbol "Error" ∉ values ∧ r = (.expression values, b)) ∨
       ∃ front tail, values = front ++ Atom.symbol "Error" :: tail ∧
         Atom.symbol "Error" ∉ tail ∧ r = (.expression (Atom.symbol "Error" :: tail), b) := by

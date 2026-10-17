@@ -131,13 +131,20 @@ def countSink : OperatorDecl :=
   { interface := "count", arity := 3,
     semanticId := "support.group-cardinality.v1" }
 
-/-- Exact floating evaluation is a declared foreign-provider extension.  It
-is not assigned the meaning of an ordinary support sink. -/
+/-- The kernel's `pure` registry is a declared foreign-provider extension.  It
+is not assigned the meaning of an ordinary support sink.  The registry of the
+always-on grounding feature evaluates integer, floating and string functions;
+the identifier names only its floating part. -/
 def pureSink : OperatorDecl :=
   { interface := "pure", arity := 3,
     semanticId := "support.evaluate-project.mm2-pure-f64.v1" }
 
-/-- The maintained open-world MM2 execution presentation. -/
+/-- The maintained open-world support presentation of MM2.  Two declared laws
+differ from the kernel: the kernel writes the instances of every `+` sink before
+it finalizes the other sinks, so `finalizeSinksLeftToRight` holds for it only
+when no `+` sink follows a sink that removes the same instance; and it aborts on
+an unknown sink or source inside a recognized form, where `leaveInert` keeps the
+shell as data (`Mainline.fireDirective`, `Mainline.MainlineFault`). -/
 def presentation : ExecutionPresentation :=
   { name := "mm2"
     profile := "gslt"

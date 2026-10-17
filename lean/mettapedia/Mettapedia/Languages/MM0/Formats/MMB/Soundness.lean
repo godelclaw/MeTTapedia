@@ -60,9 +60,9 @@ mutual
 /-- Decoding one actual source expression preserves all preceding slots and
 consumes exactly a command prefix. Saved applications fill their own new
 reservation; they do not overwrite an earlier source binding. -/
-theorem decodeExpr_source_order (arity : Nat → Option Nat) (arguments fuel : Nat)
+theorem decodeExpr_resolved_source_order (termId sortId : Nat → Option Nat) (arity : Nat → Option Nat) (arguments fuel : Nat)
     (before after : Statements.Decoding) (commands rest : List UnifyCmd) (expression : Preterm)
-    (decoded : Statements.decodeExpr arity arguments fuel before commands = some (expression, after, rest)) :
+    (decoded : Statements.decodeExpr arity arguments fuel before commands termId sortId = some (expression, after, rest)) :
     ∃ slots consumed, after.slots = before.slots ++ slots ∧ commands = consumed ++ rest ∧ consumed ≠ [] := by
   cases fuel with
   | zero => simp [Statements.decodeExpr] at decoded
@@ -73,6 +73,7 @@ theorem decodeExpr_source_order (arity : Nat → Option Nat) (arguments fuel : N
           cases command with
           | hyp => simp [Statements.decodeExpr] at decoded
           | ref index =>
+              simp only [Statements.decodeExpr] at decoded
               change ((before.slots[index]?).bind id).bind (fun source => some (source, before, commands)) =
                 some (expression, after, rest) at decoded
               cases sourceRead : (before.slots[index]?).bind id with
@@ -85,60 +86,69 @@ theorem decodeExpr_source_order (arity : Nat → Option Nat) (arguments fuel : N
                   cases same
                   exact ⟨[], [.ref index], by simp, rfl, by simp⟩
           | dummy sort =>
-              have same : (.var (arguments + before.dummies.length),
-                  ⟨before.slots ++ [some (.var (arguments + before.dummies.length))], before.dummies ++ [sort]⟩,
-                  commands) = (expression, after, rest) := by
-                simpa [Statements.decodeExpr] using decoded
-              cases same
-              exact ⟨[some (.var (arguments + before.dummies.length))], [.dummy sort], rfl, rfl, by simp⟩
+              cases logicalRead : sortId sort with
+              | none => simp [Statements.decodeExpr, logicalRead] at decoded
+              | some logical =>
+                  have same : (.var (arguments + before.dummies.length),
+                      ⟨before.slots ++ [some (.var (arguments + before.dummies.length))], before.dummies ++ [logical]⟩,
+                      commands) = (expression, after, rest) := by
+                    simpa [Statements.decodeExpr, logicalRead] using decoded
+                  cases same
+                  exact ⟨[some (.var (arguments + before.dummies.length))], [.dummy sort], rfl, rfl, by simp⟩
           | term term =>
-              cases countRead : arity term with
-              | none => simp [Statements.decodeExpr, countRead] at decoded
-              | some count =>
-                  cases children : Statements.decodeExprs arity arguments fuel count before commands with
-                  | none => simp [Statements.decodeExpr, countRead, children] at decoded
-                  | some value =>
-                      rcases value with ⟨expressions, next, remaining⟩
-                      have same : (Preterm.applyArgs (.term term) expressions, next, remaining) =
-                          (expression, after, rest) := by
-                        simpa [Statements.decodeExpr, countRead, children] using decoded
-                      obtain ⟨slots, consumed, slotsRead, commandsRead, _⟩ :=
-                        decodeExprs_source_order arity arguments fuel count before next commands remaining expressions children
-                      cases same
-                      exact ⟨slots, .term term :: consumed, slotsRead, by rw [commandsRead]; rfl, by simp⟩
+              cases logicalRead : termId term with
+              | none => simp [Statements.decodeExpr, logicalRead] at decoded
+              | some logical =>
+                  cases countRead : arity term with
+                  | none => simp [Statements.decodeExpr, countRead] at decoded
+                  | some count =>
+                      cases children : Statements.decodeExprs arity arguments fuel count before commands termId sortId with
+                      | none => simp [Statements.decodeExpr, countRead, logicalRead, children] at decoded
+                      | some value =>
+                          rcases value with ⟨expressions, next, remaining⟩
+                          have same : (Preterm.applyArgs (.term logical) expressions, next, remaining) =
+                              (expression, after, rest) := by
+                            simpa [Statements.decodeExpr, countRead, logicalRead, children] using decoded
+                          obtain ⟨slots, consumed, slotsRead, commandsRead, _⟩ :=
+                            decodeExprs_resolved_source_order termId sortId arity arguments fuel count before next commands remaining expressions children
+                          cases same
+                          exact ⟨slots, .term term :: consumed, slotsRead, by rw [commandsRead]; rfl, by simp⟩
           | termSave term =>
-              cases countRead : arity term with
-              | none => simp [Statements.decodeExpr, countRead] at decoded
-              | some count =>
-                  let reserved : Statements.Decoding := { before with slots := before.slots ++ [none] }
-                  cases children : Statements.decodeExprs arity arguments fuel count reserved commands with
-                  | none => simp [Statements.decodeExpr, countRead, reserved, children] at decoded
-                  | some value =>
-                      rcases value with ⟨expressions, next, remaining⟩
-                      let body := Preterm.applyArgs (.term term) expressions
-                      have same : body = expression ∧
-                          { next with slots := next.slots.set before.slots.length (some body) } = after ∧
-                          remaining = rest := by
-                        simpa [Statements.decodeExpr, countRead, reserved, body, children] using decoded
-                      obtain ⟨slots, consumed, slotsRead, commandsRead, _⟩ :=
-                        decodeExprs_source_order arity arguments fuel count reserved next commands remaining expressions children
-                      rcases same with ⟨sameExpression, sameState, sameRest⟩
-                      subst expression
-                      subst after
-                      subst rest
-                      refine ⟨some body :: slots, .termSave term :: consumed, ?_, by rw [commandsRead]; rfl, by simp⟩
-                      change next.slots.set before.slots.length (some body) = before.slots ++ (some body :: slots)
-                      rw [slotsRead]
-                      change ((before.slots ++ [none]) ++ slots).set before.slots.length (some body) = _
-                      rw [List.append_assoc, List.set_append_right _ _ (Nat.le_refl _)]
-                      simp
+              cases logicalRead : termId term with
+              | none => simp [Statements.decodeExpr, logicalRead] at decoded
+              | some logical =>
+                  cases countRead : arity term with
+                  | none => simp [Statements.decodeExpr, countRead] at decoded
+                  | some count =>
+                      let reserved : Statements.Decoding := { before with slots := before.slots ++ [none] }
+                      cases children : Statements.decodeExprs arity arguments fuel count reserved commands termId sortId with
+                      | none => simp [Statements.decodeExpr, countRead, logicalRead, reserved, children] at decoded
+                      | some value =>
+                          rcases value with ⟨expressions, next, remaining⟩
+                          let body := Preterm.applyArgs (.term logical) expressions
+                          have same : body = expression ∧
+                              { next with slots := next.slots.set before.slots.length (some body) } = after ∧
+                              remaining = rest := by
+                            simpa [Statements.decodeExpr, countRead, logicalRead, reserved, body, children] using decoded
+                          obtain ⟨slots, consumed, slotsRead, commandsRead, _⟩ :=
+                            decodeExprs_resolved_source_order termId sortId arity arguments fuel count reserved next commands remaining expressions children
+                          rcases same with ⟨sameExpression, sameState, sameRest⟩
+                          subst expression
+                          subst after
+                          subst rest
+                          refine ⟨some body :: slots, .termSave term :: consumed, ?_, by rw [commandsRead]; rfl, by simp⟩
+                          change next.slots.set before.slots.length (some body) = before.slots ++ (some body :: slots)
+                          rw [slotsRead]
+                          change ((before.slots ++ [none]) ++ slots).set before.slots.length (some body) = _
+                          rw [List.append_assoc, List.set_append_right _ _ (Nat.le_refl _)]
+                          simp
 termination_by fuel
 
 /-- Consecutive source children retain their exact order and preceding
 bindings. The prefix is derived from the actual recursive decoder. -/
-theorem decodeExprs_source_order (arity : Nat → Option Nat) (arguments fuel count : Nat)
+theorem decodeExprs_resolved_source_order (termId sortId : Nat → Option Nat) (arity : Nat → Option Nat) (arguments fuel count : Nat)
     (before after : Statements.Decoding) (commands rest : List UnifyCmd) (expressions : List Preterm)
-    (decoded : Statements.decodeExprs arity arguments fuel count before commands = some (expressions, after, rest)) :
+    (decoded : Statements.decodeExprs arity arguments fuel count before commands termId sortId = some (expressions, after, rest)) :
     ∃ slots consumed, after.slots = before.slots ++ slots ∧ commands = consumed ++ rest ∧ count ≤ consumed.length := by
   cases count with
   | zero =>
@@ -150,20 +160,20 @@ theorem decodeExprs_source_order (arity : Nat → Option Nat) (arguments fuel co
       cases fuel with
       | zero => simp [Statements.decodeExprs] at decoded
       | succ fuel =>
-          cases first : Statements.decodeExpr arity arguments fuel before commands with
+          cases first : Statements.decodeExpr arity arguments fuel before commands termId sortId with
           | none => simp [Statements.decodeExprs, first] at decoded
           | some value =>
               rcases value with ⟨expression, middle, remaining⟩
-              cases others : Statements.decodeExprs arity arguments fuel count middle remaining with
+              cases others : Statements.decodeExprs arity arguments fuel count middle remaining termId sortId with
               | none => simp [Statements.decodeExprs, first, others] at decoded
               | some value =>
                   rcases value with ⟨earlier, finish, following⟩
                   have same : (expression :: earlier, finish, following) = (expressions, after, rest) := by
                     simpa [Statements.decodeExprs, first, others] using decoded
                   obtain ⟨firstSlots, firstCommands, firstSlotsRead, firstCommandsRead, firstNonempty⟩ :=
-                    decodeExpr_source_order arity arguments fuel before middle commands remaining expression first
+                    decodeExpr_resolved_source_order termId sortId arity arguments fuel before middle commands remaining expression first
                   obtain ⟨otherSlots, otherCommands, otherSlotsRead, otherCommandsRead, countBound⟩ :=
-                    decodeExprs_source_order arity arguments fuel count middle finish remaining following earlier others
+                    decodeExprs_resolved_source_order termId sortId arity arguments fuel count middle finish remaining following earlier others
                   cases same
                   refine ⟨firstSlots ++ otherSlots, firstCommands ++ otherCommands,
                     by rw [otherSlotsRead, firstSlotsRead, List.append_assoc],
@@ -174,6 +184,23 @@ theorem decodeExprs_source_order (arity : Nat → Option Nat) (arguments fuel co
 termination_by fuel
 
 end
+
+
+
+/-- The already-resolved command specialization preserves preceding slots and
+consumes a nonempty prefix of the original stream. -/
+theorem decodeExpr_source_order (arity : Nat → Option Nat) (arguments fuel : Nat)
+    (before after : Statements.Decoding) (commands rest : List UnifyCmd) (expression : Preterm)
+    (decoded : Statements.decodeExpr arity arguments fuel before commands = some (expression, after, rest)) :
+    ∃ slots consumed, after.slots = before.slots ++ slots ∧ commands = consumed ++ rest ∧ consumed ≠ [] :=
+  decodeExpr_resolved_source_order some some arity arguments fuel before after commands rest expression decoded
+
+/-- Consecutive already-resolved children retain their ordered source prefix. -/
+theorem decodeExprs_source_order (arity : Nat → Option Nat) (arguments fuel count : Nat)
+    (before after : Statements.Decoding) (commands rest : List UnifyCmd) (expressions : List Preterm)
+    (decoded : Statements.decodeExprs arity arguments fuel count before commands = some (expressions, after, rest)) :
+    ∃ slots consumed, after.slots = before.slots ++ slots ∧ commands = consumed ++ rest ∧ count ≤ consumed.length :=
+  decodeExprs_resolved_source_order some some arity arguments fuel count before after commands rest expressions decoded
 
 /-- Context positions of the bound binders, in rank order. -/
 def rankPositions (context : Context) : List Nat :=

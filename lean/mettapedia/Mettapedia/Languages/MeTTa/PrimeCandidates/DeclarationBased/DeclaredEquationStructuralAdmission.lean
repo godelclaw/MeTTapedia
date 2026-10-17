@@ -23,7 +23,7 @@ namespace DeclaredEquationStructuralAdmission
 
 open AuthoredDeclarationSignature
 open DeclaredEquationInference
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.ExtensionGluing
 open Mettapedia.GSLT.LanguageDef.GroundFactExtension

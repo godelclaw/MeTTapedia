@@ -566,6 +566,11 @@ noncomputable def sourceExtension (result : ContextConstantDefinitionResult)
     rw [sourcePreModel_eq]
     exact (M.constantSubstitutionReduct (sourceExpansion result)).term_closed
 
+/-- A constant-only extension keeps the same value universe. -/
+@[simp] theorem sourceExtension_carrier (result : ContextConstantDefinitionResult)
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
+    (sourceExtension result M).Carrier = M.Carrier := rfl
+
 theorem sourceExtension_eq_reduct (result : ContextConstantDefinitionResult)
     (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) :
     sourceExtension result M = M.constantSubstitutionReduct (sourceExpansion result) := by
@@ -581,6 +586,15 @@ theorem sourceExtension_fullDomains (result : ContextConstantDefinitionResult)
     (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
     (sourceExtension result M).FullDomains :=
   (M.constantSubstitutionReduct_fullDomains_iff (sourceExpansion result)).mpr full
+
+/-- Standardizing the admitted meanings retains the existing source extension.
+The equation is abstract in the declaration, so callers need not unfold a
+concrete definition body to compare model structure fields. -/
+theorem sourceStandard_eq_sourceExtension (result : ContextConstantDefinitionResult)
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
+    HOL.HenkinModel.standard M.Carrier (sourceMeanings result M) = sourceExtension result M :=
+  HOL.HenkinModel.standard_eq_of_fullDomains (sourceExtension result M)
+    (sourceExtension_fullDomains result M full)
 
 /-- The registered source identity receives the denotation of its actual
 body at every admitted public type instance. -/
@@ -608,6 +622,57 @@ theorem sourceExtension_constant_other (result : ContextConstantDefinitionResult
   change M.denote (sourceExpansion result (.constant constant annotation typed)) _ = _
   rw [sourceExpansion_other result constant annotation typed different]
   rfl
+
+/-- The named denotation node preserves every other declaration, without
+unfolding the preceding model's admitted definition bodies. -/
+theorem sourceMeanings_constant_other (result : ContextConstantDefinitionResult)
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol)
+    (constant : Const) (annotation : Ty) {type : HOL.Ty AtomicTy}
+    (typed : annotation.toHOL = type) (different : constant ≠ result.output.constant) :
+    sourceMeanings result M (.constant constant annotation typed) =
+      M.constDen (.constant constant annotation typed) :=
+  sourceExtension_constant_other result M constant annotation typed different
+
+
+/-- Constant denotation updates over a fixed carrier. Keeping the preceding
+meanings as a function avoids elaborating complete earlier model extensions
+when a later declaration refers to an old symbol. -/
+@[irreducible] noncomputable def standardSourceMeanings (result : ContextConstantDefinitionResult)
+    (carrier : AtomicTy → Type (w + 1))
+    (meanings : ∀ {type}, Symbol type → HOL.Ty.denote.{0, w + 1} carrier type) :
+    ∀ {type}, Symbol type → HOL.Ty.denote.{0, w + 1} carrier type :=
+  sourceMeanings result (HOL.HenkinModel.standard carrier meanings)
+
+theorem standardSourceMeanings_eq (result : ContextConstantDefinitionResult)
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
+    @standardSourceMeanings result M.Carrier M.constDen = @sourceMeanings result M := by
+  unfold standardSourceMeanings
+  have congruent {first second : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol}
+      (same : first = second) : HEq (@sourceMeanings result first) (@sourceMeanings result second) := by
+    cases same
+    rfl
+  exact eq_of_heq (congruent (HOL.HenkinModel.standard_eq_of_fullDomains M full))
+
+theorem standardSourceMeanings_constant_other (result : ContextConstantDefinitionResult)
+    (carrier : AtomicTy → Type (w + 1))
+    (meanings : ∀ {type}, Symbol type → HOL.Ty.denote.{0, w + 1} carrier type)
+    (constant : Const) (annotation : Ty) {type : HOL.Ty AtomicTy}
+    (typed : annotation.toHOL = type) (different : constant ≠ result.output.constant) :
+    standardSourceMeanings result carrier meanings (.constant constant annotation typed) =
+      meanings (.constant constant annotation typed) := by
+  unfold standardSourceMeanings
+  exact sourceMeanings_constant_other result
+    (HOL.HenkinModel.standard carrier meanings) constant annotation typed different
+
+/-- The fixed-carrier presentation has exactly the original extension's
+semantics on full-domain models; this is not a new declaration authority. -/
+theorem standardSourceModel_eq_sourceExtension (result : ContextConstantDefinitionResult)
+    (M : HOL.HenkinModel.{0, 0, w + 1} AtomicTy Symbol) (full : M.FullDomains) :
+    HOL.HenkinModel.standard M.Carrier
+      (standardSourceMeanings result M.Carrier M.constDen) = sourceExtension result M := by
+  rw [standardSourceMeanings_eq result M full]
+  exact sourceStandard_eq_sourceExtension result M full
+
 
 /-- Expanding a fresh declaration leaves every translation omitting it
 unchanged, including open terms and primitive equality. -/

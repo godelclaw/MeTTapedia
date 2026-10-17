@@ -84,25 +84,25 @@ def fixturePins : List FixturePin := [
   { suite := "prime", test := "theory_profiles/isolation"
     files := [
       { path := "tests/prime/theory_profiles/isolation.metta"
-        sha256 := "0929e757253bef938ba5f21a9d9463c92aec2a9ad74043f29d39b0529cdc3e9d" },
+        sha256 := "89f8014fb252d6739df824864346e41e94fbe6dfaf1218ecb9a8813e37f3384e" },
       { path := "tests/prime/theory_profiles/isolation.expected"
-        sha256 := "c7f07ed2eada2a62ba58ccf426741c8f738275593d692808fdde5cd2a8254688" }] },
+        sha256 := "9ac0663ae27dc71536b25257f05fbc307def105990225d8d560f07e902a1df22" }] },
   { suite := "prime", test := "trinity/reverse.extensional"
     files := [
       { path := "tests/prime/trinity/reverse.extensional.metta"
-        sha256 := "891a9a8b5da0e6973716fb8aa5f53ba80e668f41a1971a7f0604da54062d7454" },
+        sha256 := "58d866f8e9edcd4e697be4f8d4576854bfdd926f76fc251dab92d44d7094dee6" },
       { path := "tests/prime/trinity/reverse.extensional.expected"
-        sha256 := "b22c1f2b0d3b47283fac7f1d9bd256c7cd8dbef9b09592664bf0b4b67c460416" }] },
+        sha256 := "478a3f40c0f00573e45d9306023f4f35ae70ada2ce593e8bba105beb088ba1fa" }] },
   { suite := "prime", test := "trinity/reverse.intensional"
     files := [
       { path := "tests/prime/trinity/reverse.intensional.metta"
-        sha256 := "ac661274d2a031468131429fd39eeeff6dfefb836c1492238dd7ea1bb7f3b2e6" },
+        sha256 := "70b3bb2c14ba22c044873174e2e9bf9e52bd7c74d04e26a30b95e583f219f3b2" },
       { path := "tests/prime/trinity/reverse.intensional.expected"
-        sha256 := "02899bf0da242fbb63b4d945f8cc549a468292e29b9a52023546c127400605f3" }] },
+        sha256 := "8411b03af8d81a5fea1a107f5ce29423e03421153b7f03f3cced5851e4fb81c0" }] },
   { suite := "prime", test := "trinity/reverse.operational"
     files := [
       { path := "tests/prime/trinity/reverse.operational.metta"
-        sha256 := "b56f8a8c20427aad63a77e8738ebd8367969feb22931ec607e5709a098b606ca" },
+        sha256 := "2ad38d38e7464b0a96abab1f1fb85e3336ae9aa2069e04daa27ed82aa5706e7a" },
       { path := "tests/prime/trinity/reverse.operational.expected"
         sha256 := "5e298c98723e2f75d64c4b417e4e10e41fee1c9c15badab4785ebac3743e7dab" }] }
 ]

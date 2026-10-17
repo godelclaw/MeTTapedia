@@ -58,7 +58,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.GSLT.LanguageDef.Authored
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
   (language queryFirstCandidatePresentation)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 variable (K : AuthoredCalculus)

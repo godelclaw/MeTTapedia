@@ -348,3 +348,179 @@ theorem inserted_administration_does_not_force_a_divergent_cek_source_to_termina
   exact finiteObservation
 
 end Mettapedia.Machines.ProductiveCoreControls
+
+namespace Mettapedia.Machines.ProductiveCoreControls.FamilyLoading
+
+open MachineCore ProductiveCoreOrdered
+
+/-! ## Actual kernels with different dependent state and question carriers -/
+
+inductive FunctionalPackage where
+  | eager | demand | countdown
+  deriving DecidableEq, Repr
+
+def FunctionalQuestion : FunctionalPackage → Type
+  | .eager | .demand => Tm
+  | .countdown => Nat
+
+def functionalKernel : (selection : FunctionalPackage) → MachineCore (FunctionalQuestion selection)
+  | .eager => cekCore
+  | .demand => krivineCore
+  | .countdown => countdown
+
+def functionalFamily := familyCore functionalKernel
+
+/-- This observer reads literal answers of each actual evaluator, or the
+completed countdown. It supplies no common hypothetical consequence relation. -/
+def functionalReadout : functionalFamily.State → Option Nat
+  | ⟨.eager, state⟩ => (cekAnswer state).bind fun value =>
+      match value with | .lit number => some number | .clo _ _ => none
+  | ⟨.demand, state⟩ => (krivineAnswer state).bind fun value =>
+      match value with | .lit number => some number | .clo _ _ => none
+  | ⟨.countdown, state⟩ => if Nat.beq state 0 then some 0 else none
+
+theorem heterogeneous_questions_and_states_are_retained :
+    functionalFamily.load ⟨.eager, .lit 7⟩ = ⟨.eager, cekCore.load (.lit 7)⟩ ∧
+    functionalFamily.load ⟨.demand, .lit 7⟩ = ⟨.demand, krivineCore.load (.lit 7)⟩ ∧
+    functionalFamily.load ⟨.countdown, (3 : Nat)⟩ = ⟨.countdown, (3 : Nat)⟩ ∧
+    functionalFamily.step ⟨.countdown, (3 : Nat)⟩ = some ⟨.countdown, (2 : Nat)⟩ :=
+  ⟨rfl, rfl, rfl, rfl⟩
+
+/-- The same real source term keeps the existing eager/demand strategy
+distinction when execution is packaged through the dependent family. -/
+theorem actual_strategy_distinction_survives_family_loading :
+    functionalReadout (walk functionalFamily 10 (functionalFamily.load ⟨.eager, tKO⟩)) = none ∧
+    functionalReadout (walk functionalFamily 10 (functionalFamily.load ⟨.demand, tKO⟩)) = some 7 :=
+  ⟨rfl, rfl⟩
+
+theorem actual_family_runs_keep_selected_kernel (selection : FunctionalPackage)
+    (question : FunctionalQuestion selection) (fuel : Nat) :
+    (walk functionalFamily fuel (functionalFamily.load ⟨selection, question⟩)).1 = selection :=
+  familyCore_reachable_keeps_selection functionalKernel (walk_reachable functionalFamily fuel _)
+
+/-! ## One instruction image with two selected opcode interpretations -/
+
+inductive ArithmeticPackage where
+  | increment | double
+  deriving DecidableEq, Repr
+
+inductive ArithmeticInstruction where
+  | adjust
+  | add (amount : Nat)
+  | invalid
+  deriving DecidableEq, Repr
+
+structure ArithmeticState where
+  register : Nat
+  code : List ArithmeticInstruction
+  deriving DecidableEq, Repr
+
+abbrev ArithmeticQuestion (_selection : ArithmeticPackage) := List ArithmeticInstruction × Nat
+
+/-- Each selected interpretation executes its actual instruction table.
+`adjust` increments under one package and doubles under the other. -/
+def arithmeticKernel (selection : ArithmeticPackage) : MachineCore (ArithmeticQuestion selection) where
+  State := ArithmeticState
+  load question := ⟨question.2, question.1⟩
+  step state := match state.code with
+    | [] | .invalid :: _ => none
+    | .adjust :: rest => some ⟨(match selection with
+        | .increment => state.register + 1
+        | .double => 2 * state.register), rest⟩
+    | .add amount :: rest => some ⟨state.register + amount, rest⟩
+
+def arithmeticFamily := familyCore arithmeticKernel
+
+structure ArithmeticImage where
+  selection : Option ArithmeticPackage
+  code : List ArithmeticInstruction
+  input : Nat
+  deriving DecidableEq, Repr
+
+def validArithmeticCode (code : List ArithmeticInstruction) : Bool :=
+  code.all fun instruction => match instruction with | .invalid => false | _ => true
+
+def decodeArithmetic (selection : ArithmeticPackage) (image : ArithmeticImage) :
+    Option (ArithmeticQuestion selection) :=
+  if validArithmeticCode image.code then some (image.code, image.input) else none
+
+def readArithmeticImage := decodeSelected ArithmeticImage.selection decodeArithmetic
+
+def loadArithmeticImage := arithmeticFamily.loadCode readArithmeticImage
+
+def arithmeticCode : List ArithmeticInstruction := [.adjust, .add 5, .adjust]
+
+def incrementImage : ArithmeticImage := ⟨some .increment, arithmeticCode, 3⟩
+def doubleImage : ArithmeticImage := ⟨some .double, arithmeticCode, 3⟩
+
+def codeDatum (image : ArithmeticImage) : List ArithmeticInstruction × Nat := (image.code, image.input)
+
+def arithmeticObservation (image : ArithmeticImage) : Option Nat :=
+  (loadArithmeticImage image).map fun loaded => (walk arithmeticFamily 3 loaded).2.register
+
+/-- Identical code and input execute three actual instructions with different
+results because the retained interpretation changes `adjust`. -/
+theorem identical_code_has_distinct_selected_results :
+    codeDatum incrementImage = codeDatum doubleImage ∧
+    arithmeticObservation incrementImage = some 10 ∧
+    arithmeticObservation doubleImage = some 22 := ⟨rfl, rfl, rfl⟩
+
+/-- No observer of bare code and input alone can reproduce these selected
+executions. The differing results come from the runners, not an answer table. -/
+theorem bare_code_cannot_determine_selected_results :
+    ¬ ∃ observe : (List ArithmeticInstruction × Nat) → Option Nat,
+      ∀ image, observe (codeDatum image) = arithmeticObservation image := by
+  rintro ⟨observe, agrees⟩
+  have first := agrees incrementImage
+  have second := agrees doubleImage
+  change observe (arithmeticCode, 3) = some 10 at first
+  change observe (arithmeticCode, 3) = some 22 at second
+  have impossible : (10 : Nat) = 22 := Option.some.inj (first.symm.trans second)
+  cases impossible
+
+/-- A defective reader defaults every accepted instruction image to one
+package, forgetting both selected interpretation and missing selection. -/
+def forgettingReader (image : ArithmeticImage) : Option (Σ selection, ArithmeticQuestion selection) :=
+  (decodeArithmetic .increment image).map (Sigma.mk .increment)
+
+def forgettingObservation (image : ArithmeticImage) : Option Nat :=
+  (arithmeticFamily.loadCode forgettingReader image).map fun loaded =>
+    (walk arithmeticFamily 3 loaded).2.register
+
+theorem forgetting_selection_merges_distinct_interpretations :
+    forgettingObservation incrementImage = some 10 ∧
+    forgettingObservation doubleImage = some 10 ∧
+    forgettingObservation doubleImage ≠ arithmeticObservation doubleImage :=
+  ⟨rfl, rfl, by decide⟩
+
+theorem forgetting_reader_does_not_preserve_selected_package :
+    ¬ ∀ image state, arithmeticFamily.loadCode forgettingReader image = some state →
+      image.selection = some state.1 := by
+  intro preserves
+  have wrong := preserves doubleImage ⟨.increment, ⟨3, arithmeticCode⟩⟩ rfl
+  cases wrong
+
+theorem selected_reader_retains_its_actual_package {image : ArithmeticImage}
+    {state : arithmeticFamily.State} (loaded : loadArithmeticImage image = some state) :
+    image.selection = some state.1 :=
+  familyCore_loadCode_keeps_selection arithmeticKernel ArithmeticImage.selection decodeArithmetic loaded
+
+theorem missing_package_and_invalid_code_are_refused :
+    loadArithmeticImage ⟨none, arithmeticCode, 3⟩ = none ∧
+    loadArithmeticImage ⟨some .double, [.invalid], 3⟩ = none := ⟨rfl, rfl⟩
+
+/-- Falling back to an unrequested interpretation would invent a configuration
+where the checked package selector refused the image. -/
+theorem default_package_invents_a_refused_configuration :
+    loadArithmeticImage ⟨none, arithmeticCode, 3⟩ = none ∧
+    arithmeticFamily.loadCode forgettingReader ⟨none, arithmeticCode, 3⟩ =
+      some ⟨.increment, ⟨3, arithmeticCode⟩⟩ := ⟨rfl, rfl⟩
+
+theorem family_step_cannot_retag_the_same_native_payload :
+    arithmeticFamily.step ⟨.increment, ⟨3, arithmeticCode⟩⟩ ≠
+      some ⟨.double, ⟨4, [.add 5, .adjust]⟩⟩ := by
+  intro advanced
+  have same := familyCore_step_keeps_selection arithmeticKernel advanced
+  cases same
+
+end Mettapedia.Machines.ProductiveCoreControls.FamilyLoading

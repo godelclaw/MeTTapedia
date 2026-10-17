@@ -26,9 +26,7 @@ open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlap
 open Mettapedia.PLN.Evidence.EvidenceClass
 open scoped ENNReal
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.ModalQuery
-abbrev WeightedState := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState
-abbrev PolicyRuleSet := RuleSet WeightedState ModalQuery
+abbrev PolicyRuleSet := RuleSet WeightedState (LO.Modal.Formula ℕ)
 
 /-- Policy-adapted state:
 first apply overlap-aware fallback revision, then trusted-source gating. -/
@@ -42,8 +40,8 @@ noncomputable def policyLeastRuleClosure
     (R : PolicyRuleSet)
     (trusted : String → Prop) [DecidablePred trusted]
     (W₁ W₂ : WeightedState)
-    (seed : Set ModalQuery) : Set ModalQuery :=
-  leastRuleClosure (State := WeightedState) (Query := ModalQuery)
+    (seed : Set (LO.Modal.Formula ℕ)) : Set (LO.Modal.Formula ℕ) :=
+  leastRuleClosure (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
     R (policyRevisedState trusted W₁ W₂) seed
 
 /-- Policy-aware iterative closure dynamics. -/
@@ -51,38 +49,38 @@ noncomputable def policyImmediateIter
     (R : PolicyRuleSet)
     (trusted : String → Prop) [DecidablePred trusted]
     (W₁ W₂ : WeightedState)
-    (seed : Set ModalQuery) : ℕ → Set ModalQuery :=
-  immediateIter (State := WeightedState) (Query := ModalQuery)
+    (seed : Set (LO.Modal.Formula ℕ)) : ℕ → Set (LO.Modal.Formula ℕ) :=
+  immediateIter (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
     R (policyRevisedState trusted W₁ W₂) seed
 
 theorem policyImmediateIter_subset_policyLeastRuleClosure
     (R : PolicyRuleSet)
     (trusted : String → Prop) [DecidablePred trusted]
     (W₁ W₂ : WeightedState)
-    (seed : Set ModalQuery)
+    (seed : Set (LO.Modal.Formula ℕ))
     (n : ℕ) :
     policyImmediateIter R trusted W₁ W₂ seed n ⊆
       policyLeastRuleClosure R trusted W₁ W₂ seed := by
   exact
     immediateIter_subset_leastRuleClosure
-      (State := WeightedState) (Query := ModalQuery)
+      (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
       (R := R) (W := policyRevisedState trusted W₁ W₂) (seed := seed) n
 
 theorem policyLeastRuleClosure_thresholdValid
     (R : PolicyRuleSet)
     (trusted : String → Prop) [DecidablePred trusted]
     (W₁ W₂ : WeightedState)
-    (seed : Set ModalQuery)
+    (seed : Set (LO.Modal.Formula ℕ))
     (τ : ℝ≥0∞)
     (hSeed :
-      thresholdValid (State := WeightedState) (Query := ModalQuery)
+      thresholdValid (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (policyRevisedState trusted W₁ W₂) τ seed) :
-    thresholdValid (State := WeightedState) (Query := ModalQuery)
+    thresholdValid (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
       (policyRevisedState trusted W₁ W₂) τ
       (policyLeastRuleClosure R trusted W₁ W₂ seed) := by
   exact
     leastRuleClosure_thresholdValid
-      (State := WeightedState) (Query := ModalQuery)
+      (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
       (R := R) (W := policyRevisedState trusted W₁ W₂)
       (seed := seed) (τ := τ) hSeed
 
@@ -112,38 +110,38 @@ theorem policyRevisedState_eq_left_of_not_compatible_trustedAll
     fallbackRevision_eq_left_of_not_compatible, hcompat]
 
 theorem policyLeastRuleClosure_eq_add_of_compatible_trustedAll
-    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set ModalQuery)
+    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set (LO.Modal.Formula ℕ))
     (hcompat : compatible W₁ W₂) :
     policyLeastRuleClosure R trustedAll W₁ W₂ seed =
-      leastRuleClosure (State := WeightedState) (Query := ModalQuery)
+      leastRuleClosure (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         R (W₁ + W₂) seed := by
   simp [policyLeastRuleClosure,
     policyRevisedState_eq_add_of_compatible_trustedAll (hcompat := hcompat)]
 
 theorem policyLeastRuleClosure_eq_left_of_not_compatible_trustedAll
-    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set ModalQuery)
+    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set (LO.Modal.Formula ℕ))
     (hcompat : ¬ compatible W₁ W₂) :
     policyLeastRuleClosure R trustedAll W₁ W₂ seed =
-      leastRuleClosure (State := WeightedState) (Query := ModalQuery)
+      leastRuleClosure (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         R W₁ seed := by
   simp [policyLeastRuleClosure,
     policyRevisedState_eq_left_of_not_compatible_trustedAll (hcompat := hcompat)]
 
 theorem policyImmediateIter_eq_add_of_compatible_trustedAll
-    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set ModalQuery)
+    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set (LO.Modal.Formula ℕ))
     (hcompat : compatible W₁ W₂) :
     policyImmediateIter R trustedAll W₁ W₂ seed =
-      immediateIter (State := WeightedState) (Query := ModalQuery)
+      immediateIter (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         R (W₁ + W₂) seed := by
   funext n
   simp [policyImmediateIter,
     policyRevisedState_eq_add_of_compatible_trustedAll (hcompat := hcompat)]
 
 theorem policyImmediateIter_eq_left_of_not_compatible_trustedAll
-    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set ModalQuery)
+    (R : PolicyRuleSet) (W₁ W₂ : WeightedState) (seed : Set (LO.Modal.Formula ℕ))
     (hcompat : ¬ compatible W₁ W₂) :
     policyImmediateIter R trustedAll W₁ W₂ seed =
-      immediateIter (State := WeightedState) (Query := ModalQuery)
+      immediateIter (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         R W₁ seed := by
   funext n
   simp [policyImmediateIter,

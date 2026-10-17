@@ -22,20 +22,12 @@ import Mettapedia.PLN.Bridges.HOL.LedgerMultiPathAdapter
 import Mettapedia.PLN.Bridges.HOL.Introspection
 import Mettapedia.PLN.Bridges.HOL.LogicalInductionWorldModelBridge
 import Mettapedia.PLN.Bridges.HOL.LogicalInduction
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLConsequence
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLInfinitary
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLInfinitaryCompleteness
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridge
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridgeRegression
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCode
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeCompleteness
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeConsequence
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeInfinitary
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeInfinitaryCompleteness
 import Mettapedia.PLN.Bridges.HOL.ProbHOLWorldModelBridge
 import Mettapedia.PLN.Bridges.HOL.Probabilistic
 

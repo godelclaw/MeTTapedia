@@ -42,7 +42,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.Framework.DerivedModalities
 open Mettapedia.GSLT.Core
-open CategoryTheory
+open _root_.Mettapedia.CategoryTheory
 
 /-! ## SubobjectFibration over Constructor Category -/
 

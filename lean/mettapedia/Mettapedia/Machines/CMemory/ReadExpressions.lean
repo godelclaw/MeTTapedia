@@ -1,5 +1,7 @@
-import Mettapedia.Machines.CMemory.Values
+import Mettapedia.Machines.CMemory.Array
 import Mettapedia.GSLT.LanguageDef.NativeOpsCScalarRead
+import Mettapedia.Languages.C11.IntegerConversion
+import Mettapedia.Languages.C11.TypeLanguage
 
 /-!
 # Retained scalar expressions with physical block reads
@@ -14,7 +16,12 @@ pointer values. Logical selection keeps the supplied unselected expression
 unevaluated. Unsupported syntax or scalar types reach undefined.
 
 Unsigned arithmetic uses the existing UInt32/UInt64 scalar operations and their
-declared unsigned widening. Signed decimals and unary minus use the common
+declared unsigned widening. Explicit uint32_t and uint64_t casts use the common
+C11 modular conversion and evaluate their operand exactly once. A leading
+const pointer cast uses the static character-view judgment and retains the
+operand's nullable pointer and reached heap. Its type inventory must justify
+the native typedefs; byte storage, alignment and lifetime are separate use
+obligations. Other pointer conversions remain outside this profile. Signed decimals and unary minus use the common
 scalar profile, which rejects signed overflow. Native byte layout, other C promotions and
 synchronization remain separate boundaries. This module does not define a second memory or ownership model.
 -/
@@ -25,8 +32,10 @@ namespace Mettapedia.Machines.CMemory.ReadExpressions
 
 open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
 open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.Languages.C11 hiding CType
 
 inductive FieldKind where
+  | byte
   | pointer
   | signedWord
   | word
@@ -44,6 +53,7 @@ structure Field where
 /-- The descriptor selects the same stored scalar type, without value-based
 narrowing or repair. -/
 def valueKind : CVal → FieldKind
+  | .u8 _ => .byte
   | .bool _ => .boolean
   | .i32 _ => .signedWord
   | .u32 _ => .word
@@ -58,6 +68,7 @@ def resolved {α : Type} : Option α → CProg CVal α
   | none => CProg.undefined
 
 def scalar (value : CVal) : ScalarRead.Value Ptr := match value with
+  | .u8 value => .byte value
   | .bool value => .boolean value
   | .i32 value => .signed value
   | .u32 value => .unsigned value
@@ -65,6 +76,7 @@ def scalar (value : CVal) : ScalarRead.Value Ptr := match value with
   | .ptr value => .identity value
 
 def cell? : ScalarRead.Value Ptr → Option CVal
+  | .byte value => some (.u8 value)
   | .boolean value => some (.bool value)
   | .signed value => some (.i32 value)
   | .unsigned value => some (.u32 value)
@@ -76,6 +88,7 @@ def cell? : ScalarRead.Value Ptr → Option CVal
 /-- Pointer truth is a validity-checked comparison, not a test that bypasses
 the lifetime contract of the memory primitives. -/
 def truth : CVal → CProg CVal Bool
+  | .u8 value => pure (value != 0)
   | .bool value => pure value
   | .i32 value => pure (value != 0)
   | .u32 value => pure (value != 0)
@@ -86,6 +99,10 @@ def truth : CVal → CProg CVal Bool
 
 def pointer : CVal → CProg CVal (Option Ptr)
   | .ptr value => pure value
+  | _ => CProg.undefined
+
+def byte : CVal → CProg CVal UInt8
+  | .u8 value => pure value
   | _ => CProg.undefined
 
 def word : CVal → CProg CVal UInt32
@@ -102,6 +119,9 @@ def field (layout : Layout) (owner : CVal) (name : Name) : CProg CVal CVal := do
   | some address, some descriptor =>
       match descriptor.kind with
       | .embedded => CProg.undefined
+      | .byte => do
+          let value ← CProg.loadU8 (address + descriptor.offset)
+          pure (.u8 value)
       | .signedWord => do
           let value ← CProg.loadI32 (address + descriptor.offset)
           pure (.i32 value)
@@ -136,6 +156,19 @@ def indexedScalar (kind : FieldKind) (array index : CVal) : CProg CVal CVal := d
     | .u64 value => pure value.toNat
     | _ => CProg.undefined
   field (fun _ => some ⟨offset, kind⟩) (.ptr array) []
+
+/-- Resolve an aggregate array place without loading its contents. Unsigned
+indices retain their full width. Bounds, alignment and live storage belong to
+the physical precondition; the stride is a static typed-cell descriptor. -/
+def indexedPlace (stride : Nat) (array index : CVal) : CProg CVal Ptr := do
+  let array ← pointer array
+  let offset ← match index with
+    | .u32 value => pure value.toNat
+    | .u64 value => pure value.toNat
+    | _ => CProg.undefined
+  match array with
+  | some address => pure (address + offset * stride)
+  | none => CProg.undefined
 
 def equal (left right : CVal) : CProg CVal Bool := match left, right with
   | .ptr left, .ptr right => CProg.ptrEq left right
@@ -183,6 +216,35 @@ abbrev Calls := CallService CVal
 
 def noCalls : Calls := fun _ _ => CProg.undefined
 
+/-- Whole call arguments are typed snapshots, separate from physical scalar cells. -/
+inductive CallArgument where
+  | scalar (value : CVal)
+  | record (type : CType) (fields : List CVal)
+  deriving DecidableEq, Repr
+
+/-- The established scalar call profile remains the default. Whole-value
+calls explicitly admit complete record arguments. -/
+inductive ArgumentMode where
+  | scalar
+  | whole
+  deriving DecidableEq, Repr
+
+abbrev ArgumentMode.Value : ArgumentMode → Type
+  | .scalar => CVal
+  | .whole => CallArgument
+
+/-- Call admission fixes the argument representation before evaluating the
+source operands. Its implementation must justify effects and returned data. -/
+structure ArgumentCall (Result : Type) where
+  mode : ArgumentMode := .scalar
+  invoke : List mode.Value → CProg CVal Result
+
+/-- The complete source range is read before any callee parameter writes. -/
+def snapshotRecord (type : CType) (source : Ptr) (extent : Nat) :
+    CProg CVal CallArgument := do
+  let fields ← CProg.loadCells source extent
+  pure (.record type fields)
+
 /-- Embedded-field addresses do not read an aggregate as a scalar cell.
 The offset is admitted by the layout; validity and ownership remain obligations
 of the program's physical execution contract. -/
@@ -221,9 +283,24 @@ structure ObjectReads where
   place : Option (Name → Option Ptr) := none
   size : CExpr → Option CVal := fun _ => none
   fields : Option (CExpr → Bool → Layout) := none
+  /-- Static array-member admission selects address decay of an embedded
+  field. A pointer-valued field still loads its stored pointer normally. -/
+  arrayField : CExpr → Bool → Name → Bool := fun _ _ _ => false
   /-- The static array operand determines its effective element type.
   Absent metadata retains the original pointer-array/UInt32 profile. -/
   indexKind : Option (CExpr → Option FieldKind) := none
+  /-- Aggregate lvalues need their statically admitted logical cell stride.
+  This neither reads an element nor guesses its size from pointer contents. -/
+  indexStride : CExpr → Option Nat := fun _ => none
+  /-- Static admission of a complete record lvalue. This does not read it. -/
+  record : CExpr → Option (CType × Nat) := fun _ => none
+  /-- Explicit whole-argument calls coexist with the established scalar service.
+  Missing admission retains the original call path. -/
+  argumentCalls : Name → Option (ArgumentCall CVal) := fun _ => none
+  /-- Elaborated source types are static data, not a predicate on reached values.
+  The source profile must justify its declarations and native typedef mapping. -/
+  sourceType : CExpr → Option Mettapedia.Languages.C11.CType := fun _ => none
+  targetType : CType → Option Mettapedia.Languages.C11.CType := fun _ => none
 
 /-- A static object profile selects descriptors using the actual owner syntax
 and the dot/arrow distinction. The default preserves the existing single-layout
@@ -233,6 +310,85 @@ def ObjectReads.fieldLayout (objects : ObjectReads) (fallback : Layout)
   match objects.fields with
   | none => fallback
   | some fields => fields owner throughPointer
+
+/-- Array members decay to their own address. The field must be an
+embedded object; its first cell is never read as an invented pointer value.
+This does not establish array bounds, lifetime or native byte offsets. -/
+def arrayFieldAddress (layout : Layout) (owner : CVal) (name : Name) : CProg CVal CVal := do
+  let descriptor ← resolved (layout name)
+  if descriptor.kind = .embedded then
+    let address ← fieldAddress layout owner name
+    pure (.ptr (some address))
+  else CProg.undefined
+
+/-- Only an explicitly admitted array member receives address decay. The
+scalar default, including refusal to read a whole embedded record, is kept. -/
+def ObjectReads.fieldRead (objects : ObjectReads) (fallback : Layout)
+    (owner : CExpr) (throughPointer : Bool) (actual : CVal) (name : Name) : CProg CVal CVal :=
+  if objects.arrayField owner throughPointer name then
+    arrayFieldAddress (objects.fieldLayout fallback owner throughPointer) actual name
+  else field (objects.fieldLayout fallback owner throughPointer) actual name
+
+/-- Scalar profiles keep the established field operation. Array-address
+decay is used only at the statically admitted member, never by inspecting the
+stored value or by treating an embedded record as a pointer. -/
+@[simp] theorem ObjectReads.fieldRead_of_scalar (objects : ObjectReads) (fallback : Layout)
+    (owner : CExpr) (throughPointer : Bool) (actual : CVal) (name : Name)
+    (scalar : objects.arrayField owner throughPointer name = false) :
+    objects.fieldRead fallback owner throughPointer actual name =
+      field (objects.fieldLayout fallback owner throughPointer) actual name := by
+  simp only [ObjectReads.fieldRead, scalar, Bool.false_eq_true, ↓reduceIte]
+
+/-- Mathematical integer readout of an admitted scalar. A pointer is not an
+integer whose value can be guessed from its address. -/
+def integerValue? : CVal → Option Int
+  | .u8 value => some value.toNat
+  | .bool value => some (if value then 1 else 0)
+  | .i32 value => some value.toInt
+  | .u32 value => some value.toNat
+  | .u64 value => some value.toNat
+  | .ptr _ => none
+
+/-- Explicit fixed-width unsigned casts use the shared C11 conversion. The
+signed policy is unreachable for these destinations. Other destination types
+are outside this physical-reader profile, rather than public language failure. -/
+def unsignedCast (type : CType) (value : CVal) : CProg CVal CVal := do
+  let input ← resolved (integerValue? value)
+  if type = ⟨"uint32_t".toList, 0⟩ then
+    match convertInteger (signalingPolicy 0) input (.integer (.unsigned 32 (by decide))) with
+    | .value result => pure (.u32 (UInt32.ofNat result.toNat))
+    | .signal _ => CProg.undefined
+  else if type = ⟨"uint64_t".toList, 0⟩ then
+    match convertInteger (signalingPolicy 0) input (.integer (.unsigned 64 (by decide))) with
+    | .value result => pure (.u64 (UInt64.ofNat result.toNat))
+    | .signal _ => CProg.undefined
+  else CProg.undefined
+
+/-- Retain every existing pointee qualifier when adding const. Unsupported
+nonpointer destinations have no pointer view; no qualifier is erased. -/
+def constPointee? : Mettapedia.Languages.C11.CType → Option Mettapedia.Languages.C11.CType
+  | .pointer qualifiers pointee => some (.pointer { qualifiers with const := true } pointee)
+  | _ => none
+
+/-- The static permission is checked against the independent C11 character
+view relation. A native uint8_t-to-unsigned-char mapping is an explicit source
+profile fact. The reached pointer is preserved, including null and allocation
+identity; this operation performs no read, callback or lifetime assertion. -/
+def readonlyPointerCast (source target : Mettapedia.Languages.C11.CType)
+    (value : CVal) : CProg CVal CVal :=
+  if CharacterPointerViews.accepted source target then
+    match value with
+    | .ptr pointer => pure (.ptr pointer)
+    | _ => CProg.undefined
+  else CProg.undefined
+
+/-- Only static source/type-name information selects a view. Actual operand
+execution has already occurred; type refusal cannot erase its effects. -/
+def ObjectReads.readonlyCast (objects : ObjectReads) (type : CType)
+    (operand : CExpr) (value : CVal) : CProg CVal CVal :=
+  match objects.sourceType operand, (objects.targetType type).bind constPointee? with
+  | some source, some target => readonlyPointerCast source target value
+  | _, _ => CProg.undefined
 
 mutual
  def expressionWithNames (names : NameReads) (calls : Calls) (layout : Layout)
@@ -244,9 +400,13 @@ mutual
   | .word value => pure (.u64 (UInt64.ofNat value.toNat))
   | .bool value => pure (.bool value)
   | .null => pure (.ptr none)
-  | .call name arguments => do
-      let values ← argumentsWithNames names calls layout arguments objects
-      calls name values
+  | .call name arguments => match objects.argumentCalls name with
+      | none => do
+          let values ← argumentsWithNames names calls layout arguments objects .scalar
+          calls name values
+      | some service => do
+          let values ← argumentsWithNames names calls layout arguments objects service.mode
+          service.invoke values
   | .unary .address (.field record name true) => do
       let owner ← expressionWithNames names calls layout record objects
       let address ← fieldAddress (objects.fieldLayout layout record true) owner name
@@ -258,6 +418,12 @@ mutual
           pure (.ptr (some address))
   | .sizeOfExpr operand => resolved (objects.size (.sizeOfExpr operand))
   | .sizeOf type => resolved (objects.size (.sizeOf type))
+  | .cast type operand => do
+      let value ← expressionWithNames names calls layout operand objects
+      unsignedCast type value
+  | .castPointeeConst type operand => do
+      let value ← expressionWithNames names calls layout operand objects
+      objects.readonlyCast type operand value
   | .unary .negate operand => do
       let value ← expressionWithNames names calls layout operand objects
       negate value
@@ -267,12 +433,12 @@ mutual
       pure (.bool (!selected))
   | .field record name true => do
       let owner ← expressionWithNames names calls layout record objects
-      field (objects.fieldLayout layout record true) owner name
+      objects.fieldRead layout record true owner name
   | .field record name false => match objects.place with
       | none => CProg.undefined
       | some _ => do
           let owner ← placeWithNames names calls layout record objects
-          field (objects.fieldLayout layout record false) (.ptr (some owner)) name
+          objects.fieldRead layout record false (.ptr (some owner)) name
   | .index array index => do
       let address ← expressionWithNames names calls layout array objects
       let position ← expressionWithNames names calls layout index objects
@@ -308,11 +474,20 @@ mutual
  termination_by structural operand
 
  def argumentsWithNames (names : NameReads) (calls : Calls) (layout : Layout)
-     (arguments : List CExpr) (objects : ObjectReads := {}) : CProg CVal (List CVal) := match arguments with
+     (arguments : List CExpr) (objects : ObjectReads := {}) (mode : ArgumentMode := .scalar) :
+     CProg CVal (List mode.Value) := match arguments with
   | [] => pure []
   | argument :: rest => do
-      let first ← expressionWithNames names calls layout argument objects
-      let others ← argumentsWithNames names calls layout rest objects
+      let first : mode.Value ← (match mode with
+        | .scalar => expressionWithNames names calls layout argument objects
+        | .whole => match objects.record argument with
+            | some (type, extent) => do
+                let source ← placeWithNames names calls layout argument objects
+                snapshotRecord type source extent
+            | none => do
+                let value ← expressionWithNames names calls layout argument objects
+                pure (CallArgument.scalar value))
+      let others ← argumentsWithNames names calls layout rest objects mode
       pure (first :: others)
  termination_by structural arguments
 
@@ -333,6 +508,11 @@ mutual
       let owner ← placeWithNames names calls layout record objects
       let descriptor ← resolved ((objects.fieldLayout layout record false) name)
       pure (owner + descriptor.offset)
+  | .index array index => do
+      let stride ← resolved (objects.indexStride array)
+      let address ← expressionWithNames names calls layout array objects
+      let position ← expressionWithNames names calls layout index objects
+      indexedPlace stride address position
   | _ => CProg.undefined
  termination_by structural operand
 end
@@ -425,6 +605,12 @@ theorem expressionWith_equation (calls : Calls) (layout : Layout) (environment :
   | .call name arguments => do
       let values ← argumentsWith calls layout environment arguments
       calls name values
+  | .cast type operand => do
+      let value ← expressionWith calls layout environment operand
+      unsignedCast type value
+  | .castPointeeConst _ operand => do
+      let _ ← expressionWith calls layout environment operand
+      CProg.undefined
   | .unary .address (.field record name true) => do
       let owner ← expressionWith calls layout environment record
       let address ← fieldAddress layout owner name
@@ -521,6 +707,167 @@ theorem undefined_bind {α β : Type} (next : α → CProg CVal β) :
   congr 1
   funext impossible
   cases impossible
+
+theorem unsignedCast32_exact (value : CVal) (input : Int)
+    (read : integerValue? value = some input) :
+    unsignedCast ⟨"uint32_t".toList, 0⟩ value =
+      pure (.u32 (UInt32.ofNat (input % powerOfTwo 32).toNat)) := by
+  simp only [unsignedCast, read, resolved, Prog.bind_eq, Prog.pure_eq,
+    Prog.ret_bind, ↓reduceIte, convertInteger]
+
+theorem unsignedCast64_exact (value : CVal) (input : Int)
+    (read : integerValue? value = some input) :
+    unsignedCast ⟨"uint64_t".toList, 0⟩ value =
+      pure (.u64 (UInt64.ofNat (input % powerOfTwo 64).toNat)) := by
+  simp only [unsignedCast, read, resolved, Prog.bind_eq, Prog.pure_eq,
+    Prog.ret_bind, ↓reduceIte, convertInteger]
+  rfl
+
+theorem unsignedCast32_of_u64 (value : UInt64) :
+    unsignedCast ⟨"uint32_t".toList, 0⟩ (.u64 value) =
+      pure (.u32 (UInt32.ofNat value.toNat)) := by
+  rw [unsignedCast32_exact _ _ rfl]
+  change (pure (CVal.u32 (UInt32.ofNat (value.toNat % 2 ^ 32))) : CProg CVal CVal) = _
+  rw [UInt32.ofNat_mod_size]
+
+private theorem unsigned32_remainder_readout (input : Int) :
+    ((UInt32.ofNat (input % powerOfTwo 32).toNat).toNat : Int) =
+      input % powerOfTwo 32 := by
+  have nonnegative := Int.emod_nonneg input (ne_of_gt (powerOfTwo_positive 32))
+  have bound := Int.emod_lt_of_pos input (powerOfTwo_positive 32)
+  have limit : (input % powerOfTwo 32).toNat < 2 ^ 32 := by
+    norm_num [powerOfTwo] at *
+    omega
+  rw [UInt32.toNat_ofNat', Nat.mod_eq_of_lt limit]
+  exact Int.toNat_of_nonneg nonnegative
+
+private theorem unsigned64_remainder_readout (input : Int) :
+    ((UInt64.ofNat (input % powerOfTwo 64).toNat).toNat : Int) =
+      input % powerOfTwo 64 := by
+  have nonnegative := Int.emod_nonneg input (ne_of_gt (powerOfTwo_positive 64))
+  have bound := Int.emod_lt_of_pos input (powerOfTwo_positive 64)
+  have limit : (input % powerOfTwo 64).toNat < 2 ^ 64 := by
+    norm_num [powerOfTwo] at *
+    omega
+  rw [UInt64.toNat_ofNat', Nat.mod_eq_of_lt limit]
+  exact Int.toNat_of_nonneg nonnegative
+
+/-- No operand-fit premise: overflowing and negative integers use exactly
+C11's unsigned reduction relation. -/
+theorem unsignedCast32_conversion (policy : SignedConversionPolicy) (input : Int) :
+    IntegerConverts policy input (.integer (.unsigned 32 (by decide)))
+      (.value ((UInt32.ofNat (input % powerOfTwo 32).toNat).toNat : Int)) := by
+  rw [unsigned32_remainder_readout]
+  exact convertInteger_sound policy input (.integer (.unsigned 32 (by decide)))
+
+theorem unsignedCast64_conversion (policy : SignedConversionPolicy) (input : Int) :
+    IntegerConverts policy input (.integer (.unsigned 64 (by decide)))
+      (.value ((UInt64.ofNat (input % powerOfTwo 64).toNat).toNat : Int)) := by
+  rw [unsigned64_remainder_readout]
+  exact convertInteger_sound policy input (.integer (.unsigned 64 (by decide)))
+
+theorem unsignedCast_pointer_unsupported (type : CType) (pointer : Option Ptr) :
+    unsignedCast type (.ptr pointer) = CProg.undefined := by
+  simp only [unsignedCast, integerValue?, resolved]
+  exact undefined_bind _
+
+theorem unsignedCast_destination_unsupported (type : CType) (value : CVal)
+    (not32 : type ≠ ⟨"uint32_t".toList, 0⟩)
+    (not64 : type ≠ ⟨"uint64_t".toList, 0⟩) :
+    unsignedCast type value = CProg.undefined := by
+  cases value <;>
+    simp only [unsignedCast, integerValue?, resolved, Prog.bind_eq, Prog.pure_eq,
+      Prog.ret_bind, if_neg not32, if_neg not64]
+  exact undefined_bind _
+
+namespace UnsignedCastControls
+
+theorem overflow_keeps_low_32_bits :
+    unsignedCast ⟨"uint32_t".toList, 0⟩ (.u64 4294967303) = pure (.u32 7) := rfl
+
+theorem negative_integer_reduces_unsigned :
+    unsignedCast ⟨"uint32_t".toList, 0⟩ (.i32 (-1)) = pure (.u32 4294967295) := rfl
+
+theorem narrow_integer_widens_without_loss :
+    unsignedCast ⟨"uint64_t".toList, 0⟩ (.u32 4294967295) =
+      pure (.u64 4294967295) := rfl
+
+theorem unsigned_pointer_destination_is_unsupported :
+    unsignedCast ⟨"uint32_t".toList, 1⟩ (.u64 7) = CProg.undefined := rfl
+
+theorem signed_destination_is_not_unsigned_reduction :
+    unsignedCast ⟨"int32_t".toList, 0⟩ (.u64 4294967303) = CProg.undefined := rfl
+
+end UnsignedCastControls
+
+/-- A cast evaluates the authored operand once and converts its reached value.
+The conversion neither invokes the operand again nor moves its effects. -/
+theorem cast_keeps_reached_operand (names : NameReads) (calls : Calls)
+    (layout : Layout) (objects : ObjectReads) (type : CType) (operand : CExpr) :
+    expressionWithNames names calls layout (.cast type operand) objects =
+      (expressionWithNames names calls layout operand objects >>= unsignedCast type) := rfl
+
+theorem immutable_cast_keeps_reached_operand (calls : Calls) (layout : Layout)
+    (environment : Environment) (type : CType) (operand : CExpr) :
+    expressionWith calls layout environment (.cast type operand) =
+      (expressionWith calls layout environment operand >>= unsignedCast type) := rfl
+
+namespace UnsignedCastControls
+
+/-- The actual source reader retains exactly one operand store before narrowing. -/
+theorem effectful_operand_occurs_once (address : Ptr) :
+    expressionWithNames
+      (fun _ => CProg.store address (.u32 1) >>= fun _ => pure (.u64 4294967303))
+      noCalls (fun _ => none)
+      (.cast ⟨"uint32_t".toList, 0⟩ (.identifier "operand".toList)) =
+      (CProg.store address (.u32 1) >>= fun _ => pure (.u32 7)) := rfl
+
+/-- Unsupported destination admission does not erase the already reached
+operand effect. It remains outside this physical-reader profile. -/
+theorem unsupported_cast_keeps_operand_effect (address : Ptr) :
+    expressionWithNames
+      (fun _ => CProg.store address (.u32 1) >>= fun _ => pure (.u64 4294967303))
+      noCalls (fun _ => none)
+      (.cast ⟨"uint32_t".toList, 1⟩ (.identifier "operand".toList)) =
+      (CProg.store address (.u32 1) >>= fun _ => CProg.undefined) := rfl
+
+end UnsignedCastControls
+
+/-- Array lvalue resolution evaluates each authored operand once and keeps
+its admitted cell stride. It performs no aggregate value read. -/
+theorem described_index_place_keeps_operands (names : NameReads) (calls : Calls)
+    (layout : Layout) (objects : ObjectReads) (array index : CExpr) (stride : Nat)
+    (described : objects.indexStride array = some stride) :
+    placeWithNames names calls layout (.index array index) objects =
+      (expressionWithNames names calls layout array objects >>= fun address =>
+        expressionWithNames names calls layout index objects >>= fun position =>
+          indexedPlace stride address position) := by
+  rw [placeWithNames.eq_def]
+  simp only [described, resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
+
+theorem missing_index_place_is_not_guessed (names : NameReads) (calls : Calls)
+    (layout : Layout) (objects : ObjectReads) (array index : CExpr)
+    (missing : objects.indexStride array = none) :
+    placeWithNames names calls layout (.index array index) objects = CProg.undefined := by
+  rw [placeWithNames.eq_def]
+  simp only [missing, resolved, Prog.bind_eq]
+  exact undefined_bind _
+
+theorem indexed_place_retains_stride (array : Ptr) (index : UInt32) (stride : Nat) :
+    indexedPlace stride (.ptr (some array)) (.u32 index) =
+      pure (array + index.toNat * stride) := rfl
+
+theorem indexed_place_wide_index (array : Ptr) (index : UInt64) (stride : Nat) :
+    indexedPlace stride (.ptr (some array)) (.u64 index) =
+      pure (array + index.toNat * stride) := rfl
+
+theorem indexed_place_null_is_undefined (index : UInt32) (stride : Nat) :
+    indexedPlace stride (.ptr none) (.u32 index) = CProg.undefined := rfl
+
+theorem indexed_place_wrong_index_type (array : Ptr) (stride : Nat) :
+    indexedPlace stride (.ptr (some array)) (.ptr none) = CProg.undefined := by
+  simp only [indexedPlace, pointer, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
+  exact undefined_bind _
 
 theorem field_address_retains_offset (layout : Layout) (owner : Ptr) (name : Name)
     (offset : Nat) (kind : FieldKind) (selected : layout name = some ⟨offset, kind⟩) :
@@ -680,6 +1027,12 @@ theorem load_pointer_readOnly (address : Ptr) :
   intro value
   cases value <;> first | exact pure_readOnly _ | exact undefined_readOnly
 
+theorem load_byte_readOnly (address : Ptr) :
+    ReadOnly (L := L) (CProg.loadU8 address) := by
+  apply bind_readOnly _ _ (load_readOnly address)
+  intro value
+  cases value <;> first | exact pure_readOnly _ | exact undefined_readOnly
+
 theorem load_word_readOnly (address : Ptr) :
     ReadOnly (L := L) (CProg.loadU32 address) := by
   apply bind_readOnly _ _ (load_readOnly address)
@@ -713,6 +1066,7 @@ theorem field_read_rule (layout : Layout) (owner : Ptr) (name : Name)
   all_goals
     simp only [field, pointer, Prog.pure_eq, Prog.bind_eq, Prog.ret_bind, selected]
     first
+      | refine triple_bind _ (loadU8_rule reads) ?_
       | refine triple_bind _ (loadBool_rule reads) ?_
       | refine triple_bind _ (loadI32_rule reads) ?_
       | refine triple_bind _ (loadU32_rule reads) ?_
@@ -869,6 +1223,21 @@ namespace Controls
 
 def emptyLayout : Layout := fun _ => none
 def emptyEnvironment : Environment := fun _ => none
+
+/-- The physical/scalar boundary retains high-bit and NUL bytes exactly. -/
+theorem byte_scalar_roundtrip (value : UInt8) :
+    cell? (scalar (.u8 value)) = some (.u8 value) := rfl
+
+theorem byte_truth_retains_high_bit : truth (.u8 128) = pure true := rfl
+
+theorem nul_byte_is_false : truth (.u8 0) = pure false := rfl
+
+/-- C integer promotions for byte arithmetic are outside this typed read profile. -/
+theorem byte_addition_is_not_word_addition (left right : UInt8) :
+    ScalarRead.numericBinary (Ptr := Ptr) .add (.byte left) (.byte right) = none := rfl
+
+theorem byte_negation_is_not_unsigned_word_wrap (value : UInt8) :
+    ScalarRead.numericNegation? (Ptr := Ptr) (.byte value) = none := rfl
 
 theorem missing_local_is_undefined :
     expression emptyLayout emptyEnvironment (.identifier "missing".toList) =
@@ -1093,4 +1462,451 @@ theorem indexed_null_array_is_not_loaded (index : UInt64) (kind : FieldKind) :
 theorem indexed_embedded_value_is_not_a_scalar (array : Ptr) (index : UInt64) :
     indexedScalar .embedded (.ptr (some array)) (.u64 index) = CProg.undefined := rfl
 
+
+/-! ## Static embedded-array decay -/
+
+theorem array_field_address_uses_member_place (layout : Layout) (owner : Ptr)
+    (name : Name) (offset : Nat) (declared : layout name = some ⟨offset, .embedded⟩) :
+    arrayFieldAddress layout (.ptr (some owner)) name = pure (.ptr (some (owner + offset))) := by
+  simp only [arrayFieldAddress, declared, resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind,
+    ↓reduceIte, fieldAddress, pointer]
+
+theorem array_field_does_not_load_pointer_member (layout : Layout) (owner : CVal)
+    (name : Name) (offset : Nat) (declared : layout name = some ⟨offset, .pointer⟩) :
+    arrayFieldAddress layout owner name = CProg.undefined := by
+  simp only [arrayFieldAddress, declared, resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind,
+    reduceCtorEq, if_false]
+
+theorem array_field_null_owner_is_undefined (layout : Layout) (name : Name) (offset : Nat)
+    (declared : layout name = some ⟨offset, .embedded⟩) :
+    arrayFieldAddress layout (.ptr none) name = CProg.undefined := by
+  simp only [arrayFieldAddress, declared, resolved, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind,
+    ↓reduceIte, fieldAddress, pointer]
+  exact undefined_bind _
+
+theorem array_field_unknown_member_is_undefined (layout : Layout) (owner : CVal)
+    (name : Name) (absent : layout name = none) :
+    arrayFieldAddress layout owner name = CProg.undefined := by
+  simp only [arrayFieldAddress, absent, resolved]
+  exact undefined_bind _
+
+theorem array_member_retains_owner_expression (names : NameReads) (calls : Calls)
+    (fallback : Layout) (objects : ObjectReads) (owner : CExpr) (name : Name)
+    (admitted : objects.arrayField owner true name = true) :
+    expressionWithNames names calls fallback (.field owner name true) objects =
+      (expressionWithNames names calls fallback owner objects >>= fun actual =>
+        arrayFieldAddress (objects.fieldLayout fallback owner true) actual name) := by
+  rw [expressionWithNames]
+  simp only [ObjectReads.fieldRead, admitted, ↓reduceIte]
+
+theorem scalar_member_keeps_default_load (names : NameReads) (calls : Calls)
+    (fallback : Layout) (objects : ObjectReads) (owner : CExpr) (name : Name)
+    (ordinary : objects.arrayField owner true name = false) :
+    expressionWithNames names calls fallback (.field owner name true) objects =
+      (expressionWithNames names calls fallback owner objects >>= fun actual =>
+        field (objects.fieldLayout fallback owner true) actual name) := by
+  rw [expressionWithNames]
+  simp only [ObjectReads.fieldRead, ordinary, Bool.false_eq_true, ↓reduceIte]
+
+namespace ArrayDecayControls
+
+def owner : Ptr := ⟨31, 0⟩
+def effectCell : Ptr := ⟨32, 0⟩
+def record : CExpr := .identifier "schema".toList
+def member : CExpr := .field record "source_ids".toList true
+def layout : Layout := fun name =>
+  if name = "source_ids".toList then some ⟨7, .embedded⟩ else none
+
+def objects : ObjectReads where
+  arrayField := fun source through name => match source with
+    | .identifier recordName => recordName == "schema".toList && through && name == "source_ids".toList
+    | _ => false
+  indexKind := some (fun source => match source with
+    | .field (.identifier recordName) name true =>
+        if recordName == "schema".toList && name == "source_ids".toList then some .word64 else none
+    | _ => none)
+
+def names : NameReads := fun name =>
+  if name = "schema".toList then pure (.ptr (some owner)) else CProg.undefined
+
+theorem array_address_is_not_loaded_from_its_first_element :
+    expressionWithNames names noCalls layout member objects =
+      pure (.ptr (some (owner + 7))) := by
+  unfold member
+  rw [array_member_retains_owner_expression _ _ _ _ _ _ (by decide)]
+  change (pure (.ptr (some owner)) >>= fun actual => arrayFieldAddress layout actual _) = _
+  simp only [Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
+  exact array_field_address_uses_member_place _ _ _ _ (by rfl)
+
+theorem scalar_array_index_loads_actual_member_cell :
+    expressionWithNames names noCalls layout (.index member (.unsignedInteger 2)) objects =
+      (CProg.loadU64 (owner + 9) >>= fun value => pure (.u64 value)) := by
+  rw [described_index_keeps_operands _ _ _ _ _ _ _ .word64 rfl (by rfl),
+    array_address_is_not_loaded_from_its_first_element]
+  rfl
+
+theorem absent_array_admission_does_not_invent_pointer :
+    expressionWithNames names noCalls layout member = CProg.undefined := by
+  change field layout (.ptr (some owner)) "source_ids".toList = _
+  exact embedded_field_is_not_a_scalar_read _ _ _ _ (by rfl)
+
+def effectOwner : CExpr := .call "owner".toList []
+def effectObjects : ObjectReads :=
+  { objects with arrayField := fun source through name => match source with
+      | .call function [] => function == "owner".toList && through && name == "source_ids".toList
+      | _ => false }
+def calls : Calls := fun _ _ => CProg.store effectCell (.u32 1) >>= fun _ =>
+  pure (.ptr (some owner))
+
+theorem array_owner_effect_occurs_once :
+    expressionWithNames names calls layout
+      (.field effectOwner "source_ids".toList true) effectObjects =
+      (CProg.store effectCell (.u32 1) >>= fun _ => pure (.ptr (some (owner + 7)))) := by
+  rw [array_member_retains_owner_expression _ _ _ _ _ _ (by decide)]
+  change ((CProg.store effectCell (.u32 1) >>= fun _ => pure (.ptr (some owner))) >>=
+    fun actual => arrayFieldAddress layout actual "source_ids".toList) = _
+  simp only [Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind,
+    array_field_address_uses_member_place layout owner "source_ids".toList 7 (by rfl)]
+
+end ArrayDecayControls
+
 end Mettapedia.Machines.CMemory.ReadExpressions
+
+namespace Mettapedia.Machines.CMemory.ReadExpressions
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+section Ownership
+open Mettapedia.GSLT.SeparationAlgebra
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open CellPermission
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+theorem snapshotRecord_complete (type : CType) (source : Ptr) (fields : List CVal) :
+    CTriple (L := L) (Cells source (fields.map some))
+      (snapshotRecord type source fields.length)
+      (fun value heap => value = .record type fields ∧
+        Cells source (fields.map some) heap) := by
+  unfold snapshotRecord
+  refine triple_bind _ (load_cells source fields) fun actual => ?_
+  apply triple_pure
+  intro equality
+  subst actual
+  exact triple_pre _ (fun _ held => ⟨rfl, held⟩)
+    (triple_ret act (CallArgument.record type fields) (fun value heap =>
+      value = CallArgument.record type fields ∧ Cells source (fields.map some) heap))
+
+/-- Uninitialized source storage cannot be made into an argument by taking
+its address or silently skipping the first field. -/
+theorem snapshotRecord_uninitialized_unsafe (type : CType) (source : Ptr)
+    (extent : Nat) (heap : Heap L)
+    (uninitialized : read ((heap source.block).2 source.offset) = some none) :
+    ¬ (snapshotRecord type source (extent + 1)).Safe act heap := by
+  intro safe
+  simp only [snapshotRecord, CProg.loadCells, Prog.bind_eq, Prog.bind_assoc] at safe
+  have first := (Prog.safe_bind act _ _ heap).mp safe
+  obtain ⟨value, loaded⟩ := first.1.1
+  rw [uninitialized] at loaded
+  cases loaded
+end Ownership
+
+end Mettapedia.Machines.CMemory.ReadExpressions
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.Machines.CMemory.ReadExpressions
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+
+/-- The scalar mode keeps its existing single argument fold, even if static
+record metadata is available for a different admitted call. -/
+theorem arguments_scalar_cons (names : NameReads) (calls : Calls) (layout : Layout)
+    (argument : CExpr) (rest : List CExpr) (objects : ObjectReads) :
+    argumentsWithNames names calls layout (argument :: rest) objects .scalar =
+      (expressionWithNames names calls layout argument objects >>= fun first =>
+        argumentsWithNames names calls layout rest objects .scalar >>= fun others =>
+        pure (first :: others)) := by
+  rw [argumentsWithNames.eq_def]
+
+theorem arguments_whole_record_cons (names : NameReads) (calls : Calls) (layout : Layout)
+    (argument : CExpr) (rest : List CExpr) (objects : ObjectReads)
+    (type : CType) (extent : Nat) (admitted : objects.record argument = some (type, extent)) :
+    argumentsWithNames names calls layout (argument :: rest) objects .whole =
+      (placeWithNames names calls layout argument objects >>= fun source =>
+        CProg.loadCells source extent >>= fun fields =>
+        argumentsWithNames names calls layout rest objects .whole >>= fun others =>
+        pure (CallArgument.record type fields :: others)) := by
+  rw [argumentsWithNames.eq_def]
+  dsimp only [ArgumentMode.Value]
+  simp only [admitted, snapshotRecord, Prog.bind_eq, Prog.pure_eq, Prog.bind_assoc, Prog.ret_bind]
+
+theorem explicit_call_waits_for_all_arguments (names : NameReads) (calls : Calls)
+    (layout : Layout) (name : Name) (arguments : List CExpr) (objects : ObjectReads)
+    (service : ArgumentCall CVal) (admitted : objects.argumentCalls name = some service) :
+    expressionWithNames names calls layout (.call name arguments) objects =
+      (argumentsWithNames names calls layout arguments objects service.mode >>= service.invoke) := by
+  rw [expressionWithNames.eq_def]
+  simp only [admitted]
+
+theorem absent_argument_call_preserves_scalar_path (names : NameReads) (calls : Calls)
+    (layout : Layout) (name : Name) (arguments : List CExpr) (objects : ObjectReads)
+    (absent : objects.argumentCalls name = none) :
+    expressionWithNames names calls layout (.call name arguments) objects =
+      (argumentsWithNames names calls layout arguments objects .scalar >>= calls name) := by
+  rw [expressionWithNames.eq_def]
+  simp only [absent]
+
+namespace WholeArgumentControls
+
+def recordType : CType := ⟨"Pair".toList, 0⟩
+def recordName : Name := "record".toList
+def changeName : Name := "change".toList
+
+def objects (address : Ptr) : ObjectReads where
+  place := some (fun name => if name = recordName then some address else none)
+  record := fun operand => match operand with
+    | .identifier name => if name = recordName then some (recordType, 1) else none
+    | _ => none
+
+def calls (address : Ptr) (replacement : CVal) : Calls := fun name arguments =>
+  if name = changeName ∧ arguments = [] then do
+    CProg.store address replacement
+    pure (.bool true)
+  else CProg.undefined
+
+def operands : List CExpr :=
+  [.identifier recordName, .call changeName [], .identifier recordName]
+
+def capture (address : Ptr) (replacement : CVal) : CProg CVal (List CallArgument) :=
+  argumentsWithNames (fun _ => CProg.undefined) (calls address replacement) (fun _ => none)
+    operands (objects address) .whole
+
+/-- The first record is captured before the source effect, and the repeated
+record argument is read again afterward. Neither snapshot is replayed. -/
+theorem capture_order (address : Ptr) (replacement : CVal) :
+    capture address replacement =
+      (CProg.load address >>= fun first =>
+        CProg.store address replacement >>= fun _ =>
+        CProg.load address >>= fun last =>
+        pure [.record recordType [first], .scalar (.bool true), .record recordType [last]]) := by
+  simp only [capture, operands, argumentsWithNames.eq_def, objects,
+    placeWithNames.eq_def, Option.bind_some, resolved, snapshotRecord, CProg.loadCells,
+    expressionWithNames.eq_def, calls, and_self, ↓reduceIte, Prog.bind_eq, Prog.pure_eq,
+    Prog.ret_bind, Prog.bind_assoc]
+
+/-- Record metadata does not make an ordinary scalar read of an embedded
+object succeed. Such a use is outside the scalar expression profile. -/
+theorem scalar_record_argument_refuses (address : Ptr) :
+    argumentsWithNames (fun _ => CProg.undefined) noCalls (fun _ => none)
+      [.identifier recordName] (objects address) .scalar = CProg.undefined := by
+  rw [arguments_scalar_cons]
+  rw [expressionWithNames.eq_def]
+  exact undefined_bind _
+
+section Ownership
+open Mettapedia.GSLT.SeparationAlgebra
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open CellPermission
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+theorem capture_observes_old_and_new (address : Ptr) (original replacement : CVal) :
+    CTriple (L := L) (PointsTo address original) (capture address replacement)
+      (fun actual heap =>
+        actual = [.record recordType [original], .scalar (.bool true),
+          .record recordType [replacement]] ∧ PointsTo address replacement heap) := by
+  rw [capture_order]
+  refine triple_bind _ (load_rule (v := original) fun _ held =>
+    read_of_pointsTo (F := emp) (by simpa only [sepConj_emp] using held)) fun first => ?_
+  apply triple_pure
+  intro same
+  subst first
+  refine triple_bind _ (triple_pre _ (fun _ held => ⟨some original, held⟩)
+    (store_spec address replacement)) fun _ => ?_
+  refine triple_bind _ (load_rule (v := replacement) fun _ held =>
+    read_of_pointsTo (F := emp) (by simpa only [sepConj_emp] using held)) fun last => ?_
+  apply triple_pure
+  intro same
+  subst last
+  exact triple_pre _ (fun _ held => ⟨rfl, held⟩)
+    (triple_ret act
+      [CallArgument.record recordType [original], .scalar (.bool true),
+        .record recordType [replacement]]
+      (fun actual heap => actual = [.record recordType [original], .scalar (.bool true),
+        .record recordType [replacement]] ∧ PointsTo address replacement heap))
+
+end Ownership
+end WholeArgumentControls
+end Mettapedia.Machines.CMemory.ReadExpressions
+
+namespace Mettapedia.Machines.CMemory.ReadExpressions
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.GSLT.SeparationAlgebra
+open Mettapedia.Languages.C11 hiding CType
+
+abbrev PointerSourceType := Mettapedia.Languages.C11.CType
+
+theorem readonly_pointer_cast_pointer {source target : PointerSourceType}
+    (admitted : CharacterPointerViews.ReadOnly source target) (pointer : Option Ptr) :
+    readonlyPointerCast source target (.ptr pointer) = pure (.ptr pointer) := by
+  simp only [readonlyPointerCast,
+    (CharacterPointerViews.accepted_iff source target).mpr admitted, ↓reduceIte]
+
+theorem ObjectReads.readonlyCast_pointer (objects : ObjectReads) (type : CType)
+    (operand : CExpr) (source declared target : PointerSourceType)
+    (sourceTyped : objects.sourceType operand = some source)
+    (targetTyped : objects.targetType type = some declared)
+    (qualified : constPointee? declared = some target)
+    (admitted : CharacterPointerViews.ReadOnly source target) (pointer : Option Ptr) :
+    objects.readonlyCast type operand (.ptr pointer) = pure (.ptr pointer) := by
+  simp only [ObjectReads.readonlyCast, sourceTyped, targetTyped, Option.bind_some,
+    qualified, readonly_pointer_cast_pointer admitted]
+
+theorem readonly_cast_keeps_reached_operand (names : NameReads) (calls : Calls)
+    (layout : Layout) (objects : ObjectReads) (type : CType) (operand : CExpr) :
+    expressionWithNames names calls layout (.castPointeeConst type operand) objects =
+      (expressionWithNames names calls layout operand objects >>=
+        objects.readonlyCast type operand) := rfl
+
+section Execution
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L]
+  [CellPermission L (Option CVal)]
+
+private theorem undefined_has_no_run (heap reached : Heap L) (value : CVal) :
+    ¬(CProg.undefined : CProg CVal CVal).Runs act heap value reached := by
+  rintro ⟨_, _, impossible, _⟩
+  exact impossible
+
+theorem readonly_pointer_cast_runs_iff (source target : PointerSourceType)
+    (input output : CVal) (heap reached : Heap L) :
+    (readonlyPointerCast source target input).Runs act heap output reached ↔
+      CharacterPointerViews.ReadOnly source target ∧
+        ∃ pointer, input = .ptr pointer ∧ output = .ptr pointer ∧ reached = heap := by
+  by_cases accepted : CharacterPointerViews.accepted source target = true
+  · have admitted := (CharacterPointerViews.accepted_iff source target).mp accepted
+    simp only [readonlyPointerCast, accepted, ↓reduceIte]
+    cases input with
+    | ptr pointer =>
+        change (.ptr pointer = output ∧ heap = reached) ↔ _
+        constructor
+        · rintro ⟨rfl, rfl⟩
+          exact ⟨admitted, pointer, rfl, rfl, rfl⟩
+        · rintro ⟨_, other, same, rfl, rfl⟩
+          exact ⟨same, rfl⟩
+    | _ =>
+        constructor
+        · intro impossible
+          exact False.elim (undefined_has_no_run heap reached output impossible)
+        · rintro ⟨_, _, impossible, _, _⟩
+          cases impossible
+  · have refused : ¬ CharacterPointerViews.ReadOnly source target :=
+      fun permitted => accepted ((CharacterPointerViews.accepted_iff source target).mpr permitted)
+    simp only [readonlyPointerCast, accepted]
+    constructor
+    · intro impossible
+      exact False.elim (undefined_has_no_run heap reached output impossible)
+    · rintro ⟨permitted, _⟩
+      exact False.elim (refused permitted)
+
+/-- The source cast's complete executions are exactly one operand execution
+followed by the admitted pointer view. The reached heap and nullable pointer
+are retained. No second operand execution or fabricated memory read occurs. -/
+theorem readonly_cast_runs_iff (names : NameReads) (calls : Calls)
+    (layout : Layout) (objects : ObjectReads) (type : CType) (operand : CExpr)
+    (source declared target : PointerSourceType)
+    (sourceTyped : objects.sourceType operand = some source)
+    (targetTyped : objects.targetType type = some declared)
+    (qualified : constPointee? declared = some target)
+    (output : CVal) (heap reached : Heap L) :
+    (expressionWithNames names calls layout (.castPointeeConst type operand) objects).Runs
+        act heap output reached ↔
+      CharacterPointerViews.ReadOnly source target ∧
+        ∃ pointer, (expressionWithNames names calls layout operand objects).Runs
+          act heap (.ptr pointer) reached ∧ output = .ptr pointer := by
+  rw [readonly_cast_keeps_reached_operand]
+  change (Prog.bind (expressionWithNames names calls layout operand objects)
+    (objects.readonlyCast type operand)).Runs act heap output reached ↔ _
+  rw [Prog.runs_bind]
+  constructor
+  · rintro ⟨value, between, operandRun, castRun⟩
+    simp only [ObjectReads.readonlyCast, sourceTyped, targetTyped,
+      Option.bind_some, qualified] at castRun
+    obtain ⟨admitted, pointer, rfl, outputSame, rfl⟩ :=
+      (readonly_pointer_cast_runs_iff source target value output between reached).mp castRun
+    exact ⟨admitted, pointer, operandRun, outputSame⟩
+  · rintro ⟨admitted, pointer, operandRun, rfl⟩
+    refine ⟨.ptr pointer, reached, operandRun, ?_⟩
+    rw [objects.readonlyCast_pointer type operand source declared target sourceTyped
+      targetTyped qualified admitted pointer]
+    exact ⟨rfl, rfl⟩
+
+end Execution
+end Mettapedia.Machines.CMemory.ReadExpressions
+
+namespace Mettapedia.Machines.CMemory.ReadExpressions.ReadonlyCastControls
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.Languages.C11.CharacterPointerViews
+
+def bytes : CExpr := .identifier "bytes".toList
+
+def returnedBytes : CExpr := .call "get_bytes".toList []
+
+def bytePointer : CType := ⟨"uint8_t".toList, 1⟩
+
+def objects : ObjectReads where
+  sourceType := fun operand => match operand with
+    | .identifier name => if name == "bytes".toList then some (.pointer {} .character) else none
+    | .call name [] => if name == "get_bytes".toList then some (.pointer {} .character) else none
+    | _ => none
+  targetType := fun type =>
+    if type = bytePointer then some (.pointer {} unsignedCharacter)
+    else if type = ⟨"uint32_t".toList, 1⟩ then
+      some (.pointer {} (.arithmetic (.integer (.unsigned (.standard .int)))))
+    else none
+
+theorem pointer_only_view (pointer : Option Ptr) :
+    objects.readonlyCast bytePointer bytes (.ptr pointer) = pure (.ptr pointer) := rfl
+
+theorem actual_source_reader_returns_same_pointer (pointer : Option Ptr) :
+    expressionWithNames (fun _ => pure (.ptr pointer)) noCalls (fun _ => none)
+      (.castPointeeConst bytePointer bytes) objects = pure (.ptr pointer) := rfl
+
+theorem effectful_operand_is_evaluated_once (marker : Ptr) (pointer : Option Ptr) :
+    expressionWithNames (fun _ => CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer))
+      noCalls (fun _ => none) (.castPointeeConst bytePointer bytes) objects =
+      (CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer)) := rfl
+
+theorem actual_call_is_executed_once (marker : Ptr) (pointer : Option Ptr) :
+    expressionWithNames (fun _ => CProg.undefined)
+      (fun _ _ => CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer))
+      (fun _ => none) (.castPointeeConst bytePointer returnedBytes) objects =
+      (CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer)) := rfl
+
+theorem missing_static_type_preserves_reached_effect (marker : Ptr) (pointer : Option Ptr) :
+    expressionWithNames (fun _ => CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer))
+      noCalls (fun _ => none) (.castPointeeConst bytePointer bytes) =
+      (CProg.store marker (.u32 1) >>= fun _ => CProg.undefined) := rfl
+
+/-- This reader does not reinterpret integer payloads as pointers. C integer
+null-pointer constants require their separate source conversion. -/
+theorem nonzero_integer_payload_does_not_gain_pointer_identity :
+    objects.readonlyCast bytePointer bytes (.u32 1) = CProg.undefined := rfl
+
+theorem wrong_destination_keeps_effect_before_refusal (marker : Ptr) (pointer : Option Ptr) :
+    expressionWithNames (fun _ => CProg.store marker (.u32 1) >>= fun _ => pure (.ptr pointer))
+      noCalls (fun _ => none) (.castPointeeConst ⟨"uint32_t".toList, 1⟩ bytes) objects =
+      (CProg.store marker (.u32 1) >>= fun _ => CProg.undefined) := rfl
+
+theorem mutable_pointer_cast_not_silently_enabled (pointer : Option Ptr) :
+    expressionWithNames (fun _ => pure (.ptr pointer)) noCalls (fun _ => none)
+      (.cast bytePointer bytes) objects = CProg.undefined := by
+  simp only [expressionWithNames.eq_def, bytes, unsignedCast, integerValue?, resolved,
+    Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
+  exact undefined_bind _
+
+
+end Mettapedia.Machines.CMemory.ReadExpressions.ReadonlyCastControls

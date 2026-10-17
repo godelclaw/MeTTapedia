@@ -28,6 +28,7 @@ open Mettapedia.PLN.Bridges.HOL.ProbHOLWorldModelBridge
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 
 universe u v w
@@ -55,30 +56,6 @@ noncomputable abbrev empiricalModelSpace
     intro φ
     trivial
 
-private theorem holEvidence_total_eq_card
-    (W : Multiset (HenkinModel.{u, v, w} Base Const))
-    (φ : ClosedFormula Const) :
-    (holEvidence (Base := Base) (Const := Const) W φ).total = (W.card : ℝ≥0∞) := by
-  classical
-  have hcardNat :
-      W.card =
-        Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const => holSatisfies M φ) W +
-          Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const => ¬ holSatisfies M φ) W := by
-    simpa using
-      (Multiset.card_eq_countP_add_countP
-        (p := fun M : HenkinModel.{u, v, w} Base Const => holSatisfies M φ) W)
-  have hcard :
-      (W.card : ℝ≥0∞) =
-        (Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const => holSatisfies M φ) W : ℝ≥0∞) +
-          (Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const => ¬ holSatisfies M φ) W : ℝ≥0∞) := by
-    exact_mod_cast hcardNat
-  unfold holEvidence BinaryEvidence.total
-  simpa using hcard.symm
-
 private theorem staticQueryStrength_eq_count_ratio
     (W : Multiset (HenkinModel.{u, v, w} Base Const))
     (hW : W ≠ 0)
@@ -99,12 +76,12 @@ private theorem staticQueryStrength_eq_count_ratio
     exact_mod_cast hcardNat
   unfold BinaryWorldModel.queryStrength BinaryEvidence.toStrength
   change
-    (if (holEvidence (Base := Base) (Const := Const) W φ).total = 0 then 0
-      else (holEvidence (Base := Base) (Const := Const) W φ).pos /
-        (holEvidence (Base := Base) (Const := Const) W φ).total) =
+    (if (crispEvidence holSatisfies W φ).total = 0 then 0
+      else (crispEvidence holSatisfies W φ).pos /
+        (crispEvidence holSatisfies W φ).total) =
       (Multiset.countP p W : ℝ≥0∞) / (W.card : ℝ≥0∞)
-  rw [holEvidence_total_eq_card (Base := Base) (Const := Const) W φ, if_neg hcardENN]
-  simp [holEvidence, p]
+  rw [crispEvidence_total holSatisfies W _, if_neg hcardENN]
+  simp [crispEvidence, p]
 
 /-- Semantic `ProbHOL` sentence probability of the empirical multiset sample. -/
 theorem empiricalSentenceProb_eq_count_ratio
@@ -219,7 +196,7 @@ theorem empiricalSentenceProb_singleton_of_satisfies
       (Base := Base) (Const := Const)
       ({M} : Multiset (HenkinModel.{u, v, w} Base Const))
       (by simp) φ]
-  exact queryStrength_singleton_of_satisfies (Base := Base) (Const := Const) M φ hφ
+  exact queryStrength_singleton_of_satisfies holSatisfies M φ hφ
 
 /-- Singleton empirical semantic probability agrees with the old singleton
 adequacy theorem on non-satisfying queries. -/
@@ -237,7 +214,7 @@ theorem empiricalSentenceProb_singleton_of_not_satisfies
       (Base := Base) (Const := Const)
       ({M} : Multiset (HenkinModel.{u, v, w} Base Const))
       (by simp) φ]
-  exact queryStrength_singleton_of_not_satisfies (Base := Base) (Const := Const) M φ hφ
+  exact queryStrength_singleton_of_not_satisfies holSatisfies M φ hφ
 
 end
 

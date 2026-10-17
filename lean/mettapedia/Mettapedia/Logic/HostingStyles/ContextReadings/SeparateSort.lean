@@ -44,7 +44,7 @@ open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory termSetoid TermStep)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-! ## The constructors of a sort, counted -/
 
@@ -82,7 +82,7 @@ theorem tokens_fill_oneHole (counted : String → Bool) (context : OneHoleContex
 
 /-- Patterns that the equation of quotation and dropping identifies have the
 same count, for every count that does not count those two. -/
-theorem _root_.Mettapedia.Logic.HostingStyles.PrimeCandidate.QuoteDropOnly.tokens_equiv
+theorem _root_.Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.QuoteDropOnly.tokens_equiv
     {lang : LanguageDef} (only : QuoteDropOnly lang) {base : BasePremiseEvaluator}
     {counted : String → Bool} (quote : counted "prime-quote" = false)
     (drop : counted "prime-drop" = false) {left right : Pattern}
@@ -106,7 +106,7 @@ theorem _root_.Mettapedia.Logic.HostingStyles.PrimeCandidate.QuoteDropOnly.token
 
 /-- **The static equivalence of quotation and dropping keeps every count that
 does not count those two.** -/
-theorem _root_.Mettapedia.Logic.HostingStyles.PrimeCandidate.QuoteDropOnly.tokens_eq
+theorem _root_.Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.QuoteDropOnly.tokens_eq
     {lang : LanguageDef} (only : QuoteDropOnly lang) {base : BasePremiseEvaluator}
     {counted : String → Bool} (quote : counted "prime-quote" = false)
     (drop : counted "prime-drop" = false) {interface : Contexts.Interface}

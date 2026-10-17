@@ -25,8 +25,8 @@ The laws of products are theorems about every such model, not assumptions:
   `denote_tupleOf_projections`).
 
 Products cost nothing: over any carriers of the leaf types and any
-interpretation of the declared constants there is a model whose product
-carriers are the products themselves (`standard`).  The laws are not
+interpretation of the declared and application constants there is a model
+whose product carriers are the products themselves (`standard`).  The laws are not
 consequences of the signature: a standard model whose constants denote
 constant functions refutes `∀ a b. FST (a, b) = a`
 (`constantModel_not_models_fstPairLaw`).
@@ -49,9 +49,9 @@ structure ProductModel (space : Space) extends HenkinModel.{0, 0, w} Atom (Const
   product of the rest. -/
   split : ∀ (component : Atom) (components : List Atom),
     Carrier (.expression (component :: components)) ≃
-      Ty.denote Carrier (toTy component) × Carrier (.expression components)
+      Ty.denote Carrier (.base component) × Carrier (.expression components)
   pair_eq : ∀ (component : Atom) (components : List Atom)
-      (left : Ty.denote Carrier (toTy component)) (right : Carrier (.expression components)),
+      (left : Ty.denote Carrier (.base component)) (right : Carrier (.expression components)),
     constDen (pairConst space component components) left right =
       (split component components).symm (left, right)
   fst_eq : ∀ (component : Atom) (components : List Atom)
@@ -72,13 +72,13 @@ variable {space : Space} (M : ProductModel.{w} space)
 /-! ## Binary laws -/
 
 theorem fst_pair (component : Atom) (components : List Atom)
-    (left : Ty.denote M.Carrier (toTy component)) (right : M.Carrier (.expression components)) :
+    (left : Ty.denote M.Carrier (.base component)) (right : M.Carrier (.expression components)) :
     M.constDen (fstConst space component components)
         (M.constDen (pairConst space component components) left right) = left := by
   rw [M.pair_eq, M.fst_eq, Equiv.apply_symm_apply]
 
 theorem snd_pair (component : Atom) (components : List Atom)
-    (left : Ty.denote M.Carrier (toTy component)) (right : M.Carrier (.expression components)) :
+    (left : Ty.denote M.Carrier (.base component)) (right : M.Carrier (.expression components)) :
     M.constDen (sndConst space component components)
         (M.constDen (pairConst space component components) left right) = right := by
   rw [M.pair_eq, M.snd_eq, Equiv.apply_symm_apply]
@@ -100,7 +100,7 @@ theorem unit_eq (value : M.Carrier (.expression [])) :
 /-- `∀ a b. FST (a, b) = a`. -/
 def fstPairLaw (space : Space) (component : Atom) (components : List Atom) :
     ClosedFormula (Const space) :=
-  .all (σ := toTy component) (.all (σ := productTy components)
+  .all (σ := .base component) (.all (σ := productTy components)
     (.eq (.app (.const (fstConst space component components))
         (.app (.app (.const (pairConst space component components)) (.var (.vs .vz)))
           (.var .vz)))
@@ -109,7 +109,7 @@ def fstPairLaw (space : Space) (component : Atom) (components : List Atom) :
 /-- `∀ a b. SND (a, b) = b`. -/
 def sndPairLaw (space : Space) (component : Atom) (components : List Atom) :
     ClosedFormula (Const space) :=
-  .all (σ := toTy component) (.all (σ := productTy components)
+  .all (σ := .base component) (.all (σ := productTy components)
     (.eq (.app (.const (sndConst space component components))
         (.app (.app (.const (pairConst space component components)) (.var (.vs .vz)))
           (.var .vz)))
@@ -132,10 +132,10 @@ theorem models_fstPairLaw (component : Atom) (components : List Atom) :
     M.models (fstPairLaw space component components) := by
   simp only [HenkinModel.models, PreModel.models, fstPairLaw, PreModel.denote_all]
   intro left leftAdmissible right _
-  show PreModel.Eqv M.toPreModel (toTy component)
+  show PreModel.Eqv M.toPreModel (.base component)
     (M.constDen (fstConst space component components)
       (M.constDen (pairConst space component components) left right)) left
-  exact (congrArg (fun value => PreModel.Eqv M.toPreModel (toTy component) value left)
+  exact (congrArg (fun value => PreModel.Eqv M.toPreModel (.base component) value left)
     (M.fst_pair component components left right)).mpr
     (PreModel.eqv_refl M.toPreModel leftAdmissible)
 
@@ -167,7 +167,7 @@ theorem models_unitLaw : M.models (unitLaw space) := by
 /-- One value at the denotation of each component type. -/
 def Values : List Atom → Type (max 1 w)
   | [] => PUnit
-  | component :: components => Ty.denote M.Carrier (toTy component) × Values components
+  | component :: components => Ty.denote M.Carrier (.base component) × Values components
 
 /-- The tuple of values. -/
 def tupleValue : (components : List Atom) → Values M components → M.Carrier (.expression components)
@@ -211,14 +211,14 @@ def productEquiv (components : List Atom) :
 
 /-- The value at the component `index`. -/
 def Values.get : (components : List Atom) → Values M components →
-    (index : Fin components.length) → Ty.denote M.Carrier (toTy (components.get index))
+    (index : Fin components.length) → Ty.denote M.Carrier (.base (components.get index))
   | _ :: _, values, ⟨0, _⟩ => values.1
   | _ :: components, values, ⟨index + 1, bound⟩ =>
       Values.get components values.2 ⟨index, Nat.lt_of_succ_lt_succ bound⟩
 
 /-- The `index`-th projection of an element of a product. -/
 def projectValue : (components : List Atom) → (index : Fin components.length) →
-    M.Carrier (.expression components) → Ty.denote M.Carrier (toTy (components.get index))
+    M.Carrier (.expression components) → Ty.denote M.Carrier (.base (components.get index))
   | component :: components, ⟨0, _⟩, value => (M.split component components value).1
   | component :: components, ⟨index + 1, bound⟩, value =>
       projectValue components ⟨index, Nat.lt_of_succ_lt_succ bound⟩
@@ -258,7 +258,7 @@ theorem get_projectValues :
 inductive Components (context : Ctx Atom) : List Atom → Type where
   | nil : Components context []
   | cons {component : Atom} {components : List Atom} :
-      Term (Const space) context (toTy component) → Components context components →
+      Term (Const space) context (.base component) → Components context components →
       Components context (component :: components)
 
 /-- The intrinsic tuple `t₀, (t₁, … (tₙ, one))`. -/
@@ -273,7 +273,7 @@ def tupleOf {context : Ctx Atom} :
 def projectOf {context : Ctx Atom} :
     (components : List Atom) → (index : Fin components.length) →
       Term (Const space) context (productTy components) →
-        Term (Const space) context (toTy (components.get index))
+        Term (Const space) context (.base (components.get index))
   | component :: components, ⟨0, _⟩, term =>
       .app (.const (fstConst space component components)) term
   | component :: components, ⟨index + 1, bound⟩, term =>
@@ -291,7 +291,7 @@ def denoteComponents {context : Ctx Atom} (valuation : HenkinModel.Valuation M.t
 /-- The intrinsic term at the component `index`. -/
 def Components.get {context : Ctx Atom} :
     {components : List Atom} → Components (space := space) context components →
-      (index : Fin components.length) → Term (Const space) context (toTy (components.get index))
+      (index : Fin components.length) → Term (Const space) context (.base (components.get index))
   | _ :: _, .cons term _, ⟨0, _⟩ => term
   | _ :: _, .cons _ terms, ⟨index + 1, bound⟩ =>
       Components.get terms ⟨index, Nat.lt_of_succ_lt_succ bound⟩
@@ -389,96 +389,25 @@ variable (leaf : Atom → Type (max 1 w))
 
 mutual
 
-/-- The carrier of the HOL reading of an atom in the standard product model:
-a leaf's own carrier, the function space of an arrow, and the product of the
-elements of any other expression. -/
-def typeCarrier : Atom → Type (max 1 w)
+/-- The carrier of a base type in the standard product model: a leaf's own carrier, and the
+product of the elements of an expression.  An arrow is a base type of the contract; the
+standard model reads it as the product of its elements too, which the contract allows. -/
+def baseCarrier : Atom → Type (max 1 w)
   | .symbol name => leaf (.symbol name)
   | .var name => leaf (.var name)
   | .grounded value => leaf (.grounded value)
-  | .expression atoms => expressionCarrier atoms
-
-/-- `typeCarrier` of an expression, by its elements. -/
-def expressionCarrier : List Atom → Type (max 1 w)
-  | .symbol "->" :: first :: second :: rest => spineCarrier (first :: second :: rest)
-  | [] => PUnit.{max 1 w + 1}
-  | atom :: atoms => typeCarrier atom × listCarrier atoms
-
-/-- The function space of the components of an arrow. -/
-def spineCarrier : List Atom → Type (max 1 w)
-  | [] => leaf (.symbol "->") × PUnit.{max 1 w + 1}
-  | [last] => typeCarrier last
-  | first :: second :: rest => typeCarrier first → spineCarrier (second :: rest)
+  | .expression atoms => listCarrier atoms
 
 /-- The product of the carriers of a list of types. -/
 def listCarrier : List Atom → Type (max 1 w)
   | [] => PUnit.{max 1 w + 1}
-  | atom :: atoms => typeCarrier atom × listCarrier atoms
+  | atom :: atoms => baseCarrier atom × listCarrier atoms
 
 end
 
-/-- The carrier of a base type: a leaf's own carrier, and the product of the
-elements of an expression. -/
-def baseCarrier : Atom → Type (max 1 w)
-  | .expression atoms => listCarrier leaf atoms
-  | .symbol name => leaf (.symbol name)
-  | .var name => leaf (.var name)
-  | .grounded value => leaf (.grounded value)
-
-theorem expressionCarrier_of_not_arrowForm {atoms : List Atom} (notArrow : ¬ArrowForm atoms) :
-    expressionCarrier leaf atoms = listCarrier leaf atoms := by
-  unfold expressionCarrier
-  split
-  · exact absurd ⟨_, _, _, rfl⟩ notArrow
-  · simp only [listCarrier]
-  · simp only [listCarrier]
-
-theorem denote_componentsSpine_of :
-    ∀ (components : List Atom),
-      (∀ atom ∈ components,
-        Ty.denote (baseCarrier leaf) (toTy atom) = typeCarrier leaf atom) →
-      Ty.denote (baseCarrier leaf) (componentsSpine components) =
-        spineCarrier leaf components
-  | [], _ => by
-      simp only [componentsSpine, spineCarrier, Ty.denote, baseCarrier, listCarrier,
-        typeCarrier]
-  | [last], all => by
-      simp only [componentsSpine, spineCarrier]
-      exact all last (by simp)
-  | first :: second :: rest, all => by
-      simp only [componentsSpine, spineCarrier, Ty.denote]
-      rw [all first (by simp),
-        denote_componentsSpine_of (second :: rest)
-          (fun atom member => all atom (List.mem_cons_of_mem _ member))]
-
-/-- The HOL reading of an atom denotes its standard carrier. -/
-theorem denote_toTy (atom : Atom) :
-    Ty.denote (baseCarrier leaf) (toTy atom) = typeCarrier leaf atom := by
-  induction atom using Atom.rec (motive_2 := fun atoms => ∀ atom ∈ atoms,
-      Ty.denote (baseCarrier leaf) (toTy atom) = typeCarrier leaf atom) with
-  | symbol name => simp only [toTy, typeCarrier, Ty.denote, baseCarrier]
-  | var name => simp only [toTy, typeCarrier, Ty.denote, baseCarrier]
-  | grounded value => simp only [toTy, typeCarrier, Ty.denote, baseCarrier]
-  | expression atoms ih =>
-      simp only [toTy, typeCarrier]
-      by_cases arrowForm : ArrowForm atoms
-      · obtain ⟨first, second, rest, rfl⟩ := arrowForm
-        simp only [expressionTy, expressionCarrier]
-        exact denote_componentsSpine_of leaf (first :: second :: rest)
-          (fun atom member => ih atom (List.mem_cons_of_mem _ member))
-      · rw [expressionTy_of_not_arrowForm arrowForm,
-          expressionCarrier_of_not_arrowForm leaf arrowForm]
-        simp only [Ty.denote, baseCarrier]
-  | nil => rename_i member; cases member
-  | cons head tail headIH tailIH =>
-      rename_i atom member
-      rcases List.mem_cons.mp member with rfl | member
-      · exact headIH
-      · exact tailIH atom member
-
 theorem baseCarrier_cons (component : Atom) (components : List Atom) :
     baseCarrier leaf (.expression (component :: components)) =
-      (typeCarrier leaf component × baseCarrier leaf (.expression components)) := by
+      (baseCarrier leaf component × baseCarrier leaf (.expression components)) := by
   simp only [baseCarrier, listCarrier]
 
 theorem baseCarrier_nil : baseCarrier leaf (.expression []) = PUnit.{max 1 w + 1} := by
@@ -487,22 +416,29 @@ theorem baseCarrier_nil : baseCarrier leaf (.expression []) = PUnit.{max 1 w + 1
 /-- The standard split of a product carrier. -/
 def standardSplit (component : Atom) (components : List Atom) :
     baseCarrier leaf (.expression (component :: components)) ≃
-      Ty.denote (baseCarrier leaf) (toTy component) × baseCarrier leaf (.expression components) :=
-  (Equiv.cast (baseCarrier_cons leaf component components)).trans
-    (Equiv.prodCongr (Equiv.cast (denote_toTy leaf component)).symm (Equiv.refl _))
+      Ty.denote (baseCarrier leaf) (.base component) × baseCarrier leaf (.expression components) :=
+  Equiv.cast (baseCarrier_cons leaf component components)
 
 variable {space : Space}
 
-/-- The standard interpretation of the contract's constants: the declared
-constants as given, and the pairing, projections and unit of the standard
+/-- The standard interpretation of the contract's constants: the declared constants and the
+application constants as given, and the pairing, projections and unit of the standard
 products. -/
 noncomputable def standardConstDen
-    (interpret : ∀ (constant instanceType : Atom), Instance space constant instanceType →
-      Ty.denote (baseCarrier leaf) (toTy instanceType)) :
+    (interpret : ∀ (constant : Atom) (occurrence : Nat) (instanceType : Atom),
+      Instance space constant occurrence instanceType →
+        Ty.denote (baseCarrier leaf) (.base instanceType))
+    (interpretApply : ∀ (parameters : List Atom) (result : Atom),
+      TypeAtom (arrowAtom parameters result) →
+        Ty.denote (baseCarrier leaf) (.arr (.base (arrowAtom parameters result))
+          (applyTy parameters result))) :
     {type : Ty Atom} → Const space type → Ty.denote (baseCarrier leaf) type
-  | _, ⟨.declared constant instanceType, lookup⟩ =>
+  | _, ⟨.declared constant occurrence instanceType, lookup⟩ =>
       (nameType_declared_eq_some_iff.mp lookup).2 ▸
-        interpret constant instanceType (nameType_declared_eq_some_iff.mp lookup).1
+        interpret constant occurrence instanceType (nameType_declared_eq_some_iff.mp lookup).1
+  | _, ⟨.apply parameters result, lookup⟩ =>
+      (nameType_apply_eq_some_iff.mp lookup).2 ▸
+        interpretApply parameters result (nameType_apply_eq_some_iff.mp lookup).1
   | _, ⟨.pair (component :: components), lookup⟩ =>
       Option.some.inj lookup ▸ fun left right =>
         (standardSplit leaf component components).symm (left, right)
@@ -516,15 +452,20 @@ noncomputable def standardConstDen
   | _, ⟨.fst [], lookup⟩ => absurd lookup (by simp [nameType])
   | _, ⟨.snd [], lookup⟩ => absurd lookup (by simp [nameType])
 
-/-- **Models with genuine products exist.**  Over any carriers of the leaf
-types and any interpretation of the declared constants, the standard model,
-whose product carriers are the products of their components, is a model of
-the contract. -/
+/-- **Models with genuine products exist.**  Over any carriers of the leaf types and any
+interpretation of the declared and application constants, the standard model, whose product
+carriers are the products of their components, is a model of the contract. -/
 noncomputable def standard
-    (interpret : ∀ (constant instanceType : Atom), Instance space constant instanceType →
-      Ty.denote (baseCarrier leaf) (toTy instanceType)) :
+    (interpret : ∀ (constant : Atom) (occurrence : Nat) (instanceType : Atom),
+      Instance space constant occurrence instanceType →
+        Ty.denote (baseCarrier leaf) (.base instanceType))
+    (interpretApply : ∀ (parameters : List Atom) (result : Atom),
+      TypeAtom (arrowAtom parameters result) →
+        Ty.denote (baseCarrier leaf) (.arr (.base (arrowAtom parameters result))
+          (applyTy parameters result))) :
     ProductModel.{w} space where
-  toHenkinModel := HenkinModel.standard (baseCarrier leaf) (standardConstDen leaf interpret)
+  toHenkinModel :=
+    HenkinModel.standard (baseCarrier leaf) (standardConstDen leaf interpret interpretApply)
   split := standardSplit leaf
   pair_eq := fun _ _ _ _ => rfl
   fst_eq := fun _ _ _ => rfl
@@ -536,13 +477,19 @@ noncomputable def standard
 
 /-- The standard model interprets every declared constant as given. -/
 theorem standard_declared
-    (interpret : ∀ (constant instanceType : Atom), Instance space constant instanceType →
-      Ty.denote (baseCarrier leaf) (toTy instanceType))
-    {constant instanceType : Atom} (isInstance : Instance space constant instanceType) :
-    (standard leaf interpret).constDen
-        (⟨.declared constant instanceType,
-          nameType_declared_eq_some_iff.mpr ⟨isInstance, rfl⟩⟩ : Const space (toTy instanceType)) =
-      interpret constant instanceType isInstance :=
+    (interpret : ∀ (constant : Atom) (occurrence : Nat) (instanceType : Atom),
+      Instance space constant occurrence instanceType →
+        Ty.denote (baseCarrier leaf) (.base instanceType))
+    (interpretApply : ∀ (parameters : List Atom) (result : Atom),
+      TypeAtom (arrowAtom parameters result) →
+        Ty.denote (baseCarrier leaf) (.arr (.base (arrowAtom parameters result))
+          (applyTy parameters result)))
+    {constant instanceType : Atom} {occurrence : Nat}
+    (isInstance : Instance space constant occurrence instanceType) :
+    (standard leaf interpret interpretApply).constDen
+        (⟨.declared constant occurrence instanceType,
+          nameType_declared_eq_some_iff.mpr ⟨isInstance, rfl⟩⟩ : Const space (.base instanceType)) =
+      interpret constant occurrence instanceType isInstance :=
   rfl
 
 end Standard
@@ -581,8 +528,7 @@ theorem constantModel_not_models_fstPairLaw (space : Space) :
   intro law
   simp only [HenkinModel.models, PreModel.models, ProductModel.fstPairLaw,
     PreModel.denote_all] at law
-  obtain ⟨value, differs⟩ := exists_not_eqv_default space (toTy (.symbol "B"))
-    ⟨.symbol "B", toTy_of_not_arrowShaped (by rintro ⟨_, equal⟩; cases equal)⟩
+  obtain ⟨value, differs⟩ := exists_not_eqv_default space (.base (.symbol "B")) ⟨.symbol "B", rfl⟩
   exact differs (law value trivial (defaultValue (productTy [])) trivial)
 
 end Control

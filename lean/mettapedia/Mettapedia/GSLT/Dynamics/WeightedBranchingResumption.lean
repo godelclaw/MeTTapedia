@@ -67,6 +67,17 @@ def contributions [Monoid V] (source : Coalgebra State Answer V) :
       | .inl answer => [(.inl answer, 1)]
       | .inr alternatives => sequence alternatives (contributions source fuel)
 
+/-- Number of coalgebra dispatches performed by the finite frontier recursion.
+Each physical alternative is visited separately, including equal states and
+zero-weight branches. Work internal to a dispatch, allocation and physical time
+need their own accounts; this counter does not assign them a constant cost. -/
+def dispatches (source : Coalgebra State Answer V) : Nat → State → Nat
+  | 0, _ => 0
+  | fuel + 1, state =>
+      1 + match source state with
+        | .inl _ => 0
+        | .inr alternatives => (alternatives.map fun next => dispatches source fuel next.1).sum
+
 /-- A coefficient-preserving one-step comparison transports the entire
 finite execution, including duplicate occurrences and suspended states. -/
 theorem contributions_reindex [Monoid V] {OtherState OtherAnswer : Type*}

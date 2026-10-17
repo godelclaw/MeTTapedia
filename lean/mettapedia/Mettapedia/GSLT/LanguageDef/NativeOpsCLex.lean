@@ -1,10 +1,11 @@
 import Mettapedia.GSLT.LanguageDef.NativeOpsSyntax
+import Mettapedia.GSLT.LanguageDef.NativeOpsQuotedString
 
 /-!
 # Lexing the emitted native C fragment
 
 Tokens retain character lists, avoiding opaque UTF-8 reconstruction during
-artifact checking. The fragment includes decimal numerals, identifiers,
+artifact checking. The fragment includes decimal and hexadecimal number tokens, identifiers,
 punctuation, unescaped quoted include paths and C comments. Unsupported
 characters and unfinished quoted paths or comments are refused. This is the
 required generated fragment, rather than the whole C preprocessing language.
@@ -43,6 +44,13 @@ def letter (c : Char) : Bool :=
   ('A' ≤ c && c ≤ 'Z') || ('a' ≤ c && c ≤ 'z') || c == '_'
 
 def digit (c : Char) : Bool := '0' ≤ c && c ≤ '9'
+
+/-- The lexical prefix fixes radix without changing the retained spelling.
+The numeric reader separately requires at least one valid digit. -/
+def hexadecimalPrefix (reversed : List Char) : Bool :=
+  match reversed.reverse with
+  | '0' :: 'x' :: _ | '0' :: 'X' :: _ => true
+  | _ => false
 
 def whitespace (c : Char) : Bool := [' ', '\t', '\n', '\r', '\x0b', '\x0c'].contains c
 
@@ -85,7 +93,11 @@ def step (state : LexState) (c : Char) : LexState :=
         if state.currentRev.head? == some 'u' || state.currentRev.head? == some 'U' then
           if letter c || digit c then { state with fault := some .character }
           else idle (emit state (.number state.currentRev.reverse)) c
-        else if digit c then { state with currentRev := c :: state.currentRev }
+        else if state.currentRev == ['0'] && (c == 'x' || c == 'X') then
+          { state with currentRev := c :: state.currentRev }
+        else if digit c || (hexadecimalPrefix state.currentRev &&
+            (Mettapedia.GSLT.LanguageDef.NativeOpsQuotedString.hexDigit c).isSome) then
+          { state with currentRev := c :: state.currentRev }
         else if c == 'u' || c == 'U' then { state with currentRev := c :: state.currentRev }
         else if letter c then { state with fault := some .character }
         else idle (emit state (.number state.currentRev.reverse)) c
@@ -250,7 +262,16 @@ theorem unfinished_quote_refused : lex "\"path".toList = .error .unfinishedQuote
 theorem unsupported_escape_refused : lex "\"a\\b\"".toList = .error .escape :=
   by decide +kernel
 
-theorem nondecimal_number_refused : lex "0x10".toList = .error .character :=
+theorem hexadecimal_number_retained : lex "0x10".toList = .ok [.number "0x10".toList] :=
+  by decide +kernel
+
+theorem hexadecimal_unsigned_spelling_retained : lex "0XAfU;".toList =
+    .ok [.number "0XAfU".toList, .punctuation [';']] := by decide +kernel
+
+theorem invalid_hexadecimal_digit_refused : lex "0x1g".toList = .error .character :=
+  by decide +kernel
+
+theorem hexadecimal_suffix_is_terminal : lex "0x1u2".toList = .error .character :=
   by decide +kernel
 
 end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC

@@ -4,8 +4,8 @@ import Mettapedia.Languages.GF.Typing
 import Mettapedia.Languages.GF.LinguisticInvariance
 import Mettapedia.Languages.GF.WorldModelSemantics
 import Mettapedia.Languages.GF.Generated.PaperAmbiguityPGFWitnesses
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 namespace Mettapedia.Languages.GF.HandCrafted.English.ContextualDisambiguation
 

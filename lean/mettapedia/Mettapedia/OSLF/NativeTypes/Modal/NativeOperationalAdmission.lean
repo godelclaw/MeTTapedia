@@ -125,19 +125,22 @@ structure Prerequisites (environment : Environment) : Prop where
   closed : ClosedProvider environment.language environment.free environment.provider
   positive : PositiveRules environment
   recursive : StructuralDescent.checkEnvironment environment = true
+  finiteProvider : environment.provider.dynamicRelations = []
 
 def checkPrerequisites (environment : Environment) : Bool :=
   checkProviderClosed environment.language environment.free environment.provider &&
-    checkPositiveRules environment && StructuralDescent.checkEnvironment environment
+    checkPositiveRules environment && StructuralDescent.checkEnvironment environment &&
+    environment.provider.dynamicRelations.isEmpty
 
 theorem prerequisites_exact (environment : Environment) :
     checkPrerequisites environment = true ↔ Prerequisites environment := by
-  simp only [checkPrerequisites, Bool.and_eq_true, closedProvider_exact, positiveRules_exact]
+  simp only [checkPrerequisites, Bool.and_eq_true, closedProvider_exact, positiveRules_exact,
+    List.isEmpty_iff]
   constructor
-  · rintro ⟨⟨closed, positive⟩, recursive⟩
-    exact ⟨closed, positive, recursive⟩
+  · rintro ⟨⟨⟨closed, positive⟩, recursive⟩, finiteProvider⟩
+    exact ⟨closed, positive, recursive, finiteProvider⟩
   · intro ready
-    exact ⟨⟨ready.closed, ready.positive⟩, ready.recursive⟩
+    exact ⟨⟨⟨ready.closed, ready.positive⟩, ready.recursive⟩, ready.finiteProvider⟩
 
 /-- The fixed-snapshot executor can support more premise forms than these
 contextual reindexing prerequisites permit. Neither status is an assertion

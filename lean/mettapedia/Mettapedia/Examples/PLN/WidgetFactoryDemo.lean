@@ -30,7 +30,7 @@ All declarations are closed.
 -/
 
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.Examples.PLN.BrokenSensorDemo
 
 namespace Mettapedia.Examples.PLN.WidgetFactoryDemo

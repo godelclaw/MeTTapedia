@@ -12,6 +12,12 @@ relate actual structured and represented residual states, preserving ordered
 occurrences and exact verdicts at every finite budget. They establish the
 representation stage; independent language and native callback stages remain
 additional obligations.
+
+Type queries follow an explicit policy over the complete configuration. The
+literal profile reads annotations as written. Hyperon Experimental's profile
+instantiates every signature returned at an invocation apart from all retained
+names, so independent calls of one schematic signature never share an instance,
+while the positions of one signature stay correlated.
 -/
 
 set_option autoImplicit false
@@ -22,19 +28,67 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open RecursiveTasks RecursiveEncoding
 open Mettapedia.GSLT.Distinction.ProductiveBlocks
 
-def next (dispatch : GroundedDispatch) (state : Configuration) : Option Configuration :=
+/-- The type query consulted at each worker transition. It may read the whole
+configuration; replenishing evaluator depths leaves its answers unchanged. -/
+structure TypePolicy where
+  types : Configuration → TypeLookup
+  types_deepen : ∀ extra state, types (state.deepen extra) = types state
+
+/-- The historical profile reads literal annotations at every use. -/
+@[reducible] def rawTypes : TypePolicy where
+  types state := rawTypeLookup state.space
+  types_deepen extra state := by rw [Configuration.deepen_space]
+
+/-- Each type-use query protects every retained caller, pending alternative
+and published answer, as well as its own reached bindings and operands. -/
+def invocationTypes (state : Configuration) : TypeLookup :=
+  getAtomTypesScoped (RecursiveScope.configurationNames state) state.space
+
+@[simp] theorem invocationTypes_deepen (extra : Nat) (state : Configuration) :
+    invocationTypes (state.deepen extra) = invocationTypes state := by
+  simp only [invocationTypes, RecursiveScope.configurationNames_deepen,
+    Configuration.deepen_space]
+
+/-- On a closed signature prefix the invocation query is literal: only later
+schematic signatures receive call-site instances. -/
+theorem invocationTypes_closed_append (state : Configuration) (bindings : Bindings)
+    (subject expected : Atom) {closedPrefix rest : List Atom}
+    (types : getAtomTypes state.space subject = closedPrefix ++ rest)
+    (closed : ∀ signature ∈ closedPrefix, atomVariables signature = []) :
+    ∃ instances, invocationTypes state bindings subject expected = closedPrefix ++ instances ∧
+      instances.length = rest.length :=
+  getAtomTypesScoped_closed_append _ _ _ _ _ types closed
+
+theorem invocationTypes_closed (state : Configuration) (bindings : Bindings)
+    (subject expected : Atom)
+    (closed : ∀ signature ∈ getAtomTypes state.space subject, atomVariables signature = []) :
+    invocationTypes state bindings subject expected = getAtomTypes state.space subject := by
+  obtain ⟨instances, equal, length⟩ := invocationTypes_closed_append state bindings subject expected
+    (List.append_nil _).symm closed
+  have empty : instances = [] := List.eq_nil_of_length_eq_zero (by simpa using length)
+  rw [equal, empty, List.append_nil]
+
+/-- Hyperon Experimental's profile: each invocation instantiates its
+signatures apart from the complete retained configuration. -/
+def scopedTypes : TypePolicy where
+  types := invocationTypes
+  types_deepen := invocationTypes_deepen
+
+def next (dispatch : GroundedDispatch) (state : Configuration)
+    (policy : TypePolicy := rawTypes) : Option Configuration :=
   match state.control, state.stack with
   | .work task, stack =>
-      let entered := FirstSuccessRecursiveStrategy.enter state.space dispatch task
+      let entered := FirstSuccessRecursiveStrategy.enter state.space dispatch task (policy.types state)
       some {state with control := entered.1, stack := entered.2 ++ stack}
   | .returning results, frame :: remaining =>
-      let resumed := RecursiveMachine.resume state.space frame results
+      let resumed := RecursiveMachine.resume state.space frame results (policy.types state)
       some {state with control := resumed.1, stack := resumed.2 ++ remaining}
   | .returning _, [] => none
 
-def machine (dispatch : GroundedDispatch) : Machine Configuration ResultPair Configuration Empty where
+def machine (dispatch : GroundedDispatch) (policy : TypePolicy := rawTypes) :
+    Machine Configuration ResultPair Configuration Empty where
   step state :=
-    match next dispatch state with
+    match next dispatch state policy with
     | some after => some (.silent after)
     | none => match state.control with
       | .work _ => none
@@ -239,5 +293,359 @@ theorem represented_resume_prefix (dispatch : GroundedDispatch)
         ((dataMachine dispatch).run second (configurationData saved)).2) := by
   rw [run_representation, resume_prefix dispatch state saved first second observed paused,
     run_representation]
+
+/-! ## Resource-checked first-success execution -/
+
+namespace Checked
+
+abbrev ResourceRequest := RecursiveMachine.Checked.ResourceRequest
+
+/-- The atomic overload selector checks its visited prefix. Other pending
+requests and return frames retain the common leaf-coverage conditions. -/
+def blocked (dispatch : GroundedDispatch) (state : Configuration)
+    (policy : TypePolicy := rawTypes) : Option ResourceRequest :=
+  match state.control, state.stack with
+  | .work task, _ =>
+      if FirstSuccessRecursiveStrategy.taskReady state.space dispatch task (policy.types state) then none
+      else some (match task with
+        | .primitive value _ (_ + 1) _ _ =>
+            if minimalCoreSupported value then .leafDepth else .primitiveService value
+        | _ => if task.depth == 0 then .evaluationDepth else .leafDepth)
+  | .returning results, frame :: _ =>
+      if RecursiveMachine.Checked.frameReady state.space results frame (policy.types state) then none
+      else some .leafDepth
+  | .returning _, [] => none
+
+def machine (dispatch : GroundedDispatch) (policy : TypePolicy := rawTypes) :
+    Machine Configuration ResultPair Configuration ResourceRequest :=
+  RecursiveMachine.Checked.guardMachine (FirstSuccessRecursiveExecution.machine dispatch policy)
+    (fun state => blocked dispatch state policy)
+
+theorem blocked_run (dispatch : GroundedDispatch) (state : Configuration)
+    (request : ResourceRequest) (budget : Nat)
+    (pending : blocked dispatch state = some request) :
+    (machine dispatch).run (budget + 1) state = ([], .suspended request state) := by
+  exact (machine dispatch).run_succ_call (by simp [machine, RecursiveMachine.Checked.guardMachine, pending])
+
+theorem resume_prefix (dispatch : GroundedDispatch) (state saved : Configuration)
+    (first second : Nat) (observed : ResultSet)
+    (paused : (machine dispatch).run first state = (observed, .exhausted saved)) :
+    (machine dispatch).run (first + second) state =
+      (observed ++ ((machine dispatch).run second saved).1,
+        ((machine dispatch).run second saved).2) :=
+  (machine dispatch).established_and_pending first second state saved observed paused
+
+/-- A depth grant changes only the pending operation. It uses the existing
+replenishment map, which retains callers, world, scope and publication history. -/
+def continueRun (dispatch : GroundedDispatch) (budget extra : Nat) :
+    ResultSet × Outcome Configuration Configuration ResourceRequest →
+      ResultSet × Outcome Configuration Configuration ResourceRequest
+  | (events, .suspended _ saved) =>
+      let later := (machine dispatch).run budget (RecursiveMachine.Checked.replenish extra saved)
+      (events ++ later.1, later.2)
+  | result => (machine dispatch).continueRun budget result
+
+/-- Grants preserve every already-published occurrence as a prefix. The
+following events come only from the saved pending operation. -/
+theorem continueRun_events_prefix (dispatch : GroundedDispatch) (budget extra : Nat)
+    (result : ResultSet × Outcome Configuration Configuration ResourceRequest) :
+    result.1 <+: (continueRun dispatch budget extra result).1 := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome <;> simp only [continueRun, Machine.continueRun]
+  all_goals first | exact List.prefix_append _ _ | exact List.prefix_rfl
+
+theorem finished_refines (dispatch : GroundedDispatch) (budget : Nat)
+    (state : Configuration) (events : ResultSet) (final : Configuration) {policy : TypePolicy}
+    (completed : (machine dispatch policy).run budget state = (events, .finished final)) :
+    (FirstSuccessRecursiveExecution.machine dispatch policy).run budget state =
+      (events, .finished final) :=
+  RecursiveMachine.Checked.guard_finished_refines
+    (FirstSuccessRecursiveExecution.machine dispatch policy) (fun state => blocked dispatch state policy)
+    budget state final events completed
+
+theorem step_deepen (dispatch : GroundedDispatch) (state : Configuration) (extra : Nat)
+    {policy : TypePolicy} (ready : blocked dispatch state policy = none) :
+    (FirstSuccessRecursiveExecution.machine dispatch policy).step (state.deepen extra) =
+      ((FirstSuccessRecursiveExecution.machine dispatch policy).step state).map (fun transition =>
+        (transition.mapState (Configuration.deepen extra)).relabel id (Configuration.deepen extra) id) := by
+  rcases state with ⟨space, control, stack, emitted⟩
+  cases control with
+  | work task =>
+      have covered : FirstSuccessRecursiveStrategy.taskReady space dispatch task
+          (policy.types ⟨space, .work task, stack, emitted⟩) = true := by
+        simpa [blocked] using ready
+      have commute := FirstSuccessRecursiveStrategy.enter_deepen space dispatch task extra covered
+      have scope : policy.types ⟨space, .work (task.replenish extra),
+          stack.map (Frame.deepen extra), emitted⟩ =
+          policy.types ⟨space, .work task, stack, emitted⟩ :=
+        policy.types_deepen extra ⟨space, .work task, stack, emitted⟩
+      simp only [FirstSuccessRecursiveExecution.machine, next, scope,
+        Configuration.deepen, Control.deepen, commute,
+        RecursiveMachine.Checked.deepenExpansion, List.map_append, Option.map_some, Transition.mapState, Transition.relabel]
+  | returning results =>
+      cases stack with
+      | nil => cases results <;> rfl
+      | cons frame remaining =>
+          have covered : RecursiveMachine.Checked.frameReady space results frame
+              (policy.types ⟨space, .returning results, frame :: remaining, emitted⟩) = true := by
+            simpa [blocked] using ready
+          have commute := RecursiveMachine.Checked.resume_deepen space frame results extra covered
+          have scope : policy.types ⟨space, .returning results,
+              frame.deepen extra :: remaining.map (Frame.deepen extra), emitted⟩ =
+              policy.types ⟨space, .returning results, frame :: remaining, emitted⟩ :=
+            policy.types_deepen extra ⟨space, .returning results, frame :: remaining, emitted⟩
+          simp only [FirstSuccessRecursiveExecution.machine, next, scope,
+            Configuration.deepen, Control.deepen,
+            List.map_cons, commute, RecursiveMachine.Checked.deepenExpansion, List.map_append,
+            Option.map_some, Transition.mapState, Transition.relabel]
+
+/-- Actual checked completion earns the same occurrences after increasing
+all pending evaluator depths, including those stored in continuation frames. -/
+theorem completed_deepen (dispatch : GroundedDispatch) (extra budget : Nat)
+    (state final : Configuration) (events : ResultSet) {policy : TypePolicy}
+    (completed : (machine dispatch policy).run budget state = (events, .finished final)) :
+    (FirstSuccessRecursiveExecution.machine dispatch policy).run budget (state.deepen extra) =
+      (events, .finished (final.deepen extra)) :=
+  RecursiveMachine.Checked.guard_completed_map
+    (FirstSuccessRecursiveExecution.machine dispatch policy) (fun state => blocked dispatch state policy)
+    (Configuration.deepen extra) (fun state ready => step_deepen dispatch state extra ready)
+    budget state final events completed
+
+/-- Represented execution reuses the common configuration/action readers and
+the same resource request codec as the recursive worker. -/
+def dataMachine (dispatch : GroundedDispatch) : Machine Atom ResultPair Atom ResourceRequest :=
+  RecursiveDataExecution.dataMachineFor (machine dispatch)
+    RecursiveDataExecution.Checked.requestData RecursiveDataExecution.Checked.readRequest
+
+/-- The checked representation belongs to the existing machine-stage
+category, including explicit resource calls and complete encoded verdicts. -/
+def realizationStage (dispatch : GroundedDispatch) :
+    Stage ((machine dispatch).relabel id configurationData id) (dataMachine dispatch) where
+  related state data := data = configurationData state
+  cost := 1
+  forward := by
+    rw [dataMachine, RecursiveDataExecution.dataMachineFor_eq_represent _ _ _
+      RecursiveDataExecution.Checked.readRequest_requestData]
+    exact ((Stage.ofRepresentation _ configurationData readConfiguration
+      readConfiguration_configurationData).relabel id configurationData id).forward
+  reflects := by
+    rw [dataMachine, RecursiveDataExecution.dataMachineFor_eq_represent _ _ _
+      RecursiveDataExecution.Checked.readRequest_requestData]
+    exact ((Stage.ofRepresentation _ configurationData readConfiguration
+      readConfiguration_configurationData).relabel id configurationData id).reflects
+
+theorem realizationStage_matchesStuck (dispatch : GroundedDispatch) :
+    MatchesStuck ((machine dispatch).relabel id configurationData id)
+      (dataMachine dispatch) (realizationStage dispatch).related (realizationStage dispatch).cost := by
+  change MatchesStuck _ _ (fun state data => data = configurationData state) 1
+  rw [dataMachine, RecursiveDataExecution.dataMachineFor_eq_represent _ _ _
+    RecursiveDataExecution.Checked.readRequest_requestData]
+  exact (Stage.ofRepresentation_stuck (machine dispatch)
+    configurationData readConfiguration readConfiguration_configurationData).relabel id configurationData id
+
+theorem run_representation (dispatch : GroundedDispatch) (budget : Nat) (state : Configuration) :
+    (dataMachine dispatch).run budget (configurationData state) =
+      (((machine dispatch).run budget state).1,
+        RecursiveDataExecution.representedOutcome ((machine dispatch).run budget state).2) :=
+  RecursiveDataExecution.run_dataMachineFor (machine dispatch)
+    RecursiveDataExecution.Checked.requestData RecursiveDataExecution.Checked.readRequest
+    RecursiveDataExecution.Checked.readRequest_requestData budget state
+
+theorem run_iff (dispatch : GroundedDispatch) (budget : Nat) (state : Configuration)
+    (events : ResultSet) (outcome : Outcome Configuration Configuration ResourceRequest) :
+    (dataMachine dispatch).run budget (configurationData state) =
+        (events, RecursiveDataExecution.representedOutcome outcome) ↔
+      (machine dispatch).run budget state = (events, outcome) := by
+  rw [run_representation]
+  rcases (machine dispatch).run budget state with ⟨published, actual⟩
+  simp only [Prod.mk.injEq, RecursiveDataExecution.representedOutcome_injective.eq_iff]
+
+theorem malformed_input_refused (dispatch : GroundedDispatch) (input : Atom)
+    (malformed : readConfiguration input = none) : (dataMachine dispatch).step input = none := by
+  simp [dataMachine, RecursiveDataExecution.dataMachineFor, RecursiveDataExecution.stepDataFor, malformed]
+
+/-- Continue scheduler exhaustion unchanged, or grant depth to the suspended
+operation. Malformed retained data is refused, never completed. -/
+def continueDataRun (dispatch : GroundedDispatch) (budget extra : Nat) :
+    ResultSet × Outcome Atom Atom ResourceRequest → ResultSet × Outcome Atom Atom ResourceRequest
+  | (events, .suspended _ saved) =>
+      match RecursiveDataExecution.Checked.replenishData extra saved with
+      | none => (events, .stuck saved)
+      | some granted =>
+          let later := (dataMachine dispatch).run budget granted
+          (events ++ later.1, later.2)
+  | result => (dataMachine dispatch).continueRun budget result
+
+theorem continueRun_representation (dispatch : GroundedDispatch) (budget extra : Nat)
+    (result : ResultSet × Outcome Configuration Configuration ResourceRequest) :
+    continueDataRun dispatch budget extra
+        (result.1, RecursiveDataExecution.representedOutcome result.2) =
+      ((continueRun dispatch budget extra result).1,
+        RecursiveDataExecution.representedOutcome (continueRun dispatch budget extra result).2) := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome <;>
+    simp [continueDataRun, continueRun, Machine.continueRun,
+      RecursiveDataExecution.representedOutcome, run_representation]
+
+theorem represented_resume_prefix (dispatch : GroundedDispatch) (first second : Nat)
+    (initial saved : Configuration) (observed : ResultSet)
+    (paused : (machine dispatch).run first initial = (observed, .exhausted saved)) :
+    (dataMachine dispatch).run (first + second) (configurationData initial) =
+      (observed ++ ((dataMachine dispatch).run second (configurationData saved)).1,
+        ((dataMachine dispatch).run second (configurationData saved)).2) := by
+  have encoded := run_representation dispatch first initial
+  rw [paused] at encoded
+  exact (dataMachine dispatch).established_and_pending first second
+    (configurationData initial) (configurationData saved) observed encoded
+
+theorem data_blocked_run (dispatch : GroundedDispatch) (state : Configuration)
+    (request : ResourceRequest) (budget : Nat)
+    (pending : blocked dispatch state = some request) :
+    (dataMachine dispatch).run (budget + 1) (configurationData state) =
+      ([], .suspended request (configurationData state)) := by
+  rw [run_representation, blocked_run dispatch state request budget pending]
+  rfl
+
+end Checked
+
+namespace Controls.SelectionPolicy
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open RecursiveTasks
+
+private def arrow (argument returned : Atom) : Atom :=
+  .expression [.symbol "->", argument, returned]
+private def annotation (type : Atom) : Atom := .expression [.symbol ":", .symbol "ident", type]
+private def declaration : Atom :=
+  .expression [.symbol "=", .expression [.symbol "ident", .var "x"], .var "x"]
+private def source : Space := Space.ofList
+  [annotation (arrow Atom.atomType Atom.atomType),
+   annotation (arrow (.symbol "Number") (.symbol "Number")), declaration]
+private def seven : Atom := .grounded (.int 7)
+private def call : Atom := .expression [.symbol "ident", seven]
+private def start : Configuration := Configuration.initial source
+  (.atom call Atom.undefinedType Bindings.empty 16 [])
+
+
+
+private def typedItem : Atom := .symbol "item"
+private def argumentSource : Space := Space.ofList
+  [.expression [.symbol ":", typedItem, .symbol "A"],
+   .expression [.symbol ":", typedItem, .symbol "B"],
+   annotation (arrow Atom.atomType Atom.atomType), declaration]
+private def argumentCall : Atom := .expression [.symbol "ident", typedItem]
+private def argumentStart : Configuration := Configuration.initial argumentSource
+  (.atom argumentCall Atom.undefinedType Bindings.empty 16 [])
+
+
+theorem overloaded_type_scan_selects_one_answer :
+    ((FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none).run 1000 start).1.map Prod.fst =
+      [seven] := by decide +kernel
+
+theorem repeated_argument_types_select_one_answer :
+    ((FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none).run 1000 argumentStart).1.map Prod.fst =
+      [typedItem] := by decide +kernel
+
+private def duplicateSource : Space := Space.ofList
+  [annotation (arrow (.symbol "Number") (.symbol "Number")), declaration, declaration]
+private def duplicateStart : Configuration := Configuration.initial duplicateSource
+  (.atom call Atom.undefinedType Bindings.empty 16 [])
+
+theorem duplicate_equation_occurrences_remain_two_answers :
+    ((FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none).run 1000 duplicateStart).1.map Prod.fst =
+      [seven, seven] := by decide +kernel
+
+
+theorem repeated_type_paths_are_not_duplicate_answers :
+    ((Checked.machine GroundedDispatch.none).run 1000 argumentStart).1.map Prod.fst ≠
+      [typedItem, typedItem] := by
+  rw [repeated_argument_types_select_one_answer]
+  intro equality
+  have lengths := congrArg List.length equality
+  simp at lengths
+
+theorem duplicate_equations_are_not_collapsed :
+    ((Checked.machine GroundedDispatch.none).run 1000 duplicateStart).1.map Prod.fst ≠ [seven] := by
+  rw [duplicate_equation_occurrences_remain_two_answers]
+  intro equality
+  have lengths := congrArg List.length equality
+  simp at lengths
+
+end Controls.SelectionPolicy
+
+namespace Controls.ScopedPolymorphism
+
+set_option maxRecDepth 100000
+set_option maxHeartbeats 4000000
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open RecursiveTasks
+
+private def arrow : Atom := .expression [.symbol "->", .var "t", .var "t"]
+private def source : Space := Space.ofList
+  [.expression [.symbol ":", .symbol "ident", arrow],
+   .expression [.symbol "=", .expression [.symbol "ident", .var "x"], .var "x"]]
+private def seven : Atom := .grounded (.int 7)
+private def yes : Atom := .grounded (.bool true)
+private def pairCall : Atom := .expression [.symbol "Pair",
+  .expression [.symbol "ident", seven], .expression [.symbol "ident", yes]]
+private def pairStart : Configuration := Configuration.initial source
+  (.atom pairCall Atom.undefinedType Bindings.empty 16 [])
+
+/-- Two calls of one schematic signature in one retained tuple are typed by
+independent call-site instances: the first call's choice of `t` is not reused. -/
+theorem independent_calls_of_one_schematic_signature :
+    ((Checked.machine GroundedDispatch.none scopedTypes).run 1000 pairStart).1.map Prod.fst =
+      [.expression [.symbol "Pair", seven, yes]] := by decide +kernel
+
+private def swappedStart : Configuration := Configuration.initial source
+  (.atom (.expression [.symbol "Pair", .expression [.symbol "ident", yes],
+    .expression [.symbol "ident", seven]]) Atom.undefinedType Bindings.empty 16 [])
+
+theorem independent_calls_in_either_order :
+    ((Checked.machine GroundedDispatch.none scopedTypes).run 1000 swappedStart).1.map Prod.fst =
+      [.expression [.symbol "Pair", yes, seven]] := by decide +kernel
+
+/-- A caller that already binds the schematic name `t` keeps its binding:
+call-site instances avoid every reached binding name. -/
+theorem caller_binding_of_the_schematic_name_is_protected :
+    ((Checked.machine GroundedDispatch.none scopedTypes).run 1000
+      (Configuration.initial source (.atom pairCall Atom.undefinedType
+        (Bindings.empty.assign "t" (.symbol "Number")) 16 []))).1.map Prod.fst =
+      [.expression [.symbol "Pair", seven, yes]] := by decide +kernel
+
+/-- The historical literal-annotation profile reuses `t` across the two calls
+and rejects the second argument, so the two profiles are observably different. -/
+theorem literal_profile_leaks_the_first_instance :
+    (((Checked.machine GroundedDispatch.none).run 1000 pairStart).1.map Prod.fst).map
+      isEmptyOrError = [true] := by decide +kernel
+
+/-- Declaration inspection stays literal; only invocation queries instantiate. -/
+theorem annotation_lookup_stays_raw : getAtomTypes source (.symbol "ident") = [arrow] := by
+  decide +kernel
+
+private def correlated : Atom := .expression [.symbol "->", .var "t", .var "t", .symbol "Bool"]
+private def correlatedSource : Space := Space.ofList
+  [.expression [.symbol ":", .symbol "same", correlated],
+   .expression [.symbol "=", .expression [.symbol "same", .var "x", .var "y"], .symbol "True"]]
+private def start (call : Atom) : Configuration := Configuration.initial correlatedSource
+  (.atom call Atom.undefinedType Bindings.empty 16 [])
+
+/-- One instance is shared by every position of a single signature, so a
+within-signature conflict is still a type error. -/
+theorem within_signature_conflict_still_rejects :
+    (((Checked.machine GroundedDispatch.none scopedTypes).run 1000
+      (start (.expression [.symbol "same", seven, yes]))).1.map Prod.fst).map isEmptyOrError =
+      [true] := by decide +kernel
+
+theorem within_signature_agreement_succeeds :
+    ((Checked.machine GroundedDispatch.none scopedTypes).run 1000
+      (start (.expression [.symbol "same", seven, .grounded (.int 8)]))).1.map Prod.fst =
+      [.symbol "True"] := by decide +kernel
+
+end Controls.ScopedPolymorphism
 
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessRecursiveExecution

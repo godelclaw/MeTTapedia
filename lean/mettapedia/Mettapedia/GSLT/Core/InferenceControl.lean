@@ -863,6 +863,685 @@ theorem fixed_fair_iff (system : BranchingSystem Node Answer)
     rw [fixed_run_search]
     exact selection
 
+/-! ## Position service of the breadth-first runner
+
+`FairFrom` and `member_selected_or_live` are label facts.  `List.idxOf`
+names the first copy of a label, and `member_selected_or_live` takes its
+left branch when that copy is the selected head, so neither statement keeps
+a later equal label as its own request.  An admitted request is the
+occurrence at a stable initial index.  `Scheduler.breadthFirst` is the
+runner: `reorder` is the identity and `integrate pending generated` is
+`pending ++ generated`, so one tick on `head :: tail` is
+`tail ++ system.successors head`.  Fresh finite work is appended behind the
+admitted suffix.  The only hypothesis is that the index lies on the initial
+finite frontier.
+
+Yielding-cycle service, total-step descent, and admission of a client that
+was never placed on the frontier are not hypotheses of these theorems.  A
+client with no index acquires no service guarantee.  Total-step completion
+is the abstract assumption `run_completes_at_rank`, which consumes a
+`DescentCertificate`.  It is not a native response-time guarantee.
+Depth-first integration (`generated ++ pending`) is an unfair scheduler
+counterexample: an admitted answer behind a silent self-loop is never
+selected.  That counterexample is not evidence of a native primitive that
+never yields.  Finite external bursts admitted while execution continues
+are the following section: each burst is appended after the breadth-first
+tick, behind the suffix already retained.
+-/
+
+/-- One breadth-first step appends the selected node's successors behind the
+pending suffix. -/
+theorem fifo_tick_appends (system : BranchingSystem Node Answer)
+    (snapshot : Snapshot Node Answer Unit) (head : Node) (tail : List Node)
+    (frontierEq : snapshot.search.frontier = head :: tail) :
+    (tick system (Controller.fixed Scheduler.breadthFirst) snapshot).search.frontier =
+      tail ++ system.successors head := by
+  cases snapshot with
+  | mk search memory =>
+    cases memory
+    cases search with
+    | mk events frontier =>
+      have frontierEq : frontier = head :: tail := frontierEq
+      rw [frontierEq]
+      unfold tick Controller.fixed
+        Mettapedia.GSLT.Core.BranchingTemporal.tick
+        Scheduler.breadthFirst
+      rfl
+
+/-- After `steps` breadth-first expansions, the original suffix that began
+`steps` positions behind the head is still the prefix of the live frontier.
+Work generated during those steps is appended behind that suffix. -/
+theorem fifo_admitted_suffix (system : BranchingSystem Node Answer)
+    (snapshot : Snapshot Node Answer Unit) (steps : Nat)
+    (bound : steps ≤ snapshot.search.frontier.length) :
+    ∃ generated : List Node,
+      (run system (Controller.fixed Scheduler.breadthFirst) steps
+          snapshot).search.frontier =
+        snapshot.search.frontier.drop steps ++ generated := by
+  induction steps with
+  | zero =>
+      refine ⟨[], ?_⟩
+      simp [run]
+  | succ steps inductionHypothesis =>
+      have steps_lt : steps < snapshot.search.frontier.length :=
+        Nat.lt_of_succ_le bound
+      have steps_le : steps ≤ snapshot.search.frontier.length :=
+        Nat.le_of_lt steps_lt
+      obtain ⟨generated, earlier⟩ := inductionHypothesis steps_le
+      have headTail :
+          (run system (Controller.fixed Scheduler.breadthFirst) steps
+              snapshot).search.frontier =
+            snapshot.search.frontier[steps] ::
+              (snapshot.search.frontier.drop (steps + 1) ++ generated) := by
+        rw [earlier, List.drop_eq_getElem_cons steps_lt, List.cons_append]
+      have stepped :=
+        fifo_tick_appends system
+          (run system (Controller.fixed Scheduler.breadthFirst) steps snapshot)
+          snapshot.search.frontier[steps]
+          (snapshot.search.frontier.drop (steps + 1) ++ generated)
+          headTail
+      refine ⟨generated ++ system.successors (snapshot.search.frontier[steps]), ?_⟩
+      rw [run, stepped, List.append_assoc]
+
+/-- The occurrence at an admitted index is selected after exactly that many
+breadth-first steps.  Fuel is the initial position.  No yielding bound and
+no descent certificate is used. -/
+theorem fifo_serves_admitted_position (system : BranchingSystem Node Answer)
+    (snapshot : Snapshot Node Answer Unit) (index : Nat)
+    (admitted : index < snapshot.search.frontier.length) :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (run system (Controller.fixed Scheduler.breadthFirst) index snapshot) =
+        some snapshot.search.frontier[index] := by
+  obtain ⟨_generated, suffix⟩ :=
+    fifo_admitted_suffix system snapshot index (Nat.le_of_lt admitted)
+  rw [selected, suffix, List.drop_eq_getElem_cons admitted, List.cons_append]
+  unfold Controller.fixed
+    Mettapedia.GSLT.Core.BranchingTemporal.selected
+    Scheduler.breadthFirst
+  rw [List.head?_cons]
+
+/-- Two copies of label `0`.  Every expansion appends a fresh `2`. -/
+def duplicateLabelSystem : BranchingSystem Nat Nat where
+  emit _ := none
+  successors _ := [2]
+
+/-- The admitted frontier `[0, 0]`.  The two positions share a label. -/
+def duplicateLabelSnapshot : Snapshot Nat Nat Unit :=
+  initial (Controller.fixed Scheduler.breadthFirst) [0, 0]
+
+/-- Label debt is not position service.  `idxOf 0` is the first copy, and
+fuel 0 selects that copy while the second `0` is still the admitted suffix.
+Fuel 1 selects the original second position, with the fresh `2` behind it. -/
+theorem fifo_duplicate_label_is_not_later_position :
+    List.idxOf (0 : Nat) duplicateLabelSnapshot.search.frontier = 0 ∧
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (run duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst) 0
+          duplicateLabelSnapshot) = some 0 ∧
+      (run duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst) 0
+        duplicateLabelSnapshot).search.frontier = [0, 0] ∧
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (run duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst) 1
+          duplicateLabelSnapshot) = some 0 ∧
+      (run duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst) 1
+        duplicateLabelSnapshot).search.frontier = [0, 2] := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · rfl
+  · have admitted : 0 < duplicateLabelSnapshot.search.frontier.length :=
+      Nat.zero_lt_succ _
+    have served :=
+      fifo_serves_admitted_position duplicateLabelSystem duplicateLabelSnapshot 0
+        admitted
+    simpa [duplicateLabelSnapshot, initial, BranchingTemporal.initial,
+      List.getElem_cons_zero] using served
+  · rfl
+  · have admitted : 1 < duplicateLabelSnapshot.search.frontier.length :=
+      Nat.succ_lt_succ (Nat.zero_lt_succ 0)
+    have served :=
+      fifo_serves_admitted_position duplicateLabelSystem duplicateLabelSnapshot 1
+        admitted
+    simpa [duplicateLabelSnapshot, initial, BranchingTemporal.initial,
+      List.getElem_cons_succ, List.getElem_cons_zero] using served
+  · have frontierEq : duplicateLabelSnapshot.search.frontier = 0 :: [0] := rfl
+    have zero :
+        run duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst) 0
+          duplicateLabelSnapshot = duplicateLabelSnapshot := rfl
+    rw [run, zero,
+      fifo_tick_appends duplicateLabelSystem duplicateLabelSnapshot 0 [0] frontierEq]
+    simp [duplicateLabelSystem]
+
+/-- A frontier that contains only `0`, and that generates no further work. -/
+def unadmittedClientSystem : BranchingSystem Nat Nat where
+  emit _ := none
+  successors _ := []
+
+def unadmittedClientSnapshot : Snapshot Nat Nat Unit :=
+  initial (Controller.fixed Scheduler.breadthFirst) [0]
+
+/-- Label `1` is not an admitted index of `[0]`, and no fuel selects it.
+Clearing the frontier does not admit a client that was never placed on it. -/
+theorem fifo_never_serves_unadmitted_client (fuel : Nat) :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst) fuel
+        unadmittedClientSnapshot) ≠ some 1 ∧
+      ∀ index (indexAdmitted : index < unadmittedClientSnapshot.search.frontier.length),
+        unadmittedClientSnapshot.search.frontier[index]'indexAdmitted ≠ 1 := by
+  refine ⟨?_, ?_⟩
+  · cases fuel with
+    | zero =>
+        rw [run, selected]
+        unfold Controller.fixed
+          Mettapedia.GSLT.Core.BranchingTemporal.selected
+          Scheduler.breadthFirst unadmittedClientSnapshot initial
+          Mettapedia.GSLT.Core.BranchingTemporal.initial
+        rw [List.head?_cons]
+        intro selectedOne
+        cases selectedOne
+    | succ fuel =>
+        have cleared :
+            (run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst) 1
+              unadmittedClientSnapshot).search.frontier = [] := by
+          have frontierEq : unadmittedClientSnapshot.search.frontier = 0 :: [] := rfl
+          have zero :
+              run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst) 0
+                unadmittedClientSnapshot = unadmittedClientSnapshot := rfl
+          rw [run, zero,
+            fifo_tick_appends unadmittedClientSystem unadmittedClientSnapshot 0 []
+              frontierEq]
+          unfold unadmittedClientSystem
+          rfl
+        have stayed :
+            run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst)
+              (fuel + 1) unadmittedClientSnapshot =
+            run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst) 1
+              unadmittedClientSnapshot := by
+          rw [Nat.add_comm, run_add]
+          exact run_eq_self_of_frontier_nil unadmittedClientSystem
+            (Controller.fixed Scheduler.breadthFirst)
+            (run unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst) 1
+              unadmittedClientSnapshot) cleared fuel
+        rw [stayed, selected, cleared]
+        unfold Controller.fixed
+          Mettapedia.GSLT.Core.BranchingTemporal.selected
+          Scheduler.breadthFirst
+        rw [List.head?_nil]
+        intro selectedOne
+        cases selectedOne
+  · intro index indexAdmitted
+    cases index with
+    | zero =>
+        simp only [unadmittedClientSnapshot, initial,
+          Mettapedia.GSLT.Core.BranchingTemporal.initial, List.getElem_cons_zero]
+        intro selectedOne
+        cases selectedOne
+    | succ index =>
+        have frontierEq : unadmittedClientSnapshot.search.frontier = 0 :: [] := rfl
+        rw [frontierEq] at indexAdmitted
+        exact absurd (Nat.lt_of_succ_lt_succ indexAdmitted) (Nat.not_lt_zero index)
+
+/-- Depth-first integration keeps the silent loop in front of the admitted
+answer, at every fuel.  This is an unfair scheduler counterexample, read
+through the fixed controller.  It is not a new scheduler, and it is not
+evidence that a native primitive never yields. -/
+theorem depthFirst_starves_admitted_answer (fuel : Nat) :
+    selected (Controller.fixed Scheduler.depthFirst)
+      (run BranchingTemporal.Starvation.system
+        (Controller.fixed Scheduler.depthFirst) fuel
+        (initial (Controller.fixed Scheduler.depthFirst)
+          BranchingTemporal.Starvation.roots)) ≠
+      some BranchingTemporal.Starvation.Node.answer := by
+  intro served
+  have searchEq :=
+    fixed_run_search BranchingTemporal.Starvation.system Scheduler.depthFirst fuel
+      (BranchingTemporal.initial BranchingTemporal.Starvation.roots)
+  rw [BranchingTemporal.Starvation.depthFirst_run_fixed] at searchEq
+  have startEq :
+      (initial (Controller.fixed Scheduler.depthFirst)
+          BranchingTemporal.Starvation.roots :
+        Snapshot BranchingTemporal.Starvation.Node Nat Unit) =
+        { search := BranchingTemporal.initial BranchingTemporal.Starvation.roots
+          memory := () } := rfl
+  unfold selected at served
+  rw [startEq, searchEq] at served
+  unfold Controller.fixed
+    Mettapedia.GSLT.Core.BranchingTemporal.selected
+    Scheduler.depthFirst
+    Mettapedia.GSLT.Core.BranchingTemporal.initial
+    BranchingTemporal.Starvation.roots at served
+  rw [List.head?_cons] at served
+  cases served
+
+/-- On that same witness, breadth-first fuel 1 selects the admitted answer.
+The fresh loop successor is appended behind it. -/
+theorem fifo_serves_admitted_starvation_answer :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (run BranchingTemporal.Starvation.system
+        (Controller.fixed Scheduler.breadthFirst) 1
+        (initial (Controller.fixed Scheduler.breadthFirst)
+          BranchingTemporal.Starvation.roots)) =
+      some BranchingTemporal.Starvation.Node.answer ∧
+    (run BranchingTemporal.Starvation.system
+        (Controller.fixed Scheduler.breadthFirst) 1
+        (initial (Controller.fixed Scheduler.breadthFirst)
+          BranchingTemporal.Starvation.roots)).search.frontier =
+      [BranchingTemporal.Starvation.Node.answer] ++
+        BranchingTemporal.Starvation.system.successors
+          BranchingTemporal.Starvation.Node.loop := by
+  let controller : Controller BranchingTemporal.Starvation.Node Nat Unit :=
+    Controller.fixed Scheduler.breadthFirst
+  let system := BranchingTemporal.Starvation.system
+  let snapshot := initial controller BranchingTemporal.Starvation.roots
+  refine ⟨?_, ?_⟩
+  · have admitted : 1 < snapshot.search.frontier.length := by
+      unfold snapshot initial controller
+        Mettapedia.GSLT.Core.BranchingTemporal.initial
+        BranchingTemporal.Starvation.roots
+      exact Nat.succ_lt_succ (Nat.zero_lt_succ 0)
+    have served := fifo_serves_admitted_position system snapshot 1 admitted
+    have node : snapshot.search.frontier[1] =
+        BranchingTemporal.Starvation.Node.answer := by
+      unfold snapshot initial controller
+        Mettapedia.GSLT.Core.BranchingTemporal.initial
+        BranchingTemporal.Starvation.roots
+      rfl
+    rw [served, node]
+  · have frontierEq : snapshot.search.frontier =
+        BranchingTemporal.Starvation.Node.loop ::
+          [BranchingTemporal.Starvation.Node.answer] := by
+      unfold snapshot initial controller
+      rfl
+    have zero : run system controller 0 snapshot = snapshot := rfl
+    rw [run, zero]
+    exact fifo_tick_appends system snapshot
+      BranchingTemporal.Starvation.Node.loop
+      [BranchingTemporal.Starvation.Node.answer] frontierEq
+
+/-! ## External bursts admitted at the tail
+
+The host remains `Controller.fixed Scheduler.breadthFirst`, the realization
+of one breadth-first program command.  A burst is not a command and does not
+change `reorder` or `integrate`.  Each step is the existing tick, then one
+finite list appended to the frontier.  On `head :: tail` the next frontier is
+`tail ++ successors head ++ burst`, so the new requests stay behind the
+suffix that was already waiting.  An empty frontier has no earlier suffix;
+the burst is then the whole frontier.
+
+Positions remain the request identity.  `fifo_serves_admitted_position_with_tail_bursts`
+serves whatever occurrence is at an index of the frontier at that moment,
+for every later burst function.  A label repeated by a burst is a later
+index.  Yielding-cycle service and total-step descent stay outside these
+hypotheses.  Total-step completion is still the abstract
+`run_completes_at_rank` / `DescentCertificate` assumption, not a native
+response-time guarantee.  The depth-first silent loop remains an unfair
+scheduler counterexample, not evidence of a native primitive that never
+yields.  A client absent from the frontier, from every burst, and from the
+generated successors still acquires no service guarantee.
+-/
+
+/-- The breadth-first host is the existing program runner.  External bursts
+are not commands of this program. -/
+theorem breadthFirst_is_realized_program (Node Answer : Type*) :
+    Controller.fixed (Node := Node) (Answer := Answer) Scheduler.breadthFirst =
+      Controller.Program.realize
+        ({ initialMemory := ()
+           command := fun _ => ()
+           advance := fun _ _ _ _ => () } :
+          Controller.Program Node Answer Unit Unit)
+        (fun _ => Scheduler.breadthFirst) := rfl
+
+/-- Append one finite external burst behind every occurrence already retained.
+Controller memory is unchanged. -/
+def admitTail (snapshot : Snapshot Node Answer Memory) (burst : List Node) :
+    Snapshot Node Answer Memory where
+  search := { snapshot.search with frontier := snapshot.search.frontier ++ burst }
+  memory := snapshot.memory
+
+@[simp] theorem admitTail_frontier (snapshot : Snapshot Node Answer Memory)
+    (burst : List Node) :
+    (admitTail snapshot burst).search.frontier = snapshot.search.frontier ++ burst :=
+  rfl
+
+@[simp] theorem admitTail_memory (snapshot : Snapshot Node Answer Memory)
+    (burst : List Node) :
+    (admitTail snapshot burst).memory = snapshot.memory :=
+  rfl
+
+theorem admitTail_nil (snapshot : Snapshot Node Answer Memory) :
+    admitTail snapshot [] = snapshot := by
+  cases snapshot with
+  | mk search memory =>
+    cases search with
+    | mk events frontier =>
+      unfold admitTail
+      rw [List.append_nil]
+
+/-- Existing breadth-first steps, with the step's finite burst appended after
+integration.  Step `k` receives `burst k`. -/
+def runAdmitting (system : BranchingSystem Node Answer)
+    (controller : Controller Node Answer Memory) (burst : Nat → List Node) :
+    Nat → Snapshot Node Answer Memory → Snapshot Node Answer Memory
+  | 0, snapshot => snapshot
+  | steps + 1, snapshot =>
+      admitTail
+        (tick system controller
+          (runAdmitting system controller burst steps snapshot))
+        (burst steps)
+
+/-- No external burst leaves the existing controlled runner. -/
+theorem runAdmitting_nil_burst (system : BranchingSystem Node Answer)
+    (burst : Nat → List Node) (empty : ∀ step, burst step = []) (steps : Nat)
+    (snapshot : Snapshot Node Answer Unit) :
+    runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst steps snapshot =
+      run system (Controller.fixed Scheduler.breadthFirst) steps snapshot := by
+  induction steps with
+  | zero => rfl
+  | succ steps inductionHypothesis =>
+      rw [runAdmitting, run, inductionHypothesis, empty steps, admitTail_nil]
+
+/-- One breadth-first tick, then the external burst behind the retained suffix
+and behind that tick's successors. -/
+theorem fifo_step_admits_at_tail (system : BranchingSystem Node Answer)
+    (snapshot : Snapshot Node Answer Unit) (burst : List Node) (head : Node)
+    (tail : List Node) (frontierEq : snapshot.search.frontier = head :: tail) :
+    (admitTail (tick system (Controller.fixed Scheduler.breadthFirst) snapshot)
+        burst).search.frontier =
+      tail ++ system.successors head ++ burst := by
+  rw [admitTail_frontier, fifo_tick_appends system snapshot head tail frontierEq]
+
+/-- With nothing left waiting, the burst is the whole frontier. -/
+theorem fifo_exhausted_burst_is_frontier (system : BranchingSystem Node Answer)
+    (snapshot : Snapshot Node Answer Unit) (burst : List Node)
+    (empty : snapshot.search.frontier = []) :
+    (admitTail (tick system (Controller.fixed Scheduler.breadthFirst) snapshot)
+        burst).search.frontier = burst := by
+  rw [tick_eq_self_of_frontier_nil system (Controller.fixed Scheduler.breadthFirst)
+      snapshot empty, admitTail_frontier, empty, List.nil_append]
+
+/-- After `steps` admitting steps, while those steps have not passed the
+original frontier, that frontier's drop-steps suffix is still a prefix.
+Every burst admitted on the way, and every successor generated on the way,
+sits in the remainder. -/
+theorem fifo_tail_admitted_suffix (system : BranchingSystem Node Answer)
+    (burst : Nat → List Node) (snapshot : Snapshot Node Answer Unit) (steps : Nat)
+    (bound : steps ≤ snapshot.search.frontier.length) :
+    ∃ generated : List Node,
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst steps
+          snapshot).search.frontier =
+        snapshot.search.frontier.drop steps ++ generated := by
+  induction steps with
+  | zero =>
+      refine ⟨[], ?_⟩
+      simp only [runAdmitting, List.drop_zero, List.append_nil]
+  | succ steps inductionHypothesis =>
+      have steps_lt : steps < snapshot.search.frontier.length :=
+        Nat.lt_of_succ_le bound
+      have steps_le : steps ≤ snapshot.search.frontier.length :=
+        Nat.le_of_lt steps_lt
+      obtain ⟨generated, earlier⟩ := inductionHypothesis steps_le
+      have headTail :
+          (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst steps
+              snapshot).search.frontier =
+            snapshot.search.frontier[steps] ::
+              (snapshot.search.frontier.drop (steps + 1) ++ generated) := by
+        rw [earlier, List.drop_eq_getElem_cons steps_lt, List.cons_append]
+      have stepped :=
+        fifo_step_admits_at_tail system
+          (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst steps
+            snapshot)
+          (burst steps) snapshot.search.frontier[steps]
+          (snapshot.search.frontier.drop (steps + 1) ++ generated) headTail
+      refine ⟨generated ++ system.successors (snapshot.search.frontier[steps]) ++
+          burst steps, ?_⟩
+      rw [runAdmitting, stepped]
+      simp only [List.append_assoc]
+
+/-- An index occupied now is selected after that many further admitting steps.
+Later bursts are appended behind it.  The burst function is arbitrary. -/
+theorem fifo_serves_admitted_position_with_tail_bursts
+    (system : BranchingSystem Node Answer) (burst : Nat → List Node)
+    (snapshot : Snapshot Node Answer Unit) (index : Nat)
+    (admitted : index < snapshot.search.frontier.length) :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst index
+        snapshot) =
+      some snapshot.search.frontier[index] := by
+  obtain ⟨_generated, suffix⟩ :=
+    fifo_tail_admitted_suffix system burst snapshot index (Nat.le_of_lt admitted)
+  rw [selected, suffix, List.drop_eq_getElem_cons admitted, List.cons_append]
+  unfold Controller.fixed
+    Mettapedia.GSLT.Core.BranchingTemporal.selected
+    Scheduler.breadthFirst
+  rw [List.head?_cons]
+
+/-- The request at offset `offset` of the burst admitted by the next step
+occupies the index behind the retained suffix and that step's successors.
+Later bursts do not move it forward.  Its identity is that index, not its label. -/
+theorem fifo_serves_tail_burst_position (system : BranchingSystem Node Answer)
+    (burst : Nat → List Node) (snapshot : Snapshot Node Answer Unit) (head : Node)
+    (tail : List Node) (offset : Nat)
+    (frontierEq : snapshot.search.frontier = head :: tail)
+    (inBurst : offset < (burst 0).length) :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst)
+        (fun step => burst (step + 1))
+        (offset + (tail ++ system.successors head).length)
+        (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 1
+          snapshot)) =
+      some (burst 0)[offset] := by
+  have zero :
+      runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 0 snapshot =
+        snapshot := rfl
+  have stepped :=
+    fifo_step_admits_at_tail system snapshot (burst 0) head tail frontierEq
+  have frontierAfter :
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 1
+          snapshot).search.frontier =
+        (tail ++ system.successors head) ++ burst 0 := by
+    rw [runAdmitting, zero, stepped]
+  have indexLt :
+      offset + (tail ++ system.successors head).length <
+        (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 1
+          snapshot).search.frontier.length := by
+    rw [frontierAfter]
+    have raw :
+        (tail ++ system.successors head).length + offset <
+          (tail ++ system.successors head).length + (burst 0).length :=
+      Nat.add_lt_add_left inBurst (tail ++ system.successors head).length
+    have swapped :
+        offset + (tail ++ system.successors head).length <
+          (tail ++ system.successors head).length + (burst 0).length :=
+      Nat.add_comm (tail ++ system.successors head).length offset ▸ raw
+    have lengths :
+        ((tail ++ system.successors head) ++ burst 0).length =
+          (tail ++ system.successors head).length + (burst 0).length :=
+      List.length_append
+    rw [lengths]
+    exact swapped
+  have served :=
+    fifo_serves_admitted_position_with_tail_bursts system (fun step => burst (step + 1))
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 1 snapshot)
+      (offset + (tail ++ system.successors head).length) indexLt
+  have optionEq :
+      (runAdmitting system (Controller.fixed Scheduler.breadthFirst) burst 1
+          snapshot).search.frontier[offset + (tail ++ system.successors head).length]? =
+        some (burst 0)[offset] := by
+    rw [frontierAfter,
+      List.getElem?_append_right
+        (Nat.le_add_left (tail ++ system.successors head).length offset)]
+    rw [Nat.add_sub_cancel_right]
+    exact List.getElem?_eq_getElem inBurst
+  rw [served]
+  exact (List.getElem?_eq_getElem indexLt).symm.trans optionEq
+
+/-- Label `1` is not served when it is absent from the frontier, from every
+external burst, and from the empty successor lists.  Supplying other finite
+bursts does not admit it. -/
+theorem fifo_tail_burst_does_not_serve_absent_client (burst : Nat → List Nat)
+    (absent : ∀ step, (1 : Nat) ∉ burst step) (fuel : Nat) :
+    selected (Controller.fixed Scheduler.breadthFirst)
+      (runAdmitting unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst)
+        burst fuel unadmittedClientSnapshot) ≠ some 1 := by
+  have avoid : ∀ fuel,
+      ∀ node ∈ (runAdmitting unadmittedClientSystem
+          (Controller.fixed Scheduler.breadthFirst) burst fuel
+          unadmittedClientSnapshot).search.frontier,
+        node ≠ (1 : Nat) := by
+    intro fuel
+    induction fuel with
+    | zero =>
+        intro node member
+        have frontierEq : unadmittedClientSnapshot.search.frontier = 0 :: [] := rfl
+        rw [runAdmitting, frontierEq, List.mem_singleton] at member
+        intro nodeEq
+        cases member
+        cases nodeEq
+    | succ fuel inductionHypothesis =>
+        intro node member
+        let prev :=
+          runAdmitting unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst)
+            burst fuel unadmittedClientSnapshot
+        rw [runAdmitting, admitTail_frontier] at member
+        cases frontierShape : prev.search.frontier with
+        | nil =>
+            have stayed :=
+              tick_eq_self_of_frontier_nil unadmittedClientSystem
+                (Controller.fixed Scheduler.breadthFirst) prev frontierShape
+            rw [stayed, frontierShape, List.nil_append] at member
+            intro nodeEq
+            exact absent fuel (nodeEq ▸ member)
+        | cons head tail =>
+            have stepped :=
+              fifo_tick_appends unadmittedClientSystem prev head tail frontierShape
+            rw [stepped] at member
+            unfold unadmittedClientSystem at member
+            rw [List.append_nil] at member
+            rcases List.mem_append.mp member with inTail | inBurst
+            · exact inductionHypothesis node
+                (frontierShape.symm ▸ List.mem_cons_of_mem head inTail)
+            · intro nodeEq
+              exact absent fuel (nodeEq ▸ inBurst)
+  intro selectedOne
+  cases frontierShape :
+      (runAdmitting unadmittedClientSystem (Controller.fixed Scheduler.breadthFirst)
+        burst fuel unadmittedClientSnapshot).search.frontier with
+  | nil =>
+      rw [selected, frontierShape] at selectedOne
+      unfold Controller.fixed
+        Mettapedia.GSLT.Core.BranchingTemporal.selected
+        Scheduler.breadthFirst at selectedOne
+      rw [List.head?_nil] at selectedOne
+      cases selectedOne
+  | cons node rest =>
+      rw [selected, frontierShape] at selectedOne
+      unfold Controller.fixed
+        Mettapedia.GSLT.Core.BranchingTemporal.selected
+        Scheduler.breadthFirst at selectedOne
+      rw [List.head?_cons] at selectedOne
+      injection selectedOne with nodeEq
+      exact avoid fuel node
+        (frontierShape.symm ▸ (List.mem_cons_self : node ∈ node :: rest)) nodeEq
+
+/-- The burst admitted beside the duplicate frontier `[0, 0]` is another `0`.
+`idxOf` still names the first copy.  The burst copy is selected only after the
+retained suffix and the generated `2`. -/
+def repeatedLabelBurst (step : Nat) : List Nat :=
+  match step with
+  | 0 => [0]
+  | _ + 1 => []
+
+theorem fifo_tail_burst_repeats_label_behind_retained_suffix :
+    selected (Controller.fixed Scheduler.breadthFirst)
+        (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          repeatedLabelBurst 0 duplicateLabelSnapshot) = some 0 ∧
+      duplicateLabelSnapshot.search.frontier = [0, 0] ∧
+      (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          repeatedLabelBurst 1 duplicateLabelSnapshot).search.frontier =
+        [0] ++ duplicateLabelSystem.successors 0 ++ repeatedLabelBurst 0 ∧
+      (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          repeatedLabelBurst 1 duplicateLabelSnapshot).search.frontier = [0, 2, 0] ∧
+      List.idxOf (0 : Nat)
+          (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+            repeatedLabelBurst 1 duplicateLabelSnapshot).search.frontier = 0 ∧
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          (fun step => repeatedLabelBurst (step + 1)) 0
+          (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+            repeatedLabelBurst 1 duplicateLabelSnapshot)) = some 0 ∧
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          (fun step => repeatedLabelBurst (step + 1)) 1
+          (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+            repeatedLabelBurst 1 duplicateLabelSnapshot)) = some 2 ∧
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          (fun step => repeatedLabelBurst (step + 1)) 2
+          (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+            repeatedLabelBurst 1 duplicateLabelSnapshot)) = some 0 := by
+  let after :=
+    runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+      repeatedLabelBurst 1 duplicateLabelSnapshot
+  have baseEq : duplicateLabelSnapshot.search.frontier = 0 :: [0] := rfl
+  have zero :
+      runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+        repeatedLabelBurst 0 duplicateLabelSnapshot = duplicateLabelSnapshot := rfl
+  have stepped :=
+    fifo_step_admits_at_tail duplicateLabelSystem duplicateLabelSnapshot
+      (repeatedLabelBurst 0) 0 [0] baseEq
+  have shape : after.search.frontier =
+      [0] ++ duplicateLabelSystem.successors 0 ++ repeatedLabelBurst 0 := by
+    unfold after
+    rw [runAdmitting, zero, stepped]
+  have listEq : after.search.frontier = [0, 2, 0] := by
+    rw [shape]
+    unfold duplicateLabelSystem repeatedLabelBurst
+    rfl
+  have serveAt (index value : Nat) (indexLt : index < after.search.frontier.length)
+      (read : after.search.frontier[index]? = some value) :
+      selected (Controller.fixed Scheduler.breadthFirst)
+        (runAdmitting duplicateLabelSystem (Controller.fixed Scheduler.breadthFirst)
+          (fun step => repeatedLabelBurst (step + 1)) index after) = some value := by
+    have served :=
+      fifo_serves_admitted_position_with_tail_bursts duplicateLabelSystem
+        (fun step => repeatedLabelBurst (step + 1)) after index indexLt
+    rw [served]
+    exact (List.getElem?_eq_getElem indexLt).symm.trans read
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · have admitted : 0 < duplicateLabelSnapshot.search.frontier.length :=
+      Nat.zero_lt_succ _
+    have served :=
+      fifo_serves_admitted_position_with_tail_bursts duplicateLabelSystem
+        repeatedLabelBurst duplicateLabelSnapshot 0 admitted
+    have read : duplicateLabelSnapshot.search.frontier[0]? = some 0 := by
+      rw [show duplicateLabelSnapshot.search.frontier = [0, 0] from rfl]
+      rfl
+    rw [served]
+    exact (List.getElem?_eq_getElem admitted).symm.trans read
+  · rfl
+  · exact shape
+  · exact listEq
+  · rw [listEq]
+    rfl
+  · have indexLt : 0 < after.search.frontier.length := by
+      rw [listEq]
+      exact Nat.zero_lt_succ 2
+    have read : after.search.frontier[0]? = some 0 := by
+      rw [listEq]
+      rfl
+    exact serveAt 0 0 indexLt read
+  · have indexLt : 1 < after.search.frontier.length := by
+      rw [listEq]
+      exact Nat.succ_lt_succ (Nat.zero_lt_succ 1)
+    have read : after.search.frontier[1]? = some 2 := by
+      rw [listEq]
+      rfl
+    exact serveAt 1 2 indexLt read
+  · have indexLt : 2 < after.search.frontier.length := by
+      rw [listEq]
+      exact Nat.succ_lt_succ (Nat.succ_lt_succ (Nat.zero_lt_succ 0))
+    have read : after.search.frontier[2]? = some 0 := by
+      rw [listEq]
+      rfl
+    exact serveAt 2 0 indexLt read
+
 /-! ## The controlled machine as a GSLT -/
 
 /-- The operational theory of a controlled search.  A live configuration has
@@ -1919,7 +2598,9 @@ example :
   exact ⟨0, rfl⟩
 
 /-- Lawful occurrence preservation alone does not imply fairness: embedded
-depth-first control retains the established silent-loop starvation witness. -/
+depth-first control retains the established silent-loop starvation witness.
+That witness is an unfair scheduler counterexample, not a native primitive
+that never yields. -/
 example :
     ¬ Snapshot.FairFrom BranchingTemporal.Starvation.system
       (Controller.fixed Scheduler.depthFirst)
@@ -1972,6 +2653,22 @@ end ObserverControls
 #print axioms Snapshot.completed_controllers_bag_agree
 #print axioms Snapshot.run_completes_at_rank
 #print axioms Snapshot.fair_emits_reachable
+#print axioms Snapshot.fifo_admitted_suffix
+#print axioms Snapshot.fifo_serves_admitted_position
+#print axioms Snapshot.fifo_duplicate_label_is_not_later_position
+#print axioms Snapshot.fifo_never_serves_unadmitted_client
+#print axioms Snapshot.depthFirst_starves_admitted_answer
+#print axioms Snapshot.fifo_serves_admitted_starvation_answer
+#print axioms Snapshot.breadthFirst_is_realized_program
+#print axioms Snapshot.admitTail_nil
+#print axioms Snapshot.runAdmitting_nil_burst
+#print axioms Snapshot.fifo_step_admits_at_tail
+#print axioms Snapshot.fifo_exhausted_burst_is_frontier
+#print axioms Snapshot.fifo_tail_admitted_suffix
+#print axioms Snapshot.fifo_serves_admitted_position_with_tail_bursts
+#print axioms Snapshot.fifo_serves_tail_burst_position
+#print axioms Snapshot.fifo_tail_burst_does_not_serve_absent_client
+#print axioms Snapshot.fifo_tail_burst_repeats_label_behind_retained_suffix
 #print axioms Snapshot.run_multistep
 #print axioms WorkOccurrence.generated_valid
 #print axioms WorkOccurrence.controlled_emission_sound

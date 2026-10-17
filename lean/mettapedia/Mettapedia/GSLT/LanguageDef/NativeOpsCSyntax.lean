@@ -46,6 +46,9 @@ inductive CExpr where
   | postIncrement (operand : CExpr)
   | postDecrement (operand : CExpr)
   | cast (type : CType) (operand : CExpr)
+  /-- The admitted leading const qualifier applies to the pointed-to object.
+  The source reader checks a one-level pointer; typed execution remains separate. -/
+  | castPointeeConst (type : CType) (operand : CExpr)
   | binary (operator : BinaryOperator) (left right : CExpr)
   | conditional (condition whenTrue whenFalse : CExpr)
   | field (record : CExpr) (name : Name) (throughPointer : Bool)
@@ -124,32 +127,71 @@ structure CUnit where
 /-- This table is checked against the separately admitted declaration layout. -/
 abbrev TypeNames := List Name
 
-/-- Decimal recognition excludes a multi-digit leading zero. Such a C token
-is octal syntax and cannot be interpreted by a decimal-only profile. -/
+/-- One positional fold checks every digit against the selected radix. -/
+def radixDigits? (radix : Nat) (characters : List Char) : Option Nat :=
+  if characters.isEmpty then none else
+    characters.foldlM (fun value c => do
+      let digit ← Mettapedia.GSLT.LanguageDef.NativeOpsQuotedString.hexDigit c
+      if digit < radix then some (radix * value + digit) else none) 0
+
+/-- Decimal recognition retains its original leading-zero policy. A
+multi-digit leading zero is C's octal spelling, not decimal input. -/
 def decimalChars? (characters : List Char) : Option Nat :=
   if characters.isEmpty || !characters.all digit ||
       (characters.head? == some '0' && 1 < characters.length) then none
   else some (characters.foldl (fun value c => 10 * value + (c.toNat - '0'.toNat)) 0)
 
-/-- The supported unsigned suffix retains a magnitude rather than asserting
-a particular machine width. Leading zero selects C's octal radix. Hexadecimal
-and long suffixes remain outside the lexer and this recognition profile. -/
+/-- A nonnegative C integer token's radix is selected by its authored prefix.
+Suffixes are checked by the caller and never ignored by this fold. -/
+def integerMagnitude? : List Char → Option Nat
+  | '0' :: 'x' :: rest | '0' :: 'X' :: rest => radixDigits? 16 rest
+  | characters =>
+      let radix := if characters.head? == some '0' then 8 else 10
+      if characters.isEmpty || !characters.all (fun c => digit c && c.toNat - '0'.toNat < radix)
+        then none
+      else some (characters.foldl (fun value c => radix * value + (c.toNat - '0'.toNat)) 0)
+
+/-- Only the terminal unsigned suffix is admitted here. Long suffixes remain
+outside this scalar reader profile. -/
 def unsignedChars? (characters : List Char) : Option Nat := do
   let reversed ← match characters.reverse with
     | 'u' :: rest | 'U' :: rest => some rest
     | _ => none
-  let digits := reversed.reverse
-  let radix := if digits.head? == some '0' then 8 else 10
-  if digits.isEmpty || !digits.all (fun c => digit c && c.toNat - '0'.toNat < radix) then none
-  else some (digits.foldl (fun value c => radix * value + (c.toNat - '0'.toNat)) 0)
+  integerMagnitude? reversed.reverse
 
-def wordChars? (characters : List Char) : Option (BitVec 64) := do
-  let value ← decimalChars? characters
-  if value < 2 ^ 64 then some (BitVec.ofNat 64 value) else none
+/-- Macro literals must fit their declared width. Overflow is refused before
+conversion, so a too-large spelling cannot silently wrap. The existing
+decimal macro profile keeps octal spellings outside admission; hexadecimal
+spelling is an explicit additional radix. -/
+def fixedWidthChars? (width : Nat) (characters : List Char) : Option Nat :=
+  (if hexadecimalPrefix characters.reverse then integerMagnitude? characters
+    else decimalChars? characters).bind fun value =>
+      if value < 2 ^ width then some value else none
 
-def byteChars? (characters : List Char) : Option (BitVec 8) := do
-  let value ← decimalChars? characters
-  if value < 2 ^ 8 then some (BitVec.ofNat 8 value) else none
+def wordChars? (characters : List Char) : Option (BitVec 64) :=
+  (fixedWidthChars? 64 characters).map (BitVec.ofNat 64)
+
+def byteChars? (characters : List Char) : Option (BitVec 8) :=
+  (fixedWidthChars? 8 characters).map (BitVec.ofNat 8)
+
+/-- Unsuffixed hexadecimal constants follow the supported 32-bit C type
+ordering: signed int first, then unsigned int. Larger unsuffixed integer
+types require a separate admitted profile; the fixed-width macros cover their
+explicit unsigned alternatives. -/
+def hexadecimal32? (characters : List Char) : Option CExpr := do
+  if !hexadecimalPrefix characters.reverse then none else do
+    let value ← fixedWidthChars? 32 characters
+    if value < 2 ^ 31 then some (.decimal value)
+    else some (.unsignedInteger value)
+
+theorem fixedWidthChars_bounded (width : Nat) (characters : List Char) (value : Nat)
+    (accepted : fixedWidthChars? width characters = some value) : value < 2 ^ width := by
+  unfold fixedWidthChars? at accepted
+  obtain ⟨parsed, _, checked⟩ := Option.bind_eq_some_iff.mp accepted
+  split at checked
+  · next bound => cases Option.some.inj checked; exact bound
+  · simp at checked
+
 
 def binaryOperator? : Name → Option (BinaryOperator × Nat)
   | ['|', '|'] => some (.or, 1)
@@ -222,5 +264,23 @@ theorem unsigned_octal_magnitude : unsignedChars? "077u".toList = some 63 :=
 
 theorem invalid_unsigned_octal_refused : unsignedChars? "09u".toList = none :=
   by decide +kernel
+
+theorem hexadecimal_hash_multiplier : fixedWidthChars? 32 "0x9E3779B1".toList =
+    some 2654435761 := by decide +kernel
+
+theorem hexadecimal_maximum_word : fixedWidthChars? 32 "0xFFFFFFFF".toList =
+    some 4294967295 := by decide +kernel
+
+theorem hexadecimal_width_overflow_refused : fixedWidthChars? 32 "0x100000000".toList =
+    none := by decide +kernel
+
+theorem hexadecimal_empty_digits_refused : integerMagnitude? "0x".toList = none :=
+  by decide +kernel
+
+theorem hexadecimal_bad_digit_refused : integerMagnitude? "0xfg".toList = none :=
+  by decide +kernel
+
+theorem hexadecimal_octal_separation : integerMagnitude? "010".toList = some 8 ∧
+    integerMagnitude? "0x10".toList = some 16 := by decide +kernel
 
 end Mettapedia.GSLT.LanguageDef.NativeOps.NativeC

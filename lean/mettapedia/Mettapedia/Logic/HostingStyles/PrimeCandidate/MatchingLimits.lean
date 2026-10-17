@@ -51,7 +51,9 @@ itself.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -679,4 +681,4 @@ theorem matchingCandidate_not_rank : IsEmpty matchingCandidate.Rank := by
 #print axioms boundTable_iff_determinedTable
 #print axioms instances_hostedBy_matching_iff
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

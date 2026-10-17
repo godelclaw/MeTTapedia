@@ -18,6 +18,12 @@ the abandoned continuation and does not roll back the supplied world. A checked
 address and payload relocation preserves publication, selected observations and
 retained bytes, including duplicate answer occurrences. Native root discovery,
 finalizers and the implementation of that copy remain separate obligations.
+
+A discovery catalogue is one delimited owner. Taking prepared proposals
+publishes each selected root to its own owner and then cancels that catalogue
+once. An untaken address is collected only when no surviving root reaches it.
+Releasing one selected owner retains a sibling graph. Operational roots stay
+distinct from observer roots, and a semantic reference may still retain storage.
 -/
 
 set_option autoImplicit false
@@ -177,6 +183,39 @@ theorem commit_preserves_selected_observation
     state.heap state.roots dead output answers outside selected
       (allocated address selected))
 
+/-- Read each ordered answer in the session's semantic world. Equal resource
+addresses do not supply the binding or interpretation context of a return. -/
+def observeContext {Observation : Type}
+    (state : Session Owner Address Value World) (answers : List Address)
+    (interpret : World → Option (Cell Address Value) → Observation) : List Observation :=
+  (observe state.heap answers).map (interpret state.world)
+
+/-- Actual publication and collection preserve every world-indexed readout of
+selected complete cells, including duplicate answer occurrences. -/
+theorem commit_preserves_contextual_observation {Observation : Type}
+    (state : Session Owner Address Value World) (dead : Finset Owner)
+    (output : Owner) (answers : List Address) (outside : output ∉ dead)
+    (allocated : ∀ address ∈ answers, address ∈ state.heap.allocated)
+    (interpret : World → Option (Cell Address Value) → Observation) :
+    observeContext (commit state dead output answers) answers interpret =
+      observeContext state answers interpret := by
+  unfold observeContext
+  rw [commit_world, commit_preserves_selected_observation state dead output answers
+    outside allocated]
+
+/-- Keeping storage cannot repair a substituted semantic world. This decoder
+exposes the world on every cell occurrence, so any nonempty answer list detects
+that substitution even when the resource heap is unchanged. -/
+theorem changed_world_changes_contextual_observation
+    (state : Session Owner Address Value World) (other : World)
+    (different : state.world ≠ other) (address : Address) (rest : List Address) :
+    observeContext state (address :: rest) (fun world cell => (world, cell)) ≠
+      observeContext {state with world := other} (address :: rest)
+        (fun world cell => (world, cell)) := by
+  intro same
+  have heads := List.cons.inj same
+  exact different (congrArg Prod.fst heads.1)
+
 theorem commit_preserves_answer_graph
     (state : Session Owner Address Value World) (dead : Finset Owner)
     (output : Owner) (answers : List Address) (outside : output ∉ dead)
@@ -269,6 +308,27 @@ theorem relocate_observation {source : Heap Address Value}
   apply List.map_congr_left
   intro address _
   exact copy.lookup_eq address
+
+/-- A representation change transports complete cells through the existing
+relocation. The readout receives the original semantic world. Its cell decoder
+must respect that representation map; pointer transport alone cannot imply it. -/
+theorem relocate_contextual_observation {Observation : Type}
+    (state : Session Owner Address Value World)
+    (destination : Heap DestinationAddress DestinationValue)
+    (copy : Relocation state.heap destination) (answers : List Address)
+    (readSource : World → Option (Cell Address Value) → Observation)
+    (readDestination : World → Option (Cell DestinationAddress DestinationValue) → Observation)
+    (decode : ∀ cell, readDestination state.world
+      (cell.map (Cell.relocate copy.address copy.payload)) = readSource state.world cell) :
+    observeContext (relocateSession state destination copy) (answers.map copy.address)
+      readDestination = observeContext state answers readSource := by
+  unfold observeContext
+  rw [show (relocateSession state destination copy).world = state.world from rfl]
+  rw [show (relocateSession state destination copy).heap = destination from rfl]
+  rw [relocate_observation copy answers, List.map_map]
+  apply List.map_congr_left
+  intro cell _
+  exact decode cell
 
 /-- An exported answer survives cancellation in either representation, with
 the same ordered occurrence list and transported complete cells. -/
@@ -1992,5 +2052,396 @@ theorem canceled_output_owner_is_not_export :
   exact lookup_collect_of_not_live cyclicHeap _ (not_live_empty cyclicHeap 1)
 
 end Examples
+
+/-! ## Prepared proposals
+
+The catalogue is an owner in the existing root set. Each taken proposal is
+one address published by the existing `publish`, and the catalogue cancellation
+is the existing `closeScope`. `commit` remains the one-owner form of the same
+two steps. Payload, world, ordered path reads and reachable cells are the
+observations already preserved by collection. An address still reached from
+outside the catalogue is not untaken. Observer-only references and semantic
+history retention stay the laws in `ResourceOwnership`.
+-/
+
+section PreparedProposals
+
+/-- Iterated publication. Duplicate selected pairs share one physical root;
+the caller's list keeps the occurrences. -/
+def publishSelections (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) : Roots Owner Address :=
+  selections.foldl (fun acc item => publish acc item.1 [item.2]) roots
+
+theorem answerRoots_singleton (owner : Owner) (address : Address) :
+    answerRoots owner [address] = {(owner, address)} := by
+  ext pair
+  rcases pair with ⟨other, located⟩
+  simp only [mem_answerRoots, List.mem_singleton, Finset.mem_singleton, Prod.mk.injEq]
+
+theorem publishSelections_step (roots : Roots Owner Address)
+    (head : Owner × Address) (tail : List (Owner × Address)) :
+    publishSelections roots (head :: tail) =
+      publishSelections (publish roots head.1 [head.2]) tail := by
+  unfold publishSelections
+  simp only [List.foldl_cons]
+
+theorem publishSelections_mono (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) :
+    roots ⊆ publishSelections roots selections := by
+  induction selections generalizing roots with
+  | nil =>
+      unfold publishSelections
+      simp only [List.foldl_nil]
+      exact Finset.Subset.refl roots
+  | cons head tail ih =>
+      rw [publishSelections_step]
+      exact (publish_mono roots head.1 [head.2]).trans (ih _)
+
+theorem publishSelections_selected (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) (owner : Owner) (address : Address)
+    (member : (owner, address) ∈ selections) :
+    (owner, address) ∈ publishSelections roots selections := by
+  induction selections generalizing roots with
+  | nil => cases member
+  | cons head tail ih =>
+      rw [publishSelections_step]
+      rcases List.mem_cons.mp member with same | later
+      · cases same
+        refine publishSelections_mono _ tail ?_
+        exact Finset.mem_union.mpr (Or.inr ((mem_answerRoots owner owner [address] address).mpr
+          ⟨rfl, List.mem_singleton.mpr rfl⟩))
+      · exact ih _ later
+
+theorem publishSelections_eq (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) :
+    publishSelections roots selections =
+      roots ∪ (selections.map fun item => (item.1, item.2)).toFinset := by
+  induction selections generalizing roots with
+  | nil =>
+      simp only [publishSelections, List.foldl_nil, List.map_nil, List.toFinset_nil,
+        Finset.union_empty]
+  | cons head tail ih =>
+      rw [publishSelections_step, ih, publish, answerRoots_singleton, List.map_cons,
+        List.toFinset_cons, Finset.insert_eq, Finset.union_assoc]
+
+/-- A selected owner outside the catalogue still holds its exported root
+after that catalogue is removed. -/
+theorem selected_root_survives_catalogue (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (address : Address)
+    (taken : (owner, address) ∈ selections) (distinct : owner ∉ catalogue) :
+    (owner, address) ∈ cancel (publishSelections roots selections) catalogue :=
+  (mem_cancel _ catalogue _).mpr
+    ⟨publishSelections_selected roots selections owner address taken, distinct⟩
+
+theorem selected_answer_survives_catalogue (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal : Address)
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue) :
+    answerRoots owner [proposal] ⊆
+      cancel (publishSelections roots selections) catalogue := by
+  intro pair member
+  rcases pair with ⟨other, located⟩
+  obtain ⟨sameOwner, selectedAddress⟩ :=
+    (mem_answerRoots owner other [proposal] located).mp member
+  cases sameOwner
+  cases List.mem_singleton.mp selectedAddress
+  exact selected_root_survives_catalogue roots selections catalogue owner proposal taken distinct
+
+/-- Publish every taken proposal, then cancel the catalogue once. -/
+noncomputable def exportProposals (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner) :
+    Session Owner Address Value World :=
+  closeScope { state with roots := publishSelections state.roots selections } catalogue
+
+theorem exportProposals_world (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner) :
+    (exportProposals state selections catalogue).world = state.world := by
+  unfold exportProposals
+  rw [closeScope_world]
+
+theorem exportProposals_preserves_reachable
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal target : Address)
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue)
+    (live : Live state.heap (answerRoots owner [proposal]) target) :
+    (exportProposals state selections catalogue).heap.lookup target =
+      state.heap.lookup target := by
+  unfold exportProposals
+  exact lookup_collect_of_live state.heap _
+    (live_mono state.heap
+      (selected_answer_survives_catalogue state.roots selections catalogue owner proposal
+        taken distinct) live)
+
+theorem exportProposals_preserves_payload
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal : Address)
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue)
+    (allocated : proposal ∈ state.heap.allocated) :
+    (exportProposals state selections catalogue).heap.lookup proposal =
+      state.heap.lookup proposal :=
+  exportProposals_preserves_reachable state selections catalogue owner proposal proposal
+    taken distinct (live_of_root state.heap _
+      ((mem_answerRoots owner owner [proposal] proposal).mpr
+        ⟨rfl, List.mem_singleton.mpr rfl⟩) allocated)
+
+theorem exportProposals_preserves_context {Observation : Type}
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal : Address)
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue)
+    (allocated : proposal ∈ state.heap.allocated)
+    (interpret : World → Option (Cell Address Value) → Observation) :
+    observeContext (exportProposals state selections catalogue) [proposal] interpret =
+      observeContext state [proposal] interpret := by
+  unfold observeContext observe
+  rw [exportProposals_world]
+  simp only [List.map_cons, List.map_nil]
+  rw [exportProposals_preserves_payload state selections catalogue owner proposal
+    taken distinct allocated]
+
+/-- Path starts that were exported remain readable, in order, after the
+catalogue cancellation. The session world is the captured environment. -/
+theorem exportProposals_preserves_paths
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (paths : List (Address × List Address))
+    (protectedStart : ∀ query ∈ paths, ∃ owner,
+      (owner, query.1) ∈ selections ∧ owner ∉ catalogue)
+    (allocated : ∀ query ∈ paths, query.1 ∈ state.heap.allocated) :
+    RequestBorrow.observe (exportProposals state selections catalogue).heap paths =
+      RequestBorrow.observe state.heap paths := by
+  unfold exportProposals
+  apply List.map_congr_left
+  intro query member
+  obtain ⟨owner, taken, distinct⟩ := protectedStart query member
+  exact walk_collect state.heap _
+    (live_of_root state.heap _
+      (selected_root_survives_catalogue state.roots selections catalogue owner query.1
+        taken distinct) (allocated query member)) query.2
+
+/-- An address that survives neither an owner outside the catalogue nor a
+taken proposal is reclaimed with the catalogue. A surviving outside root or a
+selected graph, including a shared descendant, is a real reference and is not
+claimed here. -/
+theorem exportProposals_reclaims_unreferenced
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (address : Address)
+    (notOuter : ¬ Live state.heap (cancel state.roots catalogue) address)
+    (notTaken : ∀ owner proposal, (owner, proposal) ∈ selections → owner ∉ catalogue →
+      ¬ Live state.heap (answerRoots owner [proposal]) address) :
+    (exportProposals state selections catalogue).heap.lookup address = none := by
+  unfold exportProposals
+  apply lookup_collect_of_not_live
+  intro live
+  rw [live_iff_root] at live
+  obtain ⟨pair, member, origin⟩ := live
+  obtain ⟨present, surviving⟩ := (mem_cancel _ catalogue pair).mp member
+  rw [publishSelections_eq] at present
+  rcases Finset.mem_union.mp present with original | selected
+  · apply notOuter
+    refine live_mono state.heap ?_ origin
+    intro single singleMember
+    have same : single = pair := Finset.mem_singleton.mp singleMember
+    rw [same]
+    exact (mem_cancel state.roots catalogue pair).mpr ⟨original, surviving⟩
+  · obtain ⟨item, itemMember, samePair⟩ := List.mem_map.mp (List.mem_toFinset.mp selected)
+    cases samePair
+    exact notTaken item.1 item.2 itemMember surviving
+      ((live_congr_rootAddresses state.heap {(item.1, item.2)}
+        (answerRoots item.1 [item.2]) (by rw [answerRoots_singleton]) address).mp origin)
+
+/-- Cancelling the catalogue before any export removes a proposal whose only
+protecting roots belong to that catalogue. -/
+theorem catalogue_cancel_before_export_reclaims
+    (state : Session Owner Address Value World) (catalogue : Owner) (proposal : Address)
+    (catalogueOnly : ∀ pair ∈ state.roots,
+      Live state.heap {pair} proposal → pair.1 = catalogue) :
+    (closeScope state {catalogue}).heap.lookup proposal = none :=
+  closeScope_reclaims_final_owner state {catalogue} proposal (by
+    intro pair member live
+    exact Finset.mem_singleton.mpr (catalogueOnly pair member live))
+
+/-- Publishing back into the owner being cancelled does not export. -/
+theorem export_into_cancelled_owner_reclaims
+    (state : Session Owner Address Value World) (owner : Owner) (proposal : Address)
+    (noOutside : ∀ pair ∈ publish state.roots owner [proposal],
+      Live state.heap {pair} proposal → pair.1 = owner) :
+    (closeScope { state with
+        roots := publish state.roots owner [proposal] } {owner}).heap.lookup proposal = none := by
+  refine closeScope_reclaims_final_owner
+    { state with roots := publish state.roots owner [proposal] } {owner} proposal ?_
+  intro pair member live
+  exact Finset.mem_singleton.mpr (noOutside pair member live)
+
+theorem closeScope_preserves_sibling_payload
+    (state : Session Owner Address Value World) (selected sibling : Owner)
+    (proposal : Address) (different : sibling ≠ selected)
+    (held : (sibling, proposal) ∈ state.roots)
+    (allocated : proposal ∈ state.heap.allocated) :
+    (closeScope state {selected}).heap.lookup proposal = state.heap.lookup proposal ∧
+      (closeScope state {selected}).world = state.world := by
+  have outside : sibling ∉ ({selected} : Finset Owner) := by
+    intro member
+    exact different (Finset.mem_singleton.mp member)
+  have rooted : (sibling, proposal) ∈ cancel state.roots {selected} :=
+    (mem_cancel state.roots {selected} (sibling, proposal)).mpr ⟨held, outside⟩
+  exact ⟨lookup_collect_of_live state.heap _
+      (live_of_root state.heap (cancel state.roots {selected}) rooted allocated),
+    closeScope_world _ _⟩
+
+theorem closeScope_preserves_sibling_graph
+    (state : Session Owner Address Value World) (selected sibling : Owner)
+    {address : Address} (different : sibling ≠ selected)
+    (live : Live state.heap (state.roots.filter fun pair => pair.1 = sibling) address) :
+    (closeScope state {selected}).heap.lookup address = state.heap.lookup address := by
+  apply lookup_collect_of_live
+  refine live_cancel_other_owner state.heap state.roots {selected} sibling ?_ live
+  intro member
+  exact different (Finset.mem_singleton.mp member)
+
+/-- Cancelling every selected owner reclaims a resource that had no other
+protector. Cancelling one of them does not. -/
+theorem cancel_selected_pair_reclaims
+    (state : Session Owner Address Value World) (first second : Owner)
+    (address : Address)
+    (onlyThese : ∀ pair ∈ state.roots,
+      Live state.heap {pair} address → pair.1 = first ∨ pair.1 = second) :
+    (closeScope state {first, second}).heap.lookup address = none := by
+  refine closeScope_reclaims_final_owner state {first, second} address ?_
+  intro pair member live
+  rcases onlyThese pair member live with same | same
+  · exact Finset.mem_insert.mpr (Or.inl same)
+  · exact Finset.mem_insert.mpr (Or.inr (Finset.mem_singleton.mpr same))
+
+/-- Export before catalogue retirement. `publish` installs each taken root and
+`closeScope` retires the catalogue; one selected owner is the existing
+`commit`. The selected cell, every cell reachable from it, the captured world
+and the ordered path reads survive that retirement. -/
+theorem export_before_catalogue_cancel {Observation : Type}
+    (state : Session Owner Address Value World)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal : Address)
+    (paths : List (Address × List Address))
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue)
+    (allocated : proposal ∈ state.heap.allocated)
+    (pathStarts : ∀ query ∈ paths, ∃ selectedOwner,
+      (selectedOwner, query.1) ∈ selections ∧ selectedOwner ∉ catalogue)
+    (pathAllocated : ∀ query ∈ paths, query.1 ∈ state.heap.allocated)
+    (interpret : World → Option (Cell Address Value) → Observation) :
+    (exportProposals state selections catalogue).heap.lookup proposal =
+        state.heap.lookup proposal ∧
+      (exportProposals state selections catalogue).world = state.world ∧
+      observeContext (exportProposals state selections catalogue) [proposal] interpret =
+        observeContext state [proposal] interpret ∧
+      RequestBorrow.observe (exportProposals state selections catalogue).heap paths =
+        RequestBorrow.observe state.heap paths ∧
+      (∀ target, Live state.heap (answerRoots owner [proposal]) target →
+        (exportProposals state selections catalogue).heap.lookup target =
+          state.heap.lookup target) := by
+  refine ⟨exportProposals_preserves_payload state selections catalogue owner proposal
+      taken distinct allocated,
+    exportProposals_world state selections catalogue,
+    exportProposals_preserves_context state selections catalogue owner proposal
+      taken distinct allocated interpret,
+    exportProposals_preserves_paths state selections catalogue paths pathStarts pathAllocated,
+    ?_⟩
+  intro target live
+  exact exportProposals_preserves_reachable state selections catalogue owner proposal target
+    taken distinct live
+
+section RelocationExport
+
+variable {DestinationAddress DestinationValue : Type}
+variable [DecidableEq DestinationAddress]
+
+theorem relocate_publishSelections {source : Heap Address Value}
+    {destination : Heap DestinationAddress DestinationValue}
+    (copy : Relocation source destination) (roots : Roots Owner Address)
+    (selections : List (Owner × Address)) :
+    copy.roots (publishSelections roots selections) =
+      publishSelections (copy.roots roots)
+        (selections.map fun item => (item.1, copy.address item.2)) := by
+  induction selections generalizing roots with
+  | nil =>
+      simp only [publishSelections, List.foldl_nil, List.map_nil]
+  | cons head tail ih =>
+      rw [publishSelections_step, List.map_cons, publishSelections_step]
+      have published : copy.roots (publish roots head.1 [head.2]) =
+          publish (copy.roots roots) head.1 [copy.address head.2] := by
+        unfold publish
+        rw [show copy.roots (roots ∪ answerRoots head.1 [head.2]) =
+          copy.roots roots ∪ copy.roots (answerRoots head.1 [head.2]) from
+          Finset.image_union _ _]
+        rw [relocate_answerRoots copy head.1 [head.2]]
+        rfl
+      rw [ih, published]
+
+theorem relocate_exportProposals (state : Session Owner Address Value World)
+    (destination : Heap DestinationAddress DestinationValue)
+    (copy : Relocation state.heap destination)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner) :
+    copy.roots (exportProposals state selections catalogue).roots =
+      (exportProposals (relocateSession state destination copy)
+        (selections.map fun item => (item.1, copy.address item.2)) catalogue).roots := by
+  unfold exportProposals closeScope relocateSession
+  rw [Relocation.roots_cancel, relocate_publishSelections]
+
+theorem relocate_exportProposals_payload
+    (state : Session Owner Address Value World)
+    (destination : Heap DestinationAddress DestinationValue)
+    (copy : Relocation state.heap destination)
+    (selections : List (Owner × Address)) (catalogue : Finset Owner)
+    (owner : Owner) (proposal : Address)
+    (taken : (owner, proposal) ∈ selections) (distinct : owner ∉ catalogue)
+    (allocated : proposal ∈ state.heap.allocated) :
+    (exportProposals (relocateSession state destination copy)
+        (selections.map fun item => (item.1, copy.address item.2)) catalogue).heap.lookup
+      (copy.address proposal) =
+      ((exportProposals state selections catalogue).heap.lookup proposal).map
+        (Cell.relocate copy.address copy.payload) := by
+  have mapped : (owner, copy.address proposal) ∈
+      selections.map fun item => (item.1, copy.address item.2) :=
+    List.mem_map.mpr ⟨(owner, proposal), taken, rfl⟩
+  have allocatedDest : copy.address proposal ∈ destination.allocated :=
+    (copy.allocated_iff proposal).mpr allocated
+  rw [exportProposals_preserves_payload (relocateSession state destination copy)
+    (selections.map fun item => (item.1, copy.address item.2)) catalogue owner
+    (copy.address proposal) mapped distinct allocatedDest]
+  rw [show (relocateSession state destination copy).heap = destination from rfl]
+  rw [copy.lookup_eq, exportProposals_preserves_payload state selections catalogue owner
+    proposal taken distinct allocated]
+
+end RelocationExport
+
+#print axioms commit_preserves_selected_observation
+#print axioms commit_reclaims_unprotected
+#print axioms answerRoots_singleton
+#print axioms publishSelections_mono
+#print axioms publishSelections_selected
+#print axioms publishSelections_eq
+#print axioms selected_root_survives_catalogue
+#print axioms exportProposals_world
+#print axioms exportProposals_preserves_payload
+#print axioms exportProposals_preserves_context
+#print axioms exportProposals_preserves_paths
+#print axioms exportProposals_preserves_reachable
+#print axioms exportProposals_reclaims_unreferenced
+#print axioms catalogue_cancel_before_export_reclaims
+#print axioms export_into_cancelled_owner_reclaims
+#print axioms closeScope_preserves_sibling_payload
+#print axioms closeScope_preserves_sibling_graph
+#print axioms cancel_selected_pair_reclaims
+#print axioms export_before_catalogue_cancel
+#print axioms relocate_publishSelections
+#print axioms relocate_exportProposals
+#print axioms relocate_exportProposals_payload
+#print axioms Mettapedia.Machines.ResourceOwnership.live_cancel_other_owner
+#print axioms Mettapedia.Machines.ResourceOwnership.live_release_other_owner
+
+end PreparedProposals
 
 end Mettapedia.Machines.Cursor.OwnedLifecycle

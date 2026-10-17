@@ -31,7 +31,9 @@ reads the spelling of its subject (`runPresentation_hostOf_tabular_terms`).
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -315,4 +317,4 @@ theorem freeTable_not_determinedTabular :
 #print axioms choice_determinedTabular
 #print axioms freeTable_not_determinedTabular
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

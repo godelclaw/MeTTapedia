@@ -571,9 +571,12 @@ The Beta distribution emerges as the *posterior* given this evidence,
 not as an arbitrary parameterization. This is the conjugate prior view.
 -/
 
-/-- Raw evidence counts. This is the primitive representation.
+/-- Positive real evidence counts read as the parameters of a Beta posterior.
     Semantically: "We have observed α positive and β negative instances."
-    The Beta(α, β) distribution represents our uncertainty about the true probability. -/
+    The Beta(α, β) distribution represents our uncertainty about the true probability.
+    Both counts are positive so that the Beta distribution is proper; this is
+    not the PLN count carrier `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence`,
+    whose counts live in `ℝ≥0∞` and may be zero. -/
 structure BinaryEvidence where
   positive : ℝ  -- α (can be fractional for "virtual" evidence)
   negative : ℝ  -- β
@@ -610,9 +613,9 @@ def variance (e : BinaryEvidence) : ℝ := e.toBeta.variance
 theorem variance_pos (e : BinaryEvidence) : 0 < e.variance :=
   e.toBeta.variance_pos
 
-/-- Revision: Combining independent evidence sources is ADDITION.
-    This is the key insight: revision is trivially correct because
-    Beta is the conjugate prior for Bernoulli observations. -/
+/-- Revision adds counts.  For counts of disjoint observations of one Bernoulli
+    parameter, with no prior pseudo-counts added, this is the conjugate Beta
+    update; an observation recorded in both arguments is counted twice. -/
 def revision (e₁ e₂ : BinaryEvidence) : BinaryEvidence where
   positive := e₁.positive + e₂.positive
   negative := e₁.negative + e₂.negative

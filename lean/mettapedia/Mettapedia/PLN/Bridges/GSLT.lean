@@ -7,6 +7,8 @@ import Mettapedia.PLN.Bridges.GSLT.NeighborhoodProofAuthority
 import Mettapedia.PLN.Bridges.GSLT.ObservationDiscipline
 import Mettapedia.PLN.Bridges.GSLT.PLNDeriveCheckerAuthority
 import Mettapedia.PLN.Bridges.GSLT.RevisionPinnedEvidenceExecution
+import Mettapedia.PLN.Bridges.GSLT.EvidenceCalculusModule
+import Mettapedia.PLN.Bridges.GSLT.EvidenceCalculusSemantics
 import Mettapedia.Logic.Bridges.FoundationCertificateGSLT
 
 /-!

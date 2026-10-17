@@ -193,6 +193,25 @@ theorem completed_cursor_perm {I A : Type}
   rw [Fold.complete_exact, Fold.complete_exact,
     permutation.length_eq, foldl_perm step commute permutation initial]
 
+/-- Occurrence order. Each item is one snoc, so duplicates remain and reversal
+is a different accumulator. `Fold.complete_exact` returns this fold. -/
+theorem foldl_snoc {α : Type} (items initial : List α) :
+    items.foldl (fun state item => state ++ [item]) initial = initial ++ items := by
+  induction items generalizing initial with
+  | nil => simp
+  | cons item rest ih =>
+      simp only [List.foldl_cons, ih, List.append_assoc, List.singleton_append]
+
+/-- The completed cursor for that snoc is the concatenation, not a bag. -/
+theorem completed_snoc_is_concatenation {α : Type} (items initial : List α) :
+    advance (Sequence.tails α) (Fold.client (fun state item => state ++ [item]))
+        (fun _ _ => 1) (items.length + 2)
+        (Fold.start _ (fun state item => state ++ [item]) items initial) =
+      (items.length + 1, .done ⟨(), initial ++ items, []⟩) := by
+  have folded := Fold.complete_exact (fun state item => state ++ [item]) items initial
+  rw [foldl_snoc] at folded
+  exact folded
+
 namespace Controls
 
 /-- Counting occurrences is a commuting action even though item values are

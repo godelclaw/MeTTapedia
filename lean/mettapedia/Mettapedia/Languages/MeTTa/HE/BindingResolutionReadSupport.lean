@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.Types
+import Mettapedia.Languages.MeTTa.HE.EqualityClosure
 import Mettapedia.Languages.MeTTa.SubstitutionAlgebra
 import Mettapedia.Machines.ReadOnlyQuery
 
@@ -12,7 +13,8 @@ lookups are dependencies too. The support conservatively records every member
 of an inspected equality class, even if its first value stops the search.
 
 Equality authority is retained separately: reusing an assignment certificate
-requires the ordered equality relations to remain unchanged. The result theorem
+requires the ordered classes to agree. Identical relation rows are one sufficient
+condition; appending a previously stored edge is another. The result theorem
 preserves the actual `resolveFull`, including fuel exhaustion and cycle rejection.
 The same holds of `applyFull`, the application of bindings to an atom that the
 HE evaluator performs: its support is the support of each variable occurrence.
@@ -66,9 +68,10 @@ private theorem classes_eq {first second : Bindings}
     equalities]
 
 private theorem representative_eq {first second : Bindings}
-    (equalities : second.equalities = first.equalities) (key : String) :
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key)
+    (key : String) :
     second.eqRepresentative key = first.eqRepresentative key := by
-  simp only [Bindings.eqRepresentative, classes_eq equalities]
+  simp only [Bindings.eqRepresentative, classes]
 
 private theorem findSome_eq (first second : Bindings) (keys : List String)
     (agree : ∀ key ∈ keys, second.lookup key = first.lookup key) :
@@ -89,7 +92,7 @@ private theorem vars_expression (atoms : List Atom) :
   | cons atom rest ih => simp [vars.varsList, ih]
 
 private theorem guardAux_eq {first second : Bindings}
-    (equalities : second.equalities = first.equalities) :
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key) :
     ∀ fuel atom,
       (∀ key ∈ vars atom, second.lookup key = first.lookup key) →
       second.hasResolvableVarAux fuel atom = first.hasResolvableVarAux fuel atom := by
@@ -102,7 +105,7 @@ private theorem guardAux_eq {first second : Bindings}
       | symbol name => rfl
       | grounded value => rfl
       | var key =>
-          simp only [Bindings.hasResolvableVarAux, classes_eq equalities,
+          simp only [Bindings.hasResolvableVarAux, classes,
             Bindings.isBound, agree key (by simp [vars])]
       | expression atoms =>
           simp only [Bindings.hasResolvableVarAux]
@@ -125,16 +128,16 @@ private theorem guardAux_eq {first second : Bindings}
               simp only [List.any_cons, ih atom headAgree, tail tailAgree]
 
 private theorem guard_eq {first second : Bindings}
-    (equalities : second.equalities = first.equalities) (atom : Atom)
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key) (atom : Atom)
     (agree : ∀ key ∈ vars atom, second.lookup key = first.lookup key) :
     second.hasResolvableVar atom = first.hasResolvableVar atom := by
   unfold Bindings.hasResolvableVar
-  exact guardAux_eq equalities _ atom agree
+  exact guardAux_eq classes _ atom agree
 
 /-- Agreement on transitive assignment reads preserves the actual recursive
 resolution, including the original fuel and visited-path rejection. -/
-theorem resolveAtomFullAux_eq_of_support {first second : Bindings}
-    (equalities : second.equalities = first.equalities) :
+theorem resolveAtomFullAux_eq_of_ordered_classes {first second : Bindings}
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key) :
     ∀ fuel visited atom,
       (∀ key ∈ atomSupport first fuel visited atom,
         second.lookup key = first.lookup key) →
@@ -168,7 +171,7 @@ theorem resolveAtomFullAux_eq_of_support {first second : Bindings}
                 rw [tail (fun atom member => children atom (by simp [member]))]
           rw [mapped]
       | var root =>
-          simp only [Bindings.resolveAtomFullAux, classes_eq equalities]
+          simp only [Bindings.resolveAtomFullAux, classes]
           by_cases visitedClass : (first.eqClassOrdered root).any visited.contains = true
           · simp only [visitedClass, ↓reduceIte]
           · have classAgree : ∀ key ∈ (first.eqClassOrdered root), second.lookup key = first.lookup key := by
@@ -179,7 +182,7 @@ theorem resolveAtomFullAux_eq_of_support {first second : Bindings}
             have found := findSome_eq first second (first.eqClassOrdered root) classAgree
             rw [found]
             cases valueFound : (first.eqClassOrdered root).findSome? first.lookup with
-            | none => simp only [representative_eq equalities]
+            | none => simp only [representative_eq classes]
             | some value =>
                 have nextAgree : ∀ key ∈
                     atomSupport first remaining ((first.eqClassOrdered root) ++ visited) value,
@@ -196,15 +199,24 @@ theorem resolveAtomFullAux_eq_of_support {first second : Bindings}
                   simp only [atomSupport, visitedClass, Bool.false_eq_true, ↓reduceIte, valueFound,
                     List.mem_append]
                   exact Or.inr (Or.inl member)
-                have scanned := guard_eq equalities value guardAgree
+                have scanned := guard_eq classes value guardAgree
                 have continued := ih ((first.eqClassOrdered root) ++ visited) value nextAgree
                 cases value <;> simp only [scanned, continued,
-                  representative_eq equalities]
+                  representative_eq classes]
+
+/-- Identical equality rows instantiate ordered-class agreement. -/
+theorem resolveAtomFullAux_eq_of_support {first second : Bindings}
+    (equalities : second.equalities = first.equalities)
+    (fuel : Nat) (visited : List String) (atom : Atom)
+    (agree : ∀ key ∈ atomSupport first fuel visited atom,
+      second.lookup key = first.lookup key) :
+    second.resolveAtomFullAux fuel visited atom = first.resolveAtomFullAux fuel visited atom :=
+  resolveAtomFullAux_eq_of_ordered_classes (classes_eq equalities) fuel visited atom agree
 
 /-- A valid read certificate licenses reuse of the public HE resolution.
 The equality relations remain a separate governing authority. -/
-theorem resolveFull_eq_of_reads {first second : Bindings}
-    (equalities : second.equalities = first.equalities)
+theorem resolveFull_eq_of_ordered_classes {first second : Bindings}
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key)
     (key : String) (fuel : Nat)
     (agree : ReadOnlyQuery.Agrees second.lookup (reads first key fuel)) :
     second.resolveFull key fuel = first.resolveFull key fuel := by
@@ -216,9 +228,17 @@ theorem resolveFull_eq_of_reads {first second : Bindings}
   have atomAgree : ∀ observed ∈ atomSupport first fuel [] (.var key),
       second.lookup observed = first.lookup observed :=
     fun observed member => lookups observed (List.mem_append_right _ member)
-  simp only [Bindings.resolveFull, classes_eq equalities,
+  simp only [Bindings.resolveFull, classes,
     findSome_eq first second _ classAgree,
-    resolveAtomFullAux_eq_of_support equalities fuel [] (.var key) atomAgree]
+    resolveAtomFullAux_eq_of_ordered_classes classes fuel [] (.var key) atomAgree]
+
+/-- Exact retained equality rows give the original read-certificate interface. -/
+theorem resolveFull_eq_of_reads {first second : Bindings}
+    (equalities : second.equalities = first.equalities)
+    (key : String) (fuel : Nat)
+    (agree : ReadOnlyQuery.Agrees second.lookup (reads first key fuel)) :
+    second.resolveFull key fuel = first.resolveFull key fuel :=
+  resolveFull_eq_of_ordered_classes (classes_eq equalities) key fuel agree
 
 theorem resolveFull_eq_of_checkReads {first second : Bindings}
     (equalities : second.equalities = first.equalities)
@@ -244,8 +264,8 @@ def applyReads (bindings : Bindings) (atom : Atom) (fuel : Nat) :
 /-- Agreement on the support of an application preserves the application,
 including every variable left in place by an exhausted or rejected
 resolution. -/
-theorem applyFull_eq_of_support {first second : Bindings}
-    (equalities : second.equalities = first.equalities) :
+theorem applyFull_eq_of_ordered_classes {first second : Bindings}
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key) :
     ∀ fuel atom,
       (∀ key ∈ applySupport first fuel atom, second.lookup key = first.lookup key) →
       second.applyFull atom fuel = first.applyFull atom fuel := by
@@ -258,7 +278,7 @@ theorem applyFull_eq_of_support {first second : Bindings}
       | symbol name => rfl
       | grounded value => rfl
       | var key =>
-          have resolved := resolveFull_eq_of_reads equalities key remaining
+          have resolved := resolveFull_eq_of_ordered_classes classes key remaining
             ((ReadOnlyQuery.agrees_samples_iff _ _ _).mpr agree)
           simp only [Bindings.applyFull, resolved]
       | expression atoms =>
@@ -270,6 +290,14 @@ theorem applyFull_eq_of_support {first second : Bindings}
             simp only [applySupport, List.mem_flatMap]
             exact ⟨child, member, contained⟩))
 
+/-- The original row-preserving interface follows from ordered-class agreement. -/
+theorem applyFull_eq_of_support {first second : Bindings}
+    (equalities : second.equalities = first.equalities)
+    (fuel : Nat) (atom : Atom)
+    (agree : ∀ key ∈ applySupport first fuel atom, second.lookup key = first.lookup key) :
+    second.applyFull atom fuel = first.applyFull atom fuel :=
+  applyFull_eq_of_ordered_classes (classes_eq equalities) fuel atom agree
+
 /-- A valid read certificate licenses reuse of an application of bindings. -/
 theorem applyFull_eq_of_reads {first second : Bindings}
     (equalities : second.equalities = first.equalities)
@@ -278,6 +306,23 @@ theorem applyFull_eq_of_reads {first second : Bindings}
     second.applyFull atom fuel = first.applyFull atom fuel :=
   applyFull_eq_of_support equalities fuel atom
     ((ReadOnlyQuery.agrees_samples_iff _ _ _).mp agree)
+
+/-- A duplicate stored equality preserves the full resolver at every depth,
+including cycle rejection and depth exhaustion. The stored record itself grows. -/
+theorem resolveFull_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) (key : String) (fuel : Nat) :
+    (bindings.addEquality left right).resolveFull key fuel = bindings.resolveFull key fuel := by
+  apply resolveFull_eq_of_ordered_classes
+    (EqualityClosure.eqClassOrdered_addEquality_of_mem stored) key fuel
+  exact (ReadOnlyQuery.agrees_samples_iff _ _ _).mpr (fun _ _ => rfl)
+
+/-- All variable occurrences in a future atom retain their joint readout after
+an already-stored edge is appended. No name is renamed independently. -/
+theorem applyFull_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) (atom : Atom) (fuel : Nat) :
+    (bindings.addEquality left right).applyFull atom fuel = bindings.applyFull atom fuel :=
+  applyFull_eq_of_ordered_classes
+    (EqualityClosure.eqClassOrdered_addEquality_of_mem stored) fuel atom (fun _ _ => rfl)
 
 private theorem lookup_map_of_key_preserved (transform : String × Atom → String × Atom)
     (changed key : String) (different : key ≠ changed)
@@ -371,6 +416,26 @@ theorem resolveFull_eq_of_untouched_trace {first second : Bindings}
       exact untouched key contained)
   rw [secondLookup]
   exact retained
+
+
+/-- Structural depth bounds may differ between two records. Agreement of the
+actual ordered classes and lookups still preserves their complete readout. -/
+theorem complete_applyFull_eq_of_ordered_classes {first second : Bindings}
+    (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key)
+    (lookups : ∀ key, second.lookup key = first.lookup key) (atom : Atom) :
+    second.applyFull atom (second.resolutionFuel atom) =
+      first.applyFull atom (first.resolutionFuel atom) := by
+  let firstDepth := first.resolutionFuel atom
+  let secondDepth := second.resolutionFuel atom
+  have firstStable := first.applyFullCovered_stable atom firstDepth secondDepth
+    (first.applyFullCovered_resolutionFuel atom)
+  have secondStable := second.applyFullCovered_stable atom secondDepth firstDepth
+    (second.applyFullCovered_resolutionFuel atom)
+  have sameDepth := applyFull_eq_of_ordered_classes classes (firstDepth + secondDepth) atom
+    (fun key _ => lookups key)
+  rw [Nat.add_comm secondDepth] at secondStable
+  exact secondStable.symm.trans (sameDepth.trans firstStable)
+
 
 namespace Controls
 
@@ -495,6 +560,38 @@ theorem changed_dependency_invalidates_application :
         (applyReads firstBranch pairOfAlias 7) = false ∧
       secondBranch.applyFull pairOfAlias 7 ≠ firstBranch.applyFull pairOfAlias 7 := by
   decide
+
+/-- Reconciliation may repeat a stored relation without changing the joint
+readout or its shared residual name; the actual record still retains both edges. -/
+theorem duplicate_edge_preserves_open_compound :
+    let source : Bindings := ⟨[("value", .expression [.symbol "Pair", .var "b", .var "b"])],
+      [("a", "b")]⟩
+    let changed := source.addEquality "a" "b"
+    (∀ fuel, changed.applyFull (.var "value") fuel = source.applyFull (.var "value") fuel) ∧
+      changed.applyFull (.var "value") 12 = .expression [.symbol "Pair", .var "a", .var "a"] ∧
+      changed.equalities.length = 2 := by
+  refine ⟨fun fuel => applyFull_addEquality_of_mem (by decide) _ fuel, ?_, rfl⟩
+  decide +kernel
+
+/-- A repeated edge preserves rejection as well; it cannot repair a cyclic
+assignment dependency. -/
+theorem duplicate_edge_preserves_cyclic_refusal :
+    let source : Bindings := ⟨[("a", .expression [.symbol "F", .var "b"])], [("a", "b")]⟩
+    (source.addEquality "a" "b").resolveFull "a" 12 = none ∧
+      source.resolveFull "a" 12 = none := by
+  decide +kernel
+
+/-- Mere equality-edge permutation is too weak for string-visible readout:
+changing first appearance changes the common residual variable. -/
+theorem edge_permutation_changes_joint_residual :
+    let first : Bindings := ⟨[], [("a", "b"), ("c", "b")]⟩
+    let second : Bindings := ⟨[], [("c", "b"), ("a", "b")]⟩
+    List.Perm first.equalities second.equalities ∧
+      first.applyFull (.expression [.var "b", .var "b"]) 6 =
+        .expression [.var "a", .var "a"] ∧
+      second.applyFull (.expression [.var "b", .var "b"]) 6 =
+        .expression [.var "c", .var "c"] := by
+  refine ⟨List.Perm.swap _ _ [], ?_, ?_⟩ <;> decide +kernel
 
 end Controls
 

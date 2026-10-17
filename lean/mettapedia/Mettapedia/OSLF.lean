@@ -1,3 +1,9 @@
+import Mettapedia.OSLF.MeTTaIL.AuthoredPremiseServices
+import Mettapedia.OSLF.MeTTaIL.Comparisons.EnumeratingPremiseReplayControls
+import Mettapedia.OSLF.MeTTaIL.GeneralRewriteRecipeCompositionControls
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseRecipeChecking
+import Mettapedia.OSLF.Syntax.BindingEqualityWire
+import Mettapedia.OSLF.Syntax.BindingEqualityCertificates
 import Mettapedia.OSLF.Main
 import Mettapedia.OSLF.CoreMain
 import Mettapedia.OSLF.Bridges
@@ -5,6 +11,14 @@ import Mettapedia.OSLF.PathMap
 import Mettapedia.OSLF.SpecIndex
 import Mettapedia.OSLF.Framework.ReductionSpanTypeSynthesis
 import Mettapedia.OSLF.Framework.GSLTTypeSynthesis
+import Mettapedia.OSLF.Framework.GeneralCanonicalAgreement
+import Mettapedia.OSLF.Framework.GeneralCanonicalPremiseAgreement
+import Mettapedia.OSLF.Framework.GeneralCanonicalQueryAgreement
+import Mettapedia.OSLF.Framework.GeneralCanonicalCongruenceAgreement
+import Mettapedia.OSLF.Framework.GeneralCanonicalNativeTransport
+import Mettapedia.OSLF.Framework.GeneralCanonicalAgreementControls
+import Mettapedia.OSLF.Framework.OrderedSystemNativeTypes
+import Mettapedia.OSLF.Framework.GeneralCanonicalQueryOccurrences
 import Mettapedia.OSLF.Framework.DisplayedRewriteSite
 import Mettapedia.OSLF.Framework.DisplayedRewriteSiteTransport
 import Mettapedia.OSLF.Framework.DisplayedLanguage
@@ -40,6 +54,13 @@ import Mettapedia.OSLF.Framework.ContextualModalConstructionProvenance
 import Mettapedia.OSLF.StructuralModal.Formula
 import Mettapedia.OSLF.Framework.OSLFCertificateGSLTAuthority
 import Mettapedia.OSLF.StructuralModal.CertificateGSLT
+import Mettapedia.OSLF.MeTTaIL.CoreLanguageDef
+import Mettapedia.OSLF.MeTTaIL.LanguageProfiles
+import Mettapedia.OSLF.MeTTaIL.CollectionLaws
+import Mettapedia.OSLF.MeTTaIL.Complete.Normalized
+import Mettapedia.OSLF.MeTTaIL.Upstream.Ambient
+import Mettapedia.OSLF.MeTTaIL.Upstream.AmbientTests
+import Mettapedia.OSLF.MeTTaIL.Upstream.Lambda
 
 /-!
 # OSLF

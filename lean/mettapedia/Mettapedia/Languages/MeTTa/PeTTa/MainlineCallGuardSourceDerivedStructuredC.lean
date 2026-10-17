@@ -325,8 +325,9 @@ private def variableExpressions (names : List String) : List Pattern :=
 /-- Compile one source relation premise to one visible StructuredC condition. -/
 def lowerPremiseCondition? (plan : FirstOrder.PremisePlan) : Option Pattern := do
   let primitive <- queryPrimitive? plan.relation
-  if plan.arguments.length = primitive.arity then
-    pure (call primitive.targetExternal (variableExpressions plan.arguments))
+  let names <- plan.argumentNames?
+  if names.length = primitive.arity then
+    pure (call primitive.targetExternal (variableExpressions names))
   else
     none
 

@@ -191,7 +191,7 @@ theorem truth_sourceRule_sound
     · exact hB
     · exact hBA
   have hpln :
-      plnSourceRuleStrength tBA.strength tBC.strength tA.strength tB.strength tC.strength =
+      plnInductionStrength tBA.strength tBC.strength tA.strength tB.strength tC.strength =
         μ.real (interp C ∩ interp A) / μ.real (interp A) := by
     -- Rewrite the RHS of the PLN theorem (`hctx`) into the induction form.
     have : μ.real (interp C ∩ interp A) / μ.real (interp A) =
@@ -212,7 +212,7 @@ theorem truth_sourceRule_sound
           bayesInversion tBA.strength tA.strength tB.strength := by
         simpa using h_bayes.symm
       -- Rewrite `μ.real (interp B)` and `μ.real (interp C)` to TV strengths.
-      -- `plnSourceRuleStrength` expands to Bayes+Deduction.
+      -- `plnInductionStrength` expands to Bayes+Deduction.
       -- We convert stepwise to keep simp stable.
       -- Step: rewrite marginals.
       have h3 :
@@ -225,7 +225,7 @@ theorem truth_sourceRule_sound
       -- Combine.
       simpa [h3] using h1
     -- Now unfold the SourceRule strength alias.
-    simpa [plnSourceRuleStrength, plnInductionStrength] using this.symm
+    simpa [plnInductionStrength] using this.symm
   -- Replace by the semantic conditional probability and clamp away.
   rw [hpln]
   have hmem :

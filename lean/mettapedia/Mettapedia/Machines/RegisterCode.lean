@@ -1,5 +1,6 @@
 import Mathlib.Data.Finset.Basic
 import Mathlib.Logic.Function.Basic
+import Mettapedia.Machines.ResumableRegion
 
 /-!
 # Lowering equation bodies to register code
@@ -1588,5 +1589,225 @@ example : answer (exec sem (nodeAnswer sem 0) [.iteOp .lt [.lit 0, .lit 1] [.ret
     (fun _ => none)) = none := by decide +kernel
 
 end Example
+
+/-! ## Retained instruction execution
+
+The common bounded runner executes the existing register instructions. Its
+state retains the actual suffix and registers, including the refused
+instruction. A returned value is a final state: inspecting it does not execute
+another instruction. The debit counts these instruction transitions; a call
+or a conditional instruction may contain more primitive work. Flattened native
+jumps, interruption inside an instruction, source validation and physical
+ownership remain separate obligations.
+-/
+
+namespace Retained
+
+variable {V L O P H : Type}
+
+inductive State (V L O P H : Type) where
+  | running (code : List (Instr L O P H)) (registers : Regs V)
+  | returned (value : V) (registers : Regs V)
+  | declined (code : List (Instr L O P H)) (registers : Regs V)
+
+/-- Refusal keeps the instruction that could not be executed. Successful
+return keeps the registers at that instruction's entry. -/
+def core (S : Sem V L O P H) (ans : H → List V → Option V) :
+    MachineCore (List (Instr L O P H) × Regs V) where
+  State := State V L O P H
+  load input := .running input.1 input.2
+  step
+    | .running [] _ => none
+    | .running (instruction :: rest) registers =>
+        match RegisterCode.step S ans instruction registers with
+        | none => some (.declined (instruction :: rest) registers)
+        | some (.next next) => some (.running rest next)
+        | some (.ret value) => some (.returned value registers)
+    | .returned _ _ | .declined _ _ => none
+
+/-- Remaining meaning is defined using the independent complete interpreter. -/
+def readback (S : Sem V L O P H) (ans : H → List V → Option V) :
+    State V L O P H → Option (Outcome V)
+  | .running code registers => exec S ans code registers
+  | .returned value _ => some (.ret value)
+  | .declined _ _ => none
+
+/-- The outer option distinguishes unfinished execution from a completed
+refusal; the inner option is the complete register interpreter's outcome. -/
+def observe : State V L O P H → Option (Option (Outcome V))
+  | .running [] registers => some (some (.next registers))
+  | .running (_ :: _) _ => none
+  | .returned value _ => some (some (.ret value))
+  | .declined _ _ => some none
+
+theorem step_readback (S : Sem V L O P H) (ans : H → List V → Option V)
+    (state next : State V L O P H) (advanced : (core S ans).step state = some next) :
+    readback S ans next = readback S ans state := by
+  cases state with
+  | returned value registers => simp [core] at advanced
+  | declined code registers => simp [core] at advanced
+  | running code registers =>
+      cases code with
+      | nil => simp [core] at advanced
+      | cons instruction rest =>
+          cases executed : RegisterCode.step S ans instruction registers with
+          | none =>
+              simp only [core, executed, Option.some.injEq] at advanced
+              subst next
+              simp [readback, exec, executed, andThen]
+          | some result =>
+              cases result with
+              | next registers' =>
+                  simp only [core, executed, Option.some.injEq] at advanced
+                  subst next
+                  simp [readback, exec, executed, andThen]
+              | ret value =>
+                  simp only [core, executed, Option.some.injEq] at advanced
+                  subst next
+                  simp [readback, exec, executed, andThen]
+
+/-- Every budget cut preserves the remaining meaning and full retained state.
+No completion premise or singleton annotation is supplied. -/
+theorem runSlice_readback (S : Sem V L O P H) (ans : H → List V → Option V)
+    (fuel : Nat) (state : State V L O P H) :
+    readback S ans (MachineCore.runSlice (core S ans) fuel state).1 =
+      readback S ans state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      cases advanced : (core S ans).step state with
+      | none => simp [MachineCore.runSlice, advanced]
+      | some next =>
+          simpa only [MachineCore.runSlice, advanced] using
+            (ih next).trans (step_readback S ans state next advanced)
+
+theorem observe_final (S : Sem V L O P H) (ans : H → List V → Option V)
+    (state : State V L O P H) (result : Option (Outcome V))
+    (observed : observe state = some result) : (core S ans).step state = none := by
+  cases state with
+  | running code registers => cases code <;> simp_all [observe, core]
+  | returned value registers => rfl
+  | declined code registers => rfl
+
+theorem observe_readback (S : Sem V L O P H) (ans : H → List V → Option V)
+    (state : State V L O P H) (result : Option (Outcome V))
+    (observed : observe state = some result) : readback S ans state = result := by
+  cases state with
+  | running code registers => cases code <;> simp_all [observe, readback, exec]
+  | returned value registers => simpa [observe, readback] using observed
+  | declined code registers => simpa [observe, readback] using observed
+
+def answerCore (S : Sem V L O P H) (ans : H → List V → Option V) :
+    AnswerMachineCore (List (Instr L O P H) × Regs V) (Option (Outcome V)) where
+  toMachineCore := core S ans
+  answer := observe
+  answer_final := observe_final S ans
+
+/-- Actual successful, fallen-through and refused executions all settle
+within the number of retained instructions. Unused budget is not charged. -/
+theorem runSlice_complete (S : Sem V L O P H) (ans : H → List V → Option V)
+    (code : List (Instr L O P H)) (registers : Regs V) :
+    observe (MachineCore.runSlice (core S ans) code.length (.running code registers)).1 =
+      some (exec S ans code registers) := by
+  induction code generalizing registers with
+  | nil => rfl
+  | cons instruction rest ih =>
+      cases executed : RegisterCode.step S ans instruction registers with
+      | none =>
+          simp [MachineCore.runSlice, core, executed, observe, exec, andThen,
+            MachineCore.runSlice_of_final]
+      | some result =>
+          cases result with
+          | next next => simpa [MachineCore.runSlice, core, executed, exec, andThen] using ih next
+          | ret value =>
+              simp [MachineCore.runSlice, core, executed, observe, exec, andThen,
+                MachineCore.runSlice_of_final]
+
+/-- A delivered outcome is inert under every later allowance. In particular
+a retained refusal cannot be turned into an empty successful answer. -/
+theorem observed_paidSlice (S : Sem V L O P H) (ans : H → List V → Option V)
+    (state : State V L O P H) (result : Option (Outcome V))
+    (observed : observe state = some result) (fuel incoming : Nat) :
+    MachineCore.paidSlice (core S ans) fuel (incoming, state) = (incoming, state) :=
+  MachineCore.paidSlice_of_final _ _ (observe_final S ans state result observed) fuel incoming
+
+/-- Existing source lowering and the independently stepped register machine
+compose. A suspended prefix retains the code and slots; enough instruction
+allowance gives the node evaluator's value or its genuine refusal. -/
+theorem lower_retained_answers (S : Sem V L O P H) (ans : H → List V → Option V)
+    (fuses : O → Nat → Bool) {m : Nat} {body : Node L O P H} {scope : Finset Nat}
+    {destination next : Nat} {registers sourceRegisters : Regs V}
+    (scoping : Scoped S.toPatterns m scope body) (bound : ∀ i ∈ scope, i < m)
+    (agree : ∀ i ∈ scope, registers i = sourceRegisters i) (fresh : m ≤ next) :
+    let code := (compile fuses body true destination next).1
+    Answers (eval S ans sourceRegisters body)
+      (observe (MachineCore.runSlice (core S ans) code.length (.running code registers)).1).join := by
+  dsimp only
+  rw [runSlice_complete]
+  exact lower_answers S ans fuses scoping bound agree fresh
+
+namespace Controls
+
+/-- Optional payloads are explicit values. A refused operation is the outer
+failure of the primitive, distinct from a returned absent payload. -/
+private def sem : Sem (Option Nat) (Option Nat) Unit Unit Unit where
+  patReads _ := []
+  patSlots _ := []
+  lit := id
+  op _ _ := none
+  truth _ := none
+  bindLet _ _ _ := none
+  bindLet_frame := by intro p value before after refused; simp at refused
+  bindLet_local := by intro p value before after agree; exact Option.Rel.none
+  enter _ _ := none
+
+private def noCall (_ : Unit) (_ : List (Option Nat)) : Option (Option Nat) := none
+private def blank : Regs (Option Nat) := fun _ => none
+
+private def valueCode : List (Instr (Option Nat) Unit Unit Unit) :=
+  [.move 0 (.lit (some 7)), .ret (.reg 0)]
+
+theorem suspended_value_retains_the_written_slot :
+    let cut := MachineCore.paidSlice (core sem noCall) 1 (5, .running valueCode blank)
+    cut.1 = 6 ∧
+      (match cut.2 with
+       | .running rest registers => rest = [.ret (.reg 0)] ∧ registers 0 = some (some 7)
+       | _ => False) := by
+  exact ⟨rfl, rfl, rfl⟩
+
+theorem paid_value_is_not_reexecuted :
+    let completed := MachineCore.paidSlice (core sem noCall) 2 (5, .running valueCode blank)
+    completed.1 = 7 ∧ observe completed.2 = some (some (.ret (some 7))) ∧
+      MachineCore.paidSlice (core sem noCall) 19 completed = completed := by
+  exact ⟨rfl, rfl, rfl⟩
+
+theorem split_value_retains_incoming_debit :
+    MachineCore.paidSlice (core sem noCall) 1
+      (MachineCore.paidSlice (core sem noCall) 1 (5, .running valueCode blank)) =
+      MachineCore.paidSlice (core sem noCall) 2 (5, .running valueCode blank) :=
+  (MachineCore.paidSlice_add _ 1 1 _).symm
+
+theorem returned_absence_is_not_refusal :
+    let code : List (Instr (Option Nat) Unit Unit Unit) := [.ret (.lit none)]
+    observe (MachineCore.runSlice (core sem noCall) 1 (.running code blank)).1 =
+      some (some (.ret none)) := rfl
+
+theorem refusal_keeps_the_failed_instruction_and_earlier_slot :
+    let code : List (Instr (Option Nat) Unit Unit Unit) :=
+      [.move 0 (.lit (some 7)), .op 1 () [.reg 0], .ret (.reg 1)]
+    let cut := MachineCore.paidSlice (core sem noCall) 3 (5, .running code blank)
+    cut.1 = 7 ∧ observe cut.2 = some none ∧
+      (match cut.2 with
+       | .declined suffix registers =>
+           suffix = [.op 1 () [.reg 0], .ret (.reg 1)] ∧ registers 0 = some (some 7)
+       | _ => False) := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+theorem zero_allowance_cannot_publish_a_value :
+    observe (MachineCore.runSlice (core sem noCall) 0 (.running valueCode blank)).1 = none := rfl
+
+end Controls
+
+end Retained
 
 end Mettapedia.Machines.RegisterCode

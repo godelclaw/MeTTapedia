@@ -54,7 +54,7 @@ theorem probGuard_collider_blocked_B_given_A_is_blocked :
   exact colliderHardBlocked_has_no_value
 
 theorem probGuard_collider_blocked_B_given_A_has_no_go :
-    "PLNEndToEnd.colliderNotExact" ∈ probGuard_collider_blocked_B_given_A.provenance := by
+    "PLNXiDerivedBNRules.plnAbductionStrength_not_exact_collider" ∈ probGuard_collider_blocked_B_given_A.provenance := by
   exact colliderHardBlocked_carries_no_go_provenance
 
 end Mettapedia.PLN.RuleFamilies.HigherOrder.PLNProbGuardedAdmissibilityRegression

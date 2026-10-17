@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 
 /-!
 # The finite data language of declaration-aware cumulative-tower candidate judgments
@@ -24,7 +24,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.Declaratio
 
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.OSLF.MeTTaIL.Syntax
 

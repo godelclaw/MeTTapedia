@@ -1,35 +1,30 @@
 /-
-# Universal Hyperprior for Normal-Normal: Mixture Over Prior Variances
+# A Countable Normal-Normal Hyperprior Mixture
 
-When inferring a Normal mean μ from observations x₁,...,xₙ ~ N(μ, σ²) with known σ²,
-the prior variance τ₀² is **unidentifiable** from single-level data. The naive
-empirical Bayes estimate τ̂₀² = s² - σ² gives spuriously overconfident posteriors.
+This file studies a fixed family of centered Normal priors with variances
+`2 ^ k`, indexed by integers, and positive geometric mixing weights.  The
+observation variance is known.  A hyperprior represents uncertainty about the
+prior scale; this construction does not assert that the scale is structurally
+unidentifiable or that empirical Bayes is inherently invalid.
 
-This file formalizes the **Universal Hyperprior** solution: form a Bayesian mixture over a
-countable family of τ₀² values with computable weights.
+The supplied Normal-Normal closed-form expressions are treated as definitions.
+The file proves summability, a positive partition function, normalized posterior
+weights, componentwise log-loss dominance and shrinkage of the mixture mean.
+It does not derive these expressions from a Gaussian likelihood integral or
+prove the underlying conjugacy theorem.
 
-## Main Results
+The extended nonnegative variance formula retains infinite moments.  Positive
+observation count gives finite component and between-mean moments.  At zero
+count the expected component variance diverges, so returning a real-valued
+`tsum` would incorrectly conceal the infinite uncertainty.
 
-- `NormalNormalContext`: Context for Normal-Normal with known σ²
-- `contextFamily`: Family of contexts indexed by k ∈ ℤ with τ₀² = 2^k
-- `integerGeometricWeight`: Weights w(k) = 2^{-(|k|+1)} for k ∈ ℤ
-- `logMarginalLikelihood`: Log P(data | context)
-- `mixturePosteriorMean`: E[μ | data] under the mixture
-- `mixturePosteriorVar`: Var[μ | data] under the mixture (law of total variance)
-- `dominance`: The mixture is never more than O(|k*|) bits worse than best context
-
-## PLN Justification
-
-This IS the correct PLN approach because:
-1. **BinaryEvidence/Context separation**: Same evidence (n, Σx, Σx²), multiple contexts
-2. **Second-order probability**: Uncertainty about τ₀² is explicitly modeled
-3. **Modal reasoning**: Each C_k is a possible world; weights are beliefs
-4. **Dominance**: Guaranteed regret bound vs any fixed context
+Dominance compares this specified mixture with each member of its fixed family;
+it is not a universality or optimality theorem over all statistical models.
 
 ## References
 
-- Mettapedia/UniversalAI/UniversalPrediction/MarkovHyperpriorMixture.lean (Universal Hyperprior pattern)
-- Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceNormalGamma.lean (Normal-Gamma evidence)
+- `UniversalPrediction/MarkovHyperpriorMixture.lean` (the separate prefix-measure mixture)
+- `PLN/Bridges/ProbabilityTheory/EvidenceNormalGamma.lean` (sufficient statistics)
 - Murphy, "Conjugate Bayesian analysis of the Gaussian distribution" (2007)
 -/
 
@@ -37,6 +32,7 @@ import Mathlib.Data.Real.Basic
 import Mathlib.Data.Int.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 import Mathlib.Topology.Algebra.InfiniteSum.Real
 import Mathlib.Topology.Algebra.InfiniteSum.NatInt
@@ -66,7 +62,7 @@ The likelihood is: xᵢ | μ ~ N(μ, σ²) -/
 structure NormalNormalContext where
   /-- Prior mean for μ -/
   μ₀ : ℝ
-  /-- Prior variance for μ (the unidentifiable parameter!) -/
+  /-- Prior variance for μ. -/
   τ₀_sq : ℝ
   /-- Known observation variance -/
   σ_sq : ℝ
@@ -146,8 +142,9 @@ theorem posteriorMean_weighted_avg (ctx : NormalNormalContext) (ev : NormalGamma
 
 /-! ## Context Family: τ₀² = 2^k for k ∈ ℤ
 
-The key insight: we don't know τ₀², so we form a mixture over all possible values.
-We use powers of 2 for computational convenience (self-delimiting codes).
+The mixture represents uncertainty over a specified dyadic grid of prior variances.
+The grid contains arbitrarily small and arbitrarily large values; it does not
+contain every positive real variance.
 -/
 
 /-- Context with τ₀² = 2^k -/
@@ -173,7 +170,8 @@ For k ∈ ℤ, we use unnormalized weights u(k) = 2^{-(|k|+1)} which sum to 3/2:
 
 The normalized weights are w(k) = u(k) / (3/2) = (2/3) · 2^{-(|k|+1)}.
 
-These weights encode the description length: |k| + 1 bits to specify k.
+The negative log weight is bounded in `weight_codelength_bound`.  No explicit
+prefix code construction is supplied here.
 -/
 
 /-- Unnormalized weight: 2^{-(|k|+1)} -/
@@ -281,15 +279,24 @@ theorem tsum_weight_eq_one : (∑' k : ℤ, weight k) = 1 := by
   rw [tsum_div_const, tsum_unnormWeight_eq_threeHalves]
   norm_num
 
+/-- Normalization excludes the nonsummable `tsum = 0` convention. -/
+theorem summable_weight : Summable weight := by
+  by_contra notSummable
+  have zero := tsum_eq_zero_of_not_summable notSummable
+  rw [tsum_weight_eq_one] at zero
+  norm_num at zero
+
 /-! ## Log Marginal Likelihood
 
-For Normal-Normal with prior μ ~ N(0, τ₀²) and data x₁,...,xₙ ~ N(μ, σ²):
+The supplied formula allows a general prior μ ~ N(μ₀, τ₀²) and data
+x₁,...,xₙ ~ N(μ, σ²):
 
 log P(x₁,...,xₙ | τ₀², σ²) = -n/2 log(2π) - n/2 log(σ²)
                             - 1/2 log(1 + n·τ₀²/σ²)
-                            - (SS + n·xbar²·σ²/(σ² + n·τ₀²)) / (2σ²)
+                            - (SS + n·(xbar-μ₀)²·σ²/(σ² + n·τ₀²)) / (2σ²)
 
-Where SS = Σ(xᵢ - xbar)² is the sum of squared deviations.
+Here SS is the reconstructed sum of squared deviations.  This expression is
+a model definition, not an integral identity established in this file.
 -/
 
 /-- Log marginal likelihood under a specific context -/
@@ -305,8 +312,60 @@ noncomputable def logMarginalLikelihood (ctx : NormalNormalContext)
     let log2pi_term := n / 2 * Real.log (2 * Real.pi);
     let logsigma_term := n / 2 * Real.log ctx.σ_sq;
     let logdet_term := (1 / 2) * Real.log (1 + ratio);
-    let quad_term := (ss + n * shrinkage * xbar^2) / (2 * ctx.σ_sq);
+    let quad_term := (ss + n * shrinkage * (xbar - ctx.μ₀)^2) / (2 * ctx.σ_sq);
     -(log2pi_term + logsigma_term + logdet_term + quad_term)
+
+/-- The Gaussian base factor bounds the supplied log-likelihood formula uniformly
+over prior means and variances.  Its exponential need not be at most one. -/
+theorem logMarginalLikelihood_le_base (ctx : NormalNormalContext)
+    (ev : NormalGammaEvidence) :
+    logMarginalLikelihood ctx ev ≤
+      -((ev.n : ℝ) / 2 * Real.log (2 * Real.pi) +
+        (ev.n : ℝ) / 2 * Real.log ctx.σ_sq) := by
+  by_cases hn : ev.n = 0
+  · simp [logMarginalLikelihood, hn]
+  have count_nonneg : (0 : ℝ) ≤ ev.n := Nat.cast_nonneg _
+  have variance_nonneg : 0 ≤ ev.sumSquaredDeviations := by
+    unfold NormalGammaEvidence.sumSquaredDeviations
+    simp only [hn, ↓reduceIte]
+    have count_pos : (0 : ℝ) < ev.n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero hn)
+    have constraint := ev.cauchy_schwarz
+    have : ev.sum ^ 2 / ev.n ≤ ev.sumSq := by
+      rw [div_le_iff₀ count_pos]
+      nlinarith [constraint]
+    linarith
+  have ratio_nonneg : 0 ≤ (ev.n : ℝ) * ctx.τ₀_sq / ctx.σ_sq :=
+    div_nonneg (mul_nonneg count_nonneg ctx.τ₀_sq_pos.le) ctx.σ_sq_pos.le
+  have logdet_nonneg : 0 ≤ (1 / 2 : ℝ) *
+      Real.log (1 + (ev.n : ℝ) * ctx.τ₀_sq / ctx.σ_sq) :=
+    mul_nonneg (by norm_num) (Real.log_nonneg (by linarith))
+  have shrinkage_nonneg : 0 ≤ ctx.σ_sq / (ctx.σ_sq + ev.n * ctx.τ₀_sq) :=
+    div_nonneg ctx.σ_sq_pos.le
+      (add_nonneg ctx.σ_sq_pos.le (mul_nonneg count_nonneg ctx.τ₀_sq_pos.le))
+  have quadratic_nonneg :
+      0 ≤ (ev.sumSquaredDeviations + ev.n *
+        (ctx.σ_sq / (ctx.σ_sq + ev.n * ctx.τ₀_sq)) * (ev.sum / ev.n - ctx.μ₀) ^ 2) /
+        (2 * ctx.σ_sq) :=
+    div_nonneg (add_nonneg variance_nonneg
+      (mul_nonneg (mul_nonneg count_nonneg shrinkage_nonneg) (sq_nonneg _)))
+      (mul_nonneg (by norm_num) ctx.σ_sq_pos.le)
+  simp only [logMarginalLikelihood, hn, ↓reduceIte]
+  linarith
+
+/-- The context likelihoods are dominated by a fixed multiple of the summable
+prior weights. -/
+theorem summable_weighted_likelihood (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    Summable (fun k : ℤ => weight k *
+      Real.exp (logMarginalLikelihood (contextAtK k σ_sq hσ) ev)) := by
+  refine Summable.of_nonneg_of_le
+    (fun k => mul_nonneg (weight_pos k).le (Real.exp_pos _).le) ?_
+    (summable_weight.mul_right (Real.exp (-((ev.n : ℝ) / 2 * Real.log (2 * Real.pi) +
+      (ev.n : ℝ) / 2 * Real.log σ_sq))))
+  intro k
+  exact mul_le_mul_of_nonneg_left
+    (Real.exp_le_exp.mpr (logMarginalLikelihood_le_base (contextAtK k σ_sq hσ) ev))
+    (weight_pos k).le
 
 /-! ## Mixture Posterior
 
@@ -322,6 +381,27 @@ noncomputable def logPosteriorWeight (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
     (ev : NormalGammaEvidence) : ℝ :=
   Real.log (weight k) + logMarginalLikelihood (contextAtK k σ_sq hσ) ev
 
+/-- Exponentiating the log weight recovers prior weight times likelihood. -/
+theorem exp_logPosteriorWeight (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    Real.exp (logPosteriorWeight k σ_sq hσ ev) =
+      weight k * Real.exp (logMarginalLikelihood (contextAtK k σ_sq hσ) ev) := by
+  rw [logPosteriorWeight, Real.exp_add, Real.exp_log (weight_pos k)]
+
+theorem summable_exp_logPosteriorWeight (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    Summable (fun k : ℤ => Real.exp (logPosteriorWeight k σ_sq hσ ev)) := by
+  simpa only [exp_logPosteriorWeight] using summable_weighted_likelihood σ_sq hσ ev
+
+/-- The partition function is finite as a summable real series and strictly
+positive because it contains a positive term. -/
+theorem posteriorPartition_pos (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    0 < ∑' k : ℤ, Real.exp (logPosteriorWeight k σ_sq hσ ev) := by
+  exact (Real.exp_pos (logPosteriorWeight 0 σ_sq hσ ev)).trans_le
+    ((summable_exp_logPosteriorWeight σ_sq hσ ev).le_tsum 0
+      (fun k _ => (Real.exp_pos _).le))
+
 /-- Normalized posterior weight for context k -/
 noncomputable def posteriorWeight (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
     (ev : NormalGammaEvidence) : ℝ :=
@@ -334,32 +414,27 @@ theorem posteriorWeight_pos (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq) (ev : Norm
   unfold posteriorWeight
   exact Real.exp_pos _
 
-/-- Posterior weights sum to 1 -/
+/-- The normalized exponential is an ordinary ratio with a positive partition function. -/
+theorem posteriorWeight_eq_exp_div (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    posteriorWeight k σ_sq hσ ev = Real.exp (logPosteriorWeight k σ_sq hσ ev) /
+      (∑' j : ℤ, Real.exp (logPosteriorWeight j σ_sq hσ ev)) := by
+  unfold posteriorWeight
+  rw [Real.exp_sub, Real.exp_log (posteriorPartition_pos σ_sq hσ ev)]
+
+theorem summable_posteriorWeight (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev) := by
+  simpa only [posteriorWeight_eq_exp_div] using
+    (summable_exp_logPosteriorWeight σ_sq hσ ev).div_const
+      (∑' j : ℤ, Real.exp (logPosteriorWeight j σ_sq hσ ev))
+
+/-- Posterior weights sum to one; no positivity or convergence premise is added. -/
 theorem tsum_posteriorWeight_eq_one (σ_sq : ℝ) (hσ : 0 < σ_sq) (ev : NormalGammaEvidence) :
     (∑' k : ℤ, posteriorWeight k σ_sq hσ ev) = 1 := by
-  -- posteriorWeight k = exp(logPosteriorWeight k - logZ)
-  -- where logZ = log(Z) and Z = ∑' k exp(logPosteriorWeight k)
-  -- So: ∑' k posteriorWeight k = ∑' k (exp(logPosteriorWeight k) / Z)
-  --                             = (1/Z) · ∑' k exp(logPosteriorWeight k)
-  --                             = (1/Z) · Z = 1
-  unfold posteriorWeight
-  let Z := ∑' k' : ℤ, Real.exp (logPosteriorWeight k' σ_sq hσ ev)
-  let logZ := Real.log Z
-  -- Show Z > 0 (sum of positive exponentials)
-  have hZ_pos : 0 < Z := by
-    sorry  -- TODO: Need to show (1) summable, (2) at least one term > 0 implies sum > 0
-           -- Summability follows from weight k ~ 2^{-|k|} dominating the exponentials
-           -- Positivity follows from Real.exp_pos and le_tsum
-  -- Rewrite as tsum of exp(logPosteriorWeight k) / Z
-  calc ∑' k : ℤ, Real.exp (logPosteriorWeight k σ_sq hσ ev - logZ)
-      = ∑' k : ℤ, Real.exp (logPosteriorWeight k σ_sq hσ ev) / Real.exp logZ := by
-        congr 1; ext k; rw [Real.exp_sub]
-    _ = ∑' k : ℤ, Real.exp (logPosteriorWeight k σ_sq hσ ev) / Z := by
-        congr 1; ext k; congr 1; exact Real.exp_log hZ_pos
-    _ = (∑' k : ℤ, Real.exp (logPosteriorWeight k σ_sq hσ ev)) / Z := by
-        rw [tsum_div_const]
-    _ = Z / Z := rfl
-    _ = 1 := div_self (ne_of_gt hZ_pos)
+  simp_rw [posteriorWeight_eq_exp_div]
+  rw [tsum_div_const]
+  exact div_self (ne_of_gt (posteriorPartition_pos σ_sq hσ ev))
 
 /-- Mixture posterior mean: Σ_k w_k · E[μ | data, C_k] -/
 noncomputable def mixturePosteriorMean (σ_sq : ℝ) (hσ : 0 < σ_sq)
@@ -371,27 +446,96 @@ noncomputable def componentPosteriorVar (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq
     (ev : NormalGammaEvidence) : ℝ :=
   posteriorVariance (contextAtK k σ_sq hσ) ev.n
 
-/-- Mixture posterior variance via law of total variance:
-    Var[μ|data] = E[Var[μ|C,data]] + Var[E[μ|C,data]] -/
+/-- At zero count the likelihood is one and the posterior retains the prior weights. -/
+theorem posteriorWeight_of_count_zero (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    posteriorWeight k σ_sq hσ ev = weight k := by
+  rw [posteriorWeight_eq_exp_div]
+  have likelihood_one (j : ℤ) :
+      Real.exp (logMarginalLikelihood (contextAtK j σ_sq hσ) ev) = 1 := by
+    simp [logMarginalLikelihood, empty]
+  simp_rw [exp_logPosteriorWeight, likelihood_one, mul_one]
+  rw [tsum_weight_eq_one, div_one]
+
+theorem weight_natCast (n : ℕ) : weight (n : ℤ) = 1 / (3 * (2 : ℝ) ^ n) := by
+  unfold weight unnormWeight normConstant
+  rw [abs_natCast]
+  have exponent : -((n : ℤ) + 1) = -((n + 1 : ℕ) : ℤ) := by omega
+  rw [exponent, zpow_neg, zpow_natCast, pow_succ]
+  field_simp
+
+theorem componentPosteriorVar_of_count_zero (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    componentPosteriorVar k σ_sq hσ ev = (2 : ℝ) ^ k := by
+  simp [componentPosteriorVar, posteriorVariance, posteriorPrecision,
+    NormalNormalContext.priorPrecision, empty, contextAtK]
+
+/-- Every nonnegative-index variance contribution is the same positive constant. -/
+theorem zero_count_variance_tail (n : ℕ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    posteriorWeight (n : ℤ) σ_sq hσ ev *
+      componentPosteriorVar (n : ℤ) σ_sq hσ ev = 1 / 3 := by
+  rw [posteriorWeight_of_count_zero _ _ _ _ empty,
+    componentPosteriorVar_of_count_zero _ _ _ _ empty, weight_natCast, zpow_natCast]
+  field_simp
+
+/-- The prior has divergent expected component variance; a real-valued `tsum`
+would conceal this by taking its default value zero. -/
+theorem not_summable_zero_count_variance (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    ¬ Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev *
+      componentPosteriorVar k σ_sq hσ ev) := by
+  intro summable
+  have naturalTail := summable.comp_injective Int.ofNat_injective
+  change Summable (fun n : ℕ => posteriorWeight (n : ℤ) σ_sq hσ ev *
+    componentPosteriorVar (n : ℤ) σ_sq hσ ev) at naturalTail
+  have constantTail : Summable (fun _ : ℕ => (1 / 3 : ℝ)) := by
+    simpa only [zero_count_variance_tail _ _ _ _ empty] using naturalTail
+  rw [summable_const_iff] at constantTail
+  norm_num at constantTail
+
+/-- Positive observation count bounds each component variance uniformly in the prior index. -/
+theorem componentPosteriorVar_le_observation (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (positive : ev.n ≠ 0) :
+    componentPosteriorVar k σ_sq hσ ev ≤ σ_sq / ev.n := by
+  have count_pos : (0 : ℝ) < ev.n := Nat.cast_pos.mpr (Nat.pos_of_ne_zero positive)
+  change 1 / posteriorPrecision (contextAtK k σ_sq hσ) ev.n ≤ σ_sq / ev.n
+  rw [div_le_div_iff₀ (posteriorPrecision_pos _ _) count_pos]
+  have prior_pos := (contextAtK k σ_sq hσ).priorPrecision_pos
+  unfold posteriorPrecision NormalNormalContext.obsPrecision
+  change 1 * (ev.n : ℝ) ≤ σ_sq *
+    ((contextAtK k σ_sq hσ).priorPrecision + ev.n * (1 / σ_sq))
+  have cancel : σ_sq * ((ev.n : ℝ) * (1 / σ_sq)) = ev.n := by field_simp
+  nlinarith [mul_nonneg hσ.le prior_pos.le]
+
+theorem summable_componentVariance (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (positive : ev.n ≠ 0) :
+    Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev *
+      componentPosteriorVar k σ_sq hσ ev) := by
+  refine Summable.of_nonneg_of_le
+    (fun k => mul_nonneg (posteriorWeight_pos k σ_sq hσ ev).le
+      (posteriorVariance_pos _ _).le) ?_
+    ((summable_posteriorWeight σ_sq hσ ev).mul_right (σ_sq / ev.n))
+  intro k
+  exact mul_le_mul_of_nonneg_left
+    (componentPosteriorVar_le_observation k σ_sq hσ ev positive)
+    (posteriorWeight_pos k σ_sq hσ ev).le
+
+/-- The supplied within/between variance formula in the extended nonnegative reals.
+Divergent moments remain infinite instead of becoming the default real `tsum = 0`. -/
 noncomputable def mixturePosteriorVar (σ_sq : ℝ) (hσ : 0 < σ_sq)
-    (ev : NormalGammaEvidence) : ℝ :=
-  let mean := mixturePosteriorMean σ_sq hσ ev
-  -- E[Var]: expected variance across contexts
-  let expectedVar := ∑' k : ℤ, posteriorWeight k σ_sq hσ ev *
-                              componentPosteriorVar k σ_sq hσ ev
-  -- Var[E]: variance of means across contexts
-  let varOfMeans := ∑' k : ℤ, posteriorWeight k σ_sq hσ ev *
-                             (posteriorMean (contextAtK k σ_sq hσ) ev - mean)^2
-  expectedVar + varOfMeans
+    (ev : NormalGammaEvidence) : ENNReal :=
+  (∑' k : ℤ, ENNReal.ofReal (posteriorWeight k σ_sq hσ ev *
+    componentPosteriorVar k σ_sq hσ ev)) +
+  (∑' k : ℤ, ENNReal.ofReal (posteriorWeight k σ_sq hσ ev *
+    (posteriorMean (contextAtK k σ_sq hσ) ev - mixturePosteriorMean σ_sq hσ ev) ^ 2))
 
 /-! ## Dominance Theorem (Universal Hyperprior)
 
-The mixture is never more than O(|k*|) bits worse than the best context.
-
-Specifically: for any k* ∈ ℤ,
-  -log P_mixture(data) ≤ -log P_{C_{k*}}(data) + |k*| + 1
-
-This follows because w(k*) = 2^{-(|k*|+1)}, so log(1/w(k*)) = |k*| + 1.
+For every fixed index k, the mixture log loss is at most the component log loss
+plus `-log (weight k)`.  The logarithms use nats.  The normalized weights include
+the factor `2/3`; `weight_codelength_bound` bounds their exact overhead by
+`(|k| + 2) * log 2`.
 -/
 
 /-- Log mixture marginal likelihood -/
@@ -408,23 +552,21 @@ For any k : -ln P_mix(data) ≤ -ln P_k(data) - ln(weight k)
 Since weight k = 2^{-(|k|+1)} / (3/2), we have:
   -ln(weight k) = (|k|+1)·ln(2) + ln(3/2) ≤ (|k|+2)·ln(2)
 
-This is THE key theorem justifying Universal Hyperprior: the mixture is a universal
-predictor that competes with any fixed τ₀² = 2^k with logarithmic regret. -/
+This bound compares the supplied mixture with every fixed variance `2 ^ k`.
+It does not establish optimality relative to models outside that family. -/
 theorem dominance (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq) (ev : NormalGammaEvidence) :
     -logMixtureMarginalLikelihood σ_sq hσ ev ≤
       -logMarginalLikelihood (contextAtK k σ_sq hσ) ev - Real.log (weight k) := by
+  have term_pos : 0 < weight k *
+      Real.exp (logMarginalLikelihood (contextAtK k σ_sq hσ) ev) :=
+    mul_pos (weight_pos k) (Real.exp_pos _)
+  have contains_term := (summable_weighted_likelihood σ_sq hσ ev).le_tsum k
+    (fun j _ => mul_nonneg (weight_pos j).le (Real.exp_pos _).le)
+  have log_bound := Real.log_le_log term_pos contains_term
+  rw [Real.log_mul (ne_of_gt (weight_pos k)) (ne_of_gt (Real.exp_pos _)),
+    Real.log_exp] at log_bound
   unfold logMixtureMarginalLikelihood
-  -- Let P_mix = ∑' j, w_j · exp(logML_j)
-  let P_mix := ∑' j : ℤ, weight j * Real.exp (logMarginalLikelihood (contextAtK j σ_sq hσ) ev)
-  -- Let P_k = exp(logML_k)
-  let P_k := Real.exp (logMarginalLikelihood (contextAtK k σ_sq hσ) ev)
-
-  -- Step 1: P_mix ≥ w_k · P_k (mixture contains the k-th term)
-  have h_mix_ge_term : weight k * P_k ≤ P_mix := by
-    -- This follows from: single term ≤ sum of non-negative terms
-    sorry  -- Need: Summable + le_tsum or similar
-
-  sorry  -- TODO: Complete proof using le_tsum, Real.log_le_log, and linarith
+  linarith
 
 /-- The redundancy (extra nats of information) when using the mixture vs context k. -/
 theorem redundancy_bound (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq) (ev : NormalGammaEvidence) :
@@ -440,24 +582,12 @@ Since weight k = 2^{-(|k|+1)} / (3/2), we have:
 
 because ln(3/2) ≈ 0.405 < ln(2) ≈ 0.693 -/
 theorem weight_codelength_bound (k : ℤ) : -Real.log (weight k) ≤ (|k| + 2) * Real.log 2 := by
-  -- weight k = 2^{-(|k|+1)} / (3/2)
-  -- -ln(weight k) = (|k|+1)·ln(2) - ln(3/2)
-  -- Need: (|k|+1)·ln(2) - ln(3/2) ≤ (|k|+2)·ln(2), i.e., -ln(3/2) ≤ ln(2)
-  -- This is equivalent to: ln(3/2) + ln(2) ≥ 0, i.e., ln(3) ≥ 0, which is true since 3 > 1
+  -- The normalized weight contributes the positive overhead log (3/2).
   unfold weight unnormWeight normConstant
   have h2pos : (0:ℝ) < 2 := by norm_num
   have hzpow_pos := zpow_pos h2pos (-(|k| + 1 : ℤ))
   have h32pos : (0:ℝ) < 3/2 := by norm_num
   have h32_lt_2 : (3:ℝ)/2 < 2 := by norm_num
-  -- Key: log(3) > 0
-  have h3_gt_1 : (1:ℝ) < 3 := by norm_num
-  have hlog3_pos : 0 < Real.log 3 := Real.log_pos h3_gt_1
-  -- log(3) = log(3/2 · 2) = log(3/2) + log(2)
-  have hlog3_expand : Real.log 3 = Real.log (3/2) + Real.log 2 := by
-    rw [← Real.log_mul (ne_of_gt h32pos) (ne_of_gt h2pos)]
-    norm_num
-  -- Therefore log(3/2) + log 2 > 0, so -log(3/2) < log 2
-  have hkey : -Real.log (3/2) ≤ Real.log 2 := by linarith [hlog3_pos, hlog3_expand]
   -- Compute -log(2^{-(|k|+1)} / (3/2))
   -- -log(A/B) = -log A + log B = -(log A - log B)
   -- = -log(2^{-(|k|+1)}) + log(3/2)
@@ -481,22 +611,23 @@ theorem weight_codelength_bound (k : ℤ) : -Real.log (weight k) ≤ (|k| + 2) *
 
 /-! ## Connection to PLN Modal BinaryEvidence Theory
 
-This formalization justifies the PLN approach where:
+The separation used by this construction is:
 
 1. **BinaryEvidence** = (n, Σx, Σx²) - context-free sufficient statistics
 2. **Context** = (μ₀, τ₀², σ²) - interpretation parameters
 3. **Universal Hyperprior** = mixture over {(0, 2^k, σ²) : k ∈ ℤ}
 
-The key insight: when τ₀² is unidentifiable, PLN doesn't guess—it reasons
-about the space of possible contexts using principled weights.
+The same sufficient statistics can be interpreted under multiple prior scales.
+This is a mathematical mixture construction; no deployed PLN implementation is
+verified here.
 -/
 
-/-- PLN Universal Hyperprior inference: returns (mean, std) tuple -/
+/-- The supplied mixture formulas return a real mean and extended standard deviation. -/
 noncomputable def plnUniversalHyperpriorInference (σ_sq : ℝ) (hσ : 0 < σ_sq)
-    (ev : NormalGammaEvidence) : ℝ × ℝ :=
+    (ev : NormalGammaEvidence) : ℝ × ENNReal :=
   let mean := mixturePosteriorMean σ_sq hσ ev
   let var := mixturePosteriorVar σ_sq hσ ev
-  (mean, Real.sqrt var)
+  (mean, var ^ (1 / 2 : ℝ))
 
 /-- For μ₀ = 0, posterior mean magnitude is bounded by sample mean -/
 theorem posteriorMean_abs_le_sampleMean (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq)
@@ -528,64 +659,179 @@ theorem posteriorMean_abs_le_sampleMean (k : ℤ) (σ_sq : ℝ) (hσ : 0 < σ_sq
      _ ≤ 1 * |ev.toMean| := by apply mul_le_mul_of_nonneg_right hcoeff.2 (abs_nonneg _)
      _ = |ev.toMean| := one_mul _
 
+theorem summable_posteriorMean (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) :
+    Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev *
+      posteriorMean (contextAtK k σ_sq hσ) ev) := by
+  by_cases empty : ev.n = 0
+  · simp [posteriorMean, empty, contextAtK]
+  refine Summable.of_norm_bounded
+    ((summable_posteriorWeight σ_sq hσ ev).mul_right |ev.toMean|) ?_
+  intro k
+  rw [Real.norm_eq_abs, abs_mul, abs_of_pos (posteriorWeight_pos k σ_sq hσ ev)]
+  exact mul_le_mul_of_nonneg_left
+    (posteriorMean_abs_le_sampleMean k σ_sq hσ ev empty)
+    (posteriorWeight_pos k σ_sq hσ ev).le
+
+theorem summable_centeredMean_square (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (center : ℝ) (positive : ev.n ≠ 0) :
+    Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev *
+      (posteriorMean (contextAtK k σ_sq hσ) ev - center) ^ 2) := by
+  refine Summable.of_nonneg_of_le
+    (fun k => mul_nonneg (posteriorWeight_pos k σ_sq hσ ev).le (sq_nonneg _)) ?_
+    ((summable_posteriorWeight σ_sq hσ ev).mul_right ((|ev.toMean| + |center|) ^ 2))
+  intro k
+  apply mul_le_mul_of_nonneg_left _ (posteriorWeight_pos k σ_sq hσ ev).le
+  have triangle : |posteriorMean (contextAtK k σ_sq hσ) ev - center| ≤
+      |posteriorMean (contextAtK k σ_sq hσ) ev| + |center| := by
+    simpa only [sub_zero, zero_sub, abs_neg] using
+      abs_sub_le (posteriorMean (contextAtK k σ_sq hσ) ev) 0 center
+  have component := posteriorMean_abs_le_sampleMean k σ_sq hσ ev positive
+  have abs_bound : |posteriorMean (contextAtK k σ_sq hσ) ev - center| ≤
+      |ev.toMean| + |center| := by linarith
+  have bound := (sq_le_sq₀ (abs_nonneg _) (add_nonneg (abs_nonneg _) (abs_nonneg _))).2 abs_bound
+  simpa only [sq_abs] using bound
+
+
+/-- Positive data make both component and between-mean variance sums finite. -/
+theorem mixturePosteriorVar_ne_top (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (positive : ev.n ≠ 0) :
+    mixturePosteriorVar σ_sq hσ ev ≠ ⊤ := by
+  exact ENNReal.add_ne_top.mpr
+    ⟨ne_of_lt (summable_componentVariance σ_sq hσ ev positive).tsum_ofReal_lt_top,
+      ne_of_lt (summable_centeredMean_square σ_sq hσ ev
+        (mixturePosteriorMean σ_sq hσ ev) positive).tsum_ofReal_lt_top⟩
+
+/-- Under positive observation count, the extended formula agrees exactly with
+the finite real-series formula. -/
+theorem mixturePosteriorVar_eq_ofReal (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (positive : ev.n ≠ 0) :
+    mixturePosteriorVar σ_sq hσ ev = ENNReal.ofReal
+      ((∑' k : ℤ, posteriorWeight k σ_sq hσ ev * componentPosteriorVar k σ_sq hσ ev) +
+      (∑' k : ℤ, posteriorWeight k σ_sq hσ ev *
+        (posteriorMean (contextAtK k σ_sq hσ) ev - mixturePosteriorMean σ_sq hσ ev) ^ 2)) := by
+  have within_nonneg (k : ℤ) : 0 ≤ posteriorWeight k σ_sq hσ ev *
+      componentPosteriorVar k σ_sq hσ ev :=
+    mul_nonneg (posteriorWeight_pos k σ_sq hσ ev).le (posteriorVariance_pos _ _).le
+  have between_nonneg (k : ℤ) : 0 ≤ posteriorWeight k σ_sq hσ ev *
+      (posteriorMean (contextAtK k σ_sq hσ) ev - mixturePosteriorMean σ_sq hσ ev) ^ 2 :=
+    mul_nonneg (posteriorWeight_pos k σ_sq hσ ev).le (sq_nonneg _)
+  rw [ENNReal.ofReal_add (tsum_nonneg within_nonneg) (tsum_nonneg between_nonneg),
+    ENNReal.ofReal_tsum_of_nonneg within_nonneg (summable_componentVariance σ_sq hσ ev positive),
+    ENNReal.ofReal_tsum_of_nonneg between_nonneg
+      (summable_centeredMean_square σ_sq hσ ev (mixturePosteriorMean σ_sq hσ ev) positive)]
+  rfl
+
+/-- With no observations, the heavy-tailed prior retains infinite variance. -/
+theorem mixturePosteriorVar_of_count_zero (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    mixturePosteriorVar σ_sq hσ ev = ⊤ := by
+  have within_top : (∑' k : ℤ, ENNReal.ofReal (posteriorWeight k σ_sq hσ ev *
+      componentPosteriorVar k σ_sq hσ ev)) = ⊤ := by
+    by_contra finite
+    have summable_real := ENNReal.summable_toReal finite
+    have at_each (k : ℤ) :
+        (ENNReal.ofReal (posteriorWeight k σ_sq hσ ev *
+          componentPosteriorVar k σ_sq hσ ev)).toReal =
+          posteriorWeight k σ_sq hσ ev * componentPosteriorVar k σ_sq hσ ev :=
+      ENNReal.toReal_ofReal
+        (mul_nonneg (posteriorWeight_pos k σ_sq hσ ev).le (posteriorVariance_pos _ _).le)
+    simp_rw [at_each] at summable_real
+    exact not_summable_zero_count_variance σ_sq hσ ev empty summable_real
+  unfold mixturePosteriorVar
+  rw [within_top, top_add]
+
+/-- The public readout retains an infinite standard deviation at zero count. -/
+theorem inference_of_count_zero (σ_sq : ℝ) (hσ : 0 < σ_sq)
+    (ev : NormalGammaEvidence) (empty : ev.n = 0) :
+    plnUniversalHyperpriorInference σ_sq hσ ev = (0, ⊤) := by
+  have mean_zero : mixturePosteriorMean σ_sq hσ ev = 0 := by
+    simp [mixturePosteriorMean, posteriorMean, empty, contextAtK]
+  simp only [plnUniversalHyperpriorInference, mean_zero,
+    mixturePosteriorVar_of_count_zero σ_sq hσ ev empty,
+    ENNReal.top_rpow_of_pos (by norm_num : (0 : ℝ) < 1 / 2)]
+
+
 /-- The mixture mean shrinks toward the prior mean (0) -/
 theorem mixture_shrinks_toward_prior (σ_sq : ℝ) (hσ : 0 < σ_sq)
     (ev : NormalGammaEvidence) (hn : ev.n ≠ 0) :
     |mixturePosteriorMean σ_sq hσ ev| ≤ |ev.toMean| := by
+  have majorant := (summable_posteriorWeight σ_sq hσ ev).mul_right |ev.toMean|
+  have component_bound (k : ℤ) :
+      posteriorWeight k σ_sq hσ ev * |posteriorMean (contextAtK k σ_sq hσ) ev| ≤
+        posteriorWeight k σ_sq hσ ev * |ev.toMean| :=
+    mul_le_mul_of_nonneg_left (posteriorMean_abs_le_sampleMean k σ_sq hσ ev hn)
+      (posteriorWeight_pos k σ_sq hσ ev).le
+  have absolute_term (k : ℤ) :
+      |posteriorWeight k σ_sq hσ ev * posteriorMean (contextAtK k σ_sq hσ) ev| =
+        posteriorWeight k σ_sq hσ ev * |posteriorMean (contextAtK k σ_sq hσ) ev| := by
+    rw [abs_mul, abs_of_pos (posteriorWeight_pos k σ_sq hσ ev)]
+  have summable_absolute : Summable (fun k : ℤ => posteriorWeight k σ_sq hσ ev *
+      |posteriorMean (contextAtK k σ_sq hσ) ev|) := by
+    simpa only [absolute_term] using (summable_posteriorMean σ_sq hσ ev).abs
+  have summable_norm : Summable (fun k : ℤ =>
+      ‖posteriorWeight k σ_sq hσ ev * posteriorMean (contextAtK k σ_sq hσ) ev‖) := by
+    simpa only [Real.norm_eq_abs, absolute_term] using summable_absolute
   unfold mixturePosteriorMean
-  -- |∑ w_k·mean_k| ≤ ∑ w_k·|mean_k| ≤ ∑ w_k·|xbar| = |xbar|
-  calc |∑' k : ℤ, posteriorWeight k σ_sq hσ ev * posteriorMean (contextAtK k σ_sq hσ) ev|
-       ≤ ∑' k : ℤ, |posteriorWeight k σ_sq hσ ev * posteriorMean (contextAtK k σ_sq hσ) ev| := by
-          sorry  -- TODO: abs_tsum_le_tsum_abs (requires summability)
-     _ = ∑' k : ℤ, posteriorWeight k σ_sq hσ ev * |posteriorMean (contextAtK k σ_sq hσ) ev| := by
-          congr 1; ext k; rw [abs_mul, abs_of_pos (posteriorWeight_pos k σ_sq hσ ev)]
-     _ ≤ ∑' k : ℤ, posteriorWeight k σ_sq hσ ev * |ev.toMean| := by
-          sorry  -- TODO: tsum_le_tsum using posteriorMean_abs_le_sampleMean
-     _ = (∑' k : ℤ, posteriorWeight k σ_sq hσ ev) * |ev.toMean| := by
-          rw [tsum_mul_right]
-     _ = 1 * |ev.toMean| := by rw [tsum_posteriorWeight_eq_one σ_sq hσ ev]
-     _ = |ev.toMean| := one_mul _
+  calc
+    |∑' k : ℤ, posteriorWeight k σ_sq hσ ev * posteriorMean (contextAtK k σ_sq hσ) ev| ≤
+        ∑' k : ℤ, |posteriorWeight k σ_sq hσ ev *
+          posteriorMean (contextAtK k σ_sq hσ) ev| := by
+      simpa only [Real.norm_eq_abs] using norm_tsum_le_tsum_norm summable_norm
+    _ = ∑' k : ℤ, posteriorWeight k σ_sq hσ ev *
+        |posteriorMean (contextAtK k σ_sq hσ) ev| := tsum_congr absolute_term
+    _ ≤ ∑' k : ℤ, posteriorWeight k σ_sq hσ ev * |ev.toMean| :=
+      Summable.tsum_le_tsum component_bound summable_absolute majorant
+    _ = (∑' k : ℤ, posteriorWeight k σ_sq hσ ev) * |ev.toMean| := tsum_mul_right
+    _ = |ev.toMean| := by rw [tsum_posteriorWeight_eq_one σ_sq hσ ev, one_mul]
 
-/-- The mixture variance is at least the maximum component variance
-    (consequence of law of total variance: Var ≥ E[Var]) -/
+/-- The variance formula is at least the expected component variance.  This
+comparison does not claim a lower bound by the largest component variance. -/
 theorem mixture_var_ge_expected_var (σ_sq : ℝ) (hσ : 0 < σ_sq)
     (ev : NormalGammaEvidence) :
     mixturePosteriorVar σ_sq hσ ev ≥
-      ∑' k : ℤ, posteriorWeight k σ_sq hσ ev * componentPosteriorVar k σ_sq hσ ev := by
-  -- Var = E[Var] + Var[E] ≥ E[Var] since Var[E] ≥ 0
-  unfold mixturePosteriorVar
-  have h : (∑' k : ℤ, posteriorWeight k σ_sq hσ ev *
-              (posteriorMean (contextAtK k σ_sq hσ) ev - mixturePosteriorMean σ_sq hσ ev)^2) ≥ 0 := by
-    apply tsum_nonneg
-    intro k
-    apply mul_nonneg
-    · exact le_of_lt (posteriorWeight_pos k σ_sq hσ ev)
-    · exact sq_nonneg _
+      ∑' k : ℤ, ENNReal.ofReal (posteriorWeight k σ_sq hσ ev *
+        componentPosteriorVar k σ_sq hσ ev) := by
+  exact le_add_of_nonneg_right bot_le
+
+theorem logMarginalLikelihood_single_at_prior_mean (ctx : NormalNormalContext) :
+    logMarginalLikelihood ctx (NormalGammaEvidence.single ctx.μ₀) =
+      -((1 / 2 : ℝ) * Real.log (2 * Real.pi) +
+        (1 / 2 : ℝ) * Real.log ctx.σ_sq +
+        (1 / 2 : ℝ) * Real.log (1 + ctx.τ₀_sq / ctx.σ_sq)) := by
+  simp [logMarginalLikelihood, NormalGammaEvidence.single,
+    NormalGammaEvidence.sumSquaredDeviations]
+
+namespace Controls
+
+def unitContext (mean : ℝ) : NormalNormalContext where
+  μ₀ := mean
+  τ₀_sq := 1
+  σ_sq := 1
+  τ₀_sq_pos := by norm_num
+  σ_sq_pos := by norm_num
+
+theorem nonzero_prior_center_changes_likelihood :
+    logMarginalLikelihood (unitContext 2) (NormalGammaEvidence.single 2) =
+        logMarginalLikelihood (unitContext 0) (NormalGammaEvidence.single 2) + 1 ∧
+      logMarginalLikelihood (unitContext 0) (NormalGammaEvidence.single 2) <
+        logMarginalLikelihood (unitContext 2) (NormalGammaEvidence.single 2) := by
+  norm_num [logMarginalLikelihood, unitContext, NormalGammaEvidence.single,
+    NormalGammaEvidence.sumSquaredDeviations]
   linarith
 
-/-! ## Summary: Why Universal Hyperprior is Correct PLN
+end Controls
+/-! ## Scope of the results
 
-The Universal Hyperprior mixture approach is the **theoretically correct** PLN solution for
-single-level Normal-Normal inference because:
+The fixed-family mixture has normalized positive posterior weights, a finite
+partition function, a componentwise redundancy bound and a bounded mixture
+mean.  The variance formula uses extended nonnegative sums; positive data give
+finite moments, while zero-count inputs retain infinite variance.
 
-1. **BinaryEvidence aggregates context-free**: hplus on (n, Σx, Σx²) is a monoid operation
-   that doesn't depend on τ₀². This is the foundation of PLN.
-
-2. **Context is modal**: Different τ₀² values represent different "possible worlds"
-   for interpretation. PLN explicitly reasons about these.
-
-3. **Unidentifiable parameters get mixed over**: Rather than point-estimating τ₀²
-   (which would be statistically invalid), we form a principled mixture.
-
-4. **Dominance guarantees optimal regret**: The mixture never does much worse than
-   the best context in hindsight (Universal Hyperprior theorem).
-
-5. **Weights from coding theory**: The geometric weights 2^{-(|k|+1)} arise from
-   self-delimiting codes, giving information-theoretic optimality.
-
-The incorrect "empirical Bayes" approach (τ̂₀² = s² - σ²) violates PLN principles
-by pretending to identify an unidentifiable parameter, leading to spuriously
-overconfident posteriors that fail to achieve nominal coverage.
+These are results about the displayed formulas and their countable index set.
+No theorem here establishes a Gaussian integral representation, full conjugacy,
+coverage of credible intervals, optimal choice of the grid or coding weights,
+identifiability of a hyperparameter, or superiority to empirical Bayes.
 -/
 
 end Mettapedia.UniversalAI.UniversalHyperprior

@@ -364,8 +364,6 @@ def logicReadmeBlocks : List ReadmeBlock :=
       ]
   , .codeBlock "bash"
       "lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression"
-  , .codeBlock "bash"
-      "lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin"
   , .pathItems
       [ {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierSemantics.lean"}
       , {path := "Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyQuantifierSemantics.lean"}
@@ -417,7 +415,7 @@ def logicReadmeBlocks : List ReadmeBlock :=
   , .heading 2 (renderLogicHeading .criticalProvenTheorems)
   , .claimBullets [claimBullet .criticalTheoremsSectionSummarizesAnchors]
   , .codeBlock ""
-      "| Theorem | File |\n|---------|------|\n| Frechet bounds | PLNFrechetBounds.lean |\n| PLN consistency | PLNFrechetBounds.lean |\n| Weight-space min | PLNConfidenceWeight.lean |\n| BinaryEvidence not boolean | HeytingValuationOnEvidence.lean |\n| Quantale transitivity | EvidenceQuantale.lean |\n| Solomonoff collapse | ../UniversalAI/SolomonoffExchangeable.lean |\n| De Finetti | DeFinetti.lean |"
+      "| Theorem | File |\n|---------|------|\n| Frechet bounds | PLNFrechetBounds.lean |\n| PLN consistency | PLNFrechetBounds.lean |\n| Weight-space min | PLNConfidenceWeight.lean |\n| BinaryEvidence not boolean | HeytingValuationOnEvidence.lean |\n| Quantale transitivity | BinaryEvidence.lean |\n| Solomonoff collapse | ../UniversalAI/SolomonoffExchangeable.lean |\n| De Finetti | DeFinetti.lean |"
   , .heading 2 (renderLogicHeading .proofsForNbAndKnn)
   , .claimBullets
       [ claimBullet .nbBridgeTheoremExists

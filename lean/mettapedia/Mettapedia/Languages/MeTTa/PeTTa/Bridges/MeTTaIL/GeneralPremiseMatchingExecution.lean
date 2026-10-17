@@ -1820,7 +1820,8 @@ theorem frame_expanded_within_returns (runtime : Program)
 
 theorem root_run_frame_expanded_returns (runtime : Program)
     (agreement : ProgramAgreementOn ownedHeads sourceProgram runtime) (lower : LowerOperations runtime)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (index fuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) fuel
@@ -1831,10 +1832,12 @@ theorem root_run_frame_expanded_returns (runtime : Program)
       (encoded (encodeOption expansionTerm (some (expand environment (.root bound type sourcePattern index) task)))) := by
   apply frame_expanded_within_returns runtime agreement lower state environment
     (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider) _ task code supported
-  exact (GeneralPremise.Execution.root_run_finite_free_within environment bound type sourcePattern index fuel).1 task member
+  exact (GeneralPremise.Execution.root_run_finite_free_within environment bound type sourcePattern index fuel
+    (Query.DynamicOutputsFreeWithin.of_unregistered _ environment finiteProvider)).1 task member
 
 theorem root_run_frame_expanded_in_assembly_returns (lower : LowerOperations Assembly.program)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (index fuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) fuel
@@ -1843,12 +1846,13 @@ theorem root_run_frame_expanded_in_assembly_returns (lower : LowerOperations Ass
       (environment.free.entriesOn (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider)) task = some code) :
     PureReturns Assembly.program [] state code state
       (encoded (encodeOption expansionTerm (some (expand environment (.root bound type sourcePattern index) task)))) :=
-  root_run_frame_expanded_returns Assembly.program Assembly.frame_owned_agreement lower state environment bound type
+  root_run_frame_expanded_returns Assembly.program Assembly.frame_owned_agreement lower state environment finiteProvider bound type
     sourcePattern index fuel task code member supported
 
 theorem steps_run_frame_expanded_returns (runtime : Program)
     (agreement : ProgramAgreementOn ownedHeads sourceProgram runtime) (lower : LowerOperations runtime)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (limit fuel : Nat)
     (task : Task environment (.steps bound type sourcePattern limit)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.steps bound type sourcePattern limit) fuel
@@ -1859,11 +1863,13 @@ theorem steps_run_frame_expanded_returns (runtime : Program)
       (encoded (encodeOption expansionTerm (some (expand environment (.steps bound type sourcePattern limit) task)))) := by
   apply frame_expanded_within_returns runtime agreement lower state environment
     (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider) _ task code supported
-  exact (GeneralPremise.Execution.steps_run_finite_free_within environment bound type sourcePattern limit fuel).1 task member
+  exact (GeneralPremise.Execution.steps_run_finite_free_within environment bound type sourcePattern limit fuel
+    (Query.DynamicOutputsFreeWithin.of_unregistered _ environment finiteProvider)).1 task member
 
 theorem root_run_frame_completed_iff (runtime : Program)
     (agreement : ProgramAgreementOn ownedHeads sourceProgram runtime) (lower : LowerOperations runtime)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (index prefixFuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) prefixFuel
@@ -1876,7 +1882,7 @@ theorem root_run_frame_completed_iff (runtime : Program)
       answers = [encoded (encodeOption expansionTerm
         (some (expand environment (.root bound type sourcePattern index) task)))] ∧ input = [] ∧ output = [] :=
   pure_returns_completed_iff runtime [] state state code _
-    (root_run_frame_expanded_returns runtime agreement lower state environment bound type sourcePattern index prefixFuel
+    (root_run_frame_expanded_returns runtime agreement lower state environment finiteProvider bound type sourcePattern index prefixFuel
       task code member supported) after answers input output
 
 
@@ -1946,7 +1952,8 @@ theorem frame_expanded_returns (lower : LowerOperations RuleExecutionProgram.sco
     footprint outer task code supported within
 
 theorem root_run_frame_returns (lower : LowerOperations RuleExecutionProgram.scopedMachineProgram)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (index fuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) fuel
@@ -1955,11 +1962,12 @@ theorem root_run_frame_returns (lower : LowerOperations RuleExecutionProgram.sco
       (environment.free.entriesOn (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider)) task = some code) :
     PureReturns RuleExecutionProgram.scopedMachineProgram [] state code state
       (encoded (encodeOption expansionTerm (some (expand environment (.root bound type sourcePattern index) task)))) :=
-  root_run_frame_expanded_returns RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement lower state environment bound type
+  root_run_frame_expanded_returns RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement lower state environment finiteProvider bound type
     sourcePattern index fuel task code member supported
 
 theorem steps_run_frame_returns (lower : LowerOperations RuleExecutionProgram.scopedMachineProgram)
-    (state : State) (environment : Environment) (bound : List TypeExpr) (type : TypeExpr)
+    (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (bound : List TypeExpr) (type : TypeExpr)
     (sourcePattern : Pattern) (limit fuel : Nat)
     (task : Task environment (.steps bound type sourcePattern limit)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.steps bound type sourcePattern limit) fuel
@@ -1968,7 +1976,7 @@ theorem steps_run_frame_returns (lower : LowerOperations RuleExecutionProgram.sc
       (environment.free.entriesOn (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider)) task = some code) :
     PureReturns RuleExecutionProgram.scopedMachineProgram [] state code state
       (encoded (encodeOption expansionTerm (some (expand environment (.steps bound type sourcePattern limit) task)))) :=
-  steps_run_frame_expanded_returns RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement lower state environment bound type
+  steps_run_frame_expanded_returns RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement lower state environment finiteProvider bound type
     sourcePattern limit fuel task code member supported
 
 theorem frame_captured_within_returns (lower : LowerOperations RuleExecutionProgram.scopedMachineProgram)
@@ -1999,6 +2007,7 @@ theorem frame_captured_within_completed_iff (lower : LowerOperations RuleExecuti
 
 theorem root_run_frame_captured_completed_iff (lower : LowerOperations RuleExecutionProgram.scopedMachineProgram)
     (helper : Helper) (caller : Subst) (state after : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (sourcePattern : Pattern) (index prefixFuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (arguments values : List Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) prefixFuel
@@ -2014,11 +2023,12 @@ theorem root_run_frame_captured_completed_iff (lower : LowerOperations RuleExecu
       answers = [encoded (encodeOption expansionTerm
         (some (expand environment (.root bound type sourcePattern index) task)))] ∧ input = [] ∧ output = [] :=
   frame_captured_completed_iff RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement helper caller state after arguments values _
-    length captured (root_run_frame_returns lower state environment bound type sourcePattern index prefixFuel task _
+    length captured (root_run_frame_returns lower state environment finiteProvider bound type sourcePattern index prefixFuel task _
       member supported) answers input output
 
 theorem steps_run_frame_captured_completed_iff (lower : LowerOperations RuleExecutionProgram.scopedMachineProgram)
     (helper : Helper) (caller : Subst) (state after : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (sourcePattern : Pattern) (limit prefixFuel : Nat)
     (task : Task environment (.steps bound type sourcePattern limit)) (arguments values : List Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.steps bound type sourcePattern limit) prefixFuel
@@ -2034,7 +2044,7 @@ theorem steps_run_frame_captured_completed_iff (lower : LowerOperations RuleExec
       answers = [encoded (encodeOption expansionTerm
         (some (expand environment (.steps bound type sourcePattern limit) task)))] ∧ input = [] ∧ output = [] :=
   frame_captured_completed_iff RuleExecutionProgram.scopedMachineProgram Mechanical.frame_agreement helper caller state after arguments values _
-    length captured (steps_run_frame_returns lower state environment bound type sourcePattern limit prefixFuel task _
+    length captured (steps_run_frame_returns lower state environment finiteProvider bound type sourcePattern limit prefixFuel task _
       member supported) answers input output
 
 
@@ -2304,6 +2314,7 @@ theorem frame_expanded_returns (state : State) (environment : Environment)
   Consumer.frame_expanded_returns Checkers.operations state environment footprint outer task code supported within
 
 theorem root_run_frame_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (sourcePattern : Pattern) (index fuel : Nat)
     (task : Task environment (.root bound type sourcePattern index)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.root bound type sourcePattern index) fuel
@@ -2312,10 +2323,11 @@ theorem root_run_frame_returns (state : State) (environment : Environment)
       (environment.free.entriesOn (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider)) task = some code) :
     PureReturns RuleExecutionProgram.scopedMachineProgram [] state code state
       (encoded (encodeOption expansionTerm (some (expand environment (.root bound type sourcePattern index) task)))) :=
-  Consumer.root_run_frame_returns Checkers.operations state environment bound type sourcePattern index fuel
+  Consumer.root_run_frame_returns Checkers.operations state environment finiteProvider bound type sourcePattern index fuel
     task code member supported
 
 theorem steps_run_frame_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (sourcePattern : Pattern) (limit fuel : Nat)
     (task : Task environment (.steps bound type sourcePattern limit)) (code : Atom)
     (member : task ∈ (GeneralPremise.Execution.run environment (.steps bound type sourcePattern limit) fuel
@@ -2324,7 +2336,7 @@ theorem steps_run_frame_returns (state : State) (environment : Environment)
       (environment.free.entriesOn (sourcePattern.freeFvarNames ++ providerFreeNames environment.provider)) task = some code) :
     PureReturns RuleExecutionProgram.scopedMachineProgram [] state code state
       (encoded (encodeOption expansionTerm (some (expand environment (.steps bound type sourcePattern limit) task)))) :=
-  Consumer.steps_run_frame_returns Checkers.operations state environment bound type sourcePattern limit fuel
+  Consumer.steps_run_frame_returns Checkers.operations state environment finiteProvider bound type sourcePattern limit fuel
     task code member supported
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution.GeneralExecution.MatcherFrames.Native
 end MatchingNativeEndpoints

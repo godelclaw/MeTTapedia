@@ -1,5 +1,5 @@
 import Mathlib.Data.ENNReal.Real
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # Additive World-Model No-Go Theorems

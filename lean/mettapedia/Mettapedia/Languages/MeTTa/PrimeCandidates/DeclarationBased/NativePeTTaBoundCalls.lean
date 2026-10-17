@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations
 import Mettapedia.Languages.MeTTa.PeTTa.BoundCallControls
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # Captured-call execution over the native typed configuration representation
 

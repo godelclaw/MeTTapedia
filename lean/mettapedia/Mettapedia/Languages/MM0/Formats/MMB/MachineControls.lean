@@ -145,4 +145,53 @@ theorem copied_conversion_cannot_finish_success (state : State) :
   intro impossible
   cases impossible
 
+/-! ## Final assertion validation after resumption -/
+
+/-- Pausing inside unification has no assertion verdict, even though the
+working store already contains the proposition being proved. -/
+theorem assertion_budget_is_not_refusal :
+    assertionVerdict tables ⟨[], [.term 0]⟩ false
+      ((assertionTrajectory tables ⟨[], [.term 0]⟩ axiomCommands).observation 2).2 = none := by
+  rfl
+
+/-- Continuing the saved unification yields the original accepted assertion. -/
+theorem resumed_assertion_accepted :
+    assertionVerdict tables ⟨[], [.term 0]⟩ false
+      ((eventMachine tables .assertion).continueRun 4
+        ((assertionTrajectory tables ⟨[], [.term 0]⟩ axiomCommands).observation 2)).2 = some true := by
+  decide
+
+/-- Resuming publishes exactly five microsteps, not a restarted prefix. -/
+theorem resumed_assertion_occurrences :
+    ((eventMachine tables .assertion).continueRun 4
+      ((assertionTrajectory tables ⟨[], [.term 0]⟩ axiomCommands).observation 2)).1.length = 5 := by
+  rfl
+
+/-- Successful execution cannot authorize a different source conclusion. -/
+theorem completed_stream_wrong_claim_refused :
+    assertionVerdict tables ⟨[], [.term 1]⟩ false
+      ((assertionTrajectory tables ⟨[], [.term 1]⟩ axiomCommands).observation 6).2 = some false := by
+  decide
+
+/-- A finished command stream with an unfinished conversion is a final
+refusal, distinct from a paused stream waiting for more budget. -/
+theorem completed_conversion_obligation_refused :
+    assertionVerdict tables ⟨[], [.term 0]⟩ false
+      ((assertionTrajectory tables ⟨[], [.term 0]⟩
+        [.termSave 0, .ref 0, .thm 0, .conv]).observation 8).2 = some false := by
+  decide
+
+/-- Loading an undeclared argument sort fails before any proof is executed. -/
+theorem undeclared_sort_loading_refused :
+    (assertionTrajectory tables ⟨[constant 1], [.term 0]⟩ axiomCommands).observation 0 =
+      ([], .finished none) := by
+  rfl
+
+/-- Retaining a failed theorem instruction does not make it retryable. -/
+theorem failed_stream_remains_refused :
+    assertionVerdict tables ⟨[], [.term 0]⟩ false
+      ((eventMachine tables .assertion).continueRun 20
+        ((assertionTrajectory tables ⟨[], [.term 0]⟩ [.thm 0]).observation 2)).2 = some false := by
+  rfl
+
 end Mettapedia.Languages.MM0.Formats.MMB.Controls

@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.EvidenceIntuitionisticProbability
 import KnuthSkilling.Core.Basic
 import Mathlib.Data.ENNReal.Inv

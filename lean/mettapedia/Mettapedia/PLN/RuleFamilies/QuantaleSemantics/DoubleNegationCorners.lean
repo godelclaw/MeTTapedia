@@ -203,7 +203,7 @@ theorem compl_compl_mul (a b : BinaryEvidence) : (a * b)ᶜᶜ = aᶜᶜ ⊓ b�
       min (if a.neg = 0 then 0 else ⊤) (if b.neg = 0 then 0 else ⊤)
     by_cases ha : a.neg = 0 <;> by_cases hb : b.neg = 0 <;> simp [ha, hb]
 
-/-- Additive revision (pooling independent evidence) descends to the knowledge
+/-- Additive revision (pooling evidence from disjoint observations) descends to the knowledge
 join: on the corners it accumulates what has been told. -/
 theorem compl_compl_add (a b : BinaryEvidence) : (a + b)ᶜᶜ = aᶜᶜ ⊔ bᶜᶜ := by
   rw [compl_compl_apply, compl_compl_apply a, compl_compl_apply b]

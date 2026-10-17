@@ -27,7 +27,9 @@ contexts still have a linear size (`reentryLinearSize`).
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -197,4 +199,4 @@ def reentryLinearSize (base : BasePremiseEvaluator) :
 #print axioms reentry_not_rank
 #print axioms reentryLinearSize
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

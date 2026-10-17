@@ -1,5 +1,5 @@
 import Mettapedia.CognitiveArchitecture.GodelClaw.Core
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNNegation
 
 /-!

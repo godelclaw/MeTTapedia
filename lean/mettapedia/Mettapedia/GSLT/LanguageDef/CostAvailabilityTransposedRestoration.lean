@@ -433,7 +433,7 @@ end
 mutual
   /-- Forget the structural certificate while retaining its exact
   transposed-restoration equality. -/
-  def AvailabilityTransposedPatternAligned.toRestoresTogether
+  theorem AvailabilityTransposedPatternAligned.toRestoresTogether
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -467,7 +467,7 @@ mutual
           (AvailabilityTransposedPatternAlignedList.toForall₂ elements)
 
   /-- Listwise companion of the structural eliminator. -/
-  def AvailabilityTransposedPatternAlignedList.toForall₂
+  theorem AvailabilityTransposedPatternAlignedList.toForall₂
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -492,7 +492,7 @@ mutual
   exactly when every sealed free-variable token carries its own re-exposure
   certificate.  This is the mode transition used when Quote/Drop finishing
   erases a quote shell. -/
-  def AvailabilityTransposedPatternAligned.reexpose
+  theorem AvailabilityTransposedPatternAligned.reexpose
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -532,7 +532,7 @@ mutual
           (AvailabilityTransposedPatternAlignedList.reexpose elements)
 
   /-- Listwise companion of sealed-to-exposed structural transport. -/
-  def AvailabilityTransposedPatternAlignedList.reexpose
+  theorem AvailabilityTransposedPatternAlignedList.reexpose
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -552,7 +552,7 @@ mutual
 end
 
 /-- Retarget a quote-sealed alignment to its enclosing regime. -/
-def AvailabilityTransposedPatternAligned.ofSealed
+theorem AvailabilityTransposedPatternAligned.ofSealed
     {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
     {smallSupport largeSupport : ContextSupport.Support}
     {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -570,7 +570,7 @@ mutual
   map that preserves exactly the reflective quote boundary.  Free-variable
   restoration is profile-independent at the leaf; the quote comparison is
   the only place where the reflection profile affects the recursion. -/
-  def AvailabilityTransposedPatternAligned.mapPattern
+  theorem AvailabilityTransposedPatternAligned.mapPattern
       {sourceProfile targetProfile :
         Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
@@ -621,7 +621,7 @@ mutual
             quotePreserved elements)
 
   /-- Listwise companion of constructor-symbol naturality. -/
-  def AvailabilityTransposedPatternAlignedList.mapPattern
+  theorem AvailabilityTransposedPatternAlignedList.mapPattern
       {sourceProfile targetProfile :
         Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
@@ -652,7 +652,7 @@ mutual
   /-- Structural availability alignment preserves ordinary locally nameless
   scope exactly.  In particular, the large endpoint cannot gain a reference
   to an ambient binder that was absent from the small endpoint. -/
-  def AvailabilityTransposedPatternAligned.isWellScopedAt_eq
+  theorem AvailabilityTransposedPatternAligned.isWellScopedAt_eq
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -685,7 +685,7 @@ mutual
           elements depth
 
   /-- Listwise companion of exact scope preservation. -/
-  def AvailabilityTransposedPatternAlignedList.isWellScopedListAt_eq
+  theorem AvailabilityTransposedPatternAlignedList.isWellScopedListAt_eq
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -707,7 +707,7 @@ end
 
 /-- Forget only the list wrapper while retaining the full structural relation
 at every corresponding position. -/
-def AvailabilityTransposedPatternAlignedList.toForall₂Aligned
+theorem AvailabilityTransposedPatternAlignedList.toForall₂Aligned
     {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
     {smallSupport largeSupport : ContextSupport.Support}
     {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -725,7 +725,7 @@ def AvailabilityTransposedPatternAlignedList.toForall₂Aligned
         (AvailabilityTransposedPatternAlignedList.toForall₂Aligned tail)
 
 /-- Rebuild the structural list wrapper from its pointwise relation. -/
-def AvailabilityTransposedPatternAlignedList.ofForall₂Aligned
+theorem AvailabilityTransposedPatternAlignedList.ofForall₂Aligned
     {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
     {smallSupport largeSupport : ContextSupport.Support}
     {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -1084,7 +1084,7 @@ mutual
   /-- Keyed reflective canonicalization preserves structural availability
   transposition when its ordering keys are the two endpoint-local restoration
   evaluations. -/
-  def AvailabilityTransposedPatternAligned.canonicalizeByAt
+  theorem AvailabilityTransposedPatternAligned.canonicalizeByAt
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -1189,7 +1189,7 @@ mutual
                   collectionType none normalizedElements
 
   /-- Listwise companion of endpoint-local keyed canonicalization. -/
-  def AvailabilityTransposedPatternAlignedList.canonicalizeByAt
+  theorem AvailabilityTransposedPatternAlignedList.canonicalizeByAt
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}

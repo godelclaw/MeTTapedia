@@ -1,6 +1,6 @@
 import Mettapedia.Logic.HostingStyles.SpacesAndRegions.SealingSpaces
 import Mettapedia.Logic.HostingStyles.SpacesAndRegions.Trees
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ReductionRank
+import Mettapedia.Logic.HostingStyles.ReductionRank
 import Mettapedia.GSLT.LanguageDef.ReflectiveWellSorted
 
 /-!
@@ -64,7 +64,7 @@ open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (atomAt atomInterface atomAt_wellSorted contract_atomAt tokens_atomAt releaseRule step_release
     step_lamBody contract_dropped contract_quoted contract_dropQuote_dropQuote contract_ruleSpace

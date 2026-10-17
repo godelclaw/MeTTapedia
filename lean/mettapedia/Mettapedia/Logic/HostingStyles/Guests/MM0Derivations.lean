@@ -69,7 +69,7 @@ open Mettapedia.GSLT.LanguageDef.Authored
 open Mettapedia.Languages.MM0
 open Mettapedia.Languages.MM0.Presentation.Calculus
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef (language)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language (Model)
 

@@ -162,4 +162,137 @@ theorem substConst_ruleTree
          List.get_eq_getElem, List.getElem_cons_zero, List.getElem_cons_succ,
          Fin.val_zero, Fin.val_succ, ruleTree_castIndices])
 
+
+/-! ## Constant substitution and variable substitution commute -/
+
+section Commutation
+
+theorem castIndices_heq {Γ : Ctx Base} {Δ Δ' : List (Formula Const Γ)} {φ ψ : Formula Const Γ}
+    (assumptions : Δ = Δ') (conclusion : φ = ψ) (proof : ProofSyntax Const Δ φ) :
+    HEq (castIndices assumptions conclusion proof) proof := by
+  subst assumptions conclusion
+  rfl
+
+theorem substConst_heq_of_heq (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    {Γ : Ctx Base} {Δ₁ Δ₂ : List (Formula Const Γ)} {φ₁ φ₂ : Formula Const Γ}
+    (hypotheses : Δ₁ = Δ₂) (conclusion : φ₁ = φ₂)
+    {first : ProofSyntax Const Δ₁ φ₁} {second : ProofSyntax Const Δ₂ φ₂}
+    (same : HEq first second) : HEq (substConst images first) (substConst images second) := by
+  subst hypotheses conclusion
+  cases same
+  rfl
+
+theorem lift_of_constant (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    {Γ Γ' : Ctx Base} {σ : Ty Base} {θ : Subst Const Γ Γ'} {θ' : Subst Const' Γ Γ'}
+    (pointwise : ∀ {τ : Ty Base} (index : Var Γ τ), θ' index = HOL.substConst images (θ index)) :
+    ∀ {τ : Ty Base} (index : Var (σ :: Γ) τ),
+      Subst.lift (σ := σ) θ' index = HOL.substConst images (Subst.lift θ index) := by
+  intro τ index
+  cases index with
+  | vz => rfl
+  | vs index =>
+      change weaken (θ' index) = HOL.substConst images (weaken (θ index))
+      rw [pointwise index, HOL.substConst_weaken]
+
+theorem term_of_constant (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    {Γ Γ' : Ctx Base} {θ : Subst Const Γ Γ'} {θ' : Subst Const' Γ Γ'}
+    (pointwise : ∀ {τ : Ty Base} (index : Var Γ τ), θ' index = HOL.substConst images (θ index))
+    {τ : Ty Base} (term : Term Const Γ τ) :
+    HOL.subst θ' (HOL.substConst images term) = HOL.substConst images (HOL.subst θ term) := by
+  rw [← HOL.substConst_subst images θ term]
+  exact subst_ext (fun index => pointwise index) _
+
+theorem terms_of_constant (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    {Γ Γ' : Ctx Base} {θ : Subst Const Γ Γ'} {θ' : Subst Const' Γ Γ'}
+    (pointwise : ∀ {τ : Ty Base} (index : Var Γ τ), θ' index = HOL.substConst images (θ index))
+    {τ : Ty Base} (terms : List (Term Const Γ τ)) :
+    (terms.map (HOL.substConst images)).map (HOL.subst θ') =
+      (terms.map (HOL.subst θ)).map (HOL.substConst images) := by
+  simp only [List.map_map]
+  exact List.map_congr_left (fun term _ => term_of_constant images pointwise term)
+
+local macro "strip_casts" : tactic => `(tactic| repeat (first
+  | refine (ProofSyntax.mpr_heq _ _).trans ?_
+  | refine (ProofSyntax.mp_heq _ _).trans ?_
+  | refine (ProofSyntax.id_mp_heq _ _).trans ?_
+  | refine (castIndices_heq _ _ _).trans ?_
+  | refine HEq.trans ?_ (ProofSyntax.mpr_heq _ _).symm
+  | refine HEq.trans ?_ (ProofSyntax.mp_heq _ _).symm
+  | refine HEq.trans ?_ (ProofSyntax.id_mp_heq _ _).symm
+  | refine HEq.trans ?_ (castIndices_heq _ _ _).symm))
+
+local macro "strip_inner" : tactic => `(tactic| repeat (first
+  | (refine (subst_heq_of_heq _ ?_ ?_ (castIndices_heq _ _ _)).trans ?_; rotate_left 2)
+  | (refine (subst_heq_of_heq _ ?_ ?_ (ProofSyntax.id_mp_heq _ _)).trans ?_; rotate_left 2)
+  | (refine HEq.trans ?_ (substConst_heq_of_heq _ ?_ ?_ (ProofSyntax.mpr_heq _ _)).symm;
+      rotate_left 0)
+  | (refine HEq.trans ?_ (substConst_heq_of_heq _ ?_ ?_ (ProofSyntax.mp_heq _ _)).symm;
+      rotate_left 0)
+  | (refine HEq.trans ?_ (substConst_heq_of_heq _ ?_ ?_ (ProofSyntax.id_mp_heq _ _)).symm;
+      rotate_left 0)))
+
+set_option maxHeartbeats 4000000 in
+set_option linter.unusedSimpArgs false in
+set_option linter.unreachableTactic false in
+set_option linter.unusedTactic false in
+set_option backward.isDefEq.respectTransparency false in
+/-- **Constant substitution commutes with variable substitution on retained
+proofs.** Substituting along `θ'` after interpreting constants is
+interpreting constants after substituting along `θ`, when `θ'` is the
+interpretation of `θ`. Every rule, hypothesis occurrence and term argument is
+compared. -/
+theorem subst_substConst_heq (images : ∀ {type}, Const type → ClosedTerm Const' type)
+    {Γ : Ctx Base} {Δ : List (Formula Const Γ)} {φ : Formula Const Γ}
+    (proof : ProofSyntax Const Δ φ) {Γ' : Ctx Base} (θ : Subst Const Γ Γ') (θ' : Subst Const' Γ Γ')
+    (pointwise : ∀ {τ : Ty Base} (index : Var Γ τ), θ' index = HOL.substConst images (θ index)) :
+    HEq (subst θ' (substConst images proof)) (substConst images (subst θ proof)) := by
+  induction proof generalizing Γ' with
+  | _ =>
+      dsimp only [substConst, subst]
+      strip_inner
+      all_goals try (simp [HOL.substConst_instantiate, HOL.substConst_weaken,
+        ExtDerivation.substConst_weakenHyps, subst_instantiate, subst_weakenHyps, HOL.substConst,
+        HOL.subst, Subst.lift]; done)
+      all_goals try dsimp only [substConst, subst]
+      all_goals strip_casts
+      all_goals try congr 1
+      all_goals try (first
+        | exact term_of_constant images pointwise _
+        | exact term_of_constant images (lift_of_constant images pointwise) _
+        | exact terms_of_constant images pointwise _
+        | exact terms_of_constant images (lift_of_constant images pointwise) _
+        | solve_by_elim (maxDepth := 6) [lift_of_constant]
+        | exact (Fin.heq_ext_iff (by simp)).2 (by simp)
+        | (strip_casts
+           strip_inner
+           all_goals try (simp [HOL.substConst_instantiate, HOL.substConst_weaken,
+             ExtDerivation.substConst_weakenHyps, subst_instantiate, subst_weakenHyps,
+             HOL.substConst, HOL.subst, Subst.lift]; done)
+           all_goals try strip_casts
+           all_goals solve_by_elim (maxDepth := 6) [lift_of_constant]))
+      all_goals done
+
+/-- Embedding a proof into a larger signature commutes with substitution. -/
+theorem subst_mapConst_heq (constants : ∀ {type}, Const type → Const' type)
+    {Γ : Ctx Base} {Δ : List (Formula Const Γ)} {φ : Formula Const Γ}
+    (proof : ProofSyntax Const Δ φ) {Γ' : Ctx Base} (θ : Subst Const Γ Γ') :
+    HEq (subst (fun index => HOL.mapConst constants (θ index)) (mapConst constants proof))
+      (mapConst constants (subst θ proof)) := by
+  have pointwise : ∀ {τ : Ty Base} (index : Var Γ τ),
+      HOL.mapConst constants (θ index) =
+        HOL.substConst (fun constant => .const (constants constant)) (θ index) :=
+    fun index => (HOL.substConst_constant_images constants (θ index)).symm
+  have expand : ∀ {Γ'' : Ctx Base} {Δ' : List (Formula Const Γ'')} {φ' : Formula Const Γ''}
+      (inner : ProofSyntax Const Δ' φ'),
+      HEq (mapConst constants inner) (substConst (fun constant => .const (constants constant)) inner) :=
+    fun inner => castIndices_heq _ _ _
+  refine HEq.trans ?_ (expand _).symm
+  refine HEq.trans (subst_heq_of_heq _ ?_ ?_ (expand proof)) ?_
+  · exact List.map_congr_left (fun formula _ =>
+      (HOL.substConst_constant_images constants formula).symm)
+  · exact (HOL.substConst_constant_images constants φ).symm
+  · exact subst_substConst_heq _ proof θ _ pointwise
+
+end Commutation
+
 end Mettapedia.Logic.HOL.ProofSyntax

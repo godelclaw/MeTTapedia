@@ -510,4 +510,245 @@ theorem completed_runReport_agrees_with_authored (model : Model)
   rw [pipeline_runReport_two]
   exact stagedRealization_agrees_with_authored model request
 
+
+/-! ## Native occurrence evidence and its independent checking judgment -/
+
+/-- A raw query article retains both the space-atom occurrence and the
+matcher occurrence. Equal endpoints do not identify either coordinate. -/
+structure QueryProof where
+  candidate : Pattern
+  atomOccurrence : Nat
+  bindings : Bindings
+  matchOccurrence : Nat
+  deriving Repr, DecidableEq
+
+/-- The source query judgment is stated directly from the reflective space,
+matching and instantiation. It does not invoke the producer or checker. -/
+def QueryProof.Valid (model : Model) (space : model.Space)
+    (pattern template result : Pattern) (proof : QueryProof) : Prop :=
+  proof.atomOccurrence < Multiset.count proof.candidate (model.contents space) ∧
+    proof.matchOccurrence < Multiset.count proof.bindings
+      (model.matchAtoms pattern proof.candidate) ∧
+    applyBindings proof.bindings template = result
+
+/-- Check the actual occurrence bounds, matcher output and template result.
+No conclusion or provenance field is trusted. -/
+def checkQueryProof (model : Model) (space : model.Space)
+    (pattern template result : Pattern) (proof : QueryProof) : Bool :=
+  decide (proof.atomOccurrence <
+    Multiset.count proof.candidate (model.contents space)) &&
+  decide (proof.matchOccurrence <
+    Multiset.count proof.bindings (model.matchAtoms pattern proof.candidate)) &&
+  decide (applyBindings proof.bindings template = result)
+
+@[simp] theorem checkQueryProof_exact (model : Model) (space : model.Space)
+    (pattern template result : Pattern) (proof : QueryProof) :
+    checkQueryProof model space pattern template result proof = true ↔
+      proof.Valid model space pattern template result := by
+  simp [checkQueryProof, QueryProof.Valid, and_assoc]
+
+/-- Existence completeness retains an occurrence at each independent source
+coordinate. It does not impose an order on the query answer bag. -/
+theorem query_mem_iff_exists_valid (model : Model) (space : model.Space)
+    (pattern template result : Pattern) :
+    result ∈ query model space pattern template ↔
+      ∃ proof : QueryProof, proof.Valid model space pattern template result := by
+  simp only [query, Multiset.mem_bind, Multiset.mem_map]
+  constructor
+  · rintro ⟨candidate, candidateMember, bindings, bindingMember, instantiates⟩
+    exact ⟨⟨candidate, 0, bindings, 0⟩,
+      Multiset.count_pos.mpr candidateMember,
+      Multiset.count_pos.mpr bindingMember, instantiates⟩
+  · rintro ⟨proof, atomCopy, matchCopy, instantiates⟩
+    exact ⟨proof.candidate,
+      Multiset.count_pos.mp (Nat.zero_lt_of_lt atomCopy), proof.bindings,
+      Multiset.count_pos.mp (Nat.zero_lt_of_lt matchCopy), instantiates⟩
+
+/-- Intrinsic positive-production articles. Equation articles retain the
+public-query article through which the equation was discovered. Grounding
+retains its own output occurrence and cannot be relabeled as an equation. -/
+inductive ProductionProof where
+  | query (proof : QueryProof)
+  | equation (queryProof : QueryProof) (queried left right : Pattern)
+      (bindings : Bindings) (matchOccurrence : Nat)
+  | ground (occurrence : Nat)
+  deriving Repr, DecidableEq
+
+/-- Independently stated source judgment for positive production. -/
+def ProductionProof.Valid (model : Model) (request : ClassifiedRequest model)
+    (result : Pattern) (proof : ProductionProof) : Prop :=
+  match request, proof with
+  | .query space pattern template, .query queryProof =>
+      queryProof.Valid model space pattern template result
+  | .evaluate space subject,
+      .equation queryProof queried left right bindings matchOccurrence =>
+      queryProof.Valid model space (.fvar allAtomsVariable)
+        (.fvar allAtomsVariable) queried ∧
+      viewEquation? queried = some (left, right) ∧
+      matchOccurrence < Multiset.count bindings (model.matchAtoms left subject) ∧
+      applyBindings bindings right = result
+  | .evaluate _ subject, .ground occurrence =>
+      occurrence < Multiset.count result (model.groundApply subject)
+  | _, _ => False
+
+/-- Positive replay checks the source article's fields directly, without
+searching for a derivation or invoking `produce`. -/
+def checkProductionProof (model : Model) (request : ClassifiedRequest model)
+    (result : Pattern) (proof : ProductionProof) : Bool :=
+  match request, proof with
+  | .query space pattern template, .query queryProof =>
+      checkQueryProof model space pattern template result queryProof
+  | .evaluate space subject,
+      .equation queryProof queried left right bindings matchOccurrence =>
+      checkQueryProof model space (.fvar allAtomsVariable)
+        (.fvar allAtomsVariable) queried queryProof &&
+      decide (viewEquation? queried = some (left, right)) &&
+      decide (matchOccurrence <
+        Multiset.count bindings (model.matchAtoms left subject)) &&
+      decide (applyBindings bindings right = result)
+  | .evaluate _ subject, .ground occurrence =>
+      decide (occurrence < Multiset.count result (model.groundApply subject))
+  | _, _ => false
+
+@[simp] theorem checkProductionProof_exact (model : Model)
+    (request : ClassifiedRequest model) (result : Pattern)
+    (proof : ProductionProof) :
+    checkProductionProof model request result proof = true ↔
+      proof.Valid model request result := by
+  cases request <;> cases proof <;>
+    simp [checkProductionProof, ProductionProof.Valid, and_assoc]
+
+/-- Source production membership has exactly the independently checked native
+articles above. This is existence completeness, including all grounding and
+equation results; it is not a theoremhood decision procedure. -/
+theorem production_mem_iff_exists_valid (model : Model)
+    (request : ClassifiedRequest model) (result : Pattern) :
+    result ∈ (produce model request).map ProducedOccurrence.result ↔
+      ∃ proof : ProductionProof, proof.Valid model request result := by
+  cases request with
+  | query space pattern template =>
+      rw [produce_query_results, query_mem_iff_exists_valid]
+      constructor
+      · rintro ⟨proof, valid⟩
+        exact ⟨.query proof, valid⟩
+      · rintro ⟨proof, valid⟩
+        cases proof with
+        | query queryProof => exact ⟨queryProof, valid⟩
+        | equation queryProof queried left right bindings matchOccurrence => exact False.elim valid
+        | ground occurrence => exact False.elim valid
+  | evaluate space subject =>
+      rw [produce_evaluate_results]
+      change result ∈ equationResults model space subject +
+        model.groundApply subject ↔ _
+      rw [Multiset.mem_add, mem_equationResults_iff]
+      constructor
+      · rintro (⟨queried, queryMember, left, right, equation,
+            bindings, bindingMember, instantiates⟩ | grounding)
+        · obtain ⟨queryProof, queryValid⟩ :=
+            (query_mem_iff_exists_valid model space
+              (.fvar allAtomsVariable) (.fvar allAtomsVariable) queried).mp queryMember
+          exact ⟨.equation queryProof queried left right bindings 0,
+            queryValid, equation, Multiset.count_pos.mpr bindingMember, instantiates⟩
+        · exact ⟨.ground 0, Multiset.count_pos.mpr grounding⟩
+      · rintro ⟨proof, valid⟩
+        cases proof with
+        | query proof => exact False.elim valid
+        | equation queryProof queried left right bindings matchOccurrence =>
+            obtain ⟨queryValid, equation, matchCopy, instantiates⟩ := valid
+            exact Or.inl ⟨queried,
+              (query_mem_iff_exists_valid model space
+                (.fvar allAtomsVariable) (.fvar allAtomsVariable) queried).mpr
+                  ⟨queryProof, queryValid⟩,
+              left, right, equation, bindings,
+              Multiset.count_pos.mp (Nat.zero_lt_of_lt matchCopy), instantiates⟩
+        | ground occurrence =>
+            exact Or.inr (Multiset.count_pos.mp (Nat.zero_lt_of_lt valid))
+
+/-- Completed observation articles add the inert case only at the exact
+empty-production boundary. Query silence never supplies an inert article. -/
+inductive ObservationProof where
+  | produced (proof : ProductionProof)
+  | inert
+  deriving Repr, DecidableEq
+
+def ObservationProof.Valid (model : Model) (request : ClassifiedRequest model)
+    (result : Pattern) (proof : ObservationProof) : Prop :=
+  match request, proof with
+  | _, .produced production => production.Valid model request result
+  | .evaluate space subject, .inert =>
+      interpretedResults model space subject = 0 ∧ result = subject
+  | .query .., .inert => False
+
+/-- The inert guard computes exact completed production emptiness. A timeout
+or absence of a submitted article cannot satisfy this check. -/
+def checkObservationProof (model : Model) (request : ClassifiedRequest model)
+    (result : Pattern) (proof : ObservationProof) : Bool :=
+  match request, proof with
+  | _, .produced production => checkProductionProof model request result production
+  | .evaluate space subject, .inert =>
+      decide (interpretedResults model space subject = 0) && decide (result = subject)
+  | .query .., .inert => false
+
+@[simp] theorem checkObservationProof_exact (model : Model)
+    (request : ClassifiedRequest model) (result : Pattern)
+    (proof : ObservationProof) :
+    checkObservationProof model request result proof = true ↔
+      proof.Valid model request result := by
+  cases request <;> cases proof <;>
+    simp [checkObservationProof, ObservationProof.Valid]
+
+/-- Every source answer has a finite native article, and accepted articles
+cannot invent an answer. This includes the open-world inert case. -/
+theorem observation_mem_iff_exists_valid (model : Model)
+    (request : ClassifiedRequest model) (result : Pattern) :
+    result ∈ run model request ↔
+      ∃ proof : ObservationProof, proof.Valid model request result := by
+  cases request with
+  | query space pattern template =>
+      rw [run_query, ← produce_query_results model space pattern template,
+        production_mem_iff_exists_valid]
+      constructor
+      · rintro ⟨proof, valid⟩
+        exact ⟨.produced proof, valid⟩
+      · rintro ⟨proof, valid⟩
+        cases proof with
+        | produced proof => exact ⟨proof, valid⟩
+        | inert => exact False.elim valid
+  | evaluate space subject =>
+      rw [run_evaluate]
+      by_cases empty : interpretedResults model space subject = 0
+      · rw [evaluateOne_of_uninterpreted model space subject empty]
+        constructor
+        · intro member
+          exact ⟨.inert, empty, Multiset.mem_singleton.mp member⟩
+        · rintro ⟨proof, valid⟩
+          cases proof with
+          | produced proof =>
+              have member :=
+                (production_mem_iff_exists_valid model (.evaluate space subject) result).mpr
+                  ⟨proof, valid⟩
+              rw [produce_evaluate_results, empty] at member
+              exact False.elim (Multiset.notMem_zero _ member)
+          | inert => exact Multiset.mem_singleton.mpr valid.2
+      · rw [evaluateOne_of_interpreted model space subject empty,
+          ← produce_evaluate_results model space subject,
+          production_mem_iff_exists_valid]
+        constructor
+        · rintro ⟨proof, valid⟩
+          exact ⟨.produced proof, valid⟩
+        · rintro ⟨proof, valid⟩
+          cases proof with
+          | produced proof => exact ⟨proof, valid⟩
+          | inert => exact False.elim (empty valid.1)
+
+/-- Executable evidence-existence completeness for the independently stated
+source query/evaluation observation. -/
+theorem observation_mem_iff_exists_accepted (model : Model)
+    (request : ClassifiedRequest model) (result : Pattern) :
+    result ∈ run model request ↔
+      ∃ proof : ObservationProof,
+        checkObservationProof model request result proof = true := by
+  simp only [checkObservationProof_exact]
+  exact observation_mem_iff_exists_valid model request result
+
 end Mettapedia.Languages.MeTTa.MeTTaZeroStagedAdequacy

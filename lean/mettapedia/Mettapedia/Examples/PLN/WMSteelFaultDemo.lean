@@ -38,7 +38,7 @@ Extraction script: scripts/extract_steel_faults_fixture.py
 -/
 
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.Examples.PLN.BrokenSensorDemo
 
 namespace Mettapedia.Examples.PLN.WMSteelFaultDemo

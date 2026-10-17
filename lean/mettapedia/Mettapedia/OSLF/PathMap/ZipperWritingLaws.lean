@@ -77,7 +77,8 @@ private theorem ftrieInPlaceOp_identity {V : Type*} [BEq V] [LawfulBEq V]
     ((ftrieInPlaceOp op a b).1 == a) = true := by
   delta ftrieInPlaceOp at h ⊢
   simp only at h ⊢
-  split_ifs at h ⊢ with h1 h2 <;> first | exact h1 | exact absurd h (by decide)
+  split_ifs at h ⊢ with h1
+  exact h1
 
 theorem FTrie.meetInto_status {V : Type*} [BEq V] [LawfulBEq V] :
     InPlaceStatusSpec (α := FTrie V) (ftrieInPlaceOp FTrie.meet) where
@@ -99,7 +100,8 @@ private theorem ftrieInPlaceOp_none {V : Type*} [BEq V] [LawfulBEq V]
     ((ftrieInPlaceOp op a b).1 == FTrie.empty) = true := by
   delta ftrieInPlaceOp at h ⊢
   simp only at h ⊢
-  split_ifs at h ⊢ with h1 h2 <;> first | exact h2 | exact absurd h (by decide)
+  split_ifs at h ⊢ with h1 h2
+  exact h2
 
 /-! ## §7: Summary
 

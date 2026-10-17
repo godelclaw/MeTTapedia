@@ -246,12 +246,13 @@ def equality (lhs rhs : Atom) : Atom :=
 /-! ### Display -/
 
 /-- Convert atom to string representation -/
-partial def toString : Atom → String
+def toString : Atom → String
   | .symbol s => s
   | .var v => "$" ++ v
   | .grounded g => g.toString
   | .expression [] => "()"
   | .expression atoms => "(" ++ " ".intercalate (atoms.map toString) ++ ")"
+termination_by atom => sizeOf atom
 
 instance : ToString Atom := ⟨toString⟩
 

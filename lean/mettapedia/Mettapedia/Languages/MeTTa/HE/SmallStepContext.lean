@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.SmallStep
+import Mettapedia.Languages.MeTTa.HE.BindingComposition
 import Mettapedia.Languages.MeTTa.HE.EvalSpec
 
 /-!
@@ -38,14 +39,15 @@ any official tuple derivation of `(pre ++ x' :: post)` transports to
 `(pre ++ x :: post)` with the identical result. -/
 theorem interpretTuple_swap {space : Space} {d : GroundedDispatch}
     {x x' : Atom}
-    (h_sub : ∀ (b' : Bindings) (r' : ResultPair),
-      EvalAtom space d x' Atom.undefinedType b' r' →
-      EvalAtom space d x Atom.undefinedType b' r') :
+    (same : atomVariables x' = atomVariables x)
+    (h_sub : ∀ (b' : Bindings) (r' : ResultPair) {scope : List Atom},
+      EvalAtom space d x' Atom.undefinedType b' r' scope →
+      EvalAtom space d x Atom.undefinedType b' r' scope) :
     ∀ (pre : List Atom) {post : List Atom} {b : Bindings} {r : ResultPair}
-      {l : List Atom}, l = pre ++ x' :: post →
-      InterpretTuple space d (.expression l) b r →
-      InterpretTuple space d (.expression (pre ++ x :: post)) b r
-  | [], post, b, r, l, h_eq, h => by
+      {l : List Atom} {live : List Atom}, l = pre ++ x' :: post →
+      InterpretTuple space d (.expression l) b r live →
+      InterpretTuple space d (.expression (pre ++ x :: post)) b r live
+  | [], post, b, r, l, live, h_eq, h => by
       cases h with
       | nil => simp at h_eq
       | singleton a _ result h_eval h_ok =>
@@ -56,59 +58,45 @@ theorem interpretTuple_swap {space : Space} {d : GroundedDispatch}
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.singleton_error x b r (h_sub b r h_eval) h_error
-      | head_error =>
-          -- probed: h_ne : tl ≠ [], h_isErr : isEmptyOrError r.1 = true,
-          --         h_ev : EvalAtom hd ⊤ b r
-          rename_i hd tl h_ne h_isErr h_ev
+      | @head_error _ hd tl _ _ h_ne h_ev h_isErr =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.head_error x post b r h_ne
             (h_sub b r h_ev) h_isErr
-      | tail_error =>
-          -- probed: hr; h_ne : tl ≠ []; h_hok : isEmptyOrError hr.1 = false;
-          --         h_ev : EvalAtom hd ⊤ b hr; h_tail : InterpretTuple tl hr.2 r;
-          --         h_terr : isEmptyOrError r.1 = true
-          rename_i hd tl hr h_ne h_hok h_ev h_tail h_terr
+      | @tail_error _ hd tl _ hr _ h_ne h_ev h_hok h_tail h_terr =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.tail_error x post b hr r h_ne
             (h_sub b hr h_ev) h_hok h_tail h_terr
-      | success =>
-          -- probed: hr tr; h_ne : tl ≠ []; h_hok : isEmptyOrError hr.1 = false;
-          --         h_tl : InterpretTuple tl hr.2 tr; h_tok : isEmptyOrError tr.1 = false;
-          --         h_ev : EvalAtom hd ⊤ b hr
-          rename_i hd tl hr tr h_ne h_hok h_tl h_tok h_ev
+      | @success _ hd tl _ hr tr h_ne h_ev h_hok h_tl h_tok =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.success x post b hr tr h_ne
             (h_sub b hr h_ev) h_hok h_tl h_tok
-  | p :: ps, post, b, r, l, h_eq, h => by
+  | p :: ps, post, b, r, l, live, h_eq, h => by
       cases h with
       | nil => simp at h_eq
       | singleton a _ _ _ _ | singleton_error a _ _ _ _ =>
           exfalso
           injection h_eq.symm with h1 h2
           exact absurd h2.symm (by simp)
-      | head_error =>
-          rename_i hd tl h_ne h_isErr h_ev
+      | @head_error _ hd tl _ _ h_ne h_ev h_isErr =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.head_error p (ps ++ x :: post) b r
-            (by simp) h_ev h_isErr
-      | tail_error =>
-          rename_i hd tl hr h_ne h_hok h_ev h_tail h_terr
+            (by simp) (h_ev.scope_congr (by simp [atomVariables, atomListVariables_append, atomListVariables, same])) h_isErr
+      | @tail_error _ hd tl _ hr _ h_ne h_ev h_hok h_tail h_terr =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.tail_error p (ps ++ x :: post) b hr r
-            (by simp) h_ev h_hok
-            (interpretTuple_swap h_sub ps rfl h_tail) h_terr
-      | success =>
-          rename_i hd tl hr tr h_ne h_hok h_tl h_tok h_ev
+            (by simp) (h_ev.scope_congr (by simp [atomVariables, atomListVariables_append, atomListVariables, same])) h_hok
+            (interpretTuple_swap same h_sub ps rfl h_tail) h_terr
+      | @success _ hd tl _ hr tr h_ne h_ev h_hok h_tl h_tok =>
           injection h_eq.symm with h1 h2
           cases h1; cases h2
           exact InterpretTuple.success p (ps ++ x :: post) b hr tr
-            (by simp) h_ev h_hok
-            (interpretTuple_swap h_sub ps rfl h_tl) h_tok
+            (by simp) (h_ev.scope_congr (by simp [atomVariables, atomListVariables_append, atomListVariables, same])) h_hok
+            (interpretTuple_swap same h_sub ps rfl h_tl) h_tok
 
 /-- Typed argument-list transport: with a type-generic result-preserving
 substitution for one argument position, any official `InterpretArgs`
@@ -123,15 +111,16 @@ argument would *stop* as a changed error; discovered designing this
 lemma — recorded as trap T8). -/
 theorem interpretArgs_swap {space : Space} {d : GroundedDispatch}
     {x x' : Atom}
+    (same : atomVariables x' = atomVariables x)
     (h_x : isEmptyOrError x = false)
     (h_x' : isEmptyOrError x' = false)
-    (h_sub : ∀ (t : Atom) (b' : Bindings) (r' : ResultPair),
-      EvalAtom space d x' t b' r' → EvalAtom space d x t b' r') :
+    (h_sub : ∀ (t : Atom) (b' : Bindings) (r' : ResultPair) {scope : List Atom},
+      EvalAtom space d x' t b' r' scope → EvalAtom space d x t b' r' scope) :
     ∀ (pre : List Atom) {post : List Atom} {types : List Atom}
-      {b : Bindings} {r : ResultPair},
-      InterpretArgs space d (pre ++ x' :: post) types b r →
-      InterpretArgs space d (pre ++ x :: post) types b r
-  | [], post, types, b, r, h => by
+      {b : Bindings} {r : ResultPair} {live : List Atom},
+      InterpretArgs space d (pre ++ x' :: post) types b r live →
+      InterpretArgs space d (pre ++ x :: post) types b r live
+  | [], post, types, b, r, live, h => by
       cases h with
       | head_changed_error _ _ t ts _ _ h_head h_err h_changed =>
           refine InterpretArgs.head_changed_error x post t ts b _
@@ -153,17 +142,17 @@ theorem interpretArgs_swap {space : Space} {d : GroundedDispatch}
           rcases h_head_ok with h | h
           · exact h
           · rw [h]; exact h_x'
-  | p :: ps, post, types, b, r, h => by
+  | p :: ps, post, types, b, r, live, h => by
       cases h with
       | head_changed_error _ _ t ts _ _ h_head h_err h_changed =>
           exact InterpretArgs.head_changed_error p (ps ++ x :: post) t ts b _
-            h_head h_err h_changed
+            (h_head.scope_congr (by simp [atomListVariables_append, atomListVariables, same])) h_err h_changed
       | cons_tail_error _ _ t ts _ _ _ h_head h_head_ok h_tail h_terr =>
           exact InterpretArgs.cons_tail_error p (ps ++ x :: post) t ts b _ _
-            h_head h_head_ok (interpretArgs_swap h_x h_x' h_sub ps h_tail) h_terr
+            (h_head.scope_congr (by simp [atomListVariables_append, atomListVariables, same])) h_head_ok (interpretArgs_swap same h_x h_x' h_sub ps h_tail) h_terr
       | cons_ok _ _ t ts _ _ _ h_head h_head_ok h_tail h_tok =>
           exact InterpretArgs.cons_ok p (ps ++ x :: post) t ts b _ _
-            h_head h_head_ok (interpretArgs_swap h_x h_x' h_sub ps h_tail) h_tok
+            (h_head.scope_congr (by simp [atomListVariables_append, atomListVariables, same])) h_head_ok (interpretArgs_swap same h_x h_x' h_sub ps h_tail) h_tok
 
 /-- Tuple-path `InterpretExpression` transport at non-head positions: with
 the head untouched, the tuple-path side conditions (the head's non-function
@@ -172,21 +161,22 @@ type witness) transfer verbatim, the tuple derivation transports by
 on the evaluated tuple result, which transport keeps identical). -/
 theorem interpretExpression_swap_tuple_path
     {space : Space} {d : GroundedDispatch} {x x' : Atom}
-    (h_sub : ∀ (b' : Bindings) (r' : ResultPair),
-      EvalAtom space d x' Atom.undefinedType b' r' →
-      EvalAtom space d x Atom.undefinedType b' r')
+    (same : atomVariables x' = atomVariables x)
+    (h_sub : ∀ (b' : Bindings) (r' : ResultPair) {scope : List Atom},
+      EvalAtom space d x' Atom.undefinedType b' r' scope →
+      EvalAtom space d x Atom.undefinedType b' r' scope)
     (p : Atom) (ps : List Atom) {post : List Atom}
-    {type_ : Atom} {b : Bindings} {tupleResult callResult : ResultPair}
+    {type_ : Atom} {live : List Atom} {b : Bindings} {tupleResult callResult : ResultPair}
     (h_has : ∃ t ∈ getAtomTypes space p,
       isFunctionType t = false ∨ t = Atom.undefinedType)
     (h_tuple : InterpretTuple space d
-      (.expression (p :: ps ++ x' :: post)) b tupleResult)
-    (h_call : MettaCall space d tupleResult.1 type_ tupleResult.2 callResult) :
+      (.expression (p :: ps ++ x' :: post)) b tupleResult (type_ :: live))
+    (h_call : MettaCall space d tupleResult.1 type_ tupleResult.2 callResult live) :
     InterpretExpression space d (.expression (p :: ps ++ x :: post))
-      type_ b callResult :=
+      type_ b callResult live :=
   InterpretExpression.tuple_path _ _ _ tupleResult callResult
     (by simpa using h_has)
-    (interpretTuple_swap h_sub (p :: ps) rfl h_tuple)
+    (interpretTuple_swap same h_sub (p :: ps) rfl h_tuple)
     h_call (by simp [Atom.unit])
 
 /-- `EvalAtom` transport for tuple-path `interpret_success` derivations at
@@ -196,11 +186,12 @@ proper expressions); the interpretation transports; the success-filter
 condition is about the (identical) result. -/
 theorem evalAtom_swap_tuple_path
     {space : Space} {d : GroundedDispatch} {x x' : Atom}
-    (h_sub : ∀ (b' : Bindings) (r' : ResultPair),
-      EvalAtom space d x' Atom.undefinedType b' r' →
-      EvalAtom space d x Atom.undefinedType b' r')
+    (same : atomVariables x' = atomVariables x)
+    (h_sub : ∀ (b' : Bindings) (r' : ResultPair) {scope : List Atom},
+      EvalAtom space d x' Atom.undefinedType b' r' scope →
+      EvalAtom space d x Atom.undefinedType b' r' scope)
     (p : Atom) (ps : List Atom) {post : List Atom}
-    {type_ : Atom} {b : Bindings} {tupleResult r : ResultPair}
+    {type_ : Atom} {live : List Atom} {b : Bindings} {tupleResult r : ResultPair}
     (h_not_err : isEmptyOrError (.expression (p :: ps ++ x :: post)) = false)
     (h_not_pass : ¬(type_ = Atom.atomType
       ∨ type_ = getMetaType (Atom.expression (p :: ps ++ x :: post))
@@ -209,49 +200,16 @@ theorem evalAtom_swap_tuple_path
     (h_has : ∃ t ∈ getAtomTypes space p,
       isFunctionType t = false ∨ t = Atom.undefinedType)
     (h_tuple : InterpretTuple space d
-      (.expression (p :: ps ++ x' :: post)) b tupleResult)
-    (h_call : MettaCall space d tupleResult.1 type_ tupleResult.2 r)
+      (.expression (p :: ps ++ x' :: post)) b tupleResult (type_ :: live))
+    (h_call : MettaCall space d tupleResult.1 type_ tupleResult.2 r live)
     (h_not_error : isErrorAtom r.1 = false) :
-    EvalAtom space d (.expression (p :: ps ++ x :: post)) type_ b r :=
+    EvalAtom space d (.expression (p :: ps ++ x :: post)) type_ b r live :=
   EvalAtom.interpret_success _ _ _ _
     h_not_err
     h_not_pass
     rfl
     (by intro h_unit; simp [Atom.unit] at h_unit)
-    (interpretExpression_swap_tuple_path h_sub p ps h_has h_tuple h_call)
+    (interpretExpression_swap_tuple_path same h_sub p ps h_has h_tuple h_call)
     h_not_error
-
-/-- Ground atoms: no variables anywhere.  The substrate for the
-bindings-irrelevance induction (design-note T10): on ground atoms,
-official result *atoms* are independent of the incoming bindings
-thread, which is what lets the master absorption theorem be stated on
-result atoms across equation steps in element position. -/
-inductive GroundAtom : Atom → Prop where
-  | symbol (s : String) : GroundAtom (.symbol s)
-  | grounded (g : GroundedValue) : GroundAtom (.grounded g)
-  | expression {es : List Atom} (h : ∀ e ∈ es, GroundAtom e) :
-      GroundAtom (.expression es)
-
-theorem GroundAtom.not_var {v : String} : ¬ GroundAtom (.var v) := by
-  rintro ⟨⟩
-
-theorem GroundAtom.elem {es : List Atom} {e : Atom}
-    (h : GroundAtom (.expression es)) (h_mem : e ∈ es) : GroundAtom e := by
-  cases h with
-  | expression h_elems => exact h_elems e h_mem
-
-/-- Positive and negative examples. -/
-example : GroundAtom (.expression [.symbol "f", .grounded (.int 5)]) :=
-  .expression (by
-    intro e he
-    rcases List.mem_cons.mp he with rfl | he'
-    · exact .symbol _
-    rcases List.mem_cons.mp he' with rfl | he''
-    · exact .grounded _
-    · cases he'')
-
-example : ¬ GroundAtom (.expression [.symbol "f", .var "x"]) := by
-  intro h
-  exact GroundAtom.not_var (v := "x") (h.elem (by simp))
 
 end Mettapedia.Languages.MeTTa.HE

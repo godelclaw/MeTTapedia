@@ -12,10 +12,28 @@ constructor layer.
 
 Positive example: `Cons 1 (Cons 2 Nil)` is ground.
 Negative example: `Cons $x Nil` is not ground and will not be specialized. -/
-partial def isGroundPattern : Pattern → Bool
-  | .apply _ args => args.all isGroundPattern
-  | .collection _ elems rest => rest.isNone && elems.all isGroundPattern
+def isGroundPattern : Pattern → Bool
+  | .apply _ args => args.attach.all (fun arg => isGroundPattern arg.val)
+  | .collection _ elems rest => rest.isNone && elems.attach.all (fun elem => isGroundPattern elem.val)
   | .fvar _ | .bvar _ | .lambda _ | .multiLambda _ _ | .subst _ _ => false
+termination_by pattern => sizeOf pattern
+decreasing_by
+  · have smaller := List.sizeOf_lt_of_mem arg.property
+    simp only [Pattern.apply.sizeOf_spec]
+    omega
+  · have smaller := List.sizeOf_lt_of_mem elem.property
+    simp only [Pattern.collection.sizeOf_spec]
+    omega
+
+theorem isGroundPattern_apply (head : String) (args : List Pattern) :
+    isGroundPattern (.apply head args) = args.all isGroundPattern := by
+  simp [isGroundPattern]
+
+theorem isGroundPattern_collection (kind : CollType) (elements : List Pattern)
+    (rest : Option String) :
+    isGroundPattern (.collection kind elements rest) =
+      (rest.isNone && elements.all isGroundPattern) := by
+  simp [isGroundPattern]
 
 /-- Look up an already-specialized concrete call. -/
 def lookupSpecializedHead (seen : List (Pattern × String)) (call : Pattern) : Option String :=
@@ -199,7 +217,7 @@ core.
 Positive example: `idTree(Cons 1 Nil)` evaluates to `Cons 1 Nil`.
 Negative example: a non-ground query like `idTree($x)` stays outside this
 staged layer. -/
-partial def evalGroundPattern? (fuel : Nat) (rules : List RewriteRule) (knownHeads : List String)
+def evalGroundPattern? (fuel : Nat) (rules : List RewriteRule) (knownHeads : List String)
     (term : Pattern) : Option Pattern :=
   match fuel with
   | 0 => none
@@ -211,6 +229,7 @@ partial def evalGroundPattern? (fuel : Nat) (rules : List RewriteRule) (knownHea
             match evalGroundPattern? fuel' rules knownHeads arg, evalList? rest with
             | some arg', some rest' => some (arg' :: rest')
             | _, _ => none
+      termination_by (fuel', sizeOf args)
       match term with
       | .apply ctor [] =>
           if knownHeads.contains ctor then
@@ -274,6 +293,7 @@ partial def evalGroundPattern? (fuel : Nat) (rules : List RewriteRule) (knownHea
               | none => none
       | .collection _ _ _ | .fvar _ | .bvar _ | .lambda _ | .multiLambda _ _ | .subst _ _ =>
           none
+termination_by (fuel, sizeOf term)
 
 /-- Compile one concrete constructor query into the current stable `EvalIR`
 core by generating nullary helpers for each reachable concrete recursive call.
@@ -401,33 +421,41 @@ def mirrorQuery : Pattern :=
 
 theorem run_len_constructor_query :
     runConstructorQuery? 16 64 lenQuery lenRules = some (.int 2) := by
-  native_decide
+  cbv
 
 theorem run_tag_constructor_query :
     runConstructorQuery? 8 32 tagQuery tagRules = some (.str "just") := by
-  native_decide
+  cbv
 
 theorem run_tree_size_constructor_query :
     runConstructorQuery? 24 128 treeSizeQuery treeSizeRules = some (.int 5) := by
-  native_decide
+  cbv
 
 theorem run_sum_list_constructor_query :
     runConstructorQuery? 24 128 sumListQuery sumListRules = some (.int 6) := by
-  native_decide
+  cbv
 
 theorem constructor_result_outside_core_fails_closed :
     runConstructorQuery? 8 32 idTreeQuery idTreeRules = none := by
-  native_decide
+  cbv
 
 theorem run_id_tree_constructor_pattern_query :
     runConstructorPatternQuery? 8 idTreeQuery idTreeRules =
       some (app "Cons" [sym "1", sym "Nil"]) := by
-  native_decide
+  cbv
 
 theorem run_mirror_constructor_pattern_query :
     runConstructorPatternQuery? 16 mirrorQuery mirrorRules =
       some (app "Node" [app "Node" [sym "Leaf", sym "Leaf"], sym "Leaf"]) := by
-  native_decide
+  cbv
+
+theorem non_ground_constructor_query_refused :
+    runConstructorPatternQuery? 8 (app "idTree" [fvar "x"]) idTreeRules = none := by
+  cbv
+
+theorem constructor_query_without_fuel_refused :
+    runConstructorPatternQuery? 0 idTreeQuery idTreeRules = none := by
+  cbv
 
 #eval if runConstructorQuery? 16 64 lenQuery lenRules == some (.int 2) then
     "recursive constructors: len(Cons 1 (Cons 2 Nil)) = 2 ✓"

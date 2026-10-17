@@ -34,7 +34,7 @@ theorem rhoHereditaryReflectiveSupportPreserving :
     rhoHereditaryStaticNormalizer_preservesReflectiveSupport_path
 
 /-- The rho cost layer object laws from generator tree alignability alone. -/
-def rhoHereditaryCompactOpenNormalizerLaws_ofAlignable
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofAlignable
     (alignable : CostOpenGeneratorTreeAlignable rhoCIGSLT
       rhoHereditaryNormalizationKernel) :
     Cost.CompactOpenNormalizer.Laws rhoCIGSLT
@@ -52,7 +52,7 @@ def rhoHereditaryCostLayer_ofAlignable
 
 /-- The rho cost layer object laws from the per-colour semantic-cut provider
 alone — the single remaining open obligation of the cost layer chain. -/
-def rhoHereditaryCompactOpenNormalizerLaws_ofProvider
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofProvider
     (provider : ∀ color,
       RhoCanonicalStaticPair.HasSemanticCut color) :
     Cost.CompactOpenNormalizer.Laws rhoCIGSLT

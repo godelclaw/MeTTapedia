@@ -50,7 +50,7 @@ set_option backward.isDefEq.respectTransparency false in
 /-- Turn an alignment of reached-plan abstracts into the fixed parent-cospan
 apex while routing rigid free variables through occurrence evidence in both
 parent skeletons.  The callback is consulted only at genuine plan stops. -/
-noncomputable def ofProvenancedAlignedAbstracts
+theorem ofProvenancedAlignedAbstracts
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

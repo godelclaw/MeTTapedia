@@ -1,6 +1,6 @@
 import Mettapedia.PLN.InferenceControl.PremiseSelection.PriorNB
 import Mettapedia.PLN.InferenceControl.PremiseSelection.Fusion
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Selector-Spec Theorems for Normalization and Gating Defaults

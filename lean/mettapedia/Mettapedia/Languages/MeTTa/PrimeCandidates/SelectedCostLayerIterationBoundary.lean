@@ -128,17 +128,17 @@ it is not an exact receipt; the retained displayed state admits exact replay. -/
 theorem rhoSelectedCostLayerIteration_global_key_boundary
     (dependencies : DependencySystem) (revision : dependencies.Revision) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) False)
           (compactCarrierKey rhoSelectedCostLayerConfiguration.source)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) True)
           (compactCarrierKey rhoSelectedCostLayerConfiguration.source)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) True)
           (id : RhoSelectedCostLayerIterationState → RhoSelectedCostLayerIterationState)) :=
@@ -161,19 +161,19 @@ theorem rhoSelectedCostLayerIteration_nik_policy_boundary
       (policy : CostOpenElaboration
         rhoSelectedCostLayerConfiguration.source term → Bool),
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy False) (compactFibreKey term)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy True) (compactFibreKey term)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy False)
           (provenanceKey
             (source := rhoSelectedCostLayerConfiguration.source)
             (term := term))) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy True)
           (provenanceKey
             (source := rhoSelectedCostLayerConfiguration.source)
@@ -186,7 +186,7 @@ transport theory and needs no selected second-layer normalizer. -/
 theorem rhoSelectedCostLayerIteration_displayed_compact_boundary
     (dependencies : DependencySystem) (revision : dependencies.Revision) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) False)
           (compactCarrierKey rhoSelectedCostLayerConfiguration.source)) ∧

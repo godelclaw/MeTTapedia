@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.GSLTEvidence
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # A BinaryWorldModel of rho-pattern samples

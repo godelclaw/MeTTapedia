@@ -42,9 +42,9 @@ theorem certified_equation_occurrence {request : Request} {state : State request
   have sourceEq := congrArg Prod.fst same
   have keyEq := congrArg Prod.snd same
   change edge.source = archive.frame.source at sourceEq
-  change equationReceipt edge.receipt = equationReceipt receipt at keyEq
+  change equationReplayRecord edge.receipt = equationReplayRecord receipt at keyEq
   refine ⟨edge, edgeMember, sourceEq, ?_⟩
-  apply equationReceipt_injective _ valid keyEq
+  apply equationReplayRecord_injective _ valid keyEq
   rw [← sourceEq]
   exact edge.valid
 
@@ -75,9 +75,9 @@ theorem certified_rule_occurrence {request : Request} {state : State request}
   have sourceEq := congrArg Prod.fst same
   have keyEq := congrArg Prod.snd same
   change answer.val.representative = archive.frame.representative.pattern at sourceEq
-  change ruleReceipt answer.val.firing = ruleReceipt receipt at keyEq
+  change ruleReplayRecord answer.val.firing = ruleReplayRecord receipt at keyEq
   refine ⟨answer, answerMember, sourceEq.trans sameSource, ?_⟩
-  apply ruleReceipt_injective _ validAt keyEq
+  apply ruleReplayRecord_injective _ validAt keyEq
   rw [← sourceEq]
   exact answer.property.2
 

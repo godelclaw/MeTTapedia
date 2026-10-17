@@ -40,7 +40,8 @@ def language : LanguageDef where
   equations := []
 
 def provider : GeneralPremise.ProviderSnapshot :=
-  ⟨[⟨"allowed", [term], [.input]⟩], [⟨"allowed", [zero]⟩, ⟨"allowed", [zero]⟩]⟩
+  {signatures := [⟨"allowed", [term], [.input]⟩],
+   rows := [⟨"allowed", [zero]⟩, ⟨"allowed", [zero]⟩], dynamicRelations := []}
 
 def snapshot : Snapshot := ⟨language, [], provider⟩
 def permissions : Permissions := {sites := .all}

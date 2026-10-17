@@ -46,7 +46,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.Languages.MM0
 open Mettapedia.Languages.MM0.Presentation.Calculus
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-- **Row one**: the derivations of a judgment of an MM0 theory are hosted on

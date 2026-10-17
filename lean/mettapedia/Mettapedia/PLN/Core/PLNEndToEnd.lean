@@ -1,5 +1,5 @@
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 /-!
 # PLN End-to-End (Stable Interface)

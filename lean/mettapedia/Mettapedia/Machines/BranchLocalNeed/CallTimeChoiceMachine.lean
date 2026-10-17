@@ -1,6 +1,8 @@
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceSpec
 import Mettapedia.Machines.BranchLocalNeed.ReturningRuns
 import Mettapedia.Machines.BranchLocalNeed.CacheLaws
+import Mettapedia.Machines.BranchLocalNeed.AllocationBound
+import Mettapedia.Machines.BranchLocalNeed.Representation
 
 /-!
 # The core calculus on the reference Need machine
@@ -343,6 +345,38 @@ theorem alternatives_referencesSatisfy (P : Program) {p : CellId → Prop} {orig
       cases member
       exact enter_referencesSatisfy _ captured
 
+/-- Strong references captured by a continuation token. -/
+def MResume.referenceSet : MResume → Finset CellId
+  | .seqAlloc _ env | .seqRet _ env | .needAlloc _ env | .delayAlloc _ env => envReferenceSet env
+  | _ => ∅
+
+theorem MResume.referencesSatisfy_iff_referenceSet (p : CellId → Prop) (token : MResume) :
+    token.referencesSatisfy p ↔ ∀ cell ∈ token.referenceSet, p cell := by
+  cases token <;> simp [MResume.referencesSatisfy, MResume.referenceSet,
+    EnvReferencesSatisfy_iff_referenceSet]
+
+/-- The active local state's captured origins, outcomes and saved token. -/
+def MLocal.referenceSet : MLocal → Finset CellId
+  | .output (.value value) => value.referenceSet
+  | .output _ => ∅
+  | .alloc origin token => envReferenceSet origin.2 ∪ token.referenceSet
+  | .demand cell token | .resample cell token => insert cell token.referenceSet
+  | .emit _ next => next.referenceSet
+
+theorem MLocal.referencesSatisfy_iff_referenceSet (p : CellId → Prop) (state : MLocal) :
+    state.referencesSatisfy p ↔ ∀ cell ∈ state.referenceSet, p cell := by
+  induction state with
+  | output result =>
+      cases result <;> simp [MLocal.referencesSatisfy, MLocal.referenceSet,
+        Val.referencesSatisfy_iff_referenceSet]
+  | alloc origin token =>
+      simp [MLocal.referencesSatisfy, MLocal.referenceSet, EnvReferencesSatisfy_iff_referenceSet,
+        MResume.referencesSatisfy_iff_referenceSet, or_imp, forall_and]
+  | demand cell token | resample cell token =>
+      simp [MLocal.referencesSatisfy, MLocal.referenceSet,
+        MResume.referencesSatisfy_iff_referenceSet, or_imp, forall_and]
+  | emit event next ih => exact ih
+
 /-- A constructed instance of the general reference discipline. It checks
 language operations for every domain, without assuming a machine invariant. -/
 def machineReferenceDiscipline (P : Program) : NeedCacheLaws.ReferenceDiscipline (machineSpec P) where
@@ -375,10 +409,40 @@ def machineReferenceDiscipline (P : Program) : NeedCacheLaws.ReferenceDiscipline
     intro p token cell saved allocated
     exact afterAllocation_referencesSatisfy saved allocated
 
+/-- The language's validated finite inventories instantiate the shared
+heap and continuation assembly. The stored payload keeps all source roles. -/
+def machineReferenceInventory (P : Program) :
+    NeedCacheLaws.ReferenceInventory (machineReferenceDiscipline P) where
+  origin source := envReferenceSet source.2
+  localState := MLocal.referenceSet
+  resume := MResume.referenceSet
+  value := Val.referenceSet
+  origin_exact := by
+    intro p source
+    exact EnvReferencesSatisfy_iff_referenceSet p source.2
+  local_exact := MLocal.referencesSatisfy_iff_referenceSet
+  resume_exact := MResume.referencesSatisfy_iff_referenceSet
+  value_exact := Val.referencesSatisfy_iff_referenceSet
+
 /-- Run a closed computation from the empty heap. -/
 def initialMachine (M : Comp) : MMachine where
   world := initialWorld
   control := .run (enter M []) []
+
+/-- Every bounded point of a closed computation has an exact ordered
+full-cell history image. Pending controls, effects and duplicates survive
+the round trip; reconstruction itself does not execute any producer. -/
+theorem runFrontier_fullHistory_readback (P : Program) (code : Comp) (fuel : Nat) :
+    ∃ views,
+      (runFrontier (machineSpec P) fuel [initialMachine code]).mapM
+        Machine.fullHistoryView? = some views ∧
+      views.mapM Machine.ofFullHistoryView? =
+        some (runFrontier (machineSpec P) fuel [initialMachine code]) := by
+  apply Machine.runFrontier_fullHistory_frontier_readback
+  intro machine member
+  simp only [List.mem_singleton] at member
+  subst machine
+  exact ⟨Heap.empty_recorded, Heap.empty_historyEncodable⟩
 
 theorem initialMachine_referencesClosed (P : Program) (code : Comp) :
     (machineReferenceDiscipline P).machineClosed (initialMachine code) := by
@@ -401,6 +465,159 @@ theorem runFrontier_referencesClosed (P : Program) (code : Comp) (fuel : Nat) {m
   cases List.mem_singleton.mp selected
   exact initialMachine_referencesClosed P code
 
+/-- Every real frontier retains an exact finite heap history. -/
+theorem runFrontier_heapRecorded (P : Program) (code : Comp) (fuel : Nat) {machine : MMachine}
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code]) :
+    machine.world.heap.Recorded := by
+  apply NeedFrontierLaws.runFrontier_preserves (machineSpec P)
+    (fun candidate => candidate.world.heap.Recorded) (fuel := fuel) (member := member)
+  · intro before after valid stepped
+    exact step_heap_recorded (machineSpec P) before after valid stepped
+  · intro initial selected
+    cases List.mem_singleton.mp selected
+    exact Heap.empty_recorded
+
+/-- The independently recorded allocation receipts and heap history agree
+at every actual frontier, including pauses and inherited sibling prefixes. -/
+theorem runFrontier_allocationReceiptsExact (P : Program) (code : Comp) (fuel : Nat)
+    {machine : MMachine}
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code]) :
+    machine.world.AllocationReceiptsExact := by
+  apply NeedFrontierLaws.runFrontier_preserves (machineSpec P)
+    (fun candidate => candidate.world.AllocationReceiptsExact) (fuel := fuel) (member := member)
+  · intro before after valid stepped
+    exact step_allocationReceiptsExact (machineSpec P) before after valid stepped
+  · intro initial selected
+    cases List.mem_singleton.mp selected
+    rfl
+
+theorem runFrontier_slotBound (P : Program) (code : Comp) (fuel : Nat) {machine : MMachine}
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code]) :
+    NeedAllocationBound.SlotBound machine.world := by
+  apply NeedFrontierLaws.runFrontier_preserves (machineSpec P)
+    (fun candidate => NeedAllocationBound.SlotBound candidate.world) (fuel := fuel) (member := member)
+  · intro before after bounded stepped
+    exact NeedAllocationBound.step_slotBound (machineSpec P) before after bounded stepped
+  · intro initial selected
+    cases List.mem_singleton.mp selected
+    exact NeedAllocationBound.SlotBound.of_empty _ rfl
+
+/-- A collected actual frontier uses the common operational root census.
+Receipt-target inspection requires its stronger archive retention policy. -/
+def collectedFrontierMachine {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) : MMachine :=
+  (machineReferenceInventory P).collectMachine owner machine
+    (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member) weight
+
+theorem collectedFrontierMachine_valid {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    let collected := collectedFrontierMachine owner P code fuel machine member weight
+    collected.world.heap.Recorded ∧
+      (machineReferenceDiscipline P).machineClosed collected ∧
+      NeedAllocationBound.SlotBound collected.world :=
+  ⟨(machineReferenceInventory P).collectMachine_recorded owner machine
+      (runFrontier_heapRecorded P code fuel member)
+      (runFrontier_referencesClosed P code fuel member) weight,
+    (machineReferenceInventory P).collectMachine_closed owner machine
+      (runFrontier_heapRecorded P code fuel member)
+      (runFrontier_referencesClosed P code fuel member) weight,
+    NeedAllocationBound.collectMachine_slotBound (machineReferenceInventory P) owner machine
+      (runFrontier_heapRecorded P code fuel member)
+      (runFrontier_referencesClosed P code fuel member) weight
+      (runFrontier_slotBound P code fuel member)⟩
+
+/-- The common finite resource heap is constructed for an arbitrary paused
+frontier of the actual instance. It preserves complete captured origins and
+cache payloads; its outgoing edges are the validated language inventory. -/
+def frontierResourceHeap (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    Mettapedia.Machines.ResourceOwnership.Heap CellId (CellRecord (Comp × MEnv) MVal Empty) :=
+  (machineReferenceInventory P).resourceHeap machine.world.heap
+    (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member).1 weight
+
+/-- Roots captured by the current control and continuation exist in the same
+frontier's resource heap. No validity premise is supplied by the caller. -/
+theorem frontier_controlRoots_valid {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    Mettapedia.Machines.ResourceOwnership.ValidRoots
+      (frontierResourceHeap P code fuel machine member weight)
+      ((machineReferenceInventory P).controlRoots owner machine.control) :=
+  (machineReferenceInventory P).controlRoots_valid owner machine
+    (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member) weight
+
+/-- The existing executable resource census agrees with inductive reachability
+for every actual frontier, including captured code and suspended fields. -/
+theorem frontier_cell_census_exact {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) (cell : CellId) :
+    cell ∈ Mettapedia.Machines.ResourceOwnership.census
+        (frontierResourceHeap P code fuel machine member weight)
+        ((machineReferenceInventory P).controlRoots owner machine.control) ↔
+      Mettapedia.Machines.ResourceOwnership.Live
+        (frontierResourceHeap P code fuel machine member weight)
+        ((machineReferenceInventory P).controlRoots owner machine.control) cell :=
+  (machineReferenceInventory P).control_census_exact owner machine
+    (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member) weight cell
+
+/-- Following every allocation receipt to its current cell requires the full
+recorded heap. The root set is read from receipt nodes, independently of the
+heap allocation census, and their equality is earned by actual transitions. -/
+theorem frontier_allocationRoots_eq_snapshotRoots {Owner : Type*} [DecidableEq Owner]
+    (owner : Owner) (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    machine.world.receipts.allocationRoots owner =
+      (frontierResourceHeap P code fuel machine member weight).snapshotRoots owner := by
+  change machine.world.receipts.allocationCells.image (fun cell => (owner, cell)) =
+    machine.world.heap.allocated.image (fun cell => (owner, cell))
+  rw [runFrontier_allocationReceiptsExact P code fuel member]
+
+theorem frontier_allocationRoots_valid {Owner : Type*} [DecidableEq Owner]
+    (owner : Owner) (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    Mettapedia.Machines.ResourceOwnership.ValidRoots
+      (frontierResourceHeap P code fuel machine member weight)
+      (machine.world.receipts.allocationRoots owner) := by
+  rw [frontier_allocationRoots_eq_snapshotRoots owner P code fuel machine member weight]
+  exact Mettapedia.Machines.ResourceOwnership.Heap.snapshotRoots_valid _ owner
+
+theorem frontier_allocation_census {Owner : Type*} [DecidableEq Owner]
+    (owner : Owner) (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    Mettapedia.Machines.ResourceOwnership.census
+      (frontierResourceHeap P code fuel machine member weight)
+      (machine.world.receipts.allocationRoots owner) = machine.world.heap.allocated := by
+  rw [frontier_allocationRoots_eq_snapshotRoots owner P code fuel machine member weight]
+  exact Mettapedia.Machines.ResourceOwnership.census_snapshotRoots _ owner
+
+/-- Collection under the archive's allocation-target observer preserves every
+complete resource lookup, not merely the current answer or continuation. -/
+theorem frontier_allocation_lookup_preserved {Owner : Type*} [DecidableEq Owner]
+    (owner : Owner) (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) :
+    (Mettapedia.Machines.ResourceOwnership.collect
+      (frontierResourceHeap P code fuel machine member weight)
+      (machine.world.receipts.allocationRoots owner)).lookup =
+        (frontierResourceHeap P code fuel machine member weight).lookup := by
+  rw [frontier_allocationRoots_eq_snapshotRoots owner P code fuel machine member weight]
+  funext cell
+  exact Mettapedia.Machines.ResourceOwnership.lookup_collect_snapshotRoots _ owner cell
+
 /-- The machine's answers for the observation of a closed computation. -/
 def machineAnswers (P : Program) (fuel : Nat) (M : Comp) : List MOutcome :=
   answers (machineSpec (observed P)) fuel (initialMachine (observe M))
@@ -415,6 +632,52 @@ def machineValues (os : List MOutcome) : List MVal :=
 /-- A completed outcome together with the branch's chronological emissions. -/
 def haltedObservation (machine : MMachine) : Option (MOutcome × List Nat) :=
   (haltedOutcome machine).map fun outcome => (outcome, machine.world.receipts.effects)
+
+/-- Arbitrary actual pauses resume after collection with exactly the same
+ordered completed outcomes and chronological emissions at every budget. -/
+theorem collectedFrontierMachine_resume_eq {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) (more : Nat) :
+    (runFrontier (machineSpec P) more [machine]).map haltedObservation =
+      (runFrontier (machineSpec P) more
+        [collectedFrontierMachine owner P code fuel machine member weight]).map haltedObservation := by
+  have pairs := NeedAllocationBound.collectMachine_runFrontier (machineReferenceInventory P) owner
+    machine (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member) weight
+    (runFrontier_slotBound P code fuel member) more
+  change List.Forall₂ (fun source target => ∃ domain,
+    NeedAllocationBound.MachineAgreement (machineReferenceDiscipline P) domain source target)
+    (runFrontier (machineSpec P) more [machine])
+    (runFrontier (machineSpec P) more
+      [collectedFrontierMachine owner P code fuel machine member weight]) at pairs
+  generalize sourceFrontier : runFrontier (machineSpec P) more [machine] = sources at pairs ⊢
+  generalize targetFrontier : runFrontier (machineSpec P) more
+    [collectedFrontierMachine owner P code fuel machine member weight] = targets at pairs ⊢
+  clear sourceFrontier targetFrontier
+  induction pairs with
+  | nil => rfl
+  | @cons source target sources targets related _ ih =>
+    obtain ⟨domain, same⟩ := related
+    simp only [List.map_cons, haltedObservation, haltedOutcome,
+      same.control, same.worlds.worlds.receipts, ih]
+
+/-- The stronger paused-control observer also keeps the complete receipt
+graph and semantic work, rather than only finished values and emissions. -/
+theorem collectedFrontierMachine_resume_configurations
+    {Owner : Type*} [DecidableEq Owner] (owner : Owner)
+    (P : Program) (code : Comp) (fuel : Nat) (machine : MMachine)
+    (member : machine ∈ runFrontier (machineSpec P) fuel [initialMachine code])
+    (weight : CellRecord (Comp × MEnv) MVal Empty → Nat) (more : Nat) :
+    (runFrontier (machineSpec P) more [machine]).map (fun result =>
+      (result.control, result.world.receipts, result.work)) =
+    (runFrontier (machineSpec P) more
+      [collectedFrontierMachine owner P code fuel machine member weight]).map (fun result =>
+        (result.control, result.world.receipts, result.work)) :=
+  NeedAllocationBound.collectMachine_frontier_observations (machineReferenceInventory P) owner
+    machine (runFrontier_heapRecorded P code fuel member)
+    (runFrontier_referencesClosed P code fuel member) weight
+    (runFrontier_slotBound P code fuel member) more
 
 /-- Observe the same frontier as `machineAnswers`, retaining each answer's
 emitted events. Pending branches are not reported as completed observations. -/

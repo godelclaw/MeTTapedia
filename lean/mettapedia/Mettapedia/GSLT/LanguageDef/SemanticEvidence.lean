@@ -4,6 +4,7 @@ import Mathlib.CategoryTheory.Adjunction.Basic
 import Mathlib.Data.Finset.Max
 import Mettapedia.GSLT.LanguageDef.IndexedCheckerOperational
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTClone
+import Mettapedia.OSLF.NativeTypes.Certificates.Coding
 
 /-!
 # Semantic evidence, proof fibres, and meaning-preserving interpretations
@@ -1835,6 +1836,80 @@ theorem authority :
   CertificateEquivalence.authority kernel.certificateEquivalence
 
 end NativeProofKernel
+
+namespace FiniteRuleKernel
+
+open Mettapedia.OSLF.NativeTypes.Certificates
+
+universe uRule
+variable (presentation : Presentation.{uRule})
+
+/-- Generate a native proof language from the author's rules. Its judgment
+requires an original derivation with exactly the submitted rule history. -/
+def guest : NativeProofSystem presentation.Judgment where
+  ProofObject := Tree presentation
+  Judges proof claim := ∃ derivation : presentation.Derivation claim,
+    Tree.erase derivation = proof
+
+/-- The actual structural checker supplies the correctness theorem; no
+checker-soundness or derivability procedure is an input to this generator. -/
+def kernel [DecidableEq presentation.Judgment] : NativeProofKernel (guest presentation) where
+  decide claim proof := proof.check claim
+  correct claim proof := Tree.check_exact proof claim
+
+theorem proofFibre_iff_derivation (claim : presentation.Judgment) :
+    Nonempty ((guest presentation).ProofFibre claim) ↔
+      Nonempty (presentation.Derivation claim) := by
+  constructor
+  · rintro ⟨⟨proof, derivation, _⟩⟩
+    exact ⟨derivation⟩
+  · rintro ⟨derivation⟩
+    exact ⟨⟨Tree.erase derivation, derivation, rfl⟩⟩
+
+theorem authority [DecidableEq presentation.Judgment] :
+    (kernel presentation).toChecker.Authority
+      (fun claim => Nonempty (presentation.Derivation claim)) where
+  sound claim proof accepted := Tree.check_sound proof claim accepted
+  complete claim derivable := by
+    obtain ⟨derivation⟩ := derivable
+    exact ⟨Tree.erase derivation, Tree.check_erase derivation⟩
+
+/-- The untrusted list-tree boundary uses the shared rule-wire decoder,
+including its premise-count and conclusion checks. -/
+def wireChecker [DecidableEq presentation.Judgment] :
+    Checker presentation.Judgment (Tree.Wire presentation) where
+  check claim wire := Tree.checkWire wire claim
+
+theorem wireAuthority [DecidableEq presentation.Judgment] :
+    (wireChecker presentation).Authority
+      (fun claim => Nonempty (presentation.Derivation claim)) where
+  sound claim wire accepted := by
+    obtain ⟨derivation, _⟩ := (Tree.checkWire_exact wire claim).mp accepted
+    exact ⟨derivation⟩
+  complete claim derivable := by
+    obtain ⟨derivation⟩ := derivable
+    exact ⟨Tree.encodeDerivation derivation,
+      (Tree.checkWire_exact _ claim).mpr ⟨derivation, rfl⟩⟩
+
+/-- The native proof language retains exactly the independent derivation,
+including the original rule choices at repeated premise occurrences. -/
+def derivationNativeEquiv [DecidableEq presentation.Judgment]
+    (claim : presentation.Judgment) :
+    presentation.Derivation claim ≃ (guest presentation).ProofFibre claim where
+  toFun derivation := ⟨Tree.erase derivation, derivation, rfl⟩
+  invFun proof := Tree.reconstruct proof.val claim
+    ((Tree.check_exact proof.val claim).mpr proof.property)
+  left_inv derivation := Tree.reconstruct_erase derivation
+  right_inv proof := Subtype.ext (Tree.erase_reconstruct proof.val claim _)
+
+/-- Raw list-tree evidence and native proof objects have the same complete
+proof fibre, beyond merely agreeing that some proof exists. -/
+def wireCertificateEquivalence [DecidableEq presentation.Judgment] :
+    CertificateEquivalence (wireChecker presentation) (guest presentation) where
+  fibreEquiv claim := (Tree.derivationWireEquiv claim).symm.trans
+    (derivationNativeEquiv presentation claim)
+
+end FiniteRuleKernel
 
 /-! ### A strict counterexample to decode-only parity -/
 

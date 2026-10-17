@@ -36,7 +36,7 @@ private theorem plift_heq_of_prop_eq {left right : Prop}
 
 /-- The canonical proof-retaining lift of any proposition-valued root relation
 has coherent identity and composite substitution actions. -/
-def RetainedRoot.ofRulesSubstitutionCoherent
+theorem RetainedRoot.ofRulesSubstitutionCoherent
     {Head : Type} (rules : Rules Head) :
     (RetainedRoot.ofRules rules).computation.SubstitutionCoherent where
   substitute_ids := by

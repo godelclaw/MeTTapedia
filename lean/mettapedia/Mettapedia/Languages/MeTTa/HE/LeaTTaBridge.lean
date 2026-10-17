@@ -1,4 +1,5 @@
-import Mettapedia.Languages.MeTTa.HE.MatcherBridge
+import Mettapedia.Languages.MeTTa.HE.BindingComposition
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 import Mettapedia.Languages.MeTTa.HE.SmallStep
 import Mettapedia.Languages.MeTTa.HE.DeclMatchSpec
 import Mettapedia.Languages.MeTTa.HE.Space
@@ -36,17 +37,6 @@ namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 open Mettapedia.Languages.MeTTa.OSLFCore
 open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
 
-/-- Translate HE grounded payloads into LeaTTa grounded payloads.
-
-`custom` payloads are mapped into LeaTTa's `external` lane. This is a structural
-embedding only; no claim is made yet that the host-side operational semantics of
-custom/external payloads coincide. -/
-def toLeaTTaGround : GroundedValue → Metta.Ground
-  | .int n => .int n
-  | .string s => .str s
-  | .bool b => .bool b
-  | .custom typeName payload => .external typeName payload
-
 /-- Numeric boundary: HE grounded values never translate to LeaTTa host floats. -/
 theorem toLeaTTaGround_ne_float (g : GroundedValue) (f : Float) :
     toLeaTTaGround g ≠ .float f := by
@@ -63,22 +53,6 @@ LeaTTa's grounded `error` payload constructor. -/
 theorem toLeaTTaGround_ne_error (g : GroundedValue) (msg : String) :
     toLeaTTaGround g ≠ .error msg := by
   cases g <;> simp [toLeaTTaGround]
-
-mutual
-
-/-- Structural HE-atom translation into LeaTTa atoms. -/
-def toLeaTTaAtom : Atom → Metta.Atom
-  | .symbol s => .sym s
-  | .var v => .var v
-  | .grounded g => .gnd (toLeaTTaGround g)
-  | .expression es => .expr (toLeaTTaAtoms es)
-
-/-- Structural translation on atom lists. -/
-def toLeaTTaAtoms : List Atom → List Metta.Atom
-  | [] => []
-  | a :: as => toLeaTTaAtom a :: toLeaTTaAtoms as
-
-end
 
 @[simp] private theorem substOccurs_symbol (v s : String) :
     Metta.Subst.occurs v (Metta.Atom.sym s) = false := by
@@ -210,33 +184,6 @@ structure LeaBindingRelEquiv (b : Bindings) (lb : Metta.Bindings) : Prop where
   values : LeaValueRelEquiv b lb
   equalities : LeaEqualityRelEquiv b lb
 
-/-- Structural variable disjointness for query/rule matching, independent of
-the fuel-bounded HE variable collector. -/
-def VarsDisjoint (left right : Atom) : Prop :=
-  ∀ v, v ∈ (toLeaTTaAtom left).vars →
-    v ∉ (toLeaTTaAtom right).vars
-
-/-- Structural variable disjointness is symmetric. -/
-theorem VarsDisjoint.symm {left right : Atom}
-    (h : VarsDisjoint left right) : VarsDisjoint right left := by
-  intro v hright hleft
-  exact h v hleft hright
-
--- Structural depth measures for HE atoms and atom lists.
-mutual
-
-def atomDepth : Atom → Nat
-  | .symbol _ => 0
-  | .var _ => 0
-  | .grounded _ => 0
-  | .expression es => listDepth es + 1
-
-def listDepth : List Atom → Nat
-  | [] => 0
-  | a :: as => max (atomDepth a) (listDepth as)
-
-end
-
 /-- Boundary predicate for the fragment where HE's recursive `resolve` agrees
 with LeaTTa's one-pass substitution: no HE lookup produces a bare variable. -/
 def NoVarAssignmentValues (b : Bindings) : Prop :=
@@ -247,16 +194,6 @@ bare-variable value. Unlike `NoVarAssignmentValues`, this sees every list entry
 and therefore needs no uniqueness premise when used directly. -/
 def NoBareVarAssignments (b : Bindings) : Prop :=
   ∀ ⦃v x⦄, (v, .var x) ∉ b.assignments
-
-/-- No variable occurring inside an assignment value has another direct
-assignment in the same HE binding set. -/
-def AssignmentValuesIndependent (b : Bindings) : Prop :=
-  ∀ ⦃v a⦄, b.lookup v = some a → b.hasAssignedVar a = false
-
-/-- HE assignment-key uniqueness, stated explicitly so bridge lemmas can use it
-without reaching into private helper files. -/
-def AssignmentsNodup (b : Bindings) : Prop :=
-  (b.assignments.map Prod.fst).Nodup
 
 @[simp] theorem toLeaTTaEqualityBindings_empty :
     toLeaTTaEqualityBindings Bindings.empty = [] := rfl
@@ -323,12 +260,6 @@ private theorem noVarAssignmentValues_of_extends
     NoVarAssignmentValues seed := by
   intro v x hlookup
   exact hno (hext v (.var x) hlookup)
-
-@[simp] theorem toLeaTTaAtoms_nil :
-    toLeaTTaAtoms [] = [] := rfl
-
-@[simp] theorem toLeaTTaAtoms_cons (a : Atom) (as : List Atom) :
-    toLeaTTaAtoms (a :: as) = toLeaTTaAtom a :: toLeaTTaAtoms as := rfl
 
 private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {a : Atom}
     (h : a ∈ atoms) :
@@ -441,33 +372,6 @@ private theorem lookup_some_of_mem_assignment {xs : List (String × Atom)}
         · exact ⟨b, by simp [List.lookup_cons, hk]⟩
         · rcases ih h with ⟨a', ha'⟩
           exact ⟨a', by simp [List.lookup_cons, hk, ha']⟩
-
-/-- On the honest no-variable-values fragment, HE bindings are loop-free:
-every successful lookup terminates immediately at a non-variable payload, so
-`hasLoopFrom` can never follow an edge. This is the precise semantic reason the
-restricted bridge should carry `NoVarAssignmentValues` rather than a separate
-loop premise. -/
-theorem NoVarAssignmentValues.hasLoop_false {b : Bindings}
-    (hno : NoVarAssignmentValues b) :
-    b.hasLoop = false := by
-  unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop
-  rw [List.any_eq_false]
-  intro p hp
-  rcases p with ⟨v, val⟩
-  simp
-  rcases lookup_some_of_mem_assignment hp with ⟨a', hlookup⟩
-  cases a' with
-  | var w =>
-      exact False.elim (hno hlookup)
-  | symbol s =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
-  | grounded g =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
-  | expression es =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
 
 private theorem lookup_none_not_mem_assignment_keys {xs : List (String × Atom)}
     {v : String} (h : List.lookup v xs = none) :
@@ -3010,17 +2914,6 @@ private theorem assignmentValuesIndependent_of_noVar_fresh
       have haVal := val_mem_toLeaTTaMatchBindings_of_lookup hno hlookup
       exact False.elim ((hfresh w hwKey v (toLeaTTaAtom a) haVal) hwVars)
 
-/-- On assignment-independent bindings, recursive `resolve` agrees with a
-single direct lookup as soon as it has one unfold step available. -/
-@[simp] theorem resolve_eq_lookup_of_assignmentValuesIndependent {b : Bindings}
-    (hindependent : AssignmentValuesIndependent b) (v : String) (fuel : Nat) :
-    b.resolve v (fuel + 1) = b.lookup v := by
-  cases h : b.lookup v with
-  | none => simp [Bindings.resolve, h]
-  | some a =>
-      have hstable : b.hasAssignedVar a = false := hindependent h
-      simp [Bindings.resolve, Bindings.resolveAtomAux, h, hstable]
-
 /-- First substitution correspondence lemma: on variable leaves, HE's
 assignment-only application operation matches LeaTTa instantiation once we are in
 the no-variable-values fragment. This is the kernel of the later ground-query
@@ -3963,8 +3856,7 @@ theorem faithfulQueryWitness_matchBinding_eq
       simp [mergeBindings] at hmerge
   | succ n =>
       have hqb : qb = mb := by
-        rw [mergeBindings_empty_right mb n] at hmerge
-        simpa using hmerge
+        simpa [mergeBindings, Bindings.empty] using hmerge
       exact ⟨mb, hmb, hqb, hloop⟩
 
 /-- The final binding of a faithful query witness is itself one of the official
@@ -4362,7 +4254,7 @@ private theorem matchListAccRel_headKey_compat
                   | symSym =>
                       subst hsk
                       exact Or.inl rfl
-                  | nonVarVar hnv =>
+                  | nonVarVar hnv _ =>
                       exact Or.inr rfl
               | var v =>
                   simp [heHeadKey] at htarget
@@ -4384,9 +4276,9 @@ private theorem matchRel_headKey_compat
       exact Or.inl rfl
   | varVar a b =>
       simp [heHeadKey] at htarget
-  | varNonVar hnv =>
+  | varNonVar hnv _ =>
       simp [heHeadKey] at htarget
-  | nonVarVar hnv =>
+  | nonVarVar hnv _ =>
       exact Or.inr rfl
   | grounded g =>
       simp [heHeadKey] at htarget
@@ -5459,14 +5351,15 @@ typed alpha-visible LeaTTa witness can be exhibited together. This is the typed
 counterpart of the untyped semantic packaging above, but it stays on the
 instantiated-item seam where the current preservation theorems apply directly. -/
 theorem equation_match_typed_queryOp_visible_successor_of_instantiated_item
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
+    {space : Space} {d : GroundedDispatch} {fuel : Nat} {live : List Atom}
     {es : List Atom} {lhs rhs : Atom} {qb : Bindings}
     {gt : Metta.GroundingTable}
     {env : Metta.TypeEnv} {Γ : List (String × Metta.Atom)} {T : Metta.Atom}
     (prev : Metta.Minimal.Stack) (counter : Nat)
     (h_not_special : ¬ SpecialFormHead (.expression es))
     (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hquery : (rhs, qb) ∈ queryEquations space (.expression es) fuel)
+    (hquery : (rhs, qb) ∈ queryEquationsAvoiding
+      (equationScope live (.expression es) Atom.undefinedType Bindings.empty) space (.expression es) fuel)
     (hno : NoVarAssignmentValues qb)
     (hkeys : AssignmentsNodup qb)
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings qb))
@@ -5483,7 +5376,7 @@ theorem equation_match_typed_queryOp_visible_successor_of_instantiated_item
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
     (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
     (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T) :
-    HESmallStep space d fuel (.expression es) (qb.applyFull rhs fuel) ∧
+    HESmallStep space d fuel (.expression es) (qb.applyFull rhs fuel) live ∧
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
@@ -5493,12 +5386,9 @@ theorem equation_match_typed_queryOp_visible_successor_of_instantiated_item
       Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) ∧
       Metta.WT env [] emitted T := by
   refine ⟨HESmallStep.equation_match h_not_special h_not_grounded hquery
-    (NoVarAssignmentValues.hasLoop_false hno), ?_⟩
+    (GroundBindings.hasLoop_false hb), ?_⟩
   exact
-    queryOp_contains_typed_equation_match_visible_successor_of_instantiated_item
-      (space := space) (src := .expression es) (lhs := lhs) (rhs := rhs)
-      (qb := qb) (fuel := fuel) (gt := gt) (env := env) (Γ := Γ) (T := T)
-      prev counter hquery hno hkeys hfresh hb hdepth hitem hσ hL hR
+    typed_visible_successor_of_instantiated_item hno hkeys hfresh hb hdepth hitem hσ hL hR
 
 /-- True P1 simulation boundary for `HESmallStep.equation_match`: after
 transporting the freshened query witness, `queryOp` should emit some concrete

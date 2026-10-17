@@ -93,16 +93,42 @@ mutual
             assignment body bodyResult ready (supported_binders_body supported) interpreted
     | subst body replacement => simp only [checkSide, Bool.false_eq_true] at ready
     | collection kind elements rest =>
+        simp only [checkSide, Bool.and_eq_true] at ready
         cases rest with
-        | some name => simp only [checkSide, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at ready
+        | some name =>
+            simp only [instantiateAt?, instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at instantiated
+            obtain ⟨explicit, interpreted, value, found, arguments, occurrence, residualValue, residual, spliced⟩ :=
+              instantiated
+            have spine := ready.1
+            simp only [restSupported, occurrence, Bool.and_eq_true] at spine
+            split at spliced
+            · rename_i actualKind items
+              split at spliced
+              · cases spliced
+                have early := instantiateArguments_relevant_support symbols rule spec ambient site path depth
+                  assignment 0 elements explicit ready.2
+                  (fun child member => supported_element symbols kind _ none supported child (by simp [member]))
+                  interpreted
+                have residualSupported : Supported symbols (.collection actualKind items none) :=
+                  supported_collection symbols actualKind items
+                    (fun child member => supported_element symbols kind _ none supported child (by simp [member]))
+                have bodySupported := (instantiateValue_support_iff symbols value ambient depth arguments _ spine.1
+                  residual).mp residualSupported
+                intro actual occurs other otherFound
+                simp only [Pattern.freeFvarNames, List.mem_append, Option.toList_some, List.mem_singleton] at occurs
+                rcases occurs with inElements | rfl
+                · exact early actual inElements other otherFound
+                · cases Option.some.inj (otherFound.symm.trans found)
+                  exact bodySupported
+              · cases spliced
+            · cases spliced
         | none =>
-            simp only [checkSide, Option.isNone_none, Bool.true_and] at ready
             simp only [instantiateAt?, instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at instantiated
             obtain ⟨results, interpreted, equal⟩ := instantiated
             cases Option.some.inj equal
             simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using
               instantiateArguments_relevant_support symbols rule spec ambient site path depth assignment 0
-                elements results ready (supported_element symbols kind results none supported) interpreted
+                elements results ready.2 (supported_element symbols kind results none supported) interpreted
   termination_by sizeOf pattern
 
   theorem instantiateArguments_relevant_support (symbols : Alphabet) (rule : RewriteRule) (spec : RuleBindingSpec)
@@ -188,17 +214,31 @@ mutual
     | bag _notVector bag =>
         rename_i kind patterns rest targets
         simp only [checkSide, Bool.and_eq_true] at ready
-        have noRest : rest = none := Option.isNone_iff_eq_none.mp ready.1
-        subst rest
         exact supported_collection symbols kind targets
-          (matchedBag_target_supported bag ready.2 (supported_element _ _ _ none template)
-            (by simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using bodies) extension)
+          (matchedBag_target_supported bag ready.2 (by simpa using ready.1) (supported_element _ _ _ rest template)
+            (by simpa only [Pattern.freeFvarNames] using bodies) extension)
     | vector arguments =>
-        simp only [checkSide, Option.isNone_none, Bool.true_and] at ready
+        simp only [checkSide, Bool.and_eq_true] at ready
         exact supported_collection symbols .vec _
-          (matchedArguments_target_supported arguments ready (supported_element _ _ _ none template)
+          (matchedArguments_target_supported arguments ready.2 (supported_element _ _ _ none template)
             (by simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using bodies) extension)
-    | vectorRest _ _ => simp only [checkSide, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at ready
+    | vectorRest arguments captured =>
+        rename_i patterns name targets middle
+        simp only [checkSide, Bool.and_eq_true] at ready
+        have early := matchedArguments_target_supported arguments ready.2 (supported_element _ _ _ _ template)
+          (by intro other member; exact bodies other (by simp [Pattern.freeFvarNames, member]))
+          ((GeneralScopedMatch.capture_extends captured).trans extension)
+        obtain ⟨_, restArguments, value, _, occurrence, _, retained, interpreted, _⟩ := capture_interpretation captured
+        have spine := ready.1
+        simp only [restSupported, occurrence, Bool.and_eq_true] at spine
+        have residual := instantiateValue_supported symbols value ambient depth restArguments _ spine.1
+          (bodies name (by simp [Pattern.freeFvarNames]) value (extension _ _ retained)) interpreted
+        apply supported_collection symbols .vec targets
+        intro child member
+        rw [← List.take_append_drop patterns.length targets] at member
+        rcases List.mem_append.mp member with front | back
+        · exact early child front
+        · exact supported_element symbols .vec _ none residual child back
   termination_by sizeOf pattern
 
   theorem matchedArguments_target_supported {symbols : Alphabet} {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
@@ -227,20 +267,35 @@ mutual
   theorem matchedBag_target_supported {symbols : Alphabet} {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
       {site : RulePatternSite} {path : List Nat} {depth index : Nat}
       {initial final completed : Assignment} {patterns targets : List Pattern} {kind : CollType}
-      (matched : Bag rule spec ambient site path depth initial index patterns none kind targets final)
+      {rest : Option String}
+      (matched : Bag rule spec ambient site path depth initial index patterns rest kind targets final)
       (ready : checkArguments rule spec site path depth index patterns = true)
+      (restOk : restSupported rule spec site (path ++ [index + patterns.length]) depth rest = true)
       (templates : ∀ pattern ∈ patterns, Supported symbols pattern)
-      (bodies : RelevantSupport symbols completed (patterns.flatMap Pattern.freeFvarNames))
+      (bodies : RelevantSupport symbols completed (patterns.flatMap Pattern.freeFvarNames ++ rest.toList))
       (extension : Extends final completed) : ∀ target ∈ targets, Supported symbols target := by
     cases matched with
     | nil => simp
+    | rest captured =>
+        rename_i name
+        obtain ⟨_, restArguments, value, _, occurrence, _, retained, interpreted, _⟩ := capture_interpretation captured
+        have spine := restOk
+        simp only [restSupported, Nat.add_zero, List.length_nil, occurrence, Bool.and_eq_true] at spine
+        have residual := instantiateValue_supported symbols value ambient depth restArguments _ spine.1
+          (bodies name (by simp) value (extension _ _ retained)) interpreted
+        intro child member
+        exact supported_element symbols kind _ none residual child member
     | cons selected within head tail =>
         simp only [checkArguments, Bool.and_eq_true] at ready
         have first := matched_target_supported head ready.1 (templates _ (by simp))
-          (by intro name member; exact bodies name (by simp only [List.flatMap_cons, List.mem_append]; exact Or.inl member))
+          (by intro name member; exact bodies name (by simp only [List.flatMap_cons, List.append_assoc, List.mem_append]; exact Or.inl member))
           (tail.extends.trans extension)
-        have rest := matchedBag_target_supported tail ready.2 (by intro pattern member; exact templates pattern (by simp [member]))
-          (by intro name member; exact bodies name (by simp only [List.flatMap_cons, List.mem_append]; exact Or.inr member)) extension
+        have rest := matchedBag_target_supported tail ready.2
+          (by rw [Nat.add_assoc, Nat.add_comm 1]; simpa using restOk)
+          (by intro pattern member; exact templates pattern (by simp [member]))
+          (fun name member => bodies name (by
+            simp only [List.flatMap_cons, List.append_assoc, List.mem_append] at member ⊢
+            exact Or.inr member)) extension
         intro target member
         rcases selected_or_erased targets selected within target member with equal | later
         · exact equal ▸ first
@@ -294,7 +349,7 @@ theorem completion_reverse_supported {plan : Plan} {bound : List TypeExpr} {type
     ready.2.2.1 rawSupport complete.reduct
   have balance : constantContribution receipt.job.equation.rule.left = constantContribution receipt.job.equation.rule.right ∧
       receipt.job.equation.rule.left.freeFvarNames.Perm receipt.job.equation.rule.right.freeFvarNames := by
-    simpa only [balanced, Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] using ready.2.2.2
+    simpa only [balanced, Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] using balancedSides_balanced ready.2.2.2
   have leftBodies : RelevantSupport symbols receipt.completed receipt.job.equation.rule.left.freeFvarNames := by
     intro name member
     exact rightBodies name (balance.2.mem_iff.mp member)

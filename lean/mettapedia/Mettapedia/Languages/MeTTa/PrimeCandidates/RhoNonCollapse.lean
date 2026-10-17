@@ -1,5 +1,6 @@
 import Mettapedia.Languages.MeTTa.Experimental.StagedReflective.Presentation
 import Mettapedia.Languages.MeTTa.PrimeCandidates.UniversalName
+import Mettapedia.OSLF.Syntax.RhoSubstitutionEncoding
 
 /-!
 # candidate/rho structural non-collapse
@@ -129,6 +130,92 @@ example : DirectRhoFragment
 
 example : ¬ DirectRhoFragment nativeDependentFunctionType :=
   nativeDependentFunctionType_not_directRho
+
+
+/-! ## Opaque data inclusion is not the open binding embedding
+
+The `pattern` constructor includes arbitrary runtime syntax as inert data.
+Its native substitution action deliberately leaves that data unchanged. The
+existing intrinsic rho encoding has a different, proved action on open source
+terms: `RhoSchema.IntrinsicEncoding.encodeTerm_bind` commutes with generic
+pattern-context substitution. These actions cannot be identified merely because
+both include the same closed runtime patterns.
+-/
+
+namespace PatternBoundary
+
+open Mettapedia.OSLF.Binding
+open RhoSchema RhoSchema.IntrinsicEncoding
+
+/-- The existing open input refers to its ambient name beneath a distinct
+input binder. It is included as data at native scope depth one. -/
+def openInput : StagedReflectiveTm 0 1 :=
+  .pattern (encodeTerm openInputDropsAmbient)
+
+/-- The source calculus closes its ambient name using its own simultaneous
+substitution, preserving the distinction from the input's new binder. -/
+def sourceClosedInput : StagedReflectiveTm 0 0 :=
+  .pattern (encodeTerm (bind closeInputAmbient openInputDropsAmbient))
+
+/-- A well-scoped native environment supplying that same closed rho name. -/
+def closeNativeAmbient : NativeSub 1 0 :=
+  fun _ _ => .pattern (encodeTerm chan)
+
+theorem openInput_in_direct_fragment : DirectRhoFragment openInput :=
+  .pattern _
+
+/-- Positive source control: the existing encoding closes the ambient name
+under the input without capturing it as the new input variable. -/
+theorem source_closing_preserves_input_binder :
+    Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute
+      (encodeSub closeInputAmbient) (encodeTerm openInputDropsAmbient) =
+      .apply "PInput" [encodeTerm chan,
+        .lambda none (.apply "PDrop" [encodeTerm chan])] :=
+  openInput_bind_encodes_without_capture
+
+/-- The complete native substitution leaves the runtime-data payload opaque,
+including the source pattern's apparent de Bruijn indices. -/
+theorem native_substitution_keeps_pattern_payload :
+    nativeSubst closeNativeAmbient openInput =
+      (.pattern (encodeTerm openInputDropsAmbient) : StagedReflectiveTm 0 0) :=
+  rfl
+
+/-- This concrete data inclusion fails the required source-substitution
+square. The statement is relative to `pattern`, the actual native action,
+and literal syntax equality; it is not an impossibility theorem for other
+rho realizations in the native language. -/
+theorem opaque_pattern_substitution_not_source_substitution :
+    nativeSubst closeNativeAmbient openInput ≠ sourceClosedInput := by
+  intro same
+  change StagedReflectiveTm.pattern (encodeTerm openInputDropsAmbient) =
+    StagedReflectiveTm.pattern
+      (encodeTerm (bind closeInputAmbient openInputDropsAmbient)) at same
+  have payloads := StagedReflectiveTm.pattern.inj same
+  have distinct : encodeTerm openInputDropsAmbient ≠
+      encodeTerm (bind closeInputAmbient openInputDropsAmbient) := by decide
+  exact distinct payloads
+
+/-- A source weakening changes both ambient name occurrences while lifting
+past the input binder. -/
+def weakenSource : Ren sig [Srt.nm] [Srt.nm, Srt.nm] :=
+  fun _ value => .succ value
+
+/-- Native weakening of opaque runtime data also fails the corresponding
+source-renaming square, before any operational observations are quotiented. -/
+theorem opaque_pattern_renaming_not_source_renaming :
+    nativeRename nativeWk openInput ≠
+      (.pattern (encodeTerm (rename weakenSource openInputDropsAmbient)) :
+        StagedReflectiveTm 0 2) := by
+  intro same
+  change StagedReflectiveTm.pattern (encodeTerm openInputDropsAmbient) =
+    StagedReflectiveTm.pattern
+      (encodeTerm (rename weakenSource openInputDropsAmbient)) at same
+  have payloads := StagedReflectiveTm.pattern.inj same
+  have distinct : encodeTerm openInputDropsAmbient ≠
+      encodeTerm (rename weakenSource openInputDropsAmbient) := by decide
+  exact distinct payloads
+
+end PatternBoundary
 
 #print axioms translatedCandidateName_mem
 #print axioms pureImage_disjoint_directRho

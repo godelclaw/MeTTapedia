@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.LanguageDef.ModuleFormat.Envelope
 import Mettapedia.GSLT.LanguageDef.ExtensionComposition
+import Mettapedia.GSLT.LanguageDef.ModuleFormat.Text
 
 /-!
 # Module envelopes as a compositional coGSLT
@@ -99,5 +100,41 @@ theorem append_rejected_right (limits : Limits) (first second : Document)
   have law := elaborateDocument_append limits first second
   rw [law, rejected]
   cases elaborateDocument? limits first <;> rfl
+
+
+/-! ## Canonical text of admitted module envelopes -/
+
+/-- Unknown export specifications remain structured data when a module is read. -/
+def readText? (limits : Limits) (source : String) : Option (Module limits) := do
+  let term ← Text.read? source
+  let value ← Value.Wire.decode? term
+  decode? limits value
+
+def renderText (limits : Limits) (module : Module limits) : String :=
+  Text.render (Value.Wire.encode (encodeRaw module.val))
+
+@[simp] theorem readText_renderText (limits : Limits) (module : Module limits) :
+    readText? limits (renderText limits module) = some module := by
+  simp [readText?, renderText]
+
+/-- Text loading leaves the existing envelope policy in charge. -/
+theorem readText_isSome_iff (limits : Limits) (source : String) :
+    (readText? limits source).isSome = true ↔
+      ∃ term value module,
+        Text.read? source = some term ∧ Value.Wire.decode? term = some value ∧
+        decodeRaw? value = some module ∧ module.Valid limits := by
+  unfold readText?
+  cases termRead : Text.read? source with
+  | none => simp_all
+  | some term =>
+      cases valueRead : Value.Wire.decode? term with
+      | none => simp_all
+      | some value =>
+          cases moduleRead : decodeRaw? value with
+          | none => simp_all [decode?]
+          | some module =>
+              by_cases valid : module.Valid limits <;>
+                simp_all [decode?]
+
 
 end Mettapedia.GSLT.LanguageDef.ModuleFormat

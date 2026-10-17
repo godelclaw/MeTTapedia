@@ -77,7 +77,7 @@ def neighbors (G : SimpleGraph V) (v : V) : Set V := G.neighborSet v
 omit [DecidableEq V] in
 /-- A vertex is not its own neighbor -/
 theorem not_mem_neighbors_self (G : SimpleGraph V) (v : V) : v ∉ neighbors G v := by
-  simp only [neighbors, SimpleGraph.neighborSet, Set.mem_setOf_eq]
+  simp only [neighbors, SimpleGraph.neighborSet, Set.mem_ofPred_eq]
   exact G.loopless.irrefl v
 
 /-- Complete graph: every pair of distinct vertices is adjacent -/
@@ -246,7 +246,7 @@ theorem tree_two_leaves [Fintype V] (G : SimpleGraph V) [DecidableRel G.Adj]
     (hTree : G.IsTree) (hn : Fintype.card V ≥ 2) :
     ∃ u v : V, u ≠ v ∧ G.degree u = 1 ∧ G.degree v = 1 := by
   classical
-  letI : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
+  let : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp (by omega)
   obtain ⟨u, hu⟩ := hTree.exists_vert_degree_one_of_nontrivial
   by_contra noPair
   have uniqueLeaf {v : V} (hv : G.degree v = 1) : v = u := by

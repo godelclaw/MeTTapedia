@@ -49,7 +49,7 @@ abbrev holHenkinSatisfiabilityRung :=
 complete for pointwise HOL implication coincides with singleton WM
 consequence. -/
 abbrev wmConsequenceSchemaRung :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.externalImplication_iff_singletonConsequence_of_sound_complete
+  @Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.externalImplication_iff_singletonStrengthLE_of_sound_complete
 
 /-- Positive example: benchmark belief-day behavior tracks the hierarchical
 probabilistic HOL semantics on the canonical benchmark sample. -/

@@ -20,7 +20,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.Declaratio
 open Mettapedia.OSLF.MeTTaIL Syntax Match ContextualStep
 open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
 open Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution
-open DeclarationAwareSubstitutionLanguage DeclarationAwarePatternCodec
+open DeclarationAwareSubstitutionLanguage Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareSubstitutionSemantics DeclarationAwareSubstitutionCompiler
 
 def substituteFuel : Nat → Nat → RawTerm → RawTerm → Option RawTerm

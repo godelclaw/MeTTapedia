@@ -1,5 +1,5 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FormationSensitiveHOLNativeMixedPreservation
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 
 /-!
 # Computational and universe-level components of the unchanged mixed profile
@@ -25,7 +25,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeM
 
 open Presentation
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 
 abbrev jointRules := FormationSensitiveHOLProofListIntegration.rules
 

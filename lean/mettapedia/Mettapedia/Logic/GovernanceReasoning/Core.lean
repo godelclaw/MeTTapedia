@@ -1,5 +1,5 @@
 import Mettapedia.Logic.ModalMuCalculus
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Governance Reasoning: Core Types and Deontic Traditional Scheme

@@ -145,7 +145,7 @@ theorem normalizedBoundaryResolved_normal_eq_of_name_eq
 apex after semantic-atom reification.  The source namespace uses the generic
 authored-variable theorem; the boundary namespace uses collision-free raw
 boundary identity plus rho's unambiguous child normalization. -/
-noncomputable def memberFVar_commonRestorationApex
+theorem memberFVar_commonRestorationApex
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -358,7 +358,7 @@ noncomputable def memberFVar_commonRestorationApex
 depth-indexed semantic-leaf callback used by source-frame canonicalization.
 The ordering keys are irrelevant at a free-variable root; all semantic content
 comes from the uniform common-restoration apex above. -/
-noncomputable def memberFVar_sourcePatternLeafAligned
+theorem memberFVar_sourcePatternLeafAligned
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -438,7 +438,7 @@ noncomputable def memberFVar_sourcePatternLeafAligned
 free-variable callback discharged internally.  The caller is responsible
 only for provenance-bearing plan stops; arbitrary or one-sided names are not
 part of the interface. -/
-noncomputable def reifiedSourceAlignment_of_rawAlignment
+theorem reifiedSourceAlignment_of_rawAlignment
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)

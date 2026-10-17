@@ -1120,7 +1120,7 @@ premises: certified static regions and the two canonicalizer root-collapse
 forms.  In particular, this theorem does not assume the final normalized
 equality; it constructs both proof-relevant trees and their hereditary
 alignment. -/
-noncomputable def CostCanonicalPairElaboration.nonempty_of_canonical
+theorem CostCanonicalPairElaboration.nonempty_of_canonical
     {source : CIGSLT} {kernel : CostStaticNormalizationKernel source}
     {targetFree : FreeTypeContext}
     (declaration : ReflectivePresentationDecl)

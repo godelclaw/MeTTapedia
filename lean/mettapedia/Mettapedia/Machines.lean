@@ -1,5 +1,7 @@
 import Mettapedia.Machines.SourceSnapshot
 import Mettapedia.Machines.ReadCertifiedQueryReuse
+import Mettapedia.Machines.ValidatedCommit
+import Mettapedia.Machines.Cursor.ReadOnlyQuery
 import Mettapedia.Machines.Cursor.ProducerOccurrenceLog
 import Mettapedia.Machines.Cursor.SharedFactorCost
 import Mettapedia.Machines.Cursor.SharedFactorMachine
@@ -17,10 +19,12 @@ import Mettapedia.Machines.FunctionalCorrespondence
 import Mettapedia.Machines.MachineSubstrate
 import Mettapedia.Machines.MachineRefinement
 import Mettapedia.Machines.ProductiveCoreAdapters
+import Mettapedia.Machines.ExecutionHints
 import Mettapedia.Machines.ProductiveFunctionalMachines
 import Mettapedia.Machines.ProductiveCoreOrdered
 import Mettapedia.Machines.Refocusing
 import Mettapedia.Machines.CategoricalAbstractMachine
+import Mettapedia.Machines.CategoricalAbstractMachineGraph
 import Mettapedia.Machines.OccurrenceMachine
 import Mettapedia.Machines.OccurrenceCone
 import Mettapedia.Machines.ReceiptReachability
@@ -38,6 +42,18 @@ interruption observations for nondeterministic answer streams, together with
 constructive boundaries on what flattened traces can reconstruct and exact
 guards for causal-receipt reachability.
 
+Adaptive reads use the shared cursor protocol. Their retained read certificates
+support validated resumption and certified reuse without introducing another
+binding store or identifying a logical observation with mutable native memory.
+The common resumable trajectory applies to retained adaptive reads, scheduled
+premise states, PeTTa program jobs and owned effect sessions. Snapshot runners
+keep their selected world; changing a pure query's world requires validating
+its performed reads. Effect sessions interpret only fresh events, and
+cancellation keeps the committed world and history. Writes computed from reads
+of a shared store commit only after their read certificate is validated against
+the current store; accepted commitments are serializable, refused ones change
+nothing, and the owned host publishes each accepted write list once.
+
 Deterministic control cores instantiate the common event-machine interface
 through ordered operational occurrences. Bare missing transitions remain
 stuck; answer cores use their checked answer observer. Exact finite traces,
@@ -53,4 +69,8 @@ The historical categorical abstract machine supplies a compiled-code instance
 with independent source evaluation, instruction transitions and executable
 readback. Its strict and neutral profiles retain their distinct instruction
 rules; compiled answers require both an empty code sequence and an empty stack.
+Its value-graph form keeps values in a heap of cells: recursion closes a cyclic
+environment by updating one couple in place, delayed bodies are forced on demand
+and re-run on each use, and finite observations of the graph agree with the
+source values that compiled code computes.
 -/

@@ -1,5 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.MatchSolutionTheory
 import Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 
 /-!
 # Structural size preservation for the HE matcher
@@ -13,6 +14,10 @@ conflict worklist, while atom size governs recursive matcher calls.
 The theorem is deliberately representation-insensitive.  It bounds only the
 translated structural size of assignment payloads; equality order, class
 representatives, and the particular reconciliation path are irrelevant.
+
+The same semantic size measure proves that satisfied bindings with nonvariable
+assignment payloads pass the independent specification's class-cycle boundary.
+Variable occurrence and the HE-to-LeaTTa translation are connected explicitly.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
@@ -53,6 +58,117 @@ def HESolutionAtomsSizeBound (valuation : String → Metta.Atom)
     (valuation : String → Metta.Atom) (key : String) :
     HESolutionAtomSize valuation (.var key) = (valuation key).size := by
   simp [HESolutionAtomSize, toLeaTTaAtom, applyClassSolution]
+
+/-! ## Satisfiable bindings and the semantic loop boundary -/
+
+section SemanticLoopBoundary
+
+open Mettapedia.Languages.MeTTa.SubstitutionAlgebra (vars)
+
+/-- The structural translation preserves the complete variable list, including repeated occurrences. -/
+theorem toLeaTTaAtom_vars (atom : Atom) :
+    (toLeaTTaAtom atom).vars = vars atom := by
+  induction atom using Atom.rec (motive_2 := fun atoms =>
+    ((toLeaTTaAtoms atoms).map Metta.Atom.vars).flatten =
+      vars.varsList atoms) with
+  | symbol _ => simp [toLeaTTaAtom, Metta.Atom.vars, vars]
+  | var _ => simp [toLeaTTaAtom, Metta.Atom.vars, vars]
+  | grounded _ => simp [toLeaTTaAtom, Metta.Atom.vars, vars]
+  | expression _ ih => simpa [toLeaTTaAtom, Metta.Atom.vars, vars] using ih
+  | nil => rfl
+  | cons head tail ihHead ihTail =>
+      simp only [toLeaTTaAtoms, List.map_cons, List.flatten_cons,
+        vars.varsList, ihHead, ihTail]
+
+/-- Translated variable membership is exactly occurrence in the independent HE specification. -/
+theorem mem_toLeaTTaAtom_vars_iff_atomOccurs {atom : Atom} {key : String} :
+    key ∈ (toLeaTTaAtom atom).vars ↔ Spec.Match.Merge.AtomOccurs atom key := by
+  rw [toLeaTTaAtom_vars]
+  exact Spec.Match.Merge.mem_vars_iff_atomOccurs
+
+/-- An occurrence below a nonvariable HE root is strictly smaller than the interpreted whole. -/
+theorem size_valuation_lt_apply_of_atomOccurs_nonvariable
+    (valuation : String → Metta.Atom) {value : Atom} {dependency : String}
+    (hnonvariable : ∀ other, value ≠ .var other)
+    (hoccurs : Spec.Match.Merge.AtomOccurs value dependency) :
+    (valuation dependency).size < HESolutionAtomSize valuation value := by
+  have htranslated : ∀ other, toLeaTTaAtom value ≠ .var other := by
+    intro other
+    cases value <;> simp_all [toLeaTTaAtom]
+  exact size_valuation_lt_apply_of_mem_vars_nonvariable valuation htranslated
+    (mem_toLeaTTaAtom_vars_iff_atomOccurs.mpr hoccurs)
+
+/-- Every proper class dependency in a satisfied record with nonvariable assignment payloads strictly decreases valuation size. -/
+theorem size_valuation_lt_of_heClassDepends
+    {bindings : Bindings} {valuation : String → Metta.Atom}
+    (hnonvariable : NoBareVarAssignments bindings)
+    (hsatisfied : HEBindingSatisfied valuation bindings)
+    {source target : String}
+    (hdepends : Spec.Match.Merge.ClassDepends bindings source target) :
+    (valuation target).size < (valuation source).size := by
+  rcases hdepends with
+    ⟨key, value, dependency, hassignment, hsource,
+      hdependency, htarget, _hproper⟩
+  have hnonvariableValue : ∀ other, value ≠ .var other := by
+    intro other heq
+    subst value
+    exact hnonvariable hassignment
+  have hproper := size_valuation_lt_apply_of_atomOccurs_nonvariable
+    valuation hnonvariableValue hdependency
+  have hsourceEq := hsatisfied.eq_of_mem_eqClass hsource
+  have htargetEq := hsatisfied.eq_of_mem_eqClass htarget
+  have hassignmentEq := hsatisfied.1 key value hassignment
+  calc
+    (valuation target).size = (valuation dependency).size :=
+      congrArg Metta.Atom.size htargetEq.symm
+    _ < (applyClassSolution valuation (toLeaTTaAtom value)).size := hproper
+    _ = (valuation key).size := congrArg Metta.Atom.size hassignmentEq.symm
+    _ = (valuation source).size := congrArg Metta.Atom.size hsourceEq
+
+/-- A satisfying finite valuation excludes cycles among classes when every stored assignment payload is nonvariable. -/
+theorem heSemanticLoopFree_of_satisfied_nonvariable
+    {bindings : Bindings} {valuation : String → Metta.Atom}
+    (hsatisfied : HEBindingSatisfied valuation bindings)
+    (hnonvariable : NoBareVarAssignments bindings) :
+    Spec.Match.Merge.SemanticLoopFree bindings := by
+  intro name hcycle
+  have hstrictPath : ∀ {source target},
+      Relation.TransGen (Spec.Match.Merge.ClassDepends bindings) source target →
+        (valuation target).size < (valuation source).size := by
+    intro source target path
+    induction path with
+    | single hstep =>
+        exact size_valuation_lt_of_heClassDepends hnonvariable hsatisfied hstep
+    | tail _ hlast ih =>
+        exact (size_valuation_lt_of_heClassDepends hnonvariable hsatisfied hlast).trans ih
+  exact Nat.lt_irrefl _ (hstrictPath hcycle)
+
+/-- Lookup-level nonvariable values suffice when assignment keys are unique; uniqueness exposes every stored entry to lookup. -/
+theorem heSemanticLoopFree_of_satisfied_noVarAssignmentValues
+    {bindings : Bindings} {valuation : String → Metta.Atom}
+    (hsatisfied : HEBindingSatisfied valuation bindings)
+    (hkeys : AssignmentsNodup bindings)
+    (hnonvariable : NoVarAssignmentValues bindings) :
+    Spec.Match.Merge.SemanticLoopFree bindings :=
+  heSemanticLoopFree_of_satisfied_nonvariable hsatisfied
+    (noBareVarAssignments_of_noVarAssignmentValues hkeys hnonvariable)
+
+/-- A satisfied equation between a variable and a nonvariable atom excludes occurrence of that variable in the atom. -/
+theorem not_atomOccurs_of_satisfied_nonvariable_equation
+    {valuation : String → Metta.Atom} {key : String} {value : Atom}
+    (hnonvariable : ∀ other, value ≠ .var other)
+    (hequation : valuation key =
+      applyClassSolution valuation (toLeaTTaAtom value)) :
+    ¬Spec.Match.Merge.AtomOccurs value key := by
+  intro hoccurs
+  have hproper := size_valuation_lt_apply_of_atomOccurs_nonvariable
+    valuation hnonvariable hoccurs
+  change (valuation key).size <
+    (applyClassSolution valuation (toLeaTTaAtom value)).size at hproper
+  rw [← hequation] at hproper
+  exact Nat.lt_irrefl _ hproper
+
+end SemanticLoopBoundary
 
 theorem HEBindingSolutionSizeBound.mono
     {valuation : String → Metta.Atom} {b : Bindings} {small large : Nat}
@@ -1309,5 +1425,56 @@ example : ¬ HEAssignmentsSizeBound
         (.expression [.symbol "f", .var "y"])).assignments := by
     simp [Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
   exact (Nat.lt_irrefl _) (hbound _ _ hmem)
+
+/-- A proper dependency is admissible when its finite valuation satisfies it. -/
+theorem satisfied_proper_dependency_is_loopFree : Spec.Match.Merge.SemanticLoopFree
+    ⟨[("x", .expression [.var "y"])], []⟩ := by
+  apply heSemanticLoopFree_of_satisfied_nonvariable
+    (valuation := fun key => if key = "x" then .expr [.sym "a"] else .sym "a")
+  · constructor
+    · intro key value hmem
+      have : key = "x" ∧ value = .expression [.var "y"] := by
+        simpa using hmem
+      rcases this with ⟨rfl, rfl⟩
+      simp [applyClassSolution, toLeaTTaAtom, toLeaTTaAtoms]
+    · intro left right hmem
+      simp at hmem
+  · intro key target hmem
+    simp at hmem
+
+/-- No finite valuation can solve a variable equated to an expression containing it. -/
+theorem self_containing_equation_unsatisfied (valuation : String → Metta.Atom) :
+    valuation "x" ≠ applyClassSolution valuation
+      (toLeaTTaAtom (.expression [.var "x"])) := by
+  intro heq
+  exact not_atomOccurs_of_satisfied_nonvariable_equation (by simp) heq
+    (.expression (by simp) (.var "x"))
+
+/-- Lookup alone misses a shadowed self-assignment. Satisfiability therefore
+needs pointwise nonvariable entries, or lookup plus key uniqueness. -/
+theorem lookup_nonvariable_can_hide_satisfied_cycle :
+    let bindings : Bindings :=
+      ⟨[("x", .symbol "a"), ("x", .var "x")], []⟩
+    HEBindingSatisfied (fun _ => .sym "a") bindings ∧
+      NoVarAssignmentValues bindings ∧
+      ¬Spec.Match.Merge.SemanticLoopFree bindings := by
+  dsimp
+  refine ⟨?_, ?_, ?_⟩
+  · constructor
+    · intro key value hmem
+      simp only [List.mem_cons, List.not_mem_nil, or_false, Prod.mk.injEq] at hmem
+      rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
+        simp [applyClassSolution, toLeaTTaAtom]
+    · intro left right hmem
+      simp at hmem
+  · intro key target hlookup
+    simp [Bindings.lookup, List.lookup] at hlookup
+    split at hlookup <;> simp_all
+  · intro hfree
+    apply hfree "x" (.single ?_)
+    refine ⟨"x", .var "x", "x", by simp, ?_, .var "x", ?_, ?_⟩
+    · exact EqualityClosure.mem_eqClass_iff_reachable.mpr .rfl
+    · exact EqualityClosure.mem_eqClass_iff_reachable.mpr .rfl
+    · simp
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaBridge

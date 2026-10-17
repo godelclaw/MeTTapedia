@@ -11,6 +11,8 @@ import Mettapedia.Logic.TheoryModel.WeaknessMeasures
 import Mettapedia.Logic.TheoryModel.InstitutionBridge
 import Mettapedia.Logic.TheoryModel.DegenerateTop
 import Mettapedia.Logic.TheoryModel.WeakestCorrect
+import Mettapedia.Logic.TheoryModel.TwoTruths
+import Mettapedia.Logic.TheoryModel.OpenDeclarations
 
 /-!
 # Theories and models
@@ -57,4 +59,13 @@ import Mettapedia.Logic.TheoryModel.WeakestCorrect
   chance of admitting every future requirement is ordered by the size of the
   model class under a uniform future, and monotone in it under an exchangeable
   one.
+* `TwoTruths`: conventional truths are the consequences computed in the fragment a
+  convention carves out, ultimate truths those computed in the universe; conventions
+  covering the universe have the ultimate truths as their common part, and
+  disagreeing conventions make neither claim ultimate.  Concepts separate two
+  structures exactly when a sentence does.
+* `OpenDeclarations`: a declared type read as a set that may be empty; adding
+  constructors, conservative exactly when one was already declared; closing, which
+  makes the membership of other names refutable; HOL's universe and pointed universes
+  host the empty declarations unfaithfully or not at all.
 -/

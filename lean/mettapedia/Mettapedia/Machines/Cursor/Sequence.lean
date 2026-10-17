@@ -151,4 +151,89 @@ theorem prefetch_prefix_bound
   dsimp only [Hom.packet, prefetchHom, credit] at bound
   omega
 
+/-! ## Producer-supplied final-return evidence
+
+The extra reply bit comes from the retained representation. Erasing it keeps
+the existing pull protocol and every adaptive client law. It is not established
+by asking the producer for another item, and a prefix length cannot replace it.
+-/
+
+def finalProtocol : IndexedPolynomial Unit (fun _ => Unit) where
+  Shape _ _ := Unit
+  Position _ := Option (Item × Bool)
+  next _ _ := ()
+
+def finalTails : Provider (finalProtocol Item) where
+  State _ _ := List Item
+  step items _ := match items with
+    | [] => ⟨none, []⟩
+    | first :: rest => ⟨some (first, rest.isEmpty), rest⟩
+
+def finalSlices : Provider (finalProtocol Item) where
+  State _ _ := Slice Item
+  step view _ := match view.remaining with
+    | 0 => ⟨none, view⟩
+    | remaining + 1 => match view.storage[view.offset]? with
+      | none => ⟨none, view⟩
+      | some value =>
+          ⟨some (value, remaining == 0),
+            {view with offset := view.offset + 1, remaining := remaining}⟩
+
+/-- Reply erasure retains the provider state; it does not run a second pull. -/
+def eraseFinal (source : Provider (finalProtocol Item)) : Provider (protocol Item) where
+  State := source.State
+  step state _ :=
+    let observed := source.step state ()
+    ⟨observed.1.map Prod.fst, observed.2⟩
+
+/-- The annotated list implementation and the ordinary list implementation
+are independent steps with equal replies after metadata erasure. -/
+def finalTailHom : Hom (eraseFinal Item (finalTails Item)) (tails Item) where
+  map items := items
+  step items request := by cases items <;> simp [eraseFinal, finalTails, tails]
+
+def finalSliceHom : Hom (eraseFinal Item (finalSlices Item)) (slices Item) where
+  map view := view
+  step view request := by
+    cases remaining : view.remaining with
+    | zero => simp [eraseFinal, finalSlices, slices, remaining]
+    | succ rest => cases found : view.storage[view.offset]? <;>
+        simp [eraseFinal, finalSlices, slices, remaining, found]
+
+/-- The bit implies that the independently specified source tail has no item.
+No assumption about answer values, equality or distinctness is used. -/
+theorem final_tail_has_no_future (items : List Item) (value : Item)
+    (last : ((finalTails Item).step (base := ()) (index := ()) items ()).1 = some (value, true)) :
+    ((tails Item).step (base := ()) (index := ()) ((finalTails Item).step (base := ()) (index := ()) items ()).2 ()).1 = none := by
+  cases items with
+  | nil => simp [finalTails] at last
+  | cons first rest => cases rest with
+    | nil => rfl
+    | cons second later =>
+        have flags : (false : Bool) = true := congrArg Prod.snd (Option.some.inj last)
+        cases flags
+
+/-- Array metadata gives the same empty source tail through the existing
+slice representation map. Storage remains owned; the reply is not a release. -/
+theorem final_slice_has_empty_source (view : Slice Item) (value : Item)
+    (last : ((finalSlices Item).step (base := ()) (index := ()) view ()).1 = some (value, true)) :
+    (sliceHom Item).map (base := ()) (index := ()) ((finalSlices Item).step (base := ()) (index := ()) view ()).2 = [] := by
+  cases remaining : view.remaining with
+  | zero => simp [finalSlices, remaining] at last
+  | succ rest =>
+      cases found : view.storage[view.offset]? with
+      | none => simp [finalSlices, remaining, found] at last
+      | some item => cases rest with
+        | zero =>
+            simp only [finalSlices, remaining, found, sliceHom, List.take_zero]
+            rfl
+        | succ rest =>
+            simp only [finalSlices, remaining, found] at last
+            have flags : (false : Bool) = true := congrArg Prod.snd (Option.some.inj last)
+            cases flags
+
+theorem equal_payloads_do_not_make_the_first_final (value : Item) :
+    ((finalTails Item).step (base := ()) (index := ()) [value, value] ()).1 = some (value, false) ∧
+      ((finalTails Item).step (base := ()) (index := ()) [value] ()).1 = some (value, true) := ⟨rfl, rfl⟩
+
 end Mettapedia.Machines.Cursor.Sequence

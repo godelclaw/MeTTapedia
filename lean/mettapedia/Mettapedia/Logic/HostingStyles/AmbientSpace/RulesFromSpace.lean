@@ -45,7 +45,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList)
 
@@ -293,9 +293,9 @@ theorem determinedFamily_hostOf_determinedTabular (space : Pattern) :
         fun _ _ step => (determinedFamily_step tabular determined).mpr step,
         fun _ next step => ⟨next, (determinedFamily_step tabular determined).mp step, rfl⟩⟩
   exact ⟨((listedMap (unionListing determinedListing) space).comp
-      (PrimeCandidate.memberMap determinedListing (tableCode table))).comp member,
+      (Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.memberMap determinedListing (tableCode table))).comp member,
     ((listedMap_hosting (unionListing determinedListing) space).comp
-      (PrimeCandidate.memberMap_hosting determinedListing (tableCode table))).comp memberHosting⟩
+      (Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.memberMap_hosting determinedListing (tableCode table))).comp memberHosting⟩
 
 /-- In particular of the class that the family of this delivery hosts at the
 spaces of the tables. -/

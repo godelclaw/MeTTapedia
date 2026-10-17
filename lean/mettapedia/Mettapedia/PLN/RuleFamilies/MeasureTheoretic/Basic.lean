@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Topology.UnitInterval
 

@@ -70,22 +70,22 @@ structure Receipt where
   target : Pattern
   deriving Repr
 
-def Receipt.Valid (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+def Receipt.ValidWith (dynamic : GeneralPremise.DynamicProvider) (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
     (receipt : Receipt) : Prop :=
   receipt.job.Valid plan bound type source ∧
-    GeneralPremise.RootFiring (GeneralPlanEnvironment.environment plan)
+    GeneralPremise.RootFiring (GeneralPlanEnvironment.environmentWith plan dynamic)
       receipt.job.site.focusBound receipt.job.site.focusType receipt.job.site.focus receipt.job.ordinal
       receipt.matcherTrace receipt.captured receipt.completed receipt.premiseHistory receipt.localTarget ∧
-    receipt.job.site.acceptsReplacementRepresentation (GeneralPlanEnvironment.environment plan).language
+    receipt.job.site.acceptsReplacementRepresentation (GeneralPlanEnvironment.environmentWith plan dynamic).language
       receipt.localTarget = true ∧
     receipt.target = receipt.job.site.context.fill receipt.localTarget ∧
-    OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
+    OpenPatternWellSorted (GeneralPlanEnvironment.environmentWith plan dynamic).language plan.snapshot.free
       bound type receipt.target
 
-def finish? (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (job : Job)
+def finishWith? (dynamic : GeneralPremise.DynamicProvider) (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (job : Job)
     (trace : List GeneralScopedMatchMachine.BagChoice) (captured completed : Assignment)
     (history : List GeneralPremise.Event) : Option Receipt := do
-  let environment := GeneralPlanEnvironment.environment plan
+  let environment := GeneralPlanEnvironment.environmentWith plan dynamic
   if admittedFor job.declaration.rule job.declaration.binding.spec &&
       checkOpenPatternWellSorted environment.language environment.free job.site.focusBound
         job.site.focusType job.site.focus &&
@@ -99,17 +99,17 @@ def finish? (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (job : Job)
     else none
   else none
 
-theorem finish_sound {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+theorem finishWith_sound {dynamic : GeneralPremise.DynamicProvider} {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
     {job : Job} {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
     {history : List GeneralPremise.Event} {receipt : Receipt}
     (licensed : job.Valid plan bound type source)
     (matching : GeneralScopedMatchMachine.TracedMatches job.declaration.rule job.declaration.binding.spec
       job.site.focusBound.length .left [] 0 [] job.declaration.rule.left job.site.focus trace captured)
-    (premises : GeneralPremise.PremisesHold (GeneralPlanEnvironment.environment plan) job.context
+    (premises : GeneralPremise.PremisesHold (GeneralPlanEnvironment.environmentWith plan dynamic) job.context
       job.declaration.rule.premises captured completed history)
-    (emitted : finish? plan bound type job trace captured completed history = some receipt) :
-    receipt.Valid plan bound type source := by
-  unfold finish? at emitted
+    (emitted : finishWith? dynamic plan bound type job trace captured completed history = some receipt) :
+    receipt.ValidWith dynamic plan bound type source := by
+  unfold finishWith? at emitted
   dsimp only at emitted
   split at emitted
   next ready =>
@@ -128,16 +128,39 @@ theorem finish_sound {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {so
     next => contradiction
   next => contradiction
 
-theorem receipt_root_readout {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
-    {receipt : Receipt} (valid : receipt.Valid plan bound type source) :
+/-- A root result produced with the installed service justifies the same
+receipt construction without replacing the independent source judgment. -/
+theorem finishWith_root_sound {dynamic : GeneralPremise.DynamicProvider}
+    {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {job : Job} {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
+    {history : List GeneralPremise.Event} {localTarget : Pattern} {receipt : Receipt}
+    (licensed : job.Valid plan bound type source)
+    (firing : GeneralPremise.RootFiring (GeneralPlanEnvironment.environmentWith plan dynamic)
+      job.site.focusBound job.site.focusType job.site.focus job.ordinal
+      trace captured completed history localTarget)
+    (emitted : finishWith? dynamic plan bound type job trace captured completed history = some receipt) :
+    receipt.ValidWith dynamic plan bound type source := by
+  have selected := Job.selected_rule licensed
+  have specified := Job.selected_specification licensed
+  cases firing with
+  | @fire bound type source target index rule spec trace captured completed history declared specification
+      admitted sourceTyped matching capturedTyped premises reduced targetTyped =>
+    have ruleSame : rule = job.declaration.rule := Option.some.inj (declared.symm.trans selected)
+    have specSame : spec = job.declaration.binding.spec := Option.some.inj (specification.symm.trans specified)
+    cases ruleSame
+    cases specSame
+    exact finishWith_sound licensed matching premises emitted
+
+theorem receipt_root_readout_with {dynamic : GeneralPremise.DynamicProvider} {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {receipt : Receipt} (valid : receipt.ValidWith dynamic plan bound type source) :
     admittedFor receipt.job.declaration.rule receipt.job.declaration.binding.spec = true ∧
-      OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
+      OpenPatternWellSorted (GeneralPlanEnvironment.environmentWith plan dynamic).language plan.snapshot.free
         receipt.job.site.focusBound receipt.job.site.focusType receipt.job.site.focus ∧
-      GeneralPremise.TypedAssignment (GeneralPlanEnvironment.environment plan) receipt.job.context receipt.captured ∧
-      reductWith? (ScopedReflectiveExecution.binderOperation (GeneralPlanEnvironment.environment plan).reflection
+      GeneralPremise.TypedAssignment (GeneralPlanEnvironment.environmentWith plan dynamic) receipt.job.context receipt.captured ∧
+      reductWith? (ScopedReflectiveExecution.binderOperation (GeneralPlanEnvironment.environmentWith plan dynamic).reflection
         receipt.job.declaration.rule) receipt.job.declaration.rule receipt.job.declaration.binding.spec
         receipt.job.site.focusBound.length receipt.completed = some receipt.localTarget ∧
-      OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
+      OpenPatternWellSorted (GeneralPlanEnvironment.environmentWith plan dynamic).language plan.snapshot.free
         receipt.job.site.focusBound receipt.job.site.focusType receipt.localTarget := by
   have selected := Job.selected_rule valid.1
   have specified := Job.selected_specification valid.1
@@ -150,11 +173,11 @@ theorem receipt_root_readout {plan : Plan} {bound : List TypeExpr} {type : TypeE
     cases specSame
     exact ⟨admitted, sourceTyped, capturedTyped, reduced, targetTyped⟩
 
-theorem finish_complete {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
-    {receipt : Receipt} (valid : receipt.Valid plan bound type source) :
-    finish? plan bound type receipt.job receipt.matcherTrace receipt.captured receipt.completed
+theorem finishWith_complete {dynamic : GeneralPremise.DynamicProvider} {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {receipt : Receipt} (valid : receipt.ValidWith dynamic plan bound type source) :
+    finishWith? dynamic plan bound type receipt.job receipt.matcherTrace receipt.captured receipt.completed
       receipt.premiseHistory = some receipt := by
-  have root := receipt_root_readout valid
+  have root := receipt_root_readout_with valid
   have sourceChecked := checkOpenPatternWellSorted_complete root.2.1
   have captureChecked := GeneralPremise.checkTypedAssignment_complete root.2.2.1
   have localChecked := checkOpenPatternWellSorted_complete root.2.2.2.2
@@ -165,8 +188,50 @@ theorem finish_complete {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} 
   | mk job trace captured completed history localTarget target =>
     dsimp only at readout
     subst target
-    simp only [finish?, show (GeneralPlanEnvironment.environment plan).free = plan.snapshot.free from rfl,
+    simp only [finishWith?, show (GeneralPlanEnvironment.environmentWith plan dynamic).free = plan.snapshot.free from rfl,
       root.1, sourceChecked, captureChecked, Bool.true_and, Option.bind_eq_bind, Option.bind_some,
       root.2.2.2.1, localChecked, represented, globalChecked, ↓reduceIte]
+
+/-- The empty-service receipt contract specializes the shared construction. -/
+def Receipt.Valid (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (receipt : Receipt) : Prop :=
+  receipt.ValidWith GeneralPremise.DynamicProvider.empty plan bound type source
+
+def finish? (plan : Plan) (bound : List TypeExpr) (type : TypeExpr) (job : Job)
+    (trace : List GeneralScopedMatchMachine.BagChoice) (captured completed : Assignment)
+    (history : List GeneralPremise.Event) : Option Receipt :=
+  finishWith? GeneralPremise.DynamicProvider.empty plan bound type job trace captured completed history
+
+theorem finish_sound {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {job : Job} {trace : List GeneralScopedMatchMachine.BagChoice} {captured completed : Assignment}
+    {history : List GeneralPremise.Event} {receipt : Receipt}
+    (licensed : job.Valid plan bound type source)
+    (matching : GeneralScopedMatchMachine.TracedMatches job.declaration.rule job.declaration.binding.spec
+      job.site.focusBound.length .left [] 0 [] job.declaration.rule.left job.site.focus trace captured)
+    (premises : GeneralPremise.PremisesHold (GeneralPlanEnvironment.environment plan) job.context
+      job.declaration.rule.premises captured completed history)
+    (emitted : finish? plan bound type job trace captured completed history = some receipt) :
+    receipt.Valid plan bound type source := by
+  exact finishWith_sound licensed matching premises emitted
+
+theorem receipt_root_readout {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {receipt : Receipt} (valid : receipt.Valid plan bound type source) :
+    admittedFor receipt.job.declaration.rule receipt.job.declaration.binding.spec = true ∧
+      OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
+        receipt.job.site.focusBound receipt.job.site.focusType receipt.job.site.focus ∧
+      GeneralPremise.TypedAssignment (GeneralPlanEnvironment.environment plan) receipt.job.context receipt.captured ∧
+      reductWith? (ScopedReflectiveExecution.binderOperation (GeneralPlanEnvironment.environment plan).reflection
+        receipt.job.declaration.rule) receipt.job.declaration.rule receipt.job.declaration.binding.spec
+        receipt.job.site.focusBound.length receipt.completed = some receipt.localTarget ∧
+      OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
+        receipt.job.site.focusBound receipt.job.site.focusType receipt.localTarget := by
+  exact receipt_root_readout_with valid
+
+theorem finish_complete {plan : Plan} {bound : List TypeExpr} {type : TypeExpr} {source : Pattern}
+    {receipt : Receipt} (valid : receipt.Valid plan bound type source) :
+    finish? plan bound type receipt.job receipt.matcherTrace receipt.captured receipt.completed
+      receipt.premiseHistory = some receipt := by
+  exact finishWith_complete valid
+
 
 end Mettapedia.OSLF.MeTTaIL.GeneralRuleJobs

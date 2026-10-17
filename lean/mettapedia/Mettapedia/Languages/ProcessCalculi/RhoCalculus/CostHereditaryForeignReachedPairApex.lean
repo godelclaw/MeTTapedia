@@ -11,7 +11,7 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefContinuedInterac
 
 namespace ParallelFrontier
 
-noncomputable def foreignReachedPair_commonRestorationApex
+theorem foreignReachedPair_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

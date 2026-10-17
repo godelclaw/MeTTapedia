@@ -201,7 +201,7 @@ noncomputable def leftReached :
     rfl
 
 /-- The wrapped endpoint has an intrinsic wrapped static root. -/
-def rightStaticShape :
+theorem rightStaticShape :
     CostStaticRootShape rhoCIGSLT rightPattern
       (.base (costBaseSortName "Name")) := by
   apply CostStaticRootShape.application .wrapped wrappedQuoteDeclared

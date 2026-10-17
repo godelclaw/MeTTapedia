@@ -195,8 +195,9 @@ def SelectedApplicationResultsRuntimeSound
     (typing : EvalTypeService := publishedTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ interpreted callResult,
-      InterpretFunctionRel space dispatch live (typing := typing)
-          expression policy.functionType expectedType applicableBindings
+      InterpretFunctionRel space dispatch
+          ((if policy.returnType = Atom.expressionType then Atom.undefinedType else policy.returnType) :: live)
+          (typing := typing) expression policy.functionType expectedType applicableBindings
             interpreted ∧
         CallRel space dispatch live (typing := typing)
           interpreted.1
@@ -218,7 +219,7 @@ def TupleApplicationResultsRuntimeSound
     (typing : EvalTypeService := publishedTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ tupleResult callResult,
-      InterpretTupleRel space dispatch live (typing := typing)
+      InterpretTupleRel space dispatch (expectedType :: live) (typing := typing)
           expression bindings tupleResult ∧
         CallRel space dispatch live (typing := typing)
           tupleResult.1 expectedType tupleResult.2 callResult ∧

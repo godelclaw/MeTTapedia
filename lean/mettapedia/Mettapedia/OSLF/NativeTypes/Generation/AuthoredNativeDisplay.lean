@@ -88,7 +88,7 @@ def renderProjection (projection : NativeModalSignature.Projection
 def renderCube (former : NativeCubeProfile.Former installed.operational) : String :=
   "Cube " ++ installed.formerName former ++ " : " ++
     installed.renderEvidence (installed.cubeDerivation
-      (CubeNativeDeclarations.primitiveFormation installed.vertex (.formation former)))
+      (CubeNativeClosedFormation.primitiveFormation installed.vertex (.formation former)))
 
 def formerList : List (NativeCubeProfile.Former installed.operational) :=
   (List.finRange installed.operational.declarations.headers.length).map Sum.inl ++

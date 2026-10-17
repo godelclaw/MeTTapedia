@@ -3,6 +3,8 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.Polarize
 import Mettapedia.TypeTheory.ContextualComputationAlgebra
 import Mettapedia.TypeTheory.ContextualAlgebraSequencing
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # An owned checker function as a computation power
 

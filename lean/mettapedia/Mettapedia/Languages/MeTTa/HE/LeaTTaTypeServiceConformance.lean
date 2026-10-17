@@ -6262,7 +6262,7 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_avoiding
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
-      (preparedPackageTypeService oracle).candidateScan
+      (preparedPackageTypeService oracle).candidateScan []
         space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRel
         (typeServiceObservationScope space expression expectedType)
@@ -6335,7 +6335,7 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_aligned
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
-      (preparedPackageTypeService oracle).candidateScan
+      (preparedPackageTypeService oracle).candidateScan []
         space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRelWith
         SelectedTypePolicyRuntimeExactRel
@@ -6430,7 +6430,7 @@ structure PreparedPackageTypeServiceRuntimeConformance
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
-      (preparedPackageTypeService oracle).candidateScan
+      (preparedPackageTypeService oracle).candidateScan []
         space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRel
         (typeServiceObservationScope space expression expectedType)

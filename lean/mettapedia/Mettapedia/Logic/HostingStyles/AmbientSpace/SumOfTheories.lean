@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Contexts.TransitionProfile
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ContextShape
+import Mettapedia.Logic.HostingStyles.ContextShape
 
 /-!
 # The sum of a family of theories presented through their contexts

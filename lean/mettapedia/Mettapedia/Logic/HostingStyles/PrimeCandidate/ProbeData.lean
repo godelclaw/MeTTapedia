@@ -1,5 +1,5 @@
 import Mettapedia.Logic.HostingStyles.PrimeCandidate.ProbeDynamics
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.TermsAloneHosting
+import Mettapedia.Logic.HostingStyles.TermsAloneHosting
 
 /-!
 # Where data that does not reduce lives in the candidate presentation
@@ -18,7 +18,9 @@ atom that is no numeral (`droppedAtom_not_numeral`).
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -200,4 +202,4 @@ theorem droppedAtom_not_numeral (base : BasePremiseEvaluator) (count : Nat) :
 #print axioms probeNames
 #print axioms droppedAtom_not_numeral
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

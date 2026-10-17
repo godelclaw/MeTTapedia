@@ -400,7 +400,7 @@ noncomputable def categoricalEncoderMeanForcedByAggregate
 `MultiEvidence` once the IDM context and queried category are chosen. -/
 noncomputable def categoricalEncoderIDMLowerForcedByAggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) (q : Query) (i : Fin k) :
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) (q : Query) (i : Fin k) :
     ForcedByStatistic (Multiset Obs) (MultiEvidence k) ℝ :=
   aggregateProjectionForced S q (fun e => idmLower ctx e i)
 
@@ -408,7 +408,7 @@ noncomputable def categoricalEncoderIDMLowerForcedByAggregate
 `MultiEvidence` once the IDM context and queried category are chosen. -/
 noncomputable def categoricalEncoderIDMUpperForcedByAggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) (q : Query) (i : Fin k) :
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) (q : Query) (i : Fin k) :
     ForcedByStatistic (Multiset Obs) (MultiEvidence k) ℝ :=
   aggregateProjectionForced S q (fun e => idmUpper ctx e i)
 
@@ -416,7 +416,7 @@ noncomputable def categoricalEncoderIDMUpperForcedByAggregate
 IDM context is chosen. -/
 noncomputable def categoricalEncoderIDMWidthForcedByAggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) (q : Query) :
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) (q : Query) :
     ForcedByStatistic (Multiset Obs) (MultiEvidence k) ℝ :=
   aggregateProjectionForced S q (fun e => idmWidth ctx e)
 
@@ -462,7 +462,7 @@ theorem categoricalEncoder_mean_eq_of_same_aggregate
 /-- Equal aggregate categorical evidence forces equal IDM lower endpoints. -/
 theorem categoricalEncoder_idmLower_eq_of_same_aggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
     (i : Fin k)
     (h :
       SufficientStatisticEncoder.aggregate S σ₁ q =
@@ -475,7 +475,7 @@ theorem categoricalEncoder_idmLower_eq_of_same_aggregate
 /-- Equal aggregate categorical evidence forces equal IDM upper endpoints. -/
 theorem categoricalEncoder_idmUpper_eq_of_same_aggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
     (i : Fin k)
     (h :
       SufficientStatisticEncoder.aggregate S σ₁ q =
@@ -488,7 +488,7 @@ theorem categoricalEncoder_idmUpper_eq_of_same_aggregate
 /-- Equal aggregate categorical evidence forces equal IDM widths. -/
 theorem categoricalEncoder_idmWidth_eq_of_same_aggregate
     (S : SufficientStatisticEncoder Obs Query (MultiEvidence k))
-    (ctx : IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) {σ₁ σ₂ : Multiset Obs} {q : Query}
     (h :
       SufficientStatisticEncoder.aggregate S σ₁ q =
         SufficientStatisticEncoder.aggregate S σ₂ q) :

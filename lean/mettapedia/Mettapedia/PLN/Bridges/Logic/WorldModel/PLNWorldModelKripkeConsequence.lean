@@ -1,5 +1,5 @@
 import Mathlib.Data.Multiset.Count
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.Logic.GovernanceReasoning.Core
 
 /-!

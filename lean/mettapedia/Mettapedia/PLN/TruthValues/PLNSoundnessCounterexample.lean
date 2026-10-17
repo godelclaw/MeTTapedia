@@ -209,7 +209,7 @@ combining independent evidence sources using BinaryEvidence-theoretic formulas.
 
 ## Next Steps
 
-We need to investigate EvidenceQuantale.lean and PLNDeduction.lean to understand:
+We need to investigate BinaryEvidence.lean and PLNDeduction.lean to understand:
 1. What soundness condition SHOULD hold for BinaryEvidence-based TVs?
 2. Is there a different error model that matches BinaryEvidence theory?
 3. Should we track error bounds separately from BinaryEvidence confidence?

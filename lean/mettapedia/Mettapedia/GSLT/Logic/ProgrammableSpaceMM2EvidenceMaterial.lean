@@ -1,6 +1,7 @@
 import Mettapedia.GSLT.Logic.ProgrammableSpaceAtomCoding
 import Mettapedia.GSLT.Logic.ProgrammableSpaceReadings
 import Mettapedia.GSLT.LanguageDef.ProgrammableSpaceMM2ReceiptControls
+import Mettapedia.GSLT.Core.NonFactorization
 
 /-!
 # Material readings of actual MM2 matcher rows
@@ -14,6 +15,11 @@ an explicitly weaker readout.
 The concrete instance uses the existing structural matcher on its actual
 source, including the shared query occurrence and two distinct joining paths.
 Counting those rows does not establish independence of their evidence.
+
+A consuming continuation appends each row's ordered source origins to its
+existing delivery trace. Conclusion support cannot determine this continuation;
+the ordered batch and receipt readings can. The positive factorizations use
+classical partial inverses of the proved injective codings, not runtime decoders.
 -/
 
 set_option autoImplicit false
@@ -26,6 +32,7 @@ open Mettapedia.TypeTheory.MaterialSets.Hypersets
 open Mettapedia.GSLT.ProgrammableSpaceReadings
 open Mettapedia.GSLT.LanguageDef.ProgrammableSpaceMM2
 open MM2MatchingCursor
+open Mettapedia.GSLT.Core.NonFactorization
 
 universe u
 
@@ -119,6 +126,29 @@ theorem batch_eq_iff (first second : List Row) :
     batch atoms names first = batch atoms names second ↔ first = second :=
   occurrences_eq_iff (rows atoms names) first second
 
+/-- Consume rows in delivery order, appending their actual source positions
+in authored premise order to the continuation's existing trace. -/
+def consumeOrigins (values : List Row) (delivered : List (List Nat)) : List (List Nat) :=
+  values.foldl (fun trace row => trace ++ [row.2.reverse.map Prod.snd]) delivered
+
+/-- The retained ordered batch determines the consuming continuation, for
+every already delivered prefix. Recovery here is a classical partial inverse
+of the material coding; no executable decoder is asserted. -/
+theorem consumeOrigins_factors_batch (delivered : List (List Nat)) :
+    Factors (batch atoms names) (fun values => consumeOrigins values delivered) := by
+  refine ⟨fun value =>
+    match Function.partialInv (batch atoms names) value with
+    | none => delivered
+    | some values => consumeOrigins values delivered, ?_⟩
+  intro values
+  have decoded : Function.partialInv (batch atoms names) (batch atoms names values) = some values :=
+    Function.partialInv_left
+      (fun first second same => (batch_eq_iff atoms names first second).mp same) values
+  change (match Function.partialInv (batch atoms names) (batch atoms names values) with
+    | none => delivered
+    | some recovered => consumeOrigins recovered delivered) = _
+  rw [decoded]
+
 def resultSupport (conclusion : Atom) (values : List Row) : HSet :=
   support atoms (values.map fun row => applySubst row.1 conclusion)
 
@@ -160,6 +190,27 @@ theorem receipt_reading_eq_iff (first second : Receipt) :
     exact congrArg (receiptParts atoms names).reading
       (Prod.ext instruction (Prod.ext snapshot matcherRows))
 
+/-- Retained receipts determine the same continuation through their actual
+ordered rows, without recovering the request's unobserved proof fields. -/
+theorem consumeOrigins_factors_receipt (delivered : List (List Nat)) :
+    Factors (receiptReading atoms names)
+      (fun receipt => consumeOrigins receipt.rows delivered) := by
+  refine ⟨fun value =>
+    match Function.partialInv (receiptParts atoms names).reading value with
+    | none => delivered
+    | some retained => consumeOrigins retained.2.2 delivered, ?_⟩
+  intro receipt
+  change (match Function.partialInv (receiptParts atoms names).reading
+    ((receiptParts atoms names).reading (receiptProjection receipt)) with
+    | none => delivered
+    | some retained => consumeOrigins retained.2.2 delivered) = _
+  have decoded : Function.partialInv (receiptParts atoms names).reading
+      ((receiptParts atoms names).reading (receiptProjection receipt)) =
+      some (receiptProjection receipt) :=
+    Function.partialInv_left (receiptParts atoms names).injective (receiptProjection receipt)
+  rw [decoded]
+  rfl
+
 namespace ActualJoin
 
 open Mettapedia.GSLT.LanguageDef.ProgrammableSpaceMM2ReceiptControls
@@ -185,6 +236,15 @@ theorem both_emit_reachable :
     applySubst first.1 conclusion = reachable ∧ applySubst second.1 conclusion = reachable := by
   decide +kernel
 
+/-- Running the continuation on the actual two-path batch preserves both
+deliveries and every origin in its authored premise order. -/
+theorem consume_actual_origins (delivered : List (List Nat)) :
+    consumeOrigins joinRows delivered = delivered ++ [[0, 1, 2], [0, 3, 4]] := by
+  rw [actual_rows]
+  change (delivered ++ [first.2.reverse.map Prod.snd]) ++ [second.2.reverse.map Prod.snd] = _
+  rw [first_source_origins, second_source_origins, List.append_assoc]
+  rfl
+
 theorem substitutions_differ : first.1 ≠ second.1 := by decide +kernel
 
 theorem actual_material_rows_differ :
@@ -207,6 +267,18 @@ theorem same_fact_support_two_material_rows :
   refine ⟨?_, actual_material_rows_differ atoms names⟩
   unfold resultSupport
   rw [List.map_singleton, List.map_singleton, both_emit_reachable.1, both_emit_reachable.2]
+
+/-- The actual two paths have one conclusion but different continuation
+receipts. Thus their consuming observation cannot descend to fact support. -/
+theorem conclusion_support_cannot_recover_origin_continuation :
+    ¬ Factors (resultSupport atoms conclusion) (fun values => consumeOrigins values []) := by
+  apply NonTrivialFiber.not_factors
+  refine ⟨[first], [second], ?_, ?_⟩
+  · unfold resultSupport
+    rw [List.map_singleton, List.map_singleton, both_emit_reachable.1, both_emit_reachable.2]
+  · change [first.2.reverse.map Prod.snd] ≠ [second.2.reverse.map Prod.snd]
+    rw [first_source_origins, second_source_origins]
+    decide
 
 theorem published_support_is_single_result :
     resultSupport atoms conclusion joinRows = support atoms [reachable] := by
@@ -240,5 +312,10 @@ theorem native_join_readouts :
   same_fact_support_two_material_rows ProgrammableSpaceAtomCoding.coding ProgrammableSpaceAtomCoding.strings
 
 end ActualJoin
+
+#print axioms consumeOrigins_factors_batch
+#print axioms consumeOrigins_factors_receipt
+#print axioms ActualJoin.consume_actual_origins
+#print axioms ActualJoin.conclusion_support_cannot_recover_origin_continuation
 
 end Mettapedia.GSLT.Logic.ProgrammableSpaceMM2EvidenceMaterial

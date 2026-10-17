@@ -155,9 +155,12 @@ scoped syntax ident "." langDefTypeBinding,* "|" langDefPremise,* "|-" langDefPa
 private def mkStrTerm (s : String) : TSyntax `term :=
   ⟨Syntax.mkStrLit s⟩
 
+/-- Core identifiers carry name contents, not Lean's diagnostic quoting. -/
+private def coreName (value : Lean.Name) : String := value.toString (escape := false)
+
 private def splitCompactBinderIdent (ident : Lean.Name) : MacroM (String × String) := do
-  match ident.toString.splitOn "." with
-  | [binderName, bodyName] =>
+  match ident with
+  | .str (.str .anonymous binderName) bodyName =>
       pure (binderName, bodyName)
   | _ =>
       Macro.throwError s!"unsupported compact binder form `{ident}`; expected `^x.p`"
@@ -242,7 +245,7 @@ private def renderSourceStringLit (s : String) : String :=
 
 private def restVarName (stx : TSyntax `langDefRestVar) : MacroM String := do
   match stx with
-  | `(langDefRestVar| ... $rest:ident) => pure rest.getId.toString
+  | `(langDefRestVar| ... $rest:ident) => pure (coreName rest.getId)
   | _ => Macro.throwErrorAt stx "unsupported collection rest variable"
 
 private def sepSyntaxToList (node : Syntax) : List Syntax :=
@@ -272,12 +275,12 @@ partial def expandTypeExpr : TSyntax `langDefTypeExpr → MacroM (TSyntax `term)
       `(TypeExpr.arrow $dom' $cod')
   | `(langDefTypeExpr| $base:ident * -> $cod:langDefTypeExpr) => do
       let cod' ← expandTypeExpr cod
-      `(TypeExpr.arrow (TypeExpr.multiBinder (TypeExpr.base $(mkStrTerm base.getId.toString))) $cod')
+      `(TypeExpr.arrow (TypeExpr.multiBinder (TypeExpr.base $(mkStrTerm (coreName base.getId)))) $cod')
   | stx => Macro.throwErrorAt stx "unsupported type expression"
 where
   expandTypeAtom : TSyntax `langDefTypeAtom → MacroM (TSyntax `term)
     | `(langDefTypeAtom| $nm:ident) =>
-        `(TypeExpr.base $(mkStrTerm nm.getId.toString))
+        `(TypeExpr.base $(mkStrTerm (coreName nm.getId)))
     | `(langDefTypeAtom| $coll:ident($inner:langDefTypeExpr)) => do
         let inner' ← expandTypeExpr inner
         let collType ← resolveCollName coll
@@ -288,21 +291,21 @@ where
 
 private def expandTypeDecl : TSyntax `langDefTypeDecl → MacroM (TSyntax `term)
   | `(langDefTypeDecl| $nm:ident) =>
-      `(TypeDecl.mk $(mkStrTerm nm.getId.toString) CarrierKind.ast)
+      `(TypeDecl.mk $(mkStrTerm (coreName nm.getId)) CarrierKind.ast)
   | `(langDefTypeDecl| ![$carrier:ident] as $nm:ident) => do
       let carrierKind ← resolveCarrierName carrier
-      `(TypeDecl.mk $(mkStrTerm nm.getId.toString) $(carrierTerm carrierKind))
+      `(TypeDecl.mk $(mkStrTerm (coreName nm.getId)) $(carrierTerm carrierKind))
   | stx => Macro.throwErrorAt stx "unsupported type declaration"
 
 private def expandTermParam : TSyntax `langDefTermParam → MacroM (TSyntax `term)
   | `(langDefTermParam| $nm:ident:$ty:langDefTypeExpr) => do
       let ty' ← expandTypeExpr ty
-      `(TermParam.simple $(mkStrTerm nm.getId.toString) $ty')
+      `(TermParam.simple $(mkStrTerm (coreName nm.getId)) $ty')
   | `(langDefTermParam| ^ $binder:ident . $body:ident : [ $ty:langDefTypeExpr ]) => do
       let ty' ← expandTypeExpr ty
       `(TermParam.abstractionWithBinder
-          $(mkStrTerm binder.getId.toString)
-          $(mkStrTerm body.getId.toString)
+          $(mkStrTerm (coreName binder.getId))
+          $(mkStrTerm (coreName body.getId))
           $ty')
   | `(langDefTermParam| ^ $binderAndBody:ident : [ $ty:langDefTypeExpr ]) => do
       let (binderName, bodyName) ← splitCompactBinderIdent binderAndBody.getId
@@ -313,12 +316,12 @@ private def expandTermParam : TSyntax `langDefTermParam → MacroM (TSyntax `ter
           $ty')
   | `(langDefTermParam| ^[ $binders:ident,* ] . $body:ident : [ $ty:langDefTypeExpr ]) => do
       let binderTerms ← binders.getElems.toList.mapM (fun binder =>
-        pure (mkStrTerm binder.getId.toString))
+        pure (mkStrTerm (coreName binder.getId)))
       let binderList ← mkTermList binderTerms
       let ty' ← expandTypeExpr ty
       `(TermParam.multiAbstractionWithBinders
           $binderList
-          $(mkStrTerm body.getId.toString)
+          $(mkStrTerm (coreName body.getId))
           $ty')
   | stx => Macro.throwErrorAt stx "unsupported term parameter"
 
@@ -326,38 +329,38 @@ mutual
 
 private partial def expandSyntaxOpSource : TSyntax `langDefSyntaxOpSource → MacroM (TSyntax `term)
   | `(langDefSyntaxOpSource| $nm:ident) =>
-      `(SyntaxPatternOp.var $(mkStrTerm nm.getId.toString))
+      `(SyntaxPatternOp.var $(mkStrTerm (coreName nm.getId)))
   | `(langDefSyntaxOpSource| $op:langDefSyntaxOp) =>
       expandSyntaxOp op
   | stx => Macro.throwErrorAt stx "unsupported syntax op source"
 
 private partial def expandSyntaxOp : TSyntax `langDefSyntaxOp → MacroM (TSyntax `term)
   | `(langDefSyntaxOp| *sep($nm:ident, $sep:str)) =>
-      `(SyntaxPatternOp.sep $(mkStrTerm nm.getId.toString) $sep none)
+      `(SyntaxPatternOp.sep $(mkStrTerm (coreName nm.getId)) $sep none)
   | `(langDefSyntaxOp| $nm:ident.*sep($sep:str)) =>
-      `(SyntaxPatternOp.sep $(mkStrTerm nm.getId.toString) $sep none)
+      `(SyntaxPatternOp.sep $(mkStrTerm (coreName nm.getId)) $sep none)
   | `(langDefSyntaxOp| $src:langDefSyntaxOp.*sep($sep:str)) => do
       let src' ← expandSyntaxOp src
       `(SyntaxPatternOp.sep "__chain__" $sep (some $src'))
   | `(langDefSyntaxOp| *zip($left:ident, $right:ident)) =>
-      `(SyntaxPatternOp.zip $(mkStrTerm left.getId.toString) $(mkStrTerm right.getId.toString))
+      `(SyntaxPatternOp.zip $(mkStrTerm (coreName left.getId)) $(mkStrTerm (coreName right.getId)))
   | `(langDefSyntaxOp| *map($src:langDefSyntaxOpSource, | $params:ident,* | $body:langDefSyntaxAtom*)) => do
       let src' ← expandSyntaxOpSource src
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let bodyItems ← body.toList.mapM expandSyntaxAtomAsItem
       let paramsTerm ← mkTermList paramTerms
       let bodyTerm ← mkTermList bodyItems
       `(SyntaxPatternOp.map $src' $paramsTerm $bodyTerm)
   | `(langDefSyntaxOp| $src:ident.*map(| $params:ident,* | $body:langDefSyntaxAtom*)) => do
-      let src' : TSyntax `term := ← `(SyntaxPatternOp.var $(mkStrTerm src.getId.toString))
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let src' : TSyntax `term := ← `(SyntaxPatternOp.var $(mkStrTerm (coreName src.getId)))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let bodyItems ← body.toList.mapM expandSyntaxAtomAsItem
       let paramsTerm ← mkTermList paramTerms
       let bodyTerm ← mkTermList bodyItems
       `(SyntaxPatternOp.map $src' $paramsTerm $bodyTerm)
   | `(langDefSyntaxOp| $src:langDefSyntaxOp.*map(| $params:ident,* | $body:langDefSyntaxAtom*)) => do
       let src' ← expandSyntaxOp src
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let bodyItems ← body.toList.mapM expandSyntaxAtomAsItem
       let paramsTerm ← mkTermList paramTerms
       let bodyTerm ← mkTermList bodyItems
@@ -384,15 +387,15 @@ private partial def expandSyntaxAtom : TSyntax `langDefSyntaxAtom → MacroM (Ar
       let item ← `(SyntaxItem.terminal $tok)
       pure #[item]
   | `(langDefSyntaxAtom| $nm:ident) => do
-      let item ← `(SyntaxItem.nonTerminal $(mkStrTerm nm.getId.toString))
+      let item ← `(SyntaxItem.nonTerminal $(mkStrTerm (coreName nm.getId)))
       pure #[item]
   | `(langDefSyntaxAtom| $nm:ident.*sep($sep:str)) => do
       let op ← `(SyntaxItem.op
-        (SyntaxPatternOp.sep $(mkStrTerm nm.getId.toString) $sep none))
+        (SyntaxPatternOp.sep $(mkStrTerm (coreName nm.getId)) $sep none))
       pure #[op]
   | `(langDefSyntaxAtom| $nm:ident.*delim($l:str, $r:str)) =>
       do
-        let nt ← `(SyntaxItem.nonTerminal $(mkStrTerm nm.getId.toString))
+        let nt ← `(SyntaxItem.nonTerminal $(mkStrTerm (coreName nm.getId)))
         let delim ← `(SyntaxItem.delimiter $l $r)
         pure #[nt, delim]
   | `(langDefSyntaxAtom| $op:langDefSyntaxOp) => do
@@ -408,9 +411,9 @@ mutual
 private partial def expandPatternOpSourceInfo
     : TSyntax `langDefPatternOpSource → MacroM ExpandedPattern
   | `(langDefPatternOpSource| $nm:ident) => do
-      let raw := nm.getId.toString
+      let raw := coreName nm.getId
       let term ← `(Pattern.fvar $(mkStrTerm raw))
-      pure (mkExpandedPattern term raw)
+      pure (mkExpandedPattern term nm.getId.toString)
   | `(langDefPatternOpSource| $op:langDefPatternOp) =>
       expandPatternOpInfo op
   | stx => Macro.throwErrorAt stx "unsupported pattern op source"
@@ -428,7 +431,7 @@ private partial def expandPatternOpInfo
       let src' ← expandPatternOpSourceInfo src
       let body' ← expandPatternInfo body
       let paramNames := params.getElems.toList.map (fun p => p.getId.toString)
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let paramList ← mkTermList paramTerms
       let srcTerm := src'.term
       let bodyTerm := body'.term
@@ -437,10 +440,10 @@ private partial def expandPatternOpInfo
       pure (mkExpandedPattern term s!"*map({src'.sourceText}, |{renderedParams}| {body'.sourceText})")
   | `(langDefPatternOp| $src:ident.*map(| $params:ident,* | $body:langDefPattern)) => do
       let src' : ExpandedPattern :=
-        { term := ← `(Pattern.fvar $(mkStrTerm src.getId.toString)), sourceText := src.getId.toString }
+        { term := ← `(Pattern.fvar $(mkStrTerm (coreName src.getId))), sourceText := src.getId.toString }
       let body' ← expandPatternInfo body
       let paramNames := params.getElems.toList.map (fun p => p.getId.toString)
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let paramList ← mkTermList paramTerms
       let srcTerm := src'.term
       let bodyTerm := body'.term
@@ -451,7 +454,7 @@ private partial def expandPatternOpInfo
       let src' ← expandPatternOpInfo src
       let body' ← expandPatternInfo body
       let paramNames := params.getElems.toList.map (fun p => p.getId.toString)
-      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm p.getId.toString))
+      let paramTerms ← params.getElems.toList.mapM (fun p => pure (mkStrTerm (coreName p.getId)))
       let paramList ← mkTermList paramTerms
       let srcTerm := src'.term
       let bodyTerm := body'.term
@@ -488,20 +491,20 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let argSyntax ← args.toList.mapM (fun arg => splitPrefixPatternArgs ⟨arg⟩)
       let args' ← (flattenLists argSyntax).mapM expandPatternInfo
       let argsTerm ← mkTermList (args'.map (·.term))
-      let ctorName := ctor.getId.toString
+      let ctorName := coreName ctor.getId
       let sourceArgs := String.intercalate " " (args'.map (·.sourceText))
       let term ← `(Pattern.apply $(mkStrTerm ctorName) $argsTerm)
-      pure (mkExpandedPattern term s!"{ctorName} {sourceArgs}")
+      pure (mkExpandedPattern term s!"{ctor.getId.toString} {sourceArgs}")
   | `(langDefPattern| $nm:ident) => do
-      let raw := nm.getId.toString
+      let raw := coreName nm.getId
       let term ← `(Pattern.fvar $(mkStrTerm raw))
-      pure (mkExpandedPattern term raw)
+      pure (mkExpandedPattern term nm.getId.toString)
   | `(langDefPattern| $op:langDefPatternOp) =>
       expandPatternOpInfo op
   | `(langDefPattern| ... $rest:ident) => do
-      let restName := rest.getId.toString
+      let restName := coreName rest.getId
       let term ← `(Pattern.collection CollType.hashBag [] (some $(mkStrTerm restName)))
-      pure (mkExpandedPattern term ("..." ++ restName) (some restName))
+      pure (mkExpandedPattern term ("..." ++ rest.getId.toString) (some restName))
   | `(langDefPattern| $n:num) => do
       let raw := toString n.getNat
       let term ← `(Pattern.apply $(mkStrTerm raw) [])
@@ -520,10 +523,10 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
   | `(langDefPattern| $ctor:ident($args:langDefPattern,*)) => do
       let args' ← args.getElems.toList.mapM expandPatternInfo
       let argsTerm ← mkTermList (args'.map (·.term))
-      let ctorName := ctor.getId.toString
+      let ctorName := coreName ctor.getId
       let sourceArgs := String.intercalate ", " (args'.map (·.sourceText))
       let term ← `(Pattern.apply $(mkStrTerm ctorName) $argsTerm)
-      pure (mkExpandedPattern term s!"{ctorName}({sourceArgs})")
+      pure (mkExpandedPattern term s!"{ctor.getId.toString}({sourceArgs})")
   | `(langDefPattern| ($inner:langDefPattern)) => do
       let inner' ← expandPatternInfo inner
       pure (mkExpandedPattern inner'.term s!"({inner'.sourceText})")
@@ -546,11 +549,11 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       pure (mkExpandedPattern term s!"eval({scope'.sourceText}, {repl'.sourceText})")
   | `(langDefPattern| (eval $scope:ident $repl:langDefPattern)) => do
       let repl' ← expandPatternInfo repl
-      let scopeName := scope.getId.toString
+      let scopeName := coreName scope.getId
       let scopeTerm ← `(Pattern.fvar $(mkStrTerm scopeName))
       let replTerm := repl'.term
       let term ← `(Pattern.eval $scopeTerm $replTerm)
-      pure (mkExpandedPattern term s!"(eval {scopeName} {repl'.sourceText})")
+      pure (mkExpandedPattern term s!"(eval {scope.getId.toString} {repl'.sourceText})")
   | `(langDefPattern| (eval $scope:langDefPattern $repl:langDefPattern)) => do
       let scope' ← expandPatternInfo scope
       let repl' ← expandPatternInfo repl
@@ -561,19 +564,19 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
   | `(langDefPattern| ^ $binder:ident . $body:langDefPattern) => do
       let body' ← expandPatternInfo body
       let bodyTerm := body'.term
-      let binderName := mkStrTerm binder.getId.toString
+      let binderName := mkStrTerm (coreName binder.getId)
       let term ← `(Pattern.lambda (some $binderName) $bodyTerm)
       pure (mkExpandedPattern term s!"^{binder.getId.toString}.{body'.sourceText}")
   | `(langDefPattern| ^ $binder:ident .( $body:langDefPattern )) => do
       let body' ← expandPatternInfo body
       let bodyTerm := body'.term
-      let binderName := mkStrTerm binder.getId.toString
+      let binderName := mkStrTerm (coreName binder.getId)
       let term ← `(Pattern.lambda (some $binderName) $bodyTerm)
       pure (mkExpandedPattern term s!"^{binder.getId.toString}.({body'.sourceText})")
   | `(langDefPattern| ^ $binder:ident . ($body:langDefPattern)) => do
       let body' ← expandPatternInfo body
       let bodyTerm := body'.term
-      let binderName := mkStrTerm binder.getId.toString
+      let binderName := mkStrTerm (coreName binder.getId)
       let term ← `(Pattern.lambda (some $binderName) $bodyTerm)
       pure (mkExpandedPattern term s!"^{binder.getId.toString}.({body'.sourceText})")
   | `(langDefPattern| ^ $binderAndBody:ident) => do
@@ -581,14 +584,14 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let bodyTerm ← `(Pattern.fvar $(mkStrTerm bodyName))
       let binderTerm := mkStrTerm binderName
       let term ← `(Pattern.lambda (some $binderTerm) $bodyTerm)
-      pure (mkExpandedPattern term s!"^{binderName}.{bodyName}")
+      pure (mkExpandedPattern term s!"^{binderAndBody.getId.toString}")
   | `(langDefPattern| ^[ $binders:ident,* ] . $body:langDefPattern) => do
       let body' ← expandPatternInfo body
       let binderNames := binders.getElems.toList.map (·.getId.toString)
       let renderedBinders := String.intercalate ", " binderNames
       let bodyTerm := body'.term
       let binderTerms ← binders.getElems.toList.mapM (fun b =>
-        pure (mkStrTerm b.getId.toString))
+        pure (mkStrTerm (coreName b.getId)))
       let binderList ← mkTermList binderTerms
       let term ← `(Pattern.multiLambda $(quote binders.getElems.size) $binderList $bodyTerm)
       pure (mkExpandedPattern term s!"^[{renderedBinders}].{body'.sourceText}")
@@ -598,7 +601,7 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let renderedBinders := String.intercalate ", " binderNames
       let bodyTerm := body'.term
       let binderTerms ← binders.getElems.toList.mapM (fun b =>
-        pure (mkStrTerm b.getId.toString))
+        pure (mkStrTerm (coreName b.getId)))
       let binderList ← mkTermList binderTerms
       let term ← `(Pattern.multiLambda $(quote binders.getElems.size) $binderList $bodyTerm)
       pure (mkExpandedPattern term s!"^[{renderedBinders}].({body'.sourceText})")
@@ -608,7 +611,7 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let renderedBinders := String.intercalate ", " binderNames
       let bodyTerm := body'.term
       let binderTerms ← binders.getElems.toList.mapM (fun b =>
-        pure (mkStrTerm b.getId.toString))
+        pure (mkStrTerm (coreName b.getId)))
       let binderList ← mkTermList binderTerms
       let term ← `(Pattern.multiLambda $(quote binders.getElems.size) $binderList $bodyTerm)
       pure (mkExpandedPattern term s!"^[{renderedBinders}].({body'.sourceText})")
@@ -643,10 +646,10 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
       let argSyntax ← args.toList.mapM (fun arg => splitPrefixPatternArgs ⟨arg⟩)
       let args' ← (flattenLists argSyntax).mapM expandPatternInfo
       let argsTerm ← mkTermList (args'.map (·.term))
-      let ctorName := ctor.getId.toString
+      let ctorName := coreName ctor.getId
       let sourceArgs := String.intercalate " " (args'.map (·.sourceText))
       let term ← `(Pattern.apply $(mkStrTerm ctorName) $argsTerm)
-      pure (mkExpandedPattern term s!"({ctorName} {sourceArgs})")
+      pure (mkExpandedPattern term s!"({ctor.getId.toString} {sourceArgs})")
   | stx => do
       let args := stx.raw.getArgs
       match args.size with
@@ -667,6 +670,15 @@ private partial def expandPatternInfo (stx0 : TSyntax `langDefPattern) : MacroM 
             pure (mkExpandedPattern term ("{" ++ sourceElements ++ ", ..." ++ restName ++ "}"))
           catch _ =>
             Macro.throwErrorAt stx "unsupported pattern syntax"
+      | 6 =>
+          if args[0]!.getAtomVal == "^" && args[1]!.isIdent && args[2]!.getAtomVal == "." &&
+              args[3]!.getAtomVal == "(" && args[5]!.getAtomVal == ")" then do
+            let body' ← expandPatternInfo ⟨args[4]!⟩
+            let binderName := mkStrTerm (coreName args[1]!.getId)
+            let term ← `(Pattern.lambda (some $binderName) $(body'.term))
+            pure (mkExpandedPattern term s!"^{args[1]!.getId.toString}.({body'.sourceText})")
+          else
+            Macro.throwErrorAt stx "unsupported pattern syntax"
       | _ =>
           Macro.throwErrorAt stx "unsupported pattern syntax"
 
@@ -680,34 +692,34 @@ partial def expandPattern (stx : TSyntax `langDefPattern) : MacroM (TSyntax `ter
 def expandTypeBinding : TSyntax `langDefTypeBinding → MacroM (TSyntax `term)
   | `(langDefTypeBinding| $nm:ident:$ty:langDefTypeExpr) => do
       let ty' ← expandTypeExpr ty
-      `(($(mkStrTerm nm.getId.toString), $ty'))
+      `(($(mkStrTerm (coreName nm.getId)), $ty'))
   | stx => Macro.throwErrorAt stx "unsupported type binding"
 
 private partial def expandPremiseInfo (stx0 : TSyntax `langDefPremise) : MacroM ExpandedPremise := do
   let stx : TSyntax `langDefPremise := ⟨normalizeChoiceSyntax stx0.raw⟩
   match stx with
   | `(langDefPremise| $nm:ident # ... $rest:ident) => do
-      let varName := nm.getId.toString
-      let restName := rest.getId.toString
+      let varName := coreName nm.getId
+      let restName := coreName rest.getId
       let term ← `(Premise.freshness
           (FreshnessCondition.mk
             $(mkStrTerm varName)
             (Pattern.collection CollType.hashBag [] (some $(mkStrTerm restName)))))
-      pure ⟨term, varName ++ " # ..." ++ restName⟩
+      pure ⟨term, nm.getId.toString ++ " # ..." ++ rest.getId.toString⟩
   | `(langDefPremise| $nm:ident # $rest:langDefRestVar) => do
-      let varName := nm.getId.toString
+      let varName := coreName nm.getId
       let restName ← restVarName rest
       let term ← `(Premise.freshness
           (FreshnessCondition.mk
             $(mkStrTerm varName)
             (Pattern.collection CollType.hashBag [] (some $(mkStrTerm restName)))))
-      pure ⟨term, varName ++ " # ..." ++ restName⟩
+      pure ⟨term, nm.getId.toString ++ " # " ++ rest.raw.reprint.getD ("..." ++ restName)⟩
   | `(langDefPremise| $nm:ident # $pat:langDefPattern) => do
       let pat' ← expandPatternInfo pat
-      let varName := nm.getId.toString
+      let varName := coreName nm.getId
       let patTerm := pat'.term
       let term ← `(Premise.freshness (FreshnessCondition.mk $(mkStrTerm varName) $patTerm))
-      pure ⟨term, s!"{varName} # {pat'.sourceText}"⟩
+      pure ⟨term, s!"{nm.getId.toString} # {pat'.sourceText}"⟩
   | `(langDefPremise| $lhs:langDefPattern ~> $rhs:langDefPattern) => do
       let lhs' ← expandPatternInfo lhs
       let rhs' ← expandPatternInfo rhs
@@ -730,24 +742,24 @@ private partial def expandPremiseInfo (stx0 : TSyntax `langDefPremise) : MacroM 
   | `(langDefPremise| $rel:ident($args:langDefPattern,*)) => do
       let args' ← args.getElems.toList.mapM expandPatternInfo
       let argsTerm ← mkTermList (args'.map (·.term))
-      let relName := rel.getId.toString
+      let relName := coreName rel.getId
       let sourceArgs := String.intercalate ", " (args'.map (·.sourceText))
       let term ← `(Premise.relationQuery $(mkStrTerm relName) $argsTerm)
-      pure ⟨term, s!"{relName}({sourceArgs})"⟩
+      pure ⟨term, s!"{rel.getId.toString}({sourceArgs})"⟩
   | `(langDefPremise| $collection:ident.*map(| $param:ident | $body:langDefPremise)) => do
       let body' ← expandPremiseInfo body
-      let collectionName := collection.getId.toString
-      let paramName := param.getId.toString
+      let collectionName := coreName collection.getId
+      let paramName := coreName param.getId
       let bodyTerm := body'.term
       let term ← `(Premise.forAll $(mkStrTerm collectionName) $(mkStrTerm paramName) $bodyTerm)
-      pure ⟨term, s!"{collectionName}.*map(|{paramName}| {body'.sourceText})"⟩
+      pure ⟨term, s!"{collection.getId.toString}.*map(|{param.getId.toString}| {body'.sourceText})"⟩
   | `(langDefPremise| forAll($collection:ident, $param:ident, $body:langDefPremise)) => do
       let body' ← expandPremiseInfo body
-      let collectionName := collection.getId.toString
-      let paramName := param.getId.toString
+      let collectionName := coreName collection.getId
+      let paramName := coreName param.getId
       let bodyTerm := body'.term
       let term ← `(Premise.forAll $(mkStrTerm collectionName) $(mkStrTerm paramName) $bodyTerm)
-      pure ⟨term, s!"forAll({collectionName}, {paramName}, {body'.sourceText})"⟩
+      pure ⟨term, s!"forAll({collection.getId.toString}, {param.getId.toString}, {body'.sourceText})"⟩
   | stx => Macro.throwErrorAt stx "unsupported premise syntax"
 
 private partial def expandPremise (stx : TSyntax `langDefPremise) : MacroM (TSyntax `term) := do
@@ -795,7 +807,8 @@ private def expandTermDecl : TSyntax `langDefTermDecl → MacroM (TSyntax `term)
       let syns' := synArrays.foldl (init := #[]) (fun acc arr => acc ++ arr)
       let paramsTerm ← mkTermList params'
       let synsTerm ← mkTermList syns'.toList
-      `(GrammarRule.mk $(mkStrTerm label.getId.toString) $(mkStrTerm category.getId.toString) $paramsTerm $synsTerm none none)
+      `(GrammarRule.mk $(mkStrTerm (coreName label.getId))
+        $(mkStrTerm (coreName category.getId)) $paramsTerm $synsTerm none none)
   | `(langDefTermDecl| $label:ident . $params:langDefTermParam,* |- $syns:langDefSyntaxAtom* : $category:ident ![ $policy:langDefEvalPolicy ] ; ) => do
       let params' ← params.getElems.toList.mapM expandTermParam
       let synArrays ← syns.toList.mapM expandSyntaxAtom
@@ -804,14 +817,15 @@ private def expandTermDecl : TSyntax `langDefTermDecl → MacroM (TSyntax `term)
       let synsTerm ← mkTermList syns'.toList
       let resolvedPolicy ← resolveEvalPolicyName policy
       let policyTerm := evalPolicyTerm resolvedPolicy
-      `(GrammarRule.mk $(mkStrTerm label.getId.toString) $(mkStrTerm category.getId.toString) $paramsTerm $synsTerm (some $policyTerm) none)
+      `(GrammarRule.mk $(mkStrTerm (coreName label.getId))
+        $(mkStrTerm (coreName category.getId)) $paramsTerm $synsTerm (some $policyTerm) none)
   | stx => Macro.throwErrorAt stx "unsupported term declaration"
 
 private def mkEquationTerm
     (nm : Syntax)
     (ctxTerm premisesTerm lhsTerm rhsTerm : TSyntax `term) :
     MacroM (TSyntax `term) :=
-  `(Equation.mk (bindings := none) $(mkStrTerm nm.getId.toString)
+  `(Equation.mk (bindings := none) $(mkStrTerm (coreName nm.getId))
       $ctxTerm
       $premisesTerm
       $lhsTerm
@@ -821,7 +835,7 @@ private def mkRewriteTerm
     (nm : Syntax)
     (ctxTerm premisesTerm lhsTerm rhsTerm : TSyntax `term) :
     MacroM (TSyntax `term) :=
-  `(RewriteRule.mk (bindings := none) $(mkStrTerm nm.getId.toString)
+  `(RewriteRule.mk (bindings := none) $(mkStrTerm (coreName nm.getId))
       $ctxTerm
       $premisesTerm
       $lhsTerm

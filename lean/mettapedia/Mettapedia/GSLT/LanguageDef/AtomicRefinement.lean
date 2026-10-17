@@ -22,6 +22,9 @@ structure RefineAction (Hole : Type uHole) (Head : Type uHead) where
   head : Head
   deriving DecidableEq, Repr
 
+-- State, hole, head and program carriers may have different universes; the
+-- bundled root itself necessarily lives in their maximum.
+set_option linter.checkUnivs false in
 /--
 Data for an atomic refinement root.  `legalHeads` is the finite policy support;
 `refine?` remains the checker-owned transition and must be proved exact by the

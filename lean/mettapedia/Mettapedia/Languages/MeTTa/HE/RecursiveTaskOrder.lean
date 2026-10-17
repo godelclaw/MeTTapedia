@@ -16,15 +16,26 @@ namespace Mettapedia.Languages.MeTTa.HE.RecursiveTaskOrder
 open RecursiveTasks RecursiveMachine RecursiveCorrectness
 
 def taskKey : Task → Nat × Nat × Nat
-  | .atom _ _ _ fuel | .expression _ _ _ fuel | .func _ _ _ fuel
-  | .args _ _ _ fuel | .tuple _ _ fuel | .call _ _ _ fuel => (fuel, 0, 0)
-  | .functions _ _ _ fuel types => (fuel, 3, types.length)
-  | .bindingAlternatives _ _ _ fuel alternatives => (fuel, 2, alternatives.length)
-  | .heads _ _ fuel alternatives | .argumentHeads _ _ _ fuel alternatives
-  | .tupleHeads _ fuel alternatives | .equations _ _ fuel alternatives
-  | .grounded _ _ fuel alternatives => (fuel, 2, alternatives.length)
-  | .calls _ fuel alternatives | .atoms _ fuel alternatives => (fuel, 1, alternatives.length)
-  | .tupleCalls _ _ _ fuel => (fuel, 2, 0)
+  | .atom _ _ _ fuel _ | .expression _ _ _ fuel _ | .func _ _ _ fuel _
+  | .args _ _ _ fuel _ | .tuple _ _ fuel _ => (fuel, 0, 0)
+  | .call _ _ _ fuel _ => (fuel, 1, 0)
+  | .functions _ _ _ fuel types _ => (fuel, 5, types.length)
+  | .bindingAlternatives _ _ _ fuel alternatives _ => (fuel, 4, alternatives.length)
+  | .heads _ _ fuel alternatives _ | .argumentHeads _ _ _ fuel alternatives _
+  | .tupleHeads _ fuel alternatives _ => (fuel, 3, alternatives.length)
+  | .returned _ _ _ _ fuel _ => (fuel, 1, 0)
+  | .returns _ _ fuel alternatives _ => (fuel, 2, alternatives.length)
+  | .equations _ _ _ fuel alternatives _
+  | .grounded _ _ _ fuel alternatives _ => (fuel, 1, alternatives.length)
+  | .calls _ fuel alternatives _ | .atoms _ fuel alternatives _ => (fuel, 2, alternatives.length)
+  | .tupleCalls _ _ _ fuel _ => (fuel, 3, 0)
+  | .invocation _ _ _ fuel _ _ | .produced _ _ fuel _ _ _
+  | .minimal _ _ fuel _ _ | .primitive _ _ fuel _ _
+  | .functionBody _ _ fuel _ _ | .completed _ _ _ fuel => (fuel, 0, 0)
+  | .productions fuel alternatives _ _ _ | .minimals fuel alternatives _ _
+  | .chainRows _ _ fuel alternatives | .bodyResults fuel alternatives _ _ =>
+      (fuel, 1, alternatives.length)
+  | .producerResults _ _ _ fuel _ _ _ => (fuel, 4, 0)
 
 def Smaller (child parent : Task) : Prop :=
   Prod.Lex Nat.lt (Prod.Lex Nat.lt Nat.lt) (taskKey child) (taskKey parent)
@@ -37,12 +48,22 @@ def controlRequests : Control → List Task
   | .returning _ => []
 
 def frameRequests : Frame → ResultSet → List Task
-  | .heads operatorType arguments fuel, results => [.heads operatorType arguments fuel results]
-  | .argumentHeads original remaining types fuel, results =>
-      [.argumentHeads original remaining types fuel results]
-  | .tupleHeads tail fuel, results => [.tupleHeads tail fuel results]
-  | .calls expected fuel, results => [.calls expected fuel results]
+  | .heads operatorType arguments fuel live, results =>
+      [.heads operatorType arguments fuel results live]
+  | .argumentHeads original remaining types fuel live, results =>
+      [.argumentHeads original remaining types fuel results live]
+  | .tupleHeads tail fuel live, results => [.tupleHeads tail fuel results live]
+  | .calls expected fuel live, results => [.calls expected fuel results live]
   | .append remaining, _ => [remaining]
+  | .invocationReturn mode original fuel live, results =>
+      match mode with
+      | .raw => []
+      | .ordinary expected => [.returns original expected fuel results live]
+  | .producerResults mode original incoming fuel live emptyReply, results =>
+      [.producerResults mode original incoming fuel live emptyReply results]
+  | .minimalResults fuel live caller, results => [.minimals fuel results live caller]
+  | .chainResults name template fuel, results => [.chainRows name template fuel results]
+  | .bodyResults fuel live caller, results => [.bodyResults fuel results live caller]
   | _, _ => []
 
 def requests (space : Space) (dispatch : GroundedDispatch) : List Frame → ResultSet → List Task
@@ -57,7 +78,7 @@ def dependencies (space : Space) (dispatch : GroundedDispatch) (task : Task) : L
 theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent child : Task)
     (dependent : child ∈ dependencies space dispatch parent) : Smaller child parent := by
   cases parent with
-  | atom value expected bindings fuel =>
+  | atom value expected bindings fuel live =>
       cases fuel with
       | zero => simp [dependencies, enter, controlRequests, requests] at dependent
       | succ fuel =>
@@ -65,17 +86,7 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
           repeat' split at dependent
           all_goals
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
-  | expression value expected bindings fuel =>
-      cases fuel with
-      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
-      | succ fuel =>
-          simp only [dependencies, enter] at dependent
-          repeat' split at dependent
-          all_goals
-            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
-            repeat' rcases dependent with rfl | dependent
-            all_goals simp_all
-  | func value operatorType bindings fuel =>
+  | expression value expected bindings fuel live =>
       cases fuel with
       | zero => simp [dependencies, enter, controlRequests, requests] at dependent
       | succ fuel =>
@@ -85,7 +96,7 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | args values types bindings fuel =>
+  | func value operatorType bindings fuel live =>
       cases fuel with
       | zero => simp [dependencies, enter, controlRequests, requests] at dependent
       | succ fuel =>
@@ -95,7 +106,7 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | tuple value bindings fuel =>
+  | args values types bindings fuel live =>
       cases fuel with
       | zero => simp [dependencies, enter, controlRequests, requests] at dependent
       | succ fuel =>
@@ -105,15 +116,19 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | call value expected bindings fuel =>
+  | tuple value bindings fuel live =>
       cases fuel with
       | zero => simp [dependencies, enter, controlRequests, requests] at dependent
       | succ fuel =>
           simp only [dependencies, enter] at dependent
           repeat' split at dependent
           all_goals
-            simp_all [controlRequests, requests, Smaller, taskKey, Prod.lex_def]
-  | functions value expected bindings fuel types =>
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | call value expected bindings fuel live =>
+      simp_all [dependencies, enter, controlRequests, requests, Smaller, taskKey, Prod.lex_def]
+  | functions value expected bindings fuel types live =>
       cases types with
       | nil => simp [dependencies, enter, controlRequests, requests] at dependent
       | cons operatorType remaining =>
@@ -123,12 +138,12 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | bindingAlternatives value operatorType expected fuel alternatives =>
+  | bindingAlternatives value operatorType expected fuel alternatives live =>
       cases alternatives <;>
         simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
       repeat' rcases dependent with rfl | dependent
       all_goals simp_all
-  | heads operatorType arguments fuel alternatives =>
+  | heads operatorType arguments fuel alternatives live =>
       cases alternatives with
       | nil => simp [dependencies, enter, controlRequests, requests] at dependent
       | cons head remaining =>
@@ -139,7 +154,7 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | argumentHeads original remaining types fuel alternatives =>
+  | argumentHeads original remaining types fuel alternatives live =>
       cases alternatives with
       | nil => simp [dependencies, enter, controlRequests, requests] at dependent
       | cons head rest =>
@@ -150,7 +165,7 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | tupleHeads tail fuel alternatives =>
+  | tupleHeads tail fuel alternatives live =>
       cases alternatives with
       | nil => simp [dependencies, enter, controlRequests, requests] at dependent
       | cons head rest =>
@@ -161,29 +176,114 @@ theorem dependency_smaller (space : Space) (dispatch : GroundedDispatch) (parent
             simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
             repeat' rcases dependent with rfl | dependent
             all_goals simp_all
-  | calls expected fuel alternatives =>
+  | calls expected fuel alternatives live =>
       cases alternatives <;>
         simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
       repeat' rcases dependent with rfl | dependent
       all_goals simp_all
-  | atoms expected fuel alternatives =>
+  | atoms expected fuel alternatives live =>
       cases alternatives <;>
         simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
       repeat' rcases dependent with rfl | dependent
       all_goals simp_all
-  | equations expected incoming fuel alternatives =>
+  | returned original value expected bindings fuel live =>
+      simp only [dependencies, enter] at dependent
+      repeat' split at dependent
+      all_goals
+        simp_all [controlRequests, requests, Smaller, taskKey, Prod.lex_def]
+  | returns original expected fuel alternatives live =>
       cases alternatives <;>
         simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
       repeat' rcases dependent with rfl | dependent
       all_goals simp_all
-  | grounded expected incoming fuel alternatives =>
+  | equations original expected incoming fuel alternatives live =>
       cases alternatives <;>
         simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
-      repeat' rcases dependent with rfl | dependent
-      all_goals simp_all
-  | tupleCalls value expected bindings fuel =>
+  | grounded original expected incoming fuel alternatives live =>
+      cases alternatives <;>
+        simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+  | tupleCalls value expected bindings fuel live =>
       simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
       repeat' rcases dependent with rfl | dependent
       all_goals simp_all
+  | invocation mode value bindings fuel live caller =>
+      cases mode <;> cases fuel with
+      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
+      | succ fuel =>
+          simp only [dependencies, enter] at dependent
+          repeat' split at dependent
+          all_goals
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | produced value bindings fuel live caller provenance =>
+      cases fuel with
+      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
+      | succ fuel =>
+          simp only [dependencies, enter] at dependent
+          repeat' split at dependent
+          all_goals
+            simp_all [controlRequests, requests, Smaller, taskKey, Prod.lex_def]
+  | minimal value bindings fuel live caller =>
+      cases fuel with
+      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
+      | succ fuel =>
+          simp only [dependencies, enter] at dependent
+          repeat' split at dependent
+          all_goals
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | primitive value bindings fuel live caller =>
+      cases fuel with
+      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
+      | succ fuel =>
+          simp only [dependencies, enter] at dependent
+          repeat' split at dependent
+          all_goals
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | functionBody value bindings fuel live caller =>
+      cases fuel with
+      | zero => simp [dependencies, enter, controlRequests, requests] at dependent
+      | succ fuel =>
+          simp only [dependencies, enter] at dependent
+          all_goals
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | productions fuel alternatives live caller provenance =>
+      cases alternatives <;>
+        simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+      repeat' rcases dependent with rfl | dependent
+      all_goals simp_all
+  | minimals fuel alternatives live caller =>
+      cases alternatives <;>
+        simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+      repeat' rcases dependent with rfl | dependent
+      all_goals simp_all
+  | chainRows name template fuel alternatives =>
+      cases alternatives <;>
+        simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+  | bodyResults fuel alternatives live caller =>
+      cases alternatives with
+      | nil => simp [dependencies, enter, controlRequests, requests] at dependent
+      | cons pair remaining =>
+          rcases pair with ⟨value, bindings⟩
+          simp only [dependencies, enter] at dependent
+          repeat' split at dependent
+          all_goals
+            simp_all [controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+            repeat' rcases dependent with rfl | dependent
+            all_goals simp_all
+  | producerResults mode original incoming fuel live emptyReply results =>
+      cases mode <;> cases results <;>
+        simp_all [dependencies, enter, controlRequests, requests, frameRequests, Smaller, taskKey, Prod.lex_def]
+      all_goals
+        repeat' rcases dependent with rfl | dependent
+        all_goals simp_all
+  | completed value expected bindings fuel =>
+      simp [dependencies, enter, controlRequests, requests] at dependent
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveTaskOrder

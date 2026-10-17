@@ -8,6 +8,13 @@ The row-major profile applies each matched row's authored sinks before
 moving to the next row. The existing source profile stages all rows for
 each sink. Both retain their literal execution order; agreement is proved
 only for the compact-key support observation under commuting writes.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  This profile applies each row's sinks before the next
+row's.  The kernel (`Mainline`) writes the instances of every `+` sink over all rows
+first and then finalizes the other sinks: on `(edge a b) (edge b c)`, the directive
+`(exec 0 (, (edge $x $y)) (O (+ $x) (- $y)))` leaves `a` in the kernel and both
+`a` and `b` in this profile.
 -/
 
 set_option autoImplicit false

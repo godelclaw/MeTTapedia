@@ -101,7 +101,7 @@ def mathlibAdjacencyMatrix {n : Nat} (graph : AdjacencyMatrix.Rep n) :
     (denoteDecidableRel graph) _ _
 
 /-- The canonical matrix is recognized by Mathlib as an adjacency matrix. -/
-def mathlibAdjacencyIsAdjMatrix {n : Nat} (graph : AdjacencyMatrix.Rep n) :
+theorem mathlibAdjacencyIsAdjMatrix {n : Nat} (graph : AdjacencyMatrix.Rep n) :
     (mathlibAdjacencyMatrix graph).IsAdjMatrix :=
   @SimpleGraph.isAdjMatrix_adjMatrix Nat (Fin n) (AdjacencyMatrix.denote graph)
     (denoteDecidableRel graph) _ _
@@ -249,14 +249,5 @@ theorem path3_mathlib_diagonal :
 
 end Canary
 
-#print axioms toMatrix_injective
-#print axioms denote_adj_iff_matrix
-#print axioms mathlibAdjacencyMatrix_apply
-#print axioms mathlibAdjacencyMatrix_toGraph
-#print axioms matrix_step_from_encoded_iff
-#print axioms encodeLookupPath
-#print axioms Canary.path3_diagonal_false
-#print axioms Canary.path3_mathlib_edge
-#print axioms Canary.path3_mathlib_diagonal
 
 end Mettapedia.GraphTheory.Representation.MatrixBridge

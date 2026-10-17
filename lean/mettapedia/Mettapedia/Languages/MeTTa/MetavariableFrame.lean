@@ -26,6 +26,10 @@ namespace Mettapedia.Languages.MeTTa.MetavariableFrame
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.SubstitutionAlgebra
 
+universe u v w
+
+variable {Payload : Type u}
+
 /-- Finite variable inventory of one activation or manufactured goal. -/
 abbrev Frame := List Var
 
@@ -33,10 +37,13 @@ abbrev Frame := List Var
 abbrev Slot (φ : Frame) := Fin φ.length
 
 /-- Environment for one frame: a value per slot. -/
-abbrev FrameEnv (φ : Frame) := Slot φ → Option Atom
+abbrev FrameEnvOf (Payload : Type u) (φ : Frame) := Slot φ → Option Payload
+
+/-- The original syntax-valued environment is the `Atom` specialization. -/
+abbrev FrameEnv (φ : Frame) := FrameEnvOf Atom φ
 
 /-- Index lookup. -/
-def lookup {φ : Frame} (env : FrameEnv φ) (slot : Slot φ) : Option Atom :=
+def lookup {φ : Frame} (env : FrameEnvOf Payload φ) (slot : Slot φ) : Option Payload :=
   env slot
 
 /-- Spell a slot as the named variable `SubstitutionAlgebra` uses. -/
@@ -71,13 +78,13 @@ theorem indexOf_lt {φ : Frame} {v : Var} {i : Nat}
 
 /-- Named substitution denoted by a frame environment.  Names outside the
 inventory are unbound. -/
-def denote {φ : Frame} (env : FrameEnv φ) : Subst :=
+def denote {φ : Frame} (env : FrameEnvOf Payload φ) : Var → Option Payload :=
   fun v =>
     match h : indexOf φ v with
     | some i => env ⟨i, indexOf_lt h⟩
     | none => none
 
-@[simp] theorem lookup_eq {φ : Frame} (env : FrameEnv φ) (slot : Slot φ) :
+@[simp] theorem lookup_eq {φ : Frame} (env : FrameEnvOf Payload φ) (slot : Slot φ) :
     lookup env slot = env slot := rfl
 
 theorem indexOf_get {φ : Frame} (unique : φ.Nodup) (slot : Slot φ) :
@@ -110,7 +117,7 @@ theorem indexOf_get {φ : Frame} (unique : φ.Nodup) (slot : Slot φ) :
 /-- A slot's name, looked up through the denoted substitution, is the
 slot's value.  This is the index-not-name law. -/
 theorem denote_nameOf {φ : Frame} (unique : φ.Nodup)
-    (env : FrameEnv φ) (slot : Slot φ) :
+    (env : FrameEnvOf Payload φ) (slot : Slot φ) :
     denote env (nameOf slot) = lookup env slot := by
   unfold denote lookup
   split
@@ -122,5 +129,31 @@ theorem denote_nameOf {φ : Frame} (unique : φ.Nodup)
   · next hnone =>
       have same := indexOf_get unique slot
       simp [same] at hnone
+
+/-- Pointwise payload transport preserves the finite inventory and every slot. -/
+def mapPayload {Target : Type v} {φ : Frame} (f : Payload → Target)
+    (env : FrameEnvOf Payload φ) : FrameEnvOf Target φ :=
+  fun slot => (env slot).map f
+
+@[simp] theorem lookup_mapPayload {Target : Type v} {φ : Frame}
+    (f : Payload → Target) (env : FrameEnvOf Payload φ) (slot : Slot φ) :
+    lookup (mapPayload f env) slot = (lookup env slot).map f := rfl
+
+@[simp] theorem denote_mapPayload {Target : Type v} {φ : Frame}
+    (f : Payload → Target) (env : FrameEnvOf Payload φ) (name : Var) :
+    denote (mapPayload f env) name = (denote env name).map f := by
+  unfold denote
+  split <;> rfl
+
+theorem mapPayload_id {φ : Frame} (env : FrameEnvOf Payload φ) :
+    mapPayload id env = env := by
+  funext slot
+  simp [mapPayload]
+
+theorem mapPayload_comp {Middle : Type v} {Target : Type w} {φ : Frame}
+    (f : Payload → Middle) (g : Middle → Target) (env : FrameEnvOf Payload φ) :
+    mapPayload g (mapPayload f env) = mapPayload (g ∘ f) env := by
+  funext slot
+  simp [mapPayload, Option.map_map]
 
 end Mettapedia.Languages.MeTTa.MetavariableFrame

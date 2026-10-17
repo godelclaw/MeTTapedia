@@ -41,6 +41,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceInterpretation
 
 open Mettapedia.GSLT.LanguageDef
+open SemanticService
 open KernelAuthority SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
@@ -49,76 +50,7 @@ open SharedJudgmentFragment SharedJudgmentInterpretation
 
 universe uArtifact uEvidence u v w w'
 
-/-- Operational data for the four existing SemanticService faces. The native guest's
-judgment is stated independently of its submitted Boolean checker. -/
-inductive RawService (target : AdmissionObject.{uArtifact}) :
-    Type (max (uArtifact + 1) (uEvidence + 1)) where
-  | directDecision (decide : target.Carrier → Bool)
-  | nativeProof (guest : NativeProofSystem.{uArtifact, uEvidence} target.Carrier)
-      (check : target.Carrier → guest.ProofObject → Bool)
-  | nativeOperation (source : AdmissionObject.{uArtifact})
-      (run : source.Carrier → target.Carrier)
-  | certificateBoundary (Certificate : Type uEvidence)
-      (checker : Checker target.Carrier Certificate)
 
-namespace RawService
-
-variable {target : AdmissionObject.{uArtifact}}
-
-/-- Qualification is separate from raw data. Operation qualification is
-preservation, not surjectivity; certificate completeness quantifies over
-evidence and is not a decision procedure for its existence. -/
-def Qualified : RawService.{uArtifact, uEvidence} target → Prop
-  | .directDecision decide => ∀ claim, decide claim = true ↔ target.Meaning claim
-  | .nativeProof guest check =>
-      (∀ claim proof, check claim proof = true ↔ guest.Judges proof claim) ∧
-      (∀ claim, target.Meaning claim ↔ Nonempty (guest.ProofFibre claim))
-  | .nativeOperation source run =>
-      ∀ input, source.Meaning input → target.Meaning (run input)
-  | .certificateBoundary _ checker => checker.Authority target.Meaning
-
-/-- Reconstruct the existing service, keeping its fixed target and all raw
-functions. No claim predicate is inferred from acceptance. -/
-def toService (raw : RawService.{uArtifact, uEvidence} target)
-    (qualified : raw.Qualified) : SemanticService.Service.{uArtifact, uEvidence} target :=
-  match raw with
-  | .directDecision decide => .directDecision ⟨decide, qualified⟩
-  | .nativeProof guest check =>
-      .nativeProof guest ⟨check, qualified.1⟩ qualified.2
-  | .nativeOperation source run => .nativeOperation source ⟨run, qualified⟩
-  | .certificateBoundary Certificate checker =>
-      .certificateBoundary Certificate checker qualified
-
-/-- Forget only the laws carried by an existing SemanticService service. -/
-def erase : SemanticService.Service.{uArtifact, uEvidence} target → RawService target
-  | .directDecision kernel => .directDecision kernel.decide
-  | .nativeProof guest kernel _ => .nativeProof guest kernel.decide
-  | .nativeOperation source operation => .nativeOperation source operation.run
-  | .certificateBoundary Certificate checker _ => .certificateBoundary Certificate checker
-
-theorem erase_toService (raw : RawService.{uArtifact, uEvidence} target)
-    (qualified : raw.Qualified) : erase (raw.toService qualified) = raw := by
-  cases raw <;> rfl
-
-theorem erased_qualified (service : SemanticService.Service.{uArtifact, uEvidence} target) :
-    (erase service).Qualified := by
-  cases service with
-  | directDecision kernel => exact kernel.correct
-  | nativeProof guest kernel exactMeaning => exact ⟨kernel.correct, exactMeaning⟩
-  | nativeOperation source operation => exact operation.preserves
-  | certificateBoundary Certificate checker authority => exact authority
-
-/-- Change only the proposed target meaning. All submitted operations and
-guest judgments stay fixed; qualification must be justified again. -/
-def withMeaning (raw : RawService.{uArtifact, uEvidence} target)
-    (meaning : target.Carrier → Prop) : RawService ⟨target.Carrier, meaning⟩ :=
-  match raw with
-  | .directDecision decide => .directDecision decide
-  | .nativeProof guest check => .nativeProof guest check
-  | .nativeOperation source run => .nativeOperation source run
-  | .certificateBoundary Certificate checker => .certificateBoundary Certificate checker
-
-end RawService
 
 variable {assembly : Assembly} {C : Cwf.{u, v, w, w'}}
 variable {target : AdmissionObject.{uArtifact}}

@@ -69,10 +69,11 @@ def declaration : RulePlan where
   binding := ⟨GeneralRuleBindingInference.inferredSpec rule, .inferredRootInputs⟩
 
 theorem compiled_binding :
-    GeneralRuleBindingInference.compile? language rule = some declaration.binding := by decide +kernel
+    GeneralRuleBindingInference.compile? language rule = some declaration.binding := by cbv
 
 theorem compiled_premises :
-    rulePremisesAdmitted language provider rule declaration.binding.spec = true := by cbv
+    rulePremisesAdmitted language provider (declaration.binding.elaborate rule)
+      declaration.binding.spec = true := by cbv
 
 theorem compiled_templates :
     GeneralEquationCanonicalTemplates.checkRule rule = true ∧

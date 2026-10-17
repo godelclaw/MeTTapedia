@@ -262,3 +262,189 @@ theorem lifting_agrees_when_ground :
         (toPattern capturingBody)
       = applyBindings [("x", Pattern.apply "P" [])] (toPattern capturingBody) := by
   decide +kernel
+
+/-! ## Executable refinement of the raw scope profile
+
+The refiner preserves textual binder metadata. It checks the raw de Bruijn
+scope discipline; quote sealing and sorted authored parsing remain distinct
+profiles with their own admission boundaries. -/
+
+mutual
+
+def fromPattern? (scope : Nat) : Pattern → Option (Scoped scope)
+  | .bvar index => if inScope : index < scope then some (.bvar ⟨index, inScope⟩) else none
+  | .fvar name => some (.fvar name)
+  | .apply label arguments => (fromPatternList? scope arguments).map (.apply label)
+  | .lambda name body => (fromPattern? (scope + 1) body).map (.lambda name)
+  | .multiLambda arity names body =>
+      (fromPattern? (scope + arity) body).map (.multiLambda arity names)
+  | .subst body replacement =>
+      (fromPattern? (scope + 1) body).bind fun scopedBody =>
+        (fromPattern? scope replacement).map (.subst scopedBody)
+  | .collection kind elements rest =>
+      (fromPatternList? scope elements).map (fun values => .collection kind values rest)
+
+def fromPatternList? (scope : Nat) : List Pattern → Option (ScopedList scope)
+  | [] => some .nil
+  | head :: tail => (fromPattern? scope head).bind fun scopedHead =>
+      (fromPatternList? scope tail).map (.cons scopedHead)
+
+end
+
+mutual
+
+theorem fromPattern?_toPattern : ∀ {scope : Nat} (term : Scoped scope),
+    fromPattern? scope (toPattern term) = some term
+  | _, .bvar index => by simp [toPattern, fromPattern?, index.isLt]
+  | _, .fvar _ => rfl
+  | _, .apply label arguments => by
+      simp only [toPattern, fromPattern?, fromPatternList?_toPatternList, Option.map_some]
+  | _, .lambda name body => by
+      simp only [toPattern, fromPattern?, fromPattern?_toPattern, Option.map_some]
+  | _, .multiLambda arity names body => by
+      simp only [toPattern, fromPattern?, fromPattern?_toPattern, Option.map_some]
+  | _, .subst body replacement => by
+      simp only [toPattern, fromPattern?, fromPattern?_toPattern, Option.bind_some,
+        Option.map_some]
+  | _, .collection kind elements rest => by
+      simp only [toPattern, fromPattern?, fromPatternList?_toPatternList, Option.map_some]
+
+theorem fromPatternList?_toPatternList : ∀ {scope : Nat} (terms : ScopedList scope),
+    fromPatternList? scope (toPatternList terms) = some terms
+  | _, .nil => rfl
+  | _, .cons head tail => by
+      simp only [toPatternList, fromPatternList?, fromPattern?_toPattern,
+        fromPatternList?_toPatternList, Option.bind_some, Option.map_some]
+
+end
+
+mutual
+
+theorem fromPattern?_readout : ∀ (scope : Nat) (pattern : Pattern),
+    (fromPattern? scope pattern).map toPattern =
+      if pattern.isWellScopedAt scope then some pattern else none
+  | scope, .bvar index => by
+      simp only [fromPattern?, Pattern.isWellScopedAt]
+      split <;> simp_all [toPattern]
+  | _, .fvar _ => rfl
+  | scope, .apply label arguments => by
+      have read := fromPatternList?_readout scope arguments
+      cases result : fromPatternList? scope arguments with
+      | none =>
+          simp only [result, Option.map_none] at read
+          cases formed : Pattern.isWellScopedListAt scope arguments <;>
+            simp_all [fromPattern?, Pattern.isWellScopedAt]
+      | some refined =>
+          simp only [result, Option.map_some] at read
+          split at read
+          · next formed =>
+              have same : toPatternList refined = arguments := Option.some.inj read
+              simp [fromPattern?, result, toPattern, Pattern.isWellScopedAt, formed, same]
+          · cases read
+  | scope, .lambda name body => by
+      have read := fromPattern?_readout (scope + 1) body
+      cases result : fromPattern? (scope + 1) body with
+      | none =>
+          simp only [result, Option.map_none] at read
+          cases formed : Pattern.isWellScopedAt (scope + 1) body <;>
+            simp_all [fromPattern?, Pattern.isWellScopedAt]
+      | some refined =>
+          simp only [result, Option.map_some] at read
+          split at read
+          · next formed =>
+              have same : toPattern refined = body := Option.some.inj read
+              simp [fromPattern?, result, toPattern, Pattern.isWellScopedAt, formed, same]
+          · cases read
+  | scope, .multiLambda arity names body => by
+      have read := fromPattern?_readout (scope + arity) body
+      cases result : fromPattern? (scope + arity) body with
+      | none =>
+          simp only [result, Option.map_none] at read
+          cases formed : Pattern.isWellScopedAt (scope + arity) body <;>
+            simp_all [fromPattern?, Pattern.isWellScopedAt]
+      | some refined =>
+          simp only [result, Option.map_some] at read
+          split at read
+          · next formed =>
+              have same : toPattern refined = body := Option.some.inj read
+              simp [fromPattern?, result, toPattern, Pattern.isWellScopedAt, formed, same]
+          · cases read
+  | scope, .subst body replacement => by
+      have first := fromPattern?_readout (scope + 1) body
+      have second := fromPattern?_readout scope replacement
+      cases firstResult : fromPattern? (scope + 1) body <;>
+        cases secondResult : fromPattern? scope replacement <;>
+        simp only [firstResult, secondResult, Option.map_some, Option.map_none] at first second <;>
+        split at first <;> split at second <;>
+        simp_all [fromPattern?, toPattern, Pattern.isWellScopedAt]
+  | scope, .collection kind elements rest => by
+      have read := fromPatternList?_readout scope elements
+      cases result : fromPatternList? scope elements with
+      | none =>
+          simp only [result, Option.map_none] at read
+          cases formed : Pattern.isWellScopedListAt scope elements <;>
+            simp_all [fromPattern?, Pattern.isWellScopedAt]
+      | some refined =>
+          simp only [result, Option.map_some] at read
+          split at read
+          · next formed =>
+              have same : toPatternList refined = elements := Option.some.inj read
+              simp [fromPattern?, result, toPattern, Pattern.isWellScopedAt, formed, same]
+          · cases read
+
+theorem fromPatternList?_readout : ∀ (scope : Nat) (patterns : List Pattern),
+    (fromPatternList? scope patterns).map toPatternList =
+      if Pattern.isWellScopedListAt scope patterns then some patterns else none
+  | _, [] => rfl
+  | scope, head :: tail => by
+      have first := fromPattern?_readout scope head
+      have second := fromPatternList?_readout scope tail
+      cases firstResult : fromPattern? scope head <;>
+        cases secondResult : fromPatternList? scope tail <;>
+        simp only [firstResult, secondResult, Option.map_some, Option.map_none] at first second <;>
+        split at first <;> split at second <;>
+        simp_all [fromPatternList?, toPatternList, Pattern.isWellScopedListAt]
+
+end
+
+theorem fromPattern?_isSome (scope : Nat) (pattern : Pattern) :
+    (fromPattern? scope pattern).isSome = pattern.isWellScopedAt scope := by
+  have read := fromPattern?_readout scope pattern
+  have status := congrArg Option.isSome read
+  cases formed : pattern.isWellScopedAt scope <;>
+    simpa only [Option.isSome_map, formed, Bool.false_eq_true, ↓reduceIte,
+      Option.isSome_none, Option.isSome_some] using status
+
+theorem fromPattern?_exact (scope : Nat) (pattern : Pattern) :
+    (∃ term, fromPattern? scope pattern = some term) ↔
+      pattern.isWellScopedAt scope = true := by
+  rw [← fromPattern?_isSome, Option.isSome_iff_exists]
+
+theorem toPattern_injective {scope : Nat} : Function.Injective (@toPattern scope) := by
+  intro first second same
+  have parsed := congrArg (fromPattern? scope) same
+  simpa only [fromPattern?_toPattern, Option.some.injEq] using parsed
+
+theorem toPattern_fromPattern? {scope : Nat} {pattern : Pattern} {term : Scoped scope}
+    (parsed : fromPattern? scope pattern = some term) : toPattern term = pattern := by
+  have read := fromPattern?_readout scope pattern
+  rw [parsed] at read
+  split at read
+  · exact Option.some.inj read
+  · cases read
+
+/-- Recover intrinsic syntax after the existing executable scope admission.
+The scope proof is erased; the refiner still computes from the raw pattern. -/
+def refine (scope : Nat) (pattern : Pattern)
+    (formed : pattern.isWellScopedAt scope = true) : Scoped scope :=
+  (fromPattern? scope pattern).get (by rw [fromPattern?_isSome, formed])
+
+theorem refine_readout (scope : Nat) (pattern : Pattern)
+    (formed : pattern.isWellScopedAt scope = true) :
+    toPattern (refine scope pattern formed) = pattern := by
+  cases parsed : fromPattern? scope pattern with
+  | none =>
+      have admitted := (fromPattern?_isSome scope pattern).trans formed
+      simp [parsed] at admitted
+  | some term =>
+      simpa only [refine, parsed, Option.get_some] using toPattern_fromPattern? parsed

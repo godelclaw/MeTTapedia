@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mathlib.Order.FixedPoints
 import Mathlib.Data.Set.Lattice
 import Mathlib.Data.Set.Card

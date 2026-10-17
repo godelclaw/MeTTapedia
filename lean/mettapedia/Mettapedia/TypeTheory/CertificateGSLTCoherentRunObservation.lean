@@ -40,20 +40,17 @@ open Mettapedia.Coalgebra.CoherentPrefixTower
 
 universe uNode uAnswer
 
-/-! ## Generic resumable trajectories -/
+/-! ## Scheduled-search specialization of resumable trajectories -/
 
 /-- A stream of finite snapshots belonging to one fixed system and scheduler,
 with exact resumption from every observation boundary. -/
-structure ResumableTrajectory
+abbrev ResumableTrajectory
     {Node : Type uNode} {Answer : Type uAnswer}
     (system : BranchingSystem Node Answer)
     (scheduler : Scheduler Node)
-    (start : Snapshot Node Answer) where
-  observation : Stream (Snapshot Node Answer)
-  at_zero : observation 0 = start
-  resume : ∀ first extra,
-    observation (first + extra) =
-      run system scheduler extra (observation first)
+    (start : Snapshot Node Answer) :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory
+    (run system scheduler) start
 
 namespace ResumableTrajectory
 
@@ -67,51 +64,40 @@ def canonical
     (system : BranchingSystem Node Answer)
     (scheduler : Scheduler Node)
     (start : Snapshot Node Answer) :
-    ResumableTrajectory system scheduler start where
-  observation fuel := run system scheduler fuel start
-  at_zero := rfl
-  resume := by
-    intro first extra
-    exact run_add system scheduler first extra start
+    ResumableTrajectory system scheduler start :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical
+    (run system scheduler) start (fun _ => rfl)
+    (run_add system scheduler)
 
 /-- Every purported trajectory is pointwise the canonical finite execution. -/
 theorem observation_eq_run
     (trajectory : ResumableTrajectory system scheduler start)
     (fuel : Nat) :
-    trajectory.observation fuel = run system scheduler fuel start := by
-  calc
-    trajectory.observation fuel =
-        run system scheduler fuel (trajectory.observation 0) := by
-      simpa using trajectory.resume 0 fuel
-    _ = run system scheduler fuel start := by rw [trajectory.at_zero]
+    trajectory.observation fuel = run system scheduler fuel start :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observation_eq_run
+    trajectory fuel
 
 @[ext]
 theorem ext
     (first second : ResumableTrajectory system scheduler start)
     (observations : first.observation = second.observation) :
-    first = second := by
-  cases first
-  cases second
-  cases observations
-  rfl
+    first = second :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.ext observations
 
 /-- Exact resumption and the initial snapshot determine a unique trajectory. -/
 theorem eq_canonical
     (trajectory : ResumableTrajectory system scheduler start) :
-    trajectory = canonical system scheduler start := by
-  apply ext
-  funext fuel
-  exact observation_eq_run trajectory fuel
+    trajectory = canonical system scheduler start :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.unique _ _
 
 /-- Later observations only append chronological events. -/
 theorem events_prefix_after_resume
     (trajectory : ResumableTrajectory system scheduler start)
     (first extra : Nat) :
     (trajectory.observation first).events.IsPrefix
-      (trajectory.observation (first + extra)).events := by
-  rw [trajectory.resume]
-  exact events_prefix_run system scheduler extra
-    (trajectory.observation first)
+      (trajectory.observation (first + extra)).events :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observer_prefix_after_resume
+    trajectory Snapshot.events (events_prefix_run system scheduler) first extra
 
 /-- A genuinely completed finite observation is stable under every later
 resumption. -/
@@ -120,10 +106,10 @@ theorem observation_constant_after_completion
     (first extra : Nat)
     (complete : (trajectory.observation first).frontier = []) :
     trajectory.observation (first + extra) =
-      trajectory.observation first := by
-  rw [trajectory.resume]
-  exact run_eq_self_of_frontier_nil system scheduler
-    (trajectory.observation first) complete extra
+      trajectory.observation first :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.observation_constant_after_settlement
+    trajectory (fun state => state.frontier = [])
+    (run_eq_self_of_frontier_nil system scheduler) first extra complete
 
 /-- Soundness of the initial snapshot propagates to every finite
 observation. -/
@@ -131,23 +117,26 @@ theorem sound
     (trajectory : ResumableTrajectory system scheduler start)
     (roots : List Node) (startSound : start.Sound system roots)
     (fuel : Nat) :
-    (trajectory.observation fuel).Sound system roots := by
-  rw [trajectory.observation_eq_run]
-  exact sound_run system scheduler startSound fuel
+    (trajectory.observation fuel).Sound system roots :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.invariant trajectory
+    (fun state => state.Sound system roots)
+    (fun fuel _state stateSound => sound_run system scheduler stateSound fuel)
+    startSound fuel
 
 /-- Every resumable trajectory supplies a coherent tower of its finite stream
 prefixes. -/
 def coherentTower
     (trajectory : ResumableTrajectory system scheduler start) :
     Tower (Snapshot Node Answer) :=
-  Tower.ofStream trajectory.observation
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.coherentTower trajectory
 
 /-- The complete coherent tower reconstructs the exact trajectory stream. -/
 @[simp]
 theorem toStream_coherentTower
     (trajectory : ResumableTrajectory system scheduler start) :
     Tower.toStream trajectory.coherentTower = trajectory.observation :=
-  Tower.toStream_ofStream trajectory.observation
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.toStream_coherentTower
+    trajectory
 
 /-- Resumption remains visible after reconstruction from the coherent tower. -/
 theorem reconstructed_resume
@@ -155,8 +144,9 @@ theorem reconstructed_resume
     (first extra : Nat) :
     Tower.toStream trajectory.coherentTower (first + extra) =
       run system scheduler extra
-        (Tower.toStream trajectory.coherentTower first) := by
-  simpa only [toStream_coherentTower] using trajectory.resume first extra
+        (Tower.toStream trajectory.coherentTower first) :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.reconstructed_resume
+    trajectory first extra
 
 end ResumableTrajectory
 

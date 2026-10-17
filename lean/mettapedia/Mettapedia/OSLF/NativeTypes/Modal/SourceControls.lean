@@ -46,7 +46,7 @@ theorem canonical_identity_proper :
 theorem canonical_identity_executes :
     Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.result [] canonicalIdentity ∈
       baseIntroductions (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.schema [])
-        (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment [] canonicalIdentity) :=
+        (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment [] canonicalIdentity) [] :=
   Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.all_proper_bodies_execute canonical_identity_proper
     (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment_lookup [] canonicalIdentity)
 
@@ -96,7 +96,7 @@ theorem named_capture_typed :
   Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment_typed named_identity_typed (by cbv)
 
 theorem named_introduction_refused :
-    baseIntroductions schema (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment [] namedIdentity) = [] := by
+    baseIntroductions schema (Mettapedia.OSLF.NativeTypes.Modal.SourceProfile.assignment [] namedIdentity) [] = [] := by
   unfold baseIntroductions
   rw [named_source_instance, schema_rhs]
   cbv

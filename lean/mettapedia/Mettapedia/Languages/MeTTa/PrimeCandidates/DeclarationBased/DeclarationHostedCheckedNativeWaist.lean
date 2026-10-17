@@ -37,7 +37,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.InferenceCheckedNativeWaist
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareFormedTyping
 open DeclarationHostedJudgments
 

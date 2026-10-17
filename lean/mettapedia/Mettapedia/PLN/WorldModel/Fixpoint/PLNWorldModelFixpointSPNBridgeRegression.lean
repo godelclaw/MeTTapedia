@@ -17,12 +17,6 @@ open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicyRegression
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlapRegression
 
-abbrev PointedKripke :=
-  Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicyRegression.PointedKripke
-abbrev PolicyWeightedState :=
-  Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointSPNBridge.PolicyWeightedState
-abbrev PolicyModalQuery :=
-  Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointSPNBridge.PolicyModalQuery
 
 def alwaysFresh : Nat → Bool := fun _ => true
 
@@ -53,12 +47,12 @@ theorem fixture_eventualFresh_to_closure_endpoint :
       alwaysFresh true false alwaysFresh_eventual
 
 theorem fixture_policy_eventualFresh_endpoint_add_of_compatible_trustedAll
-    (pkA pkB : PointedKripke) (qPolicy : PolicyModalQuery) :
+    (pkA pkB : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.PointedKripke) (qPolicy : (LO.Modal.Formula ℕ)) :
     ∃ M, ∀ n, M ≤ n →
       (n, true) ∈
         leastRuleClosure (State := OrbitState) (Query := OrbitQuery)
           (orbitRules alwaysFresh true)
-          (BinaryWorldModel.evidence (State := PolicyWeightedState) (Query := PolicyModalQuery)
+          (BinaryWorldModel.evidence (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (Query := (LO.Modal.Formula ℕ))
             ((leftState pkA) + (rightDisjointState pkB)) qPolicy)
           (orbitSeed false) := by
   exact

@@ -262,6 +262,21 @@ private theorem runMatrixAll_map_rowAt_eq_flatMap
         simp [rowAt, OPM.runMatrixAll, OPM.structuralMatchList, rejected,
           noResult, inductionHypothesis tailRejects]
 
+/-- Structural selection preserves arbitrary ordered occurrence readouts when
+an independently rejected row has no emission. Bindings and provenance can be
+observed here without projecting the leaf meaning down to target terms. -/
+theorem runMatrixAll_ofLanguage_eq_occurrenceFold {Result : Type}
+    (language : LanguageDef) (attempt : RuleOccurrence language → List Result)
+    (subject : Pattern)
+    (rejects : ∀ occurrence,
+      OPM.structuralMatch (lowerPattern (ruleAt language occurrence).left)
+        (lowerSubject subject) = false → attempt occurrence = []) :
+    OPM.runMatrixAll attempt (ofLanguage language) [lowerSubject subject] =
+      (List.finRange language.rewrites.length).flatMap attempt := by
+  apply runMatrixAll_map_rowAt_eq_flatMap
+  intro occurrence _ rejected
+  exact rejects occurrence rejected
+
 /-- The independent matrix scanner yields exactly the ordinary authored-order
 rule fold. -/
 theorem runMatrixAll_ofLanguage_eq_flatMap

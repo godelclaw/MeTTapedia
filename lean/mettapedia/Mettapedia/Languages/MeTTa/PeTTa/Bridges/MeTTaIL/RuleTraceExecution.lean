@@ -38,7 +38,7 @@ open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
 open Effects (State)
 open Eval RuleExecutionProgram
 open RootRuleExecution
-open RelationPremiseExecution (providerEnv providerTuples)
+open RelationPremiseExecution (providerEnv providerTuples VariableSourceProgram)
 
 /-- Independently compile every actual literal payload in the finite provider.
 Variables remain literal data; this check requires syntax closure, not groundness. -/
@@ -67,7 +67,7 @@ theorem providerEnv_firstOrder (rows : List ProviderRow)
 section Paths
 
 variable (state : State) (language : LanguageDef) (types terms : Term)
-  (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+  (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
   (rows : List ProviderRow)
 
 /-- The existing route type, with each edge supplied by an actual completed
@@ -166,7 +166,7 @@ end Paths
 section Batches
 
 variable (state : State) (language : LanguageDef) (types terms : Term)
-  (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+  (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
   (rows : List ProviderRow)
 
 /-- One real retained-source entry term for each supplied path edge. -/
@@ -315,7 +315,7 @@ theorem receipts_injective (language : LanguageDef) (rows : List ProviderRow) (s
 section
 
 variable (state : State) (language : LanguageDef) (types terms : Term)
-  (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites)
+  (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites)
   (rows : List ProviderRow)
 
 /-- Each ordinal-bearing edge is justified by the retained source entry's
@@ -520,7 +520,7 @@ private def driveEquation : SpaceSemantics.Equation :=
   (equations "gslt:rule:drive")[0]'(by decide +kernel)
 
 private def driveEnvironment (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (selections : List Nat) (budget : Nat) : Subst :=
   [("budget", number budget), ("selections", selectionsValue selections), ("subject", patternValue subject),
     ("rows", providerValue rows), ("language", encoded (Conditional.languageTerm language types terms contexts compiled))]
@@ -560,7 +560,7 @@ private theorem drive_shape : driveEquation.body =
   decide +kernel
 
 private theorem drive_clause (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (selections : List Nat) (budget : Nat) :
     clauses program "gslt:rule:drive"
       [encoded (Conditional.languageTerm language types terms contexts compiled), providerValue rows,
@@ -576,7 +576,7 @@ private theorem drive_clause (language : LanguageDef) (types terms : Term)
     SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
 
 private theorem drive_call (caller : Subst) (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (selections : List Nat) (budget : Nat)
     (arguments : List Atom) (answer : Atom)
     (captured : arguments.map (applySubst caller) =
@@ -600,7 +600,7 @@ private theorem drive_call (caller : Subst) (state : State) (language : Language
     exact drive_clause language types terms contexts compiled rows subject selections budget
 
 private theorem drive_nil_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (budget : Nat) :
     PureReturns program (driveEnvironment language types terms contexts compiled rows subject [] budget) state
       driveEquation.body state (encoded (stoppedTerm subject)) := by
@@ -616,7 +616,7 @@ private theorem drive_nil_body_returns (state : State) (language : LanguageDef) 
         (by decide +kernel) (by decide)
 
 private theorem drive_cons_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (index : Nat) (rest : List Nat) (budget : Nat) (answer : Atom)
     (continued : PureReturns program
       (consEnvironment (driveEnvironment language types terms contexts compiled rows subject (index :: rest) budget)
@@ -634,7 +634,7 @@ private theorem drive_cons_body_returns (state : State) (language : LanguageDef)
       matchAtom, Subst.lookup, selected, consEnvironment, caller, driveEnvironment]
 
 private theorem drive_fuel_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (index : Nat) (rest : List Nat) :
     PureReturns program (driveEnvironment language types terms contexts compiled rows subject (index :: rest) 0)
       state driveEquation.body state (encoded (fuelTerm subject (index :: rest))) := by
@@ -656,7 +656,7 @@ private theorem drive_fuel_body_returns (state : State) (language : LanguageDef)
       (by decide +kernel) (by decide)
 
 private theorem drive_more_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (index : Nat) (rest : List Nat) (budget : Nat) (answer : Atom)
     (continued : PureReturns program
       (("frontier", patternsValue (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)) ::
@@ -688,7 +688,7 @@ private theorem drive_more_body_returns (state : State) (language : LanguageDef)
   · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, bound, selected, consEnvironment, caller, driveEnvironment]
 
 private theorem drive_refused_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject : PatternPlan) (index : Nat) (rest : List Nat) (budget : Nat)
     (unavailable : (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)[index]? = none) :
     PureReturns program
@@ -720,7 +720,7 @@ private theorem drive_refused_body_returns (state : State) (language : LanguageD
         (by decide +kernel) (by decide)
 
 private theorem drive_step_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (subject next : PatternPlan) (index : Nat) (rest : List Nat) (budget : Nat) (tail : Term)
     (selectedNext : (rewriteStepWithPremisesUsing (providerEnv rows) language subject.erase)[index]? = some next.erase)
     (continued : PureReturns program (driveEnvironment language types terms contexts compiled rows next rest budget)
@@ -788,7 +788,7 @@ private theorem drive_step_body_returns (state : State) (language : LanguageDef)
         (by decide +kernel) (by decide)
 
 private theorem drive_path_body_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     {source target : PatternPlan} (path : Path language rows source target)
     (unread : List Nat) (terminal : Term) (budget : Nat) (bounded : path.length ≤ budget)
     (ending : Ending language rows target (budget - path.length) unread terminal) :
@@ -822,7 +822,7 @@ private theorem drive_path_body_returns (state : State) (language : LanguageDef)
 its exact ending. Each success performs a fresh authorized frontier call and
 re-enters the source driver on the selected residual. The store and I/O stay pure. -/
 theorem drive_captured_returns (caller : Subst) (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     {source target : PatternPlan} (path : Path language rows source target)
     (unread : List Nat) (terminal : Term) (budget : Nat) (bounded : path.length ≤ budget)
     (ending : Ending language rows target (budget - path.length) unread terminal)
@@ -836,14 +836,14 @@ theorem drive_captured_returns (caller : Subst) (state : State) (language : Lang
     (drive_path_body_returns state language types terms contexts compiled rows path unread terminal budget bounded ending)
 
 def driveQueryTerm (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (source : PatternPlan) (selections : List Nat) (budget : Nat) : Term :=
   .application "gslt:rule:drive"
     [Conditional.languageTerm language types terms contexts compiled, RelationPremiseExecution.providerRowsTerm rows,
      InferenceCettaWire.encodePattern source.erase, selectionsTerm selections, .natural budget]
 
 theorem drive_returns (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     {source target : PatternPlan} (path : Path language rows source target)
     (unread : List Nat) (terminal : Term) (budget : Nat) (bounded : path.length ≤ budget)
     (ending : Ending language rows target (budget - path.length) unread terminal) :
@@ -854,7 +854,7 @@ theorem drive_returns (state : State) (language : LanguageDef) (types terms : Te
   simp [CettaWireAtom.encode, CettaWireAtom.encodeMany, applySubst]
 
 theorem drive_completed_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     {source target : PatternPlan} (path : Path language rows source target)
     (unread : List Nat) (terminal : Term) (budget : Nat) (bounded : path.length ≤ budget)
     (ending : Ending language rows target (budget - path.length) unread terminal)
@@ -869,7 +869,7 @@ theorem drive_completed_iff (state : State) (language : LanguageDef) (types term
     after answers input output
 
 theorem drive_derivation_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     {source target : PatternPlan} (path : Path language rows source target)
     (unread : List Nat) (terminal : Term) (budget : Nat) (bounded : path.length ≤ budget)
     (ending : Ending language rows target (budget - path.length) unread terminal)
@@ -887,7 +887,7 @@ theorem drive_derivation_iff (state : State) (language : LanguageDef) (types ter
 record and one distinct ending. The semantic budget bounds the selected steps;
 the sufficient PeTTa instruction fuel is derived from actual source execution. -/
 theorem drive_total (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (providerAdmitted : providerFirstOrder rows = true)
     (source : PatternPlan) (selections : List Nat) (budget : Nat) :
     ∃ (target : PatternPlan) (path : Path language rows source target) (unread : List Nat) (terminal : Term),
@@ -906,7 +906,7 @@ theorem drive_total (state : State) (language : LanguageDef) (types terms : Term
 the exact consumed prefix, all ordered frontiers, the remaining receipts and
 the termination reason. No independent execution or trace carrier is assumed. -/
 theorem observations_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (providerAdmitted : providerFirstOrder rows = true)
     (source : PatternPlan) (selections : List Nat) (budget : Nat)
     (after : State) (answers input output : List Atom) :
@@ -932,7 +932,7 @@ theorem observations_iff (state : State) (language : LanguageDef) (types terms :
     simpa only [consumed] using completed
 
 theorem derivations_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (providerAdmitted : providerFirstOrder rows = true)
     (source : PatternPlan) (selections : List Nat) (budget : Nat)
     (after : State) (answers input output : List Atom) :
@@ -952,7 +952,7 @@ theorem derivations_iff (state : State) (language : LanguageDef) (types terms : 
 real source driver consumes it and stops at the same target. Conversely every
 such recorded driver path is a canonical GSLT path of the same length. -/
 theorem stopped_paths_iff (state : State) (language : LanguageDef) (types terms : Term)
-    (contexts : RewriteRule → Term) (compiled : RuleProgram language.rewrites) (rows : List ProviderRow)
+    (contexts : RewriteRule → Term) (compiled : VariableSourceProgram language.rewrites) (rows : List ProviderRow)
     (equationFree : language.isEquationFree = true) (providerAdmitted : providerFirstOrder rows = true)
     (source target : PatternPlan) (count : Nat) :
     (∃ path : Path language rows source target, path.length = count ∧
@@ -1010,15 +1010,15 @@ theorem second_frontier :
 private theorem selected (state : State) (subject target : PatternPlan)
     (member : target.erase ∈ rewriteStepWithPremisesUsing (providerEnv fixture.rows) fixture.language subject.erase) :
     Conditional.ObservesRootReduct state fixture.language (.symbol "LNil") (.symbol "LNil")
-      (fun _ => .symbol "LNil") fixture.compiled fixture.rows subject target.erase := by
+      (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows subject target.erase := by
   refine ⟨_, ?_, member⟩
   exact (Conditional.language_root_derivation_iff state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows subject state _ [] []).mpr
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows subject state _ [] []).mpr
       ⟨rfl, rfl, rfl, rfl⟩
 
 /-- A supplied two-edge path, with both edges justified by actual entry runs. -/
 def path (state : State) : CallPath state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows start done :=
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows start done :=
   .cons ⟨selected state start middle (by rw [first_frontier]; simp)⟩
     (.cons ⟨selected state middle done (by rw [second_frontier]; simp)⟩ (.refl done))
 
@@ -1028,7 +1028,7 @@ def expectedFrontiers : List Term :=
 
 theorem path_frontiers (state : State) :
     frontierTerms state fixture.language (.symbol "LNil") (.symbol "LNil")
-      (fun _ => .symbol "LNil") fixture.compiled fixture.rows (path state) = expectedFrontiers := by
+      (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (path state) = expectedFrontiers := by
   simp only [frontierTerms, path, Route.trace, first_frontier, second_frontier, expectedFrontiers]
 
 theorem path_length (state : State) : (path state).length = 2 := rfl
@@ -1036,19 +1036,19 @@ theorem path_length (state : State) : (path state).length = 2 := rfl
 theorem batch_checked (state : State) :
     Returns program [] state
       (batchQuery state fixture.language (.symbol "LNil") (.symbol "LNil")
-        (fun _ => .symbol "LNil") fixture.compiled fixture.rows (path state)) state
+        (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (path state)) state
       (expectedFrontiers.map CettaWireAtom.encode) := by
   rw [← path_frontiers state]
   exact batch_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (path state)
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (path state)
 
 theorem reversed_observations_refused (state : State) :
     ¬ DeclarativeSpec.Runs program
       { state, control := .evaluate [] (batchQuery state fixture.language (.symbol "LNil") (.symbol "LNil")
-          (fun _ => .symbol "LNil") fixture.compiled fixture.rows (path state)) }
+          (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (path state)) }
       (.complete state (expectedFrontiers.reverse.map CettaWireAtom.encode) [] []) := by
   apply batch_refuses_incorrect state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (path state)
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (path state)
   rw [path_frontiers state]
   decide +kernel
 
@@ -1078,13 +1078,13 @@ theorem duplicate_chosen :
 
 def driveQuery (selections : List Nat) (budget : Nat) : Term :=
   Selection.driveQueryTerm fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows start selections budget
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows start selections budget
 
 theorem drive_stopped (state : State) (budget : Nat) :
     PureReturns program [] state (CettaWireAtom.encode (driveQuery [] budget)) state
       (CettaWireAtom.encode (Selection.stoppedTerm start)) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (.refl start) [] (Selection.stoppedTerm start)
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (.refl start) [] (Selection.stoppedTerm start)
     budget (by simp [Route.length]) (Or.inl ⟨rfl, rfl⟩)
 
 /-- Receipt exhaustion wins even with zero budget, and the residual can still
@@ -1097,14 +1097,14 @@ theorem drive_fuel_before_first (state : State) :
     PureReturns program [] state (CettaWireAtom.encode (driveQuery [0] 0)) state
       (CettaWireAtom.encode (Selection.fuelTerm start [0])) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (.refl start) [0] (Selection.fuelTerm start [0])
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (.refl start) [0] (Selection.fuelTerm start [0])
     0 (by simp [Route.length]) (Or.inr (Or.inl ⟨by simp, rfl, rfl⟩))
 
 theorem drive_refused_before_first (state : State) :
     PureReturns program [] state (CettaWireAtom.encode (driveQuery [99] 3)) state
       (CettaWireAtom.encode (Selection.refusedTerm fixture.language fixture.rows start [99])) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (.refl start) [99]
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (.refl start) [99]
     (Selection.refusedTerm fixture.language fixture.rows start [99]) 3 (by simp [Route.length])
     (Or.inr (Or.inr ⟨99, [], rfl, by decide, by rw [first_frontier]; rfl, rfl⟩))
 
@@ -1114,14 +1114,14 @@ theorem drive_two (state : State) (index : Nat)
     PureReturns program [] state (CettaWireAtom.encode (driveQuery [index, 0] 2)) state
       (CettaWireAtom.encode (Selection.pathTerm (twoSelected index chosen) (Selection.stoppedTerm done))) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (twoSelected index chosen) [] (Selection.stoppedTerm done)
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (twoSelected index chosen) [] (Selection.stoppedTerm done)
     2 (by simp [twoSelected, Route.length]) (Or.inl ⟨rfl, rfl⟩)
 
 theorem drive_fuel_after_one (state : State) :
     PureReturns program [] state (CettaWireAtom.encode (driveQuery [0, 0] 1)) state
       (CettaWireAtom.encode (Selection.pathTerm (oneSelected 0 first_chosen) (Selection.fuelTerm middle [0]))) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (oneSelected 0 first_chosen) [0]
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (oneSelected 0 first_chosen) [0]
     (Selection.fuelTerm middle [0]) 1 (by simp [oneSelected, Route.length])
     (Or.inr (Or.inl ⟨by simp, rfl, rfl⟩))
 
@@ -1130,7 +1130,7 @@ theorem drive_refused_after_one (state : State) :
       (CettaWireAtom.encode (Selection.pathTerm (oneSelected 0 first_chosen)
         (Selection.refusedTerm fixture.language fixture.rows middle [8]))) :=
   Selection.drive_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows (oneSelected 0 first_chosen) [8]
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled (by decide +kernel)) fixture.rows (oneSelected 0 first_chosen) [8]
     (Selection.refusedTerm fixture.language fixture.rows middle [8]) 3 (by simp [oneSelected, Route.length])
     (Or.inr (Or.inr ⟨8, [], rfl, by decide, by rw [second_frontier]; rfl, rfl⟩))
 

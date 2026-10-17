@@ -43,6 +43,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annota
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.ParameterizedDatatypes
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.ParameterizedPackage
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.ConstantRenaming
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.LiteralConstants
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.TheoremDefinitions
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.TheoremStability
 
@@ -151,6 +152,13 @@ place of the definition's: one ι-step followed by β-steps. In the tower, the
 scrutinee-first forms of `add-onto`, `rev-onto` and `dfa-run`, written with
 the recursors of the numbers and of the lists, satisfy their equations with
 the changing accumulator.
+
+A literal of a host language is a declared constant at the sort the host
+gives it: its typing is the constant rule at that declaration, a constant the
+package does not declare has no type, and renaming constants along a bijection
+preserves and reflects every judgment. So a symmetry that swaps a literal and
+its sort with a user's constant and a user's sort decides every judgment about
+the literal as it decides the same judgment about the user's constant.
 
 The cumulative tower's instances and controls described here ("in the tower")
 are in the calculus's instance modules (`ParameterizedPiSigmaId.Instances`),

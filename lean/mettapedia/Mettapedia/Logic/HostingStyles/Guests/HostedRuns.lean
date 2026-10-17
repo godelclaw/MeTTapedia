@@ -146,7 +146,7 @@ namespace Mettapedia.Logic.HostingStyles.Guests
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 
 /-- **Under the linear reading the candidate preserves no run of more than

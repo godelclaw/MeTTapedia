@@ -2,6 +2,7 @@ import Mettapedia.OSLF.NativeTypes.Generation.BindingPipeline
 import Mettapedia.OSLF.NativeTypes.Semantics.Presheaf.CubeNativeHeaderRanks
 import Mettapedia.OSLF.NativeTypes.Semantics.Presheaf.CubeNativeExtension
 import Mettapedia.OSLF.NativeTypes.Semantics.Presheaf.CubeNativeCertificates
+import Mettapedia.OSLF.NativeTypes.Semantics.Presheaf.CubeNativeClosedFormation
 
 /-!
 # Cube enrichment from actual installed native declarations

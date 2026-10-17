@@ -11,35 +11,87 @@ The core source and instruction tables follow Cousineau, Curien and Mauny,
 retain source bodies; executable closures retain instruction lists. The
 compiler supplies their representation map. Quotation (p. 180, Table 1) and
 Boolean branching (pp. 192--193, Table 6) also execute on raw configurations.
-These extended instructions are outside the constant-free source compiler
-and its readback until an extended source representation is constructed.
+One indexed source grammar and independent evaluation judgment cover both
+the historical constant-free fragment and the quotation/conditional extension.
+The compiler, native closure readback and completed-execution correspondence
+are shared. Non-Boolean conditions remain stuck; no termination is assumed.
 
 The strict profile is the active instruction table of Section 2. The neutral
 profile adds the inactive projection/application rules of Table 5. Completed
 answers require empty code and empty stack. Arbitrary raw instructions are
 not thereby certified as compiled source programs.
+
+The instruction table also lists the primitives, `wind`, `freeze` and
+`unfreeze` of Sections 4 and 5. They have no rule here; the value-graph machine
+of `CategoricalAbstractMachineGraph` executes them.
 -/
 
 set_option autoImplicit false
 
 namespace Mettapedia.Machines.CategoricalAbstractMachine
 
-inductive Expr where
-  | var (index : Nat)
-  | lam (body : Expr)
-  | app (operator argument : Expr)
-  | pair (left right : Expr)
-  | first (term : Expr)
-  | second (term : Expr)
-  deriving DecidableEq, Repr
-
-/-- The basic quoted constants of this executable profile. Integers here are
-mathematical integers, independently of any C integer implementation profile. -/
+/-- Quoted constants of the executable profile; integers are mathematical integers.
+`unit` is the quotable `()` that the recursion code of Section 4 (p. 193) places
+in a couple before `wind` (`nullvalue` in Section 5). It is a constant, distinct
+from the empty environment `SourceValue.unit`. -/
 inductive Literal where
   | boolean (value : Bool)
   | integer (value : Int)
+  | unit
   deriving DecidableEq, Repr
 
+/-- The strict primitives of Section 5 (p. 198): `plus`, `minus`, `times`, `eq`
+and `leq` act on a couple of integers. -/
+inductive Primitive where
+  | plus
+  | minus
+  | times
+  | equal
+  | lessEqual
+  deriving DecidableEq, Repr
+
+/-- The constant a primitive returns on the couple `(left, right)` of integers. -/
+def Primitive.apply : Primitive → Int → Int → Literal
+  | .plus, left, right => .integer (left + right)
+  | .minus, left, right => .integer (left - right)
+  | .times, left, right => .integer (left * right)
+  | .equal, left, right => .boolean (decide (left = right))
+  | .lessEqual, left, right => .boolean (decide (left ≤ right))
+
+/-- One source grammar, with operational extensions admitted explicitly. The
+historical constant-free fragment is the specialization at `false`. -/
+inductive Source (extended : Bool) where
+  | var (index : Nat)
+  | lam (body : Source extended)
+  | app (operator argument : Source extended)
+  | pair (left right : Source extended)
+  | first (term : Source extended)
+  | second (term : Source extended)
+  | literal (enabled : extended = true) (value : Literal)
+  | conditional (enabled : extended = true) (condition whenTrue whenFalse : Source extended)
+  deriving DecidableEq, Repr
+
+abbrev Expr := Source false
+
+namespace Expr
+abbrev var := Source.var (extended := false)
+abbrev lam := Source.lam (extended := false)
+abbrev app := Source.app (extended := false)
+abbrev pair := Source.pair (extended := false)
+abbrev first := Source.first (extended := false)
+abbrev second := Source.second (extended := false)
+end Expr
+
+variable {extended : Bool}
+
+/-- One instruction table for the tree-valued machine of this file and the
+value-graph machine of `CategoricalAbstractMachineGraph`. The last four
+instructions are Section 4/5 extensions: `operation` applies a strict
+primitive to a couple of integers (p. 198), `wind` closes a recursive
+environment by physically replacing the right part of a couple (Table 6),
+`freeze` delays a body into a laze and `unfreeze` forces one (Table 7). The
+tree-valued `Transition` below has no rule for these four; they execute on the
+value graph, where `wind` updates a shared cell in place. -/
 inductive Instruction where
   | first
   | second
@@ -50,83 +102,112 @@ inductive Instruction where
   | app
   | quote (value : Literal)
   | branch (whenTrue whenFalse : List Instruction)
+  | operation (primitive : Primitive)
+  | wind
+  | freeze (body : List Instruction)
+  | unfreeze
   deriving Repr
 
+/-- The constructor index of an instruction form. Equal instructions have equal
+indices; it is used only to separate distinct forms in `Instruction.decEq`. -/
+def Instruction.tag : Instruction → Nat
+  | .first => 0
+  | .second => 1
+  | .cur _ => 2
+  | .push => 3
+  | .swap => 4
+  | .cons => 5
+  | .app => 6
+  | .quote _ => 7
+  | .branch _ _ => 8
+  | .operation _ => 9
+  | .wind => 10
+  | .freeze _ => 11
+  | .unfreeze => 12
+
+theorem Instruction.ne_of_tag_ne {left right : Instruction} (different : left.tag ≠ right.tag) :
+    left ≠ right :=
+  fun same => different (congrArg Instruction.tag same)
+
 mutual
-def Instruction.decEq : (left right : Instruction) → Decidable (left = right)
-  | .first, .first | .second, .second | .push, .push | .swap, .swap
-  | .cons, .cons | .app, .app => .isTrue rfl
-  | .cur left, .cur right =>
+/-- Equality of two instructions of the same form. The equal-index hypothesis
+leaves only the diagonal cases; their fields are compared recursively. -/
+def Instruction.decEqOfTag : (left right : Instruction) → left.tag = right.tag → Decidable (left = right)
+  | .first, .first, _ | .second, .second, _ | .push, .push, _ | .swap, .swap, _
+  | .cons, .cons, _ | .app, .app, _ | .wind, .wind, _ | .unfreeze, .unfreeze, _ => .isTrue rfl
+  | .cur left, .cur right, _ =>
       match Instruction.codeDecEq left right with
       | .isTrue same => .isTrue (same ▸ rfl)
       | .isFalse different => .isFalse (fun same => different (Instruction.cur.inj same))
-  | .quote left, .quote right =>
+  | .freeze left, .freeze right, _ =>
+      match Instruction.codeDecEq left right with
+      | .isTrue same => .isTrue (same ▸ rfl)
+      | .isFalse different => .isFalse (fun same => different (Instruction.freeze.inj same))
+  | .quote left, .quote right, _ =>
       if same : left = right then .isTrue (same ▸ rfl)
       else .isFalse (fun equal => same (Instruction.quote.inj equal))
-  | .branch leftTrue leftFalse, .branch rightTrue rightFalse =>
+  | .operation left, .operation right, _ =>
+      if same : left = right then .isTrue (same ▸ rfl)
+      else .isFalse (fun equal => same (Instruction.operation.inj equal))
+  | .branch leftTrue leftFalse, .branch rightTrue rightFalse, _ =>
       match Instruction.codeDecEq leftTrue rightTrue, Instruction.codeDecEq leftFalse rightFalse with
       | .isTrue sameTrue, .isTrue sameFalse => .isTrue (sameTrue ▸ sameFalse ▸ rfl)
       | .isFalse different, _ => .isFalse (fun same => different (Instruction.branch.inj same).1)
       | _, .isFalse different => .isFalse (fun same => different (Instruction.branch.inj same).2)
-  | .first, .second | .first, .cur _ | .first, .push | .first, .swap | .first, .cons
-  | .first, .app | .first, .quote _ | .first, .branch _ _ | .second, .first | .second, .cur _
-  | .second, .push | .second, .swap | .second, .cons | .second, .app | .second, .quote _
-  | .second, .branch _ _ | .cur _, .first | .cur _, .second | .cur _, .push | .cur _, .swap
-  | .cur _, .cons | .cur _, .app | .cur _, .quote _ | .cur _, .branch _ _ | .push, .first
-  | .push, .second | .push, .cur _ | .push, .swap | .push, .cons | .push, .app
-  | .push, .quote _ | .push, .branch _ _ | .swap, .first | .swap, .second | .swap, .cur _
-  | .swap, .push | .swap, .cons | .swap, .app | .swap, .quote _ | .swap, .branch _ _
-  | .cons, .first | .cons, .second | .cons, .cur _ | .cons, .push | .cons, .swap
-  | .cons, .app | .cons, .quote _ | .cons, .branch _ _ | .app, .first | .app, .second
-  | .app, .cur _ | .app, .push | .app, .swap | .app, .cons | .app, .quote _
-  | .app, .branch _ _ | .quote _, .first | .quote _, .second | .quote _, .cur _ | .quote _, .push
-  | .quote _, .swap | .quote _, .cons | .quote _, .app | .quote _, .branch _ _ | .branch _ _, .first
-  | .branch _ _, .second | .branch _ _, .cur _ | .branch _ _, .push | .branch _ _, .swap | .branch _ _, .cons
-  | .branch _ _, .app | .branch _ _, .quote _ =>
-      .isFalse (by intro same; cases same)
 def Instruction.codeDecEq : (left right : List Instruction) → Decidable (left = right)
   | [], [] => .isTrue rfl
   | [], _ :: _ | _ :: _, [] => .isFalse (by intro same; cases same)
   | left :: lefts, right :: rights =>
-      match Instruction.decEq left right, Instruction.codeDecEq lefts rights with
+      match (if tags : left.tag = right.tag then Instruction.decEqOfTag left right tags
+          else .isFalse (Instruction.ne_of_tag_ne tags)), Instruction.codeDecEq lefts rights with
       | .isTrue sameHead, .isTrue sameTail => .isTrue (sameHead ▸ sameTail ▸ rfl)
       | .isFalse different, _ => .isFalse (fun same => different (List.cons.inj same).1)
       | _, .isFalse different => .isFalse (fun same => different (List.cons.inj same).2)
 end
 
+/-- Distinct forms differ by constructor index; equal forms compare their fields. -/
+def Instruction.decEq (left right : Instruction) : Decidable (left = right) :=
+  if tags : left.tag = right.tag then Instruction.decEqOfTag left right tags
+  else .isFalse (Instruction.ne_of_tag_ne tags)
+
 instance : DecidableEq Instruction := Instruction.decEq
 
 abbrev Code := List Instruction
 
-def compile : Expr → Code
+def compileSource : Source extended → Code
   | .var index => List.replicate index .first ++ [.second]
-  | .lam body => [.cur (compile body)]
+  | .lam body => [.cur (compileSource body)]
   | .app operator argument =>
-      [.push] ++ compile operator ++ [.swap] ++ compile argument ++ [.cons, .app]
-  | .pair left right => [.push] ++ compile left ++ [.swap] ++ compile right ++ [.cons]
-  | .first term => compile term ++ [.first]
-  | .second term => compile term ++ [.second]
+      [.push] ++ compileSource operator ++ [.swap] ++ compileSource argument ++ [.cons, .app]
+  | .pair left right => [.push] ++ compileSource left ++ [.swap] ++ compileSource right ++ [.cons]
+  | .first term => compileSource term ++ [.first]
+  | .second term => compileSource term ++ [.second]
+  | .literal _ value => [.quote value]
+  | .conditional _ condition whenTrue whenFalse =>
+      .push :: compileSource condition ++ [.branch (compileSource whenTrue) (compileSource whenFalse)]
 
-@[simp] theorem compile_var_zero : compile (.var 0) = [.second] := rfl
+abbrev compile : Expr → Code := compileSource
+
+@[simp] theorem compile_var_zero : compileSource (extended := extended) (.var 0) = [.second] := rfl
 
 @[simp] theorem compile_var_succ (index : Nat) :
-    compile (.var (index + 1)) = .first :: compile (.var index) := by
-  simp [compile, List.replicate_succ]
+    compileSource (extended := extended) (.var (index + 1)) = .first :: compileSource (extended := extended) (.var index) := by
+  simp [compileSource, List.replicate_succ]
 
-theorem compile_nonempty (term : Expr) : compile term ≠ [] := by
-  cases term <;> simp [compile]
+theorem compile_nonempty (term : Source extended) : compileSource term ≠ [] := by
+  cases term <;> simp [compileSource]
 
-private inductive SymbolicValue where
+private inductive SymbolicValue (extended : Bool) where
   | environment (depth : Nat)
-  | term (expression : Expr)
+  | term (expression : Source extended)
 
-private structure SymbolicState where
-  register : SymbolicValue
-  stack : List SymbolicValue
+private structure SymbolicState (extended : Bool) where
+  register : SymbolicValue extended
+  stack : List (SymbolicValue extended)
 
 /-- Symbolically execute instructions to reconstruct their source expression.
 The final canonical check distinguishes compiler output from extra raw work. -/
-@[simp] private def decodeAux : Code → SymbolicState → Option SymbolicState
+@[simp] private def decodeAux : Code → SymbolicState extended → Option (SymbolicState extended)
   | [], state => some state
   | .first :: rest, ⟨.environment depth, stack⟩ =>
       decodeAux rest ⟨.environment (depth + 1), stack⟩
@@ -146,10 +227,21 @@ The final canonical check distinguishes compiler output from extra raw work. -/
       decodeAux rest ⟨.term (.pair left right), stack⟩
   | .app :: rest, ⟨.term (.pair operator argument), stack⟩ =>
       decodeAux rest ⟨.term (.app operator argument), stack⟩
+  | .quote value :: rest, ⟨.environment 0, stack⟩ =>
+      if enabled : extended = true then decodeAux rest ⟨.term (.literal enabled value), stack⟩
+      else none
+  | .branch whenTrue whenFalse :: rest, ⟨.term condition, .environment 0 :: stack⟩ =>
+      if enabled : extended = true then
+        match decodeAux whenTrue ⟨.environment 0, []⟩,
+            decodeAux whenFalse ⟨.environment 0, []⟩ with
+        | some ⟨.term left, []⟩, some ⟨.term right, []⟩ =>
+            decodeAux rest ⟨.term (.conditional enabled condition left right), stack⟩
+        | _, _ => none
+      else none
   | _, _ => none
 
 private theorem decodeAux_lookup (index depth : Nat) (rest : Code)
-    (stack : List SymbolicValue) :
+    (stack : List (SymbolicValue extended)) :
     decodeAux (List.replicate index .first ++ .second :: rest) ⟨.environment depth, stack⟩ =
       decodeAux rest ⟨.term (.var (depth + index)), stack⟩ := by
   induction index generalizing depth with
@@ -158,52 +250,60 @@ private theorem decodeAux_lookup (index depth : Nat) (rest : Code)
       simp only [List.replicate_succ, List.cons_append, decodeAux]
       simpa only [Nat.add_assoc, Nat.add_comm 1 index] using ih (depth + 1)
 
-private theorem decodeAux_compile (expression : Expr) (rest : Code)
-    (stack : List SymbolicValue) :
-    decodeAux (compile expression ++ rest) ⟨.environment 0, stack⟩ =
+private theorem decodeAux_compile (expression : Source extended) (rest : Code)
+    (stack : List (SymbolicValue extended)) :
+    decodeAux (compileSource expression ++ rest) ⟨.environment 0, stack⟩ =
       decodeAux rest ⟨.term expression, stack⟩ := by
   induction expression generalizing rest stack with
-  | var index => simpa only [compile, List.append_assoc, List.singleton_append, Nat.zero_add]
+  | var index => simpa only [compileSource, List.append_assoc, List.singleton_append, Nat.zero_add]
       using decodeAux_lookup index 0 rest stack
   | lam body ih =>
-      simp only [compile, List.singleton_append, decodeAux]
+      simp only [compileSource, List.singleton_append, decodeAux]
       have bodyDecoded := ih [] []
       simp only [List.append_nil, decodeAux] at bodyDecoded
       rw [bodyDecoded]
   | app operator argument operatorIH argumentIH =>
-      simp only [compile, List.append_assoc, List.cons_append, List.nil_append, decodeAux]
+      simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append, decodeAux]
       rw [operatorIH]
       simp only [decodeAux]
       rw [argumentIH]
       simp only [decodeAux]
   | pair left right leftIH rightIH =>
-      simp only [compile, List.append_assoc, List.cons_append, List.nil_append, decodeAux]
+      simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append, decodeAux]
       rw [leftIH]
       simp only [decodeAux]
       rw [rightIH]
       simp only [decodeAux]
   | first term ih =>
-      simp only [compile, List.append_assoc]
+      simp only [compileSource, List.append_assoc]
       rw [ih]
       simp only [List.singleton_append, decodeAux]
   | second term ih =>
-      simp only [compile, List.append_assoc]
+      simp only [compileSource, List.append_assoc]
       rw [ih]
       simp only [List.singleton_append, decodeAux]
+  | literal enabled value => simp [compileSource, decodeAux, enabled]
+  | conditional enabled condition whenTrue whenFalse conditionIH trueIH falseIH =>
+      simp only [compileSource, List.cons_append, List.append_assoc, decodeAux]
+      rw [conditionIH]
+      have trueDecoded := trueIH [] []
+      have falseDecoded := falseIH [] []
+      simp only [List.append_nil, decodeAux] at trueDecoded falseDecoded
+      simp [decodeAux, enabled, trueDecoded, falseDecoded]
 
-def decodeCode (code : Code) : Option Expr :=
+def decodeSourceCode (code : Code) : Option (Source extended) :=
   match decodeAux code ⟨.environment 0, []⟩ with
-  | some ⟨.term expression, []⟩ => if compile expression = code then some expression else none
+  | some ⟨.term expression, []⟩ => if compileSource expression = code then some expression else none
   | _ => none
 
-@[simp] theorem decode_compile (expression : Expr) : decodeCode (compile expression) = some expression := by
+@[simp] theorem decode_compile (expression : Source extended) : decodeSourceCode (compileSource expression) = some expression := by
   have reconstructed := decodeAux_compile expression [] []
   simp only [List.append_nil, decodeAux] at reconstructed
-  simp [decodeCode, reconstructed]
+  simp [decodeSourceCode, reconstructed]
 
-theorem compile_decode {code : Code} {expression : Expr}
-    (decoded : decodeCode code = some expression) : compile expression = code := by
-  unfold decodeCode at decoded
+theorem compile_decode {code : Code} {expression : Source extended}
+    (decoded : decodeSourceCode code = some expression) : compileSource expression = code := by
+  unfold decodeSourceCode at decoded
   split at decoded
   · split at decoded
     · cases decoded
@@ -211,19 +311,31 @@ theorem compile_decode {code : Code} {expression : Expr}
     · contradiction
   · contradiction
 
-theorem compile_injective : Function.Injective compile := by
+theorem compile_injective : Function.Injective (@compileSource extended) := by
   intro left right same
-  have decoded := congrArg decodeCode same
+  have decoded := congrArg (@decodeSourceCode extended) same
   simpa only [decode_compile, Option.some.injEq] using decoded
 
-inductive Value where
+inductive SourceValue (extended : Bool) where
   | unit
-  | pair (left right : Value)
-  | closure (body : Expr) (environment : Value)
-  | first (value : Value)
-  | second (value : Value)
-  | app (value : Value)
+  | literal (enabled : extended = true) (value : Literal)
+  | pair (left right : SourceValue extended)
+  | closure (body : Source extended) (environment : SourceValue extended)
+  | first (value : SourceValue extended)
+  | second (value : SourceValue extended)
+  | app (value : SourceValue extended)
   deriving DecidableEq, Repr
+
+abbrev Value := SourceValue false
+
+namespace Value
+abbrev unit := SourceValue.unit (extended := false)
+abbrev pair := SourceValue.pair (extended := false)
+abbrev closure := SourceValue.closure (extended := false)
+abbrev first := SourceValue.first (extended := false)
+abbrev second := SourceValue.second (extended := false)
+abbrev app := SourceValue.app (extended := false)
+end Value
 
 inductive NativeValue where
   | unit
@@ -235,118 +347,125 @@ inductive NativeValue where
   | app (value : NativeValue)
   deriving DecidableEq, Repr
 
-def encodeValue : Value → NativeValue
+def encodeSourceValue : SourceValue extended → NativeValue
   | .unit => .unit
-  | .pair left right => .pair (encodeValue left) (encodeValue right)
-  | .closure body environment => .closure (compile body) (encodeValue environment)
-  | .first value => .first (encodeValue value)
-  | .second value => .second (encodeValue value)
-  | .app value => .app (encodeValue value)
+  | .literal _ value => .literal value
+  | .pair left right => .pair (encodeSourceValue left) (encodeSourceValue right)
+  | .closure body environment => .closure (compileSource body) (encodeSourceValue environment)
+  | .first value => .first (encodeSourceValue value)
+  | .second value => .second (encodeSourceValue value)
+  | .app value => .app (encodeSourceValue value)
 
-def decodeValue : NativeValue → Option Value
+abbrev encodeValue : Value → NativeValue := encodeSourceValue
+
+def decodeSourceValue : NativeValue → Option (SourceValue extended)
   | .unit => some .unit
-  | .literal _ => none
+  | .literal value => if enabled : extended = true then some (.literal enabled value) else none
   | .pair left right =>
-      match decodeValue left, decodeValue right with
+      match decodeSourceValue left, decodeSourceValue right with
       | some left, some right => some (.pair left right)
       | _, _ => none
   | .closure body environment =>
-      match decodeCode body, decodeValue environment with
+      match decodeSourceCode body, decodeSourceValue environment with
       | some body, some environment => some (.closure body environment)
       | _, _ => none
-  | .first value => (decodeValue value).map .first
-  | .second value => (decodeValue value).map .second
-  | .app value => (decodeValue value).map .app
+  | .first value => (decodeSourceValue value).map .first
+  | .second value => (decodeSourceValue value).map .second
+  | .app value => (decodeSourceValue value).map .app
 
-@[simp] theorem decode_encodeValue (value : Value) : decodeValue (encodeValue value) = some value := by
-  induction value <;> simp_all [encodeValue, decodeValue]
+@[simp] theorem decode_encodeValue (value : SourceValue extended) : decodeSourceValue (encodeSourceValue value) = some value := by
+  induction value <;> simp_all [encodeSourceValue, decodeSourceValue]
 
-theorem encodeValue_injective : Function.Injective encodeValue := by
+theorem encodeValue_injective : Function.Injective (@encodeSourceValue extended) := by
   intro left right same
-  have decoded := congrArg decodeValue same
+  have decoded := congrArg (@decodeSourceValue extended) same
   simpa only [decode_encodeValue, Option.some.injEq] using decoded
 
-theorem encode_decodeValue {native : NativeValue} {value : Value}
-    (decoded : decodeValue native = some value) : encodeValue value = native := by
+theorem encode_decodeValue {native : NativeValue} {value : SourceValue extended}
+    (decoded : decodeSourceValue native = some value) : encodeSourceValue value = native := by
   induction native generalizing value with
-  | literal => simp [decodeValue] at decoded
-  | unit => simp only [decodeValue, Option.some.injEq] at decoded; subst value; rfl
+  | literal literal =>
+      simp only [decodeSourceValue] at decoded
+      split at decoded
+      · cases decoded; rfl
+      · contradiction
+  | unit => simp only [decodeSourceValue, Option.some.injEq] at decoded; subst value; rfl
   | pair left right leftIH rightIH =>
-      cases leftDecoded : decodeValue left with
-      | none => simp [decodeValue, leftDecoded] at decoded
+      cases leftDecoded : decodeSourceValue (extended := extended) left with
+      | none => simp [decodeSourceValue, leftDecoded] at decoded
       | some leftValue =>
-          cases rightDecoded : decodeValue right with
-          | none => simp [decodeValue, leftDecoded, rightDecoded] at decoded
+          cases rightDecoded : decodeSourceValue (extended := extended) right with
+          | none => simp [decodeSourceValue, leftDecoded, rightDecoded] at decoded
           | some rightValue =>
-              simp only [decodeValue, leftDecoded, rightDecoded, Option.some.injEq] at decoded
+              simp only [decodeSourceValue, leftDecoded, rightDecoded, Option.some.injEq] at decoded
               subst value
-              simp only [encodeValue, leftIH leftDecoded, rightIH rightDecoded]
+              simp only [encodeSourceValue, leftIH leftDecoded, rightIH rightDecoded]
   | closure body environment environmentIH =>
-      cases bodyDecoded : decodeCode body with
-      | none => simp [decodeValue, bodyDecoded] at decoded
+      cases bodyDecoded : decodeSourceCode (extended := extended) body with
+      | none => simp [decodeSourceValue, bodyDecoded] at decoded
       | some bodyValue =>
-          cases environmentDecoded : decodeValue environment with
-          | none => simp [decodeValue, bodyDecoded, environmentDecoded] at decoded
+          cases environmentDecoded : decodeSourceValue (extended := extended) environment with
+          | none => simp [decodeSourceValue, bodyDecoded, environmentDecoded] at decoded
           | some environmentValue =>
-              simp only [decodeValue, bodyDecoded, environmentDecoded, Option.some.injEq] at decoded
+              simp only [decodeSourceValue, bodyDecoded, environmentDecoded, Option.some.injEq] at decoded
               subst value
-              simp only [encodeValue, compile_decode bodyDecoded, environmentIH environmentDecoded]
+              simp only [encodeSourceValue, compile_decode bodyDecoded, environmentIH environmentDecoded]
   | first native ih =>
-      cases nativeDecoded : decodeValue native <;>
-        simp only [decodeValue, nativeDecoded, Option.map_some, Option.map_none,
+      cases nativeDecoded : decodeSourceValue (extended := extended) native <;>
+        simp only [decodeSourceValue, nativeDecoded, Option.map_some, Option.map_none,
           Option.some.injEq, reduceCtorEq] at decoded
       subst value
-      simp only [encodeValue, ih nativeDecoded]
+      simp only [encodeSourceValue, ih nativeDecoded]
   | second native ih =>
-      cases nativeDecoded : decodeValue native <;>
-        simp only [decodeValue, nativeDecoded, Option.map_some, Option.map_none,
+      cases nativeDecoded : decodeSourceValue (extended := extended) native <;>
+        simp only [decodeSourceValue, nativeDecoded, Option.map_some, Option.map_none,
           Option.some.injEq, reduceCtorEq] at decoded
       subst value
-      simp only [encodeValue, ih nativeDecoded]
+      simp only [encodeSourceValue, ih nativeDecoded]
   | app native ih =>
-      cases nativeDecoded : decodeValue native <;>
-        simp only [decodeValue, nativeDecoded, Option.map_some, Option.map_none,
+      cases nativeDecoded : decodeSourceValue (extended := extended) native <;>
+        simp only [decodeSourceValue, nativeDecoded, Option.map_some, Option.map_none,
           Option.some.injEq, reduceCtorEq] at decoded
       subst value
-      simp only [encodeValue, ih nativeDecoded]
+      simp only [encodeSourceValue, ih nativeDecoded]
 
-def firstValue : Value → Value
+def firstValue : SourceValue extended → SourceValue extended
   | .pair left _ => left
   | value => .first value
 
-def secondValue : Value → Value
+def secondValue : SourceValue extended → SourceValue extended
   | .pair _ right => right
   | value => .second value
 
-def NotPair : Value → Prop
+def NotPair : SourceValue extended → Prop
   | .pair _ _ => False
   | _ => True
 
-def NotClosure : Value → Prop
+def NotClosure : SourceValue extended → Prop
   | .closure _ _ => False
   | _ => True
 
-inductive First : Value → Value → Prop where
-  | pair (left right : Value) : First (.pair left right) left
-  | neutral (value : Value) (inactive : NotPair value) : First value (.first value)
+inductive First : SourceValue extended → SourceValue extended → Prop where
+  | pair (left right : SourceValue extended) : First (.pair left right) left
+  | neutral (value : SourceValue extended) (inactive : NotPair value) : First value (.first value)
 
-inductive Second : Value → Value → Prop where
-  | pair (left right : Value) : Second (.pair left right) right
-  | neutral (value : Value) (inactive : NotPair value) : Second value (.second value)
+inductive Second : SourceValue extended → SourceValue extended → Prop where
+  | pair (left right : SourceValue extended) : Second (.pair left right) right
+  | neutral (value : SourceValue extended) (inactive : NotPair value) : Second value (.second value)
 
-theorem firstValue_sound (value : Value) : First value (firstValue value) := by
+theorem firstValue_sound (value : SourceValue extended) : First value (firstValue value) := by
   cases value <;> first | exact .pair _ _ | exact .neutral _ trivial
 
-theorem secondValue_sound (value : Value) : Second value (secondValue value) := by
+theorem secondValue_sound (value : SourceValue extended) : Second value (secondValue value) := by
   cases value <;> first | exact .pair _ _ | exact .neutral _ trivial
 
-theorem First.result {value result : Value} (derivation : First value result) :
+theorem First.result {value result : SourceValue extended} (derivation : First value result) :
     firstValue value = result := by
   cases derivation with
   | pair => rfl
   | neutral value inactive => cases value <;> simp_all [NotPair, firstValue]
 
-theorem Second.result {value result : Value} (derivation : Second value result) :
+theorem Second.result {value result : SourceValue extended} (derivation : Second value result) :
     secondValue value = result := by
   cases derivation with
   | pair => rfl
@@ -355,36 +474,47 @@ theorem Second.result {value result : Value} (derivation : Second value result) 
 mutual
 /-- Independent completed combinatory evaluation, with active rules taking
 precedence over neutral rules. Instruction lists do not occur in this judgment. -/
-inductive Evaluation : Expr → Value → Value → Prop where
-  | varZero {environment value : Value} (projection : Second environment value) :
+inductive Evaluation : Source extended → SourceValue extended → SourceValue extended → Prop where
+  | varZero {environment value : SourceValue extended} (projection : Second environment value) :
       Evaluation (.var 0) environment value
-  | varSucc {index : Nat} {environment before value : Value}
+  | varSucc {index : Nat} {environment before value : SourceValue extended}
       (projection : First environment before) (rest : Evaluation (.var index) before value) :
       Evaluation (.var (index + 1)) environment value
-  | lam (body : Expr) (environment : Value) :
+  | literal (enabled : extended = true) (value : Literal) (environment : SourceValue extended) :
+      Evaluation (.literal enabled value) environment (.literal enabled value)
+  | conditional {enabled : extended = true} {condition whenTrue whenFalse : Source extended}
+      {environment value : SourceValue extended} {selected : Bool}
+      (conditionEval : Evaluation condition environment (.literal enabled (.boolean selected)))
+      (selectedEval : Evaluation (if selected then whenTrue else whenFalse) environment value) :
+      Evaluation (.conditional enabled condition whenTrue whenFalse) environment value
+  | lam (body : Source extended) (environment : SourceValue extended) :
       Evaluation (.lam body) environment (.closure body environment)
-  | pair {left right : Expr} {environment first second : Value}
+  | pair {left right : Source extended} {environment first second : SourceValue extended}
       (leftEval : Evaluation left environment first)
       (rightEval : Evaluation right environment second) :
       Evaluation (.pair left right) environment (.pair first second)
-  | app {operator argument : Expr} {environment function operand value : Value}
+  | app {operator argument : Source extended} {environment function operand value : SourceValue extended}
       (operatorEval : Evaluation operator environment function)
       (argumentEval : Evaluation argument environment operand)
       (invocation : Invocation function operand value) :
       Evaluation (.app operator argument) environment value
-  | first {term : Expr} {environment before value : Value}
+  | first {term : Source extended} {environment before value : SourceValue extended}
       (termEval : Evaluation term environment before) (projection : First before value) :
       Evaluation (.first term) environment value
-  | second {term : Expr} {environment before value : Value}
+  | second {term : Source extended} {environment before value : SourceValue extended}
       (termEval : Evaluation term environment before) (projection : Second before value) :
       Evaluation (.second term) environment value
-inductive Invocation : Value → Value → Value → Prop where
-  | closure {body : Expr} {environment argument value : Value}
+inductive Invocation : SourceValue extended → SourceValue extended → SourceValue extended → Prop where
+  | closure {body : Source extended} {environment argument value : SourceValue extended}
       (bodyEval : Evaluation body (.pair environment argument) value) :
       Invocation (.closure body environment) argument value
-  | neutral (function argument : Value) (inactive : NotClosure function) :
+  | neutral (function argument : SourceValue extended) (inactive : NotClosure function) :
       Invocation function argument (.app (.pair function argument))
 end
+
+/-- The historical code/value readers retain their original constant-free boundary. -/
+abbrev decodeCode : Code → Option Expr := decodeSourceCode
+abbrev decodeValue : NativeValue → Option Value := decodeSourceValue
 
 inductive Profile where
   | strict
@@ -405,7 +535,10 @@ def NativeNotApplicable : NativeValue → Prop
   | .pair (.closure _ _) _ => False
   | _ => True
 
-/-- The instruction table as independent operational rules. -/
+/-- The instruction table as independent operational rules. There is no rule
+for `operation`, `wind`, `freeze` or `unfreeze`: a tree configuration with one
+of them at the head is stopped. They are interpreted by the value-graph machine
+of `CategoricalAbstractMachineGraph`. -/
 inductive Transition : Profile → State → State → Prop where
   | firstPair (profile : Profile) (left right : NativeValue) (code : Code)
       (stack : List NativeValue) :
@@ -450,6 +583,8 @@ inductive Transition : Profile → State → State → Prop where
       Transition profile ⟨.literal (.boolean false), .branch whenTrue whenFalse :: code, saved :: stack⟩
         ⟨saved, whenFalse ++ code, stack⟩
 
+/-- Executable instruction table. The four value-graph instructions (`operation`,
+`wind`, `freeze`, `unfreeze`) fall to the final case: the tree machine stops there. -/
 def step (profile : Profile) : State → Option State
   | ⟨_, [], _⟩ => none
   | ⟨value, .first :: code, stack⟩ =>
@@ -528,7 +663,7 @@ theorem step_sound {profile : Profile} {before after : State}
           cases value <;> cases stack <;> simp only [step, reduceCtorEq] at execution
           rename_i literal saved stack
           cases literal with
-          | integer => simp at execution
+          | integer | unit => simp at execution
           | boolean selected =>
               cases selected <;> simp only [Option.some.injEq] at execution
               all_goals subst after
@@ -567,6 +702,7 @@ theorem step_sound {profile : Profile} {before after : State}
               cases profile <;> simp only [step, Option.some.injEq, reduceCtorEq] at execution
               all_goals subst after
               all_goals exact .appNeutral _ _ _ trivial
+      | operation _ | wind | freeze _ | unfreeze => simp [step] at execution
 
 theorem step_iff (profile : Profile) (before after : State) :
     step profile before = some after ↔ Transition profile before after :=
@@ -668,7 +804,7 @@ theorem ConstantFreeCode.replicate {instruction : Instruction}
   | zero => exact .nil
   | succ count ih => simpa only [List.replicate_succ] using ConstantFreeCode.cons free ih
 
-theorem compile_constantFree (term : Expr) : ConstantFreeCode (compile term) := by
+theorem compile_constantFree (term : Expr) : ConstantFreeCode (compileSource term) := by
   induction term with
   | var index => exact (ConstantFreeCode.replicate .first index).append (.singleton .second)
   | lam body ih => exact .singleton (.cur ih)
@@ -680,10 +816,13 @@ theorem compile_constantFree (term : Expr) : ConstantFreeCode (compile term) := 
         rightIH).append (.singleton .cons)
   | first term ih => exact ih.append (.singleton .first)
   | second term ih => exact ih.append (.singleton .second)
+  | literal enabled _ => cases enabled
+  | conditional enabled _ _ _ _ _ _ => cases enabled
 
-theorem encodeValue_constantFree (value : Value) : ConstantFreeValue (encodeValue value) := by
+theorem encodeValue_constantFree (value : Value) : ConstantFreeValue (encodeSourceValue value) := by
   induction value with
   | unit => exact .unit
+  | literal enabled _ => cases enabled
   | pair _ _ leftIH rightIH => exact .pair leftIH rightIH
   | closure body _ ih => exact .closure (compile_constantFree body) ih
   | first _ ih => exact .first ih
@@ -779,13 +918,13 @@ inside the old instruction/value profile, even in the extended machine.
 The previously constructed source correspondences therefore retain their
 original source boundary in both directions. -/
 theorem compiled_constantFree {profile : Profile} {term : Expr} {environment : Value} {state : State}
-    (execution : Steps profile ⟨encodeValue environment, compile term, []⟩ state) :
+    (execution : Steps profile ⟨encodeSourceValue environment, compileSource term, []⟩ state) :
     ConstantFreeState state :=
   execution.constantFree ⟨encodeValue_constantFree environment, compile_constantFree term,
     by intro value member; cases member⟩
 
 theorem compiled_cannot_quote {profile : Profile} {term : Expr} {environment : Value} {state : State}
-    (execution : Steps profile ⟨encodeValue environment, compile term, []⟩ state)
+    (execution : Steps profile ⟨encodeSourceValue environment, compileSource term, []⟩ state)
     (literal : Literal) (rest : Code) : state.code ≠ .quote literal :: rest := by
   intro same
   have free := (compiled_constantFree execution).2.1
@@ -793,7 +932,7 @@ theorem compiled_cannot_quote {profile : Profile} {term : Expr} {environment : V
   cases free.head
 
 theorem compiled_cannot_branch {profile : Profile} {term : Expr} {environment : Value} {state : State}
-    (execution : Steps profile ⟨encodeValue environment, compile term, []⟩ state)
+    (execution : Steps profile ⟨encodeSourceValue environment, compileSource term, []⟩ state)
     (whenTrue whenFalse rest : Code) : state.code ≠ .branch whenTrue whenFalse :: rest := by
   intro same
   have free := (compiled_constantFree execution).2.1
@@ -801,17 +940,17 @@ theorem compiled_cannot_branch {profile : Profile} {term : Expr} {environment : 
   cases free.head
 
 theorem compiled_cannot_produce_literal {profile : Profile} {term : Expr} {environment : Value}
-    {state : State} (execution : Steps profile ⟨encodeValue environment, compile term, []⟩ state)
+    {state : State} (execution : Steps profile ⟨encodeSourceValue environment, compileSource term, []⟩ state)
     (literal : Literal) : state.register ≠ .literal literal :=
   (compiled_constantFree execution).1.not_literal literal
 
 @[simp] theorem decode_literal (literal : Literal) : decodeValue (.literal literal) = none := rfl
 
 @[simp] theorem decode_quote (literal : Literal) (rest : Code) :
-    decodeCode (.quote literal :: rest) = none := by simp [decodeCode]
+    decodeCode (.quote literal :: rest) = none := by simp [decodeCode, decodeSourceCode]
 
 @[simp] theorem decode_branch (whenTrue whenFalse rest : Code) :
-    decodeCode (.branch whenTrue whenFalse :: rest) = none := by simp [decodeCode]
+    decodeCode (.branch whenTrue whenFalse :: rest) = none := by simp [decodeCode, decodeSourceCode]
 
 /-! ## Quotation and selected branch continuations -/
 
@@ -852,179 +991,192 @@ theorem branch_execution_tail (profile : Profile) (selected : Bool) (saved resul
   have first := step_sound (branch_step profile selected saved whenTrue whenFalse code stack)
   simpa only [extend, List.nil_append] using Relation.ReflTransGen.head first (chosen.extend code stack)
 
-theorem first_transition (value : Value) (code : Code) (stack : List NativeValue) :
-    Transition .neutral ⟨encodeValue value, .first :: code, stack⟩
-      ⟨encodeValue (firstValue value), code, stack⟩ := by
+theorem first_transition (value : SourceValue extended) (code : Code) (stack : List NativeValue) :
+    Transition .neutral ⟨encodeSourceValue value, .first :: code, stack⟩
+      ⟨encodeSourceValue (firstValue value), code, stack⟩ := by
   cases value <;> first | exact .firstPair _ _ _ _ _ | exact .firstNeutral _ _ _ trivial
 
-theorem second_transition (value : Value) (code : Code) (stack : List NativeValue) :
-    Transition .neutral ⟨encodeValue value, .second :: code, stack⟩
-      ⟨encodeValue (secondValue value), code, stack⟩ := by
+theorem second_transition (value : SourceValue extended) (code : Code) (stack : List NativeValue) :
+    Transition .neutral ⟨encodeSourceValue value, .second :: code, stack⟩
+      ⟨encodeSourceValue (secondValue value), code, stack⟩ := by
   cases value <;> first | exact .secondPair _ _ _ _ _ | exact .secondNeutral _ _ _ trivial
 
-theorem Evaluation.execution_tail {term : Expr} {environment value : Value}
+theorem Evaluation.execution_tail {term : Source extended} {environment value : SourceValue extended}
     (evaluation : Evaluation term environment value) (code : Code) (stack : List NativeValue) :
-    Steps .neutral ⟨encodeValue environment, compile term ++ code, stack⟩
-      ⟨encodeValue value, code, stack⟩ := by
+    Steps .neutral ⟨encodeSourceValue environment, compileSource term ++ code, stack⟩
+      ⟨encodeSourceValue value, code, stack⟩ := by
   induction evaluation using Evaluation.rec
       (motive_2 := fun function argument value _ => ∀ (code : Code) (stack : List NativeValue),
-        Steps .neutral ⟨.pair (encodeValue function) (encodeValue argument), .app :: code, stack⟩
-          ⟨encodeValue value, code, stack⟩) generalizing code stack with
+        Steps .neutral ⟨.pair (encodeSourceValue function) (encodeSourceValue argument), .app :: code, stack⟩
+          ⟨encodeSourceValue value, code, stack⟩) generalizing code stack with
   | @varZero environment _ projection =>
       have transition := second_transition environment code stack
       rw [projection.result] at transition
       exact .single transition
   | @varSucc index environment _ _ projection _ restIH =>
-      have transition := first_transition environment (compile (.var index) ++ code) stack
+      have transition := first_transition environment (compileSource (extended := extended) (.var index) ++ code) stack
       rw [projection.result] at transition
       simpa only [compile_var_succ, List.cons_append] using
         (Relation.ReflTransGen.head transition (restIH code stack))
+  | literal => exact .single (.quote .neutral _ _ _ _)
+  | @conditional enabled condition whenTrue whenFalse environment value selected _ _ conditionIH selectedIH =>
+      simp only [compileSource, List.cons_append, List.append_assoc]
+      have conditionRun := conditionIH (.branch (compileSource whenTrue) (compileSource whenFalse) :: code)
+        (encodeSourceValue environment :: stack)
+      have selectedRun := selectedIH code stack
+      have chosen := step_sound (branch_step .neutral selected (encodeSourceValue environment)
+        (compileSource whenTrue) (compileSource whenFalse) code stack)
+      cases selected <;> simp only [Bool.false_eq_true, if_false, if_true] at selectedRun chosen
+      · exact .head (.push .neutral _ _ _) (conditionRun.trans (.head chosen selectedRun))
+      · exact .head (.push .neutral _ _ _) (conditionRun.trans (.head chosen selectedRun))
   | lam => exact .single (.cur .neutral _ _ _ _)
   | @pair _ right environment first _ _ _ leftIH rightIH =>
-      simp only [compile, List.append_assoc, List.cons_append, List.nil_append]
-      have leftRun := leftIH (.swap :: (compile right ++ .cons :: code))
-        (encodeValue environment :: stack)
-      have rightRun := rightIH (.cons :: code) (encodeValue first :: stack)
+      simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append]
+      have leftRun := leftIH (.swap :: (compileSource right ++ .cons :: code))
+        (encodeSourceValue environment :: stack)
+      have rightRun := rightIH (.cons :: code) (encodeSourceValue first :: stack)
       exact .head (.push .neutral _ _ _) (leftRun.trans
         (.head (.swap .neutral _ _ _ _) (rightRun.tail (.cons .neutral _ _ _ _))))
   | @app _ argument environment function _ _ _ _ _ operatorIH argumentIH invocationIH =>
-      simp only [compile, List.append_assoc, List.cons_append, List.nil_append]
+      simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append]
       have operatorRun := operatorIH
-        (.swap :: (compile argument ++ .cons :: .app :: code)) (encodeValue environment :: stack)
+        (.swap :: (compileSource argument ++ .cons :: .app :: code)) (encodeSourceValue environment :: stack)
       have argumentRun := argumentIH (.cons :: .app :: code)
-        (encodeValue function :: stack)
+        (encodeSourceValue function :: stack)
       exact .head (.push .neutral _ _ _) (operatorRun.trans
         (.head (.swap .neutral _ _ _ _) ((argumentRun.tail (.cons .neutral _ _ _ _)).trans
           (invocationIH code stack))))
   | @first _ _ before _ _ projection termIH =>
       have transition := first_transition before code stack
       rw [projection.result] at transition
-      simpa only [compile, List.append_assoc, List.singleton_append] using
+      simpa only [compileSource, List.append_assoc, List.singleton_append] using
         (termIH (.first :: code) stack).tail transition
   | @second _ _ before _ _ projection termIH =>
       have transition := second_transition before code stack
       rw [projection.result] at transition
-      simpa only [compile, List.append_assoc, List.singleton_append] using
+      simpa only [compileSource, List.append_assoc, List.singleton_append] using
         (termIH (.second :: code) stack).tail transition
   | closure _ bodyIH =>
       rename_i code stack
       exact .head (.appClosure .neutral _ _ _ _ _) (bodyIH code stack)
   | neutral function argument inactive =>
       rename_i code stack
-      have notApplicable : NativeNotApplicable (.pair (encodeValue function) (encodeValue argument)) := by
-        cases function <;> simp_all [encodeValue, NotClosure, NativeNotApplicable]
+      have notApplicable : NativeNotApplicable (.pair (encodeSourceValue function) (encodeSourceValue argument)) := by
+        cases function <;> simp_all [encodeSourceValue, NotClosure, NativeNotApplicable]
       exact .single (.appNeutral _ _ _ notApplicable)
-theorem Invocation.execution_tail {function argument value : Value}
+theorem Invocation.execution_tail {function argument value : SourceValue extended}
     (invocation : Invocation function argument value) (code : Code) (stack : List NativeValue) :
-    Steps .neutral ⟨.pair (encodeValue function) (encodeValue argument), .app :: code, stack⟩
-      ⟨encodeValue value, code, stack⟩ := by
+    Steps .neutral ⟨.pair (encodeSourceValue function) (encodeSourceValue argument), .app :: code, stack⟩
+      ⟨encodeSourceValue value, code, stack⟩ := by
   cases invocation with
   | closure bodyEval =>
       exact .head (.appClosure .neutral _ _ _ _ _) (bodyEval.execution_tail code stack)
   | neutral function argument inactive =>
-      have notApplicable : NativeNotApplicable (.pair (encodeValue function) (encodeValue argument)) := by
-        cases function <;> simp_all [encodeValue, NotClosure, NativeNotApplicable]
+      have notApplicable : NativeNotApplicable (.pair (encodeSourceValue function) (encodeSourceValue argument)) := by
+        cases function <;> simp_all [encodeSourceValue, NotClosure, NativeNotApplicable]
       exact .single (.appNeutral _ _ _ notApplicable)
-theorem Evaluation.execution {term : Expr} {environment value : Value}
+theorem Evaluation.execution {term : Source extended} {environment value : SourceValue extended}
     (evaluation : Evaluation term environment value) :
-    Steps .neutral ⟨encodeValue environment, compile term, []⟩ ⟨encodeValue value, [], []⟩ := by
+    Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨encodeSourceValue value, [], []⟩ := by
   simpa only [List.append_nil] using evaluation.execution_tail [] []
 
 /-! Evaluation-context witnesses reconstruct source evaluations from native
 instruction traces. They are proof data, not an additional machine interface. -/
 
-private inductive Frame where
-  | pairLeft (right : Expr) (environment : Value)
-  | pairRight (left : Value)
-  | appLeft (argument : Expr) (environment : Value)
-  | appRight (function : Value)
+private inductive Frame (extended : Bool) where
+  | condition (enabled : extended = true) (whenTrue whenFalse : Source extended) (environment : SourceValue extended)
+  | pairLeft (right : Source extended) (environment : SourceValue extended)
+  | pairRight (left : SourceValue extended)
+  | appLeft (argument : Source extended) (environment : SourceValue extended)
+  | appRight (function : SourceValue extended)
   | first
   | second
 
-private def frameCode : Frame → Code
-  | .pairLeft right _ => .swap :: (compile right ++ [.cons])
+private def frameCode : Frame extended → Code
+  | .pairLeft right _ => .swap :: (compileSource right ++ [.cons])
   | .pairRight _ => [.cons]
-  | .appLeft argument _ => .swap :: (compile argument ++ [.cons, .app])
+  | .appLeft argument _ => .swap :: (compileSource argument ++ [.cons, .app])
   | .appRight _ => [.cons, .app]
   | .first => [.first]
   | .second => [.second]
+  | .condition _ whenTrue whenFalse _ => [.branch (compileSource whenTrue) (compileSource whenFalse)]
 
-private def contextCode : List Frame → Code
+private def contextCode : List (Frame extended) → Code
   | [] => []
   | frame :: rest => frameCode frame ++ contextCode rest
 
-private def contextStack : List Frame → List NativeValue
+private def contextStack : List (Frame extended) → List NativeValue
   | [] => []
-  | .pairLeft _ environment :: rest | .appLeft _ environment :: rest =>
-      encodeValue environment :: contextStack rest
-  | .pairRight left :: rest | .appRight left :: rest => encodeValue left :: contextStack rest
+  | .condition _ _ _ environment :: rest | .pairLeft _ environment :: rest | .appLeft _ environment :: rest =>
+      encodeSourceValue environment :: contextStack rest
+  | .pairRight left :: rest | .appRight left :: rest => encodeSourceValue left :: contextStack rest
   | .first :: rest | .second :: rest => contextStack rest
 
-private theorem contextCode_nil_iff (frames : List Frame) : contextCode frames = [] ↔ frames = [] := by
+private theorem contextCode_nil_iff (frames : List (Frame extended)) : contextCode frames = [] ↔ frames = [] := by
   cases frames with
   | nil => simp [contextCode]
   | cons frame rest => cases frame <;> simp [contextCode, frameCode]
 
-private inductive Focus where
-  | evaluate (term : Expr) (environment : Value)
-  | returned (value : Value)
-  | invoke (function argument : Value)
+private inductive Focus (extended : Bool) where
+  | evaluate (term : Source extended) (environment : SourceValue extended)
+  | returned (value : SourceValue extended)
+  | invoke (function argument : SourceValue extended)
 
-private structure Packet where
-  focus : Focus
-  frames : List Frame
+private structure Packet (extended : Bool) where
+  focus : Focus extended
+  frames : List (Frame extended)
 
-private def encodePacket (packet : Packet) : State :=
+private def encodePacket (packet : Packet extended) : State :=
   match packet.focus with
   | .evaluate term environment =>
-      ⟨encodeValue environment, compile term ++ contextCode packet.frames, contextStack packet.frames⟩
-  | .returned value => ⟨encodeValue value, contextCode packet.frames, contextStack packet.frames⟩
+      ⟨encodeSourceValue environment, compileSource term ++ contextCode packet.frames, contextStack packet.frames⟩
+  | .returned value => ⟨encodeSourceValue value, contextCode packet.frames, contextStack packet.frames⟩
   | .invoke function argument =>
-      ⟨.pair (encodeValue function) (encodeValue argument), .app :: contextCode packet.frames,
+      ⟨.pair (encodeSourceValue function) (encodeSourceValue argument), .app :: contextCode packet.frames,
         contextStack packet.frames⟩
 
-private def exposeEvaluation : Expr → Value → List Frame → Packet
+private def exposeEvaluation : Source extended → SourceValue extended → List (Frame extended) → Packet extended
   | .first term, environment, frames => exposeEvaluation term environment (.first :: frames)
   | .second term, environment, frames => exposeEvaluation term environment (.second :: frames)
   | term, environment, frames => ⟨.evaluate term environment, frames⟩
 
-private def exposePacket (packet : Packet) : Packet :=
+private def exposePacket (packet : Packet extended) : Packet extended :=
   match packet.focus with
   | .evaluate term environment => exposeEvaluation term environment packet.frames
   | _ => packet
 
-private def Ready : Focus → Prop
+private def Ready : Focus extended → Prop
   | .evaluate (.first _) _ | .evaluate (.second _) _ => False
   | _ => True
 
-private theorem exposeEvaluation_ready (term : Expr) (environment : Value) (frames : List Frame) :
+private theorem exposeEvaluation_ready (term : Source extended) (environment : SourceValue extended) (frames : List (Frame extended)) :
     Ready (exposeEvaluation term environment frames).focus := by
   induction term generalizing frames <;> first
     | exact trivial
     | apply_assumption
 
-private theorem exposePacket_ready (packet : Packet) : Ready (exposePacket packet).focus := by
+private theorem exposePacket_ready (packet : Packet extended) : Ready (exposePacket packet).focus := by
   cases packet with
   | mk focus frames =>
       cases focus with
       | evaluate term environment => exact exposeEvaluation_ready term environment frames
       | returned _ | invoke _ _ => exact trivial
 
-private theorem encode_exposeEvaluation (term : Expr) (environment : Value) (frames : List Frame) :
+private theorem encode_exposeEvaluation (term : Source extended) (environment : SourceValue extended) (frames : List (Frame extended)) :
     encodePacket (exposeEvaluation term environment frames) =
       encodePacket ⟨.evaluate term environment, frames⟩ := by
   induction term generalizing frames with
   | first term ih =>
       simp only [exposeEvaluation]
       rw [ih]
-      simp [encodePacket, compile, contextCode, frameCode, contextStack, List.append_assoc]
+      simp [encodePacket, compileSource, contextCode, frameCode, contextStack, List.append_assoc]
   | second term ih =>
       simp only [exposeEvaluation]
       rw [ih]
-      simp [encodePacket, compile, contextCode, frameCode, contextStack, List.append_assoc]
-  | var _ | lam _ _ | app _ _ _ _ | pair _ _ _ _ => rfl
+      simp [encodePacket, compileSource, contextCode, frameCode, contextStack, List.append_assoc]
+  | var _ | lam _ _ | app _ _ _ _ | pair _ _ _ _ | literal _ _ | conditional _ _ _ _ _ _ _ => rfl
 
-private theorem encode_exposePacket (packet : Packet) :
+private theorem encode_exposePacket (packet : Packet extended) :
     encodePacket (exposePacket packet) = encodePacket packet := by
   cases packet with
   | mk focus frames =>
@@ -1032,10 +1184,13 @@ private theorem encode_exposePacket (packet : Packet) :
       | evaluate term environment => exact encode_exposeEvaluation term environment frames
       | returned _ | invoke _ _ => rfl
 
-private def advanceReady : Packet → Option Packet
+private def advanceReady : Packet extended → Option (Packet extended)
   | ⟨.evaluate (.var 0) environment, frames⟩ => some ⟨.returned (secondValue environment), frames⟩
   | ⟨.evaluate (.var (index + 1)) environment, frames⟩ =>
       some ⟨.evaluate (.var index) (firstValue environment), frames⟩
+  | ⟨.evaluate (.literal enabled value) _, frames⟩ => some ⟨.returned (.literal enabled value), frames⟩
+  | ⟨.evaluate (.conditional enabled condition whenTrue whenFalse) environment, frames⟩ =>
+      some ⟨.evaluate condition environment, .condition enabled whenTrue whenFalse environment :: frames⟩
   | ⟨.evaluate (.lam body) environment, frames⟩ => some ⟨.returned (.closure body environment), frames⟩
   | ⟨.evaluate (.pair left right) environment, frames⟩ =>
       some ⟨.evaluate left environment, .pairLeft right environment :: frames⟩
@@ -1049,37 +1204,45 @@ private def advanceReady : Packet → Option Packet
   | ⟨.returned value, .appRight function :: frames⟩ => some ⟨.invoke function value, frames⟩
   | ⟨.returned value, .first :: frames⟩ => some ⟨.returned (firstValue value), frames⟩
   | ⟨.returned value, .second :: frames⟩ => some ⟨.returned (secondValue value), frames⟩
+  | ⟨.returned (.literal _ (.boolean selected)), .condition _ whenTrue whenFalse environment :: frames⟩ =>
+      some ⟨.evaluate (if selected then whenTrue else whenFalse) environment, frames⟩
   | ⟨.invoke (.closure body environment) argument, frames⟩ =>
       some ⟨.evaluate body (.pair environment argument), frames⟩
   | ⟨.invoke function argument, frames⟩ => some ⟨.returned (.app (.pair function argument)), frames⟩
   | _ => none
 
-private def advance (packet : Packet) : Option Packet := advanceReady (exposePacket packet)
+private def advance (packet : Packet extended) : Option (Packet extended) := advanceReady (exposePacket packet)
 
-private inductive Resumes : List Frame → Value → Value → Prop where
-  | nil (value : Value) : Resumes [] value value
-  | pairLeft {right : Expr} {environment left rightValue answer : Value} {frames : List Frame}
+private inductive Resumes : List (Frame extended) → SourceValue extended → SourceValue extended → Prop where
+  | nil (value : SourceValue extended) : Resumes [] value value
+  | condition {enabled : extended = true} {whenTrue whenFalse : Source extended}
+      {environment result answer : SourceValue extended} {selected : Bool} {frames : List (Frame extended)}
+      (selectedEval : Evaluation (if selected then whenTrue else whenFalse) environment result)
+      (following : Resumes frames result answer) :
+      Resumes (.condition enabled whenTrue whenFalse environment :: frames)
+        (.literal enabled (.boolean selected)) answer
+  | pairLeft {right : Source extended} {environment left rightValue answer : SourceValue extended} {frames : List (Frame extended)}
       (rightEval : Evaluation right environment rightValue)
       (following : Resumes frames (.pair left rightValue) answer) :
       Resumes (.pairLeft right environment :: frames) left answer
-  | pairRight {left right answer : Value} {frames : List Frame}
+  | pairRight {left right answer : SourceValue extended} {frames : List (Frame extended)}
       (following : Resumes frames (.pair left right) answer) :
       Resumes (.pairRight left :: frames) right answer
-  | appLeft {argument : Expr} {environment function operand result answer : Value}
-      {frames : List Frame} (argumentEval : Evaluation argument environment operand)
+  | appLeft {argument : Source extended} {environment function operand result answer : SourceValue extended}
+      {frames : List (Frame extended)} (argumentEval : Evaluation argument environment operand)
       (invocation : Invocation function operand result) (following : Resumes frames result answer) :
       Resumes (.appLeft argument environment :: frames) function answer
-  | appRight {function operand result answer : Value} {frames : List Frame}
+  | appRight {function operand result answer : SourceValue extended} {frames : List (Frame extended)}
       (invocation : Invocation function operand result) (following : Resumes frames result answer) :
       Resumes (.appRight function :: frames) operand answer
-  | first {value result answer : Value} {frames : List Frame}
+  | first {value result answer : SourceValue extended} {frames : List (Frame extended)}
       (projection : First value result) (following : Resumes frames result answer) :
       Resumes (.first :: frames) value answer
-  | second {value result answer : Value} {frames : List Frame}
+  | second {value result answer : SourceValue extended} {frames : List (Frame extended)}
       (projection : Second value result) (following : Resumes frames result answer) :
       Resumes (.second :: frames) value answer
 
-private def Resolves (packet : Packet) (answer : Value) : Prop :=
+private def Resolves (packet : Packet extended) (answer : SourceValue extended) : Prop :=
   match packet.focus with
   | .evaluate term environment =>
       ∃ value, Evaluation term environment value ∧ Resumes packet.frames value answer
@@ -1087,8 +1250,8 @@ private def Resolves (packet : Packet) (answer : Value) : Prop :=
   | .invoke function argument =>
       ∃ value, Invocation function argument value ∧ Resumes packet.frames value answer
 
-private theorem exposeEvaluation_resolves (term : Expr) (environment : Value)
-    (frames : List Frame) (answer : Value) :
+private theorem exposeEvaluation_resolves (term : Source extended) (environment : SourceValue extended)
+    (frames : List (Frame extended)) (answer : SourceValue extended) :
     Resolves (exposeEvaluation term environment frames) answer ↔
       Resolves ⟨.evaluate term environment, frames⟩ answer := by
   induction term generalizing frames with
@@ -1112,9 +1275,9 @@ private theorem exposeEvaluation_resolves (term : Expr) (environment : Value)
       · rintro ⟨result, evaluation, following⟩
         cases evaluation with
         | second termEval projection => exact ⟨_, termEval, .second projection following⟩
-  | var _ | lam _ _ | app _ _ _ _ | pair _ _ _ _ => exact Iff.rfl
+  | var _ | lam _ _ | app _ _ _ _ | pair _ _ _ _ | literal _ _ | conditional _ _ _ _ _ _ _ => exact Iff.rfl
 
-private theorem exposePacket_resolves (packet : Packet) (answer : Value) :
+private theorem exposePacket_resolves (packet : Packet extended) (answer : SourceValue extended) :
     Resolves (exposePacket packet) answer ↔ Resolves packet answer := by
   cases packet with
   | mk focus frames =>
@@ -1122,8 +1285,8 @@ private theorem exposePacket_resolves (packet : Packet) (answer : Value) :
       | evaluate term environment => exact exposeEvaluation_resolves term environment frames answer
       | returned _ | invoke _ _ => exact Iff.rfl
 
-private theorem advanceReady_resolves {before after : Packet}
-    (execution : advanceReady before = some after) (answer : Value)
+private theorem advanceReady_resolves {before after : Packet extended}
+    (execution : advanceReady before = some after) (answer : SourceValue extended)
     (following : Resolves after answer) : Resolves before answer := by
   cases before with
   | mk focus frames =>
@@ -1141,6 +1304,17 @@ private theorem advanceReady_resolves {before after : Packet}
                   subst after
                   rcases following with ⟨value, evaluation, resumed⟩
                   exact ⟨value, .varSucc (firstValue_sound environment) evaluation, resumed⟩
+          | literal enabled value =>
+              simp only [advanceReady, Option.some.injEq] at execution
+              subst after
+              exact ⟨_, .literal enabled value environment, following⟩
+          | conditional enabled condition whenTrue whenFalse =>
+              simp only [advanceReady, Option.some.injEq] at execution
+              subst after
+              rcases following with ⟨value, evaluation, resumed⟩
+              cases resumed with
+              | condition selectedEval following =>
+                  exact ⟨_, .conditional evaluation selectedEval, following⟩
           | lam body =>
               simp only [advanceReady, Option.some.injEq] at execution
               subst after
@@ -1164,6 +1338,18 @@ private theorem advanceReady_resolves {before after : Packet}
           | nil => simp [advanceReady] at execution
           | cons frame frames =>
               cases frame with
+              | condition enabled whenTrue whenFalse environment =>
+                  cases value with
+                  | literal enabled literal =>
+                      cases literal with
+                      | boolean selected =>
+                          simp only [advanceReady, Option.some.injEq] at execution
+                          subst after
+                          rcases following with ⟨value, evaluation, resumed⟩
+                          exact .condition evaluation resumed
+                      | integer _ | unit => simp [advanceReady] at execution
+                  | unit | pair _ _ | closure _ _ | first _ | second _ | app _ =>
+                      simp [advanceReady] at execution
               | pairLeft right environment =>
                   simp only [advanceReady, Option.some.injEq] at execution
                   subst after
@@ -1200,17 +1386,17 @@ private theorem advanceReady_resolves {before after : Packet}
               subst after
               rcases following with ⟨value, evaluation, resumed⟩
               exact ⟨value, .closure evaluation, resumed⟩
-          | unit | pair _ _ | first _ | second _ | app _ =>
+          | unit | literal _ _ | pair _ _ | first _ | second _ | app _ =>
               simp only [advanceReady, Option.some.injEq] at execution
               subst after
               exact ⟨_, .neutral _ argument trivial, following⟩
 
-private theorem advance_resolves {before after : Packet}
-    (execution : advance before = some after) (answer : Value)
+private theorem advance_resolves {before after : Packet extended}
+    (execution : advance before = some after) (answer : SourceValue extended)
     (following : Resolves after answer) : Resolves before answer :=
   (exposePacket_resolves before answer).mp (advanceReady_resolves execution answer following)
 
-private theorem advanceReady_encoded (packet : Packet) (ready : Ready packet.focus) :
+private theorem advanceReady_encoded (packet : Packet extended) (ready : Ready packet.focus) :
     step .neutral (encodePacket packet) = (advanceReady packet).map encodePacket := by
   cases packet with
   | mk focus frames =>
@@ -1218,9 +1404,12 @@ private theorem advanceReady_encoded (packet : Packet) (ready : Ready packet.foc
       | evaluate term environment =>
           cases term with
           | var index => cases index <;> cases environment <;> rfl
-          | lam _ => rfl
+          | lam _ | literal _ _ => rfl
+          | conditional _ _ _ _ =>
+              simp [encodePacket, advanceReady, step, compileSource, contextCode, frameCode,
+                contextStack, List.append_assoc]
           | pair _ _ | app _ _ =>
-              simp [encodePacket, advanceReady, step, compile, contextCode, frameCode,
+              simp [encodePacket, advanceReady, step, compileSource, contextCode, frameCode,
                 contextStack, List.append_assoc]
           | first _ | second _ => exact False.elim ready
       | returned value =>
@@ -1231,17 +1420,21 @@ private theorem advanceReady_encoded (packet : Packet) (ready : Ready packet.foc
               | pairLeft _ _ | appLeft _ _ =>
                   simp [encodePacket, advanceReady, step, contextCode, frameCode, contextStack,
                     List.append_assoc]
+              | condition _ _ _ _ =>
+                  cases value with
+                  | literal _ literal => cases literal <;> first | rfl | rename_i selected; cases selected <;> rfl
+                  | unit | pair _ _ | closure _ _ | first _ | second _ | app _ => rfl
               | pairRight _ | appRight _ => rfl
               | first | second => cases value <;> rfl
       | invoke function argument => cases function <;> rfl
 
-private theorem advance_encoded (packet : Packet) :
+private theorem advance_encoded (packet : Packet extended) :
     step .neutral (encodePacket packet) = (advance packet).map encodePacket := by
   rw [← encode_exposePacket packet]
   exact advanceReady_encoded (exposePacket packet) (exposePacket_ready packet)
 
 private theorem execution_contexts {before after : State} (execution : Steps .neutral before after) :
-    ∀ packet, encodePacket packet = before →
+    ∀ (packet : Packet extended), encodePacket packet = before →
       ∃ residual, encodePacket residual = after ∧
         ∀ answer, Resolves residual answer → Resolves packet answer := by
   induction execution using Relation.ReflTransGen.head_induction_on with
@@ -1260,7 +1453,7 @@ private theorem execution_contexts {before after : State} (execution : Steps .ne
           exact ⟨residual, finalEncoded, fun answer resolved =>
             advance_resolves chosen answer (reconstruct answer resolved)⟩
 
-private theorem advanceReady_none (packet : Packet) (ready : Ready packet.focus)
+private theorem advanceReady_none (packet : Packet false) (ready : Ready packet.focus)
     (stopped : advanceReady packet = none) : ∃ value, packet = ⟨.returned value, []⟩ := by
   cases packet with
   | mk focus frames =>
@@ -1269,15 +1462,20 @@ private theorem advanceReady_none (packet : Packet) (ready : Ready packet.focus)
           cases term with
           | var index => cases index <;> simp [advanceReady] at stopped
           | lam _ | app _ _ | pair _ _ => simp [advanceReady] at stopped
+          | literal enabled _ | conditional enabled _ _ _ => cases enabled
           | first _ | second _ => exact False.elim ready
       | returned value =>
           cases frames with
           | nil => exact ⟨value, rfl⟩
-          | cons frame frames => cases frame <;> simp [advanceReady] at stopped
+          | cons frame frames =>
+              cases frame with
+              | condition enabled _ _ _ => cases enabled
+              | pairLeft _ _ | pairRight _ | appLeft _ _ | appRight _ | first | second =>
+                  simp [advanceReady] at stopped
       | invoke function argument => cases function <;> simp [advanceReady] at stopped
 
-private theorem stopped_context (packet : Packet) (stopped : step .neutral (encodePacket packet) = none) :
-    ∃ value, encodePacket packet = ⟨encodeValue value, [], []⟩ ∧ Resolves packet value := by
+private theorem stopped_context (packet : Packet false) (stopped : step .neutral (encodePacket packet) = none) :
+    ∃ value, encodePacket packet = ⟨encodeSourceValue value, [], []⟩ ∧ Resolves packet value := by
   rw [advance_encoded] at stopped
   cases chosen : advance packet with
   | none =>
@@ -1294,9 +1492,9 @@ private theorem stopped_context (packet : Packet) (stopped : step .neutral (enco
 /-- A stopped compiled computation is a completed source evaluation, rather
 than an arbitrary missing instruction transition. No termination is assumed. -/
 theorem compiled_terminal_shape {term : Expr} {environment : Value} {final : State}
-    (execution : Steps .neutral ⟨encodeValue environment, compile term, []⟩ final)
+    (execution : Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ final)
     (stopped : step .neutral final = none) :
-    ∃ value, final = ⟨encodeValue value, [], []⟩ ∧ Evaluation term environment value := by
+    ∃ value, final = ⟨encodeSourceValue value, [], []⟩ ∧ Evaluation term environment value := by
   obtain ⟨packet, encoded, reconstruct⟩ := execution_contexts execution
     ⟨.evaluate term environment, []⟩ (by simp [encodePacket, contextCode, contextStack])
   obtain ⟨value, completed, resolved⟩ := stopped_context packet (by rw [encoded]; exact stopped)
@@ -1306,15 +1504,28 @@ theorem compiled_terminal_shape {term : Expr} {environment : Value} {final : Sta
   exact ⟨value, encoded.symm.trans completed, evaluation⟩
 
 /-- Construct the semantic value at the actual native endpoint. -/
-theorem execution_complete {term : Expr} {environment : Value} {native : NativeValue}
-    (execution : Steps .neutral ⟨encodeValue environment, compile term, []⟩ ⟨native, [], []⟩) :
-    ∃ value, Evaluation term environment value ∧ encodeValue value = native := by
-  obtain ⟨value, completed, evaluation⟩ := compiled_terminal_shape execution rfl
-  exact ⟨value, evaluation, (congrArg State.register completed).symm⟩
+theorem execution_complete {term : Source extended} {environment : SourceValue extended} {native : NativeValue}
+    (execution : Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨native, [], []⟩) :
+    ∃ value, Evaluation term environment value ∧ encodeSourceValue value = native := by
+  obtain ⟨⟨focus, frames⟩, encoded, reconstruct⟩ := execution_contexts execution
+    ⟨.evaluate term environment, []⟩ (by simp [encodePacket, contextCode, contextStack])
+  have emptyCode := congrArg State.code encoded
+  cases focus with
+  | evaluate term environment =>
+      have empty : compileSource term = [] := (List.append_eq_nil_iff.mp emptyCode).1
+      exact False.elim (compile_nonempty term empty)
+  | invoke function argument => simp [encodePacket] at emptyCode
+  | returned value =>
+      have emptyFrames : frames = [] := (contextCode_nil_iff frames).mp emptyCode
+      subst frames
+      have initial := reconstruct value (Resumes.nil value)
+      rcases initial with ⟨result, evaluation, resumed⟩
+      cases resumed
+      exact ⟨value, evaluation, congrArg State.register encoded⟩
 
-theorem evaluation_iff_execution (term : Expr) (environment value : Value) :
+theorem evaluation_iff_execution (term : Source extended) (environment value : SourceValue extended) :
     Evaluation term environment value ↔
-      Steps .neutral ⟨encodeValue environment, compile term, []⟩ ⟨encodeValue value, [], []⟩ := by
+      Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨encodeSourceValue value, [], []⟩ := by
   constructor
   · exact Evaluation.execution
   · intro execution
@@ -1324,59 +1535,68 @@ theorem evaluation_iff_execution (term : Expr) (environment value : Value) :
     exact evaluation
 
 theorem compiled_progress {term : Expr} {environment : Value} {state : State}
-    (execution : Steps .neutral ⟨encodeValue environment, compile term, []⟩ state) :
+    (execution : Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ state) :
     (∃ next, Transition .neutral state next) ∨
-      (∃ value, state = ⟨encodeValue value, [], []⟩ ∧ Evaluation term environment value) := by
+      (∃ value, state = ⟨encodeSourceValue value, [], []⟩ ∧ Evaluation term environment value) := by
   cases selected : step .neutral state with
   | none => exact Or.inr (compiled_terminal_shape execution selected)
   | some next => exact Or.inl ⟨next, step_sound selected⟩
 
-inductive CombinatoryState where
-  | question (term : Expr) (environment : Value)
-  | answer (value : Value)
+inductive CombinatoryState (extended : Bool := false) where
+  | question (term : Source extended) (environment : SourceValue extended)
+  | answer (value : SourceValue extended)
   deriving DecidableEq, Repr
 
 /-- The question/answer reductions of the paper, p. 187. The completed
 premises are independently judged by `Evaluation`; the equivalence below
 joins that completed form to these reductions and their transitive closure. -/
-inductive CombinatoryReduction : CombinatoryState → CombinatoryState → Prop where
-  | varZero {environment value : Value} (projection : Second environment value) :
+inductive CombinatoryReduction : (CombinatoryState extended) → (CombinatoryState extended) → Prop where
+  | varZero {environment value : SourceValue extended} (projection : Second environment value) :
       CombinatoryReduction (.question (.var 0) environment) (.answer value)
-  | varSucc {index : Nat} {environment before : Value} (projection : First environment before) :
+  | varSucc {index : Nat} {environment before : SourceValue extended} (projection : First environment before) :
       CombinatoryReduction (.question (.var (index + 1)) environment) (.question (.var index) before)
-  | lam (body : Expr) (environment : Value) :
+  | lam (body : Source extended) (environment : SourceValue extended) :
       CombinatoryReduction (.question (.lam body) environment) (.answer (.closure body environment))
-  | pair {left right : Expr} {environment first second : Value}
+  | pair {left right : Source extended} {environment first second : SourceValue extended}
       (leftEval : Evaluation left environment first) (rightEval : Evaluation right environment second) :
       CombinatoryReduction (.question (.pair left right) environment) (.answer (.pair first second))
-  | appClosure {operator argument body : Expr} {environment captured operand : Value}
+  | appClosure {operator argument body : Source extended} {environment captured operand : SourceValue extended}
       (operatorEval : Evaluation operator environment (.closure body captured))
       (argumentEval : Evaluation argument environment operand) :
       CombinatoryReduction (.question (.app operator argument) environment)
         (.question body (.pair captured operand))
-  | appNeutral {operator argument : Expr} {environment function operand : Value}
+  | appNeutral {operator argument : Source extended} {environment function operand : SourceValue extended}
       (operatorEval : Evaluation operator environment function)
       (argumentEval : Evaluation argument environment operand) (inactive : NotClosure function) :
       CombinatoryReduction (.question (.app operator argument) environment)
         (.answer (.app (.pair function operand)))
-  | first {term : Expr} {environment before value : Value}
+  | first {term : Source extended} {environment before value : SourceValue extended}
       (termEval : Evaluation term environment before) (projection : First before value) :
       CombinatoryReduction (.question (.first term) environment) (.answer value)
-  | second {term : Expr} {environment before value : Value}
+  | second {term : Source extended} {environment before value : SourceValue extended}
       (termEval : Evaluation term environment before) (projection : Second before value) :
       CombinatoryReduction (.question (.second term) environment) (.answer value)
+  | literal (enabled : extended = true) (value : Literal) (environment : SourceValue extended) :
+      CombinatoryReduction (.question (.literal enabled value) environment) (.answer (.literal enabled value))
+  | conditional {enabled : extended = true} {condition whenTrue whenFalse : Source extended}
+      {environment : SourceValue extended} {selected : Bool}
+      (conditionEval : Evaluation condition environment (.literal enabled (.boolean selected))) :
+      CombinatoryReduction (.question (.conditional enabled condition whenTrue whenFalse) environment)
+        (.question (if selected then whenTrue else whenFalse) environment)
 
-abbrev CombinatorySteps := Relation.ReflTransGen CombinatoryReduction
+abbrev CombinatorySteps := Relation.ReflTransGen (CombinatoryReduction (extended := extended))
 
-private def CombinatoryResult (state : CombinatoryState) (value : Value) : Prop :=
+private def CombinatoryResult (state : (CombinatoryState extended)) (value : SourceValue extended) : Prop :=
   match state with
   | .question term environment => Evaluation term environment value
   | .answer before => before = value
 
-private theorem combinatory_result_backward {before after : CombinatoryState}
-    (reduction : CombinatoryReduction before after) (value : Value)
+private theorem combinatory_result_backward {before after : (CombinatoryState extended)}
+    (reduction : CombinatoryReduction before after) (value : SourceValue extended)
     (following : CombinatoryResult after value) : CombinatoryResult before value := by
   cases reduction with
+  | literal enabled value environment => cases following; exact .literal enabled value environment
+  | conditional conditionEval => exact .conditional conditionEval following
   | varZero projection => cases following; exact .varZero projection
   | varSucc projection => exact .varSucc projection following
   | lam body environment => cases following; exact .lam body environment
@@ -1388,7 +1608,7 @@ private theorem combinatory_result_backward {before after : CombinatoryState}
   | first termEval projection => cases following; exact .first termEval projection
   | second termEval projection => cases following; exact .second termEval projection
 
-private theorem combinatory_steps_backward {before after : CombinatoryState}
+private theorem combinatory_steps_backward {before after : (CombinatoryState extended)}
     (execution : CombinatorySteps before after) :
     ∀ value, CombinatoryResult after value → CombinatoryResult before value := by
   induction execution using Relation.ReflTransGen.head_induction_on with
@@ -1396,11 +1616,11 @@ private theorem combinatory_steps_backward {before after : CombinatoryState}
   | head reduction _ ih => exact fun value following =>
       combinatory_result_backward reduction value (ih value following)
 
-theorem Evaluation.combinatory {term : Expr} {environment value : Value}
+theorem Evaluation.combinatory {term : Source extended} {environment value : SourceValue extended}
     (evaluation : Evaluation term environment value) :
     CombinatorySteps (.question term environment) (.answer value) := by
   induction evaluation using Evaluation.rec
-      (motive_2 := fun function operand value _ => ∀ (operator argument : Expr) (environment : Value),
+      (motive_2 := fun function operand value _ => ∀ (operator argument : Source extended) (environment : SourceValue extended),
         Evaluation operator environment function → Evaluation argument environment operand →
           CombinatorySteps (.question (.app operator argument) environment) (.answer value)) with
   | varZero projection => exact .single (.varZero projection)
@@ -1418,25 +1638,30 @@ theorem Evaluation.combinatory {term : Expr} {environment value : Value}
       rename_i operator argument environment operatorEval argumentEval
       exact .single (.appNeutral operatorEval argumentEval inactive)
 
-theorem combinatory_iff_evaluation (term : Expr) (environment value : Value) :
+  | literal enabled value environment => exact .single (.literal enabled value environment)
+  | conditional conditionEval _ _ selectedIH => exact .head (.conditional conditionEval) selectedIH
+
+theorem combinatory_iff_evaluation (term : Source extended) (environment value : SourceValue extended) :
     CombinatorySteps (.question term environment) (.answer value) ↔ Evaluation term environment value :=
   ⟨fun execution => combinatory_steps_backward execution value rfl, Evaluation.combinatory⟩
 
 /-- Proposition 3.1, with constructed source-body/code-body representation
 and both terminal fields retained. This is the augmented Table 5 profile. -/
-theorem combinatory_iff_execution (term : Expr) (environment value : Value) :
+theorem combinatory_iff_execution (term : Source extended) (environment value : SourceValue extended) :
     CombinatorySteps (.question term environment) (.answer value) ↔
-      Steps .neutral ⟨encodeValue environment, compile term, []⟩ ⟨encodeValue value, [], []⟩ :=
+      Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨encodeSourceValue value, [], []⟩ :=
   (combinatory_iff_evaluation term environment value).trans (evaluation_iff_execution term environment value)
 
 /-! ## The existing deterministic and finite-run interfaces -/
 
 /-- A source question retains both the expression and its categorical
 environment. The compiled loader does not erase captured environments. -/
-def core (profile : Profile) : MachineCore (Expr × Value) where
+def sourceCore (extended : Bool) (profile : Profile) : MachineCore (Source extended × SourceValue extended) where
   State := State
-  load question := ⟨encodeValue question.2, compile question.1, []⟩
+  load question := ⟨encodeSourceValue question.2, compileSource question.1, []⟩
   step := step profile
+
+abbrev core (profile : Profile) := sourceCore false profile
 
 /-- Raw code with an empty instruction stream but a nonempty stack is
 stopped, not a completed source answer. This observer does not certify that
@@ -1455,10 +1680,13 @@ theorem answer_final (profile : Profile) (state : State) (value : NativeValue)
   rw [(answer_iff state value).mp observed]
   rfl
 
-def answerCore (profile : Profile) : AnswerMachineCore (Expr × Value) NativeValue where
-  toMachineCore := core profile
+def sourceAnswerCore (extended : Bool) (profile : Profile) :
+    AnswerMachineCore (Source extended × SourceValue extended) NativeValue where
+  toMachineCore := sourceCore extended profile
   answer := answer
   answer_final := answer_final profile
+
+abbrev answerCore (profile : Profile) := sourceAnswerCore false profile
 
 theorem core_step_iff (profile : Profile) (state next : State) :
     (core profile).StepRel state next ↔ Transition profile state next :=
@@ -1472,27 +1700,40 @@ theorem core_steps_iff (profile : Profile) (state final : State) :
   · exact Relation.ReflTransGen.mono (fun left right edge =>
       (core_step_iff profile left right).mpr edge) state final
 
-theorem produces_iff_evaluation (term : Expr) (environment : Value) (value : NativeValue) :
-    (answerCore .neutral).Produces (term, environment) value ↔
-      ∃ source, Evaluation term environment source ∧ encodeValue source = value := by
+theorem sourceCore_steps_iff (profile : Profile) (state final : State) :
+    (sourceCore extended profile).Steps state final ↔ Steps profile state final := by
+  constructor
+  · exact Relation.ReflTransGen.mono (fun left right edge =>
+      (step_iff profile left right).mp edge) state final
+  · exact Relation.ReflTransGen.mono (fun left right edge =>
+      (step_iff profile left right).mpr edge) state final
+
+theorem sourceProduces_iff_evaluation (term : Source extended) (environment : SourceValue extended) (value : NativeValue) :
+    (sourceAnswerCore extended .neutral).Produces (term, environment) value ↔
+      ∃ source, Evaluation term environment source ∧ encodeSourceValue source = value := by
   constructor
   · rintro ⟨final, reached, observed⟩
     have ending := (answer_iff final value).mp observed
     rw [ending] at reached
-    exact execution_complete ((core_steps_iff .neutral _ _).mp reached)
+    exact execution_complete ((sourceCore_steps_iff .neutral _ _).mp reached)
   · rintro ⟨source, evaluation, represented⟩
     subst value
-    exact ⟨⟨encodeValue source, [], []⟩,
-      (core_steps_iff .neutral _ _).mpr evaluation.execution, rfl⟩
+    exact ⟨⟨encodeSourceValue source, [], []⟩,
+      (sourceCore_steps_iff .neutral _ _).mpr evaluation.execution, rfl⟩
+
+theorem produces_iff_evaluation (term : Expr) (environment : Value) (value : NativeValue) :
+    (answerCore .neutral).Produces (term, environment) value ↔
+      ∃ source, Evaluation term environment source ∧ encodeSourceValue source = value :=
+  sourceProduces_iff_evaluation term environment value
 
 /-- The completed source result is unique because the actual executable
 machine is deterministic; the representation map is proved injective. -/
-theorem Evaluation.unique {term : Expr} {environment first second : Value}
+theorem Evaluation.unique {term : Source extended} {environment first second : SourceValue extended}
     (one : Evaluation term environment first) (two : Evaluation term environment second) : first = second := by
   apply encodeValue_injective
-  exact (answerCore .neutral).produces_unique
-    ((produces_iff_evaluation term environment (encodeValue first)).mpr ⟨first, one, rfl⟩)
-    ((produces_iff_evaluation term environment (encodeValue second)).mpr ⟨second, two, rfl⟩)
+  exact (sourceAnswerCore extended .neutral).produces_unique
+    ((sourceProduces_iff_evaluation term environment (encodeSourceValue first)).mpr ⟨first, one, rfl⟩)
+    ((sourceProduces_iff_evaluation term environment (encodeSourceValue second)).mpr ⟨second, two, rfl⟩)
 
 open Mettapedia.GSLT.Distinction.ProductiveBlocks
 
@@ -1503,15 +1744,15 @@ machine states. It is not an external effect or a source beta-step count. -/
 def machine (profile : Profile) : Machine State Occurrence NativeValue Empty :=
   ProductiveCoreAdapters.answerMachine (answerCore profile)
 
-theorem evaluation_iff_finished (term : Expr) (environment value : Value) :
+theorem evaluation_iff_finished (term : Source extended) (environment value : SourceValue extended) :
     Evaluation term environment value ↔ ∃ budget events,
-      (machine .neutral).run budget ⟨encodeValue environment, compile term, []⟩ =
-        (events, .finished (encodeValue value)) := by
+      (machine .neutral).run budget ⟨encodeSourceValue environment, compileSource term, []⟩ =
+        (events, .finished (encodeSourceValue value)) := by
   change Evaluation term environment value ↔ ∃ budget events,
-    (ProductiveCoreAdapters.answerMachine (answerCore .neutral)).run budget
-      ((answerCore .neutral).load (term, environment)) = (events, .finished (encodeValue value))
-  rw [← ProductiveCoreAdapters.produces_iff_finished (answerCore .neutral) (term, environment) (encodeValue value),
-    produces_iff_evaluation]
+    (ProductiveCoreAdapters.answerMachine (sourceAnswerCore extended .neutral)).run budget
+      ((sourceAnswerCore extended .neutral).load (term, environment)) = (events, .finished (encodeSourceValue value))
+  rw [← ProductiveCoreAdapters.produces_iff_finished (sourceAnswerCore extended .neutral) (term, environment) (encodeSourceValue value),
+    sourceProduces_iff_evaluation]
   constructor
   · intro evaluation; exact ⟨value, evaluation, rfl⟩
   · rintro ⟨source, evaluation, represented⟩
@@ -1587,11 +1828,11 @@ theorem instruction_and_completion_account (profile : Profile) (budget : Nat) (s
     (machine profile).spent (fun _ => 1) budget state = ((machine profile).run budget state).1.length +
       (match ((machine profile).run budget state).2 with | .finished _ => 1 | _ => 0) := by
   have shared := ProductiveCoreAdapters.answer_instruction_count (answerCore profile) budget state
-  simp only [machine, answerCore, core] at shared ⊢
+  simp only [machine, answerCore, sourceAnswerCore, sourceCore] at shared ⊢
   convert shared using 1
   congr 1
   cases ending : ((machine profile).run budget state).2 <;>
-    simp only [machine, answerCore, core] at ending <;> simp only [ending]
+    simp only [machine, answerCore, sourceAnswerCore, sourceCore] at ending <;> simp only [ending]
 
 theorem occurrences_le_budget (profile : Profile) (budget : Nat) (state : State) :
     ((machine profile).run budget state).1.length ≤ budget :=
@@ -1603,37 +1844,51 @@ The syntax adapter below presents the existing source grammar to the shared
 binding algebra. New binders are fixed by its lifted substitutions. Section 3
 of Cousineau, Curien and Mauny (1987), pp. 189--191, uses closed readbacks and
 weak left-to-right evaluation; closure bodies are not evaluated on creation.
+The same signature is indexed by the existing source-extension flag. At
+`true`, literal normals and selected Boolean branches extend the readback,
+substitution and completed-execution theorems; at `false`, the historical
+five-head binding signature is unchanged.
 -/
 
 namespace Lambda
 
 open Mettapedia.OSLF.Binding
 
-inductive Head where
+inductive Head (extended : Bool) where
   | lam | app | pair | first | second
+  | literal (enabled : extended = true) (value : Literal)
+  | conditional (enabled : extended = true)
   deriving DecidableEq
 
-abbrev signature : Signature where
+abbrev signature (extended : Bool) : Signature where
   Srt := Unit
-  Op := fun _ => Head
+  Op := fun _ => Head extended
   arity := fun head => match head with
     | .lam => [([()], ())]
     | .app | .pair => [([], ()), ([], ())]
     | .first | .second => [([], ())]
+    | .literal _ _ => []
+    | .conditional _ => [([], ()), ([], ()), ([], ())]
 
-abbrev Scoped (context : List Unit) := Term signature context ()
-abbrev Closed := Scoped []
+abbrev Scoped (context : List Unit) (extended : Bool := false) := Term (signature extended) context ()
+abbrev Closed (extended : Bool := false) := Scoped [] extended
 
-def lam {Γ : List Unit} (body : Scoped (() :: Γ)) : Scoped Γ :=
+def lam {Γ : List Unit} (body : Scoped (extended := extended) (() :: Γ)) : Scoped (extended := extended) Γ :=
   .op .lam (.cons body .nil)
-def app {Γ : List Unit} (operator argument : Scoped Γ) : Scoped Γ :=
+def app {Γ : List Unit} (operator argument : Scoped (extended := extended) Γ) : Scoped (extended := extended) Γ :=
   .op .app (.cons operator (.cons argument .nil))
-def pair {Γ : List Unit} (left right : Scoped Γ) : Scoped Γ :=
+def pair {Γ : List Unit} (left right : Scoped (extended := extended) Γ) : Scoped (extended := extended) Γ :=
   .op .pair (.cons left (.cons right .nil))
-def first {Γ : List Unit} (term : Scoped Γ) : Scoped Γ :=
+def first {Γ : List Unit} (term : Scoped (extended := extended) Γ) : Scoped (extended := extended) Γ :=
   .op .first (.cons term .nil)
-def second {Γ : List Unit} (term : Scoped Γ) : Scoped Γ :=
+def second {Γ : List Unit} (term : Scoped (extended := extended) Γ) : Scoped (extended := extended) Γ :=
   .op .second (.cons term .nil)
+
+def literal {Γ : List Unit} (enabled : extended = true) (value : Literal) : Scoped Γ extended :=
+  .op (.literal enabled value) .nil
+def conditional {Γ : List Unit} (enabled : extended = true)
+    (condition whenTrue whenFalse : Scoped Γ extended) : Scoped Γ extended :=
+  .op (.conditional enabled) (.cons condition (.cons whenTrue (.cons whenFalse .nil)))
 
 def position : {Γ : List Unit} → {sort : Unit} → Var Γ sort → Nat
   | _, _, .zero => 0
@@ -1645,7 +1900,7 @@ def slot? : (Γ : List Unit) → Nat → Option (Var Γ ())
   | () :: Γ, index + 1 => (slot? Γ index).map .succ
 
 mutual
-def erase : {Γ : List Unit} → {sort : Unit} → Term signature Γ sort → Expr
+def erase : {Γ : List Unit} → {sort : Unit} → Term (signature extended) Γ sort → Source extended
   | _, _, .var variable_ => .var (position variable_)
   | _, _, .op head arguments => match head with
       | .lam => .lam (eraseAt arguments 0)
@@ -1653,30 +1908,39 @@ def erase : {Γ : List Unit} → {sort : Unit} → Term signature Γ sort → Ex
       | .pair => .pair (eraseAt arguments 0) (eraseAt arguments 1)
       | .first => .first (eraseAt arguments 0)
       | .second => .second (eraseAt arguments 0)
+      | .literal enabled value => .literal enabled value
+      | .conditional enabled => .conditional enabled (eraseAt arguments 0) (eraseAt arguments 1) (eraseAt arguments 2)
 def eraseAt : {arity : List (List Unit × Unit)} → {Γ : List Unit} →
-    (arguments : Args signature arity Γ) → Fin arity.length → Expr
+    (arguments : Args (signature extended) arity Γ) → Fin arity.length → Source extended
   | _, _, .cons head _, ⟨0, _⟩ => erase head
   | _, _, .cons _ tail, ⟨index + 1, bound⟩ => eraseAt tail ⟨index, Nat.lt_of_succ_lt_succ bound⟩
 end
 
 @[simp] theorem eraseAt_zero {Γ : List Unit} {binders : List Unit} {sort : Unit}
-    {arity : List (List Unit × Unit)} (head : Term signature (binders ++ Γ) sort)
-    (tail : Args signature arity Γ) : eraseAt (.cons head tail) 0 = erase head := rfl
+    {arity : List (List Unit × Unit)} (head : Term (signature extended) (binders ++ Γ) sort)
+    (tail : Args (signature extended) arity Γ) : eraseAt (.cons head tail) 0 = erase head := rfl
 
 @[simp] theorem eraseAt_succ {Γ : List Unit} {binders : List Unit} {sort : Unit}
-    {arity : List (List Unit × Unit)} (head : Term signature (binders ++ Γ) sort)
-    (tail : Args signature arity Γ) (index : Fin arity.length) :
+    {arity : List (List Unit × Unit)} (head : Term (signature extended) (binders ++ Γ) sort)
+    (tail : Args (signature extended) arity Γ) (index : Fin arity.length) :
     eraseAt (.cons head tail) index.succ = eraseAt tail index := rfl
 
-@[simp] theorem erase_lam {Γ : List Unit} (body : Scoped (() :: Γ)) : erase (lam body) = .lam (erase body) := rfl
-@[simp] theorem erase_app {Γ : List Unit} (operator argument : Scoped Γ) :
+@[simp] theorem erase_lam {Γ : List Unit} (body : Scoped (extended := extended) (() :: Γ)) : erase (lam body) = .lam (erase body) := rfl
+@[simp] theorem erase_app {Γ : List Unit} (operator argument : Scoped (extended := extended) Γ) :
     erase (app operator argument) = .app (erase operator) (erase argument) := rfl
-@[simp] theorem erase_pair {Γ : List Unit} (left right : Scoped Γ) :
+@[simp] theorem erase_pair {Γ : List Unit} (left right : Scoped (extended := extended) Γ) :
     erase (pair left right) = .pair (erase left) (erase right) := rfl
-@[simp] theorem erase_first {Γ : List Unit} (term : Scoped Γ) : erase (first term) = .first (erase term) := rfl
-@[simp] theorem erase_second {Γ : List Unit} (term : Scoped Γ) : erase (second term) = .second (erase term) := rfl
+@[simp] theorem erase_first {Γ : List Unit} (term : Scoped (extended := extended) Γ) : erase (first term) = .first (erase term) := rfl
+@[simp] theorem erase_second {Γ : List Unit} (term : Scoped (extended := extended) Γ) : erase (second term) = .second (erase term) := rfl
 
-def represent : (Γ : List Unit) → Expr → Option (Scoped Γ)
+@[simp] theorem erase_literal {Γ : List Unit} (enabled : extended = true) (value : Literal) :
+    erase (literal (Γ := Γ) enabled value) = .literal enabled value := rfl
+@[simp] theorem erase_conditional {Γ : List Unit} (enabled : extended = true)
+    (condition whenTrue whenFalse : Scoped Γ extended) :
+    erase (conditional enabled condition whenTrue whenFalse) =
+      .conditional enabled (erase condition) (erase whenTrue) (erase whenFalse) := rfl
+
+def represent : (Γ : List Unit) → Source extended → Option (Scoped (extended := extended) Γ)
   | Γ, .var index => (slot? Γ index).map .var
   | Γ, .lam body => (represent (() :: Γ) body).map lam
   | Γ, .app operator argument => do
@@ -1689,6 +1953,12 @@ def represent : (Γ : List Unit) → Expr → Option (Scoped Γ)
       pure (pair left right)
   | Γ, .first term => (represent Γ term).map first
   | Γ, .second term => (represent Γ term).map second
+  | _, .literal enabled value => some (literal enabled value)
+  | Γ, .conditional enabled condition whenTrue whenFalse => do
+      let condition ← represent Γ condition
+      let whenTrue ← represent Γ whenTrue
+      let whenFalse ← represent Γ whenFalse
+      pure (conditional enabled condition whenTrue whenFalse)
 
 @[simp] theorem slot?_position {Γ : List Unit} (variable_ : Var Γ ()) :
     slot? Γ (position variable_) = some variable_ := by
@@ -1713,10 +1983,10 @@ theorem position_slot? {Γ : List Unit} {index : Nat} {variable_ : Var Γ ()}
           subst variable_
           simpa only [position] using congrArg Nat.succ (ih previous)
 
-@[simp] theorem represent_erase : ∀ {Γ : List Unit} (term : Scoped Γ),
+@[simp] theorem represent_erase : ∀ {Γ : List Unit} (term : Scoped (extended := extended) Γ),
     represent Γ (erase term) = some term
   | Γ, .var variable_ => by
-      change (slot? Γ (position variable_)).map (Term.var (S := signature)) = some (.var variable_)
+      change (slot? Γ (position variable_)).map (Term.var (S := (signature extended))) = some (.var variable_)
       rw [slot?_position]
       rfl
   | Γ, .op .lam (.cons body .nil) => by
@@ -1743,20 +2013,30 @@ theorem position_slot? {Γ : List Unit} {index : Nat} {variable_ : Var Γ ()}
       change (represent Γ (erase term)).map second = some (second term)
       rw [show represent Γ (erase term) = some term from represent_erase term]
       rfl
+  | Γ, .op (.literal enabled value) .nil => rfl
+  | Γ, .op (.conditional enabled) (.cons condition (.cons whenTrue (.cons whenFalse .nil))) => by
+      change ((represent Γ (erase condition)).bind fun condition =>
+        (represent Γ (erase whenTrue)).bind fun whenTrue =>
+          (represent Γ (erase whenFalse)).bind fun whenFalse =>
+            some (conditional enabled condition whenTrue whenFalse)) = _
+      rw [show represent Γ (erase condition) = some condition from represent_erase condition,
+        show represent Γ (erase whenTrue) = some whenTrue from represent_erase whenTrue,
+        show represent Γ (erase whenFalse) = some whenFalse from represent_erase whenFalse]
+      rfl
 termination_by _ term => termSize term
 decreasing_by all_goals simp only [termSize, argsSize]; omega
 
-theorem erase_represent {Γ : List Unit} {expression : Expr} {term : Scoped Γ}
+theorem erase_represent {Γ : List Unit} {expression : Source extended} {term : Scoped (extended := extended) Γ}
     (represented : represent Γ expression = some term) : erase term = expression := by
   induction expression generalizing Γ term with
   | var index =>
       obtain ⟨variable_, found, same⟩ := Option.map_eq_some_iff.mp (by simpa only [represent] using represented)
       subst term
-      simpa only [erase, eraseAt] using congrArg Expr.var (position_slot? found)
+      simpa only [erase, eraseAt] using congrArg Source.var (position_slot? found)
   | lam body ih =>
       obtain ⟨bodyTerm, found, same⟩ := Option.map_eq_some_iff.mp (by simpa only [represent] using represented)
       subst term
-      simpa only [erase_lam] using congrArg Expr.lam (ih found)
+      simpa only [erase_lam] using congrArg Source.lam (ih found)
   | app operator argument ihO ihA =>
       cases operatorFound : represent Γ operator with
       | none => simp [represent, operatorFound] at represented
@@ -1780,55 +2060,87 @@ theorem erase_represent {Γ : List Unit} {expression : Expr} {term : Scoped Γ}
   | first expression ih =>
       obtain ⟨child, found, same⟩ := Option.map_eq_some_iff.mp (by simpa only [represent] using represented)
       subst term
-      simpa only [erase_first] using congrArg Expr.first (ih found)
+      simpa only [erase_first] using congrArg Source.first (ih found)
   | second expression ih =>
       obtain ⟨child, found, same⟩ := Option.map_eq_some_iff.mp (by simpa only [represent] using represented)
       subst term
-      simpa only [erase_second] using congrArg Expr.second (ih found)
+      simpa only [erase_second] using congrArg Source.second (ih found)
 
-theorem erase_injective {Γ : List Unit} : Function.Injective (@erase Γ ()) := by
+  | literal enabled value =>
+      simp only [represent, Option.some.injEq] at represented
+      subst term
+      rfl
+  | conditional enabled condition whenTrue whenFalse ihC ihT ihF =>
+      cases hc : represent Γ condition with
+      | none => simp [represent, hc] at represented
+      | some c =>
+          cases ht : represent Γ whenTrue with
+          | none => simp [represent, hc, ht] at represented
+          | some t =>
+              cases hf : represent Γ whenFalse with
+              | none => simp [represent, hc, ht, hf] at represented
+              | some f =>
+                  simp [represent, hc, ht, hf] at represented
+                  subst term
+                  simp only [erase_conditional, ihC hc, ihT ht, ihF hf]
+
+theorem erase_injective {Γ : List Unit} : Function.Injective (@erase extended Γ ()) := by
   intro left right same
   have represented := congrArg (represent Γ) same
   simpa only [represent_erase, Option.some.injEq] using represented
 
-abbrev Context (values : List Closed) : List Unit := List.replicate values.length ()
+abbrev Context (values : List (Closed extended)) : List Unit := List.replicate values.length ()
 
-private def scopedCases {Γ : List Unit} {P : Scoped Γ → Sort _}
+private def scopedCases {Γ : List Unit} {P : Scoped (extended := extended) Γ → Sort _}
     (varCase : ∀ variable_, P (.var variable_))
     (lamCase : ∀ body, P (lam body))
     (appCase : ∀ operator argument, P (app operator argument))
     (pairCase : ∀ left right, P (pair left right))
     (firstCase : ∀ term, P (first term))
-    (secondCase : ∀ term, P (second term)) : (term : Scoped Γ) → P term
+    (secondCase : ∀ term, P (second term))
+    (literalCase : ∀ enabled value, P (literal enabled value))
+    (conditionalCase : ∀ enabled condition whenTrue whenFalse,
+      P (conditional enabled condition whenTrue whenFalse)) : (term : Scoped (extended := extended) Γ) → P term
   | .var variable_ => varCase variable_
   | .op .lam (.cons body .nil) => lamCase body
   | .op .app (.cons operator (.cons argument .nil)) => appCase operator argument
   | .op .pair (.cons left (.cons right .nil)) => pairCase left right
   | .op .first (.cons term .nil) => firstCase term
   | .op .second (.cons term .nil) => secondCase term
+  | .op (.literal enabled value) .nil => literalCase enabled value
+  | .op (.conditional enabled) (.cons condition (.cons whenTrue (.cons whenFalse .nil))) =>
+      conditionalCase enabled condition whenTrue whenFalse
 
-@[simp] theorem bind_lam {Γ Δ : List Unit} (sigma : Sub signature Γ Δ) (body : Scoped (() :: Γ)) :
+@[simp] theorem bind_lam {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ) (body : Scoped (extended := extended) (() :: Γ)) :
     bind sigma (lam body) = lam (bind (liftSub sigma [()]) body) := rfl
-@[simp] theorem bind_app {Γ Δ : List Unit} (sigma : Sub signature Γ Δ) (operator argument : Scoped Γ) :
+@[simp] theorem bind_app {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ) (operator argument : Scoped (extended := extended) Γ) :
     bind sigma (app operator argument) = app (bind sigma operator) (bind sigma argument) := rfl
-@[simp] theorem bind_pair {Γ Δ : List Unit} (sigma : Sub signature Γ Δ) (left right : Scoped Γ) :
+@[simp] theorem bind_pair {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ) (left right : Scoped (extended := extended) Γ) :
     bind sigma (pair left right) = pair (bind sigma left) (bind sigma right) := rfl
-@[simp] theorem bind_first {Γ Δ : List Unit} (sigma : Sub signature Γ Δ) (term : Scoped Γ) :
+@[simp] theorem bind_first {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ) (term : Scoped (extended := extended) Γ) :
     bind sigma (first term) = first (bind sigma term) := rfl
-@[simp] theorem bind_second {Γ Δ : List Unit} (sigma : Sub signature Γ Δ) (term : Scoped Γ) :
+@[simp] theorem bind_second {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ) (term : Scoped (extended := extended) Γ) :
     bind sigma (second term) = second (bind sigma term) := rfl
 
-def substitution : (values : List Closed) → Sub signature (Context values) []
+@[simp] theorem bind_literal {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ)
+    (enabled : extended = true) (value : Literal) :
+    bind sigma (literal enabled value) = literal enabled value := rfl
+@[simp] theorem bind_conditional {Γ Δ : List Unit} (sigma : Sub (signature extended) Γ Δ)
+    (enabled : extended = true) (condition whenTrue whenFalse : Scoped Γ extended) :
+    bind sigma (conditional enabled condition whenTrue whenFalse) =
+      conditional enabled (bind sigma condition) (bind sigma whenTrue) (bind sigma whenFalse) := rfl
+
+def substitution : (values : List (Closed extended)) → Sub (signature extended) (Context values) []
   | [], _, variable_ => nomatch variable_
   | value :: _, _, .zero => value
   | _ :: values, _, .succ variable_ => substitution values () variable_
 
-def prepend {Γ : List Unit} (sigma : Sub signature Γ []) (value : Closed) :
-    Sub signature (() :: Γ) []
+def prepend {Γ : List Unit} (sigma : Sub (signature extended) Γ []) (value : (Closed extended)) :
+    Sub (signature extended) (() :: Γ) []
   | _, .zero => value
   | _, .succ variable_ => sigma () variable_
 
-@[simp] theorem substitution_cons (value : Closed) (values : List Closed) :
+@[simp] theorem substitution_cons (value : (Closed extended)) (values : List (Closed extended)) :
     substitution (value :: values) = prepend (substitution values) value := by
   funext sort variable_
   cases sort
@@ -1837,12 +2149,12 @@ def prepend {Γ : List Unit} (sigma : Sub signature Γ []) (value : Closed) :
 /-- Closing an abstraction and then applying it is the same substitution as
 extending the captured environment. This uses associativity and weakening of
 the common binding algebra, at every binder depth. -/
-theorem instantiate_closed {Γ : List Unit} (sigma : Sub signature Γ [])
-    (body : Scoped (() :: Γ)) (argument : Closed) :
+theorem instantiate_closed {Γ : List Unit} (sigma : Sub (signature extended) Γ [])
+    (body : Scoped (extended := extended) (() :: Γ)) (argument : (Closed extended)) :
     inst (bind (liftSub sigma [()]) body) argument = bind (prepend sigma argument) body := by
   change bind (Mettapedia.OSLF.Binding.extend argument) (bind (liftSub sigma [()]) body) = _
   rw [bind_comp]
-  apply congrArg (fun (sigma : Sub signature (() :: Γ) []) => bind sigma body)
+  apply congrArg (fun (sigma : Sub (signature extended) (() :: Γ) []) => bind sigma body)
   funext sort variable_
   cases sort
   cases variable_ with
@@ -1853,90 +2165,102 @@ theorem instantiate_closed {Γ : List Unit} (sigma : Sub signature Γ [])
 
 /-- Tag distinctions for the weak untyped source profile. Neutral projections
 and applications are values only when the active rule is unavailable. -/
-def NotLam (term : Closed) : Prop :=
+def NotLam (term : (Closed extended)) : Prop :=
   match erase term with
   | .lam _ => False
   | _ => True
 
-def NotPair (term : Closed) : Prop :=
+def NotPair (term : (Closed extended)) : Prop :=
   match erase term with
   | .pair _ _ => False
   | _ => True
 
-inductive Normal : Closed → Prop where
-  | lam (body : Scoped [()]) : Normal (lam body)
-  | pair {left right : Closed} (leftNormal : Normal left) (rightNormal : Normal right) :
+inductive Normal : (Closed extended) → Prop where
+  | literal (enabled : extended = true) (value : Literal) : Normal (literal enabled value)
+
+  | lam (body : Scoped (extended := extended) [()]) : Normal (lam body)
+  | pair {left right : (Closed extended)} (leftNormal : Normal left) (rightNormal : Normal right) :
       Normal (pair left right)
-  | first {term : Closed} (normal : Normal term) (inactive : NotPair term) : Normal (first term)
-  | second {term : Closed} (normal : Normal term) (inactive : NotPair term) : Normal (second term)
-  | app {operator argument : Closed} (operatorNormal : Normal operator)
+  | first {term : (Closed extended)} (normal : Normal term) (inactive : NotPair term) : Normal (first term)
+  | second {term : (Closed extended)} (normal : Normal term) (inactive : NotPair term) : Normal (second term)
+  | app {operator argument : (Closed extended)} (operatorNormal : Normal operator)
       (argumentNormal : Normal argument) (inactive : NotLam operator) : Normal (app operator argument)
 
 mutual
 /-- Exact source readback of a source-bodied combinatory value. Environments
 are separate from values: their unit sentinel is never a lambda source value. -/
-inductive Readback : Value → Closed → Prop where
-  | closure {environment : Value} {values : List Closed} {body : Scoped (() :: Context values)}
+inductive Readback : SourceValue extended → (Closed extended) → Prop where
+  | literal (enabled : extended = true) (value : Literal) :
+      Readback (.literal enabled value) (literal enabled value)
+
+  | closure {environment : SourceValue extended} {values : List (Closed extended)} {body : Scoped (extended := extended) (() :: Context values)}
       (captured : EnvironmentReadback environment values) :
       Readback (.closure (erase body) environment) (lam (bind (liftSub (substitution values) [()]) body))
-  | pair {left right : Value} {leftTerm rightTerm : Closed}
+  | pair {left right : SourceValue extended} {leftTerm rightTerm : (Closed extended)}
       (leftReadback : Readback left leftTerm) (rightReadback : Readback right rightTerm) :
       Readback (.pair left right) (pair leftTerm rightTerm)
-  | first {value : Value} {term : Closed} (readback : Readback value term)
+  | first {value : SourceValue extended} {term : (Closed extended)} (readback : Readback value term)
       (inactive : CategoricalAbstractMachine.NotPair value) : Readback (.first value) (first term)
-  | second {value : Value} {term : Closed} (readback : Readback value term)
+  | second {value : SourceValue extended} {term : (Closed extended)} (readback : Readback value term)
       (inactive : CategoricalAbstractMachine.NotPair value) : Readback (.second value) (second term)
-  | app {operator argument : Value} {operatorTerm argumentTerm : Closed}
+  | app {operator argument : SourceValue extended} {operatorTerm argumentTerm : (Closed extended)}
       (operatorReadback : Readback operator operatorTerm) (argumentReadback : Readback argument argumentTerm)
       (inactive : NotClosure operator) :
       Readback (.app (.pair operator argument)) (app operatorTerm argumentTerm)
-inductive EnvironmentReadback : Value → List Closed → Prop where
+inductive EnvironmentReadback : SourceValue extended → List (Closed extended) → Prop where
   | nil : EnvironmentReadback .unit []
-  | cons {environment value : Value} {values : List Closed} {term : Closed}
+  | cons {environment value : SourceValue extended} {values : List (Closed extended)} {term : (Closed extended)}
       (environmentReadback : EnvironmentReadback environment values) (valueReadback : Readback value term) :
       EnvironmentReadback (.pair environment value) (term :: values)
 end
 
-inductive ProjectionFirst : Closed → Closed → Prop where
-  | pair (left right : Closed) : ProjectionFirst (pair left right) left
-  | neutral (term : Closed) (inactive : NotPair term) : ProjectionFirst term (first term)
-inductive ProjectionSecond : Closed → Closed → Prop where
-  | pair (left right : Closed) : ProjectionSecond (pair left right) right
-  | neutral (term : Closed) (inactive : NotPair term) : ProjectionSecond term (second term)
+inductive ProjectionFirst : (Closed extended) → (Closed extended) → Prop where
+  | pair (left right : (Closed extended)) : ProjectionFirst (pair left right) left
+  | neutral (term : (Closed extended)) (inactive : NotPair term) : ProjectionFirst term (first term)
+inductive ProjectionSecond : (Closed extended) → (Closed extended) → Prop where
+  | pair (left right : (Closed extended)) : ProjectionSecond (pair left right) right
+  | neutral (term : (Closed extended)) (inactive : NotPair term) : ProjectionSecond term (second term)
 
 mutual
 /-- Independent completed weak left-to-right source evaluation. Application
 uses source substitution, rather than closure environments or instructions. -/
-inductive CBV : Closed → Closed → Prop where
-  | lam (body : Scoped [()]) : CBV (lam body) (lam body)
-  | pair {left right leftValue rightValue : Closed}
+inductive CBV : (Closed extended) → (Closed extended) → Prop where
+  | literal (enabled : extended = true) (value : Literal) : CBV (literal enabled value) (literal enabled value)
+  | conditional {enabled : extended = true} {condition whenTrue whenFalse value : Closed extended}
+      {selected : Bool} (conditionEval : CBV condition (literal enabled (.boolean selected)))
+      (selectedEval : CBV (if selected then whenTrue else whenFalse) value) :
+      CBV (conditional enabled condition whenTrue whenFalse) value
+
+  | lam (body : Scoped (extended := extended) [()]) : CBV (lam body) (lam body)
+  | pair {left right leftValue rightValue : (Closed extended)}
       (leftEval : CBV left leftValue) (rightEval : CBV right rightValue) :
       CBV (pair left right) (pair leftValue rightValue)
-  | app {operator argument function operand result : Closed}
+  | app {operator argument function operand result : (Closed extended)}
       (operatorEval : CBV operator function) (argumentEval : CBV argument operand)
       (invocation : Application function operand result) : CBV (app operator argument) result
-  | first {term before result : Closed} (evaluation : CBV term before)
+  | first {term before result : (Closed extended)} (evaluation : CBV term before)
       (projection : ProjectionFirst before result) : CBV (first term) result
-  | second {term before result : Closed} (evaluation : CBV term before)
+  | second {term before result : (Closed extended)} (evaluation : CBV term before)
       (projection : ProjectionSecond before result) : CBV (second term) result
-inductive Application : Closed → Closed → Closed → Prop where
-  | beta {body : Scoped [()]} {argument result : Closed} (bodyEval : CBV (inst body argument) result) :
+inductive Application : (Closed extended) → (Closed extended) → (Closed extended) → Prop where
+  | beta {body : Scoped (extended := extended) [()]} {argument result : (Closed extended)} (bodyEval : CBV (inst body argument) result) :
       Application (lam body) argument result
-  | neutral (operator argument : Closed) (inactive : NotLam operator) :
+  | neutral (operator argument : (Closed extended)) (inactive : NotLam operator) :
       Application operator argument (app operator argument)
 end
 
-theorem Readback.notLam {value : Value} {term : Closed}
+theorem Readback.notLam {value : SourceValue extended} {term : (Closed extended)}
     (readback : Readback value term) (inactive : NotClosure value) : NotLam term := by
   cases readback <;> simp_all [NotClosure, NotLam]
 
-theorem Readback.notPair {value : Value} {term : Closed}
+theorem Readback.notPair {value : SourceValue extended} {term : (Closed extended)}
     (readback : Readback value term) (inactive : CategoricalAbstractMachine.NotPair value) : NotPair term := by
   cases readback <;> simp_all [CategoricalAbstractMachine.NotPair, NotPair]
 
-theorem Readback.normal {value : Value} {term : Closed} (readback : Readback value term) : Normal term := by
+theorem Readback.normal {value : SourceValue extended} {term : (Closed extended)} (readback : Readback value term) : Normal term := by
   induction readback using Readback.rec
       (motive_2 := fun _ values _ => ∀ term ∈ values, Normal term) with
+  | literal enabled value => exact .literal enabled value
   | closure => exact .lam _
   | pair _ _ ihLeft ihRight => exact .pair ihLeft ihRight
   | first readback inactive ih => exact .first ih (readback.notPair inactive)
@@ -1949,29 +2273,32 @@ theorem Readback.normal {value : Value} {term : Closed} (readback : Readback val
       | head => exact ihValue
       | tail _ member => exact ihValues _ member
 
-theorem Normal.evaluation {term : Closed} (normal : Normal term) : CBV term term := by
+theorem Normal.evaluation {term : (Closed extended)} (normal : Normal term) : CBV term term := by
   induction normal with
+  | literal enabled value => exact .literal enabled value
   | lam body => exact .lam body
   | pair _ _ ihL ihR => exact .pair ihL ihR
   | first _ inactive ih => exact .first ih (.neutral _ inactive)
   | second _ inactive ih => exact .second ih (.neutral _ inactive)
   | app _ _ inactive ihO ihA => exact .app ihO ihA (.neutral _ _ inactive)
 
-theorem ProjectionFirst.normal {term result : Closed} (projection : ProjectionFirst term result)
+theorem ProjectionFirst.normal {term result : (Closed extended)} (projection : ProjectionFirst term result)
     (normal : Normal term) : Normal result := by
   cases projection with
   | pair => cases normal; assumption
   | neutral term inactive => exact .first normal inactive
 
-theorem ProjectionSecond.normal {term result : Closed} (projection : ProjectionSecond term result)
+theorem ProjectionSecond.normal {term result : (Closed extended)} (projection : ProjectionSecond term result)
     (normal : Normal term) : Normal result := by
   cases projection with
   | pair => cases normal; assumption
   | neutral term inactive => exact .second normal inactive
 
-theorem CBV.normal {term result : Closed} (evaluation : CBV term result) : Normal result := by
+theorem CBV.normal {term result : (Closed extended)} (evaluation : CBV term result) : Normal result := by
   induction evaluation using CBV.rec
       (motive_2 := fun operator argument result _ => Normal operator → Normal argument → Normal result) with
+  | literal enabled value => exact .literal enabled value
+  | conditional _ _ _ ihSelected => exact ihSelected
   | lam body => exact .lam body
   | pair _ _ ihL ihR => exact .pair ihL ihR
   | app _ _ _ ihO ihA ihCall => exact ihCall ihO ihA
@@ -1980,7 +2307,7 @@ theorem CBV.normal {term result : Closed} (evaluation : CBV term result) : Norma
   | beta _ ih => exact ih
   | neutral operator argument inactive => exact .app ‹Normal operator› ‹Normal argument› inactive
 
-theorem EnvironmentReadback.lookup {environment : Value} {values : List Closed}
+theorem EnvironmentReadback.lookup {environment : SourceValue extended} {values : List (Closed extended)}
     (captured : EnvironmentReadback environment values) (variable_ : Var (Context values) ()) :
     ∃ value, CategoricalAbstractMachine.Evaluation (.var (position variable_)) environment value ∧
       Readback value (substitution values () variable_) := by
@@ -1995,8 +2322,9 @@ theorem EnvironmentReadback.lookup {environment : Value} {values : List Closed}
               obtain ⟨value, evaluation, valueReadback⟩ := ih captured variable_
               exact ⟨value, .varSucc (.pair _ _) evaluation, valueReadback⟩
 
-theorem Normal.result {term result : Closed} (normal : Normal term) (evaluation : CBV term result) : result = term := by
+theorem Normal.result {term result : (Closed extended)} (normal : Normal term) (evaluation : CBV term result) : result = term := by
   induction normal generalizing result with
+  | literal enabled value => cases evaluation; rfl
   | lam body => cases evaluation; rfl
   | pair leftNormal rightNormal ihL ihR =>
       cases evaluation with
@@ -2028,8 +2356,8 @@ theorem Normal.result {term result : Closed} (normal : Normal term) (evaluation 
           | beta => simp [NotLam, erase_lam] at inactive
           | neutral => rfl
 
-theorem First.readback {value result : Value} (projection : CategoricalAbstractMachine.First value result)
-    {term : Closed} (readback : Readback value term) :
+theorem First.readback {value result : SourceValue extended} (projection : CategoricalAbstractMachine.First value result)
+    {term : (Closed extended)} (readback : Readback value term) :
     ∃ resultTerm, Readback result resultTerm ∧ ProjectionFirst term resultTerm := by
   cases projection with
   | pair left right =>
@@ -2037,8 +2365,8 @@ theorem First.readback {value result : Value} (projection : CategoricalAbstractM
       | pair leftReadback rightReadback => exact ⟨_, leftReadback, .pair _ _⟩
   | neutral value inactive => exact ⟨first term, .first readback inactive, .neutral term (readback.notPair inactive)⟩
 
-theorem Second.readback {value result : Value} (projection : CategoricalAbstractMachine.Second value result)
-    {term : Closed} (readback : Readback value term) :
+theorem Second.readback {value result : SourceValue extended} (projection : CategoricalAbstractMachine.Second value result)
+    {term : (Closed extended)} (readback : Readback value term) :
     ∃ resultTerm, Readback result resultTerm ∧ ProjectionSecond term resultTerm := by
   cases projection with
   | pair left right =>
@@ -2046,7 +2374,7 @@ theorem Second.readback {value result : Value} (projection : CategoricalAbstract
       | pair leftReadback rightReadback => exact ⟨_, rightReadback, .pair _ _⟩
   | neutral value inactive => exact ⟨second term, .second readback inactive, .neutral term (readback.notPair inactive)⟩
 
-theorem variable_readback {environment value : Value} {values : List Closed}
+theorem variable_readback {environment value : SourceValue extended} {values : List (Closed extended)}
     (captured : EnvironmentReadback environment values) (variable_ : Var (Context values) ())
     (evaluation : CategoricalAbstractMachine.Evaluation (.var (position variable_)) environment value) :
     ∃ result, Readback value result ∧ CBV (substitution values () variable_) result := by
@@ -2057,13 +2385,13 @@ theorem variable_readback {environment value : Value} {values : List Closed}
 
 /-- Every completed combinatory evaluation of a scoped expression in a
 represented environment yields its exact weak source readback. -/
-theorem evaluation_readback {term : Expr} {environment value : Value}
+theorem evaluation_readback {term : Source extended} {environment value : SourceValue extended}
     (evaluation : CategoricalAbstractMachine.Evaluation term environment value) :
-    ∀ {values : List Closed} (source : Scoped (Context values))
+    ∀ {values : List (Closed extended)} (source : Scoped (extended := extended) (Context values))
       (_captured : EnvironmentReadback environment values), erase source = term →
       ∃ result, Readback value result ∧ CBV (bind (substitution values) source) result := by
   induction evaluation using CategoricalAbstractMachine.Evaluation.rec
-      (motive_2 := fun function argument value _ => ∀ {operator operand : Closed},
+      (motive_2 := fun function argument value _ => ∀ {operator operand : (Closed extended)},
         Readback function operator → Readback argument operand →
           ∃ result, Readback value result ∧ Application operator operand result) with
   | @varZero environment value projection =>
@@ -2071,37 +2399,43 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       induction source using scopedCases with
       | varCase variable_ =>
           apply variable_readback captured variable_
-          rw [show position variable_ = 0 from Expr.var.inj represented]
+          rw [show position variable_ = 0 from Source.var.inj represented]
           exact .varZero projection
       | lamCase body => simp only [erase_lam, reduceCtorEq] at represented
       | appCase operator argument => simp only [erase_app, reduceCtorEq] at represented
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @varSucc index environment before value projection rest restIH =>
       intro values source captured represented
       induction source using scopedCases with
       | varCase variable_ =>
           apply variable_readback captured variable_
-          rw [show position variable_ = index + 1 from Expr.var.inj represented]
+          rw [show position variable_ = index + 1 from Source.var.inj represented]
           exact .varSucc projection rest
       | lamCase body => simp only [erase_lam, reduceCtorEq] at represented
       | appCase operator argument => simp only [erase_app, reduceCtorEq] at represented
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @lam body environment =>
       intro values source captured represented
       induction source using scopedCases with
       | varCase variable_ => simp only [erase, reduceCtorEq] at represented
       | lamCase sourceBody =>
-          have same : erase sourceBody = body := Expr.lam.inj represented
+          have same : erase sourceBody = body := Source.lam.inj represented
           subst body
           exact ⟨_, .closure captured, .lam _⟩
       | appCase operator argument => simp only [erase_app, reduceCtorEq] at represented
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @pair left right environment firstValue secondValue leftEval rightEval leftIH rightIH =>
       intro values source captured represented
       induction source using scopedCases with
@@ -2109,19 +2443,21 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       | lamCase body => simp only [erase_lam, reduceCtorEq] at represented
       | appCase operator argument => simp only [erase_app, reduceCtorEq] at represented
       | pairCase sourceLeft sourceRight =>
-          obtain ⟨sameLeft, sameRight⟩ := Expr.pair.inj represented
+          obtain ⟨sameLeft, sameRight⟩ := Source.pair.inj represented
           obtain ⟨leftTerm, leftReadback, leftCBV⟩ := leftIH sourceLeft captured sameLeft
           obtain ⟨rightTerm, rightReadback, rightCBV⟩ := rightIH sourceRight captured sameRight
           exact ⟨_, .pair leftReadback rightReadback, .pair leftCBV rightCBV⟩
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @app operator argument environment function operand result operatorEval argumentEval invocation operatorIH argumentIH invocationIH =>
       intro values source captured represented
       induction source using scopedCases with
       | varCase variable_ => simp only [erase, reduceCtorEq] at represented
       | lamCase body => simp only [erase_lam, reduceCtorEq] at represented
       | appCase sourceOperator sourceArgument =>
-          obtain ⟨sameOperator, sameArgument⟩ := Expr.app.inj represented
+          obtain ⟨sameOperator, sameArgument⟩ := Source.app.inj represented
           obtain ⟨functionTerm, functionReadback, operatorCBV⟩ := operatorIH sourceOperator captured sameOperator
           obtain ⟨operandTerm, operandReadback, argumentCBV⟩ := argumentIH sourceArgument captured sameArgument
           obtain ⟨resultTerm, resultReadback, sourceInvocation⟩ := invocationIH functionReadback operandReadback
@@ -2129,6 +2465,8 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @first term environment before value termEval projection termIH =>
       intro values source captured represented
       induction source using scopedCases with
@@ -2137,11 +2475,13 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       | appCase operator argument => simp only [erase_app, reduceCtorEq] at represented
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase sourceTerm =>
-          have same := Expr.first.inj represented
+          have same := Source.first.inj represented
           obtain ⟨beforeTerm, beforeReadback, termCBV⟩ := termIH sourceTerm captured same
           obtain ⟨resultTerm, resultReadback, sourceProjection⟩ := First.readback projection beforeReadback
           exact ⟨_, resultReadback, .first termCBV sourceProjection⟩
       | secondCase term => simp only [erase_second, reduceCtorEq] at represented
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @second term environment before value termEval projection termIH =>
       intro values source captured represented
       induction source using scopedCases with
@@ -2151,10 +2491,12 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       | pairCase left right => simp only [erase_pair, reduceCtorEq] at represented
       | firstCase term => simp only [erase_first, reduceCtorEq] at represented
       | secondCase sourceTerm =>
-          have same := Expr.second.inj represented
+          have same := Source.second.inj represented
           obtain ⟨beforeTerm, beforeReadback, termCBV⟩ := termIH sourceTerm captured same
           obtain ⟨resultTerm, resultReadback, sourceProjection⟩ := Second.readback projection beforeReadback
           exact ⟨_, resultReadback, .second termCBV sourceProjection⟩
+      | literalCase enabled value => simp only [erase_literal, reduceCtorEq] at represented
+      | conditionalCase enabled condition whenTrue whenFalse => simp only [erase_conditional, reduceCtorEq] at represented
   | @closure body environment argument value bodyEval bodyIH =>
       rename_i operator operand functionReadback argumentReadback
       cases functionReadback with
@@ -2169,8 +2511,31 @@ theorem evaluation_readback {term : Expr} {environment value : Value}
       exact ⟨_, .app functionReadback argumentReadback inactive,
         .neutral _ _ (functionReadback.notLam inactive)⟩
 
-theorem invocation_readback {function argument value : Value}
-    (invocation : Invocation function argument value) {operator operand : Closed}
+  | @literal enabled value environment =>
+      intro values source captured represented
+      induction source using scopedCases with
+      | literalCase sourceEnabled sourceValue =>
+          have same := Source.literal.inj represented
+          subst sourceValue
+          exact ⟨_, .literal enabled value, .literal enabled value⟩
+      | varCase | lamCase | appCase | pairCase | firstCase | secondCase | conditionalCase =>
+          cases represented
+  | @conditional enabled condition whenTrue whenFalse environment value selected conditionEval selectedEval conditionIH selectedIH =>
+      intro values source captured represented
+      induction source using scopedCases with
+      | conditionalCase sourceEnabled sourceCondition sourceTrue sourceFalse =>
+          obtain ⟨sameCondition, sameTrue, sameFalse⟩ := Source.conditional.inj represented
+          obtain ⟨conditionTerm, conditionReadback, conditionCBV⟩ := conditionIH sourceCondition captured sameCondition
+          cases conditionReadback
+          obtain ⟨resultTerm, resultReadback, resultCBV⟩ := selectedIH
+            (if selected then sourceTrue else sourceFalse) captured (by cases selected <;> assumption)
+          refine ⟨resultTerm, resultReadback, .conditional conditionCBV ?_⟩
+          cases selected <;> exact resultCBV
+      | varCase | lamCase | appCase | pairCase | firstCase | secondCase | literalCase =>
+          cases represented
+
+theorem invocation_readback {function argument value : SourceValue extended}
+    (invocation : Invocation function argument value) {operator operand : (Closed extended)}
     (functionReadback : Readback function operator) (argumentReadback : Readback argument operand) :
     ∃ result, Readback value result ∧ Application operator operand result := by
   cases invocation with
@@ -2186,16 +2551,16 @@ theorem invocation_readback {function argument value : Value}
       exact ⟨_, .app functionReadback argumentReadback inactive,
         .neutral _ _ (functionReadback.notLam inactive)⟩
 
-theorem Readback.reflectNotLam {value : Value} {term : Closed}
+theorem Readback.reflectNotLam {value : SourceValue extended} {term : (Closed extended)}
     (readback : Readback value term) (inactive : NotLam term) : NotClosure value := by
   cases readback <;> simp_all [NotLam, NotClosure]
 
-theorem Readback.reflectNotPair {value : Value} {term : Closed}
+theorem Readback.reflectNotPair {value : SourceValue extended} {term : (Closed extended)}
     (readback : Readback value term) (inactive : NotPair term) : CategoricalAbstractMachine.NotPair value := by
   cases readback <;> simp_all [NotPair, CategoricalAbstractMachine.NotPair]
 
-theorem ProjectionFirst.realization {term result : Closed} (projection : ProjectionFirst term result)
-    {value : Value} (readback : Readback value term) :
+theorem ProjectionFirst.realization {term result : (Closed extended)} (projection : ProjectionFirst term result)
+    {value : SourceValue extended} (readback : Readback value term) :
     ∃ actual, CategoricalAbstractMachine.First value actual ∧ Readback actual result := by
   cases projection with
   | pair left right =>
@@ -2205,8 +2570,8 @@ theorem ProjectionFirst.realization {term result : Closed} (projection : Project
       have actualInactive := readback.reflectNotPair inactive
       exact ⟨_, .neutral _ actualInactive, .first readback actualInactive⟩
 
-theorem ProjectionSecond.realization {term result : Closed} (projection : ProjectionSecond term result)
-    {value : Value} (readback : Readback value term) :
+theorem ProjectionSecond.realization {term result : (Closed extended)} (projection : ProjectionSecond term result)
+    {value : SourceValue extended} (readback : Readback value term) :
     ∃ actual, CategoricalAbstractMachine.Second value actual ∧ Readback actual result := by
   cases projection with
   | pair left right =>
@@ -2216,32 +2581,43 @@ theorem ProjectionSecond.realization {term result : Closed} (projection : Projec
       have actualInactive := readback.reflectNotPair inactive
       exact ⟨_, .neutral _ actualInactive, .second readback actualInactive⟩
 
-theorem lam_inj {Γ : List Unit} {left right : Scoped (() :: Γ)} (same : lam left = lam right) : left = right := by
+theorem lam_inj {Γ : List Unit} {left right : Scoped (extended := extended) (() :: Γ)} (same : lam left = lam right) : left = right := by
   apply erase_injective
   have erased := congrArg erase same
-  exact Expr.lam.inj erased
+  exact Source.lam.inj erased
 
-theorem app_inj {Γ : List Unit} {operator argument operator' argument' : Scoped Γ}
+theorem app_inj {Γ : List Unit} {operator argument operator' argument' : Scoped (extended := extended) Γ}
     (same : app operator argument = app operator' argument') : operator = operator' ∧ argument = argument' := by
-  have erased := Expr.app.inj (congrArg erase same)
+  have erased := Source.app.inj (congrArg erase same)
   exact ⟨erase_injective erased.1, erase_injective erased.2⟩
 
-theorem pair_inj {Γ : List Unit} {left right left' right' : Scoped Γ}
+theorem pair_inj {Γ : List Unit} {left right left' right' : Scoped (extended := extended) Γ}
     (same : pair left right = pair left' right') : left = left' ∧ right = right' := by
-  have erased := Expr.pair.inj (congrArg erase same)
+  have erased := Source.pair.inj (congrArg erase same)
   exact ⟨erase_injective erased.1, erase_injective erased.2⟩
 
-theorem first_inj {Γ : List Unit} {term term' : Scoped Γ} (same : first term = first term') : term = term' := by
+theorem first_inj {Γ : List Unit} {term term' : Scoped (extended := extended) Γ} (same : first term = first term') : term = term' := by
   apply erase_injective
-  exact Expr.first.inj (congrArg erase same)
+  exact Source.first.inj (congrArg erase same)
 
-theorem second_inj {Γ : List Unit} {term term' : Scoped Γ} (same : second term = second term') : term = term' := by
+theorem second_inj {Γ : List Unit} {term term' : Scoped (extended := extended) Γ} (same : second term = second term') : term = term' := by
   apply erase_injective
-  exact Expr.second.inj (congrArg erase same)
+  exact Source.second.inj (congrArg erase same)
 
-theorem variable_realization {environment : Value} {values : List Closed}
+theorem literal_inj {Γ : List Unit} {enabled : extended = true} {left right : Literal}
+    (same : literal (Γ := Γ) enabled left = literal enabled right) : left = right :=
+  Source.literal.inj (congrArg erase same)
+
+theorem conditional_inj {Γ : List Unit} {enabled : extended = true}
+    {condition whenTrue whenFalse condition' whenTrue' whenFalse' : Scoped Γ extended}
+    (same : conditional enabled condition whenTrue whenFalse = conditional enabled condition' whenTrue' whenFalse') :
+    condition = condition' ∧ whenTrue = whenTrue' ∧ whenFalse = whenFalse' := by
+  have erased := Source.conditional.inj (congrArg erase same)
+  exact ⟨erase_injective erased.1, erase_injective erased.2.1, erase_injective erased.2.2⟩
+
+theorem variable_realization {environment : SourceValue extended} {values : List (Closed extended)}
     (captured : EnvironmentReadback environment values) (variable_ : Var (Context values) ())
-    {result : Closed} (evaluation : CBV (substitution values () variable_) result) :
+    {result : (Closed extended)} (evaluation : CBV (substitution values () variable_) result) :
     ∃ value, CategoricalAbstractMachine.Evaluation (.var (position variable_)) environment value ∧
       Readback value result := by
   obtain ⟨value, lookup, readback⟩ := captured.lookup variable_
@@ -2251,14 +2627,43 @@ theorem variable_realization {environment : Value} {values : List Closed}
 
 /-- Reverse correspondence constructs the actual combinatory endpoint of a
 source evaluation, preserving its represented captured environment. -/
-theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
-    ∀ {environment : Value} {values : List Closed} (source : Scoped (Context values))
+theorem cbv_realization {term result : (Closed extended)} (evaluation : CBV term result) :
+    ∀ {environment : SourceValue extended} {values : List (Closed extended)} (source : Scoped (extended := extended) (Context values))
       (_captured : EnvironmentReadback environment values), bind (substitution values) source = term →
       ∃ value, CategoricalAbstractMachine.Evaluation (erase source) environment value ∧ Readback value result := by
   induction evaluation using CBV.rec
-      (motive_2 := fun operator operand result _ => ∀ {function argument : Value},
+      (motive_2 := fun operator operand result _ => ∀ {function argument : SourceValue extended},
         Readback function operator → Readback argument operand →
           ∃ value, Invocation function argument value ∧ Readback value result) with
+  | literal enabled value =>
+      intro environment values source captured represented
+      induction source using scopedCases with
+      | varCase variable_ =>
+          apply variable_realization captured variable_
+          rw [show substitution values () variable_ = _ from represented]
+          exact .literal enabled value
+      | literalCase sourceEnabled sourceValue =>
+          have same := literal_inj represented
+          subst sourceValue
+          exact ⟨_, .literal enabled value environment, .literal enabled value⟩
+      | lamCase | appCase | pairCase | firstCase | secondCase | conditionalCase => cases represented
+  | @conditional enabled condition whenTrue whenFalse value selected conditionEval selectedEval conditionIH selectedIH =>
+      intro environment values source captured represented
+      induction source using scopedCases with
+      | varCase variable_ =>
+          apply variable_realization captured variable_
+          rw [show substitution values () variable_ = _ from represented]
+          exact .conditional conditionEval selectedEval
+      | conditionalCase sourceEnabled sourceCondition sourceTrue sourceFalse =>
+          obtain ⟨sameCondition, sameTrue, sameFalse⟩ := conditional_inj represented
+          obtain ⟨conditionValue, actualCondition, conditionReadback⟩ := conditionIH sourceCondition captured sameCondition
+          cases conditionReadback
+          obtain ⟨resultValue, actualResult, resultReadback⟩ := selectedIH
+            (if selected then sourceTrue else sourceFalse) captured (by cases selected <;> assumption)
+          refine ⟨resultValue, .conditional actualCondition ?_, resultReadback⟩
+          cases selected <;> exact actualResult
+      | lamCase | appCase | pairCase | firstCase | secondCase | literalCase => cases represented
+
   | lam body =>
       intro environment values source captured represented
       induction source using scopedCases with
@@ -2271,6 +2676,8 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
       | pairCase left right => cases represented
       | firstCase term => cases represented
       | secondCase term => cases represented
+      | literalCase enabled value => cases represented
+      | conditionalCase enabled condition whenTrue whenFalse => cases represented
   | pair leftEval rightEval leftIH rightIH =>
       intro environment values source captured represented
       induction source using scopedCases with
@@ -2287,6 +2694,8 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
           exact ⟨_, .pair actualLeft actualRight, .pair leftReadback rightReadback⟩
       | firstCase term => cases represented
       | secondCase term => cases represented
+      | literalCase enabled value => cases represented
+      | conditionalCase enabled condition whenTrue whenFalse => cases represented
   | app operatorEval argumentEval invocation operatorIH argumentIH invocationIH =>
       intro environment values source captured represented
       induction source using scopedCases with
@@ -2304,6 +2713,8 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
       | pairCase left right => cases represented
       | firstCase term => cases represented
       | secondCase term => cases represented
+      | literalCase enabled value => cases represented
+      | conditionalCase enabled condition whenTrue whenFalse => cases represented
   | first evaluation projection termIH =>
       intro environment values source captured represented
       induction source using scopedCases with
@@ -2320,6 +2731,8 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
           obtain ⟨value, actualProjection, valueReadback⟩ := projection.realization beforeReadback
           exact ⟨value, .first actualTerm actualProjection, valueReadback⟩
       | secondCase term => cases represented
+      | literalCase enabled value => cases represented
+      | conditionalCase enabled condition whenTrue whenFalse => cases represented
   | second evaluation projection termIH =>
       intro environment values source captured represented
       induction source using scopedCases with
@@ -2336,6 +2749,8 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
           obtain ⟨before, actualTerm, beforeReadback⟩ := termIH term captured same
           obtain ⟨value, actualProjection, valueReadback⟩ := projection.realization beforeReadback
           exact ⟨value, .second actualTerm actualProjection, valueReadback⟩
+      | literalCase enabled value => cases represented
+      | conditionalCase enabled condition whenTrue whenFalse => cases represented
   | beta bodyEval bodyIH =>
       rename_i body operand result function argument functionReadback argumentReadback
       cases functionReadback with
@@ -2352,23 +2767,24 @@ theorem cbv_realization {term result : Closed} (evaluation : CBV term result) :
 
 /-- These tag tests inspect syntax only. Scope and captured-value validity are
 checked by the executable readback below and its independent judgments. -/
-def nonPair : Value → Bool
+def nonPair : SourceValue extended → Bool
   | .pair _ _ => false
   | _ => true
 
-def nonClosure : Value → Bool
+def nonClosure : SourceValue extended → Bool
   | .closure _ _ => false
   | _ => true
 
-@[simp] theorem nonPair_iff (value : Value) : nonPair value = true ↔ CategoricalAbstractMachine.NotPair value := by
+@[simp] theorem nonPair_iff (value : SourceValue extended) : nonPair value = true ↔ CategoricalAbstractMachine.NotPair value := by
   cases value <;> simp [nonPair, CategoricalAbstractMachine.NotPair]
-@[simp] theorem nonClosure_iff (value : Value) : nonClosure value = true ↔ NotClosure value := by
+@[simp] theorem nonClosure_iff (value : SourceValue extended) : nonClosure value = true ↔ NotClosure value := by
   cases value <;> simp [nonClosure, NotClosure]
 
 mutual
 /-- Executable closed readback. An unscoped closure, an environment sentinel
 as value, or a payload using an active rule as a neutral value is refused. -/
-def realize : Value → Option Closed
+def realize : SourceValue extended → Option (Closed extended)
+  | .literal enabled value => some (literal enabled value)
   | .unit => none
   | .closure body environment => do
       let values ← realizeEnvironment environment
@@ -2387,7 +2803,7 @@ def realize : Value → Option Closed
     else none
   | .app _ => none
 
-def realizeEnvironment : Value → Option (List Closed)
+def realizeEnvironment : SourceValue extended → Option (List (Closed extended))
   | .unit => some []
   | .pair environment value => do
       let values ← realizeEnvironment environment
@@ -2396,9 +2812,10 @@ def realizeEnvironment : Value → Option (List Closed)
   | _ => none
 end
 
-theorem Readback.realized {value : Value} {term : Closed} (readback : Readback value term) : realize value = some term := by
+theorem Readback.realized {value : SourceValue extended} {term : (Closed extended)} (readback : Readback value term) : realize value = some term := by
   induction readback using Readback.rec
       (motive_2 := fun environment values _ => realizeEnvironment environment = some values) with
+  | literal => rfl
   | @closure environment values body captured capturedIH =>
       simp only [realize, capturedIH]
       change (represent (() :: Context values) (erase body)).bind _ = _
@@ -2411,7 +2828,7 @@ theorem Readback.realized {value : Value} {term : Closed} (readback : Readback v
   | nil => rfl
   | cons _ _ capturedIH valueIH => simp [realizeEnvironment, capturedIH, valueIH]
 
-theorem EnvironmentReadback.realized {environment : Value} {values : List Closed}
+theorem EnvironmentReadback.realized {environment : SourceValue extended} {values : List (Closed extended)}
     (captured : EnvironmentReadback environment values) : realizeEnvironment environment = some values := by
   induction values generalizing environment with
   | nil => cases captured; rfl
@@ -2419,7 +2836,7 @@ theorem EnvironmentReadback.realized {environment : Value} {values : List Closed
       cases captured with
       | cons captured readback => simp [realizeEnvironment, ih captured, readback.realized]
 
-private theorem realize_sound_both (value : Value) :
+private theorem realize_sound_both (value : SourceValue extended) :
     (∀ term, realize value = some term → Readback value term) ∧
     (∀ values, realizeEnvironment value = some values → EnvironmentReadback value values) := by
   induction value with
@@ -2504,29 +2921,39 @@ private theorem realize_sound_both (value : Value) :
                       | pair operatorReadback argumentReadback =>
                           exact .app operatorReadback argumentReadback ((nonClosure_iff _).mp inactive)
             · simp [realize, inactive] at found
+        | literal _ _ => simp [realize] at found
         | unit | closure _ _ | first _ | second _ | app _ => simp [realize] at found
       · intro values found; simp [realizeEnvironment] at found
 
-theorem realize_sound {value : Value} {term : Closed} (represented : realize value = some term) : Readback value term :=
+  | literal enabled value =>
+      constructor
+      · intro term found
+        simp only [realize, Option.some.injEq] at found
+        subst term
+        exact .literal enabled value
+      · intro values found
+        simp [realizeEnvironment] at found
+
+theorem realize_sound {value : SourceValue extended} {term : (Closed extended)} (represented : realize value = some term) : Readback value term :=
   (realize_sound_both value).1 term represented
 
-theorem realizeEnvironment_sound {environment : Value} {values : List Closed}
+theorem realizeEnvironment_sound {environment : SourceValue extended} {values : List (Closed extended)}
     (represented : realizeEnvironment environment = some values) : EnvironmentReadback environment values :=
   (realize_sound_both environment).2 values represented
 
-theorem realize_iff (value : Value) (term : Closed) : realize value = some term ↔ Readback value term :=
+theorem realize_iff (value : SourceValue extended) (term : (Closed extended)) : realize value = some term ↔ Readback value term :=
   ⟨realize_sound, Readback.realized⟩
 
-theorem realizeEnvironment_iff (environment : Value) (values : List Closed) :
+theorem realizeEnvironment_iff (environment : SourceValue extended) (values : List (Closed extended)) :
     realizeEnvironment environment = some values ↔ EnvironmentReadback environment values :=
   ⟨realizeEnvironment_sound, EnvironmentReadback.realized⟩
 
-theorem Readback.unique {value : Value} {left right : Closed}
+theorem Readback.unique {value : SourceValue extended} {left right : (Closed extended)}
     (leftReadback : Readback value left) (rightReadback : Readback value right) : left = right :=
   Option.some.inj (leftReadback.realized.symm.trans rightReadback.realized)
 
-theorem cbv_iff_evaluation {environment : Value} {values : List Closed} (source : Scoped (Context values))
-    (captured : EnvironmentReadback environment values) (result : Closed) :
+theorem cbv_iff_evaluation {environment : SourceValue extended} {values : List (Closed extended)} (source : Scoped (extended := extended) (Context values))
+    (captured : EnvironmentReadback environment values) (result : (Closed extended)) :
     CBV (bind (substitution values) source) result ↔
       ∃ value, CategoricalAbstractMachine.Evaluation (erase source) environment value ∧ Readback value result := by
   constructor
@@ -2541,8 +2968,8 @@ theorem cbv_iff_evaluation {environment : Value} {values : List Closed} (source 
 /-- Native closure-code validation and scoped lambda readback are separate
 checks. This operation performs both; success alone grants no historical or
 publication authority to arbitrary supplied code. -/
-def nativeReadback (value : NativeValue) : Option Expr := do
-  let source ← decodeValue value
+def nativeReadback (value : NativeValue) : Option (Source extended) := do
+  let source ← decodeSourceValue value
   let closed ← realize source
   pure (erase closed)
 
@@ -2550,26 +2977,33 @@ def nativeReadback (value : NativeValue) : Option Expr := do
 /-- The historical weak, left-to-right call-by-value strategy. Evaluation does
 not enter a lambda. The right child is demanded only after the left child is
 normal; projection and beta rules demand their value operands first. -/
-inductive Step : Closed → Closed → Prop where
-  | beta (body : Scoped [()]) (argument : Closed) : Normal argument →
+inductive Step : (Closed extended) → (Closed extended) → Prop where
+  | beta (body : Scoped (extended := extended) [()]) (argument : (Closed extended)) : Normal argument →
       Step (app (lam body) argument) (inst body argument)
-  | appLeft {before after : Closed} (argument : Closed) : Step before after →
+  | appLeft {before after : (Closed extended)} (argument : (Closed extended)) : Step before after →
       Step (app before argument) (app after argument)
-  | appRight (operator : Closed) {before after : Closed} : Normal operator → Step before after →
+  | appRight (operator : (Closed extended)) {before after : (Closed extended)} : Normal operator → Step before after →
       Step (app operator before) (app operator after)
-  | pairLeft {before after : Closed} (right : Closed) : Step before after →
+  | pairLeft {before after : (Closed extended)} (right : (Closed extended)) : Step before after →
       Step (pair before right) (pair after right)
-  | pairRight (left : Closed) {before after : Closed} : Normal left → Step before after →
+  | pairRight (left : (Closed extended)) {before after : (Closed extended)} : Normal left → Step before after →
       Step (pair left before) (pair left after)
-  | first {before after : Closed} : Step before after → Step (first before) (first after)
-  | second {before after : Closed} : Step before after → Step (second before) (second after)
-  | firstPair (left right : Closed) : Normal left → Normal right → Step (first (pair left right)) left
-  | secondPair (left right : Closed) : Normal left → Normal right → Step (second (pair left right)) right
+  | first {before after : (Closed extended)} : Step before after → Step (first before) (first after)
+  | second {before after : (Closed extended)} : Step before after → Step (second before) (second after)
+  | firstPair (left right : (Closed extended)) : Normal left → Normal right → Step (first (pair left right)) left
+  | secondPair (left right : (Closed extended)) : Normal left → Normal right → Step (second (pair left right)) right
+  | conditional {enabled : extended = true} {before after : Closed extended}
+      (whenTrue whenFalse : Closed extended) : Step before after →
+      Step (conditional enabled before whenTrue whenFalse) (conditional enabled after whenTrue whenFalse)
+  | select (enabled : extended = true) (selected : Bool) (whenTrue whenFalse : Closed extended) :
+      Step (conditional enabled (literal enabled (.boolean selected)) whenTrue whenFalse)
+        (if selected then whenTrue else whenFalse)
 
-abbrev Steps := Relation.ReflTransGen Step
+abbrev Steps := Relation.ReflTransGen (Step (extended := extended))
 
-theorem Normal.inert {term : Closed} (normal : Normal term) : ∀ {after : Closed}, ¬ Step term after := by
+theorem Normal.inert {term : (Closed extended)} (normal : Normal term) : ∀ {after : (Closed extended)}, ¬ Step term after := by
   induction normal with
+  | literal => intro after transition; cases transition
   | lam body => intro after transition; cases transition
   | pair leftNormal rightNormal leftIH rightIH =>
       intro after transition
@@ -2593,29 +3027,35 @@ theorem Normal.inert {term : Closed} (normal : Normal term) : ∀ {after : Close
       | appLeft _ child => exact operatorIH child
       | appRight _ _ child => exact argumentIH child
 
-theorem Steps.appLeft {before after : Closed} (trace : Steps before after) (argument : Closed) :
+theorem Steps.appLeft {before after : (Closed extended)} (trace : Steps before after) (argument : (Closed extended)) :
     Steps (app before argument) (app after argument) :=
   trace.lift (fun operator => app operator argument) (fun _ _ child => .appLeft argument child)
 
-theorem Steps.appRight {before after : Closed} (trace : Steps before after) (operator : Closed)
+theorem Steps.appRight {before after : (Closed extended)} (trace : Steps before after) (operator : (Closed extended))
     (normal : Normal operator) : Steps (app operator before) (app operator after) :=
   trace.lift (app operator) (fun _ _ child => .appRight operator normal child)
 
-theorem Steps.pairLeft {before after : Closed} (trace : Steps before after) (right : Closed) :
+theorem Steps.pairLeft {before after : (Closed extended)} (trace : Steps before after) (right : (Closed extended)) :
     Steps (pair before right) (pair after right) :=
   trace.lift (fun left => pair left right) (fun _ _ child => .pairLeft right child)
 
-theorem Steps.pairRight {before after : Closed} (trace : Steps before after) (left : Closed)
+theorem Steps.pairRight {before after : (Closed extended)} (trace : Steps before after) (left : (Closed extended))
     (normal : Normal left) : Steps (pair left before) (pair left after) :=
   trace.lift (pair left) (fun _ _ child => .pairRight left normal child)
 
-theorem Steps.first {before after : Closed} (trace : Steps before after) : Steps (first before) (first after) :=
+theorem Steps.first {before after : (Closed extended)} (trace : Steps before after) : Steps (first before) (first after) :=
   trace.lift Lambda.first (fun _ _ child => Step.first child)
 
-theorem Steps.second {before after : Closed} (trace : Steps before after) : Steps (second before) (second after) :=
+theorem Steps.second {before after : (Closed extended)} (trace : Steps before after) : Steps (second before) (second after) :=
   trace.lift Lambda.second (fun _ _ child => Step.second child)
 
-theorem ProjectionFirst.steps {term result : Closed} (projection : ProjectionFirst term result)
+theorem Steps.conditional {enabled : extended = true} {before after : Closed extended}
+    (trace : Steps before after) (whenTrue whenFalse : Closed extended) :
+    Steps (conditional enabled before whenTrue whenFalse) (conditional enabled after whenTrue whenFalse) :=
+  trace.lift (fun condition => Lambda.conditional enabled condition whenTrue whenFalse)
+    (fun _ _ child => .conditional whenTrue whenFalse child)
+
+theorem ProjectionFirst.steps {term result : (Closed extended)} (projection : ProjectionFirst term result)
     (normal : Normal term) : Steps (first term) result := by
   cases projection with
   | pair left right =>
@@ -2623,7 +3063,7 @@ theorem ProjectionFirst.steps {term result : Closed} (projection : ProjectionFir
       | pair leftNormal rightNormal => exact .single (.firstPair _ _ leftNormal rightNormal)
   | neutral => exact .refl
 
-theorem ProjectionSecond.steps {term result : Closed} (projection : ProjectionSecond term result)
+theorem ProjectionSecond.steps {term result : (Closed extended)} (projection : ProjectionSecond term result)
     (normal : Normal term) : Steps (second term) result := by
   cases projection with
   | pair left right =>
@@ -2631,10 +3071,13 @@ theorem ProjectionSecond.steps {term result : Closed} (projection : ProjectionSe
       | pair leftNormal rightNormal => exact .single (.secondPair _ _ leftNormal rightNormal)
   | neutral => exact .refl
 
-theorem CBV.steps {term result : Closed} (evaluation : CBV term result) : Steps term result := by
+theorem CBV.steps {term result : (Closed extended)} (evaluation : CBV term result) : Steps term result := by
   induction evaluation using CBV.rec
       (motive_2 := fun operator argument result _ => Normal operator → Normal argument →
         Steps (Lambda.app operator argument) result) with
+  | literal => exact .refl
+  | @conditional enabled _ whenTrue whenFalse _ selected _ _ conditionIH selectedIH =>
+      exact (conditionIH.conditional whenTrue whenFalse).trans (.head (.select enabled selected _ _) selectedIH)
   | lam => exact .refl
   | pair leftEval _ leftIH rightIH =>
       exact (leftIH.pairLeft _).trans (rightIH.pairRight _ leftEval.normal)
@@ -2648,9 +3091,17 @@ theorem CBV.steps {term result : Closed} (evaluation : CBV term result) : Steps 
 
 /-- One source step can be prepended to a completed source derivation. This
 is a property of the independent strategy, not of the instruction executor. -/
-theorem Step.rewind {before after : Closed} (transition : Step before after) :
-    ∀ {result : Closed}, CBV after result → CBV before result := by
+theorem Step.rewind {before after : (Closed extended)} (transition : Step before after) :
+    ∀ {result : (Closed extended)}, CBV after result → CBV before result := by
   induction transition with
+  | conditional whenTrue whenFalse child ih =>
+      intro result evaluation
+      cases evaluation with
+      | conditional conditionEval selectedEval => exact .conditional (ih conditionEval) selectedEval
+  | select enabled selected whenTrue whenFalse =>
+      intro result evaluation
+      exact .conditional (.literal enabled (.boolean selected)) evaluation
+
   | beta body argument normal =>
       intro result evaluation
       exact .app (.lam body) normal.evaluation (.beta evaluation)
@@ -2685,20 +3136,20 @@ theorem Step.rewind {before after : Closed} (transition : Step before after) :
       intro result evaluation
       exact .second (.pair leftNormal.evaluation evaluation) (.pair _ _)
 
-theorem Steps.rewind {before after : Closed} (trace : Steps before after) {result : Closed}
+theorem Steps.rewind {before after : (Closed extended)} (trace : Steps before after) {result : (Closed extended)}
     (evaluation : CBV after result) : CBV before result := by
   induction trace using Relation.ReflTransGen.head_induction_on with
   | refl => exact evaluation
   | head transition _ ih => exact transition.rewind ih
 
-theorem cbv_iff_steps_normal (term result : Closed) : CBV term result ↔ Steps term result ∧ Normal result :=
+theorem cbv_iff_steps_normal (term result : (Closed extended)) : CBV term result ↔ Steps term result ∧ Normal result :=
   ⟨fun evaluation => ⟨evaluation.steps, evaluation.normal⟩,
     fun ⟨trace, normal⟩ => trace.rewind normal.evaluation⟩
 
 
-@[simp] theorem close_empty (source : Closed) : bind (substitution []) source = source := by
-  have empty : (substitution [] : Sub signature [] []) =
-      (fun (sort : signature.Srt) (variable_ : Var [] sort) => @Term.var signature [] sort variable_) := by
+@[simp] theorem close_empty (source : (Closed extended)) : bind (substitution []) source = source := by
+  have empty : (substitution [] : Sub (signature extended) [] []) =
+      (fun (sort : Unit) (variable_ : Var [] sort) => @Term.var (signature extended) [] sort variable_) := by
     funext sort variable_
     cases variable_
   rw [empty]
@@ -2707,8 +3158,8 @@ theorem cbv_iff_steps_normal (term result : Closed) : CBV term result ↔ Steps 
 /-- Proposition 3.2 with arbitrary captured scope: source substitution and
 weak evaluation agree with combinatory execution and exact closed readback.
 The environment witness contains independently judged source values. -/
-theorem source_iff_combinatory {environment : Value} {values : List Closed}
-    (source : Scoped (Context values)) (captured : EnvironmentReadback environment values) (result : Closed) :
+theorem source_iff_combinatory {environment : SourceValue extended} {values : List (Closed extended)}
+    (source : Scoped (extended := extended) (Context values)) (captured : EnvironmentReadback environment values) (result : (Closed extended)) :
     Steps (bind (substitution values) source) result ∧ Normal result ↔
       ∃ value, CombinatorySteps (.question (erase source) environment) (.answer value) ∧ Readback value result := by
   rw [← cbv_iff_steps_normal, cbv_iff_evaluation source captured]
@@ -2720,7 +3171,7 @@ theorem source_iff_combinatory {environment : Value} {values : List Closed}
 
 /-- The closed-term statement of Proposition 3.2, for the augmented neutral
 completion profile in Table 5. No reduction under a lambda is admitted. -/
-theorem proposition_3_2 (source result : Closed) :
+theorem proposition_3_2 (source result : (Closed extended)) :
     Steps source result ∧ Normal result ↔
       ∃ value, CombinatorySteps (.question (erase source) .unit) (.answer value) ∧ Readback value result := by
   simpa only [close_empty] using source_iff_combinatory (values := []) source EnvironmentReadback.nil result
@@ -2728,11 +3179,11 @@ theorem proposition_3_2 (source result : Closed) :
 /-- Exact correspondence with the constructed instruction compiler. Both
 terminal code and terminal stack are empty; captured environments remain
 present in the native closure payload. -/
-theorem source_iff_execution {environment : Value} {values : List Closed}
-    (source : Scoped (Context values)) (captured : EnvironmentReadback environment values) (result : Closed) :
+theorem source_iff_execution {environment : SourceValue extended} {values : List (Closed extended)}
+    (source : Scoped (extended := extended) (Context values)) (captured : EnvironmentReadback environment values) (result : (Closed extended)) :
     Steps (bind (substitution values) source) result ∧ Normal result ↔
       ∃ value, CategoricalAbstractMachine.Steps .neutral
-        ⟨encodeValue environment, compile (erase source), []⟩ ⟨encodeValue value, [], []⟩ ∧ Readback value result := by
+        ⟨encodeSourceValue environment, compileSource (erase source), []⟩ ⟨encodeSourceValue value, [], []⟩ ∧ Readback value result := by
   rw [source_iff_combinatory source captured]
   constructor
   · rintro ⟨value, execution, readback⟩
@@ -2740,12 +3191,12 @@ theorem source_iff_execution {environment : Value} {values : List Closed}
   · rintro ⟨value, execution, readback⟩
     exact ⟨value, (combinatory_iff_execution _ _ _).mpr execution, readback⟩
 
-theorem nativeReadback_iff (native : NativeValue) (expression : Expr) :
+theorem nativeReadback_iff (native : NativeValue) (expression : Source extended) :
     nativeReadback native = some expression ↔
-      ∃ value closed, decodeValue native = some value ∧ Readback value closed ∧ erase closed = expression := by
+      ∃ value closed, decodeSourceValue native = some value ∧ Readback value closed ∧ erase closed = expression := by
   constructor
   · intro found
-    cases decoded : decodeValue native with
+    cases decoded : decodeSourceValue native with
     | none => simp [nativeReadback, decoded] at found
     | some value =>
         cases realized : realize value with
@@ -2756,23 +3207,23 @@ theorem nativeReadback_iff (native : NativeValue) (expression : Expr) :
   · rintro ⟨value, closed, decoded, readback, same⟩
     simp [nativeReadback, decoded, readback.realized, same]
 
-@[simp] theorem nativeReadback_encode {value : Value} {closed : Closed} (readback : Readback value closed) :
-    nativeReadback (encodeValue value) = some (erase closed) := by
+@[simp] theorem nativeReadback_encode {value : SourceValue extended} {closed : (Closed extended)} (readback : Readback value closed) :
+    nativeReadback (encodeSourceValue value) = some (erase closed) := by
   simp [nativeReadback, readback.realized]
 
 /-- Executable source readback of any result produced by compiled scoped
 code is precisely the independently evaluated source result. Raw code is not
 assigned source validity merely because its instruction stream terminates. -/
-theorem source_iff_nativeReadback {environment : Value} {values : List Closed}
-    (source : Scoped (Context values)) (captured : EnvironmentReadback environment values) (result : Closed) :
+theorem source_iff_nativeReadback {environment : SourceValue extended} {values : List (Closed extended)}
+    (source : Scoped (extended := extended) (Context values)) (captured : EnvironmentReadback environment values) (result : (Closed extended)) :
     Steps (bind (substitution values) source) result ∧ Normal result ↔
       ∃ native, CategoricalAbstractMachine.Steps .neutral
-        ⟨encodeValue environment, compile (erase source), []⟩ ⟨native, [], []⟩ ∧
+        ⟨encodeSourceValue environment, compileSource (erase source), []⟩ ⟨native, [], []⟩ ∧
           nativeReadback native = some (erase result) := by
   constructor
   · intro reduction
     obtain ⟨value, execution, readback⟩ := (source_iff_execution source captured result).mp reduction
-    exact ⟨encodeValue value, execution, nativeReadback_encode readback⟩
+    exact ⟨encodeSourceValue value, execution, nativeReadback_encode readback⟩
   · rintro ⟨native, execution, found⟩
     obtain ⟨value, evaluation, same⟩ := execution_complete execution
     rw [← same] at found
@@ -2784,30 +3235,30 @@ theorem source_iff_nativeReadback {environment : Value} {values : List Closed}
     exact (cbv_iff_steps_normal _ _).mp ((cbv_iff_evaluation source captured result).mpr
       ⟨value, evaluation, readback⟩)
 
-theorem closed_iff_nativeReadback (source result : Closed) :
+theorem closed_iff_nativeReadback (source result : (Closed extended)) :
     Steps source result ∧ Normal result ↔
       ∃ native, CategoricalAbstractMachine.Steps .neutral
-        ⟨.unit, compile (erase source), []⟩ ⟨native, [], []⟩ ∧ nativeReadback native = some (erase result) := by
-  simpa only [close_empty, encodeValue] using source_iff_nativeReadback (values := []) source EnvironmentReadback.nil result
+        ⟨.unit, compileSource (erase source), []⟩ ⟨native, [], []⟩ ∧ nativeReadback native = some (erase result) := by
+  simpa only [close_empty, encodeSourceValue] using source_iff_nativeReadback (values := []) source EnvironmentReadback.nil result
 
 /-- Source correspondence also holds at the common runner's completed
 answer boundary. The existing instruction occurrence and resumption accounts
 remain separate from source reductions and from host instruction costs. -/
-theorem source_iff_finished {environment : Value} {values : List Closed}
-    (source : Scoped (Context values)) (captured : EnvironmentReadback environment values) (result : Closed) :
+theorem source_iff_finished {environment : SourceValue extended} {values : List (Closed extended)}
+    (source : Scoped (extended := extended) (Context values)) (captured : EnvironmentReadback environment values) (result : (Closed extended)) :
     Steps (bind (substitution values) source) result ∧ Normal result ↔
       ∃ budget events native,
-        (machine .neutral).run budget ⟨encodeValue environment, compile (erase source), []⟩ =
+        (machine .neutral).run budget ⟨encodeSourceValue environment, compileSource (erase source), []⟩ =
           (events, .finished native) ∧ nativeReadback native = some (erase result) := by
   rw [← cbv_iff_steps_normal, cbv_iff_evaluation source captured]
   constructor
   · rintro ⟨value, evaluation, readback⟩
     obtain ⟨budget, events, completed⟩ := (evaluation_iff_finished _ _ _).mp evaluation
-    exact ⟨budget, events, encodeValue value, completed, nativeReadback_encode readback⟩
+    exact ⟨budget, events, encodeSourceValue value, completed, nativeReadback_encode readback⟩
   · rintro ⟨budget, events, native, completed, found⟩
-    have produced : (answerCore .neutral).Produces (erase source, environment) native :=
+    have produced : (sourceAnswerCore extended .neutral).Produces (erase source, environment) native :=
       (ProductiveCoreAdapters.produces_iff_finished _ _ _).mpr ⟨budget, events, completed⟩
-    obtain ⟨value, evaluation, same⟩ := (produces_iff_evaluation _ _ _).mp produced
+    obtain ⟨value, evaluation, same⟩ := (sourceProduces_iff_evaluation _ _ _).mp produced
     rw [← same] at found
     obtain ⟨decoded, closed, decodeFound, readback, erased⟩ := (nativeReadback_iff _ _).mp found
     have equalValue : value = decoded := Option.some.inj ((decode_encodeValue value).symm.trans decodeFound)
@@ -2818,7 +3269,7 @@ theorem source_iff_finished {environment : Value} {values : List Closed}
 
 /-- Completed source evaluation has a unique result; this follows through
 constructed readback and actual deterministic CAM execution. -/
-theorem CBV.unique {term left right : Closed} (one : CBV term left) (two : CBV term right) : left = right := by
+theorem CBV.unique {term left right : (Closed extended)} (one : CBV term left) (two : CBV term right) : left = right := by
   obtain ⟨first, firstEval, firstReadback⟩ := (cbv_iff_evaluation (values := []) term EnvironmentReadback.nil left).mp
     (by simpa only [close_empty] using one)
   obtain ⟨second, secondEval, secondReadback⟩ := (cbv_iff_evaluation (values := []) term EnvironmentReadback.nil right).mp
@@ -2831,7 +3282,7 @@ theorem CBV.unique {term left right : Closed} (one : CBV term left) (two : CBV t
 /-- A changed right child witnesses that the source strategy had already
 completed its left operand. This order constraint is independent of the CAM
 compiler or its instruction schedule. -/
-theorem Step.right_demand {operator before after : Closed}
+theorem Step.right_demand {operator before after : (Closed extended)}
     (transition : Step (Lambda.app operator before) (Lambda.app operator after))
     (changed : before ≠ after) : Normal operator := by
   generalize beforeEq : Lambda.app operator before = source at transition
@@ -2846,11 +3297,11 @@ theorem Step.right_demand {operator before after : Closed}
   | appRight left normal child =>
       rw [(app_inj beforeEq).1]
       exact normal
-  | pairLeft | pairRight | first | second | firstPair | secondPair =>
+  | pairLeft | pairRight | first | second | firstPair | secondPair | conditional | select =>
       have impossible := congrArg erase beforeEq
-      simp only [erase_app, erase_pair, erase_first, erase_second, reduceCtorEq] at impossible
+      simp only [erase_app, erase_pair, erase_first, erase_second, erase_conditional, reduceCtorEq] at impossible
 
-theorem Step.pair_right_demand {left before after : Closed}
+theorem Step.pair_right_demand {left before after : (Closed extended)}
     (transition : Step (Lambda.pair left before) (Lambda.pair left after))
     (changed : before ≠ after) : Normal left := by
   generalize beforeEq : Lambda.pair left before = source at transition
@@ -2861,9 +3312,9 @@ theorem Step.pair_right_demand {left before after : Closed}
   | pairRight first normal child =>
       rw [(pair_inj beforeEq).1]
       exact normal
-  | beta | appLeft | appRight | first | second | firstPair | secondPair =>
+  | beta | appLeft | appRight | first | second | firstPair | secondPair | conditional | select =>
       have impossible := congrArg erase beforeEq
-      simp only [erase_pair, erase_app, erase_first, erase_second, reduceCtorEq] at impossible
+      simp only [erase_pair, erase_app, erase_first, erase_second, erase_conditional, reduceCtorEq] at impossible
 
 end Lambda
 
@@ -3204,7 +3655,7 @@ theorem evaluation_meaning {term : Expr} {environment value : Value}
       rename_i domain result ambient functionArrow argumentArrow functionMeaning argumentMeaning
       obtain ⟨rest, body, environment, bodyTyped, capturedArrow, sameValue, sameArrow, captured⟩ :=
         functionMeaning.closure_case rfl
-      have sameBody := Value.closure.inj sameValue
+      have sameBody := SourceValue.closure.inj sameValue
       obtain ⟨rfl, rfl⟩ := sameBody
       have arrowSame : functionArrow = capturedArrow ≫ abstraction bodyTyped.denote := eq_of_heq sameArrow
       subst functionArrow
@@ -3217,6 +3668,8 @@ theorem evaluation_meaning {term : Expr} {environment value : Value}
       subst function
       exact False.elim inactive
 
+  | @literal enabled _ _ | @conditional enabled _ _ _ _ _ _ _ _ _ _ => cases enabled
+
 theorem EnvironmentMeaning.value {ambient : TypeOf signature}
     {environment : Value} {rest : List (TypeOf signature)}
     {arrow : ambient ⟶ context rest}
@@ -3227,14 +3680,15 @@ theorem EnvironmentMeaning.value {ambient : TypeOf signature}
   | pair environment value previous _ =>
       cases captured with
       | cons environmentMeaning valueMeaning => exact .pair (previous environmentMeaning) valueMeaning
+  | literal enabled _ => cases enabled
   | closure | first | second | app => cases captured
 
 private theorem strict_first {ambient left right : TypeOf signature}
     {before value : Value} {arrow : ambient ⟶ product left right}
     (meaning : ValueMeaning ambient before (product left right) arrow)
     (projection : First before value) (code : Code) (stack : List NativeValue) :
-    Transition .strict ⟨encodeValue before, .first :: code, stack⟩
-      ⟨encodeValue value, code, stack⟩ := by
+    Transition .strict ⟨encodeSourceValue before, .first :: code, stack⟩
+      ⟨encodeSourceValue value, code, stack⟩ := by
   obtain ⟨leftValue, rightValue, leftArrow, rightArrow, sameValue, sameArrow, leftMeaning, rightMeaning⟩ :=
     meaning.pair_case rfl
   subst before
@@ -3246,8 +3700,8 @@ private theorem strict_second {ambient left right : TypeOf signature}
     {before value : Value} {arrow : ambient ⟶ product left right}
     (meaning : ValueMeaning ambient before (product left right) arrow)
     (projection : Second before value) (code : Code) (stack : List NativeValue) :
-    Transition .strict ⟨encodeValue before, .second :: code, stack⟩
-      ⟨encodeValue value, code, stack⟩ := by
+    Transition .strict ⟨encodeSourceValue before, .second :: code, stack⟩
+      ⟨encodeSourceValue value, code, stack⟩ := by
   obtain ⟨leftValue, rightValue, leftArrow, rightArrow, sameValue, sameArrow, leftMeaning, rightMeaning⟩ :=
     meaning.pair_case rfl
   subst before
@@ -3264,8 +3718,8 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
       (_typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest},
       EnvironmentMeaning ambient environment rest capturedArrow →
       ∀ (code : Code) (stack : List NativeValue),
-        Steps .strict ⟨encodeValue environment, compile term ++ code, stack⟩
-          ⟨encodeValue value, code, stack⟩ := by
+        Steps .strict ⟨encodeSourceValue environment, compileSource term ++ code, stack⟩
+          ⟨encodeSourceValue value, code, stack⟩ := by
   induction evaluated using Evaluation.rec
     (motive_2 := fun function argument value _ =>
       ∀ {domain result ambient : TypeOf signature}
@@ -3274,8 +3728,8 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
         ValueMeaning ambient function (exponentialObject domain result) functionArrow →
         ValueMeaning ambient argument domain argumentArrow →
         ∀ (code : Code) (stack : List NativeValue),
-          Steps .strict ⟨.pair (encodeValue function) (encodeValue argument), .app :: code, stack⟩
-            ⟨encodeValue value, code, stack⟩) with
+          Steps .strict ⟨.pair (encodeSourceValue function) (encodeSourceValue argument), .app :: code, stack⟩
+            ⟨encodeSourceValue value, code, stack⟩) with
   | varZero projection =>
       intro rest result ambient typed capturedArrow captured code stack
       cases typed with
@@ -3284,7 +3738,7 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
       intro rest result ambient typed capturedArrow captured code stack
       cases typed with
       | varSucc argument previous =>
-          have transition := strict_first captured.value projection (compile (.var index) ++ code) stack
+          have transition := strict_first captured.value projection (compileSource (extended := false) (.var index) ++ code) stack
           have restRun := restIH previous (captured.first projection) code stack
           simpa only [compile_var_succ, List.cons_append] using restRun.head transition
   | lam =>
@@ -3294,21 +3748,21 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
       intro rest result ambient typed capturedArrow captured code stack
       cases typed with
       | pair leftTyped rightTyped =>
-          simp only [compile, List.append_assoc, List.cons_append, List.nil_append]
-          have leftRun := leftIH leftTyped captured (.swap :: (compile right ++ .cons :: code))
-            (encodeValue environment :: stack)
-          have rightRun := rightIH rightTyped captured (.cons :: code) (encodeValue first :: stack)
+          simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append]
+          have leftRun := leftIH leftTyped captured (.swap :: (compileSource right ++ .cons :: code))
+            (encodeSourceValue environment :: stack)
+          have rightRun := rightIH rightTyped captured (.cons :: code) (encodeSourceValue first :: stack)
           exact .head (.push .strict _ _ _) (leftRun.trans
             (.head (.swap .strict _ _ _ _) (rightRun.tail (.cons .strict _ _ _ _))))
   | @app operator argument environment function operand value operatorEval argumentEval invocation operatorIH argumentIH invocationIH =>
       intro rest result ambient typed capturedArrow captured code stack
       cases typed with
       | app functionTyped argumentTyped =>
-          simp only [compile, List.append_assoc, List.cons_append, List.nil_append]
+          simp only [compileSource, List.append_assoc, List.cons_append, List.nil_append]
           have operatorRun := operatorIH functionTyped captured
-            (.swap :: (compile argument ++ .cons :: .app :: code)) (encodeValue environment :: stack)
+            (.swap :: (compileSource argument ++ .cons :: .app :: code)) (encodeSourceValue environment :: stack)
           have argumentRun := argumentIH argumentTyped captured (.cons :: .app :: code)
-            (encodeValue function :: stack)
+            (encodeSourceValue function :: stack)
           have invocationRun := invocationIH
             (evaluation_meaning operatorEval functionTyped captured)
             (evaluation_meaning argumentEval argumentTyped captured) code stack
@@ -3319,20 +3773,20 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
       cases typed with
       | first termTyped =>
           have transition := strict_first (evaluation_meaning termEval termTyped captured) projection code stack
-          simpa only [compile, List.append_assoc, List.singleton_append] using
+          simpa only [compileSource, List.append_assoc, List.singleton_append] using
             (termIH termTyped captured (.first :: code) stack).tail transition
   | second termEval projection termIH =>
       intro rest result ambient typed capturedArrow captured code stack
       cases typed with
       | second termTyped =>
           have transition := strict_second (evaluation_meaning termEval termTyped captured) projection code stack
-          simpa only [compile, List.append_assoc, List.singleton_append] using
+          simpa only [compileSource, List.append_assoc, List.singleton_append] using
             (termIH termTyped captured (.second :: code) stack).tail transition
   | @closure body environment argument value bodyEval bodyIH =>
       rename_i domain result ambient functionArrow argumentArrow functionMeaning argumentMeaning code stack
       obtain ⟨rest, sourceBody, sourceEnvironment, bodyTyped, capturedArrow, sameValue, sameArrow, captured⟩ :=
         functionMeaning.closure_case rfl
-      obtain ⟨rfl, rfl⟩ := Value.closure.inj sameValue
+      obtain ⟨rfl, rfl⟩ := SourceValue.closure.inj sameValue
       exact .head (.appClosure .strict _ _ _ _ _)
         (bodyIH bodyTyped (EnvironmentMeaning.cons captured argumentMeaning) code stack)
   | neutral function argument inactive =>
@@ -3342,12 +3796,14 @@ theorem strict_execution_tail {term : Expr} {environment value : Value}
       subst function
       exact False.elim inactive
 
+  | @literal enabled _ _ | @conditional enabled _ _ _ _ _ _ _ _ _ _ => cases enabled
+
 theorem strict_execution {term : Expr} {environment value : Value}
     (evaluated : Evaluation term environment value) {rest : List (TypeOf signature)}
     {result ambient : TypeOf signature} (typed : Typing rest term result)
     {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow) :
-    Steps .strict ⟨encodeValue environment, compile term, []⟩ ⟨encodeValue value, [], []⟩ := by
+    Steps .strict ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨encodeSourceValue value, [], []⟩ := by
   simpa only [List.append_nil] using strict_execution_tail evaluated typed captured [] []
 
 private theorem strict_transition_neutral {before after : State}
@@ -3377,7 +3833,7 @@ theorem evaluation_iff_strict_execution (term : Expr) (environment value : Value
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow) :
     Evaluation term environment value ↔
-      Steps .strict ⟨encodeValue environment, compile term, []⟩ ⟨encodeValue value, [], []⟩ :=
+      Steps .strict ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨encodeSourceValue value, [], []⟩ :=
   ⟨fun evaluated => strict_execution evaluated typed captured,
     fun execution => (evaluation_iff_execution term environment value).mpr (strict_steps_neutral execution)⟩
 
@@ -3385,8 +3841,8 @@ theorem compiled_execution_meaning {term : Expr} {environment : Value} {native :
     {rest : List (TypeOf signature)} {result ambient : TypeOf signature}
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow)
-    (execution : Steps .neutral ⟨encodeValue environment, compile term, []⟩ ⟨native, [], []⟩) :
-    ∃ value, encodeValue value = native ∧
+    (execution : Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨native, [], []⟩) :
+    ∃ value, encodeSourceValue value = native ∧
       ValueMeaning ambient value result (capturedArrow ≫ typed.denote) := by
   obtain ⟨value, evaluated, represented⟩ := execution_complete execution
   exact ⟨value, represented, evaluation_meaning evaluated typed captured⟩
@@ -3396,9 +3852,9 @@ theorem finished_meaning {term : Expr} {environment : Value} {native : NativeVal
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow)
     {budget : Nat} {events : List Occurrence}
-    (finished : (machine .neutral).run budget ⟨encodeValue environment, compile term, []⟩ =
+    (finished : (machine .neutral).run budget ⟨encodeSourceValue environment, compileSource term, []⟩ =
       (events, .finished native)) :
-    ∃ value, encodeValue value = native ∧
+    ∃ value, encodeSourceValue value = native ∧
       ValueMeaning ambient value result (capturedArrow ≫ typed.denote) := by
   have produced := (ProductiveCoreAdapters.produces_iff_finished
     (answerCore .neutral) (term, environment) native).mpr ⟨budget, events, finished⟩
@@ -3412,7 +3868,7 @@ theorem strict_produces_iff_evaluation (term : Expr) (environment : Value) (nati
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow) :
     (answerCore .strict).Produces (term, environment) native ↔
-      ∃ value, Evaluation term environment value ∧ encodeValue value = native := by
+      ∃ value, Evaluation term environment value ∧ encodeSourceValue value = native := by
   constructor
   · rintro ⟨final, reached, observed⟩
     have ending := (answer_iff final native).mp observed
@@ -3420,7 +3876,7 @@ theorem strict_produces_iff_evaluation (term : Expr) (environment : Value) (nati
     exact execution_complete (strict_steps_neutral ((core_steps_iff .strict _ _).mp reached))
   · rintro ⟨value, evaluated, represented⟩
     subst native
-    exact ⟨⟨encodeValue value, [], []⟩,
+    exact ⟨⟨encodeSourceValue value, [], []⟩,
       (core_steps_iff .strict _ _).mpr (strict_execution evaluated typed captured), rfl⟩
 
 theorem evaluation_iff_strict_finished (term : Expr) (environment value : Value)
@@ -3428,13 +3884,13 @@ theorem evaluation_iff_strict_finished (term : Expr) (environment value : Value)
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow) :
     Evaluation term environment value ↔ ∃ budget events,
-      (machine .strict).run budget ⟨encodeValue environment, compile term, []⟩ =
-        (events, .finished (encodeValue value)) := by
+      (machine .strict).run budget ⟨encodeSourceValue environment, compileSource term, []⟩ =
+        (events, .finished (encodeSourceValue value)) := by
   change Evaluation term environment value ↔ ∃ budget events,
     (ProductiveCoreAdapters.answerMachine (answerCore .strict)).run budget
-      ((answerCore .strict).load (term, environment)) = (events, .finished (encodeValue value))
-  rw [← ProductiveCoreAdapters.produces_iff_finished (answerCore .strict) (term, environment) (encodeValue value),
-    strict_produces_iff_evaluation term environment (encodeValue value) typed captured]
+      ((answerCore .strict).load (term, environment)) = (events, .finished (encodeSourceValue value))
+  rw [← ProductiveCoreAdapters.produces_iff_finished (answerCore .strict) (term, environment) (encodeSourceValue value),
+    strict_produces_iff_evaluation term environment (encodeSourceValue value) typed captured]
   constructor
   · intro evaluated; exact ⟨value, evaluated, rfl⟩
   · rintro ⟨source, evaluated, represented⟩
@@ -3445,9 +3901,9 @@ theorem strict_finished_meaning {term : Expr} {environment : Value} {native : Na
     (typed : Typing rest term result) {capturedArrow : ambient ⟶ context rest}
     (captured : EnvironmentMeaning ambient environment rest capturedArrow)
     {budget : Nat} {events : List Occurrence}
-    (finished : (machine .strict).run budget ⟨encodeValue environment, compile term, []⟩ =
+    (finished : (machine .strict).run budget ⟨encodeSourceValue environment, compileSource term, []⟩ =
       (events, .finished native)) :
-    ∃ value, encodeValue value = native ∧
+    ∃ value, encodeSourceValue value = native ∧
       ValueMeaning ambient value result (capturedArrow ≫ typed.denote) := by
   have produced := (ProductiveCoreAdapters.produces_iff_finished
     (answerCore .strict) (term, environment) native).mpr ⟨budget, events, finished⟩
@@ -3478,7 +3934,7 @@ def decodeImage (image : Code × Value) : Option (Expr × Value) :=
   (decodeCode image.1).map fun expression => (expression, image.2)
 
 def compileImage (question : Expr × Value) : Code × Value :=
-  (compile question.1, question.2)
+  (compileSource question.1, question.2)
 
 @[simp] theorem decodeImage_compileImage (question : Expr × Value) :
     decodeImage (compileImage question) = some question := by
@@ -3508,12 +3964,12 @@ It does not grant an empty stack a result before execution has occurred. -/
 theorem loadImage_some_iff (profile : Profile) (code : Code) (environment : Value) (state : State) :
     loadImage profile (code, environment) = some state ↔
       ∃ expression, decodeCode code = some expression ∧
-        state = ⟨encodeValue environment, code, []⟩ := by
+        state = ⟨encodeSourceValue environment, code, []⟩ := by
   cases decoded : decodeCode code with
   | none => simp [loadImage, MachineCore.loadCode, decodeImage, decoded]
   | some expression =>
       have canonical := compile_decode decoded
-      simp [loadImage, MachineCore.loadCode, decodeImage, decoded, core, canonical,
+      simp [loadImage, MachineCore.loadCode, decodeImage, decoded, core, sourceCore, canonical,
         eq_comm]
 
 /-- A legal instruction is an actual head of the retained code with an
@@ -3549,7 +4005,7 @@ theorem admitted_answer_iff_evaluation (code : Code) (environment : Value) (expr
     (decoded : decodeCode code = some expression) (value : NativeValue) :
     (∃ initial final, loadImage .neutral (code, environment) = some initial ∧
       (core .neutral).Steps initial final ∧ answer final = some value) ↔
-      ∃ result, Evaluation expression environment result ∧ encodeValue result = value := by
+      ∃ result, Evaluation expression environment result ∧ encodeSourceValue result = value := by
   have canonical := compile_decode decoded
   have loaded : loadImage .neutral (code, environment) =
       some ((core .neutral).load (expression, environment)) := by
@@ -3564,5 +4020,126 @@ theorem admitted_answer_iff_evaluation (code : Code) (environment : Value) (expr
     obtain ⟨final, reached, observed⟩ :=
       (produces_iff_evaluation expression environment value).mpr evaluated
     exact ⟨_, final, rfl, reached, observed⟩
+
+/-! ## Conservativity and executable admission of the extended source -/
+
+/-- Enable quotation/conditionals without changing any existing source constructor. -/
+def Source.enable : Source extended → Source true
+  | .var index => .var index
+  | .lam body => .lam body.enable
+  | .app operator argument => .app operator.enable argument.enable
+  | .pair left right => .pair left.enable right.enable
+  | .first term => .first term.enable
+  | .second term => .second term.enable
+  | .literal _ value => .literal rfl value
+  | .conditional _ condition whenTrue whenFalse =>
+      .conditional rfl condition.enable whenTrue.enable whenFalse.enable
+
+@[simp] theorem compile_enable (term : Source extended) : compileSource term.enable = compileSource term := by
+  induction term <;> simp_all [Source.enable, compileSource]
+
+/-- Captured environments and source closure bodies move together. -/
+def SourceValue.enable : SourceValue extended → SourceValue true
+  | .unit => .unit
+  | .literal _ value => .literal rfl value
+  | .pair left right => .pair left.enable right.enable
+  | .closure body environment => .closure body.enable environment.enable
+  | .first value => .first value.enable
+  | .second value => .second value.enable
+  | .app value => .app value.enable
+
+@[simp] theorem encodeValue_enable (value : SourceValue extended) :
+    encodeSourceValue value.enable = encodeSourceValue value := by
+  induction value <;> simp_all [SourceValue.enable, encodeSourceValue]
+
+/-- The old and extended source judgments agree exactly on the embedded
+fragment, through their independently proved correspondence with the same CAM. -/
+theorem evaluation_enable_iff (term : Source extended) (environment value : SourceValue extended) :
+    Evaluation term.enable environment.enable value.enable ↔ Evaluation term environment value := by
+  rw [evaluation_iff_execution, evaluation_iff_execution]
+  simp only [encodeValue_enable, compile_enable]
+
+/-- Completed native values reconstruct source closure bodies and their entire
+captured environment; neither code nor the environment is supplied by a caller. -/
+theorem evaluation_iff_nativeReadback (term : Source extended) (environment value : SourceValue extended) :
+    Evaluation term environment value ↔
+      ∃ native, Steps .neutral ⟨encodeSourceValue environment, compileSource term, []⟩ ⟨native, [], []⟩ ∧
+        decodeSourceValue native = some value := by
+  constructor
+  · intro evaluated
+    exact ⟨encodeSourceValue value, evaluated.execution, decode_encodeValue value⟩
+  · rintro ⟨native, execution, decoded⟩
+    have represented := encode_decodeValue decoded
+    rw [← represented] at execution
+    exact (evaluation_iff_execution term environment value).mpr execution
+
+namespace Extended
+
+abbrev Expr := Source true
+abbrev Value := SourceValue true
+
+def quote (value : Literal) : Expr := .literal rfl value
+
+def conditional (condition whenTrue whenFalse : Expr) : Expr :=
+  .conditional rfl condition whenTrue whenFalse
+
+abbrev compile : Expr → Code := compileSource
+abbrev encodeValue : Value → NativeValue := encodeSourceValue
+abbrev decodeCode : Code → Option Expr := decodeSourceCode
+abbrev decodeValue : NativeValue → Option Value := decodeSourceValue
+abbrev core (profile : Profile) := sourceCore true profile
+abbrev answerCore (profile : Profile) := sourceAnswerCore true profile
+
+/-- Loading is checked against the extended compiler image, separately from
+runtime instruction legality. The original source environment is retained. -/
+def decodeImage (image : Code × Value) : Option (Expr × Value) :=
+  (decodeCode image.1).map fun expression => (expression, image.2)
+
+def compileImage (question : Expr × Value) : Code × Value :=
+  (compileSource question.1, question.2)
+
+@[simp] theorem decodeImage_compileImage (question : Expr × Value) :
+    decodeImage (compileImage question) = some question := by
+  rcases question with ⟨expression, environment⟩
+  simp [decodeImage, compileImage]
+
+def loadImage (profile : Profile) (image : Code × Value) : Option State :=
+  (core profile).loadCode decodeImage image
+
+@[simp] theorem loadImage_compileImage (profile : Profile) (question : Expr × Value) :
+    loadImage profile (compileImage question) = some ((core profile).load question) :=
+  MachineCore.loadCode_encode (core profile) compileImage decodeImage decodeImage_compileImage question
+
+@[simp] theorem loadImage_refused_iff (profile : Profile) (code : Code) (environment : Value) :
+    loadImage profile (code, environment) = none ↔ decodeCode code = none := by
+  cases decoded : decodeCode code with
+  | none =>
+      simp only [loadImage, MachineCore.loadCode, decodeImage, decoded, Option.map_none]
+      exact iff_true_intro rfl
+  | some expression => simp [loadImage, MachineCore.loadCode, decodeImage, decoded]
+
+/-- Every accepted image executes exactly its independently judged source.
+Acceptance does not assert progress for a non-Boolean condition. -/
+theorem admitted_answer_iff_evaluation (code : Code) (environment : Value) (expression : Expr)
+    (decoded : decodeCode code = some expression) (value : NativeValue) :
+    (∃ initial final, loadImage .neutral (code, environment) = some initial ∧
+      (core .neutral).Steps initial final ∧ answer final = some value) ↔
+      ∃ result, Evaluation expression environment result ∧ encodeSourceValue result = value := by
+  have canonical := compile_decode decoded
+  have loaded : loadImage .neutral (code, environment) =
+      some ((core .neutral).load (expression, environment)) := by
+    rw [← canonical]
+    exact loadImage_compileImage .neutral (expression, environment)
+  rw [loaded]
+  constructor
+  · rintro ⟨initial, final, same, reached, observed⟩
+    cases same
+    exact (sourceProduces_iff_evaluation expression environment value).mp ⟨final, reached, observed⟩
+  · intro evaluated
+    obtain ⟨final, reached, observed⟩ :=
+      (sourceProduces_iff_evaluation expression environment value).mpr evaluated
+    exact ⟨_, final, rfl, reached, observed⟩
+
+end Extended
 
 end Mettapedia.Machines.CategoricalAbstractMachine

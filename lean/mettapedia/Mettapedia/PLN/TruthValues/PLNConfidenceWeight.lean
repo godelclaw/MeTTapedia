@@ -1,8 +1,27 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction
 
 /-!
-# PLN Confidence-Weight View and the Historical Raw-Min Bug
+# Confidence charts: weight, confidence and the credal width
+
+This module owns the confidence readout.  Confidence is a chart of the
+evidence weight `w = n⁺ + n⁻`:
+
+- `w2c` / `c2w` are the PLN odds chart `c = w / (w + k)` and its inverse.
+- `EvidenceWeightCoordinate` states what any confidence coordinate must satisfy
+  (count reconstruction, `countReconstruction_iff_leftInverseOnPositive`); the
+  odds chart is one coordinate among several (`reserveHalfCoordinate`), so the
+  chart is a declared choice until a gate fixes it.
+- The Walley gate fixes it: if confidence is the width complement of the
+  imprecise Dirichlet interval, the coordinate is forced to be the odds chart
+  (`walley_width_complement_forces_plnOdds`).
+- Count-level operations (minimum, sum) must be done on weights, not on
+  confidences; the historical raw-min bug below is the counterexample.
+
+What this module is not: it does not propagate confidence through rules; that
+goes through intervals (`Mettapedia.PLN.WorldModel.EvidenceContracts`).
+
+## The historical raw-min bug
 
 This file formalizes a critical insight connecting:
 1. The hypergeometric mode bound: mode ≤ min(a, b)
@@ -40,13 +59,13 @@ This file explains the PLN bug discovered in early 2025 where
 ## References
 
 - Goertzel et al., "Probabilistic Logic Networks" (2009)
-- Nil's nuPLN.tex, Section on conjunction confidence
+- Geisweiller, *nuPLN*, section on conjunction confidence
 
 ## Related Files
 
 - `PLNConjunction.lean`: Hypergeometric distribution and mode bounds
 - `PLNFrechetBounds.lean`: Measure-theoretic Fréchet bounds (proven)
-- `EvidenceQuantale.lean`: Quantale structure on BinaryEvidence
+- `BinaryEvidence.lean`: Quantale structure on BinaryEvidence
 -/
 
 namespace Mettapedia.PLN.TruthValues.PLNConfidenceWeight

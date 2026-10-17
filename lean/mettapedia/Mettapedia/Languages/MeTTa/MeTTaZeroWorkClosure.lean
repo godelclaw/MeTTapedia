@@ -220,7 +220,7 @@ theorem evaluationStep_target_isNormalForm (model : Model)
 
 /-- Bare evaluation has the generic one-step-terminal capability: every
 selected occurrence is wrapped in a quiescent answer state. -/
-def evaluationOneStepTerminal (model : Model) :
+theorem evaluationOneStepTerminal (model : Model) :
     OneStepTerminal (evaluationGSLT model) :=
   occurrenceOneStepTerminal (evaluationOccurrenceSource model)
 

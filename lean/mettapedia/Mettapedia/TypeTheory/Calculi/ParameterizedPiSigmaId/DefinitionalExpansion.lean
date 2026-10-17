@@ -129,3 +129,89 @@ def Qualification.ofSignature (base : Rules Head)
 
 end ConstantExpansion
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+
+namespace Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+
+namespace ConstantExpansion
+
+variable {Head : Type} {n : Nat}
+
+/-- The closed program returning the first of two supplied arguments. -/
+def firstProjection : Tm Head 0 := .lam (.lam (.var (Fin.succ 0)))
+
+def projectConstant (selected : DeclName) : Bodies Head :=
+  fun name => if name = selected then firstProjection else .const name
+
+/-- Replacement leaves every term not containing the selected name unchanged. -/
+theorem expand_projectConstant {selected : DeclName} {term : Tm Head n}
+    (absent : selected ∉ constantNames term) :
+    expand (projectConstant selected) term = term := by
+  calc
+    expand (projectConstant selected) term = expand (fun name => .const name) term := by
+      apply expand_eq_of_agreement
+      intro name present
+      have different : name ≠ selected := by
+        intro equal
+        exact absent (equal ▸ present)
+      simp only [projectConstant, different, if_false]
+    _ = term := expand_identity term
+
+/-- The interpreted checker application has exactly two ordinary beta steps. -/
+theorem firstProjection_two_steps (headEq : Head → Head → Prop)
+    (claim receipt : Tm Head n) :
+    ∃ middle, Step headEq
+      (.app (.app (liftClosed (firstProjection (Head := Head))) claim) receipt) middle ∧
+      Step headEq middle claim := by
+  have first : Step headEq
+      (.app (.app (liftClosed (firstProjection (Head := Head))) claim) receipt)
+      (.app (.lam (rename wk claim)) receipt) := by
+    simpa only [firstProjection, liftClosed, rename, liftRen, Fin.cases_succ,
+      Fin.cases_zero, inst0, subst, liftSub, subst0, wk] using
+      (Step.congAppFun (a := receipt)
+        (Step.betaPi (headEq := headEq) (.lam (.var ((0 : Fin (n + 1)).succ))) claim))
+  have second : Step headEq (.app (.lam (rename wk claim)) receipt) claim := by
+    simpa only [inst0_rename_wk] using
+      (Step.betaPi (headEq := headEq) (rename wk claim) receipt)
+  exact ⟨_, first, second⟩
+
+theorem firstProjection_application (headEq : Head → Head → Prop)
+    (claim receipt : Tm Head n) :
+    Conv headEq (.app (.app (liftClosed (firstProjection (Head := Head))) claim) receipt)
+      claim := by
+  obtain ⟨middle, first, second⟩ := firstProjection_two_steps headEq claim receipt
+  exact .trans _ middle _ (.rel _ _ first) (.rel _ _ second)
+
+/-- Interpreting every primitive root by pure conversion is enough to reflect
+equality of fixed, pure-normal endpoints. Intermediate terms may leave the
+fixed fragment, and no global source confluence premise is required. -/
+theorem equality_of_fixed_normal {R : Rules Head} (bodies : Bodies Head)
+    (roots : ∀ {scope : Nat} {left right : Tm Head scope}, R.computation.step left right →
+      Conv R.headEq (expand bodies left) (expand bodies right))
+    (symmetric : Std.Symm R.headEq)
+    {left right : Tm Head n}
+    (leftFixed : expand bodies left = left) (rightFixed : expand bodies right = right)
+    (leftNormal : ∀ {next}, Step R.headEq left next → False)
+    (rightNormal : ∀ {next}, Step R.headEq right next → False)
+    (conversion : Conv R.headEq left right R.computation) : left = right := by
+  have interpreted := conv_expand bodies roots conversion
+  rw [leftFixed, rightFixed] at interpreted
+  obtain ⟨common, firstPath, lastPath⟩ :=
+    EmptyRootConversion.churchRosser (pureRules R) rfl symmetric interpreted
+  have fixedPath : ∀ {term common : Tm Head n},
+      (∀ {next}, Step R.headEq term next → False) →
+      Relation.ReflTransGen (StepCore RootComputation.empty R.headEq) term common →
+      common = term := by
+    intro term common normal path
+    induction path with
+    | refl => rfl
+    | tail _ step ih => rw [ih] at step; exact (normal step).elim
+  exact (fixedPath leftNormal firstPath).symm.trans (fixedPath rightNormal lastPath)
+
+end ConstantExpansion
+
+#print axioms ConstantExpansion.expand_projectConstant
+#print axioms ConstantExpansion.firstProjection_two_steps
+#print axioms ConstantExpansion.firstProjection_application
+#print axioms ConstantExpansion.equality_of_fixed_normal
+
+end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

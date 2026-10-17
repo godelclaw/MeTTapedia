@@ -157,8 +157,9 @@ def SharedType (language : LanguageDef) (first second : Slot language) : Prop :=
         carrier? language second = some carrier
 
 def intrinsicEdges (language : LanguageDef) : List (Slot language × Slot language) :=
-  (occurrences language).flatMap fun first =>
-    ((occurrences language).filter fun second => matchable language first second).map
+  let catalogue := occurrences language
+  catalogue.flatMap fun first =>
+    (catalogue.filter fun second => matchable language first second).map
       fun second => (first.slot, second.slot)
 
 theorem sameCarrier_exact (language : LanguageDef) (first second : Slot language) :

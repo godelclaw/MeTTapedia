@@ -676,7 +676,7 @@ theorem decode_sound {goal : Expr} {trace : List Action} {term : Nf}
       · simp [hinfer] at hdecode
 
 /-- All T3 per-root obligations are discharged without additional assumptions. -/
-def pureLaws (goal : Expr) : RefinementLaws (pureRoot goal) where
+theorem pureLaws (goal : Expr) : RefinementLaws (pureRoot goal) where
   legal_iff_apply := by
     intro state action
     exact (exists_step_iff_actionLegal goal state action).symm
