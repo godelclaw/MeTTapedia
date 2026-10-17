@@ -31,6 +31,7 @@ import Mettapedia.GSLT.Core.CostedOperational
 import Mettapedia.GSLT.Core.SemanticInvariant
 import Mettapedia.GSLT.Core.SemanticTransport
 import Mettapedia.GSLT.Core.LooseRelationPredicateTransformers
+import Mettapedia.GSLT.Core.RelationalRouteSemantics
 import Mettapedia.GSLT.Core.SemanticQuery
 import Mettapedia.GSLT.Core.ObservedConceptFormation
 import Mettapedia.GSLT.HierarchicalComplexity
