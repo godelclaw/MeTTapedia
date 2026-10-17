@@ -24,8 +24,7 @@ theorem mem_liveOut {W : Sym2 (V × C) → R} {c : V → C}
     {S A : Finset V} {y : V} :
     y ∈ liveOut W c S A ↔
       y ∈ S \ A ∧ ∃ x ∈ A, W (Sym2.map (paint c) s(x, y)) ≠ 0 := by
-  classical
-  simp [liveOut, Finset.mem_filter]
+  simp only [liveOut, Finset.mem_filter]
 
 theorem liveOut_subset (W : Sym2 (V × C) → R) (c : V → C)
     (S A : Finset V) : liveOut W c S A ⊆ S \ A :=
