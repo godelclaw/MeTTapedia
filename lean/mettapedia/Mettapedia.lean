@@ -59,6 +59,7 @@ import Mettapedia.GraphTheory.Basic
 import Mettapedia.GraphTheory.Hamiltonicity
 import Mettapedia.GraphTheory.Representation
 import Mettapedia.GraphTheory.Walk
+import Mettapedia.GraphTheory.FiniteReachability
 
 -- Combinatorics
 import Mettapedia.Combinatorics
@@ -185,6 +186,7 @@ import Mettapedia.Logic.Relation.NormalizationExamples
 import Mettapedia.Logic.Relation.PathConfluence
 import Mettapedia.Logic.Relation.PathConfluenceExamples
 import Mettapedia.Logic.Relation.DecodedPath
+import Mettapedia.Logic.Relation.FiniteReachability
 import Mettapedia.Logic.WorldModel
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
 import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
