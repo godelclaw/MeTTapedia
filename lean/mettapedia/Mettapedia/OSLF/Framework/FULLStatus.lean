@@ -142,6 +142,7 @@ import Mettapedia.OSLF.Framework.WMCalculusCountScopeRelationProvider
 import Mettapedia.OSLF.Framework.WMCalculusCheckedScopeNativeCapability
 import Mettapedia.Logic.Bridges.WMCheckedScopeGSLTIL
 import Mettapedia.TypeTheory.Models.RevisionedFamilies.CheckedScopeFamilyBridge
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeFormedPresheafControls
 
 /-!
 # OSLF FULL Status Tracker
