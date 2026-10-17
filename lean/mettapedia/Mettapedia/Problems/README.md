@@ -19,14 +19,15 @@ problem work and add non-breaking indexes before moving imports.
 
 ## Four Color Theorem
 
-Canonical modern Lean work:
+Canonical modern Lean work is developed on the `goertzel/proofs` branch:
 
 - `lean/mettapedia/Mettapedia/GraphTheory/FourColor/`
 - Entry point: `lean/mettapedia/Mettapedia/GraphTheory/FourColor/README.md`
 - Detailed live roadmap:
   `lean/mettapedia/Mettapedia/GraphTheory/FourColor/ROADMAP.md`
-- Import aggregator:
-  `lean/mettapedia/Mettapedia/GraphTheory/FourColor.lean`
+
+Main carries no copy of that tree. General results distilled from it live in the
+shared library (`Mettapedia.GraphTheory`, `Mettapedia.Combinatorics.Matching`).
 
 Older Lean work:
 
@@ -171,7 +172,8 @@ Status:
 ## Organization To Do
 
 1. Finish the Four Color integration:
-   - keep `GraphTheory/FourColor` canonical;
+   - develop `GraphTheory/FourColor` on `goertzel/proofs`, moving general results
+     into the shared library when that line merges;
    - port reusable old `lean/fourcolor` background theory only after checking
      it is sorry-free or honestly marking proof gaps;
    - retire the old proof attempt only after useful theory has a new home.
