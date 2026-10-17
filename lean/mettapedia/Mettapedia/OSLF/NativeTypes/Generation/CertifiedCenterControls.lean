@@ -29,7 +29,7 @@ def language : LanguageDef :=
   {Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.theory with
     rewrites := [Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.directedRule]}
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def fragment : LanguageFragment := {operational := {includeDerivedEquations := false}}
 def logic := Mettapedia.OSLF.NativeTypes.Structural.heytingFragment
 def chosen := selectedSnapshot snapshot fragment
@@ -68,7 +68,7 @@ theorem proper_nonempty_actual_generated_center :
 theorem independent_original_source_stability : SelectedSourceStable accepted :=
   (mem_center_iff snapshot fragment logic acceptedVertex).mp accepted_in_center
 
-def directedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.directedTheory, [], ⟨[], []⟩⟩
+def directedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.directedTheory, [], ⟨[], [], []⟩⟩
 def directedChosen := selectedSnapshot directedSnapshot fragment
 def directedRejectedVertex : CubeVertex directedChosen.language :=
   (fun _ => .star, Mettapedia.OSLF.NativeTypes.SortProfiles.Coherence.Controls.separatedOutput directedChosen.language)
@@ -91,7 +91,7 @@ theorem equation_free_joint_center_is_proper :
   rw [no_equations_accepts_equation_check_but_rejects_joint_check.2] at claimed
   cases claimed
 
-def guardedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.conditionalTheory, [], ⟨[], []⟩⟩
+def guardedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.conditionalTheory, [], ⟨[], [], []⟩⟩
 def guardedChosen := selectedSnapshot guardedSnapshot fragment
 def guardedVertex : CubeVertex guardedChosen.language := (fun _ => .star, fun _ => .star)
 def guarded := generate guardedSnapshot fragment logic guardedVertex

@@ -34,7 +34,7 @@ def rule : RewriteRule where
 
 def language : LanguageDef :=
   {Mettapedia.OSLF.NativeTypes.Modal.SourceCarrierControls.language with name := "pending-binding-admission", rewrites := [rule]}
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def permissions : Permissions := {sites := .all}
 def fragment : LanguageFragment := ⟨none, permissions⟩
 def chosen : Snapshot := selectedSnapshot snapshot fragment

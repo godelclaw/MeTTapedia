@@ -54,7 +54,7 @@ theorem actual_received_dependency : dependencies? bindingSpec "p" = some [.base
 
 theorem remainder_has_no_dependency : dependencies? bindingSpec "rest" = none := by decide +kernel
 
-def snapshot : GeneralExecutionAdmission.Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : GeneralExecutionAdmission.Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 
 def permissions : GeneralExecutionAdmission.Permissions :=
   {sites := .all, ruleIndices := some [0], equationIndices := some [],

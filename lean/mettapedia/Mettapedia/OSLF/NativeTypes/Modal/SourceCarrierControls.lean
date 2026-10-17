@@ -49,7 +49,7 @@ def language : LanguageDef where
   equations := []
   rewrites := [rule]
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def permissions : Permissions := {sites := .all}
 def binding : GeneralRuleBindingInference.BindingPlan :=
   ⟨GeneralRuleBindingInference.inferredSpec rule, .inferredRootInputs⟩

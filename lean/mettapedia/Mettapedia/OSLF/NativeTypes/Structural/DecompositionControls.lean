@@ -27,7 +27,7 @@ private def readoutLanguage : LanguageDef :=
   { GeneralEquationSeparators.unitLanguage with equations := [] }
 
 private def readoutSnapshot : GeneralExecutionAdmission.Snapshot :=
-  ⟨readoutLanguage, [], ⟨[], []⟩⟩
+  ⟨readoutLanguage, [], ⟨[], [], []⟩⟩
 
 private def readoutPermissions : GeneralExecutionAdmission.Permissions where
   includeDerivedEquations := false

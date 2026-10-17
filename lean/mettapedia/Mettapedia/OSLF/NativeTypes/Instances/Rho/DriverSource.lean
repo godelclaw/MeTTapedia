@@ -24,7 +24,7 @@ open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefRewriteSystem
 open Mettapedia.GSLT.LanguageDef.ReflectionExtension
 open Mettapedia.OSLF.NativeTypes.Runtime.Description
 
-def snapshot : Snapshot := ⟨rhoCalc, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨rhoCalc, [], ⟨[], [], []⟩⟩
 def fragment : Mettapedia.OSLF.NativeTypes.Generation.LanguageFragment :=
   {operational := {sites := .rootOnly, reflection := rhoReflectionProfile}}
 

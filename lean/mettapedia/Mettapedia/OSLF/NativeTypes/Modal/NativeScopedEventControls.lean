@@ -25,7 +25,7 @@ open NativeEventDeclarations NativeEventParameters NativeScopedParameterTypes
 
 def language := Mettapedia.OSLF.Binding.LambdaAuthoredFullRuleProfile.language
 def term : TypeExpr := .base "Term"
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 theorem refined_ready : StructuralDescent.Plan.structuralReady
     (GeneralExecutionAdmission.compile snapshot StructuralDescent.Controls.rootPermissions) = true := by
   simpa only [StructuralDescent.Plan.structuralReady, StructuralDescent.AuthoredPlans.lambdaPlan,
