@@ -10,17 +10,17 @@ matching given by its partner function `f`, an involution, this means `a < b < f
 `IsNoncrossing f` forbids it.  For involutions this is the same as forbidding interleaved
 chords in either orientation (`isNoncrossing_iff_forall_not_chordsCross`), and the orbit
 partition of an involution is a noncrossing partition exactly when the involution is
-noncrossing in this sense (`Mettapedia.ProbabilityTheory.FreeProbability`,
-`orbitPartition_isNoncrossing_iff`).
+noncrossing in this sense
+(`Mettapedia.ProbabilityTheory.FreeProbability.orbitPartition_isNoncrossing_iff`).
 
 `noncrossingMatchings ps` lists the noncrossing perfect matchings of a strictly increasing
 list of points as lists of pairs: the first point is paired with a point at even distance,
 the points in between are matched among themselves, and the points after are matched
 independently.  The enumeration is
 
-* sound (`involutive_mate`, `mate_mem`, `mate_ne`, `mate_eq_self`, `isNoncrossing_mate`):
-  each entry's partner function is a noncrossing fixed-point-free involution on the
-  points, the identity elsewhere;
+* sound (`isNoncrossingMatchingOn_mate`, with the projections `involutive_mate` and
+  `isNoncrossing_mate`): each entry's partner function is a noncrossing fixed-point-free
+  involution on the points, the identity elsewhere (`IsNoncrossingMatchingOn`);
 * complete (`exists_mem_noncrossingMatchings`): every noncrossing involution without
   fixed points on the points agrees on them with an entry;
 * without repetition (`nodup_noncrossingMatchings`, `eq_of_mate_eq`);
@@ -132,7 +132,7 @@ theorem mate_cons_of_ne {a b x : α} (ha : x ≠ a) (hb : x ≠ b) (es : List (�
     mate ((a, b) :: es) x = mate es x := by
   simp [mate, ha, hb]
 
-theorem mate_eq_self_of_not_mem {p : List (α × α)} {x : α} (hx : x ∉ points p) :
+theorem mate_eq_self_of_notMem {p : List (α × α)} {x : α} (hx : x ∉ points p) :
     mate p x = x := by
   induction p with
   | nil => rfl
@@ -143,7 +143,7 @@ theorem mate_eq_self_of_not_mem {p : List (α × α)} {x : α} (hx : x ∉ point
 theorem mem_points_of_mate_ne {p : List (α × α)} {x : α} (hx : mate p x ≠ x) :
     x ∈ points p := by
   by_contra h
-  exact hx (mate_eq_self_of_not_mem h)
+  exact hx (mate_eq_self_of_notMem h)
 
 theorem mate_append_of_mem {p q : List (α × α)} {x : α} (hx : x ∈ points p) :
     mate (p ++ q) x = mate p x := by
@@ -157,7 +157,7 @@ theorem mate_append_of_mem {p q : List (α × α)} {x : α} (hx : x ∈ points p
       · rfl
       · exact ih (hx.resolve_left h₁ |>.resolve_left h₂)
 
-theorem mate_append_of_not_mem {p q : List (α × α)} {x : α} (hx : x ∉ points p) :
+theorem mate_append_of_notMem {p q : List (α × α)} {x : α} (hx : x ∉ points p) :
     mate (p ++ q) x = mate q x := by
   induction p with
   | nil => rfl
@@ -364,7 +364,7 @@ theorem isNoncrossingMatchingOn_mate {ps : List α} (hps : ps.Pairwise (· < ·)
     have gO : ∀ y ∈ O, mate ((a, b) :: (inside ++ outside)) y = mate outside y := by
       intro y hy
       rw [mate_cons_of_ne (hab.trans (hO_gt y hy)).ne' (hO_gt y hy).ne',
-        mate_append_of_not_mem fun h => hneO_I y hy ((hptsI y).mp h)]
+        mate_append_of_notMem fun h => hneO_I y hy ((hptsI y).mp h)]
     have hcases : ∀ x ∈ a :: rest, x = a ∨ x ∈ I ∨ x = b ∨ x ∈ O := by
       intro x hx
       rcases List.mem_cons.mp hx with rfl | hx
@@ -379,7 +379,7 @@ theorem isNoncrossingMatchingOn_mate {ps : List α} (hps : ps.Pairwise (· < ·)
       fun x => mem_points_iff_of_mem (mem_noncrossingMatchings_cons.mpr
         ⟨m, by assumption, inside, hinside, outside, houtside, rfl⟩)
     have goff : ∀ x, x ∉ a :: rest → mate ((a, b) :: (inside ++ outside)) x = x :=
-      fun x hx => mate_eq_self_of_not_mem fun h => hx ((hpts x).mp h)
+      fun x hx => mate_eq_self_of_notMem fun h => hx ((hpts x).mp h)
     set g := mate ((a, b) :: (inside ++ outside))
     -- `g` maps each region into itself or swaps the two named points
     have hloc : ∀ x ∈ a :: rest, g x ∈ a :: rest ∧ g x ≠ x := by
@@ -526,7 +526,7 @@ theorem exists_mem_noncrossingMatchings {ps : List α} (hps : ps.Pairwise (· < 
           mate_append_of_mem ((mem_points_iff_of_mem hpin).mpr hx), hpin_agree x hx]
       · rw [mate_cons_snd hab.ne, hfb]
       · rw [mate_cons_of_ne (hab.trans (hO_gt x hx)).ne' (hO_gt x hx).ne',
-          mate_append_of_not_mem fun h' => lt_asymm (hI_lt x
+          mate_append_of_notMem fun h' => lt_asymm (hI_lt x
             ((mem_points_iff_of_mem hpin).mp h')).2 (hO_gt x hx), hpout_agree x hx]
 
 end Correctness
@@ -584,7 +584,7 @@ theorem eq_of_mate_eq {ps : List α} (hps : ps.Nodup) {p q : List (α × α)}
       have hyI : y ∉ points ip := fun h' => hIO y ((mem_points_iff_of_mem hip).mp h') hy
       rwa [mate_cons_of_ne (hneO y hy).1 (hneO y hy).2,
         mate_cons_of_ne (hneO y hy).1 (hneO y hy).2,
-        mate_append_of_not_mem hyI, mate_append_of_not_mem hyI] at this
+        mate_append_of_notMem hyI, mate_append_of_notMem hyI] at this
     rw [hO]
 
 omit [DecidableEq α] in

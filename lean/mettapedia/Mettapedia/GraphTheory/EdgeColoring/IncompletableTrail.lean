@@ -20,7 +20,7 @@ vertices `3` and `8` remain as isolated points).  `G` is recovered from `G'` by 
 * `G` is connected, and deleting any one or two vertices leaves it connected
   (`cubicGraph_connected`, `cubicGraph_induce_compl_pair_connected`): having more than
   three vertices, `G` is `3`-connected;
-* yet from the colouring `baseColouring` of `G'`, no colouring reachable by Kempe switches
+* yet from the colouring `baseColoring` of `G'`, no colouring reachable by Kempe switches
   has the edges `0–7` and `9–14` in one two-coloured component
   (`not_kempeCompletableAcross`).
 
@@ -55,10 +55,10 @@ def rotationTable : List (List (Fin 20)) :=
     [9, 3, 14], [4, 8, 15], [4, 16, 11], [5, 10, 17], [6, 17, 13], [7, 12, 18], [8, 18, 15], [9,
     14, 16], [10, 15, 19], [11, 19, 12], [13, 19, 14], [16, 18, 17]]
 /-- A proper `3`-edge-colouring of the cubic graph, in the order of `graphEdges`. -/
-def graphColouring : List (Fin 3) :=
+def graphColoring : List (Fin 3) :=
   [0, 1, 2, 1, 2, 0, 2, 1, 0, 2, 1, 0, 2, 0, 1, 2, 2, 1, 0, 2, 1, 0, 2, 0, 1, 1, 2, 1, 0, 0]
 /-- The proper `3`-edge-colourings of the trail graph, in the order of `trailEdges`. -/
-def trailColourings : List (List (Fin 3)) := [
+def trailColorings : List (List (Fin 3)) := [
   [0, 1, 1, 2, 2, 0, 0, 2, 0, 1, 1, 1, 1, 0, 1, 2, 2, 0, 0, 0, 1, 2, 0, 1, 2, 2, 2],
   [0, 1, 1, 2, 2, 0, 0, 2, 1, 0, 0, 1, 1, 1, 0, 2, 2, 1, 0, 0, 1, 2, 1, 0, 2, 2, 2],
   [0, 1, 1, 2, 2, 0, 0, 2, 1, 0, 0, 1, 2, 1, 0, 2, 2, 1, 0, 0, 2, 1, 2, 0, 1, 2, 1],
@@ -397,12 +397,12 @@ theorem cubicGraph_isRegular : cubicGraph.IsRegularOfDegree 3 := by
   decide +kernel
 
 set_option maxRecDepth 100000 in
-theorem graphColouring_proper : graphListing.ProperTable graphColouring := by
+theorem graphColoring_proper : graphListing.ProperTable graphColoring := by
   decide +kernel
 
 /-- **`G` is `3`-edge-colourable.** -/
 theorem cubicGraph_edgeColorable : cubicGraph.EdgeColorable 3 :=
-  ⟨graphListing.coloring _ graphColouring_proper⟩
+  ⟨graphListing.coloring _ graphColoring_proper⟩
 
 /-- The position in `kempeBlocks` of an unordered pair of colours. -/
 def pairIndex (a b : Fin 3) : ℕ :=
@@ -413,15 +413,14 @@ def blocksOf (i : ℕ) (a b : Fin 3) : List (List ℕ × ℕ) :=
   (kempeBlocks.getD i []).getD (pairIndex a b) []
 
 set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
 /-- The thirty-six colourings of `G'` and their two-coloured components form a Kempe
 certificate. -/
-theorem kempeCertificate : trailListing.KempeCertificate trailColourings blocksOf := by
+theorem kempeCertificate : trailListing.KempeCertificate trailColorings blocksOf := by
   decide +kernel
 
 set_option maxRecDepth 100000 in
 /-- No certified block contains both `0–7` (position 25) and `9–14` (position 26). -/
-theorem blocks_separate : ∀ i < trailColourings.length, ∀ a b : Fin 3, ∀ blk ∈ blocksOf i a b,
+theorem blocks_separate : ∀ i < trailColorings.length, ∀ a b : Fin 3, ∀ blk ∈ blocksOf i a b,
     25 ∈ blk.1 → 26 ∉ blk.1 := by
   decide +kernel
 
@@ -440,13 +439,13 @@ theorem edgeNineFourteen_val : (edgeNineFourteen : Sym2 (Fin 20)) = s(9, 14) := 
   decide +kernel
 
 /-- The first certified colouring of `G'`. -/
-noncomputable def baseColouring : trailGraph.EdgeColoring (Fin 3) :=
+noncomputable def baseColoring : trailGraph.EdgeColoring (Fin 3) :=
   trailListing.coloring _ (kempeCertificate.proper 0 (by decide))
 
-/-- **No colouring Kempe-equivalent to `baseColouring` puts `0–7` and `9–14` in one
+/-- **No colouring Kempe-equivalent to `baseColoring` puts `0–7` and `9–14` in one
 two-coloured component**: the trail is not completable by simple operations. -/
 theorem not_kempeCompletableAcross :
-    ¬ EdgeColoring.KempeCompletableAcross baseColouring edgeZeroSeven edgeNineFourteen :=
+    ¬ EdgeColoring.KempeCompletableAcross baseColoring edgeZeroSeven edgeNineFourteen :=
   EdgeTable.Listing.not_kempeCompletableAcross kempeCertificate (by decide) _ _ blocks_separate
 
 
@@ -518,7 +517,6 @@ theorem dartIndex_injective : Function.Injective dartIndex := by
   exact Dart.ext _ _ (Prod.ext (Fin.ext (by omega)) (Fin.ext (by omega)))
 
 set_option maxRecDepth 100000 in
-set_option maxHeartbeats 0 in
 theorem rotation_faceCount : rotation.faceCount = 12 := by
   rw [RotationSystem.faceCount_eq_cycleCount _ dartIndex_injective]
   decide +kernel

@@ -65,25 +65,25 @@ section Tables
 variable {α : Type*} [DecidableEq α] [Inhabited α]
 
 /-- The colour at position `k` of a table. -/
-abbrev colourAt (t : List α) (k : ℕ) : α :=
+abbrev colorAt (t : List α) (k : ℕ) : α :=
   t.getD k default
 
 /-- Position `k` is coloured `a` or `b`. -/
-def Bicoloured (t : List α) (a b : α) (k : ℕ) : Prop :=
-  colourAt t k = a ∨ colourAt t k = b
+def Bicolored (t : List α) (a b : α) (k : ℕ) : Prop :=
+  colorAt t k = a ∨ colorAt t k = b
 
-instance (t : List α) (a b : α) (k : ℕ) : Decidable (Bicoloured t a b k) := by
-  unfold Bicoloured
+instance (t : List α) (a b : α) (k : ℕ) : Decidable (Bicolored t a b k) := by
+  unfold Bicolored
   infer_instance
 
 /-- Switch the colours `a` and `b` at the positions of a block. -/
 def swapTable (t : List α) (a b : α) (B : List ℕ) : List α :=
-  (List.range t.length).map fun i => if i ∈ B then Equiv.swap a b (colourAt t i) else colourAt t i
+  (List.range t.length).map fun i => if i ∈ B then Equiv.swap a b (colorAt t i) else colorAt t i
 
-theorem colourAt_swapTable (t : List α) (a b : α) (B : List ℕ) {i : ℕ} (hi : i < t.length) :
-    colourAt (swapTable t a b B) i =
-      if i ∈ B then Equiv.swap a b (colourAt t i) else colourAt t i := by
-  simp [swapTable, colourAt, List.getD_eq_getElem?_getD, hi]
+theorem colorAt_swapTable (t : List α) (a b : α) (B : List ℕ) {i : ℕ} (hi : i < t.length) :
+    colorAt (swapTable t a b B) i =
+      if i ∈ B then Equiv.swap a b (colorAt t i) else colorAt t i := by
+  simp [swapTable, colorAt, List.getD_eq_getElem?_getD, hi]
 
 /-- Every entry after the first meets one of the entries before it (`pre`, reversed). -/
 def listedConnected (adj : List (List ℕ)) : List ℕ → List ℕ → Bool
@@ -204,7 +204,7 @@ variable {α : Type*} [DecidableEq α] [Inhabited α]
 /-- A table colours every edge, and meeting edges differently. -/
 def ProperTable (t : List α) : Prop :=
   t.length = L.edges.length ∧
-    ∀ k < L.edges.length, ∀ k' ∈ L.adj.getD k [], colourAt t k ≠ colourAt t k'
+    ∀ k < L.edges.length, ∀ k' ∈ L.adj.getD k [], colorAt t k ≠ colorAt t k'
 
 instance (t : List α) : Decidable (L.ProperTable t) := by
   unfold ProperTable
@@ -212,44 +212,44 @@ instance (t : List α) : Decidable (L.ProperTable t) := by
 
 /-- The edge colouring described by a proper table. -/
 noncomputable def coloring (t : List α) (ht : L.ProperTable t) : L.graph.EdgeColoring α :=
-  Coloring.mk (fun e => colourAt t (L.pos e)) fun {e _} hef =>
+  Coloring.mk (fun e => colorAt t (L.pos e)) fun {e _} hef =>
     ht.2 _ (L.pos_lt e) _ ((L.mem_adj_iff_adj).mpr hef)
 
 omit [DecidableEq α] in
 theorem coloring_apply (t : List α) (ht : L.ProperTable t) (e : L.graph.edgeSet) :
-    L.coloring t ht e = colourAt t (L.pos e) := rfl
+    L.coloring t ht e = colorAt t (L.pos e) := rfl
 
 omit [DecidableEq α] in
 theorem mem_bicoloredSet_iff (t : List α) (ht : L.ProperTable t) (a b : α)
     (e : L.graph.edgeSet) :
-    e ∈ (L.coloring t ht).bicoloredSet a b ↔ Bicoloured t a b (L.pos e) := Iff.rfl
+    e ∈ (L.coloring t ht).bicoloredSet a b ↔ Bicolored t a b (L.pos e) := Iff.rfl
 
 /-! ### Kempe blocks -/
 
 /-- `B` is one two-coloured component of the table `t` for the colours `a, b`. -/
 structure IsKempeBlock (t : List α) (a b : α) (B : List ℕ) : Prop where
   lt : ∀ k ∈ B, k < L.edges.length
-  bicoloured : ∀ k ∈ B, Bicoloured t a b k
+  bicolored : ∀ k ∈ B, Bicolored t a b k
   connected : blockConnected L.adj B = true
-  closed : ∀ k ∈ B, ∀ k' ∈ L.adj.getD k [], Bicoloured t a b k' → k' ∈ B
+  closed : ∀ k ∈ B, ∀ k' ∈ L.adj.getD k [], Bicolored t a b k' → k' ∈ B
 
 instance (t : List α) (a b : α) (B : List ℕ) : Decidable (L.IsKempeBlock t a b B) :=
-  decidable_of_iff ((∀ k ∈ B, k < L.edges.length) ∧ (∀ k ∈ B, Bicoloured t a b k) ∧
+  decidable_of_iff ((∀ k ∈ B, k < L.edges.length) ∧ (∀ k ∈ B, Bicolored t a b k) ∧
       blockConnected L.adj B = true ∧
-      ∀ k ∈ B, ∀ k' ∈ L.adj.getD k [], Bicoloured t a b k' → k' ∈ B)
+      ∀ k ∈ B, ∀ k' ∈ L.adj.getD k [], Bicolored t a b k' → k' ∈ B)
     ⟨fun ⟨h₁, h₂, h₃, h₄⟩ => ⟨h₁, h₂, h₃, h₄⟩, fun ⟨h₁, h₂, h₃, h₄⟩ => ⟨h₁, h₂, h₃, h₄⟩⟩
 
 /-- The step relation of two-coloured adjacency on positions. -/
-def bicolouredStep (t : List α) (a b : α) (k k' : ℕ) : Prop :=
-  k' ∈ L.adj.getD k [] ∧ Bicoloured t a b k'
+def bicoloredStep (t : List α) (a b : α) (k k' : ℕ) : Prop :=
+  k' ∈ L.adj.getD k [] ∧ Bicolored t a b k'
 
 variable {L}
 
 omit [DecidableEq α] in
 private theorem listedConnected_reach {t : List α} {a b : α} {r : ℕ} :
-    ∀ (ks pre : List ℕ), (∀ j ∈ pre, Relation.ReflTransGen (L.bicolouredStep t a b) r j) →
-      (∀ k ∈ ks, Bicoloured t a b k) → listedConnected L.adj pre ks = true →
-        ∀ k ∈ ks, Relation.ReflTransGen (L.bicolouredStep t a b) r k := by
+    ∀ (ks pre : List ℕ), (∀ j ∈ pre, Relation.ReflTransGen (L.bicoloredStep t a b) r j) →
+      (∀ k ∈ ks, Bicolored t a b k) → listedConnected L.adj pre ks = true →
+        ∀ k ∈ ks, Relation.ReflTransGen (L.bicoloredStep t a b) r k := by
   intro ks
   induction ks with
   | nil => intro _ _ _ _ k hk; simp at hk
@@ -257,7 +257,7 @@ private theorem listedConnected_reach {t : List α} {a b : α} {r : ℕ} :
     intro pre hpre hks hcon
     simp only [listedConnected, Bool.and_eq_true, List.any_eq_true] at hcon
     obtain ⟨⟨j, hj, hjk⟩, hrest⟩ := hcon
-    have hk : Relation.ReflTransGen (L.bicolouredStep t a b) r k :=
+    have hk : Relation.ReflTransGen (L.bicoloredStep t a b) r k :=
       (hpre j hj).tail ⟨of_decide_eq_true hjk, hks k List.mem_cons_self⟩
     intro k' hk'
     rcases List.mem_cons.mp hk' with rfl | hk'
@@ -273,7 +273,7 @@ omit [DecidableEq α] in
 /-- A block is closed under two-coloured adjacency. -/
 theorem IsKempeBlock.mem_of_reflTransGen {t : List α} {a b : α} {B : List ℕ}
     (hB : L.IsKempeBlock t a b B) {k k' : ℕ} (hk : k ∈ B)
-    (h : Relation.ReflTransGen (L.bicolouredStep t a b) k k') : k' ∈ B := by
+    (h : Relation.ReflTransGen (L.bicoloredStep t a b) k k') : k' ∈ B := by
   induction h with
   | refl => exact hk
   | tail _ hstep ih => exact hB.closed _ ih _ hstep.1 hstep.2
@@ -282,27 +282,27 @@ omit [DecidableEq α] in
 /-- Every entry of a block is reached from every other along two-coloured adjacency. -/
 theorem IsKempeBlock.reflTransGen {t : List α} {a b : α} {B : List ℕ}
     (hB : L.IsKempeBlock t a b B) {k k' : ℕ} (hk : k ∈ B) (hk' : k' ∈ B) :
-    Relation.ReflTransGen (L.bicolouredStep t a b) k k' := by
+    Relation.ReflTransGen (L.bicoloredStep t a b) k k' := by
   cases B with
   | nil => exact absurd hB.connected (by simp [blockConnected])
   | cons r ks =>
-    have hfrom : ∀ j ∈ r :: ks, Relation.ReflTransGen (L.bicolouredStep t a b) r j := by
+    have hfrom : ∀ j ∈ r :: ks, Relation.ReflTransGen (L.bicoloredStep t a b) r j := by
       intro j hj
       rcases List.mem_cons.mp hj with rfl | hj
       · exact .refl
       · exact listedConnected_reach ks [r]
           (fun i hi => (List.mem_singleton.mp hi) ▸ .refl)
-          (fun k hk => hB.bicoloured k (List.mem_cons_of_mem _ hk)) hB.connected j hj
+          (fun k hk => hB.bicolored k (List.mem_cons_of_mem _ hk)) hB.connected j hj
     -- two-coloured adjacency between entries of a block is symmetric, so paths reverse
-    have hsymm : ∀ j, Relation.ReflTransGen (L.bicolouredStep t a b) r j →
-        Relation.ReflTransGen (L.bicolouredStep t a b) j r := by
+    have hsymm : ∀ j, Relation.ReflTransGen (L.bicoloredStep t a b) r j →
+        Relation.ReflTransGen (L.bicoloredStep t a b) j r := by
       intro j hj
       induction hj with
       | refl => exact .refl
       | tail hrx hxy ih =>
         rename_i x y
         have hx : x ∈ r :: ks := hB.mem_of_reflTransGen List.mem_cons_self hrx
-        exact Relation.ReflTransGen.head ⟨L.mem_adj_comm (hB.lt x hx) hxy.1, hB.bicoloured x hx⟩ ih
+        exact Relation.ReflTransGen.head ⟨L.mem_adj_comm (hB.lt x hx) hxy.1, hB.bicolored x hx⟩ ih
     exact (hsymm k (hfrom k hk)).trans (hfrom k' hk')
 
 variable (L)
@@ -314,14 +314,14 @@ theorem reachable_iff (t : List α) (ht : L.ProperTable t) (a b : α)
     (x y : L.graph.edgeSet) (hx : x ∈ (L.coloring t ht).bicoloredSet a b)
     (hy : y ∈ (L.coloring t ht).bicoloredSet a b) :
     ((L.coloring t ht).bicoloredSubgraph a b).Reachable ⟨x, hx⟩ ⟨y, hy⟩ ↔
-      Relation.ReflTransGen (L.bicolouredStep t a b) (L.pos x) (L.pos y) := by
+      Relation.ReflTransGen (L.bicoloredStep t a b) (L.pos x) (L.pos y) := by
   rw [Coloring.bicoloredSubgraph, induce_reachable_iff_reflTransGen]
   constructor
   · intro h
     exact Relation.ReflTransGen.lift L.pos (fun u w huw =>
       ⟨(L.mem_adj_iff_adj).mpr huw.1, huw.2⟩) _ _ h
   · intro h
-    suffices key : ∀ k, Relation.ReflTransGen (L.bicolouredStep t a b) (L.pos x) k →
+    suffices key : ∀ k, Relation.ReflTransGen (L.bicoloredStep t a b) (L.pos x) k →
         ∃ hk : k < L.edges.length, Relation.ReflTransGen
           (fun u w => L.graph.lineGraph.Adj u w ∧ w ∈ (L.coloring t ht).bicoloredSet a b)
           x (L.edge hk) by
@@ -346,7 +346,7 @@ theorem kempeComponentSet_eq (t : List α) (ht : L.ProperTable t) (a b : α) {B 
     (L.coloring t ht).kempeComponentSet a b
         (((L.coloring t ht).bicoloredSubgraph a b).connectedComponentMk
           ⟨L.edge (hB.lt k hk), by
-            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicoloured k hk⟩) =
+            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicolored k hk⟩) =
       {e | L.pos e ∈ B} := by
   ext e
   simp only [Coloring.kempeComponentSet, Set.mem_ofPred_eq]
@@ -357,7 +357,7 @@ theorem kempeComponentSet_eq (t : List α) (ht : L.ProperTable t) (a b : α) {B 
     exact hB.mem_of_reflTransGen hk hreach
   · intro he
     have hbic : e ∈ (L.coloring t ht).bicoloredSet a b := by
-      rw [mem_bicoloredSet_iff]; exact hB.bicoloured _ he
+      rw [mem_bicoloredSet_iff]; exact hB.bicolored _ he
     refine ⟨hbic, ConnectedComponent.sound ?_⟩
     rw [reachable_iff, L.pos_edge]
     exact hB.reflTransGen he hk
@@ -369,12 +369,12 @@ theorem swapOnKempeComponent_eq (t : List α) (ht : L.ProperTable t) (a b : α) 
     (L.coloring t ht).swapOnKempeComponent a b
         (((L.coloring t ht).bicoloredSubgraph a b).connectedComponentMk
           ⟨L.edge (hB.lt k hk), by
-            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicoloured k hk⟩) =
+            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicolored k hk⟩) =
       L.coloring t' ht' := by
   subst hswap
   refine DFunLike.ext _ _ fun e => ?_
   have hlt : L.pos e < t.length := ht.1 ▸ L.pos_lt e
-  rw [coloring_apply, colourAt_swapTable _ _ _ _ hlt]
+  rw [coloring_apply, colorAt_swapTable _ _ _ _ hlt]
   have hset := L.kempeComponentSet_eq t ht a b hB hk
   by_cases he : L.pos e ∈ B
   · rw [if_pos he, (L.coloring t ht).swapOnKempeComponent_apply_of_mem
@@ -392,7 +392,7 @@ coloured `a` or `b`, each listed with the position in `S` of the table obtained 
 switching it. -/
 def KempeCertificate : Prop :=
   (∀ i < S.length, L.ProperTable (S.getD i [])) ∧
-    (∀ i < S.length, ∀ a b, ∀ k < L.edges.length, Bicoloured (S.getD i []) a b k →
+    (∀ i < S.length, ∀ a b, ∀ k < L.edges.length, Bicolored (S.getD i []) a b k →
       ∃ blk ∈ cert i a b, k ∈ blk.1) ∧
     ∀ i < S.length, ∀ a b, ∀ blk ∈ cert i a b, L.IsKempeBlock (S.getD i []) a b blk.1 ∧
       blk.2 < S.length ∧ swapTable (S.getD i []) a b blk.1 = S.getD blk.2 []
@@ -400,7 +400,7 @@ def KempeCertificate : Prop :=
 instance [Fintype α] : Decidable (L.KempeCertificate S cert) := by
   unfold KempeCertificate
   have : ∀ (i : ℕ) (a b : α), Decidable (∀ k < L.edges.length,
-      Bicoloured (S.getD i []) a b k → ∃ blk ∈ cert i a b, k ∈ blk.1) :=
+      Bicolored (S.getD i []) a b k → ∃ blk ∈ cert i a b, k ∈ blk.1) :=
     fun _ _ _ => inferInstance
   infer_instance
 
@@ -410,7 +410,7 @@ theorem KempeCertificate.proper (h : L.KempeCertificate S cert) :
     ∀ i < S.length, L.ProperTable (S.getD i []) := h.1
 
 theorem KempeCertificate.cover (h : L.KempeCertificate S cert) :
-    ∀ i < S.length, ∀ a b, ∀ k < L.edges.length, Bicoloured (S.getD i []) a b k →
+    ∀ i < S.length, ∀ a b, ∀ k < L.edges.length, Bicolored (S.getD i []) a b k →
       ∃ blk ∈ cert i a b, k ∈ blk.1 := h.2.1
 
 theorem KempeCertificate.block (h : L.KempeCertificate S cert) :
@@ -433,13 +433,13 @@ theorem exists_eq_coloring_of_mem_edgeKempeClosure (hcert : L.KempeCertificate S
     induction K using ConnectedComponent.ind with
     | h x =>
       obtain ⟨e, hx⟩ := x
-      have hk : Bicoloured (S.getD i []) a b (L.pos e) := (mem_bicoloredSet_iff _ _ _ _ _ e).mp hx
+      have hk : Bicolored (S.getD i []) a b (L.pos e) := (mem_bicoloredSet_iff _ _ _ _ _ e).mp hx
       obtain ⟨blk, hblk, hkblk⟩ := hcert.cover i hi a b _ (L.pos_lt e) hk
       obtain ⟨hB, htlt, htgt⟩ := hcert.block i hi a b blk hblk
       refine ⟨blk.2, htlt, ?_⟩
       have hrep : (⟨e, hx⟩ : ↥((L.coloring _ (hcert.proper i hi)).bicoloredSet a b)) =
           ⟨L.edge (hB.lt _ hkblk), by
-            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicoloured _ hkblk⟩ :=
+            rw [mem_bicoloredSet_iff, L.pos_edge]; exact hB.bicolored _ hkblk⟩ :=
         Subtype.ext (L.edge_pos e).symm
       rw [hrep]
       exact L.swapOnKempeComponent_eq _ _ a b hB hkblk _ _ htgt
@@ -452,7 +452,7 @@ theorem not_sameKempeComponent (hcert : L.KempeCertificate S cert) {i : ℕ} (hi
       (L.edge hk₁) (L.edge hk₂) := by
   intro hsame
   obtain ⟨hx, hy, hreach⟩ := hsame
-  have hk : Bicoloured (S.getD i []) a b k₁ := by
+  have hk : Bicolored (S.getD i []) a b k₁ := by
     have := (mem_bicoloredSet_iff _ _ _ _ _ _).mp hx
     rwa [L.pos_edge] at this
   obtain ⟨blk, hblk, hk₁blk⟩ := hcert.cover i hi a b k₁ hk₁ hk

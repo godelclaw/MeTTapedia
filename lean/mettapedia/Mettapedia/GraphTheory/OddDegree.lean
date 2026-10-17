@@ -11,7 +11,7 @@ So every odd-degree vertex shares its component with a different odd-degree vert
 `exists_ne_odd_degree_of_exists_odd_degree`.  This is the parity step that turns a path
 leaving an odd vertex into a path ending at another one.
 
-`exists_adj_not_mem_of_odd_degree_of_even` is the companion local fact: if the neighbours
+`exists_adj_notMem_of_odd_degree_of_even` is the companion local fact: if the neighbours
 of a vertex inside a region are oddly many while all its neighbours are evenly many, some
 neighbour lies outside the region.
 -/
@@ -36,7 +36,7 @@ theorem exists_ne_odd_degree_reachable {v : V} (hv : Odd (G.degree v)) :
 
 /-- If a vertex has oddly many neighbours inside a region and evenly many in all, one of
 its neighbours lies outside the region. -/
-theorem exists_adj_not_mem_of_odd_degree_of_even (H : SimpleGraph V) [DecidableRel H.Adj]
+theorem exists_adj_notMem_of_odd_degree_of_even (H : SimpleGraph V) [DecidableRel H.Adj]
     (s : Set V) {v : V} (hH : ∀ w, H.Adj v w ↔ G.Adj v w ∧ w ∈ s) (hodd : Odd (H.degree v))
     (heven : Even (G.degree v)) : ∃ w, G.Adj v w ∧ w ∉ s := by
   by_contra hnone
