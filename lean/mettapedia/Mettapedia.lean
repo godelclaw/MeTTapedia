@@ -64,6 +64,9 @@ import Mettapedia.GraphTheory.FiniteReachability
 -- Combinatorics
 import Mettapedia.Combinatorics
 
+-- Group Theory
+import Mettapedia.GroupTheory
+
 -- Probability Theory
 import Mettapedia.ProbabilityTheory.Basic
 import Mettapedia.ProbabilityTheory.MarkovChain
