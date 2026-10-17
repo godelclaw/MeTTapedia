@@ -225,12 +225,19 @@ are derived from the models, deployed, and re-observed live.
   irreflexivity, transitivity, totality, and injected-over-never precedence.
 - `StiFloorDecay.lean` — the concrete fixed-point floor-division decay model
   and its contraction and loss bounds.
+- `TelegramCommandPlane.lean` — operator commands answered by the channel
+  service, a process separate from the agent. For every agent behaviour, each
+  command gets exactly one reply by its deadline: the agent's own answer, or
+  the service's fallback, later edited with the agent's answer. Every reply
+  and edit traces to the agent's answer to that very command, and a stop is
+  enforced where sends are dispatched. A contrast theorem shows that when only
+  the agent can answer, a silent agent leaves the command unanswered forever.
+
 Attention and memory models now live in the semantic library:
 `Mettapedia.CogArch.Attention` and
 `Mettapedia.CogArch.Memory`. Generic restarting walks and finite
 mass transport live in `Mettapedia.ProbabilityTheory.MarkovChain`. These are
 shared mathematics, independent of the agent framework that first used them.
-
 
 Most models use no Mathlib and end with a `#print axioms` audit:
 zero `sorry`, axioms at most `propext` and `Quot.sound`, several theorems
@@ -273,6 +280,7 @@ LEAN_PATH=. lean -o AsyncWait.olean AsyncWait.lean
 LEAN_PATH=. lean -o AdmissionFrontier.olean AdmissionFrontier.lean
 LEAN_PATH=. lean -o EventPump.olean EventPump.lean
 LEAN_PATH=. lean ProcessSupervision.lean
+lean TelegramCommandPlane.lean
 ```
 
 For the composed strategy and its imported model dependencies, from the
