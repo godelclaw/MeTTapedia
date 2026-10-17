@@ -32,7 +32,7 @@ open Mettapedia.Logic.HOL.Embedding.ZFSetInductive
 open Mettapedia.Logic.HOL.Embedding.ZFSetTraceProducts
 open Mettapedia.Logic.HOL.Embedding.ZFSetDependentProducts
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TowerInterpretation (numeral)
-open Relation
+open _root_.Relation
 open scoped ZFSet Ordinal
 open Classical
 
