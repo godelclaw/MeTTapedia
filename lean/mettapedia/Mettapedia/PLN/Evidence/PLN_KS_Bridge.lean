@@ -1,5 +1,4 @@
 import Mettapedia.PLN.Evidence.BinaryEvidence
-import Mettapedia.PLN.Evidence.KnuthSkillingCompatibility
 import KnuthSkilling.Core.TotalityImprecision
 
 /-!

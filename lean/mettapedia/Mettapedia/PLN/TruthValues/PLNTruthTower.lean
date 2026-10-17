@@ -6,7 +6,7 @@ import Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyMultinomialIDM
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.Basic
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.ProjectiveCredal
 import Mettapedia.ProbabilityTheory.Hypercube.ThetaSemantics
-import Mettapedia.PLN.Evidence.KnuthSkillingCompatibility
+import KnuthSkilling.Core.TotalityImprecision
 
 /-!
 # PLN Truth Tower
