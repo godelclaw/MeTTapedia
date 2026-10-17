@@ -1,6 +1,0 @@
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryAlignedRestoration
-open Mettapedia.Languages.ProcessCalculi.RhoCalculus
-#check @canonicalize_eq_of_canonicalRootAligned
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.canonicalize_eq_of_canonicalRootAligned
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoCanonicalStaticPairSemanticCut_aligned_of_planStopApex
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoAlignedViewsRestorationAligned_of_nonBoundaryRemainder

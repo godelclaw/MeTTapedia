@@ -1,4 +1,0 @@
-import Mettapedia.GSLT.LanguageDef.Cost
-
-#check Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoHereditaryCostOneDomainObject
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoHereditaryCostOneDomainObject

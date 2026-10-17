@@ -1,6 +1,0 @@
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditarySameColorQuoteStop
-
-open Mettapedia.Languages.ProcessCalculi.RhoCalculus
-
-#print axioms rho_sameColorQuoteSide_quotePair_or_canonicalIsVariable
-#print axioms rho_sameColorQuoteStop_commonRestorationApex

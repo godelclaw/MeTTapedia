@@ -1,4 +1,0 @@
-import Mettapedia.GSLT.LanguageDef.CostSourceVariableKeyAgreement
-open Mettapedia.GSLT.LanguageDef
-#print axioms Mettapedia.GSLT.LanguageDef.CostStaticAtomEnvironment.matchedFvarKeyAgreement_of_sourceVariable
-#print axioms Mettapedia.GSLT.LanguageDef.TypedCostRegionBoundaryTable.mappedFreeContext_sourceVariable

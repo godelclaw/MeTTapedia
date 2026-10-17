@@ -1,4 +1,0 @@
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryProviderLeftCollapsing
-open Mettapedia.Languages.ProcessCalculi.RhoCalculus
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoHereditaryCostOneDomainObject_ofSplitObligations
-#print axioms Mettapedia.Languages.ProcessCalculi.RhoCalculus.rhoCanonicalStaticPairSemanticCutProviderInDomain_of_splitObligations

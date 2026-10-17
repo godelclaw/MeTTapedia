@@ -71,3 +71,7 @@ Mettapedia/external/wam-references/
 *.vrb
 _archive/
 DECLARATIONS.tsv
+
+# Local scratch and build output
+/scratch/
+*.olean

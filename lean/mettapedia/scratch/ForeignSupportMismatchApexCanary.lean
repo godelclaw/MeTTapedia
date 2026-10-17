@@ -1,9 +1,0 @@
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostHereditaryForeignResidualSpine
-
-namespace Mettapedia.Languages.ProcessCalculi.RhoCalculus
-namespace ForeignSupportMismatchApexCanary
-
-#check rho_afterSameColorBoundarySideForeign_of_stopCallback
-
-end ForeignSupportMismatchApexCanary
-end Mettapedia.Languages.ProcessCalculi.RhoCalculus

@@ -1,7 +1,0 @@
-import Mettapedia.GSLT.LanguageDef.CostStaticPlanProvenancedReification
-
-open Mettapedia.GSLT.LanguageDef
-open Mettapedia.OSLF.MeTTaIL.DerivedContexts
-
-#check OneHoleContext.mem_freeFvarNames_fill
-#check Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleContext.mem_freeFvarNames_fill

@@ -1,2 +1,0 @@
-import Mettapedia.GSLT.LanguageDef.CostStaticPlanLockstep
-#check @Mettapedia.GSLT.LanguageDef.costStaticArgumentPlan_canonicalStopAligned

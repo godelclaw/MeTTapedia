@@ -1,3 +1,0 @@
-import Mettapedia.GSLT.LanguageDef.CostRestorationFvarPairLeaf
-open Mettapedia.GSLT.LanguageDef
-#print axioms Mettapedia.GSLT.LanguageDef.CostStaticAtomEnvironment.matchedFvar_apex_of_keyAgreement
